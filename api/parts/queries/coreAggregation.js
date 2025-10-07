@@ -115,12 +115,14 @@ catch (error) {
             adapters: {
                 mongodb: {
                     handler: fetchAggregatedSegmentedEventDataMongo
-                },
-                clickhouse: {
-                    handler: clickHouseRunner.fetchAggregatedSegmentedEventDataClickhouse
                 }
             }
         };
+        if (clickHouseRunner && clickHouseRunner.fetchAggregatedSegmentedEventDataClickhouse) {
+            queryDef.adapters.clickhouse = {
+                handler: clickHouseRunner.fetchAggregatedSegmentedEventDataClickhouse
+            };
+        }
 
         return common.queryRunner.executeQuery(queryDef, params, options);
     };
@@ -178,6 +180,27 @@ catch (error) {
         return common.queryRunner.executeQuery(queryDef, params, options);
     };
 
+    agg.getSegmentedEventModelData = async function(params, options) {
+        if (!common.queryRunner) {
+            throw new Error('QueryRunner not initialized. Ensure API server is fully started.');
+        }
+
+        const queryDef = {
+            name: 'GET_SEGMENTED_EVENT_MODEL_DATA',
+            adapters: {
+                mongodb: {
+                    handler: mongodbRunner.getSegmentedEventModelData
+                }
+            }
+        };
+        if (clickHouseRunner && clickHouseRunner.getSegmentedEventModelData) {
+            queryDef.adapters.clickhouse = {
+                handler: clickHouseRunner.getSegmentedEventModelData
+            };
+        }
+        return common.queryRunner.executeQuery(queryDef, params, options);
+    };
+
 
     /**
    * Gets aggregated data chosen timezone.If not set - returns in UTC timezone.
@@ -211,7 +234,25 @@ catch (error) {
     };
 
 
+    agg.viewsTableData = async function(params, options) {
+        if (!common.queryRunner) {
+            throw new Error('QueryRunner not initialized. Ensure API server is fully started.');
+        }
 
-
+        const queryDef = {
+            name: 'VIEWS_TABLE_DATA',
+            adapters: {
+                mongodb: {
+                    handler: mongodbRunner.getViewsTableData
+                }
+            }
+        };
+        if (clickHouseRunner && clickHouseRunner.getViewsTableData) {
+            queryDef.adapters.clickhouse = {
+                handler: clickHouseRunner.getViewsTableData
+            };
+        }
+        return common.queryRunner.executeQuery(queryDef, params, options);
+    };
 }(coreAggregator));
 module.exports = coreAggregator;

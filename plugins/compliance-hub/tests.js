@@ -61,7 +61,7 @@ describe('Testing Compliance Hub', function() {
         });
         it('should update timestamp values as milliseconds on the db', function(done) {
             request
-                .get('/o/consent/searchDrill?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .get('/o/consent/search?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {

@@ -10,7 +10,6 @@ var DEVICE_ID = "1234567890";
 
 
 describe('Testing Times Of Day', function() {
-
     var checkEmptyData = function(done) {
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         APP_ID = testUtils.get("APP_ID");
@@ -66,7 +65,7 @@ describe('Testing Times Of Day', function() {
 
                 var ob = JSON.parse(res.text);
                 ob.result.should.eql("Success");
-                setTimeout(done, 500 * testUtils.testScalingFactor);
+                setTimeout(done, 500 * testUtils.testScalingFactor + 3000);
             });
     });
 

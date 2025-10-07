@@ -261,6 +261,7 @@ describe('Testing data points plugin', function() {
             var plugins = pluginManager.getPlugins();
             console.log("List of plugins: " + JSON.stringify(plugins));
             delete statInternalEvents["[CLY]_session"];
+            delete statInternalEvents["[CLY]_session_begin"];
             if (plugins.indexOf("surveys") === -1) {
                 delete statInternalEvents["[CLY]_survey"];
                 delete statInternalEvents["[CLY]_nps"];

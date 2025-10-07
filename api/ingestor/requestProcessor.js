@@ -317,7 +317,7 @@ var processToDrill = async function(params, drill_updates, callback) {
             }
             var upWithMeta = fillUserProperties(dbAppUser, params.app?.ovveridden_types?.prop);
             dbEventObject[common.dbUserMap.device_id] = params.qstring.device_id;
-            dbEventObject.lsid = dbAppUser.lsid;
+            dbEventObject.lsid = events[i].lsid || dbAppUser.lsid;
             dbEventObject[common.dbEventMap.user_properties] = upWithMeta.up;
             dbEventObject.custom = upWithMeta.upCustom;
             dbEventObject.cmp = upWithMeta.upCampaign;
@@ -331,6 +331,10 @@ var processToDrill = async function(params, drill_updates, callback) {
                 dbEventObject._id = params.request_hash + "_" + params.app_user.uid + "_" + Date.now().valueOf() + "_" + i;
             }
             eventKey = currEvent.key;
+
+            if ('up_extra' in currEvent) {
+                dbEventObject.up_extra = currEvent.up_extra;
+            }
 
             var time = params.time;
             if (events[i].timestamp) {
@@ -802,6 +806,19 @@ const validateAppForWriteAPI = (params, done) => {
                                         params.qstring.events = params.qstring.events || [];
 
                                         ob.updates.push({"$set": {"lsparams": ob.params.app_user.lsparams}});
+                                        const up_extra = { av_prev: params.app_user.av, p_prev: params.app_user.p };
+                                        if (params.app_user.hadFatalCrash) {
+                                            up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
+                                        }
+                                        if (params.app_user.hadAnyFatalCrash) {
+                                            up_extra.hadAnyFatalCrash = params.app_user.hadAnyFatalCrash;
+                                        }
+                                        if (params.app_user.hadNonfatalCrash) {
+                                            up_extra.hadNonfatalCrash = params.app_user.hadNonfatalCrash;
+                                        }
+                                        if (params.app_user.hadAnyNonfatalCrash) {
+                                            up_extra.hadAnyNonfatalCrash = params.app_user.hadAnyNonfatalCrash;
+                                        }
                                         params.qstring.events.unshift({
                                             key: "[CLY]_session_begin",
                                             dur: params.qstring.session_duration || 0,
@@ -813,7 +830,8 @@ const validateAppForWriteAPI = (params, done) => {
                                                 prev_start: params.previous_session_start,
                                                 postfix: crypto.createHash('md5').update(params.app_user.did + "").digest('base64')[0],
                                                 ended: "false"
-                                            }
+                                            },
+                                            up_extra
                                         });
                                     }
                                     plugins.dispatch("/sdk/process_user", ob, function() { //

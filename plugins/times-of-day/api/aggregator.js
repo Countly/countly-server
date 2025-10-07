@@ -95,10 +95,10 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
                 db: common.drillDb,
                 pipeline: [
                     {"$match": {"operationType": "insert", "fullDocument.e": {"$in": ["[CLY]_custom", "[CLY]_session"]}}},
-                    {"$project": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd", "ts": "$fullDocument.ts", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "hour": "$fullDocument.up.hour", "dow": "$fullDocument.up.dow"}}
+                    {"$project": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd", "ts": "$fullDocument.ts", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "hour": "$fullDocument.up.hour", "dow": "$fullDocument.up.dow", "c": "$fullDocument.c"}}
                 ],
                 fallback: {
-                    pipeline: [ {"$match": {"e": {"$in": ["[CLY]_custom", "[CLY]_session"]}}}, {"$project": {"__id": "$_id", "ts": "$ts", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "hour": "$up.hour", "dow": "$up.dow"}}]
+                    pipeline: [ {"$match": {"e": {"$in": ["[CLY]_custom", "[CLY]_session"]}}}, {"$project": {"__id": "$_id", "ts": "$ts", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "c": "$c", "hour": "$up.hour", "dow": "$up.dow"}}]
                 }
             }
         });
@@ -106,7 +106,7 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
             for await (const {token, events} of eventSource) {
                 if (events && Array.isArray(events)) {
                     for (var k = 0; k < events.length; k++) {
-                        if ((events[k].e === '[CLY]_session' || events[k].e === '[CLY]_custom')) {
+                        if ((events[k].e === '[CLY]_session_begin' || events[k].e === '[CLY]_custom')) {
                             let next = events[k];
                             next.dow = next.dow || (next.up && next.up.dow);
                             next.hour = next.hour || (next.up && next.up.hour);
@@ -127,6 +127,9 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
                                         let setData = {s: next.e, a: common.db.ObjectID(next.a)};
                                         if (next.e === "[CLY]_custom") {
                                             setData.s = next.n;
+                                        }
+                                        else {
+                                            setData.s = "[CLY]_session";
                                         }
                                         let id = next.a + "_" + setData.s + "_" + datestr;
                                         let incData = {};

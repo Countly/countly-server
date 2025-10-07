@@ -1451,7 +1451,9 @@ fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
                         if (meta.sg[key].type !== "a") {
                             output.meta = output.meta || {};
                             output.meta.segments = output.meta.segments || [];
-                            output.meta.segments.push(key);
+                            if (output.meta.segments.indexOf(key) === -1) {
+                                output.meta.segments.push(key);
+                            }
                         }
                     }
                 }
@@ -1565,7 +1567,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
         "os": "p",
         "platforms": "p",
         "platform": "p",
-        "locale":"la",
+        "locale": "la",
         "os_versions": "pv",
         "platform_versions": "pv",
         "resolutions": "r",

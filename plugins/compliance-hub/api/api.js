@@ -1,11 +1,11 @@
 var plugin = {},
-    crypto = require('crypto'),
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     appUsers = require('../../../api/parts/mgmt/app_users.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     plugins = require('../../pluginManager.js'),
     log = common.log('compliance-hub:api'),
+    consentQueries = require('./queries/consents'),
     { validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'compliance_hub';
@@ -54,128 +54,119 @@ const FEATURE_NAME = 'compliance_hub';
             });
             break;
         }
-        case 'searchDrill': {
+        case 'search': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
                 return false;
             }
             validateRead(params, FEATURE_NAME, function() {
-                var query = params.qstring.query || {};
-                if (typeof query === "string" && query.length) {
-                    try {
-                        query = JSON.parse(query);
+                try {
+                    var columns = ["device_id", "device_id", "uid", "type", "after", "ts"];
+                    var checkOb;
+                    if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
+                        checkOb = {};
+                        checkOb[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                     }
-                    catch (ex) {
-                        query = {};
-                    }
-                }
-                query = query || {};
-                query.a = params.qstring.app_id;
-                query.e = "[CLY]_consent";
-
-                log.e(JSON.stringify(query));
-
-                common.drillDb.collection("drill_events").count(query, function(err, total) {
-                    if (err) {
-                        common.returnMessage(params, 400, err);
-                    }
-                    else if (total > 0) {
-                        params.qstring.query = params.qstring.query || params.qstring.filter || {};
-                        params.qstring.project = params.qstring.project || params.qstring.projection || {};
-
-                        params.qstring.query = params.qstring.query || {};
-                        params.qstring.query.a = params.qstring.app_id;
-                        params.qstring.query.e = "[CLY]_consent";
-
-                        if (typeof params.qstring.query === "string" && params.qstring.query.length) {
-                            try {
-                                params.qstring.query = JSON.parse(params.qstring.query);
-                            }
-                            catch (ex) {
-                                params.qstring.query = {};
-                            }
-                        }
-
-                        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-                            try {
-                                params.qstring.query.did = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
-                            }
-                            catch {
-                                console.log('Could not use as regex: ' + params.qstring.sSearch);
-                            }
-                        }
-
-                        var columns = ["device_id", "device_id", "uid", "type", "after", "ts"];
-                        var checkOb;
-                        if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
-                            checkOb = {};
-                            checkOb[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
-                        }
-                        params.qstring.sort = checkOb || params.qstring.sort || {};
-
-                        if (params.qstring.period) {
-                            countlyCommon.getPeriodObj(params);
-                            params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
-                        }
-
-                        params.qstring.project = params.qstring.project || {};
-                        if (typeof params.qstring.project === "string" && params.qstring.project.length) {
-                            try {
-                                params.qstring.project = JSON.parse(params.qstring.project);
-                            }
-                            catch (ex) {
-                                params.qstring.project = {};
-                            }
-                        }
-
-                        params.qstring.sort = params.qstring.sort || {};
-                        if (typeof params.qstring.sort === "string" && params.qstring.sort.length) {
-                            try {
-                                params.qstring.sort = JSON.parse(params.qstring.sort);
-                            }
-                            catch (ex) {
-                                params.qstring.sort = {};
-                            }
-                        }
-
-                        params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
-                        params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
-
-                        var cursor = common.drillDb.collection("drill_events").find(params.qstring.query, params.qstring.project);
-                        cursor.count(function(countErr, count) {
-                            if (countErr) {
-                                log.e(countErr);
-                            }
-                            if (Object.keys(params.qstring.sort).length) {
-                                cursor.sort(params.qstring.sort);
-                            }
-
-                            if (params.qstring.skip) {
-                                cursor.skip(params.qstring.skip);
-                            }
-
-                            if (params.qstring.limit) {
-                                cursor.limit(params.qstring.limit);
-                            }
-
-                            cursor.toArray(function(toArrayErr, items) {
-                                if (toArrayErr) {
-                                    common.returnMessage(params, 400, toArrayErr);
-                                }
-                                else {
-                                    common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: count, aaData: items});
-                                }
-                            });
-                        });
+                    else if (params.qstring.sort && typeof params.qstring.sort === 'object' && Object.keys(params.qstring.sort).length) {
+                        checkOb = params.qstring.sort;
                     }
                     else {
-                        common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: []});
+                        checkOb = {};
                     }
-                });
+                    var queryParams = {
+                        appID: params.qstring.app_id,
+                        period: params.qstring.period,
+                        qstring: params.qstring,
+                        sSearch: params.qstring.sSearch,
+                        sort: checkOb,
+                        project: params.qstring.project || params.qstring.projection || {}
+                    };
+
+                    let rawFilter = params.qstring.filter || params.qstring.query;
+                    if (rawFilter) {
+                        try {
+                            if (typeof rawFilter === 'string' && rawFilter.length) {
+                                rawFilter = JSON.parse(rawFilter);
+                            }
+                            queryParams.query = rawFilter;
+                        }
+                        catch (e) {
+                            log.e('Cannot parse filter/query', e);
+                        }
+                    }
+
+                    const adapter = params.qstring.db_override &&
+                                params.qstring.db_override !== 'compare' &&
+                                params.qstring.db_override !== 'config'
+                        ? params.qstring.db_override
+                        : undefined;
+                    const isClickHouse = adapter === 'clickhouse';
+                    if (isClickHouse) {
+                        queryParams.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 20;
+                        if (params.qstring.cursor) {
+                            queryParams.cursor = params.qstring.cursor;
+                        }
+                        if (params.qstring.paginationMode) {
+                            queryParams.paginationMode = params.qstring.paginationMode;
+                        }
+                        if (!queryParams.paginationMode) {
+                            queryParams.paginationMode = 'snapshot';
+                        }
+                    }
+                    else {
+                        queryParams.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 20;
+                        queryParams.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
+                    }
+                    consentQueries.fetchConsentsList(queryParams, { adapter: adapter, comparisonMode: params.qstring.comparison })
+                        .then(function(res) {
+                            var result;
+
+                            if (isClickHouse) {
+                                result = {
+                                    sEcho: params.qstring.sEcho,
+                                    iTotalRecords: res.total || 0,
+                                    iTotalDisplayRecords: res.total || 0,
+                                    aaData: res.data || []
+                                };
+                                if (res.hasNextPage) {
+                                    result.hasNextPage = true;
+                                    result.nextCursor = res.nextCursor;
+                                }
+                                if (res.paginationMode) {
+                                    result.paginationMode = res.paginationMode;
+                                }
+                                if (res.isApproximate !== undefined) {
+                                    result.isApproximate = res.isApproximate;
+                                }
+                            }
+                            else {
+                                result = {
+                                    sEcho: params.qstring.sEcho,
+                                    iTotalRecords: res.total || 0,
+                                    iTotalDisplayRecords: res.filteredTotal || res.total || 0,
+                                    aaData: res.data || []
+                                };
+                            }
+                            common.returnOutput(params, result);
+                        })
+                        .catch(function(e) {
+                            log.e(e);
+                            common.returnMessage(params, 400, 'Error. Please check logs.');
+                        });
+                }
+                catch (e) {
+                    log.e(e);
+                    common.returnMessage(params, 400, 'Error. Please check logs.');
+                }
             });
             break;
         }
-        case 'search': {
+        /*
+            Internal info: 
+            searchOld endpoint uses consent_history
+            we keep this endpoint as a backup in case we need to use old data
+        */
+        case 'searchOld': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
                 return false;
@@ -376,35 +367,35 @@ const FEATURE_NAME = 'compliance_hub';
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
         common.db.collection('consent_history').drop(function() {});
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
-        }
+        }*/
     });
 
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
         common.db.collection('consent_history').drop(function() {});
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
-        }
+        }*/
     });
 
     plugins.register("/i/apps/clear_all", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
-        }
+        }*/
     });
 
     plugins.register("/i/apps/clear", function(ob) {
         var appId = ob.appId;
         var ids = ob.ids;
         common.db.collection('consents').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: ids}}]}, function() {});
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).remove({ts: {$lt: ob.moment.valueOf()}}, function() {});
-        }
+        }*/
     });
 }(plugin));
 

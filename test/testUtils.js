@@ -1,6 +1,7 @@
 var should = require('should');
 var countlyConfig = require("../frontend/express/config.js");
 var common = require('../api/utils/common.js');
+const reqq = require('supertest');
 should.Assertion.add('haveSameItems', function(other) {
     this.params = { operator: 'to be have same items' };
 
@@ -170,20 +171,43 @@ var testUtils = function testUtils() {
         props[key] = val;
     };
 
-    this.triggerJobToRun = function(jobName, callback) {
-        this.db.collection("jobConfigs").updateOne({ jobName: jobName}, {$set: {runNow: true}}, function(err, res) {
+    function recheckDeletion(retry, db, callback) {
+        db.collection("deletion_manager").countDocuments({}, function(err, count) {
             if (err) {
                 callback(err);
             }
+            else if (count === 0) {
+                callback();
+            }
             else {
-                if (res.result.nModified === 0) {
-                    callback("Job not found");
+                console.log("Records existing:" + count);
+                if (retry > 0) {
+                    console.log("Waiting for deletions to finish... retries left: " + retry);
+                    setTimeout(function() {
+                        recheckDeletion(retry - 1, db, callback);
+                    }, 5000);
                 }
                 else {
-                    callback();
+                    callback("Deletions still not finished after waiting");
                 }
             }
         });
+    }
+    this.triggerJobToRun = function(jobName, callback) {
+        var request = reqq(this.url);
+        var self = this;
+        request.get("/jobs/i?jobName=" + encodeURIComponent(jobName) + "&action=runNow&api_key=" + props.API_KEY_ADMIN)
+            .expect(200)
+            .end(function(err, res) {
+                if (res && res.text) {
+                    console.log(res.text);
+                }
+                else {
+                    console.log("No response text");
+                    console.log(JSON.stringify(res));
+                }
+                recheckDeletion(9, self.db, callback);
+            });
     };
 
     this.triggerMergeProcessing = function(callback) {
@@ -234,6 +258,12 @@ var testUtils = function testUtils() {
         pipeline.push({"$group": {"_id": iid, "t": {"$sum": 1}, "ls": {"$min": "$up.ls"}, n: {"$max": "$n"}, "fs": {"$min": "$up.fs"}}});
 
         pipeline.push({"$group": {"_id": iid2, "n": {"$sum": 1}, "u": {"$sum": 1}, "t": {"$sum": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        if (options.event === "[CLY]_session") {
+            var pipeline2 = JSON.parse(JSON.stringify(pipeline));
+            pipeline2[0]["$match"]["e"] = "[CLY]_session_begin";
+            pipeline.push({"$unionWith": {coll: "drill_events", pipeline: pipeline2}});
+            pipeline.push({"$group": {"_id": "$_id", "n": {"$max": "$n"}, "u": {"$max": "$u"}, "t": {"$max": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        }
         db.collection("drill_events").aggregate(pipeline, function(err, res) {
             console.log(res);
             if (err) {
@@ -303,6 +333,12 @@ var testUtils = function testUtils() {
         options.values = options.values || {};
         pipeline.push({"$group": {"_id": "$uid", "t": {"$sum": "$c"}, "ls": {"$min": "$up.ls"}, "fs": {"$min": "$up.fs"}}});
         pipeline.push({"$group": {"_id": null, "u": {"$sum": 1}, "t": {"$sum": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        if (options.event === "[CLY]_session") {
+            var pipeline2 = JSON.parse(JSON.stringify(pipeline));
+            pipeline2[0]["$match"]["e"] = "[CLY]_session_begin";
+            pipeline.push({"$unionWith": {coll: "drill_events", pipeline: pipeline2}});
+            pipeline.push({"$group": {"_id": null, "u": {"$max": "$u"}, "t": {"$max": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        }
         console.log(JSON.stringify(pipeline));
         db.collection("drill_events").aggregate(pipeline, function(err, res) {
             console.log(res);

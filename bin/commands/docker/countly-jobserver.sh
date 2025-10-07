@@ -12,4 +12,4 @@ then
 	echo "[jobserver] MongoDB started"
 fi
 
-exec /sbin/setuser countly /usr/bin/nodejs /opt/countly/core/jobServer/index.js
+exec /sbin/setuser countly /usr/bin/nodejs /opt/countly/jobServer/index.js
