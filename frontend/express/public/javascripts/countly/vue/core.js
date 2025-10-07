@@ -894,11 +894,6 @@
             self.vm = new Vue({
                 el: el,
                 store: _vuex.getGlobalStore(),
-                mixins: [
-                    countlyVue.container.dataMixin({
-                        "customOverlayComponents": "/overlay/custom",
-                    })
-                ],
                 components: {
                     DummyCompAPI: DummyCompAPI,
                     MainView: self.component,
@@ -910,7 +905,6 @@
                                 <GenericPopups></GenericPopups>\
                                 <DummyCompAPI></DummyCompAPI>\
                                 <QuickstartPopover></QuickstartPopover>\
-                                <component v-if="customOverlayComponents" v-for="customComponent in customOverlayComponents" :key="customComponent.name" :is="customComponent.component" />\
                             </div>',
                 beforeCreate: function() {
                     this.$route.params = self.params;
