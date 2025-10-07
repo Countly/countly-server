@@ -638,6 +638,11 @@ describe('Testing Rating plugin', function() {
                 setTimeout(done, 500 * testUtils.testScalingFactor);
             });
         });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:deletionManagerJob", function() {
+                setTimeout(done, 500 * testUtils.testScalingFactor);
+            });
+        });
     });
 
     describe('Try to get widget list after reset app', function() {

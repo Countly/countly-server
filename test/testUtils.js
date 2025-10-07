@@ -171,35 +171,42 @@ var testUtils = function testUtils() {
         props[key] = val;
     };
 
+    function recheckDeletion(retry, db, callback) {
+        db.collection("deletion_manager").countDocuments({}, function(err, count) {
+            if (err) {
+                callback(err);
+            }
+            else if (count === 0) {
+                callback();
+            }
+            else {
+                console.log("Records existing:" + count);
+                if (retry > 0) {
+                    console.log("Waiting for deletions to finish... retries left: " + retry);
+                    setTimeout(function() {
+                        recheckDeletion(retry - 1, db, callback);
+                    }, 5000);
+                }
+                else {
+                    callback("Deletions still not finished after waiting");
+                }
+            }
+        });
+    }
     this.triggerJobToRun = function(jobName, callback) {
-        var request = reqq.agent(this.url);
+        var request = reqq(this.url);
         var self = this;
         request.get("/jobs/i?jobName=" + encodeURIComponent(jobName) + "&action=runNow&api_key=" + props.API_KEY_ADMIN)
             .expect(200)
-            .end(async function(err, res) {
-                console.log(res.text);
-
-                var retries = 9;
-                for (var i = 0; i < retries; i++) {
-                    //do query to check if deletions are done
-                    var del = await self.db.collection("deletion_manager").count({});
-                    console.log("Deletions left: " + del);
-                    if (!del) {
-                        i = retries;
-                    }
-                    else {
-                        if (i === 0) {
-                            //Remove after we make jobs endpoint work normally.
-                            self.db.collection("jobConfigs").updateOne({ jobName: jobName}, {$set: {runNow: true}}, function(err, res) {
-                            });
-                        }
-                        console.log("Waiting for deletions to finish...");
-                        await new Promise(r => setTimeout(r, 5000));
-                    }
+            .end(function(err, res) {
+                if (res && res.text) {
+                    console.log(res.text);
                 }
-                //
-                callback();
-
+                else {
+                    console.log("No response text");
+                    console.log(JSON.stringify(res));
+                }
+                recheckDeletion(9, self.db, callback);
             });
     };
 

@@ -800,6 +800,9 @@ describe('Testing event settings', function() {
                     setTimeout(done, 2000 * testUtils.testScalingFactor);
                 });
         });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:deletionManagerJob", done);
+        });
         it('check if data reseted', function(done) {
             request
                 .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=get_events')
