@@ -2,10 +2,15 @@
 Fixes:
 - [alerts] Fix: Migrate alerts to the new events model
 - [oidc] Fix for session state storage
+- [applications] Persist newly created app after page reload
+- [dashboard] Allow users to select text inside the widget without dragging it
 
 Enterprise Fixes:
 - [users] Update user custom field number formatting
 - [users] Fix condition for custom property update
+- [drill] [survey] Fix duplicate question id
+- [drill] [survey] Display survey answer value instead of id in drill result
+- [cohorts] Fix query transformation for chr
 
 
 ## Version 25.03.21
