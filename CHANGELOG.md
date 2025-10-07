@@ -3,6 +3,7 @@ Fixes:
 - [alerts] Fix: Migrate alerts to the new events model
 - [oidc] Fix for session state storage
 - [applications] Persist newly created app after page reload
+- [dashboard] Allow users to select text inside the widget without dragging it
 
 Enterprise Fixes:
 - [users] Update user custom field number formatting
