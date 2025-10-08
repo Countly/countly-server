@@ -10,161 +10,128 @@ var tracker = {},
     logger = require('../../utils/log.js'),
     //log = logger("tracker:server"),
     Countly = require('countly-sdk-nodejs'),
-    countlyConfig = require("../../../frontend/express/config.js"),
-    versionInfo = require('../../../frontend/express/version.info'),
-    ip = require('./ip.js'),
-    cluster = require('cluster'),
-    os = require('os'),
     fs = require('fs'),
-    asyncjs = require('async'),
-    trial = "79199134e635edb05fc137e8cd202bb8640fb0eb",
-    app = "e70ec21cbe19e799472dfaee0adb9223516d238f",
-    server = "e0693b48a5513cb60c112c21aede3cab809d52d0",
+    path = require('path'),
+    versionInfo = require('../../../frontend/express/version.info'),
+    server = "9c28c347849f2c03caf1b091ec7be8def435e85e",
+    user = "fa6e9ae7b410cb6d756e8088c5f3936bf1fab5f3",
     url = "https://stats.count.ly",
-    plugins = require('../../../plugins/pluginManager.js'),
-    request = require('countly-request')(plugins.getConfig("security")),
-    offlineMode = plugins.getConfig("api").offline_mode,
-    domain = plugins.getConfig("api").domain;
+    plugins = require('../../../plugins/pluginManager.js');
 
+var IS_FLEX = false;
+
+if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
+    var deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
+    try {
+        if (JSON.parse(deploymentConf).DEPLOYMENT_ID) {
+            IS_FLEX = true;
+        }
+    }
+    catch (e) {
+        IS_FLEX = false;
+    }
+}
 
 //update configs
-var cache = {};
-if (countlyConfig.web && countlyConfig.web.track === "all") {
-    countlyConfig.web.track = null;
-}
-var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
-var url_check = "https://count.ly/configurations/ce/tracking";
-if (versionInfo.type !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
-    url_check = "https://count.ly/configurations/ee/tracking";
-}
-
-if (!offlineMode) {
-    request(url_check, function(err, response, body) {
-        if (typeof body === "string") {
-            try {
-                body = JSON.parse(body);
-            }
-            catch (ex) {
-                body = null;
-            }
-        }
-        if (body) {
-            if (countlyConfigOrig.web.use_intercom && typeof body.intercom !== "undefined") {
-                countlyConfig.web.use_intercom = body.intercom;
-            }
-            if (typeof countlyConfigOrig.web.track === "undefined" && typeof body.stats !== "undefined") {
-                if (body.stats) {
-                    countlyConfig.web.track = null;
-                }
-                else {
-                    countlyConfig.web.track = "none";
-                }
-            }
-            if (typeof countlyConfigOrig.web.server_track === "undefined" && typeof body.server !== "undefined") {
-                if (body.server) {
-                    countlyConfig.web.server_track = null;
-                }
-                else {
-                    countlyConfig.web.server_track = "none";
-                }
-            }
-        }
-    });
-}
-
 var isEnabled = false;
 
 /**
 * Enable tracking for this server
 **/
 tracker.enable = function() {
+    if (isEnabled) {
+        return;
+    }
+
     var config = {
-        app_key: (versionInfo.trial) ? trial : server,
+        app_key: server,
         url: url,
         app_version: versionInfo.version,
         storage_path: "../../../.sdk/",
         interval: 10000,
         fail_timeout: 600,
-        session_update: 120,
+        session_update: 60 * 60 * 12,
         remote_config: true,
         debug: (logger.getLevel("tracker:server") === "debug")
     };
+
+    var domain = plugins.getConfig("api").domain;
+
     //set static device id if domain is defined
     if (domain) {
         config.device_id = stripTrailingSlash((domain + "").split("://").pop());
     }
-    Countly.init(config);
 
-    //change device id if is it not domain
-    if (domain && Countly.get_device_id() !== domain) {
-        Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
-    }
-    else if (!domain) {
-        checkDomain();
-    }
+    if (config.device_id && config.device_id !== "localhost") {
+        Countly.init(config);
 
-    isEnabled = true;
-    if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
-        Countly.track_errors();
-    }
-    if (cluster.isMaster) {
-        setTimeout(function() {
-            if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
-                Countly.begin_session(true);
-                setTimeout(function() {
-                    collectServerStats();
-                    collectServerData();
-                }, 20000);
-            }
-        }, 1000);
-        //report app start trace
-        if (Countly.report_app_start) {
-            Countly.report_app_start();
+        //change device id if is it not domain
+        if (Countly.get_device_id() !== domain) {
+            Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
         }
+
+        isEnabled = true;
+        Countly.user_details({"name": config.device_id });
+        if (plugins.getConfig("tracking").server_sessions) {
+            Countly.begin_session(true);
+        }
+        if (plugins.getConfig("tracking").server_crashes) {
+            Countly.track_errors();
+        }
+        setTimeout(function() {
+            tracker.getAllData().then((custom) => {
+                if (Object.keys(custom).length) {
+                    Countly.user_details({"custom": custom });
+                }
+            });
+        }, 20000);
     }
 };
 
 /**
-* Enable tracking for dashboard process
-**/
-tracker.enableDashboard = function() {
-    var config = {
-        app_key: (versionInfo.trial) ? trial : server,
-        url: url,
-        app_version: versionInfo.version,
-        storage_path: "../../../.sdk/",
-        interval: 60000,
-        fail_timeout: 600,
-        session_update: 120,
-        debug: (logger.getLevel("tracker:server") === "debug")
-    };
-    //set static device id if domain is defined
-    if (domain) {
-        config.device_id = stripTrailingSlash((domain + "").split("://").pop());
-    }
-    Countly.init(config);
-
-    //change device id if is it not domain
-    if (domain && Countly.get_device_id() !== domain) {
-        Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
-    }
-    else if (!domain) {
-        checkDomain();
-    }
-    isEnabled = true;
-    if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
-        Countly.track_errors();
-    }
+ * Get bulk server instance
+ * @returns {Object} Countly Bulk instance
+ */
+tracker.getBulkServer = function() {
+    return new Countly.Bulk({
+        app_key: server,
+        url: url
+    });
 };
 
+/**
+ * Get bulk user instance
+ * @param {Object} serverInstance - Countly Bulk server instance
+ * @returns {Object} Countly Bulk User instance
+ */
+tracker.getBulkUser = function(serverInstance) {
+    var domain = stripTrailingSlash((plugins.getConfig("api").domain + "").split("://").pop());
+    if (domain && domain !== "localhost") {
+        return serverInstance.add_user({device_id: domain});
+    }
+};
 
 /**
 * Report server level event
 * @param {object} event - event object
 **/
 tracker.reportEvent = function(event) {
-    if (isEnabled && countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
+    if (isEnabled && plugins.getConfig("tracking").server_events) {
         Countly.add_event(event);
+    }
+};
+
+/**
+* Report server level event in bulk
+* @param {Array} events - array of event objects
+**/
+tracker.reportEventBulk = function(events) {
+    if (isEnabled && plugins.getConfig("tracking").server_events) {
+        Countly.request({
+            app_key: server,
+            device_id: Countly.get_device_id(),
+            events: JSON.stringify(events)
+        });
     }
 };
 
@@ -172,12 +139,11 @@ tracker.reportEvent = function(event) {
 * Report user level event
 * @param {string} id - id of the device
 * @param {object} event - event object
-* @param {string} level - tracking level
 **/
-tracker.reportUserEvent = function(id, event, level) {
-    if (isEnabled && countlyConfig.web.track !== "none" && (!level || countlyConfig.web.track === level) && countlyConfig.web.server_track !== "none") {
+tracker.reportUserEvent = function(id, event) {
+    if (isEnabled && plugins.getConfig("tracking").user_events) {
         Countly.request({
-            app_key: app,
+            app_key: user,
             device_id: id,
             events: JSON.stringify([event])
         });
@@ -186,11 +152,10 @@ tracker.reportUserEvent = function(id, event, level) {
 
 /**
 * Check if tracking enabled
-* @param {boolean|string} level - level of tracking
 * @returns {boolean} if enabled
 **/
-tracker.isEnabled = function(level) {
-    return (isEnabled && countlyConfig.web.track !== "none" && (!level || countlyConfig.web.track === level) && countlyConfig.web.server_track !== "none");
+tracker.isEnabled = function() {
+    return isEnabled;
 };
 
 /**
@@ -203,164 +168,295 @@ tracker.getSDK = function() {
 
 /**
 * Get server stats
+* @returns {Promise<Object>} server stats
 **/
-function collectServerStats() { // eslint-disable-line no-unused-vars
-    stats.getServer(common.db, function(data) {
-        common.db.collection("apps").aggregate([{$project: {last_data: 1}}, {$sort: {"last_data": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errApps, resApps) {
-            common.db.collection("members").aggregate([{$project: {last_login: 1}}, {$sort: {"last_login": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errLogin, resLogin) {
-                if (resApps && resApps[0]) {
-                    Countly.userData.set("last_data", resApps[0].last_data || 0);
-                }
-                if (resLogin && resLogin[0]) {
-                    Countly.userData.set("last_login", resLogin[0].last_login || 0);
-                }
-                if (data) {
-                    if (data.app_users) {
-                        Countly.userData.set("app_users", data.app_users);
-                    }
-                    if (data.apps) {
-                        Countly.userData.set("apps", data.apps);
-                    }
-                    if (data.users) {
-                        Countly.userData.set("users", data.users);
-                    }
-                }
-                Countly.userData.save();
+tracker.collectServerStats = function() {
+    var props = {};
+    return new Promise((resolve) => {
+        stats.getServer(common.db, function(data) {
+            common.db.collection("apps").aggregate([{$project: {last_data: 1}}, {$sort: {"last_data": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errApps, resApps) {
+                common.db.collection("members").aggregate([{$project: {last_login: 1}}, {$sort: {"last_login": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errLogin, resLogin) {
+                    // Aggregate total list lengths across all documents in events collection
+                    common.db.collection("events").aggregate([
+                        {
+                            $group: {
+                                _id: null,
+                                totalListLength: { $sum: { $size: "$list" } }
+                            }
+                        }
+                    ], {allowDiskUse: true}, function(errEvents, resEvents) {
+
+                        if (resApps && resApps[0]) {
+                            props.last_data = resApps[0].last_data || 0;
+                        }
+                        if (resLogin && resLogin[0]) {
+                            props.last_login = resLogin[0].last_login || 0;
+                        }
+                        if (resEvents && resEvents[0]) {
+                            props.events = resEvents[0].totalListLength || 0;
+                        }
+                        if (data) {
+                            if (data.app_users) {
+                                props.app_users = data.app_users;
+                            }
+                            if (data.apps) {
+                                props.apps = data.apps;
+                            }
+                            if (data.users) {
+                                props.users = data.users;
+                            }
+                        }
+                        resolve(props);
+                    });
+                });
             });
         });
     });
-}
+};
 
 /**
 * Get server data
+* @returns {Object} server data
 **/
-function collectServerData() {
-    Countly.userData.set("plugins", plugins.getPlugins());
-    var cpus = os.cpus();
-    if (cpus && cpus.length) {
-        Countly.userData.set("cores", cpus.length);
+tracker.collectServerData = async function() {
+    var props = {};
+    props.trial = versionInfo.trial ? true : false;
+    props.plugins = plugins.getPlugins();
+    props.nodejs = process.version;
+    props.countly = versionInfo.version;
+    props.docker = hasDockerEnv() || hasDockerCGroup() || hasDockerMountInfo();
+    var edition = "Lite";
+    if (IS_FLEX) {
+        edition = "Flex";
     }
-    Countly.userData.set("nodejs_version", process.version);
+    else if (versionInfo.type !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
+        edition = "Enterprise";
+    }
+    props.edition = edition;
     if (common.db.build && common.db.build.version) {
-        Countly.userData.set("db_version", common.db.build.version);
+        props.mongodb = common.db.build.version;
     }
-    common.db.command({ serverStatus: 1 }, function(errCmd, res) {
-        if (res && res.storageEngine && res.storageEngine.name) {
-            Countly.userData.set("db_engine", res.storageEngine.name);
+    const sdkData = await tracker.getSDKData();
+    if (sdkData && sdkData.sdk_versions && Object.keys(sdkData.sdk_versions).length) {
+        props.sdks = Object.keys(sdkData.sdk_versions);
+        for (const [key, value] of Object.entries(sdkData.sdk_versions)) {
+            props[key] = value;
         }
-        getDomain(function(err, domainname) {
-            if (!err) {
-                Countly.userData.set("domain", domainname);
-                Countly.user_details({"name": stripTrailingSlash((domainname + "").split("://").pop())});
-            }
-            getDistro(function(err2, distro) {
-                if (!err2) {
-                    Countly.userData.set("distro", distro);
-                }
-                getHosting(function(err3, hosting) {
-                    if (!err3) {
-                        Countly.userData.set("hosting", hosting);
-                    }
-                    Countly.userData.save();
-                });
-            });
-        });
-    });
-}
+    }
+
+    return props;
+};
 
 /**
-* Get server domain or ip
-* @param {function} callback - callback to get results
-**/
-function getDomain(callback) {
-    if (cache.domain) {
-        callback(false, cache.domain);
+ * Get all eligible data
+ * @returns {Object} all eligible data
+ */
+tracker.getAllData = async function() {
+    var props = {};
+    if (plugins.getConfig("tracking").server_user_details) {
+        Object.assign(props, await tracker.collectServerStats());
     }
-    else {
-        ip.getHost(function(err, host) {
-            cache.domain = host;
-            callback(err, host);
-        });
-    }
-}
+    Object.assign(props, await tracker.collectServerData());
+    return props;
+};
 
 /**
-* Get server hosting provider
-* @param {function} callback - callback to get results
-**/
-function getHosting(callback) {
-    if (cache.hosting) {
-        callback(cache.hosting.length === 0, cache.hosting);
-    }
-    else {
-        var hostings = {
-            "Digital Ocean": "http://169.254.169.254/metadata/v1/hostname",
-            "Google Cloud": "http://metadata.google.internal",
-            "AWS": "http://169.254.169.254/latest/dynamic/instance-identity/"
-        };
-        asyncjs.eachSeries(Object.keys(hostings), function(host, done) {
-            request(hostings[host], function(err, response) {
-                if (response && response.statusCode >= 200 && response.statusCode < 300) {
-                    cache.hosting = host;
-                    callback(false, cache.hosting);
-                    done(true);
-                }
-                else {
-                    done();
-                }
-            });
-        }, function() {
-            if (!cache.hosting) {
-                callback(true, cache.hosting);
-            }
-        });
-    }
-}
+ * Query sdks collection for current and previous year (month 0) and combine meta_v2 data
+ * @returns {Promise<Object>} Combined meta_v2 data from all matching documents
+ */
+tracker.getSDKData = async function() {
+    var currentYear = new Date().getFullYear();
+    var previousYear = currentYear - 1;
 
-/**
-* Get OS distro
-* @param {function} callback - callback to get results
-**/
-function getDistro(callback) {
-    if (cache.distro) {
-        callback(cache.distro.length === 0, cache.distro);
-    }
-    else {
-        var oses = {"win32": "Windows", "darwin": "macOS"};
-        var osName = os.platform();
-        // Linux is a special case.
-        if (osName !== 'linux') {
-            cache.distro = oses[osName] ? oses[osName] : osName;
-            cache.distro += " " + os.release();
-            callback(false, cache.distro);
-        }
-        else {
-            var distros = {
-                "/etc/lsb-release": {name: "Ubuntu", regex: /distrib_release=(.*)/i},
-                "/etc/redhat-release": {name: "RHEL/Centos", regex: /release ([^ ]+)/i}
-            };
-            asyncjs.eachSeries(Object.keys(distros), function(distro, done) {
-                //check ubuntu
-                fs.readFile(distro, 'utf8', (err, data) => {
-                    if (!err && data) {
-                        cache.distro = distros[distro].name;
-                        var match = data.match(distros[distro].regex);
-                        if (match[1]) {
-                            cache.distro += " " + match[1];
+    // Build regex pattern to match: appid_YYYY:0_shard
+    // Matches any app ID, year (current or previous), month 0, and any shard number
+    var yearPattern = `(${currentYear}|${previousYear})`;
+    var pattern = new RegExp(`^[a-f0-9]{24}_${yearPattern}:0_\\d+$`);
+
+    try {
+        // Use aggregation pipeline to combine meta_v2 data on MongoDB side
+        var pipeline = [
+            // Match documents for current and previous year, month 0, any shard
+            {
+                $match: {
+                    _id: pattern
+                }
+            },
+            // Project only meta_v2 field and convert to array of key-value pairs
+            {
+                $project: {
+                    meta_v2: { $objectToArray: "$meta_v2" }
+                }
+            },
+            // Unwind meta_v2 array to process each meta key separately
+            {
+                $unwind: "$meta_v2"
+            },
+            // Convert nested objects to arrays for merging
+            {
+                $project: {
+                    metaKey: "$meta_v2.k",
+                    metaValue: { $objectToArray: "$meta_v2.v" }
+                }
+            },
+            // Unwind nested values
+            {
+                $unwind: "$metaValue"
+            },
+            // Group by meta key and inner key to collect all unique combinations
+            {
+                $group: {
+                    _id: {
+                        metaKey: "$metaKey",
+                        innerKey: "$metaValue.k"
+                    },
+                    value: { $first: "$metaValue.v" }
+                }
+            },
+            // Group by meta key to rebuild nested structure
+            {
+                $group: {
+                    _id: "$_id.metaKey",
+                    values: {
+                        $push: {
+                            k: "$_id.innerKey",
+                            v: "$value"
                         }
-                        callback(false, cache.distro);
-                        done(true);
+                    }
+                }
+            },
+            // Convert arrays back to objects
+            {
+                $project: {
+                    _id: 0,
+                    k: "$_id",
+                    v: { $arrayToObject: "$values" }
+                }
+            },
+            // Group all into single document
+            {
+                $group: {
+                    _id: null,
+                    meta_v2: {
+                        $push: {
+                            k: "$k",
+                            v: "$v"
+                        }
+                    }
+                }
+            },
+            // Convert final array to object
+            {
+                $project: {
+                    _id: 0,
+                    meta_v2: { $arrayToObject: "$meta_v2" }
+                }
+            }
+        ];
+
+        var result = await common.db.collection("sdks").aggregate(pipeline).toArray();
+
+        // Extract combined meta_v2 or return empty object if no results
+        var combinedMeta = (result && result[0] && result[0].meta_v2) ? result[0].meta_v2 : {};
+
+        // Process sdk_version to extract highest version per SDK
+        var sdkVersions = {};
+        if (combinedMeta.sdk_version) {
+            for (var versionKey in combinedMeta.sdk_version) {
+                // Parse SDK version format: [sdk_name]_major:minor:patch
+                var match = versionKey.match(/^\[([^\]]+)\]_(\d+):(\d+):(\d+)$/);
+                if (match) {
+                    var sdkName = match[1];
+                    var major = parseInt(match[2], 10);
+                    var minor = parseInt(match[3], 10);
+                    var patch = parseInt(match[4], 10);
+
+                    // Check if this SDK exists and compare versions
+                    if (!sdkVersions[sdkName]) {
+                        sdkVersions[sdkName] = {
+                            version: `${major}.${minor}.${patch}`,
+                            major: major,
+                            minor: minor,
+                            patch: patch
+                        };
                     }
                     else {
-                        done(null);
+                        var current = sdkVersions[sdkName];
+                        // Compare versions (major.minor.patch)
+                        if (major > current.major ||
+                            (major === current.major && minor > current.minor) ||
+                            (major === current.major && minor === current.minor && patch > current.patch)) {
+                            sdkVersions[sdkName] = {
+                                version: `${major}.${minor}.${patch}`,
+                                major: major,
+                                minor: minor,
+                                patch: patch
+                            };
+                        }
                     }
-                });
-            }, function() {
-                if (!cache.distro) {
-                    callback(true, cache.distro);
                 }
-            });
+            }
         }
+
+        // Convert to simple object with just SDK name -> version string
+        var simpleSdkVersions = {};
+        for (var sdk in sdkVersions) {
+            simpleSdkVersions[`sdk_${sdk}`] = sdkVersions[sdk].version;
+        }
+
+        return {
+            meta_v2: combinedMeta,
+            sdk_versions: simpleSdkVersions,
+            years: [previousYear, currentYear],
+            month: 0
+        };
+    }
+    catch (error) {
+        logger("tracker:server").error("Error querying SDK data:", error);
+        return {
+            meta_v2: {},
+            error: error.message
+        };
+    }
+};
+
+/**
+ * Check if running in Docker environment
+ * @returns {boolean} if running in docker
+ */
+function hasDockerEnv() {
+    try {
+        fs.statSync('/.dockerenv');
+        return true;
+    }
+    catch {
+        return false;
+    }
+}
+
+/** 
+ * Check if running in Docker by inspecting cgroup info
+ * @returns {boolean} if running in docker
+ */
+function hasDockerCGroup() {
+    try {
+        return fs.readFileSync('/proc/self/cgroup', 'utf8').includes('docker');
+    }
+    catch {
+        return false;
+    }
+}
+
+/** 
+ * Check if running in Docker by inspecting mountinfo
+ * @returns {boolean} if running in docker
+ */
+function hasDockerMountInfo() {
+    try {
+        return fs.readFileSync('/proc/self/mountinfo', 'utf8').includes('/docker/containers/');
+    }
+    catch {
+        return false;
     }
 }
 
@@ -375,21 +471,5 @@ function stripTrailingSlash(str) {
     }
     return str;
 }
-
-//check every hour if domain was provided
-var checkDomain = function() {
-    if (!domain && domain !== plugins.getConfig("api").domain) {
-        domain = plugins.getConfig("api").domain;
-        if (Countly && isEnabled) {
-            Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
-            Countly.userData.set("domain", domain);
-            Countly.user_details({"name": stripTrailingSlash((domain + "").split("://").pop())});
-            Countly.userData.save();
-        }
-    }
-    else if (!domain) {
-        setTimeout(checkDomain, 3600000);
-    }
-};
 
 module.exports = tracker;

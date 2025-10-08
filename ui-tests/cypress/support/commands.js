@@ -55,6 +55,16 @@ Cypress.Commands.add("selectCheckboxOption", (element, ...options) => {
     for (var i = 0; i < options.length; i++) {
         cy.clickOption('.el-checkbox__label', options[i]);
     }
+
+    cy
+        .elementExists(`${element}-select-x-confirm-button`)
+        .then((isExists) => {
+            if (isExists) {
+                cy.clickElement(`${element}-select-x-confirm-button`);
+
+            }
+        });
+
     cy.clickBody();
 });
 

@@ -12,17 +12,11 @@
 var authorize = require('./../../../api/utils/authorizer.js'); //for token validations
 var common = require('./../../../api/utils/common.js');
 var plugins = require('./../../../plugins/pluginManager.js');
-var { getUserApps } = require('./../../../api/utils/rights.js');
 var configs = require('./../config', 'dont-enclose');
 var countlyMail = require('./../../../api/parts/mgmt/mail.js');
-var countlyStats = require('./../../../api/parts/data/stats.js');
-var request = require('countly-request')(plugins.getConfig("security"));
 var url = require('url');
 var crypto = require('crypto');
 var argon2 = require('argon2');
-
-var versionInfo = require('./../version.info'),
-    COUNTLY_TYPE = versionInfo.type;
 
 /** @lends module:frontend/express/libs/members */
 var membersUtility = { };
@@ -54,44 +48,6 @@ membersUtility.emptyPermission = {
         ]
     }
 };
-
-/** Checks remote configuration and sets variables to configuration object
- * @param {object} countlyConfigOrig - configuration settings object. Original(ar read from file)
- * @param {object} countlyConfig - contiguration. Changes if are done on this object.
-*/
-membersUtility.recheckConfigs = function(countlyConfigOrig, countlyConfig) {
-    var checkUrl = "https://count.ly/configurations/ce/tracking";
-    if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
-        checkUrl = "https://count.ly/configurations/ee/tracking";
-    }
-    if (!plugins.getConfig("api").offline_mode) {
-        request(checkUrl, function(error, response, body) {
-            if (typeof body === "string") {
-                try {
-                    body = JSON.parse(body);
-                }
-                catch (ex) {
-                    body = null;
-                }
-            }
-            if (body) {
-                if (countlyConfigOrig.web.use_intercom && typeof body.intercom !== "undefined") {
-                    countlyConfig.web.use_intercom = body.intercom;
-                }
-                if (typeof countlyConfigOrig.web.track === "undefined" && typeof body.stats !== "undefined") {
-                    if (body.stats) {
-                        countlyConfig.web.track = null;
-                    }
-                    else {
-                        countlyConfig.web.track = "none";
-                    }
-                }
-            }
-        });
-    }
-};
-var origConf = JSON.parse(JSON.stringify(membersUtility.countlyConfig));
-membersUtility.recheckConfigs(origConf, membersUtility.countlyConfig);
 
 /**
  * Is hashed string argon2?
@@ -335,58 +291,6 @@ membersUtility.verifyCredentials = function(username, password, callback) {
 };
 
 /**
-* Update Stats for member.
-*
-* @param {object} member - member properties
-* @example
-*   membersUtility.updateStats(member );
-**/
-membersUtility.updateStats = function(member) {
-    if (plugins.getConfig('frontend').countly_tracking && !plugins.getConfig("api").offline_mode) {
-        countlyStats.getUser(membersUtility.db, member, function(statsObj) {
-            const userApps = getUserApps(member);
-            var custom = {
-                apps: (userApps) ? userApps.length : 0,
-                platforms: {"$addToSet": statsObj["total-platforms"]},
-                events: statsObj["total-events"],
-                pushes: statsObj["total-msg-sent"],
-                crashes: statsObj["total-crash-groups"],
-                users: statsObj["total-users"]
-            };
-            var date = new Date();
-            let domain = plugins.getConfig('api').domain;
-
-            try {
-                // try to extract hostname from full domain url
-                const urlObj = new URL(domain);
-                domain = urlObj.hostname;
-            }
-            catch (_) {
-                // do nothing, domain from config will be used as is
-            }
-
-            request({
-                uri: "https://stats.count.ly/i",
-                method: "GET",
-                timeout: 4E3,
-                qs: {
-                    device_id: domain,
-                    app_key: "e70ec21cbe19e799472dfaee0adb9223516d238f",
-                    timestamp: Math.round(date.getTime() / 1000),
-                    hour: date.getHours(),
-                    dow: date.getDay(),
-                    user_details: JSON.stringify(
-                        {
-                            custom: custom
-                        }
-                    )
-                }
-            }, function() {});
-        });
-    }
-};
-
-/**
 * Tries to log in user based passed userame and password. Calls "plugins"
 * methods to notify successful and unsucessful logging in attempts. If
 * successful, sets all session variables and auth token. Passes the member
@@ -421,9 +325,6 @@ membersUtility.login = function(req, res, callback) {
         }
         else {
             plugins.callMethod("loginSuccessful", {req: req, data: member});
-
-            // update stats
-            membersUtility.updateStats(member);
 
             req.session.regenerate(function() {
 
@@ -494,9 +395,6 @@ membersUtility.loginWithExternalAuthentication = function(req, res, callback) {
         }
         else {
             plugins.callMethod("loginSuccessful", {req: req, data: member});
-
-            // update stats
-            membersUtility.updateStats(member);
 
             req.session.regenerate(function() {
 
