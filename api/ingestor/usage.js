@@ -326,18 +326,21 @@ usage.updateEndSessionParams = function(params, eventList, session_duration) {
     var drill_doc = {
         "key": "[CLY]_session",
         "lsid": user.lsid,
-        "segmentation": user.lsparams,
+        "segmentation": user.lsparams || {},
         "dur": ((user.sd || 0) + (session_duration || 0)),
         "count": 1,
         "up_extra": up_extra
     };
-    var lasts = (user.ls * 1000);
+
+    var lasts = (user.ls || 0) * 1000;
     let idsplit = user.lsid.split("_");
     if (idsplit[3] && idsplit[3].length === 13) {
-        lasts = parseInt(idsplit[3]);
+        lasts = parseInt(idsplit[3], 10);
     }
     drill_doc._id = params.app_id + "_" + user.uid + "_" + user.lsid;
-    drill_doc.timestamp = lasts;
+    if (lasts) {
+        drill_doc.timestamp = lasts;
+    }
     drill_doc.segmentation.ended = "true";
     eventList.push(drill_doc);
 
@@ -448,23 +451,30 @@ usage.processSession = function(ob) {
 
         }
     }
-    else if (params.qstring.end_session && params.app_user && params.app_user[common.dbUserMap.has_ongoing_session]) {
-        // check if request is too old, ignore it
+    else if (params.qstring.end_session && params.app_user) {
+        // check if request is too old, ignore it}
         if (!params.qstring.ignore_cooldown) {
             userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
         }
         else {
+            if (!params.app_user.lsid || !params.app_user[common.dbUserMap.has_ongoing_session]) {
+                //create new lsid if not present or it is autoclosed
+                params.app_user.lsid = params.request_id;
+            }
             if (params.app_user.lsid) {
                 params.qstring.events = params.qstring.events || [];
                 console.log("Ending previous session" + params.app_user.lsid);
                 usage.updateEndSessionParams(params, params.qstring.events, session_duration);
             }
         }
+        if (!update.$unset) {
+            update.$unset = {};
+        }
         if (params.app_user[common.dbUserMap.has_ongoing_session]) {
-            if (!update.$unset) {
-                update.$unset = {};
-            }
             update.$unset[common.dbUserMap.has_ongoing_session] = "";
+        }
+        if (params.app_user.last_view) {
+            update.$unset.last_view = "";
         }
     }
 
