@@ -1,4 +1,4 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers, countlyCMS */
+/* global app, jQuery, CV, Vue, Vuex, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers, countlyCMS */
 
 (function(countlyVue, $) {
 
@@ -156,6 +156,32 @@
                     successMessage: CV.i18n("sidebar.copy-api-key-success-message"),
                     errorMessage: CV.i18n("common.copy-error-message")
                 };
+            },
+            computed: {
+                member: function() {
+                    //We should fetch the user from vuex
+                    //So that updates are reactive
+
+                    var userImage = {};
+                    var member = countlyGlobal.member;
+                    if (member.member_image) {
+                        userImage.url = member.member_image;
+                        userImage.found = true;
+                    }
+                    else {
+                        var defaultAvatarSelector = (member.created_at || Date.now()) % 10 * -60;
+                        var name = member.full_name.split(" ");
+
+                        userImage.found = false;
+                        userImage.url = "images/avatar-sprite.png?v2";
+                        userImage.position = defaultAvatarSelector;
+                        userImage.initials = name[0][0] + name[name.length - 1][0];
+                    }
+
+                    member.image = userImage;
+
+                    return member;
+                },
             },
             methods: {
                 logout: function() {
@@ -555,12 +581,41 @@
             }
         });
 
+        // we need to register the sidebar menu items here so that they are available in the
+        // sidebar in the order they are registered otherwise the order registered from other
+        // plugins will not be respected:
+        CV.container.registerData("/sidebar/menu/other", {
+            name: CountlyHelpers.isPluginEnabled('guides') ? "countly-guides" : "help-center",
+            icon: CountlyHelpers.isPluginEnabled('guides') ? "cly-icon-sidebar-countly-guides" : "cly-icon-sidebar-help-center",
+            noSelect: true,
+            tooltip: CountlyHelpers.isPluginEnabled('guides') ? "Countly Guides" : "Help Center",
+            priority: 10,
+        });
+        CV.container.registerData("/sidebar/menu/other", {
+            name: "user",
+            noSelect: true,
+            tooltip: CV.i18n("sidebar.my-profile"),
+            priority: 20,
+        });
+        CV.container.registerData("/sidebar/menu/other", {
+            name: "language",
+            noSelect: true,
+            tooltip: "Language",
+            priority: 30,
+        });
+        CV.container.registerData("/sidebar/menu/other", {
+            name: "toggle",
+            icon: "cly-icon-sidebar-toggle-left",
+            noSelect: true,
+            priority: 40,
+        });
+
         var SidebarView = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar.html'),
             mixins: [
                 countlyVue.container.dataMixin({
                     "externalMainMenuOptions": "/sidebar/menu/main",
-                    "externalOtherMenuOptions": "/sidebar/menu/other"
+                    "otherMenuOptions": "/sidebar/menu/other",
                 })
             ],
             components: {
@@ -574,7 +629,6 @@
                     selectedMenuOptionLocal: null,
                     versionInfo: countlyGlobal.countlyTypeName,
                     countlySidebarVersionPath: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/versions',
-                    showMainMenu: true,
                     redirectHomePage: 'dashboard#/' + countlyCommon.ACTIVE_APP_ID,
                     onOptionsMenu: false,
                     onMainMenu: false,
@@ -611,18 +665,19 @@
                 };
             },
             computed: {
+                ...Vuex.mapState("countlySidebar", ["showMainMenu"]),
                 components: function() {
                     var menuOptions = [];
 
                     var externalMainMenuOptions = this.externalMainMenuOptions;
-                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
+                    var otherMenuOptions = this.otherMenuOptions;
 
                     if (externalMainMenuOptions && externalMainMenuOptions.length) {
                         menuOptions = menuOptions.concat(externalMainMenuOptions);
                     }
 
-                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
-                        menuOptions = menuOptions.concat(externalOtherMenuOptions);
+                    if (otherMenuOptions && otherMenuOptions.length) {
+                        menuOptions = menuOptions.concat(otherMenuOptions);
                     }
 
                     return menuOptions;
@@ -639,66 +694,6 @@
                     }
 
                     return menuOptions;
-                },
-                otherMenuOptions: function() {
-                    var menuOptions = [
-                        {
-                            name: this.enableGuides ? "countly-guides" : "help-center",
-                            icon: this.enableGuides ? "cly-icon-sidebar-countly-guides" : "cly-icon-sidebar-help-center",
-                            noSelect: true,
-                            tooltip: this.enableGuides ? "Countly Guides" : "Help Center"
-                        },
-                        {
-                            name: "user",
-                            noSelect: true,
-                            member: this.member,
-                            tooltip: CV.i18n("sidebar.my-profile")
-                        },
-                        {
-                            name: "language",
-                            noSelect: true,
-                            tooltip: "Language"
-                        },
-                        {
-                            name: "toggle",
-                            icon: "cly-icon-sidebar-toggle-left",
-                            noSelect: true
-                        }
-                    ];
-
-                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
-
-                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
-                        for (var i = 0; i < externalOtherMenuOptions.length; i++) {
-                            menuOptions.splice(3, 0, externalOtherMenuOptions[i]);
-                        }
-                    }
-
-                    return menuOptions;
-                },
-                member: function() {
-                    //We should fetch the user from vuex
-                    //So that updates are reactive
-
-                    var userImage = {};
-                    var member = countlyGlobal.member;
-                    if (member.member_image) {
-                        userImage.url = member.member_image;
-                        userImage.found = true;
-                    }
-                    else {
-                        var defaultAvatarSelector = (member.created_at || Date.now()) % 10 * -60;
-                        var name = member.full_name.split(" ");
-
-                        userImage.found = false;
-                        userImage.url = "images/avatar-sprite.png?v2";
-                        userImage.position = defaultAvatarSelector;
-                        userImage.initials = name[0][0] + name[name.length - 1][0];
-                    }
-
-                    member.image = userImage;
-
-                    return member;
                 },
                 pseudoSelectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
@@ -748,6 +743,7 @@
                 }
             },
             methods: {
+                ...Vuex.mapMutations("countlySidebar", ["toggleMainMenu"]),
                 guidesMouseOver: function() {
                     var state = this.$store.getters["countlySidebar/getGuidesButton"];
                     if (state !== 'selected' && state !== 'highlighted') {
@@ -763,19 +759,16 @@
                 onClick: function(option) {
                     if (!option.noSelect) {
                         this.selectedMenuOptionLocal = option.name;
-                        this.showMainMenu = true;
+                        this.toggleMainMenu(true);
                         this.$store.dispatch("countlySidebar/deselectGuidesButton");
                     }
 
                     if (option.name === "toggle") {
-                        this.onToggleClick();
+                        this.toggleMainMenu();
                     }
                     else if (option.name === "countly-guides") {
                         this.$store.dispatch("countlySidebar/selectGuidesButton");
                     }
-                },
-                onToggleClick: function() {
-                    this.showMainMenu = !this.showMainMenu;
                 },
                 identifySelected: function() {
                     for (var ref in this.$refs) {
@@ -804,7 +797,7 @@
                         /**
                          * If the selected menu in vuex is dashboards, the sidebar should be floating.
                          */
-                        this.showMainMenu = false;
+                        this.toggleMainMenu(false);
                     }
                 },
                 onOptionsMenuMouseOver: function() {
@@ -813,7 +806,7 @@
                     var selectedOption = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
                     if (selectedOption && selectedOption.menu === "dashboards" && !this.showMainMenu) {
-                        this.showMainMenu = true;
+                        this.toggleMainMenu(true);
                     }
                 },
                 onOptionsMenuMouseLeave: function() {
@@ -845,7 +838,7 @@
                                         /**
                                          * If not on the main menu, hide the main menu.
                                          */
-                                        self.showMainMenu = false;
+                                        self.toggleMainMenu(false);
                                     }
                                 }
                             }, 0);
@@ -877,7 +870,7 @@
                                         /**
                                          * If not on the options menu, hide the main menu.
                                          */
-                                        self.showMainMenu = false;
+                                        self.toggleMainMenu(false);
                                     }
                                 }
                             }, 0);

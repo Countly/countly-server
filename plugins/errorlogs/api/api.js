@@ -58,7 +58,7 @@ const readFromEnd = (file, size) => {
                     console.error(errList);
                 }
                 else {
-                    logs = logfiles;
+                    logs = {...logs, ...logfiles};
                 }
                 if (params.qstring.log && logs[params.qstring.log]) {
                     if (params.qstring.download) {
@@ -164,6 +164,9 @@ const readFromEnd = (file, size) => {
                             common.returnMessage(params, 200, 'Success');
                         }
                     });
+                }
+                else {
+                    common.returnMessage(params, 200, 'Invalid log');
                 }
             });
         });

@@ -1,0 +1,448 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly User Management API",
+    "description": "API for user management in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/users/create": {
+      "get": {
+        "summary": "Create a user",
+        "description": "Create a new user in Countly",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "Admin API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "User data as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"full_name\":\"John Doe\",\"username\":\"john\",\"password\":\"password123\",\"email\":\"john@example.com\",\"global_admin\":false}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "full_name": {
+                      "type": "string",
+                      "description": "Full name of the created user"
+                    },
+                    "username": {
+                      "type": "string",
+                      "description": "Username of the created user"
+                    },
+                    "email": {
+                      "type": "string",
+                      "description": "Email of the created user"
+                    },
+                    "global_admin": {
+                      "type": "boolean",
+                      "description": "Whether the user is a global admin"
+                    },
+                    "permission": {
+                      "type": "object",
+                      "description": "Permissions assigned to the user"
+                    },
+                    "password_changed": {
+                      "type": "integer",
+                      "description": "Timestamp of when the password was set"
+                    },
+                    "created_at": {
+                      "type": "integer",
+                      "description": "Timestamp of user creation"
+                    },
+                    "_id": {
+                      "type": "string",
+                      "description": "User ID"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/users/update": {
+      "get": {
+        "summary": "Update a user",
+        "description": "Update an existing user in Countly",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "Admin API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "User update data as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"user_id\":\"user_id\",\"full_name\":\"John Smith\",\"email\":\"john.smith@example.com\"}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/users/delete": {
+      "get": {
+        "summary": "Delete a user",
+        "description": "Delete an existing user from Countly",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "Admin API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_ids",
+            "in": "query",
+            "required": true,
+            "description": "Array of user IDs to delete, as a JSON string",
+            "schema": {
+              "type": "string",
+              "example": "[\"user_id1\",\"user_id2\"]"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User(s) deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/users/all": {
+      "get": {
+        "summary": "Get all users",
+        "description": "Get a list of all users in Countly",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "Admin API key",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "User ID"
+                      },
+                      "full_name": {
+                        "type": "string",
+                        "description": "Full name of the user"
+                      },
+                      "username": {
+                        "type": "string",
+                        "description": "Username of the user"
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "Email of the user"
+                      },
+                      "global_admin": {
+                        "type": "boolean",
+                        "description": "Whether the user is a global admin"
+                      },
+                      "created_at": {
+                        "type": "integer",
+                        "description": "Timestamp of user creation"
+                      },
+                      "last_login": {
+                        "type": "integer",
+                        "description": "Timestamp of last login"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/users/me": {
+      "get": {
+        "summary": "Get current user",
+        "description": "Get information about the current logged-in user",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "User ID"
+                    },
+                    "full_name": {
+                      "type": "string",
+                      "description": "Full name of the user"
+                    },
+                    "username": {
+                      "type": "string",
+                      "description": "Username of the user"
+                    },
+                    "email": {
+                      "type": "string",
+                      "description": "Email of the user"
+                    },
+                    "global_admin": {
+                      "type": "boolean",
+                      "description": "Whether the user is a global admin"
+                    },
+                    "created_at": {
+                      "type": "integer",
+                      "description": "Timestamp of user creation"
+                    },
+                    "last_login": {
+                      "type": "integer",
+                      "description": "Timestamp of last login"
+                    },
+                    "admin_of": {
+                      "type": "object",
+                      "description": "Apps the user is admin of"
+                    },
+                    "user_of": {
+                      "type": "object",
+                      "description": "Apps the user has access to"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/users/settings": {
+      "post": {
+        "summary": "Update user settings",
+        "description": "Update settings for the current user",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "New username"
+                  },
+                  "old_pwd": {
+                    "type": "string",
+                    "description": "Current password"
+                  },
+                  "new_pwd": {
+                    "type": "string",
+                    "description": "New password"
+                  },
+                  "api_key": {
+                    "type": "string",
+                    "description": "Request new API key"
+                  },
+                  "full_name": {
+                    "type": "string",
+                    "description": "New full name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "New email"
+                  },
+                  "lang": {
+                    "type": "string",
+                    "description": "Language preference"
+                  },
+                  "theme": {
+                    "type": "string",
+                    "description": "UI theme preference"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Settings updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Success"
+                    },
+                    "api_key": {
+                      "type": "string",
+                      "description": "New API key if requested"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    }
+  ]
+}

@@ -307,6 +307,7 @@ plugins.register("/i/hook/save", function(ob) {
                             if (!err) {
                                 // Audit log: Hook updated
                                 if (result && result.value) {
+                                    common.returnOutput(params, result && result.value);
                                     plugins.dispatch("/systemlogs", {
                                         params: params,
                                         action: "hook_updated",
@@ -320,7 +321,6 @@ plugins.register("/i/hook/save", function(ob) {
                                 else {
                                     common.returnMessage(params, 500, "No result found");
                                 }
-                                common.returnOutput(params, result && result.value);
                             }
                             else {
                                 common.returnMessage(params, 500, "Failed to save an hook");
@@ -531,7 +531,15 @@ plugins.register("/i/hook/status", function(ob) {
     let paramsInstance = ob.params;
 
     validateUpdate(paramsInstance, FEATURE_NAME, function(params) {
-        const statusList = JSON.parse(params.qstring.status);
+        let statusList;
+        try {
+            statusList = JSON.parse(params.qstring.status);
+        }
+        catch (err) {
+            log.e('Parse status list failed', params.qstring.status);
+            common.returnMessage(params, 400, "Invalid status list");
+            return;
+        }
         const batch = [];
         for (const appID in statusList) {
             batch.push(
