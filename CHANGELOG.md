@@ -1,8 +1,8 @@
-## Version 24.05.XX
+## Version 24.05.41
 Enterprise Fixes:
-- [users] Update user custom field number formatting
+- [cohorts] Fix query transformation for profile group
 - [users] Fix condition for custom property update
-- [cohorts] Fix query transformation for chr
+- [users] Update user custom field number formatting
 
 
 ## Version 24.05.40
