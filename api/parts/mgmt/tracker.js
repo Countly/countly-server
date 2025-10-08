@@ -193,7 +193,7 @@ tracker.collectServerStats = function() {
                             props.last_login = resLogin[0].last_login || 0;
                         }
                         if (resEvents && resEvents[0]) {
-                            props.total_events = resEvents[0].totalListLength || 0;
+                            props.events = resEvents[0].totalListLength || 0;
                         }
                         if (data) {
                             if (data.app_users) {
