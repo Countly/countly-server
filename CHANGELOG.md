@@ -22,6 +22,7 @@ Dependencies:
 - Bump nodemailer from 7.0.6 to 7.0.9
 - Bump fs-extra from 11.3.1 to 11.3.2
 - Bump sharp from 0.34.3 to 0.34.4
+- Bump eslint-plugin-vue from 10.4.0 to 10.5.0
 - Bump sass from 1.92.1 to 1.93.2
 - Bump lint-staged from 16.1.6 to 16.2.3
 - Bump puppeteer from 24.20.0 to 24.23.0
@@ -34,6 +35,8 @@ Fixes:
 - [feedback] Prevent showing the application when switching between the NPS and Survey pages
 - [populator] Fix NPS generator
 - [surveys] Fix survey details results summary tiles display when journeys plugin in not enabled
+
+## Version 25.03.20
 Fixes:
 - [push] Fix: Migrate push to the new events model
 

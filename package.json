@@ -87,7 +87,7 @@
     "moment-timezone": "0.6.0",
     "mongodb": "6.20.0",
     "nginx-conf": "2.1.0",
-    "nodemailer": "7.0.7",
+    "nodemailer": "7.0.9",
     "object-hash": "3.0.0",
     "properties-parser": "0.6.0",
     "puppeteer": "^24.6.1",
