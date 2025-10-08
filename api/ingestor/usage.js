@@ -371,6 +371,9 @@ usage.processSession = function(ob) {
     var update = {};
 
     if (params.qstring.session_duration) {
+        if (!params.app_user[common.dbUserMap.has_ongoing_session]) {
+            params.qstring.begin_session = true;
+        }
         session_duration = parseInt(params.qstring.session_duration);
         var session_duration_limit = parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
         if (session_duration) {
@@ -380,6 +383,12 @@ usage.processSession = function(ob) {
             if (session_duration < 0) {
                 session_duration = 30;
             }
+        }
+    }
+    if (params.qstring.end_session) {
+        if (!params.qstring.ignore_cooldown && !params.app_user[common.dbUserMap.has_ongoing_session]) {
+            params.qstring.begin_session = true;
+            delete params.qstring.end_session;
         }
     }
 
@@ -460,6 +469,7 @@ usage.processSession = function(ob) {
             if (!params.app_user.lsid || !params.app_user[common.dbUserMap.has_ongoing_session]) {
                 //create new lsid if not present or it is autoclosed
                 params.app_user.lsid = params.request_id;
+                params.qstring.begin_session = true;
             }
             if (params.app_user.lsid) {
                 params.qstring.events = params.qstring.events || [];
@@ -488,6 +498,16 @@ usage.processSession = function(ob) {
             params.session_duration = (params.app_user.sd || 0) + session_duration;
         }
     }
+    else {
+        if (session_duration) {
+            userProps.sd = session_duration;
+            if (!update.$inc) {
+                update.$inc = {};
+            }
+            update.$inc.tsd = session_duration;
+            params.session_duration = session_duration;
+        }
+    }
 
     for (var key in userProps) {
         if (userProps[key] === params.app_user[key]) {
@@ -502,8 +522,7 @@ usage.processSession = function(ob) {
     if (Object.keys(update).length) {
         ob.updates.push(update);
     }
-    usage.processCoreMetrics(params); //Collexts core metrics
-
+    usage.processCoreMetrics(params); //Collects core metrics
 };
 
 usage.processUserProperties = async function(ob) {

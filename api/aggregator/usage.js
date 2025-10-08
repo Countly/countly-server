@@ -44,7 +44,7 @@ usage.processSessionDurationRange = async function(writeBatcher, token, totalSes
     writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
     var update = {
         '$inc': updateUsersZero,
-        '$set': {}
+        '$set': {"a": params.app_id + "", "m": dbDateIds.zero}
     };
     update.$set['meta_v2.d-ranges.' + calculatedDurationRange] = true;
     writeBatcher.add("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, update, "countly", {token: token});
