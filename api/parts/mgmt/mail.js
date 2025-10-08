@@ -11,7 +11,37 @@ var mail = {},
     versionInfo = require('../../../frontend/express/version.info'),
     authorize = require('../../utils/authorizer'),
     config = require('../../config'),
+    log = require('../../utils/log.js')('mail'),
+    util = require('node:util'),
     ip = require('./ip.js');
+
+const smtpLogger = {};
+
+// Set up logger wrapper
+for (let level of ['trace', 'debug', 'info', 'warn', 'error', 'fatal']) {
+    smtpLogger[level] = (data, message, ...args) => {
+        if (args && args.length) {
+            message = util.format(message, ...args);
+        }
+        if (level === 'error' || level === 'fatal') {
+            log.e(message, data || '');
+        }
+        else if (level === 'warn') {
+            log.w(message, data || '');
+        }
+        else if (level === 'info') {
+            log.i(message, data || '');
+        }
+        else {
+            log.d(message, data || '');
+        }
+    };
+}
+
+if (config.mail && config.mail.config) {
+    config.mail.config.logger = smtpLogger;
+    config.mail.config.debug = true;
+}
 
 if (config.mail && config.mail.transport && config.mail.transport !== "nodemailer-smtp-transport") {
     mail.smtpTransport = nodemailer.createTransport(require(config.mail.transport)(config.mail.config));
@@ -23,7 +53,8 @@ else {
     mail.smtpTransport = nodemailer.createTransport({
         sendmail: true,
         newline: 'unix',
-        path: '/usr/sbin/sendmail'
+        path: '/usr/sbin/sendmail',
+        logger: smtpLogger
     });
 }
 
