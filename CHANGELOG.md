@@ -4,6 +4,8 @@ Fixes:
 
 Enterprise Fixes:
 - [users] Fixed uploading user profile pictures
+- [funnels] Show notification if funnel results are from cache/task manager
+
 
 ## Version 25.03.22
 Fixes:
