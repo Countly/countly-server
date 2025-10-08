@@ -1,3 +1,44 @@
+## Version 25.03.22
+Fixes:
+- [alerts] Fix: Migrate alerts to the new events model
+- [applications] Persist newly created app after page reload
+- [dashboard] Allow users to select text inside the widget without dragging it
+- [oidc] Fix for session state storage
+
+Enterprise Fixes:
+- [cohorts] Fix query transformation for profile group
+- [drill] [survey] Display survey answer value instead of id in drill result
+- [drill] [survey] Fix duplicate question id
+- [users] Fix condition for custom property update
+- [users] Update user custom field number formatting
+
+Dependencies:
+- Bump axios from 1.8.2 to 1.12.2 in /plugins/hooks
+- Bump tar-fs from 3.1.0 to 3.1.1
+- Bump nodemailer from 7.0.6 to 7.0.9
+- Bump fs-extra from 11.3.1 to 11.3.2
+- Bump sharp from 0.34.3 to 0.34.4
+- Bump eslint-plugin-vue from 10.4.0 to 10.5.0
+- Bump sass from 1.92.1 to 1.93.2
+- Bump lint-staged from 16.1.6 to 16.2.3
+- Bump puppeteer from 24.20.0 to 24.23.0
+- Bump mongodb from 6.19.0 to 6.20.0
+- Bump typescript from 5.9.2 to 5.9.3
+- Bump semver from 7.7.2 to 7.7.3
+
+## Version 25.03.21
+Fixes:
+- [feedback] Prevent showing the application when switching between the NPS and Survey pages
+- [populator] Fix NPS generator
+- [surveys] Fix survey details results summary tiles display when journeys plugin in not enabled
+
+## Version 25.03.20
+Fixes:
+- [push] Fix: Migrate push to the new events model
+
+Enterprise Fixes:
+- [oidc] fix for sending state in oidc login
+
 ## Version 25.03.19
 Enterprise Fixes
 - [home] Fix home download render issue
@@ -179,8 +220,8 @@ Dependencies:
 - Bump sass-embedded in /plugins/content from 1.89.1 to 1.89.2
 - Bump @vue-flow/node-resizer  in /plugins/content from 1.4.0 to 1.5.0
 - Bump @vue-flow/core in /plugins/content from 1.44.0 to 1.45.0
-- Bump vue-i18n in /plugins/content from 11.1.5 to 11.1.6 
-- Bump terser in /plugins/content from 5.42.0 to 5.43.0 
+- Bump vue-i18n in /plugins/content from 11.1.5 to 11.1.6
+- Bump terser in /plugins/content from 5.42.0 to 5.43.0
 - Bump mockttp in /plugins/crash_symbolication from 3.17.1 to 4.0.0
 
 ## Version 25.03.6
@@ -236,7 +277,7 @@ Fixes:
 
 Enterprise Fixes:
 - [heatmaps] Get heatmap data from new drill events collection
-- [retention] Fixed report loading 
+- [retention] Fixed report loading
 
 Dependencies:
 - Bump countly-sdk-web from 25.1.0 to 25.4.0
@@ -395,7 +436,7 @@ Enterprise fixes:
 - [drill] [license] Update license loader to enable supplying db client
 - [users] Format data points displayed in user sidebar
 - [cohorts] Unescape drill texts in cohort component
-   
+
 Dependencies:
 - Bump fs-extra from 11.2.0 to 11.3.0
 - Bump nodemailer from 6.9.16 to 6.10.0
@@ -410,7 +451,7 @@ Fixes:
 
 Security:
 - Bump puppeteer from 17.1.3 to 23.8.0
-- Bump express from 4.21.0 to 4.21.1 
+- Bump express from 4.21.0 to 4.21.1
 - Bump sass from 1.79.4 to 1.81.0
 - Bump express-session from 1.18.0 to 1.18.1
 - Bump cross-spawn from 7.0.3 to 7.0.6 in /ui-tests
@@ -533,7 +574,7 @@ Fixes:
 
 Security:
 - Bump puppeteer from 17.1.3 to 23.8.0
-- Bump express from 4.21.0 to 4.21.1 
+- Bump express from 4.21.0 to 4.21.1
 - Bump sass from 1.79.4 to 1.81.0
 - Bump express-session from 1.18.0 to 1.18.1
 - Bump cross-spawn from 7.0.3 to 7.0.6 in /ui-tests
@@ -664,7 +705,7 @@ Fixes:
 Enterprise fixes:
 - [data-manager] changes to allow skipping query rewriting using passed property
 - [os] fix for changing default repository of CentOS 8 to vault because OS reached EOL
-  
+
 ## Version 24.05.7
 Fixes:
 - [countly-request]Fix countly-request get and post methods
@@ -749,10 +790,10 @@ Enterprise fixes:
 Fixes:
 - [populator] Bugfix for - Can't edit populator template
 - [surveys] fix nps/survey background color
-- [alerts] fix for old data remains when the alerts metric is updated 
-- [star-rating] tooltips updates  
+- [alerts] fix for old data remains when the alerts metric is updated
+- [star-rating] tooltips updates
 - [populator] fix for correctly checking if different plugins enabled
-  
+
 Enterprise fixes:
 - [formulas] null checks
 - [surveys] survey/nps tooltips updates
@@ -794,21 +835,21 @@ Enterprise Features:
 - [surveys] Responsiveness for survey/NPS/rating widget contents
 - [users] Profile Groups
 - [users] Purging user profiles in bulk
-- [users] Record hinge as user property 
+- [users] Record hinge as user property
 - [users] Select/deselect users
 - [users] User Profiles widget in dashboards
 
 ## Version 23.11.22
 Features:
 - [views] Added deselect All button
-  
+
 Fixes:
 - [push] Fix for p12 file not being parsed correctly
 
 Enterprise Features:
  - [ab-testing] Improved query to match experiments to users
  - [cohorts] Optimization to not calculate full period buckets when loading cohort meta data. Speeds up meta-loading and reduces memory usage.
-   
+
 Enterprise Fixes:
 - [cohorts] Correctly preprocess drill query for cohort values.
 - [drill] Correct time interval for drill meta job.
@@ -829,7 +870,7 @@ Enterprise Fixes:
 Fixes:
 - [core] Nullcheck in data exports
 - [events] changed formatSecond to show decimals
-  
+
 Enterprise Fixes:
 - [core] missing proxy setting added for  enterprise features
 - [drill] fix for select users correctly when navigating from drill to user
@@ -840,24 +881,24 @@ Features:
 - [reports] log subscribe/unsubscribe to audit logs
 - [scripts] Additions to checking data per cd in drill
 - [scripts] Additional crash deletion scripts
-  
+
 Fixes:
 - [core] Date picker fixes
 - [data-points] Correct counting data points to do not include events that are discarded from recording or only update user properties.
-  
+
 Enterprise Features:
 - [drill] Outputing extra columns in drill byval download with unformatted values.
-  
+
 Enterprise Fixes:
 - [block] Check for valid rule in block
 - [drill] Added missing columns in byval table download
 - [funnels] Localization value fixes
-- [users] Fixed bug - when the session is selected, the event timeline dropdown is not working. 
-  
+- [users] Fixed bug - when the session is selected, the event timeline dropdown is not working.
+
 ## Version 23.11.18
 Fixes:
 - [scripts] Create script for deleting old crashgroups
-- [scripts] Script to validate based on cd field for which dates data was recorded 
+- [scripts] Script to validate based on cd field for which dates data was recorded
 - [reports] Use localhost only in case of dashboard
 - [push] Added a chart to show number of sent and acted events
 - [push] Added the ability to set content-available by default into push settings
@@ -893,7 +934,7 @@ Fixes:
 - [scripts] custom indexes for customers
 - [report-manager] Fix warning on adding report manager submenu
 - [push] Add content-available to apns request payload
-  
+
 ## Version 23.11.15
 Fixes:
 - [views] Updated views processing logic to prevent data mismatch in cases where there are multiple records in same request decribing same view event
@@ -948,7 +989,7 @@ Fixes:
 Enterprise Fixes:
 - [geo] UI for geolocations
 - [drill] Fixed drill events when applied new filter
-- [drill] Fix toggle for drill segmentation 
+- [drill] Fix toggle for drill segmentation
 - [formulas] Fix for formulas graph becomes unresponsive
 - [data-manager] CSV export breaks if there is big_list or array type
 
@@ -993,7 +1034,7 @@ Fixes:
 - [account-settings] allow generating new api key
 - [reports] Increase timeouts for report generation
 - [flows] Fixed bug with incorrectly seletcing date range when calculating flows
-  
+
 Enterprise Fixes:
 - [heatmaps] Display a warning on heatmaps if domain is not setup
 - [license] Fix license metrics dp endpoint calculation
@@ -1059,7 +1100,7 @@ Enterprise Fixes:
 - [flows] Recheck logic for  date regex for event timeline
 - [data-manager] Do not show 'all-time' in regeneration drawer in data manager
 - [drill] typo fixes in drill localization
-   
+
 ## Version 23.11.5
 Fixes:
 - [core] add required excludes to scripts
@@ -1075,19 +1116,19 @@ Fixes:
 - [push] Updated push settings to be able to parameterize message timeout
 - [hooks] Fixed hook settings texts
 - [core] udated ingress to support latest api version
-  
+
 Enterprise Fixes:
 - [formulas] text change in formulas
 - [core] Remove tests from packages
-  
+
 ## Version 23.11.4
 Enterprise Fixes:
 - [drill] Fix for drill snapshot query
-  
+
 ## Version 23.11.3
 Fixes:
 - [core] Script for fixing drill properties
- 
+
 Enterprise Fixes:
 - [drill] Update custom properties only on session end/begin and duration. (Do not process on user_details )
 - [drill] Fixed query for generating snapshot to do not error on unexpected object values
@@ -1102,7 +1143,7 @@ Fixes:
 - [core] Always Calculate city and country and store in user object based on passed coordinates, not only on session start
 - [cms] Moved data fetching for guides/startup/walkthroughs to frontend
  -[core] Added script to export anonymized drill data
- 
+
 Enterprise Fixes:
 - [drill] Rewriting drill query before running it on the database to look also for numeric values for a passed list of values (["1"] => ["1",1]) (Helps to better search for data if values are saved in both ways - as numbers and also as strings)
 - [drill] Make sure duration is parsed before sending it for database update.
@@ -1115,7 +1156,7 @@ Fixes:
 - [cms] Stop cms calls after failure
 - [cms] Calculate timedifference against meta entry
 - [heatmaps] Update deprecated methods in heatmaps.js
-  
+
 Enterprise Fixes:
 - [drill] Fix the correct type prefix for widget names
 - [surveys] Fix the survey api to include previous month
@@ -1139,7 +1180,7 @@ Features:
 - [sdks] Add request metrics
 - [server-stats] Record breakdown of internal events of data points
 - [settings] Trim incoming data based on API setting
-- [star-rating] Make comments table serverside 
+- [star-rating] Make comments table serverside
 - [UI] Loading state fixes to distinguish from no data state
 - [views] Make table column widths adjustable
 
@@ -1201,7 +1242,7 @@ Fixes:
 - [star-rating] Fix for targeting reset on toggle
 - [members] Fix full Name updates in db
 
-Enterprise fixes: 
+Enterprise fixes:
 - [crash_symbolication] Fix for symbol file upload
 - [data-manager] Fix for disabled input in view transformations
 - [data-manager] Fix for duplicate events being created in event transformation
@@ -1229,7 +1270,7 @@ Fixes:
 - [dashboard] Fix user widget x axis in visualisation
 - [hooks] Fix hook request json payload
 
-Enterprise Fixes: 
+Enterprise Fixes:
 - [attribution] Rename campaign properties to Campaign Platform and Campaign Browser in the drill and user profile filters
 - [active-directory] Add postinstall for active directory plugin
 - [okta] Add postinstall for okta plugin
@@ -1256,12 +1297,12 @@ Enterprise fixes:
 - [ab-testing] add fetch_experiments api
 - [cognito] post install script added to congito install.js
 - [retention] Fixed Cohort breakdown query on retention
-  
+
 ## Version 23.06.11
 Fixes:
-- [crashes] Fix crash visibility filter 
+- [crashes] Fix crash visibility filter
 - [push] Fixing wrong timeout handling for APN
-  
+
 ## Version 23.06.10
 Fixes:
 - [core] Remove trust proxy
@@ -1349,7 +1390,7 @@ Fixes:
 - [report-manager] Fixes for plugin filter selector.
 - [security] Dependency updates
 
-Enterprise fixes: 
+Enterprise fixes:
 - [cohorts] fix ui bug when adding User Behavior Segmentation, the items don't fit the box.
 - [flows] null check in flows job
 
@@ -1362,7 +1403,7 @@ Fixes:
 - [hooks] trigger hooks, if multiple hooks are listening to the same trigger
 - [whitelabeling] localization fixes
 
-Enterprise fixes: 
+Enterprise fixes:
 - [drill] Fix empty Drill query with empty result produces none empty table
 - [drill] Fix save visualisations
 - [drill] Prevent error with trying set empty string for values upon recording meta biglist data
@@ -1425,7 +1466,7 @@ Enterprise fixes:
 New Features:
 - [app_versions] display time series data
 - [dashboards] new time series type for Technology section
-- [dashboards] SDK statistics widgets 
+- [dashboards] SDK statistics widgets
 - [events] added event comparison by average duration
 - [events] added search in available segments
 - [events] show omitted segments
@@ -1532,7 +1573,7 @@ Fixes:
 - [core] Update app details response to check permission object when listing app admins and users
 - [core] Sum showing up in Events breakdown that has only Count
 - [push] Fixes regarding push delivery in users’ timezones
-- [push] Drill filter for push action event 
+- [push] Drill filter for push action event
 
 Enterprise fixes:
 - [surveys] Fix nps/ias popups not working in firefox
@@ -1708,7 +1749,7 @@ Enterprise fixes:
 - [data-manager] Auto enable/disable global masking setting on enabling/disabling masking.
 - [data-manager] Fix drawer opening issue
 - [groups] Showing correct user count in each group.
-- [users] Showing in users profile only those cohorts user is currently in. 
+- [users] Showing in users profile only those cohorts user is currently in.
 
 ## Version 22.09.16
 Fixes:
@@ -1772,7 +1813,7 @@ Enterprise fixes:
 ## Version 22.09.14
 Fixes:
 - [core] Always use random initialization vector if not provided for encryption
-- [core] Fix incorrect changing of platform to Windows Phone 10 for Windows 10 
+- [core] Fix incorrect changing of platform to Windows Phone 10 for Windows 10
 - [dashboards] Fix incorrect data & fluctations of visualisation in analytics widgets
 
 Enterprise fixes:
@@ -1815,7 +1856,7 @@ Enterprise fixes:
 ## Version 22.09.11
 Fixes:
 - [compliance-hub] Fixes for table export.
-- [core] Local table export improvements to allow sorting. 
+- [core] Local table export improvements to allow sorting.
 - [data-manager] Fixes for event transformation drawer.
 - [dbviewer] Storing aggregation pipeline results in reports if they take long to calculate.
 - [plugins] Update internal-events endpoint access right
@@ -1829,7 +1870,7 @@ Fixes:
 Enterprise fixes:
 - [ab-testing] AB testing bayesian models compilation fixed
 - [attribution] Fixed issues with invalid url after edit
-- [attribution] Fixes for platform recording 
+- [attribution] Fixes for platform recording
 - [cohorts] Bugfix for cohort data merging on user merge.
 - [cohorts] Fixed issues for realtime cohort update on requests with only user properties
 - [concurrent-users] Number visualization widget
@@ -1852,7 +1893,7 @@ Fixes:
 - [ui] table export column titles are not user friendly
 
 Enterprise fixes:
-- [attribution] added typo control for platform when parsing user-agent parameters. 
+- [attribution] added typo control for platform when parsing user-agent parameters.
 - [data-manager] invalid values on opening form when editing transformation with regexp in data-manager
 - [oidc] add same site cookie fallback
 - [oidc] generate password moved to common
@@ -1882,7 +1923,7 @@ Fixes:
 Enterprise fixes:
 - [cohorts] improved speed for loading cohort widgets in dashboards
 - [data-manager] fixed for missing data type in user props
-- [data-manager] fixed user properties sort 
+- [data-manager] fixed user properties sort
 - [drill] adding stringified Drill query to the export file name
 - [funnels] fixed for false error ouptut in logs if funnels dashboard widget does not have filter query
 - [push_approver] correct members query
@@ -2089,7 +2130,7 @@ Fixes:
 - [apps] app management sidebar app icon margin alignment
 - [crashes] fixes new crash dispatch
 - [crashes] use common styles for the tab element
-- [dashboards] note in dashboards escaping fixed 
+- [dashboards] note in dashboards escaping fixed
 - [device-list] add missing Apple devices
 - [events] check for existience of map key in overview
 - [hooks] fix app filter for new crashes
@@ -2174,7 +2215,7 @@ Fixes:
 - [core] env variables in tests
 - [dbviewer] fixes in dbviewer aggregation pipeline
 - [events] fixed . usage in events for some cases
-- [logger] change display name of Request Logs to Incoming Data Logs 
+- [logger] change display name of Request Logs to Incoming Data Logs
 - [push] allowing editing created messages
 - [push] correct formatting for sent number in messages table
 - [push] fixes for user merging
@@ -2622,7 +2663,7 @@ Fixes:
 - [crashes] fixed chart color
 - [crashes] fixed crashes stats
 - [populator] added control when input has a comma
-- [push] Revert "delete unsued preview push images" 
+- [push] Revert "delete unsued preview push images"
 - [push] fixes in upgrade script
 - [push] making sure audience pusher works if there's no token
 - [push] proxy support, better configs & lots of fixes
@@ -2705,7 +2746,7 @@ Eneterprise:
 ## Version 20.11.2.14
 
 Fixes:
-- [cmd] use new hash for user management 
+- [cmd] use new hash for user management
 - [frontend] Discard the first week in ticks if it is the 7th day
 - [populator] styling fix for CE
 - [push] no personalisation in CE fix
@@ -2734,7 +2775,7 @@ Enterprise fixes:
 
 Fixes:
 - [prelogin] do not use double params in templates
-- [scripts] epel repo installing only for centos 7 
+- [scripts] epel repo installing only for centos 7
 
 Enterprise Improvements:
 - [active_directory] azure ad latest client & fixing group pagination
@@ -3146,7 +3187,7 @@ Enterprise Improvements:
 * [performance-monitoring] network response latency overall percentages and breakdown by country
 * [populator] add more template based views with heatmap data for web app type
 * [remote-config] add support for does not contain
-* [reportmanager] display errors in the report manager table 
+* [reportmanager] display errors in the report manager table
 
 **Enterprise Improvements**
 * [block] do not require segmentation for blocking events
@@ -3187,7 +3228,7 @@ Enterprise Improvements:
 * [api] fixed api side aggregated data user correction in some cases
 * [api] fixed escaping filenames in headers
 * [api] reset period object before getting query time ranges
-* [api] respect city settings when it comes to user 
+* [api] respect city settings when it comes to user
 * [core] fixes running countly in sub directory
 * [core] improve countly user password change experience
 * [crashes] double dots on y axis for crash/session ratio
@@ -4135,11 +4176,11 @@ Enterprise Improvements:
 * [cohorts] Remove deleted cohorts from selection
 * [dashboards] Fix widget drawer reset
 * [dashboards] Hide sidebar toggle in dashboards view
-* [drill] Fixed limited connection pool size 
+* [drill] Fixed limited connection pool size
 * [drill][block][cohorts] convert numeric values to number only for custom properties
 * [funnels] Calculation of total users in a perriod changed to get sessions from drill database.
 * [funnels] Fixed last row data problem.
-* [funnels] Funnels bars length issue has been fixed. 
+* [funnels] Funnels bars length issue has been fixed.
 * [live] Prevent realtime bar content wrapping
 * [live] Responsive UI modifications
 * [revenue] Responsive UI modifications
@@ -4354,7 +4395,7 @@ Enterprise Improvements:
 * New topbar that holds many action buttons. This replaces bottom bar and adds app selector, dashboard selector and configuration options (e.g password change, settings, language switcher etc).
 * Rich push support for iOS and Android, which includes ability to send images and videos to devices.
 * Interactive push support for both platforms, with ability to add up to 3 buttons in a push notification.
-* New Assistant plugin can be used to get more insights from devices and keeps you up to date with data. 
+* New Assistant plugin can be used to get more insights from devices and keeps you up to date with data.
 * Inside Crash Analytics, now it's possible to make multi crash selection for actions like resolve, unresolve, hide, show, delete, etc
 * Event logs plugin can record whole request data
 * Record metrics and some default values even without sessions
@@ -4451,141 +4492,141 @@ This is a bugfix release.
 
 **Improvements**
 
-- New user interface: 16.12 release includes the biggest visual overhaul to the entire Countly user interface, greatly improving not only the UI but also the user experience. Dashboard is now faster than ever with simplified graphs, icons, less CSS and markup. 
-- New languages: Countly is translated into Hungarian and Vietnamese, and now [supports more than 10 languages](https://www.transifex.com/projects/p/countly/). 
-- 5 new plugins 
-    - [Compare:](http://count.ly/plugins/compare) All custom event and application data can easily be compared on a time series chart. 
-    - [Star rating:](http://count.ly/plugins/star-rating) A simple plugin in order to understand end user’s ratings about your application. This plugin shows a popup when called on the SDK side (inside the mobile app) prompted the user to submit send rating information. 
-    - [Slipping Away Users:](https://count.ly/plugins/slipping-away-users) This plugin displays a list (and count) of users who haven’t used the application for a particular period, e.g for 7, 14, 30, 60 and 90 days. 
-    - [Server stats:](https://count.ly/plugins/data-points/) This plugin displays how many data points (sum of sessions, custom events, pageviews, crashes and push data) a Countly server has collected for the last 3 months. 
-    - Desktop analytics: Countly now has support for Windows and Mac OS X desktop application types. User interface changes accordingly to provide relevant information for desktop application types. 
-- Security 
-    - A new extensive login security plugin makes sure brute force login attempts are identified and eliminated by limiting number of wrong login attempts. 
-    - System administrators can specify how strong passwords need to be. Minimum password requirements such as length, uppercase or special characters can be set. 
-    - There are several additional HTTP response headers for a more secure infrastructure.  
-    - There is a password expiration mechanism, editable from Configurations. 
-    - Proper HTML escaping has been added to prevent HTML injections, editable from Configurations. 
-    - Javascript errors are hidden from the browser console. 
-    - MongoDB password in configuration file can be set in an encrypted way. 
-    - Countly can be configured to use a salt (from Management → Applications and inside the SDK) to add checksum to SDK requests in order to prevent parameter tampering. 
-    - System administrator can lock users in order to prevent them accessing the dashboard or API. 
-- Push notifications 
-    - Push overview is redesigned, to show only meaningful and important metrics. Instead of unreliable numbers that change from platform to platform (eg. delivery rate), we simplified metric page to show most important numbers and past performance, based on weekly and monthly deliveries. 
-    - It’s possible to view how a push message will look on Android and iOS prior to sending it. 
-    - You can send a push notification to a user based on her/his local timezone. 
-    - Geolocation definition is greatly improved, using OpenStreetMap and Leaflet JS. 
-    - Geolocations can now be app specific or global. 
+- New user interface: 16.12 release includes the biggest visual overhaul to the entire Countly user interface, greatly improving not only the UI but also the user experience. Dashboard is now faster than ever with simplified graphs, icons, less CSS and markup.
+- New languages: Countly is translated into Hungarian and Vietnamese, and now [supports more than 10 languages](https://www.transifex.com/projects/p/countly/).
+- 5 new plugins
+    - [Compare:](http://count.ly/plugins/compare) All custom event and application data can easily be compared on a time series chart.
+    - [Star rating:](http://count.ly/plugins/star-rating) A simple plugin in order to understand end user’s ratings about your application. This plugin shows a popup when called on the SDK side (inside the mobile app) prompted the user to submit send rating information.
+    - [Slipping Away Users:](https://count.ly/plugins/slipping-away-users) This plugin displays a list (and count) of users who haven’t used the application for a particular period, e.g for 7, 14, 30, 60 and 90 days.
+    - [Server stats:](https://count.ly/plugins/data-points/) This plugin displays how many data points (sum of sessions, custom events, pageviews, crashes and push data) a Countly server has collected for the last 3 months.
+    - Desktop analytics: Countly now has support for Windows and Mac OS X desktop application types. User interface changes accordingly to provide relevant information for desktop application types.
+- Security
+    - A new extensive login security plugin makes sure brute force login attempts are identified and eliminated by limiting number of wrong login attempts.
+    - System administrators can specify how strong passwords need to be. Minimum password requirements such as length, uppercase or special characters can be set.
+    - There are several additional HTTP response headers for a more secure infrastructure.
+    - There is a password expiration mechanism, editable from Configurations.
+    - Proper HTML escaping has been added to prevent HTML injections, editable from Configurations.
+    - Javascript errors are hidden from the browser console.
+    - MongoDB password in configuration file can be set in an encrypted way.
+    - Countly can be configured to use a salt (from Management → Applications and inside the SDK) to add checksum to SDK requests in order to prevent parameter tampering.
+    - System administrator can lock users in order to prevent them accessing the dashboard or API.
+- Push notifications
+    - Push overview is redesigned, to show only meaningful and important metrics. Instead of unreliable numbers that change from platform to platform (eg. delivery rate), we simplified metric page to show most important numbers and past performance, based on weekly and monthly deliveries.
+    - It’s possible to view how a push message will look on Android and iOS prior to sending it.
+    - You can send a push notification to a user based on her/his local timezone.
+    - Geolocation definition is greatly improved, using OpenStreetMap and Leaflet JS.
+    - Geolocations can now be app specific or global.
 
-- Crash analytics 
-    - Error logs are now syntax highlighted for easier readability. 
-    - Fix displaying crashes for web apps externally. 
-    - Do not allow bots to index shared crashes which can be read by 3rd parties. 
+- Crash analytics
+    - Error logs are now syntax highlighted for easier readability.
+    - Fix displaying crashes for web apps externally.
+    - Do not allow bots to index shared crashes which can be read by 3rd parties.
 
-- System logs 
-    - There are now more than 30 system logs stored for audit purposes (Management → System Logs).  
-    - Filter system logs based on specific user and user actions. 
-    - System logs display before and after values for update operations. 
-    - Actions of a specific user can be accessed by clicking “View User Actions” button under Management → Users. 
+- System logs
+    - There are now more than 30 system logs stored for audit purposes (Management → System Logs).
+    - Filter system logs based on specific user and user actions.
+    - System logs display before and after values for update operations.
+    - Actions of a specific user can be accessed by clicking “View User Actions” button under Management → Users.
 
-- General 
-    - New horizontal bar chart visualisation is added and is used for Analytics → Platforms and Analytics → Densities. 
-    - iOS density and web pages pixel ratio has been added to Density plugin, and values are now segmentable by platform. 
-    - Added “Show details” link to Management → Applications which displays information about the application including creation, edit, last data recorded time and all users who have access to that application. 
-    - Added a configuration option to prevent crash list from growing too long. 
+- General
+    - New horizontal bar chart visualisation is added and is used for Analytics → Platforms and Analytics → Densities.
+    - iOS density and web pages pixel ratio has been added to Density plugin, and values are now segmentable by platform.
+    - Added “Show details” link to Management → Applications which displays information about the application including creation, edit, last data recorded time and all users who have access to that application.
+    - Added a configuration option to prevent crash list from growing too long.
     - Better logging for uncaught/database errors & crashes.
     - Error logs (Management → Error logs) now output shorter logs, eliminating potential page slow-downs when viewing this page.
-    - Single install script (countly.install.sh) which auto-detects which install procedure to execute based on OS and OS version (e.g Ubuntu, Red Hat or CentOS). 
-    - OS based MongoDB version is installed and configured automatically. 
-    - Accept all timestamps in second, millisecond or float format from the SDKs. 
-    - There is no need to call begin_session to create a user on server. This way, a user is created for any request with a new device_id. 
-    - Allow changing number of items displayed in server side paginated tables (e.g 50, 100 or 200). 
-    - Management → Users displays the last login time.  
-    - Clearing an application now only clears analytical data and leaves all other data (e.g configuration in push notifications or attribution analytics). 
-    - Time ago now displays actual time on hover tooltip. 
-    - Separate export and display data for some tables. 
-    - Export file name now changes based on where data is exported from, to eliminate file mixups. 
-    - Each user can now maintain their own app sort list. Previously when a change was made, it affected all users. 
-    - Instead of mobile device and model names (e.g SM-G930F), now we use marketing names of corresponding models (e.g Galaxy S7) under Devices and filtering dropdowns, using Google’s Android device mapping list. 
-    - Carriers are filtered out and converted to names using MCC and MNC codes. 
-    - For image resizing, jimp library is used instead of sharp for less OS specific library dependencies. 
-    - Application administrator can change App key and all users can change their API key. 
-    - Countly command line has autocomplete capabilities. Also new commands are added, namely countly reindex (reapply all Countly database indexes), countly encrypt (to encrypt a value), countly decrypt (to decrypt a value), countly task (to run grunt tasks in a more convenient way) and countly config (to allow unsetting configuration values). 
-    - Sources plugin uses preprocessed data for faster loading and can extract keywords from referral data and display it under Analytics → Search Terms. 
-    - DBViewer plugin 
-        - Allow users with read permission to access data for specific application(s) she/he has access to. 
-        - Enhanced API to provide filtering capabilities based on MongoDB query mechanism. 
+    - Single install script (countly.install.sh) which auto-detects which install procedure to execute based on OS and OS version (e.g Ubuntu, Red Hat or CentOS).
+    - OS based MongoDB version is installed and configured automatically.
+    - Accept all timestamps in second, millisecond or float format from the SDKs.
+    - There is no need to call begin_session to create a user on server. This way, a user is created for any request with a new device_id.
+    - Allow changing number of items displayed in server side paginated tables (e.g 50, 100 or 200).
+    - Management → Users displays the last login time.
+    - Clearing an application now only clears analytical data and leaves all other data (e.g configuration in push notifications or attribution analytics).
+    - Time ago now displays actual time on hover tooltip.
+    - Separate export and display data for some tables.
+    - Export file name now changes based on where data is exported from, to eliminate file mixups.
+    - Each user can now maintain their own app sort list. Previously when a change was made, it affected all users.
+    - Instead of mobile device and model names (e.g SM-G930F), now we use marketing names of corresponding models (e.g Galaxy S7) under Devices and filtering dropdowns, using Google’s Android device mapping list.
+    - Carriers are filtered out and converted to names using MCC and MNC codes.
+    - For image resizing, jimp library is used instead of sharp for less OS specific library dependencies.
+    - Application administrator can change App key and all users can change their API key.
+    - Countly command line has autocomplete capabilities. Also new commands are added, namely countly reindex (reapply all Countly database indexes), countly encrypt (to encrypt a value), countly decrypt (to decrypt a value), countly task (to run grunt tasks in a more convenient way) and countly config (to allow unsetting configuration values).
+    - Sources plugin uses preprocessed data for faster loading and can extract keywords from referral data and display it under Analytics → Search Terms.
+    - DBViewer plugin
+        - Allow users with read permission to access data for specific application(s) she/he has access to.
+        - Enhanced API to provide filtering capabilities based on MongoDB query mechanism.
 
-    - Populator plugin can generate more realistic and platform dependent data, to onboard end users easier. 
-    - IDFA fix plugin is introduced to ignore opted out iOS users until new app version upgrade. 
+    - Populator plugin can generate more realistic and platform dependent data, to onboard end users easier.
+    - IDFA fix plugin is introduced to ignore opted out iOS users until new app version upgrade.
 
 **Performance**
 
-- Countly now uses a data splitting algorithm on all metrics, events and users collections. This results in better performance for high traffic deployments and takes better advantage of MongoDB sharding mechanism. 
-- Added better handling of capped collections, indexing and reindexing options. 
-- Now there is a single point for updating users collection, resulting in less read and writes from SDK requests. 
-- Using objects instead of MongoDB arrays for meta data. 
-- Optimize health check (ping) request. 
-  
+- Countly now uses a data splitting algorithm on all metrics, events and users collections. This results in better performance for high traffic deployments and takes better advantage of MongoDB sharding mechanism.
+- Added better handling of capped collections, indexing and reindexing options.
+- Now there is a single point for updating users collection, resulting in less read and writes from SDK requests.
+- Using objects instead of MongoDB arrays for meta data.
+- Optimize health check (ping) request.
+
 ### Changelog specific to Enterprise Edition (available to Enterprise Edition customers only)
 
-- User Profiles, Drill, Funnel and several other plugins are simpler and more easier to work with, using a modern and up to date user interface. 
-- Retention plugin, Funnels and User Profiles have a visual overhaul to show even smallest details, all introducing new designs. 
-- Drill plugin 
-    - Checking property limits correctly, also for user properties. 
-    - Better labels and data sorting for time buckets with periods larger than a year. 
-    - More precise event timeline ordering based on unique millisecond timestamps from the SDKs. 
-    - Big list dropdown implementation for large amounts of list values (e.g for sources and views). 
+- User Profiles, Drill, Funnel and several other plugins are simpler and more easier to work with, using a modern and up to date user interface.
+- Retention plugin, Funnels and User Profiles have a visual overhaul to show even smallest details, all introducing new designs.
+- Drill plugin
+    - Checking property limits correctly, also for user properties.
+    - Better labels and data sorting for time buckets with periods larger than a year.
+    - More precise event timeline ordering based on unique millisecond timestamps from the SDKs.
+    - Big list dropdown implementation for large amounts of list values (e.g for sources and views).
 
-- Restrict plugin 
-    - Improved restriction UI. 
-    - Restrict API access for blocked users. 
+- Restrict plugin
+    - Improved restriction UI.
+    - Restrict API access for blocked users.
 
-- User Profiles plugin 
-    - Custom properties are shown in alphabetical order. 
-    - Correctly display user's funnel progress and device names. 
+- User Profiles plugin
+    - Custom properties are shown in alphabetical order.
+    - Correctly display user's funnel progress and device names.
 
-- Attribution Analytics:  
-    - Correctly record unique clicks for some time periods. 
-    - When there is a long list of campaigns, it’s possible to hide them so they don’t clutter user interface. 
-    - Greatly improved user experience and user interface. 
-    - Re-designed campaign popups. 
+- Attribution Analytics:
+    - Correctly record unique clicks for some time periods.
+    - When there is a long list of campaigns, it’s possible to hide them so they don’t clutter user interface.
+    - Greatly improved user experience and user interface.
+    - Re-designed campaign popups.
 
-- When recaptcha is enabled from Configurations, it asks for recaptcha confirmation on login. 
+- When recaptcha is enabled from Configurations, it asks for recaptcha confirmation on login.
 
 ## Version 16.06
 
-This version provides several features and bugfixes to both server and SDKs. There are a lot of improvements in Countly core, and you are advised to upgrade. Below you can find notable changes for both Community Edition and Enterprise Edition. 
+This version provides several features and bugfixes to both server and SDKs. There are a lot of improvements in Countly core, and you are advised to upgrade. Below you can find notable changes for both Community Edition and Enterprise Edition.
 
 ### Changelog for both Community Edition and Enterprise Edition
 
-* Feature: We developed Countly Code Generator (http://code.count.ly) to help developers integrate their SDKs easily. 
+* Feature: We developed Countly Code Generator (http://code.count.ly) to help developers integrate their SDKs easily.
 * Feature: We provided several one liner explanations in Countly configuration options (under dashboard > Management > Configuration)
-* Feature: Charts now full day for today's chart, instead of capping to current time. 
-* Switched from MongoDB 3.0 to 3.2. 
+* Feature: Charts now full day for today's chart, instead of capping to current time.
+* Switched from MongoDB 3.0 to 3.2.
 * Feature: Command line now checks whether user is root and displays meaningful message for root needed commands
 * Feature: App key of application and API key of user can be changed from dashboard. This is nice in circumstances where keys should be modified in SDK but this is not a viable method.
-* Feature: Previously it wasn't possible to rename events with key names containing dots. As you may have guessed, this is not the case any more. 
+* Feature: Previously it wasn't possible to rename events with key names containing dots. As you may have guessed, this is not the case any more.
 * Feature: Countly now uses bulk report sending through jobs, rather than cronjob for each separate report.
-* Feature: Reports now also display overall events data and also benefit from datatables library when managing reports. 
-* Feature: We dropped using Imagemagick, and started using Sharp node module instead. 
+* Feature: Reports now also display overall events data and also benefit from datatables library when managing reports.
+* Feature: We dropped using Imagemagick, and started using Sharp node module instead.
 * Feature: Add IPv6 listen directive to Nginx config to make sure we are ready to use IPv6 in the future.
-* Bugfix: There is a fix in bulk API that now helps API run smoothly in certain conditions.  
+* Bugfix: There is a fix in bulk API that now helps API run smoothly in certain conditions.
 * Bugfix: All known issues with push notifications have been fixed.
 * Bugfix: Date selector issue inside push notifications have been fixed.
 * Bugfix: Corrected user estimation with active users data.
 * Bugfix: Fixed unique click reporting in attribution.
 * User experience: App management is visually improved with hints and value order.
 * User experience: All apps data fetching is greatly optimized.
-* User experience: User management table is redesigned with datatables. 
-* User experience: Data populator has been revamped so it generates less random and more meaningful data with less overhead for browser. 
+* User experience: User management table is redesigned with datatables.
+* User experience: Data populator has been revamped so it generates less random and more meaningful data with less overhead for browser.
 * User experience: We removed unused fields for web analytics.
-* User experience: When Google services are disabled (mainly for servers in China), switching between cities and countries and displaying simple table of countries on dashboard is now possible. 
+* User experience: When Google services are disabled (mainly for servers in China), switching between cities and countries and displaying simple table of countries on dashboard is now possible.
 * User experience: Improved plugin state syncing between two Countly servers, with option to disable it.
-* User interface: There is now a new and improved side bar UI which looks and behaves a lot better than the old, one-level navigation bar. 
+* User interface: There is now a new and improved side bar UI which looks and behaves a lot better than the old, one-level navigation bar.
 * User interface: There is a new, shiny pre-login page design that you'll probably love.
-* User interface: Main dashboard has been redesigned and better graph tooltips have been added to graphs. 
+* User interface: Main dashboard has been redesigned and better graph tooltips have been added to graphs.
 * User interface: Removed app category from app creation since we think your time is valuable.
-* User interface: Whole UI is now more modern - lots of small & lovely retouches everywhere 
+* User interface: Whole UI is now more modern - lots of small & lovely retouches everywhere
 * User interface: Loading bar has been renewed with a modern one.
 * User interface: When clicked on cog, user settings are now displayed in full screen instead of popup.
 
@@ -4603,10 +4644,10 @@ This version provides several features and bugfixes to both server and SDKs. The
 * Attribution Analytics: User can hide a campaign when completed, to declutter user interface.
 * Attribution Analytics: Optimization of loading data by separating campaign properties and analytical data.
 * New plugin: Retention with segments, where retention table can be drilled down into segmentation values.
-* New plugin: Restrict access, where admin can define who can see what part of the dashboard. 
+* New plugin: Restrict access, where admin can define who can see what part of the dashboard.
 * New plugin: Block requests, where admin can block certain type of requests coming from devices or web apps.
 
-### Updated SDKs 
+### Updated SDKs
 
 * Windows Phone SDK updated, with 60 seconds intervals instead of 20.
 * iPhone SDK updated, with many features and bugfixes.
@@ -4623,11 +4664,11 @@ This version provides several features and bugfixes to both server and SDKs. The
   * Fixed DB settings for replica sets
   * Fixed problem with data on Sharded servers (documents coming in different order)
   * Fixed MongoDB configuration on Ubuntu Willy
-  * Fixed GCM sent count for tokens replaced by GCM 
+  * Fixed GCM sent count for tokens replaced by GCM
   * Use NodeJS 5.5 for compatibility with push functionality
   * Fixed inconsistencies with MongoDB 3 findAndModify
   * Fixed help localization for app version
-  * Added remote installer script to install Countly 
+  * Added remote installer script to install Countly
 
         wget -qO- http://c.ly/install | bash
 
@@ -4642,7 +4683,7 @@ This version provides several features and bugfixes to both server and SDKs. The
 ### Changelog for both Community Edition and Enterprise Edition
 
   * Web Analytics feature, one of the major app types Countly now supports
-  * Support for different app types, where each app type can have different views and dashboards  
+  * Support for different app types, where each app type can have different views and dashboards
   * HTTP/2 transport for Apple Push Notifications service, single certificate for both: development & production environments
   * Sources plugin, showing sources of your Web visitors or Android app installations (replacing stores plugin)
   * Support for themeing, and switching between different themes
@@ -4664,7 +4705,7 @@ This version provides several features and bugfixes to both server and SDKs. The
   * User Profiles -  store custom properties as arrays, for multiple values, as well as provide atomic on server operations, like increase, max, min, etc.
   * More drillable properties and Drill property categorization
   * Allow tracking custom segments with Attribution Analytics
-  
+
 
 
 ## Version 15.08
@@ -4688,10 +4729,10 @@ This version provides several features and bugfixes to both server and SDKs. The
   * Languages should show long language names instead of language codes ([Issue #140](https://github.com/Countly/countly-server/issues/140))
 
 ### Changelog specific to Enterprise Edition (available for Enterprise Edition customers)
-  
+
   * Enhanced Drill (Query Builder) with new metrics, user properties, custom properties, attribution campaigns and crashes
-  * Funnel segment applied to all steps ([Issue #173](https://github.com/Countly/countly-server/issues/173))    
-  * Added Organic data to Referal Analytics ([Issue #153](https://github.com/Countly/countly-server/issues/153)) 
+  * Funnel segment applied to all steps ([Issue #173](https://github.com/Countly/countly-server/issues/173))
+  * Added Organic data to Referal Analytics ([Issue #153](https://github.com/Countly/countly-server/issues/153))
   * New metrics added to User Profiles, e.g crashes, attribution and other ([Issue #170] (https://github.com/Countly/countly-server/issues/170))
 
 
@@ -4720,7 +4761,7 @@ This version provides several features and bugfixes to both server and SDKs. The
 
 ## Version 15.03.02
 
-### Changelog for both Community Edition and Enterprise Edition 
+### Changelog for both Community Edition and Enterprise Edition
 
 * Fixed get_events api method
 * Fixed Docker support
@@ -4739,17 +4780,17 @@ This version provides several features and bugfixes to both server and SDKs. The
 ## Version 15.03
 
 
- 
-### Changelog specific to Community Edition 
+
+### Changelog specific to Community Edition
 
   * Introducing Plugins system, allowing other developers to write plugins which would extend Countly functionality without changing/breaking the core. For more information on how to write a plugin, see [Countly resources](http://resources.count.ly)
-  
+
   * Lots of plugins come with new functionality in this release, including:
    * Data Populator
    * Event Logger
    * Database Viewer
    * System Logger
-  
+
   * New core and scalable data structure, dividing data into years and months to prevent reaching MongoDB document size limit.
   * Upgraded to using latest Mongoskin version and newer MongoDB driver which supports new connection string format (https://github.com/Countly/countly-server/issues/124)
   * Countly now ensures that it uses latest MongoDB version
@@ -4771,10 +4812,10 @@ This version provides several features and bugfixes to both server and SDKs. The
 
 ### Changelog specific to Enterprise Edition (available for Enterprise Edition customers)
 
-  
+
   * Fixed displaying long funnel names (https://github.com/Countly/countly-server/issues/107)
   * Numerous other minor fixes and improvements
-  
+
 
 ## Version 14.08
 
@@ -4815,8 +4856,8 @@ This version provides several features and bugfixes to both server and SDKs. The
 ## Version 13.06
 
   * Added session durations view that shows users categorized into predefined
-    session duration buckets. User is categorized into one of 0-10 seconds, 
-    11-30 seconds, 31-60 seconds, 1-3 minutes, 3-10 minutes, 10-30 minutes, 
+    session duration buckets. User is categorized into one of 0-10 seconds,
+    11-30 seconds, 31-60 seconds, 1-3 minutes, 3-10 minutes, 10-30 minutes,
     30-60 minutes or > 1 hour according to this session duration (accessible
     from Engagement > Session durations)
   * Added resolutions view that shows detailed device resolution data
@@ -4829,16 +4870,16 @@ This version provides several features and bugfixes to both server and SDKs. The
     that returns ready-to-use metrics for today, 7 days and 30 days. This API
     is used by Countly Mobile Apps.
   * Added individual event key deletion to event configuration modal.
-  * Improved and optimized update mechanism during dashboard navigation. 
+  * Improved and optimized update mechanism during dashboard navigation.
     Navigation is now much more smoother.
-  * Added a script (bin/geoip-updater.sh) to fetch and update geoip data. 
+  * Added a script (bin/geoip-updater.sh) to fetch and update geoip data.
     Running this script will update country and city database from Maxmind
     database.
   * Various performance and visual improvements to Events view.
   * Added switch to turn off or change session_duration limit of 120 seconds
     in api/config.js (session_duration_limit).
   * Added host configuration to both app.js and api.js configuration files
-    (/frontend/express/config.js and /api/config.js) to make it possible to 
+    (/frontend/express/config.js and /api/config.js) to make it possible to
     run dashboard and application on different servers (defaults to localhost)
 
 ## Version 12.12
@@ -4860,61 +4901,61 @@ This version provides several features and bugfixes to both server and SDKs. The
 
 ## Version 12.09
 
-  * Added localization support. All the pages have translations in the 
-    following languages: Chinese, Dutch, French, German, Italian, Japanese, 
+  * Added localization support. All the pages have translations in the
+    following languages: Chinese, Dutch, French, German, Italian, Japanese,
     Spanish and Turkish (https://www.transifex.com/projects/p/countly/).
-  * Added city level location information to countries view. City level 
-    location information is available only for the country selected in 
-    timezone configuration of an application. 
-  * Added ghost graphs for all the 6 time graphs on the dashboard view. A 
-    light gray graph will represent the previous period. For instance if "30 
-    days" is selected, ghost graph will show the stats for the previous 30 
+  * Added city level location information to countries view. City level
+    location information is available only for the country selected in
+    timezone configuration of an application.
+  * Added ghost graphs for all the 6 time graphs on the dashboard view. A
+    light gray graph will represent the previous period. For instance if "30
+    days" is selected, ghost graph will show the stats for the previous 30
     days.
   * Added current month to the available time buckets.
-  * Optimized total user calculation for date ranges other than current 
+  * Optimized total user calculation for date ranges other than current
     year, month and day which already show the absolute number.
 
 ## Version 12.08
 
-  * Added custom event support. Each event has a key as well as a count and 
-    an optional sum property. There can be unlimited number of segmentation 
+  * Added custom event support. Each event has a key as well as a count and
+    an optional sum property. There can be unlimited number of segmentation
     keys for an event.
-  * Added help mode. After activated from the sidebar under Management > 
-    Help, certain items in the interface show a small descriptive text when 
+  * Added help mode. After activated from the sidebar under Management >
+    Help, certain items in the interface show a small descriptive text when
     hovered on.
   * Added option to re-order applications listed in the sidebar.
-  * Added option to select a single day from the date picker. When a single 
+  * Added option to select a single day from the date picker. When a single
     day is selected hourly data for that day is displayed.
-  * Optimized dashboard refresh process. While refreshing the dashboard, only 
-    the data for the current day is requested from the read API. Current day 
-    data is merged into the existing data which is fetched the first time 
+  * Optimized dashboard refresh process. While refreshing the dashboard, only
+    the data for the current day is requested from the read API. Current day
+    data is merged into the existing data which is fetched the first time
     user logs in to the dashboard.
-  * Fixed active application and selected date reset problem after a hard 
-    page reload. Active application and selected date are stored in 
+  * Fixed active application and selected date reset problem after a hard
+    page reload. Active application and selected date are stored in
     localStorage until user logs out.
 
 ## Version 12.07
 
   * Added platforms view under analytics section.
-  * Added app versions view under analytics section and API is modified 
+  * Added app versions view under analytics section and API is modified
     accordingly to handle _app_version metric.
-  * Added summary bars to device view to show top platform, top platform 
+  * Added summary bars to device view to show top platform, top platform
     version and top resolution.
-  * Added reset data option to manage apps screen. Global admin can reset 
+  * Added reset data option to manage apps screen. Global admin can reset
     the data stored for any application.
-  * Added timestamp (UTC UNIX timestamp) parameter to the write API. If 
-    provided, the event is recorded with the given time instead of current 
+  * Added timestamp (UTC UNIX timestamp) parameter to the write API. If
+    provided, the event is recorded with the given time instead of current
     time.
-  * Fixed application delete bug that prevented app_users collection to be 
+  * Fixed application delete bug that prevented app_users collection to be
     cleared. app_id field is added to app_users collection.
-  * Fixed JSON escape issue for the read API when device name, carrier name 
+  * Fixed JSON escape issue for the read API when device name, carrier name
     etc. contained a single quote.
 
 ## Version 12.06
 
-  * Added user management support. A user can be created as a global admin to 
+  * Added user management support. A user can be created as a global admin to
     manage & view all apps or can be assigned to any application as an
-    admin or user. An admin of an application can edit application settings. 
-    A user of an application can only view analytics for that application 
+    admin or user. An admin of an application can edit application settings.
+    A user of an application can only view analytics for that application
     and cannot edit its settings.
   * Added csfr protection to all methods provided through app.js.

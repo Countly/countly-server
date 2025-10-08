@@ -85,4 +85,64 @@ describe('Create New Custom Dashboard', () => {
         reportHelper.openReportPreviewButton();
         reportHelper.verifyReportPreviewPageImage();
     });
+
+    it(`Create a private custom dashboard and duplicate it and edit it and delete it then verify the flow`, function() {
+
+        const dashboard = generateDashboardFixture();
+        const editedDashboard = generateDashboardFixture();
+        const editPermissionEmail = generateDashboardFixture();
+        const viewOnlyPermissionEmail = generateDashboardFixture();
+
+        dashboardsHelper.clickDashboardsNewButton();
+        dashboardsHelper.typeDashboardName(dashboard.dashboardName);
+        dashboardsHelper.selectPrivateDashboardVisibility();
+        dashboardsHelper.selectNotifyAllUsersViaEmail();
+        dashboardsHelper.selectUseCustomRefreshRate();
+        dashboardsHelper.clickCreateDashboardButton();
+        dashboardsHelper.verifyDashboardCreatedNotification();
+        dashboardsHelper.closeNotification();
+
+        dashboardsHelper.verifyCustomDashboardElements({
+            dashboardName: dashboard.dashboardName,
+            createdTime: "just now",
+            createdBy: "devops+uitests@count.ly",
+        });
+
+        // Duplicate dashboard
+        dashboardsHelper.openDuplicateDashboard();
+        dashboardsHelper.clickSaveDashboardButton();
+        dashboardsHelper.verifyDashboardCreatedNotification();
+        dashboardsHelper.closeNotification();
+
+        dashboardsHelper.verifyCustomDashboardElements({
+            dashboardName: "Copy - " + dashboard.dashboardName,
+            createdTime: "just now",
+            createdBy: "devops+uitests@count.ly",
+        });
+
+        //Edit  dashboard
+        dashboardsHelper.openEditDashboard();
+        dashboardsHelper.typeDashboardName(editedDashboard.dashboardName);
+        dashboardsHelper.selectSomeSpecificUsersDashboardVisibility();
+        dashboardsHelper.typeEditPermissionEmail(editPermissionEmail.email);
+        dashboardsHelper.typeViewOnlyPermissionEmail(viewOnlyPermissionEmail.email);
+        dashboardsHelper.clickSaveDashboardButton();
+        dashboardsHelper.verifyDashboardEditedNotification();
+        dashboardsHelper.closeNotification();
+
+        dashboardsHelper.verifyCustomDashboardElements({
+            dashboardName: editedDashboard.dashboardName,
+            createdTime: "seconds",
+            createdBy: "devops+uitests@count.ly",
+        });
+
+        //Delete dashboard
+        dashboardsHelper.openDeleteDashboard();
+        dashboardsHelper.verifyDeleteDashboardPopupElements(editedDashboard.dashboardName);
+        dashboardsHelper.clickYesDeleteDashboardButton();
+        dashboardsHelper.verifyDashboardDeletedNotification();
+        dashboardsHelper.closeNotification();
+        dashboardsHelper.searchDashboard(editedDashboard.dashboardName);
+        dashboardsHelper.verifyDashboardShouldBeDeleted();
+    });
 });

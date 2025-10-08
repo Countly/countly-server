@@ -31,6 +31,15 @@ const customDashboardElements = {
 
     NOTIFICATION_SAVED_SUCCESSFULLY_MESSAGE: 'cly-notification-text',
     NOTIFICATION_SAVED_SUCCESSFULLY_MESSAGE_CLOSE_ICON: 'cly-notification-full-size-close-icon',
+
+    DASHBOARD_ITEM: "custom-dashboard-0",
+
+    //Delete popup elements
+    DELETE_POPUP_TITLE: "cly-confirm-test-id-cly-confirm-dialog-title-label",
+    DELETE_POPUP_CLOSE_ICON: "el-dialog-test-id-el-dialog-close-button",
+    DELETE_POPUP_SUBTITLE: "el-dialog-test-id-el-dialog-content-label",
+    DELETE_POPUP_CANCEL_BUTTON: "cly-confirm-test-id-cly-confirm-dialog-cancel-button",
+    DELETE_POPUP_DELETE_BUTTON: "cly-confirm-test-id-cly-confirm-dialog-save-button"
 };
 
 const customDashboardWidgetElements = (index = 0) => ({
@@ -64,9 +73,11 @@ const customDashboardDrawerElements = {
     DASHBOARD_EDIT_PERMISSIONS_LABEL: "dashboard-users-edit-permission-label-header",
     DASHBOARD_EDIT_PERMISSIONS_SUB_LABEL: "dashboard-users-edit-permission-label-sub-header",
     DASHBOARD_EDIT_PERMISSIONS_INPUT: "edit-permission-user-email-input",
+    DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX: "search-email-input",
     DASHBOARD_VIEW_PERMISSIONS_LABEL: "dashboard-users-view-permission-label-header",
     DASHBOARD_VIEW_PERMISSIONS_SUB_LABEL: "dashboard-users-view-permission-label-sub-header",
     DASHBOARD_VIEW_PERMISSIONS_INPUT: "view-permission-user-email-input",
+    DASHBOARD_VIEW_ONLY_PERMISSIONS_SEARCH_BOX: "search-email-input",
 
     DASHBOARD_ADDITIONAL_SETTINGS_LABEL: "dashboard-additional-settings-label",
     NOTIFY_VIA_EMAIL_CHECKBOX_LABEL: 'dashboard-send-email-checkbox-el-checkbox-label',
