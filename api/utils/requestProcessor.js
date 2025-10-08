@@ -24,6 +24,7 @@ const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 const request = require('countly-request')(plugins.getConfig("security"));
 const Handle = require('../../api/parts/jobs/index.js');
+const render = require('../../api/utils/render.js');
 
 var loaded_configs_time = 0;
 
@@ -464,6 +465,45 @@ const processRequest = (params) => {
                     });
                     break;
                 }
+                break;
+            }
+            case '/o/render': {
+                validateUserForRead(params, function() {
+                    var options = {};
+                    var view = params.qstring.view || "";
+                    var route = params.qstring.route || "";
+                    var id = params.qstring.id || "";
+
+                    options.view = view + "#" + route;
+                    options.id = id ? "#" + id : "";
+
+                    var imageName = "screenshot_" + common.crypto.randomBytes(16).toString("hex") + ".png";
+
+                    options.savePath = path.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + imageName);
+                    options.source = "core";
+
+                    authorize.save({
+                        db: common.db,
+                        multi: false,
+                        owner: params.member._id,
+                        ttl: 300,
+                        purpose: "LoginAuthToken",
+                        callback: function(err2, token) {
+                            if (err2) {
+                                common.returnMessage(params, 400, 'Error creating token: ' + err2);
+                                return false;
+                            }
+                            options.token = token;
+                            render.renderView(options, function(err3) {
+                                if (err3) {
+                                    common.returnMessage(params, 400, 'Error creating screenshot: ' + err3);
+                                    return false;
+                                }
+                                common.returnOutput(params, {path: common.config.path + "/images/screenshots/" + imageName});
+                            });
+                        }
+                    });
+                });
                 break;
             }
             case '/i/app_users': {
@@ -2130,8 +2170,16 @@ const processRequest = (params) => {
 
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
                             if (hasAccess) {
+                                var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
+                                var db = "";
+                                if (params.qstring.db && dbs[params.qstring.db]) {
+                                    db = dbs[params.qstring.db];
+                                }
+                                else {
+                                    db = common.db;
+                                }
                                 countlyApi.data.exports.fromDatabase({
-                                    db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
+                                    db: db,
                                     params: params,
                                     collection: params.qstring.collection,
                                     query: params.qstring.query,

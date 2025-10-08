@@ -1,3 +1,88 @@
+## Version 24.05.41
+Enterprise Fixes:
+- [cohorts] Fix query transformation for profile group
+- [users] Fix condition for custom property update
+- [users] Update user custom field number formatting
+
+
+## Version 24.05.40
+Fixes:
+- [populator] Fix NPS generator
+
+
+## Version 24.05.39
+Features:
+- [remote-config] Enable comparing newer/older app version in conditions
+
+Fixes:
+- [remote-config] Fix condition matching with compound conditions
+
+
+## Version 24.05.38
+Enterprise Fixes:
+- [home] Fix home download render issue
+
+## Version 24.05.37
+Enterprise Fixes:
+- [license] Update license metric endpoint permission
+
+
+## Version 24.05.36
+Features:
+- [plugins] Add configuration warning tags to settings UI
+
+## Version 24.05.35
+Fixes:
+- [core] Fix mongo connection url parsing
+- [dashboards] Delete associated widgets and reports when a dashboard is removed
+
+Enterprise Fixes:
+- [flows] Null checks on $size when calculating flows.
+
+## Version 24.05.34
+Enterprise Fixes:
+- [drill] Fixed typo issue while getting segment values in drill widgets
+
+## Version 24.05.33
+Fixes:
+- [emails] [puppeteer] [fix] Allow chrome to launch multiple instances
+
+
+## Version 24.05.32
+Enterprise Fixes:
+- [active-users] Fixed bug related to selecting calculation ranges. As a result, some dates were previously calculated on incomplete data set.
+
+
+## Version 24.05.31
+Fixes:
+- [feedback] Uniformize drawer internal name input texts
+- [feedback] Uniformize feedback widgets status tag
+- [star-rating] Allow bulk update of widget status
+- [star-rating] Fix rating score and responses table sorting
+- [UI] Remove white background from input character amount suffix
+
+Enterprise Fixes:
+ -  [retention] Fixed report loading 
+
+
+## Version 24.05.30
+Features:
+- [crashed] Fix unescaped SDK logs
+- [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards
+- [star-rating] Added missing columns to Rating Widgets table edit
+- [ui] Fix alignment of drawers title and close icon
+
+## Version 24.05.29
+Fixes:
+- [core] Allow downloading data also from other databases in dbviewer
+- [crash_symbolication] Symbolication server api end point test fix
+- [push] Fixed push notifications title and content text and variables combination
+- [reports] Correctly match event for email report if event key contains '.'
+
+## Version 24.05.28
+Enterprise Fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
+
 ## Version 24.05.27
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
@@ -57,7 +142,7 @@ Enterprise fixes:
 - [drill] [license] Update license loader to enable supplying db client
 - [users] Format data points displayed in user sidebar
 - [cohorts] Unescape drill texts in cohort component
-   
+
 Dependencies:
 - Bump fs-extra from 11.2.0 to 11.3.0
 - Bump nodemailer from 6.9.16 to 6.10.0
@@ -4495,4 +4580,3 @@ This version provides several features and bugfixes to both server and SDKs. The
     A user of an application can only view analytics for that application 
     and cannot edit its settings.
   * Added csfr protection to all methods provided through app.js.
-
