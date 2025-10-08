@@ -12,9 +12,10 @@ catch {
 }
 
 // Constants for managing stale tasks and retries
-const STALE_MS = 24 * 60 * 60 * 1000; // 24h
-const RETRY_DELAY_MS = 30 * 60 * 1000; // 30m
-const MAX_RETRIES = 3;
+const STALE_MS = 24 * 60 * 60 * 1000; // 24h - consider tasks running longer than this as stale
+const RETRY_DELAY_MS = 30 * 60 * 1000; // 30m - delay before retrying a failed task
+const MAX_RETRIES = 3; // Max number of retries before marking a task as failed
+const VALIDATION_INTERVAL_MS = 3 * 60 * 1000; // 3m - interval between mutation status checks
 
 const BATCH_LIMIT = 10; // Number of tasks to process in one run
 
@@ -83,11 +84,27 @@ class DeletionManagerJob extends Job {
             try {
                 if (task.db === "drill" && task.collection === "drill_events") {
                     const mongoOk = await this.deleteMongo(task);
-                    let chOk = true;
-                    if (clickHouseRunner && clickHouseRunner.deleteGranularDataByQuery) {
-                        chOk = await this.deleteClickhouse(task);
+                    let chScheduledOk = true;
+                    const hasClickhouse = !!(clickHouseRunner && clickHouseRunner.deleteGranularDataByQuery);
+                    if (hasClickhouse) {
+                        chScheduledOk = await this.deleteClickhouse(task);
                     }
-                    if (mongoOk && chOk) {
+                    if (mongoOk && hasClickhouse && chScheduledOk) {
+                        await common.db.collection("deletion_manager").updateOne(
+                            { _id: task._id },
+                            {
+                                $set: {
+                                    running: false,
+                                    status: deletionManager.DELETION_STATUS.AWAITING_CH_MUTATION_VALIDATION,
+                                    hb: Date.now(),
+                                    retry_at: Date.now() + VALIDATION_INTERVAL_MS
+                                },
+                                $unset: { batch_id: "" }
+                            }
+                        );
+                        summary.push({ query: task.query, status: "awaiting_validation" });
+                    }
+                    else if (mongoOk && !hasClickhouse) {
                         await common.db.collection("deletion_manager").deleteOne({ _id: task._id });
                         summary.push({ query: task.query, status: "deleted" });
                     }
@@ -102,7 +119,82 @@ class DeletionManagerJob extends Job {
                 log.e("Deletion task failed", task._id, e);
             }
         }
+
+        await this.processAwaitingValidation(summary);
+
         return summary;
+    }
+
+    /**
+     * Processes a batch of tasks awaiting ClickHouse mutation validation.
+     * Reserves a batch, checks mutation status via system.mutations and updates/deletes tasks accordingly.
+     * @param {Array} summary - Summary array to push status logs
+     * @returns {Promise<void>} Resolves when awaiting validation batch is processed
+     */
+    async processAwaitingValidation(summary) {
+        const validationBatchId = common.db.ObjectID() + '';
+        const nowTs = Date.now();
+        await common.db.collection("deletion_manager").aggregate([
+            {
+                $match: {
+                    running: false,
+                    status: deletionManager.DELETION_STATUS.AWAITING_CH_MUTATION_VALIDATION,
+                    $or: [{ retry_at: { $exists: false } }, { retry_at: null }, { retry_at: { $lte: nowTs } }]
+                }
+            },
+            { $sort: { ts: 1 } },
+            { $limit: BATCH_LIMIT },
+            { $set: { running: true, hb: nowTs, batch_id: validationBatchId } },
+            {
+                $merge: {
+                    into: "deletion_manager",
+                    on: "_id",
+                    whenMatched: "merge",
+                    whenNotMatched: "discard"
+                }
+            }
+        ]).toArray();
+
+        const awaiting = await common.db.collection("deletion_manager")
+            .find({ batch_id: validationBatchId, running: true, status: deletionManager.DELETION_STATUS.AWAITING_CH_MUTATION_VALIDATION })
+            .sort({ ts: 1 })
+            .toArray();
+
+        for (const task of awaiting) {
+            try {
+                if (task.db === "drill" && task.collection === "drill_events" && clickHouseRunner && clickHouseRunner.getMutationStatus) {
+                    const status = await this.getClickhouseMutationStatus(task);
+                    if (status && status.is_done) {
+                        await common.db.collection("deletion_manager").deleteOne({ _id: task._id });
+                        summary.push({ query: task.query, status: "validated_deleted" });
+                    }
+                    else if (status && (status.is_killed || status.latest_fail_reason)) {
+                        await common.db.collection("deletion_manager").updateOne(
+                            { _id: task._id },
+                            {
+                                $set: { running: false, status: deletionManager.DELETION_STATUS.FAILED, hb: Date.now(), error: status.latest_fail_reason || "mutation_killed" },
+                                $unset: { batch_id: "" }
+                            }
+                        );
+                        summary.push({ query: task.query, status: "failed", error: status.latest_fail_reason || "mutation_killed" });
+                    }
+                    else {
+                        await common.db.collection("deletion_manager").updateOne(
+                            { _id: task._id },
+                            {
+                                $set: { running: false, status: deletionManager.DELETION_STATUS.AWAITING_CH_MUTATION_VALIDATION, hb: Date.now(), retry_at: Date.now() + VALIDATION_INTERVAL_MS },
+                                $unset: { batch_id: "" }
+                            }
+                        );
+                        summary.push({ query: task.query, status: "mutation_pending_recheck_scheduled" });
+                    }
+                }
+            }
+            catch (e) {
+                log.e("Validation step failed", task._id, e?.message || e + "");
+                await this.markFailedOrRetry(task, "ch_process_awating_validation: " + e?.message || e + "");
+            }
+        }
     }
 
     /**
@@ -178,8 +270,19 @@ class DeletionManagerJob extends Job {
         };
 
         try {
-            await common.queryRunner.executeQuery(queryDef, { queryObj: task.query, targetTable: task.collection }, {});
-            log.d("ClickHouse deletion scheduled (runner)", { taskId: task._id });
+            const retryIndex = Number(task.fail_count || 0);
+            const commandId = `dm_${String(task._id)}_${retryIndex}`;
+
+            await common.queryRunner.executeQuery(
+                queryDef,
+                { queryObj: task.query, targetTable: task.collection, validation_command_id: commandId },
+                {}
+            );
+            await common.db.collection("deletion_manager").updateOne(
+                { _id: task._id },
+                { $set: { validation_command_id: commandId } }
+            );
+            log.d("ClickHouse deletion scheduled (runner)", { taskId: task._id, commandId });
             return true;
         }
         catch (err) {
@@ -189,6 +292,34 @@ class DeletionManagerJob extends Job {
             });
             await this.markFailedOrRetry(task, "clickhouse_delete_error: " + (err?.message || err + ""));
             return false;
+        }
+    }
+
+    /**
+     * Retrieves ClickHouse mutation status for a task via system.mutations.
+     * @param {object} task - Deletion task
+     * @returns {Promise<object|null>} Object with keys: is_done:boolean, is_killed:boolean, latest_fail_reason:string|null
+     */
+    async getClickhouseMutationStatus(task) {
+        if (!common.queryRunner) {
+            return null;
+        }
+        const commandId = task.validation_command_id;
+        const queryDef = {
+            name: 'GET_MUTATION_STATUS',
+            adapters: {
+                clickhouse: {
+                    handler: clickHouseRunner.getMutationStatus
+                }
+            }
+        };
+        try {
+            const res = await common.queryRunner.executeQuery(queryDef, { validation_command_id: commandId, table: task.collection, database: task.db }, {});
+            return res ? { is_done: !!res.is_done, is_killed: !!res.is_killed, latest_fail_reason: res.latest_fail_reason || null } : null;
+        }
+        catch (err) {
+            log.e("getClickhouseMutationStatus failed", { taskId: task._id, error: err?.message || err + "" });
+            return null;
         }
     }
 
