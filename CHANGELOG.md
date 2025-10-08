@@ -2,25 +2,38 @@
 Dependencies:
 - Remove SQLite
 
-## Version 25.03.X
+## Version 25.03.22
 Fixes:
 - [alerts] Fix: Migrate alerts to the new events model
-- [oidc] Fix for session state storage
 - [applications] Persist newly created app after page reload
+- [dashboard] Allow users to select text inside the widget without dragging it
+- [oidc] Fix for session state storage
 
 Enterprise Fixes:
-- [users] Update user custom field number formatting
-- [users] Fix condition for custom property update
-- [drill] [survey] Fix duplicate question id
+- [cohorts] Fix query transformation for profile group
 - [drill] [survey] Display survey answer value instead of id in drill result
+- [drill] [survey] Fix duplicate question id
+- [users] Fix condition for custom property update
+- [users] Update user custom field number formatting
+
+Dependencies:
+- Bump axios from 1.8.2 to 1.12.2 in /plugins/hooks
+- Bump tar-fs from 3.1.0 to 3.1.1
+- Bump nodemailer from 7.0.6 to 7.0.9
+- Bump fs-extra from 11.3.1 to 11.3.2
+- Bump sharp from 0.34.3 to 0.34.4
+- Bump sass from 1.92.1 to 1.93.2
+- Bump lint-staged from 16.1.6 to 16.2.3
+- Bump puppeteer from 24.20.0 to 24.23.0
+- Bump mongodb from 6.19.0 to 6.20.0
+- Bump typescript from 5.9.2 to 5.9.3
+- Bump semver from 7.7.2 to 7.7.3
 
 ## Version 25.03.21
 Fixes:
 - [feedback] Prevent showing the application when switching between the NPS and Survey pages
 - [populator] Fix NPS generator
 - [surveys] Fix survey details results summary tiles display when journeys plugin in not enabled
-
-## Version 25.03.20
 Fixes:
 - [push] Fix: Migrate push to the new events model
 

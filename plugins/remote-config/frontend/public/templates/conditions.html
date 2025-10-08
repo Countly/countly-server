@@ -36,9 +36,9 @@
         </el-table-column>
         <el-table-column type="options" v-if="hasUpdateRight || hasDeleteRight">
           <template v-slot="rowScope">
-            <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
-              <el-dropdown-item v-if="hasUpdateRight" command="edit">{{i18n('common.edit')}}</el-dropdown-item>
-              <el-dropdown-item v-if="hasDeleteRight" command="remove">{{i18n('common.delete')}}</el-dropdown-item>
+            <cly-more-options :test-id="'more-option-button-' + rowScope.$index" v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
+              <el-dropdown-item v-if="hasUpdateRight" command="edit" data-test-id="condition-data-table-more-option-edit-button">{{i18n('common.edit')}}</el-dropdown-item>
+              <el-dropdown-item v-if="hasDeleteRight" command="remove" data-test-id="condition-data-table-more-option-delete-button">{{i18n('common.delete')}}</el-dropdown-item>
             </cly-more-options>
           </template>
         </el-table-column>
