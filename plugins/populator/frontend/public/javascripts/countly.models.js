@@ -337,9 +337,13 @@
                 d = moment(seed);
             }
         }
-        var year = trimYear ? d.format('YY')[1] : d.format('YY');
+
+        var year = d.format('YY');
+        if (trimYear || year[0] === '0') {
+            year = d.format('YY')[1];
+        }
         var day = parseInt(d.format('DD')[0], 10) === 3 ? 2 : d.format('DD')[0];
-        return year + "." + d.format('MM') + "." + day;
+        return year + '.' + d.format('M') + '.' + day;
     }
     /**
      * 
@@ -1811,8 +1815,13 @@
             },
             success: function(json, textStatus, xhr) {
                 if (json && json.result) {
-                    var id = json.result.split(" ");
-                    npsWidgetList.push(id[2]);
+                    if (json.result._id) {
+                        npsWidgetList.push(json.result._id);
+                    }
+                    else if (json.result.text) {
+                        var id = json.result.text.split(" ");
+                        npsWidgetList.push(id[2]);
+                    }
                 }
                 callback(json, textStatus, xhr);
             },

@@ -67,7 +67,6 @@ var versionInfo = require('./version.info'),
     url = require('url'),
     authorize = require('../../api/utils/authorizer.js'), //for token validations
     languages = require('../../frontend/express/locale.conf'),
-    render = require('../../api/utils/render.js'),
     rateLimit = require("express-rate-limit"),
     membersUtility = require("./libs/members.js"),
     argon2 = require('argon2'),
@@ -421,6 +420,14 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         curTheme = plugins.getConfig("frontend").theme;
         app.loadThemeFiles(curTheme);
         app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
+
+        var overriddenCountlyNamedType = COUNTLY_NAMED_TYPE;
+        var whiteLabelingConfig = plugins.getConfig("white-labeling");
+        if (whiteLabelingConfig && whiteLabelingConfig.footerLabel && whiteLabelingConfig.footerLabel.length) {
+            overriddenCountlyNamedType = whiteLabelingConfig.footerLabel;
+        }
+
+        COUNTLY_NAMED_TYPE = overriddenCountlyNamedType;
 
         if (typeof plugins.getConfig('frontend').countly_tracking !== 'boolean' && plugins.isPluginEnabled('tracker')) {
             plugins.updateConfigs(countlyDb, 'frontend', { countly_tracking: true });
@@ -929,6 +936,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             licenseNotification, licenseError;
         var isLocked = false;
         configs.export_limit = plugins.getConfig("api").export_limit;
+
+        var currentWhiteLabelingConfig = plugins.getConfig("white-labeling");
+        var overriddenCountlyNamedType = COUNTLY_NAMED_TYPE;
+        if (currentWhiteLabelingConfig && currentWhiteLabelingConfig.footerLabel && currentWhiteLabelingConfig.footerLabel.length) {
+            overriddenCountlyNamedType = currentWhiteLabelingConfig.footerLabel;
+        }
         app.loadThemeFiles(configs.theme, async function(theme) {
             if (configs._user.theme) {
                 res.cookie("theme", configs.theme);
@@ -1004,7 +1017,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     licenseError,
                     ssr: serverSideRendering,
                     timezones: timezones,
-                    countlyTypeName: COUNTLY_NAMED_TYPE,
+                    countlyTypeName: overriddenCountlyNamedType,
                     countlyTypeTrack: COUNTLY_TRACK_TYPE,
                     countlyTypeCE: COUNTLY_TYPE_CE,
                     countly_tracking,
@@ -1037,7 +1050,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     countlyVersion: req.countly.version,
                     countlyType: COUNTLY_TYPE_CE,
                     countlyTrial: COUNTLY_TRIAL,
-                    countlyTypeName: COUNTLY_NAMED_TYPE,
+                    countlyTypeName: overriddenCountlyNamedType,
                     feedbackLink: COUNTLY_FEEDBACK_LINK,
                     documentationLink: COUNTLY_DOCUMENTATION_LINK,
                     helpCenterLink: COUNTLY_HELPCENTER_LINK,
@@ -1861,48 +1874,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.send(result);
             });
         }
-    });
-
-    app.get(countlyConfig.path + '/render', function(req, res) {
-        if (!req.session.uid) {
-            return res.redirect(countlyConfig.path + '/login');
-        }
-
-        var options = {};
-        var view = req.query.view || "";
-        var route = req.query.route || "";
-        var id = req.query.id || "";
-
-        options.view = view + "#" + route;
-        options.id = id ? "#" + id : "";
-
-        var randomString = (+new Date()).toString() + (Math.random()).toString();
-        var imageName = "screenshot_" + sha1Hash(randomString) + ".png";
-
-        options.savePath = path.resolve(__dirname, "./public/images/screenshots/" + imageName);
-        options.source = "core";
-
-        authorize.save({
-            db: countlyDb,
-            multi: false,
-            owner: req.session.uid,
-            ttl: 300,
-            purpose: "LoginAuthToken",
-            callback: function(err2, token) {
-                if (err2) {
-                    console.log(err2);
-                    return res.send(false);
-                }
-                options.token = token;
-                render.renderView(options, function(err3) {
-                    if (err3) {
-                        return res.send(false);
-                    }
-
-                    return res.send({path: countlyConfig.path + "/images/screenshots/" + imageName});
-                });
-            }
-        });
     });
 
     app.get(countlyConfig.path + '/login/token/:token', function(req, res) {

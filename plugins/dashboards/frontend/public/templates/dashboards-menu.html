@@ -1,8 +1,8 @@
 <div style="height: 100%;">
     <div class="cly-vue-sidebar__header">
-        <span class="cly-vue-sidebar__header-title">Dashboards</span>
+        <span class="cly-vue-sidebar__header-title" data-test-id="dashboard-menu-title">Dashboards</span>
         <span class="cly-vue-sidebar__header-button" v-if="canCreate">
-            <el-button type="success" size="small" @click="addDashboard">
+            <el-button type="success" size="small" @click="addDashboard" data-test-id="add-dashboard-button">
                 <i class="ion-plus-circled"></i>
                 <span>New</span>
             </el-button>
@@ -10,6 +10,7 @@
         <form>
             <el-input
                 class="bu-mt-5 cly-vue-sidebar__header-search"
+                test-id="dashboard-search-box"
                 autocomplete="off"
                 v-model="searchQuery"
                 placeholder="Search in Dashboards">
@@ -20,7 +21,12 @@
     <div class="cly-vue-sidebar__main-menu">
         <vue-scroll :ops="{scrollPanel: { scrollingX: false }}">
             <ul>
-                <li v-for="(dashboard, idx) in allDashboards" :key="dashboard.id" :class="['bu-px-3 bu-mb-1 bu-is-clickable', {'bu-mb-6': (idx === (allDashboards.length - 1) ? true: false)}]">
+                <li 
+                    v-for="(dashboard, idx) in allDashboards" 
+                    :key="dashboard.id" 
+                    :class="['bu-px-3 bu-mb-1 bu-is-clickable', {'bu-mb-6': (idx === (allDashboards.length - 1) ? true: false)}]"
+                    :data-test-id="'custom-dashboard-' + idx"
+                >
                     <a :href="'#/custom/' + dashboard._id">
                         <div
                             style="width: calc(100% - 24px);"
