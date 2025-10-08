@@ -140,17 +140,6 @@ plugins.setConfigs("frontend", {
     offline_mode: false
 });
 
-if (!plugins.isPluginEnabled('tracker')) {
-    plugins.setConfigs('frontend', {
-        countly_tracking: null,
-    });
-}
-else {
-    plugins.setConfigs('frontend', {
-        countly_tracking: true,
-    });
-}
-
 plugins.setUserConfigs("frontend", {
     production: false,
     theme: false,
@@ -924,7 +913,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
         var configs = plugins.getConfig("frontend", member.settings),
-            countly_tracking = plugins.isPluginEnabled('tracker') ? true : plugins.getConfig('frontend').countly_tracking,
             countly_domain = plugins.getConfig('api').domain,
             licenseNotification, licenseError;
         var isLocked = false;
@@ -1014,7 +1002,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     countlyTypeName: overriddenCountlyNamedType,
                     countlyTypeTrack: COUNTLY_TRACK_TYPE,
                     countlyTypeCE: COUNTLY_TYPE_CE,
-                    countly_tracking,
                     countly_domain,
                     frontend_app: versionInfo.frontend_app || "9c28c347849f2c03caf1b091ec7be8def435e85e",
                     frontend_server: versionInfo.frontend_server || 'https://stats.count.ly/',
