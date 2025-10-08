@@ -12,6 +12,19 @@ Enterprise Fixes:
 - [users] Fix condition for custom property update
 - [users] Update user custom field number formatting
 
+Dependencies:
+- Bump axios from 1.8.2 to 1.12.2 in /plugins/hooks
+- Bump tar-fs from 3.1.0 to 3.1.1
+- Bump nodemailer from 7.0.6 to 7.0.9
+- Bump fs-extra from 11.3.1 to 11.3.2
+- Bump sharp from 0.34.3 to 0.34.4
+- Bump eslint-plugin-vue from 10.4.0 to 10.5.0
+- Bump sass from 1.92.1 to 1.93.2
+- Bump lint-staged from 16.1.6 to 16.2.3
+- Bump puppeteer from 24.20.0 to 24.23.0
+- Bump mongodb from 6.19.0 to 6.20.0
+- Bump typescript from 5.9.2 to 5.9.3
+- Bump semver from 7.7.2 to 7.7.3
 
 ## Version 25.03.21
 Fixes:
