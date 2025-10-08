@@ -1,3 +1,7 @@
+## Version 24.05.xx
+Fixes:
+- [mail] add smtp debug option for mail module
+    
 ## Version 24.05.41
 Enterprise Fixes:
 - [cohorts] Fix query transformation for profile group
