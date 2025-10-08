@@ -5,6 +5,7 @@ import {
     customDashboardDrawerElements,
     newWidgetDrawerElements
 } from "../../../support/elements/dashboard/dashboards/dashboards";
+import sidebarElements from '../../../support/elements/sidebar/sidebar';
 
 //Dashboard Sidebar Menu 
 const clickDashboardsNewButton = () => {
@@ -17,7 +18,7 @@ const typeDashboardName = (dashboardName) => {
 };
 
 const clickCreateDashboardButton = () => {
-    cy.clickElement(customDashboardDrawerElements.CREATE_BUTTON);
+    cy.clickElement(customDashboardDrawerElements.CREATE_BUTTON, true);
     cy.checkPaceActive();
 };
 
@@ -134,7 +135,106 @@ const clickCreateWidgetButton = () => {
     cy.clickElement(newWidgetDrawerElements.CREATE_WIDGET_BUTTON);
 };
 
-//
+const selectPrivateDashboardVisibility = () => {
+    cy.clickElement(customDashboardDrawerElements.DASHBOARD_VISIBILITY_RADIO_BUTTON_PRIVATE);
+};
+
+const selectNotifyAllUsersViaEmail = () => {
+    cy.clickElement(customDashboardDrawerElements.NOTIFY_VIA_EMAIL_CHECKBOX_INPUT);
+};
+
+const selectUseCustomRefreshRate = () => {
+    cy.clickElement(customDashboardDrawerElements.USE_REFRESH_RATE_CHECKBOX_INPUT);
+};
+
+const selectSomeSpecificUsersDashboardVisibility = () => {
+    cy.clickElement(customDashboardDrawerElements.DASHBOARD_VISIBILITY_RADIO_BUTTON_SOME_SPECIFIC_USERS);
+};
+
+const openDuplicateDashboard = () => {
+    cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON);
+    cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON_DUPLICATE_OPTION);
+};
+
+const openEditDashboard = () => {
+    cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON);
+    cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON_EDIT_OPTION);
+};
+
+const verifyDashboardEditedNotification = () => {
+    cy.verifyElement({
+        labelElement: customDashboardElements.NOTIFICATION_SAVED_SUCCESSFULLY_MESSAGE,
+        labelText: "Dashboard edited successfully!"
+    });
+};
+
+const openDeleteDashboard = () => {
+    cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON);
+    cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON_DELETE_OPTION);
+};
+
+const verifyDeleteDashboardPopupElements = (dashboardName) => {
+
+    cy.verifyElement({
+        labelElement: customDashboardElements.DELETE_POPUP_TITLE,
+        labelText: "Delete dashboard?"
+    });
+
+    cy.verifyElement({
+        element: customDashboardElements.DELETE_POPUP_CLOSE_ICON
+    });
+
+    cy.verifyElement({
+        labelElement: customDashboardElements.DELETE_POPUP_SUBTITLE,
+        labelText: "Do you really want to delete dashboard called " + dashboardName + " ?"
+    });
+
+    cy.verifyElement({
+        labelElement: customDashboardElements.DELETE_POPUP_CANCEL_BUTTON,
+        labelText: "No, don't delete"
+    });
+
+    cy.verifyElement({
+        labelElement: customDashboardElements.DELETE_POPUP_DELETE_BUTTON,
+        labelText: "Yes, delete dashboard"
+    });
+};
+
+const clickYesDeleteDashboardButton = () => {
+    cy.clickElement(customDashboardElements.DELETE_POPUP_DELETE_BUTTON, true);
+};
+
+const verifyDashboardDeletedNotification = () => {
+    cy.verifyElement({
+        labelElement: customDashboardElements.NOTIFICATION_SAVED_SUCCESSFULLY_MESSAGE,
+        labelText: "Dashboard deleted successfully!"
+    });
+};
+
+const clickSaveDashboardButton = () => {
+    cy.clickElement(customDashboardDrawerElements.CREATE_BUTTON, 1, true);
+};
+
+const typeEditPermissionEmail = (editPermissionEmail) => {
+    cy.clickElement(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_INPUT);
+    cy.typeInputWithIndex(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX, editPermissionEmail, { index: 1, force: true });
+    cy.clickElement(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_INPUT, true);
+};
+
+const typeViewOnlyPermissionEmail = (viewPermissionEmail) => {
+    cy.clickElement(customDashboardDrawerElements.DASHBOARD_VIEW_PERMISSIONS_INPUT);
+    cy.typeInputWithIndex(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX, viewPermissionEmail, {index: 1, force: true});
+};
+
+const searchDashboard = (dashboardName) => {
+    cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.DASHBOARDS);
+    cy.typeInput(dashboardsMenuElements().DASHBOARD_SEARCH_BOX, dashboardName);
+};
+
+const verifyDashboardShouldBeDeleted = () => {
+    cy.shouldNotExist(customDashboardElements.DASHBOARD_ITEM);
+};
+
 
 module.exports = {
     clickDashboardsNewButton,
@@ -150,5 +250,21 @@ module.exports = {
     selectVisualizationType,
     selectMetric,
     clickCreateWidgetButton,
-    openCreateNewReportDrawer
+    openCreateNewReportDrawer,
+    selectPrivateDashboardVisibility,
+    selectNotifyAllUsersViaEmail,
+    selectUseCustomRefreshRate,
+    selectSomeSpecificUsersDashboardVisibility,
+    openDuplicateDashboard,
+    openEditDashboard,
+    verifyDashboardEditedNotification,
+    openDeleteDashboard,
+    verifyDeleteDashboardPopupElements,
+    clickYesDeleteDashboardButton,
+    verifyDashboardDeletedNotification,
+    clickSaveDashboardButton,
+    typeEditPermissionEmail,
+    typeViewOnlyPermissionEmail,
+    searchDashboard,
+    verifyDashboardShouldBeDeleted
 };

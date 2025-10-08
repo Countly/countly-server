@@ -1815,8 +1815,13 @@
             },
             success: function(json, textStatus, xhr) {
                 if (json && json.result) {
-                    var id = json.result.split(" ");
-                    npsWidgetList.push(id[2]);
+                    if (json.result._id) {
+                        npsWidgetList.push(json.result._id);
+                    }
+                    else if (json.result.text) {
+                        var id = json.result.text.split(" ");
+                        npsWidgetList.push(id[2]);
+                    }
                 }
                 callback(json, textStatus, xhr);
             },

@@ -8,10 +8,15 @@ var tracker = {},
     stats = require('../data/stats.js'),
     common = require('../../utils/common.js'),
     logger = require('../../utils/log.js'),
+    countlyFs = require('../../utils/countlyFs.js'),
     //log = logger("tracker:server"),
     Countly = require('countly-sdk-nodejs'),
     fs = require('fs'),
     path = require('path'),
+    https = require('https'),
+    http = require('http'),
+    FormData = require('form-data'),
+    { Readable } = require('node:stream'),
     versionInfo = require('../../../frontend/express/version.info'),
     server = "9c28c347849f2c03caf1b091ec7be8def435e85e",
     user = "fa6e9ae7b410cb6d756e8088c5f3936bf1fab5f3",
@@ -72,6 +77,17 @@ tracker.enable = function() {
 
         isEnabled = true;
         Countly.user_details({"name": config.device_id });
+        if (plugins.getConfig("white-labeling") && (plugins.getConfig("white-labeling").favicon || plugins.getConfig("white-labeling").stopleftlogo || plugins.getConfig("white-labeling").prelogo)) {
+            var id = plugins.getConfig("white-labeling").favicon || plugins.getConfig("white-labeling").stopleftlogo || plugins.getConfig("white-labeling").prelogo;
+            countlyFs.gridfs.getDataById("white-labeling", id, function(errWhitelabel, data) {
+                if (!errWhitelabel && data) {
+                    tracker.uploadBase64FileFromGridFS(data).catch(() => {});
+                }
+            });
+        }
+        else {
+            Countly.user_details({"picture": "./images/favicon.png" });
+        }
         if (plugins.getConfig("tracking").server_sessions) {
             Countly.begin_session(true);
         }
@@ -418,6 +434,114 @@ tracker.getSDKData = async function() {
             error: error.message
         };
     }
+};
+
+/**
+ * Upload a base64-encoded file from GridFS to the stats server
+ * This function handles files stored in GridFS as base64 strings (e.g., data URIs)
+ * and decodes them before uploading
+ * 
+ * @param {Object} base64String - Picture data
+ * @returns {Promise<Object>} Upload result
+ */
+tracker.uploadBase64FileFromGridFS = function(base64String) {
+    return new Promise((resolve, reject) => {
+        var domain = stripTrailingSlash((plugins.getConfig("api").domain + "").split("://").pop());
+        if (domain && domain !== "localhost") {
+            try {
+                let mimeType = "image/png";
+                // Strip data URI prefix if present and stripDataURI is true
+                if (base64String.includes('base64,')) {
+                    // Extract MIME type from data URI if not provided
+                    const dataURIMatch = base64String.match(/^data:([^;]+);base64,/);
+                    if (dataURIMatch) {
+                        mimeType = dataURIMatch[1];
+                    }
+                    // Remove data URI prefix
+                    base64String = base64String.split('base64,')[1];
+                }
+
+                // Decode base64 to binary buffer
+                const binaryBuffer = Buffer.from(base64String, 'base64');
+
+                // Create a readable stream from the decoded buffer
+                const decodedStream = Readable.from(binaryBuffer);
+
+                // Parse the URL
+                const statsUrl = new URL(url);
+                const protocol = statsUrl.protocol === 'https:' ? https : http;
+
+                // Build query parameters
+                const queryParams = new URLSearchParams({
+                    device_id: domain,
+                    app_key: server,
+                    user_details: ""
+                });
+
+                // Create form data
+                const form = new FormData();
+
+                // Prepare form options with MIME type if available
+                const formOptions = { filename: "profile" };
+                if (mimeType) {
+                    formOptions.contentType = mimeType;
+                }
+
+                form.append('file', decodedStream, formOptions);
+
+                // Prepare request options
+                const requestOptions = {
+                    hostname: statsUrl.hostname,
+                    port: statsUrl.port || (statsUrl.protocol === 'https:' ? 443 : 80),
+                    path: `/i?${queryParams.toString()}`,
+                    method: 'POST',
+                    headers: form.getHeaders()
+                };
+
+                // Make the request
+                const req = protocol.request(requestOptions, (res) => {
+                    let data = '';
+
+                    res.on('data', (chunk) => {
+                        data += chunk;
+                    });
+
+                    res.on('end', () => {
+                        if (res.statusCode >= 200 && res.statusCode < 300) {
+                            try {
+                                const result = JSON.parse(data);
+                                resolve({
+                                    success: true,
+                                    statusCode: res.statusCode,
+                                    data: result
+                                });
+                            }
+                            catch (e) {
+                                resolve({
+                                    success: true,
+                                    statusCode: res.statusCode,
+                                    data: data
+                                });
+                            }
+                        }
+                        else {
+                            reject(new Error(`Upload failed with status ${res.statusCode}: ${data}`));
+                        }
+                    });
+                });
+
+                req.on('error', (error) => {
+                    reject(error);
+                });
+
+                // Pipe the form data to the request
+                form.pipe(req);
+            }
+            catch (error) {
+                reject(error);
+            }
+        }
+    });
 };
 
 /**
