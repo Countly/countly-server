@@ -1,3 +1,7 @@
+## Version 25.03.xx
+Fixes:
+- [mail] add smtp debug option for mail module
+
 ## Version 25.03.22
 Fixes:
 - [alerts] Fix: Migrate alerts to the new events model
