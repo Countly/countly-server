@@ -176,24 +176,38 @@ tracker.collectServerStats = function() {
         stats.getServer(common.db, function(data) {
             common.db.collection("apps").aggregate([{$project: {last_data: 1}}, {$sort: {"last_data": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errApps, resApps) {
                 common.db.collection("members").aggregate([{$project: {last_login: 1}}, {$sort: {"last_login": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errLogin, resLogin) {
-                    if (resApps && resApps[0]) {
-                        props.last_data = resApps[0].last_data || 0;
-                    }
-                    if (resLogin && resLogin[0]) {
-                        props.last_login = resLogin[0].last_login || 0;
-                    }
-                    if (data) {
-                        if (data.app_users) {
-                            props.app_users = data.app_users;
+                    // Aggregate total list lengths across all documents in events collection
+                    common.db.collection("events").aggregate([
+                        {
+                            $group: {
+                                _id: null,
+                                totalListLength: { $sum: { $size: "$list" } }
+                            }
                         }
-                        if (data.apps) {
-                            props.apps = data.apps;
+                    ], {allowDiskUse: true}, function(errEvents, resEvents) {
+
+                        if (resApps && resApps[0]) {
+                            props.last_data = resApps[0].last_data || 0;
                         }
-                        if (data.users) {
-                            props.users = data.users;
+                        if (resLogin && resLogin[0]) {
+                            props.last_login = resLogin[0].last_login || 0;
                         }
-                    }
-                    resolve(props);
+                        if (resEvents && resEvents[0]) {
+                            props.total_events = resEvents[0].totalListLength || 0;
+                        }
+                        if (data) {
+                            if (data.app_users) {
+                                props.app_users = data.app_users;
+                            }
+                            if (data.apps) {
+                                props.apps = data.apps;
+                            }
+                            if (data.users) {
+                                props.users = data.users;
+                            }
+                        }
+                        resolve(props);
+                    });
                 });
             });
         });
