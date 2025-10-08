@@ -1,6 +1,9 @@
 ## Version 25.03.xx
 Fixes:
-- [mail] add smtp debug option for mail module
+- [mail] Add smtp debug option for mail module
+
+Enterprise Fixes:
+- [users] Fixed uploading user profile pictures
 
 ## Version 25.03.22
 Fixes:
