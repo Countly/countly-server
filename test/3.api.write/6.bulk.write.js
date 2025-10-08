@@ -8,6 +8,8 @@ var APP_ID = "";
 var APP_KEY = "";
 var DEVICE_ID = "1234567890";
 
+var waitTime = 3000;
+
 describe('Bulk writing. Tests against data provided by aggregator.', function() {
     describe('without args', function() {
         it('should bad request', function(done) {
@@ -46,7 +48,7 @@ describe('Bulk writing. Tests against data provided by aggregator.', function() 
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 2000);
+                    setTimeout(done, waitTime);
                 });
         });
     });
@@ -143,7 +145,7 @@ describe('Bulk writing. Tests against data provided by aggregator.', function() 
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor + 2000);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
                 });
         });
     });
@@ -242,7 +244,7 @@ describe('Bulk writing. Tests against data provided by aggregator.', function() 
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor + 2000);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
                 });
         });
     });

@@ -577,7 +577,7 @@ describe('Writing app sessions', function() {
             });
         });
     });
-    describe('session duration without start and then ending it(should be ignored)', function() {
+    describe('session duration without start and then ending it(it should create own new session)', function() {
         describe('Send data requests', function() {
             it('session duration', function(done) {
                 request
@@ -589,7 +589,15 @@ describe('Writing app sessions', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, testUtils.testWaitTimeForDrillEvents * 2 * testUtils.testScalingFactor);
+                        setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor);
+                    });
+            });
+            it('validate if auto session is started', function(done) {
+                request
+                    .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=sessions')
+                    .expect(200)
+                    .end(function(err, res) {
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], 'd-ranges': ["0", "1"]}, f: { '0': 3, '1': 1 }, ds: {"0": 1, "1": 1}, u: 3, n: 3, t: 4, /* e: 7,*/ d: 30, Unknown: true});
                     });
             });
             it('ending session', function(done) {
@@ -602,22 +610,22 @@ describe('Writing app sessions', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, testUtils.testWaitTimeForDrillEvents * 2 * testUtils.testScalingFactor);
+                        setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor);
                     });
             });
         });
         //{"2014":{"9":{"17":{"16":{"e":2,"n":1,"t":1,"u":1},"e":2,"n":1,"t":1,"u":1},"e":2,"n":1,"t":1,"u":1},"e":2,"n":1,"t":1,"u":1,"w38":{"u":1}},"_id":"54198f4301f67bb240000075"}
         describe('Verify sessions', function() {
-            it('should have 3 sessions with 7 events, 2 users and 30 duration', function(done) {
+            it('should have 4 sessions with 7 events, 2 users and 60 duration', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=sessions')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], 'd-ranges': ["0", "1"]}, f: { '0': 2, '1': 1 }, ds: {"0": 1, "1": 1}, u: 2, n: 2, t: 3, /* e: 7,*/ d: 30, Unknown: true});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], 'd-ranges': ["0", "1"]}, f: { '0': 3, '1': 1 }, ds: {"0": 1, "1": 2}, u: 3, n: 3, t: 4, /* e: 7,*/ d: 60, Unknown: true});
                     });
             });
             it('Validate calculated from granural data', function(done) {
-                compareAgainstGranuralData({"query": {"queryName": "aggregatedSessionData"}}, [{_id: null, u: 2, t: 3, n: 2, d: 30}], done);
+                compareAgainstGranuralData({"query": {"queryName": "aggregatedSessionData"}}, [{_id: null, u: 3, t: 4, n: 3, d: 60}], done);
             });
         });
         //{"2014":{"9":{"17":{"f":{"0":1},"l":{"0":1}},"f":{"0":1},"l":{"0":1}},"f":{"0":1},"l":{"0":1},"w38":{"f":{"0":1},"l":{"0":1}}},"_id":"5419900801f67bb240000079","meta":{"f-ranges":["0"],"l-ranges":["0"]}}
@@ -627,7 +635,7 @@ describe('Writing app sessions', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=users')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], 'd-ranges': ["0", "1"]}, f: { '0': 2, '1': 1 }, ds: {"0": 1, "1": 1}, u: 2, n: 2, t: 3, /* e: 7,*/ d: 30, Unknown: true});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], 'd-ranges': ["0", "1"]}, f: { '0': 3, '1': 1 }, ds: {"0": 1, "1": 2}, u: 3, n: 3, t: 4, /* e: 7,*/ d: 60, Unknown: true});
                     });
             });
         });
@@ -638,7 +646,7 @@ describe('Writing app sessions', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=locations')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], 'd-ranges': ["0", "1"]}, f: { '0': 2, '1': 1 }, ds: {"0": 1, "1": 1}, u: 2, n: 2, t: 3, /* e: 7,*/ d: 30, Unknown: true});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], 'd-ranges': ["0", "1"]}, f: { '0': 3, '1': 1 }, ds: {"0": 1, "1": 2}, u: 3, n: 3, t: 4, /* e: 7,*/ d: 60, Unknown: true});
                     });
             });
         });
@@ -655,7 +663,7 @@ describe('Writing app sessions', function() {
                         var ob = JSON.parse(res.text);
                         ob.should.have.length(1);
                         ob[0].should.have.property('_id', 'users');
-                        ob[0].should.have.property('u', 2);
+                        ob[0].should.have.property('u', 3);
                         done();
                     });
             });
@@ -666,7 +674,7 @@ describe('Writing app sessions', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "0.5 min", avg_time: "0.2 min", /* avg_requests: "3.5",*/ platforms: [], carriers: [{ name: 'Unknown', value: 3, percent: 100 }], resolutions: []});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 4, total_users: 3, new_users: 3, total_time: "1.0 min", avg_time: "0.3 min", /* avg_requests: "3.5",*/ platforms: [], carriers: [{ name: 'Unknown', value: 3, percent: 100 }], resolutions: []});
                     });
             });
         });
@@ -676,11 +684,11 @@ describe('Writing app sessions', function() {
                     .get('/o/analytics/countries?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateCountries(err, res, done, {country: "Unknown", code: "unknown", t: 3, u: 2, u2: 4, n: 2});
+                        testUtils.validateCountries(err, res, done, {country: "Unknown", code: "unknown", t: 4, u: 3, u2: 4, n: 3});
                     });
             });
             it('Validate calculated from granural data', function(done) {
-                compareAgainstGranuralData({"query": {"queryName": "aggregatedSessionData", "segmentation": "up.cc"}}, [{_id: "Unknown", u: 2, t: 3, n: 2, "d": 30}], done);
+                compareAgainstGranuralData({"query": {"queryName": "aggregatedSessionData", "segmentation": "up.cc"}}, [{_id: "Unknown", u: 3, t: 4, n: 3, "d": 60}], done);
             });
         });
     });
