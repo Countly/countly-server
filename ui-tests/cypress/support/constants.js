@@ -162,7 +162,6 @@ module.exports.SETTINGS = {
 
     FRONTED: {
         CODE: 'Code',
-        COUNTLY_TRACKING: 'Countly Tracking',
         OFFLINE_MODE: 'Offline Mode',
         PRODUCTION: 'Production',
         SESSION_TIMEOUT: 'Session Timeout',

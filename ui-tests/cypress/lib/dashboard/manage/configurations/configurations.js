@@ -515,21 +515,6 @@ const verifyPageElements = () => {
     });
 
     cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.FRONTED.COUNTLY_TRACKING }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Countly",
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.FRONTED.COUNTLY_TRACKING }).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "When enabled, Countly will be activated on this server to perform server-level analytics and gather user feedback to aid us in continuous product improvement. Personal user data/details or the data you process using this server will never be collected or analyzed. All data is sent exclusively to our dedicated Countly server located in Europe.",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.FRONTED.COUNTLY_TRACKING }).SELECTED_SUBFEATURE_CHECKBOX,
-        //isChecked: true //TODO: if empty data, it should be false
-    });
-
-    cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.FRONTED.OFFLINE_MODE }).SELECTED_SUBFEATURE_TITLE,
         labelText: "Offline mode",
     });
