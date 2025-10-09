@@ -171,7 +171,7 @@ class StatsJob extends job.Job {
             const options = {
                 dailyDates: specificDates,
                 monthlyBreakdown: true,
-                license_hosting: license.license_hosting,
+                license_hosting: license?.license_hosting,
             };
 
             // Atomically retrieve old last_sync value and set new one
