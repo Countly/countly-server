@@ -14,7 +14,6 @@ describe('2.Warning tooltip (old Web SDK version)', () => {
     });
     it('2.3-Test', function() {
         goToConfigTab(true);
-        //checkTooltipAppears('warning');
-        checkTooltipAppears('this step just for test upload');
+        checkTooltipAppears('warning');
     });
 });
