@@ -1,7 +1,12 @@
 ## Version 24.05.xx
 Fixes:
 - [mail] add smtp debug option for mail module
-    
+- [core] Fix multiple ajax request in event selector
+
+Enterprise Fixes:
+- [funnels] Show notification if funnel results are from cache/task manager
+
+
 ## Version 24.05.41
 Enterprise Fixes:
 - [cohorts] Fix query transformation for profile group
