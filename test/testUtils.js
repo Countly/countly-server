@@ -206,7 +206,12 @@ var testUtils = function testUtils() {
                     console.log("No response text");
                     console.log(JSON.stringify(res));
                 }
-                recheckDeletion(9, self.db, callback);
+                if (jobName === "api:deletionManagerJob") {
+                    recheckDeletion(9, self.db, callback);
+                }
+                else {
+                    callback(err);
+                }
             });
     };
 
