@@ -35,7 +35,7 @@ module.exports.autoOnCohort = function(entry, cohort, uids) {
         // },
         typ = entry ? 'enter' : 'exit';
 
-    plugins.getPluginsApis().push.cache.iterate((k, msg) => {
+    plugins.getPluginsApis()?.push?.cache?.iterate((k, msg) => {
         if (msg.app.toString() === aid) {
             let trigger = msg.triggerFind(t =>
                     t.kind === TriggerKind.Cohort &&
