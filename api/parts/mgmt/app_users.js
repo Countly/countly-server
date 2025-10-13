@@ -290,7 +290,7 @@ usersApi.delete = function(app_id, query, params, callback) {
 
                     //remove from drill_events
                     plugins.dispatch("/core/delete_granular_data", {
-                        db: "drill",
+                        db: "countly_drill",
                         collection: "drill_events",
                         query: { a: app_id + "", uid: { $in: res[0].uid } }
                     });

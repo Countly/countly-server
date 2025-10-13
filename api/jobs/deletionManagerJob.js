@@ -41,6 +41,15 @@ class DeletionManagerJob extends Job {
     }
 
     /**
+     * Check if ClickHouse is enabled
+     * @returns {boolean} true if ClickHouse is enabled, false otherwise
+     */
+    isClickhouseEnabled() {
+        const adapters = common.config && common.config.database && common.config.database.adapters;
+        return !!(adapters && adapters.clickhouse && adapters.clickhouse.enabled === true);
+    }
+
+    /**
      * Run the job
      * @param {done} done callback
     */
@@ -82,10 +91,10 @@ class DeletionManagerJob extends Job {
 
         for (const task of toProcess) {
             try {
-                if (task.db === "drill" && task.collection === "drill_events") {
+                if (task.db === "countly_drill" && task.collection === "drill_events") {
                     const mongoOk = await this.deleteMongo(task);
                     let chScheduledOk = true;
-                    const hasClickhouse = !!(clickHouseRunner && clickHouseRunner.deleteGranularDataByQuery);
+                    const hasClickhouse = this.isClickhouseEnabled() && !!(clickHouseRunner && clickHouseRunner.deleteGranularDataByQuery);
                     if (hasClickhouse) {
                         chScheduledOk = await this.deleteClickhouse(task);
                     }
@@ -120,7 +129,9 @@ class DeletionManagerJob extends Job {
             }
         }
 
-        await this.processAwaitingValidation(summary);
+        if (this.isClickhouseEnabled()) {
+            await this.processAwaitingValidation(summary);
+        }
 
         return summary;
     }
@@ -162,7 +173,7 @@ class DeletionManagerJob extends Job {
 
         for (const task of awaiting) {
             try {
-                if (task.db === "drill" && task.collection === "drill_events" && clickHouseRunner && clickHouseRunner.getMutationStatus) {
+                if (task.db === "countly_drill" && task.collection === "drill_events" && clickHouseRunner && clickHouseRunner.getMutationStatus) {
                     const status = await this.getClickhouseMutationStatus(task);
                     if (status && status.is_done) {
                         await common.db.collection("deletion_manager").deleteOne({ _id: task._id });
