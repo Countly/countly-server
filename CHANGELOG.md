@@ -6,6 +6,8 @@ Enterprise Fixes:
 - [users] Fixed uploading user profile pictures
 - [funnels] Show notification if funnel results are from cache/task manager
 - [block] Fixed filter for consent events
+- [drill] [survey] Fix survey answer in drill
+- [users] Add survey section to user feedback page
 
 
 ## Version 25.03.22
