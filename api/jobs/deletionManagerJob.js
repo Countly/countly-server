@@ -45,8 +45,9 @@ class DeletionManagerJob extends Job {
      * @returns {boolean} true if ClickHouse is enabled, false otherwise
      */
     isClickhouseEnabled() {
-        const adapters = common.config && common.config.database && common.config.database.adapters;
-        return !!(adapters && adapters.clickhouse && adapters.clickhouse.enabled === true);
+        return !!(common.queryRunner
+        && typeof common.queryRunner.isAdapterAvailable === 'function'
+        && common.queryRunner.isAdapterAvailable('clickhouse'));
     }
 
     /**
@@ -94,7 +95,8 @@ class DeletionManagerJob extends Job {
                 if (task.db === "countly_drill" && task.collection === "drill_events") {
                     const mongoOk = await this.deleteMongo(task);
                     let chScheduledOk = true;
-                    const hasClickhouse = this.isClickhouseEnabled() && !!(clickHouseRunner && clickHouseRunner.deleteGranularDataByQuery);
+                    const clickhouseEnabled = this.isClickhouseEnabled();
+                    const hasClickhouse = clickhouseEnabled && !!(clickHouseRunner && clickHouseRunner.deleteGranularDataByQuery);
                     if (hasClickhouse) {
                         chScheduledOk = await this.deleteClickhouse(task);
                     }
