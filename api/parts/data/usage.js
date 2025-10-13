@@ -1288,7 +1288,7 @@ plugins.register("/i/event/delete", async function(ob) {
         let promises = [];
         if (Array.isArray(ob.event_key)) {
             plugins.dispatch("/core/delete_granular_data", {
-                db: "drill",
+                db: "countly_drill",
                 query: { "a": ob.appId + "", "e": "[CLY]_custom", "n": {"$in": ob.event_key}},
                 collection: "drill_events"
             });
@@ -1301,7 +1301,7 @@ plugins.register("/i/event/delete", async function(ob) {
         else {
 
             plugins.dispatch("/core/delete_granular_data", {
-                db: "drill",
+                db: "countly_drill",
                 query: { "a": ob.appId + "", "e": "[CLY]_custom", "n": ob.event_key},
                 collection: "drill_events"
             });
