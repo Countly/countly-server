@@ -74,6 +74,16 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
             await page.setContent(html);
         }
 
+        const contentHeight = await page.evaluate(() => {
+            /*global document*/
+            return document.body.scrollHeight;
+        });
+
+        options.width = '210mm'; // A4 width, for example
+        options.height = `${contentHeight}px`; // full content height
+        options.printBackground = true;
+        options.preferCSSPageSize = true;
+
         await page.pdf(options).then(callback, function(error) {
             log.d('pdf generation error', error);
         });
