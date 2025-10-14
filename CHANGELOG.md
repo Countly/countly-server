@@ -1,7 +1,7 @@
 ## Version 25.03.23
 Fixes:
-- [mail] Add smtp debug option for mail module
 - [events] Entries in the event list are now sorted alphabetically
+- [mail] Add smtp debug option for mail module
 
 Enterprise Fixes:
 - [block] Fixed filter for consent events
