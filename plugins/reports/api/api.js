@@ -416,15 +416,16 @@ const FEATURE_NAME = 'reports';
                         if (err2) {
                             common.returnMessage(params, 200, err2);
                         }
-                        else {
-                            if (res) {
-                                var html = res.message;
-                                if (result.report_type !== "core") {
-                                    html = ejs.render(res.message.template, res.message.data);
-                                }
-
-                                common.returnRaw(params, 200, html, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
+                        else if (res) {
+                            var html = res.message;
+                            if (result.report_type !== "core") {
+                                html = ejs.render(res.message.template, res.message.data);
                             }
+
+                            common.returnRaw(params, 200, html, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
+                        }
+                        else {
+                            common.returnMessage(params, 200, 'No data to report');
                         }
                     });
                 });
@@ -454,41 +455,42 @@ const FEATURE_NAME = 'reports';
                         if (err2) {
                             common.returnMessage(params, 200, err2);
                         }
-                        else {
-                            if (res) {
-                                var html = res.message;
-                                if (result.report_type !== "core") {
-                                    html = ejs.render(res.message.template, res.message.data);
-                                }
-                                const filePath = '/tmp/email_report_' + new Date().getTime() + '.pdf';
-                                const options = { "path": filePath, "width": "1028px", height: "1000px" };
-
-                                pdf.renderPDF(html, function() {
-                                    //output created file to browser
-                                    fs.readFile(filePath, function(err3, data) {
-                                        if (err3) {
-                                            console.log(err3);
-                                            common.returnMessage(params, 500, 'Cannot read pdf file');
-                                        }
-                                        else {
-                                            common.returnRaw(params, 200, data, {
-                                                'Content-Type': 'application/pdf',
-                                                'Content-Disposition': 'inline; filename="report.pdf"',
-                                                'Content-Length': data.length,
-                                                'Access-Control-Allow-Origin': '*'
-                                            });
-                                        }
-                                        fs.unlink(filePath, function(unlinkErr) {
-                                            if (unlinkErr) {
-                                                console.log("Cannot remove temp pdf file");
-                                                console.log(unlinkErr);
-                                            }
-                                        });
-                                    });
-                                }, options, {
-                                    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'],
-                                }, true);
+                        else if (res) {
+                            var html = res.message;
+                            if (result.report_type !== "core") {
+                                html = ejs.render(res.message.template, res.message.data);
                             }
+                            const filePath = '/tmp/email_report_' + new Date().getTime() + '.pdf';
+                            const options = { "path": filePath, "width": "1028px", height: "1000px" };
+
+                            pdf.renderPDF(html, function() {
+                                //output created file to browser
+                                fs.readFile(filePath, function(err3, data) {
+                                    if (err3) {
+                                        console.log(err3);
+                                        common.returnMessage(params, 500, 'Cannot read pdf file');
+                                    }
+                                    else {
+                                        common.returnRaw(params, 200, data, {
+                                            'Content-Type': 'application/pdf',
+                                            'Content-Disposition': 'inline; filename="report.pdf"',
+                                            'Content-Length': data.length,
+                                            'Access-Control-Allow-Origin': '*'
+                                        });
+                                    }
+                                    fs.unlink(filePath, function(unlinkErr) {
+                                        if (unlinkErr) {
+                                            console.log("Cannot remove temp pdf file");
+                                            console.log(unlinkErr);
+                                        }
+                                    });
+                                });
+                            }, options, {
+                                args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'],
+                            }, true);
+                        }
+                        else {
+                            common.returnMessage(params, 200, 'No data to report');
                         }
                     });
                 });
