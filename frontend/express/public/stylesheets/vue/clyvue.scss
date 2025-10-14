@@ -5541,9 +5541,15 @@
             border-bottom-right-radius: 6px;
         }
         
-        /* .cly-option-swapper__option--disabled.cly-option-swapper__option--active */
-        &--no-highlight#{&}--active {
+        /* .cly-option-swapper__option--no-highlight */
+        &--no-highlight {
             background: #F6F6F6;
+
+            /* .cly-option-swapper__option--no-highlight.cly-option-swapper__option--active */
+            &.cly-option-swapper__option--active {
+                background: #FFFFFF;
+                font-weight: 500;
+            }
         }
     }
 
