@@ -1068,4 +1068,4 @@ const processRequest = (params) => {
 
 };
 
-module.exports = {processRequest: processRequest};
+module.exports = {processRequest: processRequest, processToDrill: processToDrill};
