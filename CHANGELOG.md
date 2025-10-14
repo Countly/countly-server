@@ -1,7 +1,7 @@
-## Version 24.05.xx
+## Version 24.05.42
 Fixes:
-- [mail] add smtp debug option for mail module
 - [core] Fix multiple ajax request in event selector
+- [mail] add smtp debug option for mail module
 
 Enterprise Fixes:
 - [funnels] Show notification if funnel results are from cache/task manager
