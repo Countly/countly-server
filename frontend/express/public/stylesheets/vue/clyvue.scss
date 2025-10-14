@@ -5245,7 +5245,10 @@
 
         /* .cly-vue-content-builder-sidebar-input__component--slider */
         &--slider {
+            display: inline-flex;
+            align-items: center;
             width: 100%;
+            height: 32px;
 
             /* .cly-vue-content-builder-sidebar-input__component--slider .el-slider__bar */
             & .el-slider__bar {
