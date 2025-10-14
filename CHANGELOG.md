@@ -7,6 +7,7 @@ Enterprise Fixes:
 - [block] Fixed filter for consent events
 - [drill] [survey] Fix survey answer in drill
 - [funnels] Show notification if funnel results are from cache/task manager
+- [revenue] Card in revenue page are now correctly indentified
 - [users] Add survey section to user feedback page
 - [users] Fixed uploading user profile pictures
 
