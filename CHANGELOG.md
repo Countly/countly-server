@@ -1,13 +1,13 @@
-## Version 25.03.xx
+## Version 25.03.23
 Fixes:
 - [mail] Add smtp debug option for mail module
 
 Enterprise Fixes:
-- [users] Fixed uploading user profile pictures
-- [funnels] Show notification if funnel results are from cache/task manager
 - [block] Fixed filter for consent events
 - [drill] [survey] Fix survey answer in drill
+- [funnels] Show notification if funnel results are from cache/task manager
 - [users] Add survey section to user feedback page
+- [users] Fixed uploading user profile pictures
 
 
 ## Version 25.03.22
