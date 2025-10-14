@@ -417,7 +417,7 @@ const FEATURE_NAME = 'reports';
                             common.returnMessage(params, 200, err2);
                         }
                         else {
-                            if (params && params.res) {
+                            if (res) {
                                 var html = res.message;
                                 if (result.report_type !== "core") {
                                     html = ejs.render(res.message.template, res.message.data);
@@ -455,13 +455,14 @@ const FEATURE_NAME = 'reports';
                             common.returnMessage(params, 200, err2);
                         }
                         else {
-                            if (params && params.res) {
+                            if (res) {
                                 var html = res.message;
                                 if (result.report_type !== "core") {
                                     html = ejs.render(res.message.template, res.message.data);
                                 }
                                 const filePath = '/tmp/email_report_' + new Date().getTime() + '.pdf';
                                 const options = { "path": filePath, "width": "1028px", height: "1000px" };
+
                                 pdf.renderPDF(html, function() {
                                     //output created file to browser
                                     fs.readFile(filePath, function(err3, data) {
