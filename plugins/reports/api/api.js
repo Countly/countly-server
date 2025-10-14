@@ -4,7 +4,9 @@ var common = require('../../../api/utils/common.js'),
     moment = require('moment-timezone'),
     log = require('../../../api/utils/log')('reports:api'),
     ejs = require("ejs"),
+    fs = require("fs"),
     plugins = require('../../pluginManager.js'),
+    pdf = require('../../../api/utils/pdf'),
     { validateCreate, validateRead, validateUpdate, validateDelete, getUserApps, } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'reports';
@@ -414,15 +416,81 @@ const FEATURE_NAME = 'reports';
                         if (err2) {
                             common.returnMessage(params, 200, err2);
                         }
-                        else {
-                            if (params && params.res) {
-                                var html = res.message;
-                                if (result.report_type !== "core") {
-                                    html = ejs.render(res.message.template, res.message.data);
-                                }
-
-                                common.returnRaw(params, 200, html, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
+                        else if (res) {
+                            var html = res.message;
+                            if (result.report_type !== "core") {
+                                html = ejs.render(res.message.template, res.message.data);
                             }
+
+                            common.returnRaw(params, 200, html, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
+                        }
+                        else {
+                            common.returnMessage(params, 200, 'No data to report');
+                        }
+                    });
+                });
+            });
+            break;
+        case 'pdf':
+            validateRead(paramsInstance, FEATURE_NAME, function() {
+                var params = paramsInstance;
+                var argProps = {
+                        '_id': { 'required': true, 'type': 'String'}
+                    },
+                    id = '';
+
+                if (!(id = common.validateArgs(params.qstring.args, argProps)._id)) {
+                    common.returnMessage(params, 200, 'Not enough args');
+                    return false;
+                }
+                common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err, result) {
+                    if (err || !result) {
+                        common.returnMessage(params, 200, 'Report not found');
+                        return false;
+                    }
+
+                    // TODO: Handle report type check
+
+                    reports.getReport(common.db, result, function(err2, res) {
+                        if (err2) {
+                            common.returnMessage(params, 200, err2);
+                        }
+                        else if (res) {
+                            var html = res.message;
+                            if (result.report_type !== "core") {
+                                html = ejs.render(res.message.template, res.message.data);
+                            }
+                            const filePath = '/tmp/email_report_' + new Date().getTime() + '.pdf';
+                            const options = { "path": filePath, "width": "1028px", height: "1000px" };
+
+                            pdf.renderPDF(html, function() {
+                                //output created file to browser
+                                fs.readFile(filePath, function(err3, data) {
+                                    if (err3) {
+                                        console.log(err3);
+                                        common.returnMessage(params, 500, 'Cannot read pdf file');
+                                    }
+                                    else {
+                                        common.returnRaw(params, 200, data, {
+                                            'Content-Type': 'application/pdf',
+                                            'Content-Disposition': 'inline; filename="report.pdf"',
+                                            'Content-Length': data.length,
+                                            'Access-Control-Allow-Origin': '*'
+                                        });
+                                    }
+                                    fs.unlink(filePath, function(unlinkErr) {
+                                        if (unlinkErr) {
+                                            console.log("Cannot remove temp pdf file");
+                                            console.log(unlinkErr);
+                                        }
+                                    });
+                                });
+                            }, options, {
+                                args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'],
+                            }, true);
+                        }
+                        else {
+                            common.returnMessage(params, 200, 'No data to report');
                         }
                     });
                 });

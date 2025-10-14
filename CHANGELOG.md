@@ -2,6 +2,19 @@
 Dependencies:
 - Remove SQLite
 
+## Version 25.03.23
+Fixes:
+- [events] Entries in the event list are now sorted alphabetically
+- [mail] Add smtp debug option for mail module
+
+Enterprise Fixes:
+- [block] Fixed filter for consent events
+- [drill] [survey] Fix survey answer in drill
+- [funnels] Show notification if funnel results are from cache/task manager
+- [revenue] Card in revenue page are now correctly indentified
+- [users] Add survey section to user feedback page
+- [users] Fixed uploading user profile pictures
+
 ## Version 25.03.22
 Fixes:
 - [alerts] Fix: Migrate alerts to the new events model
