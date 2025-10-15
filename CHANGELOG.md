@@ -1,3 +1,9 @@
+## Version 25.03.XX
+Enterprise Fixes:
+- [data-manager] Fixed segment data deletion
+- [users] Fix add/remove user to profile group
+- [users] Remove link to profile group page after removing user from group
+
 ## Version 25.03.23
 Fixes:
 - [events] Entries in the event list are now sorted alphabetically
