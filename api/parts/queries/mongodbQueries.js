@@ -291,5 +291,41 @@ var obb = {};
         };
     };
 
+
+    /**
+     * Fetches list of most popular segment values for a given period
+     * @param {object} options  - query options
+     * @returns {object} - fetched data
+     */
+    agg.segmentValuesForPeriod = async function(options) {
+        var match = options.dbFilter || {};
+        if (options.appID) {
+            match.a = options.appID + "";
+        }
+        if (options.event) {
+            match.e = options.event;
+        }
+        if (options.name) {
+            match.n = options.name;
+        }
+        if (options.period) {
+            match.ts = countlyCommon.getPeriodRange(options.period, "UTC", options.periodOffset);
+        }
+
+        var pipeline = [];
+        pipeline.push({"$match": match});
+        pipeline.push({"$group": {"_id": "$" + options.field, "c": {"$sum": 1}}});
+        pipeline.push({"$sort": {"c": -1}});
+        pipeline.push({"$limit": options.limit || 1000});
+        var data = await common.drillDb.collection("drill_events").aggregate(pipeline).toArray();
+        return {
+            _queryMeta: {
+                adapter: 'mongodb',
+                query: pipeline || 'MongoDB event segmentation aggregation pipeline',
+            },
+            data: data
+        };
+    };
+
 }(obb));
 module.exports = obb;
