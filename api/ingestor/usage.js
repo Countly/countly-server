@@ -473,7 +473,6 @@ usage.processSession = function(ob) {
             }
             if (params.app_user.lsid) {
                 params.qstring.events = params.qstring.events || [];
-                console.log("Ending previous session" + params.app_user.lsid);
                 usage.updateEndSessionParams(params, params.qstring.events, session_duration);
             }
         }
