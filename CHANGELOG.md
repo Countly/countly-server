@@ -2,6 +2,9 @@
 Fixes:
 - [dashboard] Allow users to select text inside the widget without dragging it
 
+Enterprise Fixes:
+- [data-manager] Fixed segment data deletion
+
 ## Version 24.05.42
 Fixes:
 - [core] Fix multiple ajax request in event selector
