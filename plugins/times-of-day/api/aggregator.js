@@ -90,6 +90,7 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
     });*/
 
     plugins.register("/aggregator", async function() {
+        log.e("Setting up times of day aggregator");
         const eventSource = new UnifiedEventSource('times-of-day', {
             mongo: {
                 db: common.drillDb,
@@ -104,6 +105,7 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
         });
         try {
             for await (const {token, events} of eventSource) {
+                log.e("Processing events:" + events.length);
                 if (events && Array.isArray(events)) {
                     for (var k = 0; k < events.length; k++) {
                         if ((events[k].e === '[CLY]_session_begin' || events[k].e === '[CLY]_custom')) {
