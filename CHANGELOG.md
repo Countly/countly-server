@@ -1,3 +1,7 @@
+## Version 24.05.XX
+Fixes:
+- [dashboard] Allow users to select text inside the widget without dragging it
+
 ## Version 24.05.42
 Fixes:
 - [core] Fix multiple ajax request in event selector
