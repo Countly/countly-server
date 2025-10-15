@@ -1,11 +1,21 @@
-## Version 25.03.xx
+## Version 25.03.X
+Enterprise Fixes:
+- [users] Fix add/remove user to profile group
+- [users] Remove link to profile group page after removing user from group
+
+
+## Version 25.03.23
 Fixes:
+- [events] Entries in the event list are now sorted alphabetically
 - [mail] Add smtp debug option for mail module
 
 Enterprise Fixes:
-- [users] Fixed uploading user profile pictures
-- [funnels] Show notification if funnel results are from cache/task manager
 - [block] Fixed filter for consent events
+- [drill] [survey] Fix survey answer in drill
+- [funnels] Show notification if funnel results are from cache/task manager
+- [revenue] Card in revenue page are now correctly indentified
+- [users] Add survey section to user feedback page
+- [users] Fixed uploading user profile pictures
 
 
 ## Version 25.03.22

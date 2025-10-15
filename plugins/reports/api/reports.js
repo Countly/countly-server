@@ -708,7 +708,7 @@ var metricProps = {
                             mail.sendMail(msg, deletePDFCallback);
                         }
                     }, options, {
-                        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'],
                     }, true).catch(err => {
                         log.d(err);
                     });
