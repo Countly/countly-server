@@ -1,9 +1,14 @@
 ## Version 24.05.XX
+Features:
+- [core] Implement go to link in notification
+
 Fixes:
 - [dashboard] Allow users to select text inside the widget without dragging it
 
 Enterprise Fixes:
 - [data-manager] Fixed segment data deletion
+- [users] Fix add/remove user to profile group
+- [users] Remove link to profile group page after removing user from group
 
 ## Version 24.05.42
 Fixes:
