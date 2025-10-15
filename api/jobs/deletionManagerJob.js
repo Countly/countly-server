@@ -51,6 +51,31 @@ class DeletionManagerJob extends Job {
     }
 
     /**
+     * Load Deletion Manager thresholds from DB
+     * @returns {Promise<{CH_MAX_PARTS_PER_PARTITION:number, CH_MAX_TOTAL_MERGETREE_PARTS:number}>} thresholds
+     */
+    async ensureThresholdsLoaded() {
+        try {
+            const doc = await common.db.collection('plugins').findOne(
+                { _id: 'plugins' },
+                { 'deletion_manager.ch_max_parts_per_partition': 1, 'deletion_manager.ch_max_total_mergetree_parts': 1 }
+            );
+            const dmCfg = (doc && doc.deletion_manager) ? doc.deletion_manager : {};
+            return {
+                CH_MAX_PARTS_PER_PARTITION: Number(dmCfg.ch_max_parts_per_partition) || 1000,
+                CH_MAX_TOTAL_MERGETREE_PARTS: Number(dmCfg.ch_max_total_mergetree_parts) || 100000
+            };
+        }
+        catch (e) {
+            log.e('Failed to load deletion manager thresholds from DB, using defaults', e && e.message ? e.message : e + '');
+            return {
+                CH_MAX_PARTS_PER_PARTITION: 1000,
+                CH_MAX_TOTAL_MERGETREE_PARTS: 100000
+            };
+        }
+    }
+
+    /**
      * Run the job
      * @param {done} done callback
     */
@@ -58,6 +83,20 @@ class DeletionManagerJob extends Job {
         const now = Date.now();
         const batchId = common.db.ObjectID() + '';
         const summary = [];
+
+        try {
+            if (this.isClickhouseEnabled()) {
+                const thresholds = await this.ensureThresholdsLoaded();
+                const pre = await this.shouldDeferDueToClickhousePressure(thresholds);
+                if (pre && pre.defer) {
+                    log.d("Run deferred due to ClickHouse pressure", pre.metrics || {});
+                    return [{ status: "deferred_due_to_ch_pressure", metrics: pre.metrics }];
+                }
+            }
+        }
+        catch (e) {
+            log.e("Global CH precheck failed; proceeding", e?.message || e + "");
+        }
 
         // Reset stale tasks (running > 24h)
         await this.resetStaleTasks();
@@ -374,6 +413,49 @@ class DeletionManagerJob extends Job {
                 }
             );
         }
+    }
+
+    /**
+     * Fetches ClickHouse load metrics to determine if deletion should be deferred.
+     * @returns {Promise<Object|null>} Object with metrics or null if fetch failed
+     */
+    async getClickhouseLoadMetrics() {
+        if (!common.queryRunner || !clickHouseRunner || !clickHouseRunner.getClickhouseHealthMetrics) {
+            return null;
+        }
+        try {
+            const queryDef = {
+                name: 'GET_CH_HEALTH_METRICS',
+                adapters: {
+                    clickhouse: {
+                        handler: clickHouseRunner.getClickhouseHealthMetrics
+                    }
+                }
+            };
+            const res = await common.queryRunner.executeQuery(queryDef, {}, {});
+            return res || null;
+        }
+        catch (e) {
+            log.e('CH health metrics fetch failed', e?.message || e + "");
+            return null;
+        }
+    }
+
+    /**
+     * Fetches ClickHouse load metrics to determine if a task should be deferred.
+     * @param {Object} thresholds - Thresholds for deferring
+     * @returns {object} Whether to defer due to ClickHouse pressure
+     */
+    async shouldDeferDueToClickhousePressure(thresholds) {
+        const m = await this.getClickhouseLoadMetrics();
+        if (!m) {
+            return { defer: false };
+        }
+        // Defer if max parts per partition or total parts over limits
+        if (m.max_parts_per_partition >= thresholds.CH_MAX_PARTS_PER_PARTITION || m.total_merge_tree_parts >= thresholds.CH_MAX_TOTAL_MERGETREE_PARTS) {
+            return { defer: true, metrics: m, reason: 'threshold_exceeded' };
+        }
+        return { defer: false, metrics: m };
     }
 }
 
