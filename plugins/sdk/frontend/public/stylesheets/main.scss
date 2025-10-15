@@ -110,3 +110,61 @@
     border-color: #c6e2ff;
   }
 }
+
+/* Some changes for making left column of config to stay top-aligned. */
+.bu-columns.config-section,
+.config-section.bu-columns,
+.config-section.bu-is-vcentered,
+.bu-columns.config-section.bu-is-vcentered {
+    align-items: flex-start !important;
+}
+
+/* SDK config validation styles */
+.config-invalid textarea,
+.config-invalid input,
+.config-invalid .el-textarea__inner {
+    border-color: var(--cly-danger, #e74c3c) !important;
+    box-shadow: 0 0 0 1px rgba(231, 76, 60, 0.12) !important;
+}
+
+.validation-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+}
+
+.config-validation-box {
+    margin-top: 6px;
+    font-size: 0.95em;
+    width: 100%;
+    box-sizing: border-box;
+}
+.config-validation-box .status-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    width: 100%;
+    box-sizing: border-box;
+}
+.config-validation-box .status-box.valid {
+    color: var(--cly-success, #176f2c);
+    background: rgba(23, 111, 44, 0.06);
+    border-color: rgba(23, 111, 44, 0.18);
+}
+.config-validation-box .status-box.invalid {
+    color: var(--cly-danger, #c0392b);
+    background: rgba(192, 57, 43, 0.04);
+    border-color: rgba(192, 57, 43, 0.18);
+}
+.config-validation-box .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.config-validation-box .dot.green { background: var(--cly-success, #2ecc71); }
+.config-validation-box .dot.red { background: var(--cly-danger, #e74c3c); }

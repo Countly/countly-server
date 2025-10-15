@@ -171,6 +171,19 @@ describe('SDK Plugin', function() {
                 });
         });
 
+        it('1.1 uploads config via POST', function(done) {
+            request
+                .post('/o')
+                .send({ method: 'config-upload', api_key: API_KEY_ADMIN, app_id: APP_ID, config: JSON.stringify({}) })
+                .expect(200)
+                .end(function(err, res) {
+                    should.not.exist(err);
+                    res.body.should.be.an.Object();
+                    res.body.should.have.property('result', 'Success');
+                    done();
+                });
+        });
+
         checkBadCredentials('/o', 'config-upload');
 
         it('7. should reject invalid config format', function(done) {
