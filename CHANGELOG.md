@@ -1,3 +1,7 @@
+## Version 25.03.XX
+Enterprise Fixes:
+- [data-manager] Fixed segment data deletion
+
 ## Version 25.03.23
 Fixes:
 - [events] Entries in the event list are now sorted alphabetically
