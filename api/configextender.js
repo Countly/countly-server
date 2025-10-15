@@ -158,7 +158,8 @@ const OVERRIDES = {
     RELOADCONFIGAFTER: 'reloadConfigAfter',
     PREVENTJOBS: 'preventJobs',
     SHARED_CONNECTION: 'shared_connection',
-    PREVENT_JOBS: 'preventJobs'
+    PREVENT_JOBS: 'preventJobs',
+    JOBSERVER: 'jobServer',
 };
 
 /**

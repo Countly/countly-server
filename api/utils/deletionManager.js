@@ -8,7 +8,8 @@ const common = require('./common.js'),
         QUEUED: "queued",
         RUNNING: "running",
         FAILED: "failed",
-        COMPLETED: "completed"
+        COMPLETED: "completed",
+        AWAITING_CH_MUTATION_VALIDATION: "awaiting_ch_mutation_validation"
     };
 
     plugins.register("/core/delete_granular_data", async function(ob) {

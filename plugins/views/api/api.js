@@ -147,12 +147,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             common.db.collection("app_viewsmeta").remove({'_id': viewid});
 
                                             plugins.dispatch("/core/delete_granular_data", {
-                                                db: "drill",
+                                                db: "countly_drill",
                                                 collection: "drill_events",
                                                 query: { a: appId + "", e: "[CLY]_view", n: viewName }
                                             });
                                             plugins.dispatch("/core/delete_granular_data", {
-                                                db: "drill",
+                                                db: "countly_drill",
                                                 collection: "drill_events",
                                                 query: { a: appId + "", e: "[CLY]_action", n: viewUrl }
                                             });
