@@ -171,7 +171,7 @@ var testUtils = function testUtils() {
         props[key] = val;
     };
 
-    /*function recheckDeletion(retry, db, callback) {
+    function recheckDeletion(retry, db, callback) {
         db.collection("deletion_manager").countDocuments({}, function(err, count) {
             if (err) {
                 callback(err);
@@ -188,11 +188,11 @@ var testUtils = function testUtils() {
                     }, 5000);
                 }
                 else {
-                    callback("Deletions still not finished after waiting");
+                    callback();
                 }
             }
         });
-    }*/
+    }
     this.triggerJobToRun = function(jobName, callback) {
         var request = reqq(this.url);
         var self = this;
@@ -207,8 +207,7 @@ var testUtils = function testUtils() {
                     console.log(JSON.stringify(res));
                 }
                 if (jobName === "api:deletionManagerJob") {
-                    setTimeout(callback, 5000);
-                    //recheckDeletion(9, self.db, callback);
+                    recheckDeletion(5, self.db, callback);
                 }
                 else {
                     callback(err);
