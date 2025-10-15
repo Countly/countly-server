@@ -1,4 +1,4 @@
-<div class="bu-is-flex bu-is-flex-wrap-wrap">
+<div class="bu-is-flex bu-is-flex-wrap-wrap" @mousedown.stop>
     <div v-for="(item, idx) in allApps" :key="item.id" class="clyd-legend-app bu-is-flex bu-mt-2 bu-is-flex-shrink-1" :style="appBlockStyles(allApps, idx)">
         <!-- Adding 26 at the end of the background color because it chagnes background opacity to 15% -->
         <div v-if="item.labels && item.labels.length" class="bu-is-flex bu-is-align-items-center bu-is-flex-shrink-1 bu-is-flex-grow-1" style="min-width: 0">

@@ -24,7 +24,7 @@
     </div>
 	<cly-chart-zoom ref="zoomRef" v-if="showZoom" @zoom-reset="onZoomReset" :echartRef="$refs.echartRef.$refs.echarts" class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external"></cly-chart-zoom>
     <clyd-primary-legend :custom-period="data.custom_period"></clyd-primary-legend>
-    <div class="clyd-widget__content" v-loading="loading" :class="'clyd-widget__content--vis-' + data.visualization">
+    <div class="clyd-widget__content" v-loading="loading" :class="'clyd-widget__content--vis-' + data.visualization" @mousedown.stop>
 		<template v-if="!loading">
             <cly-chart-time v-if="data.visualization === 'time-series' && !data.breakdowns" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}" :category="data.data_type || data.feature" :sub-category="data.feature === 'events' ? data.events : []">
             </cly-chart-time>
