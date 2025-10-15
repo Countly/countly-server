@@ -1,5 +1,5 @@
 ## Version 24.05.X
-Fixes:
+Features:
 - [core] Implement go to link in notification
 
 Enterprise Fixes:
