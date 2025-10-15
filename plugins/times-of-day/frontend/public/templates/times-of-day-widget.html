@@ -1,18 +1,34 @@
 <div v-bind:class="[componentId, 'clyd-widget']">
     <div class="bu-level">
-        <div class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0">
-            <clyd-widget-title class="bu-level-item" :title="title"></clyd-widget-title>
+        <div
+            class="bu-level-left bu-is-flex-shrink-1"
+            style="min-width: 0"
+        >
+            <clyd-widget-title
+                class="bu-level-item"
+                :title="title"
+            />
         </div>
         <div class="bu-level-right">
-            <slot name="action"></slot>
+            <slot name="action" />
         </div>
     </div>
-
-    <div class="clyd-widget__content" v-loading="loading">
+    <div
+        v-loading="loading"
+        class="clyd-widget__content"
+        @mousedown.stop
+    >
         <template v-if="!loading">
-            <times-of-day-scatter-chart :series="series" :maxSeriesValue="maxSeriesValue" :show-zoom="false" :show-toggle="false" height="auto" :showDownload="false" skin="full"></times-of-day-scatter-chart>
+            <times-of-day-scatter-chart
+                height="auto"
+                :maxSeriesValue="maxSeriesValue"
+                :series="series"
+                :show-zoom="false"
+                :show-toggle="false"
+                :showDownload="false"
+                skin="full"
+            />
         </template>
     </div>
-
-    <clyd-widget-apps :apps="data.apps"></clyd-widget-apps>
+    <clyd-widget-apps :apps="data.apps" />
 </div>

@@ -1,6 +1,9 @@
-## Version 24.05.X
+## Version 24.05.XX
 Features:
 - [core] Implement go to link in notification
+
+Fixes:
+- [dashboard] Allow users to select text inside the widget without dragging it
 
 Enterprise Fixes:
 - [data-manager] Fixed segment data deletion
