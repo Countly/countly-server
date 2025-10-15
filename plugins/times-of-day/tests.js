@@ -73,7 +73,7 @@ describe('Testing Times Of Day', function() {
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         APP_ID = testUtils.get("APP_ID");
         request
-            .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=times-of-day&tod_type=[CLY]_session')
+            .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=times-of-day&tod_type=[CLY]_session&no_cache=true')
             .expect(200)
             .end(function(err, res) {
 
@@ -105,7 +105,6 @@ describe('Testing Times Of Day', function() {
     it('Should validate session data(aggregated)', function(done) {
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         APP_ID = testUtils.get("APP_ID");
-        console.log('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=times-of-day&tod_type=[CLY]_session');
         request
             .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=times-of-day&tod_type=[CLY]_session')
             .expect(200)

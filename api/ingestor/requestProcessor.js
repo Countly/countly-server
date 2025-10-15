@@ -438,7 +438,12 @@ var processToDrill = async function(params, drill_updates, callback) {
                         }
                     }
                     else {
-                        tmpSegVal = currEvent.segmentation[segKey];
+                        if (typeof currEvent.segmentation[segKey] === "string") {
+                            tmpSegVal = common.encodeCharacters(currEvent.segmentation[segKey] + "");
+                        }
+                        else {
+                            tmpSegVal = currEvent.segmentation[segKey];
+                        }
                     }
                     dbEventObject[common.dbEventMap.segmentations] = dbEventObject[common.dbEventMap.segmentations] || {};
                     dbEventObject[common.dbEventMap.segmentations][segKeyAsFieldName] = tmpSegVal;

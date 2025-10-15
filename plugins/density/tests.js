@@ -136,6 +136,9 @@ describe('Testing Density metrics', function() {
                     setTimeout(done, 20 * testUtils.testScalingFactor);
                 });
         });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:deletionManagerJob", done);
+        });
     });
     describe('verify empty density', function() {
         it('should have no densities', function(done) {
