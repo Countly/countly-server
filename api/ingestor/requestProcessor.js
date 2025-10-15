@@ -821,7 +821,7 @@ const validateAppForWriteAPI = (params, done) => {
                                         }
                                         params.qstring.events.unshift({
                                             key: "[CLY]_session_begin",
-                                            dur: params.qstring.session_duration || 0,
+                                            dur: 0,
                                             count: 1,
                                             timestamp: params.time.mstimestamp,
                                             segmentation: {
@@ -1068,4 +1068,4 @@ const processRequest = (params) => {
 
 };
 
-module.exports = {processRequest: processRequest};
+module.exports = {processRequest: processRequest, processToDrill: processToDrill};

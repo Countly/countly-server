@@ -1654,7 +1654,7 @@ plugins.setConfigs("crashes", {
                                 if (common.drillDb) {
                                     common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + params.qstring.app_id).digest('hex')).remove({"sg.crash": group._id}, function() {});
                                     plugins.dispatch("/core/delete_granular_data", {
-                                        db: "drill",
+                                        db: "countly_drill",
                                         collection: "drill_events",
                                         query: { a: params.qstring.app_id + "", e: "[CLY]_crash", "n": group._id + "" }
                                     });

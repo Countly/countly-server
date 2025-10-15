@@ -838,7 +838,7 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     common.db.collection('app_user_merges').remove({'_id': {$regex: "^" + appId + "_.*"}}, function() {});
 
     //common.drillDb.collection("drill_events").remove({"a": appId}, function() {});
-    plugins.dispatch("/core/delete_granular_data", {query: {"a": appId + ""}, "db": "drill", "collection": "drill_events"}, function() {});
+    plugins.dispatch("/core/delete_granular_data", {query: {"a": appId + ""}, "db": "countly_drill", "collection": "drill_events"}, function() {});
     deleteAppLongTasks(appId);
     /**
     * Deletes all app's events
@@ -953,7 +953,7 @@ function deletePeriodAppData(appId, fromAppDelete, params, app) {
 
     plugins.dispatch("/core/delete_granular_data", {
         query: {"a": appId, "ts": {$lt: (oldestTimestampWanted * 1000)}},
-        db: "drill",
+        db: "countly_drill",
         collection: "drill_events"
     }, function() {});
     common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
