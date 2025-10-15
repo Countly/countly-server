@@ -1,3 +1,12 @@
+## Version 24.05.X
+Fixes:
+- [core] Implement go to link in notification
+
+Enterprise Fixes:
+- [users] Fix add/remove user to profile group
+- [users] Remove link to profile group page after removing user from group
+
+
 ## Version 24.05.42
 Fixes:
 - [core] Fix multiple ajax request in event selector
