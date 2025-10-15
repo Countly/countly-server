@@ -17,6 +17,10 @@ const RETRY_DELAY_MS = 30 * 60 * 1000; // 30m - delay before retrying a failed t
 const MAX_RETRIES = 3; // Max number of retries before marking a task as failed
 const VALIDATION_INTERVAL_MS = 3 * 60 * 1000; // 3m - interval between mutation status checks
 
+// Health check constants
+const CH_MAX_PARTS_PER_PARTITION = 1000; // threshold for maximum allowed parts per partition
+const CH_MAX_TOTAL_MERGETREE_PARTS = 100000; // threshold for maximum allowed total MergeTree parts
+
 const BATCH_LIMIT = 10; // Number of tasks to process in one run
 
 /** Class for the deletion manager job **/
@@ -58,6 +62,19 @@ class DeletionManagerJob extends Job {
         const now = Date.now();
         const batchId = common.db.ObjectID() + '';
         const summary = [];
+
+        try {
+            if (this.isClickhouseEnabled()) {
+                const pre = await this.shouldDeferDueToClickhousePressure();
+                if (pre && pre.defer) {
+                    log.d("Run deferred due to ClickHouse pressure", pre.metrics || {});
+                    return [{ status: "deferred_due_to_ch_pressure", metrics: pre.metrics }];
+                }
+            }
+        }
+        catch (e) {
+            log.e("Global CH precheck failed; proceeding", e?.message || e + "");
+        }
 
         // Reset stale tasks (running > 24h)
         await this.resetStaleTasks();
@@ -374,6 +391,48 @@ class DeletionManagerJob extends Job {
                 }
             );
         }
+    }
+
+    /**
+     * Fetches ClickHouse load metrics to determine if deletion should be deferred.
+     * @returns {Promise<Object|null>} Object with metrics or null if fetch failed
+     */
+    async getClickhouseLoadMetrics() {
+        if (!common.queryRunner || !clickHouseRunner || !clickHouseRunner.getClickhouseHealthMetrics) {
+            return null;
+        }
+        try {
+            const queryDef = {
+                name: 'GET_CH_HEALTH_METRICS',
+                adapters: {
+                    clickhouse: {
+                        handler: clickHouseRunner.getClickhouseHealthMetrics
+                    }
+                }
+            };
+            const res = await common.queryRunner.executeQuery(queryDef, {}, {});
+            return res || null;
+        }
+        catch (e) {
+            log.e('CH health metrics fetch failed', e?.message || e + "");
+            return null;
+        }
+    }
+
+    /**
+     * Fetches ClickHouse load metrics to determine if a task should be deferred.
+     * @returns {object} Whether to defer due to ClickHouse pressure
+     */
+    async shouldDeferDueToClickhousePressure() {
+        const m = await this.getClickhouseLoadMetrics();
+        if (!m) {
+            return { defer: false };
+        }
+        // Defer if max parts per partition or total parts over limits
+        if (m.max_parts_per_partition >= CH_MAX_PARTS_PER_PARTITION || m.total_merge_tree_parts >= CH_MAX_TOTAL_MERGETREE_PARTS) {
+            return { defer: true, metrics: m, reason: 'threshold_exceeded' };
+        }
+        return { defer: false, metrics: m };
     }
 }
 
