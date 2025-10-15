@@ -1,67 +1,209 @@
 <div v-bind:class="[componentId, 'clyd-widget']">
-    <div class="bu-level" v-if="!showZoom">
-        <div class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0">
-            <clyd-widget-title class="bu-level-item" :title="title" :labels="metricLabels"></clyd-widget-title>
+    <div
+        v-if="!showZoom"
+        class="bu-level"
+    >
+        <div
+            class="bu-level-left bu-is-flex-shrink-1"
+            style="min-width: 0"
+        >
+            <clyd-widget-title
+                class="bu-level-item"
+                :labels="metricLabels"
+                :title="title"
+            />
         </div>
-        <div class="bu-level-right" v-if="isAllowed">
+        <div
+            v-if="isAllowed"
+            class="bu-level-right"
+        >
             <div class="bu-level-item">
-                <clyd-bucket v-if="showBuckets" :widget-id="data._id" v-model="selectedBucket"></clyd-bucket>
+                <clyd-bucket
+                    v-if="showBuckets"
+                    v-model="selectedBucket"
+                    :widget-id="data._id"
+                />
             </div>
             <div class="bu-level-item">
-               <cly-more-options @command="onWidgetCommand">
-                    <el-dropdown-item class="dashboard-more-options" command="edit">{{i18n('common.edit')}}</el-dropdown-item>
-                    <el-dropdown-item class="dashboard-more-options" command="delete">{{i18n('common.delete')}}</el-dropdown-item>
-                    <el-dropdown-item class="dashboard-more-options" v-if="data.visualization === 'time-series' || data.visualization === 'bar-chart'" command="zoom">{{i18n('common.zoom-in')}}</el-dropdown-item>
+                <cly-more-options @command="onWidgetCommand">
+                    <el-dropdown-item
+                        class="dashboard-more-options"
+                        command="edit"
+                    >
+                        {{ i18n('common.edit') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                        class="dashboard-more-options"
+                        command="delete"
+                    >
+                        {{ i18n('common.delete') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                        v-if="data.visualization === 'time-series' || data.visualization === 'bar-chart'"
+                        class="dashboard-more-options"
+                        command="zoom"
+                    >
+                        {{ i18n('common.zoom-in') }}
+                    </el-dropdown-item>
                     <div v-if="data.visualization === 'time-series'">
-                    <hr class="dashboard-more-options__divider">
-                    <el-dropdown-item class="dashboard-more-options" command="add">{{i18n('notes.add-note')}}</el-dropdown-item>
-                    <el-dropdown-item class="dashboard-more-options" command="manage">{{i18n('notes.manage-notes')}}</el-dropdown-item>
-                    <el-dropdown-item class="dashboard-more-options" command="show">{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>
-                    </div>    
+                        <hr class="dashboard-more-options__divider">
+                        <el-dropdown-item
+                            class="dashboard-more-options"
+                            command="add"
+                        >
+                            {{ i18n('notes.add-note') }}
+                        </el-dropdown-item>
+                        <el-dropdown-item
+                            class="dashboard-more-options"
+                            command="manage"
+                        >
+                            {{ i18n('notes.manage-notes') }}
+                        </el-dropdown-item>
+                        <el-dropdown-item
+                            class="dashboard-more-options"
+                            command="show"
+                        >
+                            {{ !areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes") }}
+                        </el-dropdown-item>
+                    </div>
                 </cly-more-options>
             </div>
         </div>
     </div>
-	<cly-chart-zoom ref="zoomRef" v-if="showZoom" @zoom-reset="onZoomReset" :echartRef="$refs.echartRef.$refs.echarts" class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external"></cly-chart-zoom>
-    <clyd-primary-legend :custom-period="data.custom_period"></clyd-primary-legend>
-    <div class="clyd-widget__content" v-loading="loading" :class="'clyd-widget__content--vis-' + data.visualization" @mousedown.stop>
-		<template v-if="!loading">
-            <cly-chart-time v-if="data.visualization === 'time-series' && !data.breakdowns" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="timelineGraph.lineOptions" height="auto" skin="full" :legend="{show: false}" :category="data.data_type || data.feature" :sub-category="data.feature === 'events' ? data.events : []">
-            </cly-chart-time>
-            <div v-else-if="data.visualization === 'number'" >
-                <h1 class="bu-pb-2">{{formatNumber(number.total)}}</h1>
-                <p v-if="number.trend== 'u'" class="trend-up bu-p-0 bu-m-0">
-                    <i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2"></i><span>{{number.change}}</span>
-                    <span class="text-medium ">{{i18n('dashboards.compared-to-prev-period')}}</span>
+    <cly-chart-zoom
+        v-if="showZoom"
+        class="bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end bu-m-0 cly-vue-zoom__external"
+        :echartRef="$refs.echartRef.$refs.echarts"
+        ref="zoomRef"
+        @zoom-reset="onZoomReset"
+    />
+    <clyd-primary-legend :custom-period="data.custom_period" />
+    <div
+        v-loading="loading"
+        class="clyd-widget__content"
+        :class="'clyd-widget__content--vis-' + data.visualization"
+        @mousedown.stop
+    >
+        <template v-if="!loading">
+            <cly-chart-time
+                v-if="data.visualization === 'time-series' && !data.breakdowns"
+                :category="data.data_type || data.feature"
+                height="auto"
+                :legend="{ show: false }"
+                :option="timelineGraph.lineOptions"
+                ref="echartRef"
+                :showDownload="false"
+                :showToggle="false"
+                :showZoom="false"
+                skin="full"
+                :subCategory="data.feature === 'events' ? data.events : []"
+                @datazoom="onDataZoom"
+                @patchzoom="onPatchZoom"
+            />
+            <div v-else-if="data.visualization === 'number'">
+                <h1 class="bu-pb-2">
+                    {{ formatNumber(number.total) }}
+                </h1>
+                <p
+                    v-if="number.trend== 'u'"
+                    class="trend-up bu-p-0 bu-m-0"
+                >
+                    <i class="cly-trend-up-icon ion-android-arrow-up bu-ml-2" /><span>{{ number.change }}</span>
+                    <span class="text-medium">{{ i18n('dashboards.compared-to-prev-period') }}</span>
                 </p>
-                <p v-if="number.trend == 'd'" class="trend-down bu-p-0 bu-m-0">
-                    <i class="cly-trend-down-icon ion-android-arrow-down bu-ml-2"></i><span>{{number.change}}</span>
-                    <span class="text-medium ">{{i18n('dashboards.compared-to-prev-period')}}</span>
+                <p 
+                    v-if="number.trend == 'd'"
+                    class="trend-down bu-p-0 bu-m-0"
+                >
+                    <i class="cly-trend-down-icon ion-android-arrow-down bu-ml-2" /><span>{{ number.change }}</span>
+                    <span class="text-medium">{{ i18n('dashboards.compared-to-prev-period') }}</span>
                 </p>
             </div>
-            <div v-else-if="data.visualization === 'table'" style="width: 100%; height: 100%;">
-                <cly-datatable-n v-if="getTableData.length" :rows="getTableData" :hideTop="true" style="width: 100%; height: 100%;">
+            <div
+                v-else-if="data.visualization === 'table'"
+                style="width: 100%; height: 100%;"
+            >
+                <cly-datatable-n
+                    v-if="getTableData.length"
+                    hideTop
+                    :rows="getTableData"
+                    style="width: 100%; height: 100%;"
+                >
                     <template v-slot="scope">
-                        <el-table-column  v-for="(item, index) in tableStructure" :key="index" :sortable="false" :prop="item.prop" :label="item.title">
+                        <el-table-column
+                            v-for="(item, index) in tableStructure"
+                            :key="index"
+                            :sortable="false"
+                            :prop="item.prop"
+                            :label="item.title"
+                        >
                             <template slot-scope="scope">
                                 <span v-if="item.type === 'number'">
-                                    {{formatNumber(scope.row[item.prop] || 0)}}
+                                    {{ formatNumber(scope.row[item.prop] || 0) }}
                                 </span>
                                 <span v-else>
-                                    {{scope.row[item.prop]}}
+                                    {{ scope.row[item.prop] }}
                                 </span>
                             </template>
                         </el-table-column>
                     </template>
                 </cly-datatable-n>
-                <cly-blank :classes="{'bu-p-0': true}" v-else></cly-blank>
+                <cly-blank
+                    v-else
+                    :classes="{ 'bu-p-0': true }"
+                />
             </div>
-            <cly-chart-bar v-else-if="data.visualization === 'bar-chart'" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" :option="stackedBarOptions" height="auto" skin="full" :legend="{show: false}" :patch-x-axis="stackedBarOptions.patchXAxis !== undefined ? stackedBarOptions.patchXAxis : true"></cly-chart-bar>
-            <cly-chart-bar v-else-if="data.visualization === 'time-series'" :valFormatter="valFormatter" :option="stackedBarTimeSeriesOptions" :patch-x-axis="false" :no-hourly="true" category="user-analytics" :show-zoom="false" @patchzoom="onPatchZoom" @datazoom="onDataZoom" ref="echartRef"  :showDownload="false" :showToggle="false" height="auto" skin="full"></cly-chart-bar>
-            <cly-chart-pie v-else-if="data.visualization === 'pie-chart'" :showZoom="false" :showDownload="false" :showToggle="false" :option="pieGraph" height="auto" skin="full" :legend="{show: false}"></cly-chart-pie>
+            <cly-chart-bar
+                v-else-if="data.visualization === 'bar-chart'"
+                ref="echartRef"
+                height="auto"
+                :legend="{show: false}"
+                :option="stackedBarOptions"
+                :patchXAxis="stackedBarOptions.patchXAxis !== undefined ? stackedBarOptions.patchXAxis : true"
+                :showDownload="false"
+                :showToggle="false"
+                :showZoom="false"
+                skin="full"
+                @datazoom="onDataZoom"
+                @patchzoom="onPatchZoom"
+            />
+            <cly-chart-bar
+                v-else-if="data.visualization === 'time-series'"
+                category="user-analytics"
+                height="auto"
+                ref="echartRef"
+                noHourly
+                :option="stackedBarTimeSeriesOptions"
+                :patchXAxis="false"
+                :showDownload="false"
+                :showToggle="false"
+                :showZoom="false"
+                skin="full"
+                :valFormatter="valFormatter"
+                @datazoom="onDataZoom"
+                @patchzoom="onPatchZoom"
+            />
+            <cly-chart-pie
+                v-else-if="data.visualization === 'pie-chart'"
+                height="auto"
+                :legend="{ show: false }"
+                :option="pieGraph"
+                :showDownload="false"
+                :showZoom="false"
+                :showToggle="false"
+                skin="full"
+            />
         </template>
-	</div>
-    <drawer :settings="drawerSettingsForWidgets" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>
-    <clyd-secondary-legend :apps="data.apps" :labels="legendLabels" v-if="data.visualization === 'time-series' && !data.breakdowns"></clyd-secondary-legend>
-    <clyd-widget-apps :apps="data.apps"></clyd-widget-apps>
+    </div>
+    <drawer
+        :controls="drawers.annotation"
+        :settings="drawerSettingsForWidgets"
+        @cly-refresh="refresh"
+    />
+    <clyd-secondary-legend
+        v-if="data.visualization === 'time-series' && !data.breakdowns"
+        :apps="data.apps"
+        :labels="legendLabels"
+    />
+    <clyd-widget-apps :apps="data.apps" />
 </div>
