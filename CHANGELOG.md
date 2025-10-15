@@ -4,6 +4,12 @@ Enterprise Fixes:
 - [users] Fix add/remove user to profile group
 - [users] Remove link to profile group page after removing user from group
 
+Dependencies
+- Bump lint-staged from 16.2.3 to 16.2.4
+- Bump @faker-js/faker from 10.0.0 to 10.1.0 in /ui-tests
+- Bump puppeteer from 24.23.0 to 24.24.1
+- Bump countly-sdk-nodejs from 24.10.2 to 24.10.3
+
 ## Version 25.03.23
 Fixes:
 - [events] Entries in the event list are now sorted alphabetically
