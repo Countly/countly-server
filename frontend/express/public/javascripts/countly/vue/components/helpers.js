@@ -1036,11 +1036,13 @@
     Vue.component("cly-notification", countlyBaseComponent.extend({
         template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
                         '<div class="bu-is-flex bu-is-justify-content-space-between bu-p-3">\n' +
-                            '<div class="bu-is-flex">\n' +
+                            '<div class="bu-is-flex" style="width:100%">\n' +
                                 '<img data-test-id="cly-notification-img" :src="image" class="alert-image bu-mr-3">\n' +
-                                '<slot><span class="alert-text" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
+                                '<div :style="dynamicStyle">\n' +
+                                    '<slot><span class="alert-text" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
+                                    '<div v-if="goTo.title" class="bu-is-flex cursor-pointer"><a class="bu-level-item bu-has-text-link bu-has-text-weight-medium" @click="goToUrl">{{goTo.title}}</a></div>' +
+                                '</div>\n' +
                             '</div>\n' +
-                            '<div v-if="goTo.title" class="bu-is-flex bu-ml-auto"><a class="bu-level-item bu-has-text-link bu-has-text-weight-medium" @click="goToUrl">{{goTo.title}}</a></div>' +
                             '<div v-if="closable"  class="" >\n' +
                                 '<div v-if="size==\'full\'" @click="closeModal" class=" bu-ml-2" >\n' +
                                     '<slot name="close"><i data-test-id="cly-notification-full-size-close-icon" class="el-icon-close"></i></slot>\n' +
@@ -1069,6 +1071,7 @@
                 type: Object
             },
             customWidth: { default: "", type: String },
+            toast: { default: false, type: Boolean },
         },
         data: function() {
             return {
@@ -1115,6 +1118,20 @@
                     return this.text;
                 }
                 return "";
+            },
+            dynamicStyle: function() {
+                let style = {
+                    display: 'flex',
+                    'flex-direction': this.toast ? 'column' : 'row',
+                    width: '100%'
+                };
+                if (this.toast) {
+                    style.gap = '5px';
+                }
+                else {
+                    style['justify-content'] = 'space-between';
+                }
+                return style;
             }
         },
         methods: {
