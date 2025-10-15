@@ -21,7 +21,7 @@
           type="expand" min-width="50">
           <template v-slot="props">
             <cly-section>
-              <condition-stats :test-id="'datatable-remote-config-' + scope.$index" :parameter="props.row"></condition-stats>
+              <condition-stats :test-id="'datatable-remote-config-' + props.$index" :parameter="props.row"></condition-stats>
             </cly-section>
           </template>
         </el-table-column>

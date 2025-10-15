@@ -57,6 +57,9 @@ module.exports.TIME_UNITS = {
     HOUR: 'hour',
     DAY: 'day',
     MONTH: 'month',
+    DAILY: 'daily',
+    WEEKLY: 'weekly',
+    MONTHLY: 'monthly'
 };
 
 module.exports.LOGICAL_OPERATORS = {
@@ -159,7 +162,6 @@ module.exports.SETTINGS = {
 
     FRONTED: {
         CODE: 'Code',
-        COUNTLY_TRACKING: 'Countly Tracking',
         OFFLINE_MODE: 'Offline Mode',
         PRODUCTION: 'Production',
         SESSION_TIMEOUT: 'Session Timeout',
@@ -334,4 +336,11 @@ module.exports.USER_TYPE = {
     USER: 'User',
     ADMIN: 'Admin',
     GLOBAL_USER: 'Global Admin',
+};
+
+module.exports.VISUALIZATION_TYPE = {
+    TIME_SERIES: 'Time Series',
+    BAR_CHART: 'Bar Chart',
+    NUMBER: 'Number',
+    TABLE: 'Table'
 };

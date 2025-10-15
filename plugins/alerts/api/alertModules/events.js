@@ -2,7 +2,6 @@
  * @typedef {import('../parts/common-lib.js').App} App
  */
 
-const crypto = require('crypto');
 const log = require('../../../../api/utils/log.js')('alert:events');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
@@ -100,14 +99,10 @@ async function getEventMetricByDate(app, event, metric, date, period, segments) 
     if (segments) {
         segmentKeys = Object.keys(segments);
     }
-
-    const collectionName = "events" + crypto
-        .createHash('sha1')
-        .update(event + app._id.toString())
-        .digest('hex');
-
-    const records = await common.db.collection(collectionName)
+    const records = await common.db.collection("events_data")
         .find({
+            a: app._id.toString(),
+            e: event,
             m: monthFilter,
             s: { $in: segmentKeys },
         })
@@ -161,11 +156,13 @@ async function getEventMetricByDate(app, event, metric, date, period, segments) 
 }
 /*
 (async function() {
+    if (!require("cluster").isPrimary) {
+        return;
+    }
     await new Promise(res => setTimeout(res, 2000));
-    const app = { _id: "65c1f875a12e98a328d5eb9e", timezone: "Europe/Istanbul" };
-    const date = new Date("2024-01-02T12:47:19.247Z");
-    const date2 = new Date("2024-01-03T13:47:19.247Z");
-    const event = "Checkout";
+    const app = { _id: "67fff00d901abe2f8cc57646", timezone: "Europe/Istanbul" };
+    const date = new Date("2025-02-02T12:47:19.247Z");
+    const event = "Product Viewed";
     const prop = "c";
 
     const hourly = await getEventMetricByDate(app, event, prop, date, "hourly");

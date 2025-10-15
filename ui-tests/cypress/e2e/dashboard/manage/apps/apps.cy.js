@@ -97,6 +97,7 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.clickDeleteAppOption();
         appHelper.verifyDeleteAppPopupElements();
         appHelper.clickYesDeleteButton();
+        navigationHelpers.goToApplicationsPage();
         appHelper.searchApp(app.appName);
         appHelper.verifyAppShouldBeDeleted();
 

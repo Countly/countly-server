@@ -2616,7 +2616,8 @@
     Vue.component("cly-chart-time", BaseLineChart.extend({
         data: function() {
             return {
-                forwardedSlots: ["chart-left", "chart-right"]
+                forwardedSlots: ["chart-left", "chart-right"],
+                chartType: 'line'
             };
         },
         props: {
@@ -2733,6 +2734,7 @@
                 else if (!this.areNotesHidden) {
                     this.getGraphNotes();
                 }
+                this.chartType = this.seriesOptions?.type || 'line';
             },
             notesVisibility: function() {
                 if (!this.areNotesHidden) {
@@ -2745,7 +2747,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                        <chart-header :test-id="testId + \'-header\'" ref="header" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
+                        <chart-header :test-id="testId + \'-header\'" ref="header" :chart-type="this.chartType" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\

@@ -341,33 +341,42 @@
                         options.onOverrideResponse(context, res);
                     }
                     var convertedResponse = _dataTableAdapters.toStandardResponse(res, requestOptions);
-                    if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
-                        convertedResponse.echo >= context.state[echoField]) {
-
-                        // Generic cursor pagination response handling
-                        if (convertedResponse.hasNextPage !== undefined || convertedResponse.nextCursor !== undefined) {
-
-                            // Update the params with cursor information
-                            var cursorParams = {};
-                            if (convertedResponse.hasNextPage !== undefined) {
-                                cursorParams.hasNextPage = convertedResponse.hasNextPage;
-                            }
-                            if (convertedResponse.nextCursor !== undefined) {
-                                cursorParams.nextCursor = convertedResponse.nextCursor;
-                            }
-                            if (convertedResponse.paginationMode !== undefined) {
-                                cursorParams.paginationMode = convertedResponse.paginationMode;
-                            }
-
-                            // Update the params in the state
-                            context.commit(_capitalized("set", paramsKey), Object.assign({}, context.state[paramsField], cursorParams));
-                        }
-
-                        if (typeof options.onReady === 'function') {
-                            convertedResponse.rows = options.onReady(context, convertedResponse.rows);
+                    if (res.task_id) {
+                        if (typeof options.onTask === 'function') {
+                            options.onTask(context, res.task_id);
                         }
                         context.commit(_capitalized("set", resourceName), convertedResponse);
                         context.commit(_capitalized("set", lastSuccessfulRequestKey), requestOptions);
+                    }
+                    else {
+                        if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
+                            convertedResponse.echo >= context.state[echoField]) {
+
+                            // Generic cursor pagination response handling
+                            if (convertedResponse.hasNextPage !== undefined || convertedResponse.nextCursor !== undefined) {
+
+                                // Update the params with cursor information
+                                var cursorParams = {};
+                                if (convertedResponse.hasNextPage !== undefined) {
+                                    cursorParams.hasNextPage = convertedResponse.hasNextPage;
+                                }
+                                if (convertedResponse.nextCursor !== undefined) {
+                                    cursorParams.nextCursor = convertedResponse.nextCursor;
+                                }
+                                if (convertedResponse.paginationMode !== undefined) {
+                                    cursorParams.paginationMode = convertedResponse.paginationMode;
+                                }
+
+                                // Update the params in the state
+                                context.commit(_capitalized("set", paramsKey), Object.assign({}, context.state[paramsField], cursorParams));
+                            }
+
+                            if (typeof options.onReady === 'function') {
+                                convertedResponse.rows = options.onReady(context, convertedResponse.rows);
+                            }
+                            context.commit(_capitalized("set", resourceName), convertedResponse);
+                            context.commit(_capitalized("set", lastSuccessfulRequestKey), requestOptions);
+                        }
                     }
                 })
                 .catch(function(err) {
