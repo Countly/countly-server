@@ -13,35 +13,11 @@ var pluginOb = {},
     {getTotals, getUniqueCount, getGraphValues} = require('./queries/views.js');
 var calculatedDataManager = require('../../../api/utils/calculatedDataManager.js');
 
-
 const viewsUtils = require("./parts/viewsUtils.js");
 const FEATURE_NAME = 'views';
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 //keys to not use as segmentation
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
-    plugins.setConfigs("views", {
-        view_limit: 50000,
-        view_name_limit: 128,
-        segment_value_limit: 10,
-        segment_limit: 100
-    });
-
-    plugins.internalDrillEvents.push("[CLY]_view");
-    plugins.internalDrillEvents.push("[CLY]_action");
-
-    plugins.register("/master", function() {
-        common.dbUniqueMap.users.push("vc");
-        //Ensure nesesarry indexes
-        common.db.collection("app_userviews").createIndex({a: 1});
-        common.db.collection("app_viewsmeta").createIndex({a: 1});
-        common.db.collection("app_viewsmeta").createIndex({url: 1});
-        common.db.collection("app_viewdata").createIndex({vw: 1});
-    });
-
     plugins.register("/i/user_merge", function(ob) {
         var newAppUser = ob.newAppUser;
         var oldAppUser = ob.oldAppUser;
