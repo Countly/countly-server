@@ -37,7 +37,7 @@
                 types: Object.keys(app.appTypes),
                 appTemplates: appTemplates,
                 populatorProgress: 0,
-                populatorMaxTime: 30,
+                populatorMaxTime: 60,
                 isPopulatorFinished: false,
                 isCountlyEE: countlyGlobal.plugins.includes('drill'),
                 selectedAppTemplate: null,
@@ -99,7 +99,6 @@
                 countlyPopulator.setStartTime(countlyCommon.periodObj.start / 1000);
                 countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
                 countlyPopulator.setSelectedTemplate(selectedAppTemplate);
-                countlyPopulator.setSelectedFeatures("all");
                 countlyPopulator.getTemplate(selectedAppTemplate, function(template) {
                     countlyPopulator.generateUsers(10, template);
                     self.populatorProgress = 0;
@@ -225,6 +224,7 @@
                 };
 
                 countlyPlugins.updateConfigs(configs);
+                // go home
                 window.location.href = '#/home';
                 window.location.reload();
             },
