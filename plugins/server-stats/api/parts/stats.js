@@ -228,6 +228,7 @@ function punchCard(db, filter, options) {
  *  @param {object} options - array with periods
  *  @param {boolean} options.monthlyBreakdown - if true, will calculate monthly data points breakdown for all apps (used to get license metric)
  *  @param {string} options.license_hosting - client hosting type, could be countly hosted or self hosted. This will determine how consolidated data points should be added to total data points
+ *  @param {boolean} options.dailyDates - array of dates in YYYY:M:D format for daily data points (used to get data points for last 30 days)
  *  @param {function} callback - callback
  */
 function fetchDatapoints(db, filter, options, callback) {
@@ -264,6 +265,22 @@ function fetchDatapoints(db, filter, options, callback) {
                     }
                     else {
                         acc[current.m] = dp;
+                    }
+
+                    if (options.dailyDates && options.dailyDates.length && current.m && (!/^\[CLY\]_consolidated/.test(current._id) || options.license_hosting === 'Countly-Hosted')) {
+                        if (!acc.daily) {
+                            acc.daily = {};
+                        }
+                        options.dailyDates.forEach(date => {
+                            if (date.startsWith(current.m)) {
+                                var day = date.split(":")[2];
+                                if (current.d && current.d[day] && Object.keys(current.d[day]).length) {
+                                    for (var hour in current.d[day]) {
+                                        acc.daily[date] = (acc.daily[date] || 0) + (current.d[day][hour].e || 0) + (current.d[day][hour].s || 0);
+                                    }
+                                }
+                            }
+                        });
                     }
 
                     return acc;

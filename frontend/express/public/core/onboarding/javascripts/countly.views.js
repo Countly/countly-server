@@ -37,7 +37,7 @@
                 types: Object.keys(app.appTypes),
                 appTemplates: appTemplates,
                 populatorProgress: 0,
-                populatorMaxTime: 60,
+                populatorMaxTime: 30,
                 isPopulatorFinished: false,
                 isCountlyEE: countlyGlobal.plugins.includes('drill'),
                 selectedAppTemplate: null,
@@ -99,6 +99,7 @@
                 countlyPopulator.setStartTime(countlyCommon.periodObj.start / 1000);
                 countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
                 countlyPopulator.setSelectedTemplate(selectedAppTemplate);
+                countlyPopulator.setSelectedFeatures("all");
                 countlyPopulator.getTemplate(selectedAppTemplate, function(template) {
                     countlyPopulator.generateUsers(10, template);
                     self.populatorProgress = 0;
@@ -178,9 +179,8 @@
         template: CV.T('/core/onboarding/templates/consent.html'),
         data: function() {
             return {
-                isCountlyHosted: countlyGlobal.plugins.includes('tracker'),
+                isCountlyHosted: true,
                 newConsent: {
-                    countly_tracking: true,
                     countly_newsletter: true,
                 },
             };
@@ -225,43 +225,8 @@
                 };
 
                 countlyPlugins.updateConfigs(configs);
-                var domain = countlyGlobal.countly_domain || window.location.origin;
-
-                try {
-                    // try to extract hostname from full domain url
-                    var urlObj = new URL(domain);
-                    domain = urlObj.hostname;
-                }
-                catch (_) {
-                    // do nothing, domain from config will be used as is
-                }
-
-                var statsUrl = 'https://stats.count.ly/i';
-
-                try {
-                    var uObj = new URL(countlyGlobal.frontend_server);
-                    uObj.pathname = '/i';
-                    statsUrl = uObj.href;
-                }
-                catch (_) {
-                    // do nothing, statsUrl will be used as is
-                }
-
-                CV.$.ajax({
-                    type: 'GET',
-                    url: statsUrl,
-                    data: {
-                        consent: JSON.stringify({countly_tracking: doc.countly_tracking}),
-                        app_key: countlyGlobal.frontend_app,
-                        device_id: (window.Countly && window.Countly.device_id) || domain,
-                    },
-                    dataType: 'json',
-                    complete: function() {
-                        // go home
-                        window.location.href = '#/home';
-                        window.location.reload();
-                    }
-                });
+                window.location.href = '#/home';
+                window.location.reload();
             },
         }
     });
@@ -270,7 +235,7 @@
         template: CV.T('/core/onboarding/templates/consent.html'),
         data: function() {
             return {
-                isCountlyHosted: countlyGlobal.plugins.includes('tracker'),
+                isCountlyHosted: true,
                 newConsent: {
                     countly_newsletter: true,
                 },
@@ -322,88 +287,6 @@
         }
     });
 
-    var notRespondedConsentView = CV.views.create({
-        template: CV.T('/core/onboarding/templates/consent.html'),
-        data: function() {
-            return {
-                isCountlyHosted: countlyGlobal.plugins.includes('tracker'),
-                newConsent: {
-                    countly_tracking: null,
-                },
-            };
-        },
-        mounted: function() {
-            this.$store.dispatch('countlyOnboarding/fetchConsentItems');
-        },
-        computed: {
-            consentItems: function() {
-                return this.$store.getters['countlyOnboarding/consentItems']
-                    .filter(function(item) {
-                        return item.type === 'tracking';
-                    });
-            },
-        },
-        methods: {
-            decodeHtmlEntities: function(inp) {
-                var el = document.createElement('p');
-                el.innerHTML = inp;
-
-                var result = el.textContent || el.innerText;
-                el = null;
-
-                return result;
-            },
-            handleSubmit: function(doc) {
-                var configs = {
-                    frontend: doc,
-                };
-
-                if (this.consentItems.length === 0) {
-                    configs.frontend.countly_tracking = false;
-                }
-
-                countlyPlugins.updateConfigs(configs);
-                var domain = countlyGlobal.countly_domain || window.location.origin;
-
-                try {
-                    // try to extract hostname from full domain url
-                    var urlObj = new URL(domain);
-                    domain = urlObj.hostname;
-                }
-                catch (_) {
-                    // do nothing, domain from config will be used as is
-                }
-
-                var statsUrl = 'https://stats.count.ly/i';
-
-                try {
-                    var uObj = new URL(countlyGlobal.frontend_server);
-                    uObj.pathname = '/i';
-                    statsUrl = uObj.href;
-                }
-                catch (_) {
-                    // do nothing, statsUrl will be used as is
-                }
-
-                CV.$.ajax({
-                    type: 'GET',
-                    url: statsUrl,
-                    data: {
-                        consent: JSON.stringify({countly_tracking: doc.countly_tracking}),
-                        app_key: countlyGlobal.frontend_app,
-                        device_id: (window.Countly && window.Countly.device_id) || domain,
-                    },
-                    dataType: 'json',
-                    complete: function() {
-                        // go home
-                        window.location.href = '#/home';
-                        window.location.reload();
-                    }
-                });
-            },
-        }
-    });
-
     app.route('/initial-setup', 'initial-setup', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: appSetupView,
@@ -414,13 +297,6 @@
     app.route('/initial-consent', 'initial-consent', function() {
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: consentView,
-            vuex: [{ clyModel: countlyOnboarding }],
-        }));
-    });
-
-    app.route('/not-responded-consent', 'not-responded-consent', function() {
-        this.renderWhenReady(new CV.views.BackboneWrapper({
-            component: notRespondedConsentView,
             vuex: [{ clyModel: countlyOnboarding }],
         }));
     });
@@ -469,12 +345,7 @@
         }
     });
 
-    if (typeof countlyGlobal.countly_tracking !== 'boolean' && isGlobalAdmin && !countlyGlobal.plugins.includes('tracker')) {
-        if (Backbone.history.fragment !== '/not-responded-consent' && !/initial-setup|initial-consent/.test(window.location.hash)) {
-            app.navigate("/not-responded-consent", true);
-        }
-    }
-    else if (hasNewsLetter && (typeof countlyGlobal.member.subscribe_newsletter !== 'boolean' && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0))) {
+    if (hasNewsLetter && (typeof countlyGlobal.member.subscribe_newsletter !== 'boolean' && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0))) {
         if (Backbone.history.fragment !== '/not-subscribed-newsletter' && !/initial-setup|initial-consent/.test(window.location.hash)) {
             app.navigate("/not-subscribed-newsletter", true);
         }

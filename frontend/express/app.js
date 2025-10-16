@@ -57,7 +57,8 @@ var versionInfo = require('./version.info'),
     argon2 = require('argon2'),
     countlyCommon = require('../../api/lib/countly.common.js'),
     timezones = require('../../api/utils/timezones.js').getTimeZones,
-    { validateCreate } = require('../../api/utils/rights.js');
+    { validateCreate } = require('../../api/utils/rights.js'),
+    tracker = require('../../api/parts/mgmt/tracker.js');
 
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
@@ -115,20 +116,8 @@ plugins.setConfigs("frontend", {
     session_timeout: 30,
     use_google: true,
     code: true,
-    offline_mode: false,
-    self_tracking: "",
+    offline_mode: false
 });
-
-if (!plugins.isPluginEnabled('tracker')) {
-    plugins.setConfigs('frontend', {
-        countly_tracking: null,
-    });
-}
-else {
-    plugins.setConfigs('frontend', {
-        countly_tracking: true,
-    });
-}
 
 plugins.setUserConfigs("frontend", {
     production: false,
@@ -170,20 +159,12 @@ process.on('unhandledRejection', (reason, p) => {
     }
 });
 
-if (countlyConfig.web && countlyConfig.web.track === "all") {
-    countlyConfig.web.track = null;
-}
-
-var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
-
 Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_fs")]).then(function(dbs) {
     var countlyDb = dbs[0];
     //reference for consistency between app and api processes
     membersUtility.db = common.db = countlyDb;
     countlyFs.setHandler(dbs[1]);
 
-    //checking remote configuration
-    membersUtility.recheckConfigs(countlyConfigOrig, countlyConfig);
     /**
     * Create sha1 hash string
     * @param {string} str - string to hash
@@ -396,13 +377,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     };
 
     plugins.loadConfigs(countlyDb, function() {
+        tracker.enable();
         curTheme = plugins.getConfig("frontend").theme;
         app.loadThemeFiles(curTheme);
         app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
-
-        if (typeof plugins.getConfig('frontend').countly_tracking !== 'boolean' && plugins.isPluginEnabled('tracker')) {
-            plugins.updateConfigs(countlyDb, 'frontend', { countly_tracking: true });
-        }
     });
 
     app.engine('html', require('ejs').renderFile);
@@ -805,11 +783,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         res.send(plugins.getConfig("security").robotstxt);
     });
 
-    app.get(countlyConfig.path + '/configs', function(req, res) {
-        membersUtility.recheckConfigs(countlyConfigOrig, countlyConfig);
-        res.send("Success");
-    });
-
     app.get(countlyConfig.path + '/session', function(req, res, next) {
         if (req.session.auth_token) {
             authorize.verify_return({
@@ -902,7 +875,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
         var configs = plugins.getConfig("frontend", member.settings),
-            countly_tracking = plugins.isPluginEnabled('tracker') ? true : plugins.getConfig('frontend').countly_tracking,
             countly_domain = plugins.getConfig('api').domain,
             licenseNotification, licenseError;
         configs.export_limit = plugins.getConfig("api").export_limit;
@@ -976,9 +948,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     timezones: timezones,
                     countlyTypeName: COUNTLY_NAMED_TYPE,
                     countlyTypeTrack: COUNTLY_TRACK_TYPE,
-                    countly_tracking,
                     countly_domain,
-                    frontend_app: versionInfo.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',
+                    frontend_app: versionInfo.frontend_app || '9c28c347849f2c03caf1b091ec7be8def435e85e',
                     frontend_server: versionInfo.frontend_server || 'https://stats.count.ly/',
                     usermenu: {
                         feedbackLink: COUNTLY_FEEDBACK_LINK,
@@ -998,7 +969,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     defaultApp: defaultApp,
                     member: member,
                     intercom: countlyConfig.web.use_intercom,
-                    track: countlyConfig.web.track || false,
                     installed: req.session.install || false,
                     cpus: require('os').cpus().length,
                     countlyVersion: req.countly.version,
