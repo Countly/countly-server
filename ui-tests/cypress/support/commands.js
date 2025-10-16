@@ -7,6 +7,13 @@ Cypress.Commands.add("typeInput", (element, tag) => {
     cy.getElement(element).clear().type(tag);
 });
 
+Cypress.Commands.add("typeInputWithIndex", (element, tag, { index = 0, force = false } = {}) => {
+    cy.getElement(element)
+        .eq(index)
+        .clear({ force })
+        .type(`${tag}{enter}`, { force });
+});
+
 Cypress.Commands.add("clearInput", (element) => {
     cy.getElement(element).clear();
 });
@@ -55,6 +62,16 @@ Cypress.Commands.add("selectCheckboxOption", (element, ...options) => {
     for (var i = 0; i < options.length; i++) {
         cy.clickOption('.el-checkbox__label', options[i]);
     }
+
+    cy
+        .elementExists(`${element}-select-x-confirm-button`)
+        .then((isExists) => {
+            if (isExists) {
+                cy.clickElement(`${element}-select-x-confirm-button`);
+
+            }
+        });
+
     cy.clickBody();
 });
 
@@ -204,6 +221,18 @@ Cypress.Commands.add('checkPaceActive', () => {
                 cy.shouldNotExist('.pace-active');
             }
         });
+});
+
+Cypress.Commands.add("scrollPageSlightly", (element = '.main-view', index = 0) => {
+    cy.get(element).eq(index).then(($el) => {
+        const currentScroll = $el[0].scrollTop;
+        const newScroll = currentScroll + 550;
+
+        cy.wrap($el).scrollTo(0, newScroll, {
+            duration: 1000,
+            ensureScrollable: false,
+        });
+    });
 });
 
 Cypress.Commands.add("scrollPageToBottom", (element = '.main-view', index = 0) => {

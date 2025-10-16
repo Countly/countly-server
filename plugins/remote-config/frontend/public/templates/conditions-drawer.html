@@ -5,12 +5,13 @@
   :title="title"
   ref="clyDrawer"
   :saveButtonLabel="saveButtonLabel"
-  v-bind="controls">
+  v-bind="controls" test-id="condition-drawer">
   <template v-slot:default="drawerScope">
     <cly-form-step id="conditions-drawer">
       <div class="cly-vue-drawer-step__section">
-        <cly-form-field name="condition-name" v-slot="validation" :subheading="i18n('placeholder.condition-name')" :label="i18n('remote-config.condition-name')" rules="required|regex:^[a-zA-Z0-9 ]+$">
+        <cly-form-field name="condition-name" test-id="condition-drawer-name-label" v-slot="validation" :subheading="i18n('placeholder.condition-name')" :label="i18n('remote-config.condition-name')" rules="required|regex:^[a-zA-Z0-9 ]+$">
           <el-input
+            test-id="condition-drawer-name-input"
             v-model="drawerScope.editedObject.condition_name"
             :placeholder="i18n('remote-config.condition.name.placeholder')">
           </el-input>
@@ -19,14 +20,15 @@
           </div>
         </cly-form-field>
         <div class="bu-pt-3 bu-mt-2 bu-pb-1">
-          <el-checkbox class="text-smallish"
+          <el-checkbox test-id="condition-drawer-use-desc-checkbox" class="text-smallish"
             v-bind:label="i18n('remote-config.use.description')"
             v-model="useDescription"
             >
           </el-checkbox>
           <div class="bu-pt-3 cly-vue-remote-config-conditions-drawer" v-if="useDescription">
-            <cly-form-field name="description" :label="i18n('remote-config.conditions.description')" rules="required">
+            <cly-form-field test-id="condition-drawer-description-label" name="description" :label="i18n('remote-config.conditions.description')" rules="required">
               <textarea
+                data-test-id="condition-drawer-description-input"
                 class="input"
                 v-model="drawerScope.editedObject.condition_description"
                 :placeholder="i18n('remote-config.conditions.description.placeholder')">
@@ -35,7 +37,7 @@
           </div>
         </div>
         <div class="bu-py-4">
-          <div class="text-big font-weight-bold bu-mb-1">
+          <div data-test-id="condition-drawer-color-tag-label" class="text-big font-weight-bold bu-mb-1">
             {{i18n('remote-config.condition.color.tag')}}
           </div>
           <cly-color-tag :tags="colorTag"  :defaultTag="defaultTag" v-model="selectedTag"></cly-color-tag>
@@ -53,12 +55,13 @@
           </el-input>
         </div>
         <div class="bu-pt-4">
-          <div class="font-weight-bold text-big bu-mb-1">
+          <div data-test-id="condition-drawer-condition-definition-label" class="font-weight-bold text-big bu-mb-1">
             {{i18n('remote-config.condition-definition')}}
           </div>
           <div>
             <validation-provider name="condition-definition" rules="required" v-slot="v">
-            <cly-qb-segmentation 
+            <cly-qb-segmentation
+              test-id="condition-drawer" 
               ref="qb"
               :class="{'is-error': v.errors.length > 0}"
               :additional-properties="additionalProperties"
@@ -66,6 +69,7 @@
               :add-empty-row-on-empty-query="true"
               :allow-breakdown="false"
               :orGroupsEnabled="true"
+              :modifyPropType="modifyPropType"
               show-in-the-last-minutes
               show-in-the-last-hours
               v-model="managedPropertySegmentation">

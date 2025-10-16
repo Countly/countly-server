@@ -13,6 +13,7 @@ const QueryRunner = require('./parts/data/QueryRunner.js');
 const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
+const tracker = require('./parts/mgmt/tracker.js');
 
 // EXTENSIVE DEBUGGING - Print configuration
 console.log('=== COUNTLY API STARTUP DEBUG ===');
@@ -53,6 +54,9 @@ plugins.connectToAllDatabases().then(function() {
     console.log('common.db available:', !!common.db);
     console.log('common.drillDb available:', !!common.drillDb);
 
+    plugins.loadConfigs(common.db, function() {
+        tracker.enable();
+    });
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);
@@ -179,6 +183,44 @@ plugins.connectToAllDatabases().then(function() {
      * Initialize Plugins
      */
     console.log('=== INITIALIZING PLUGINS ===');
+    /**
+    * Set tracking config
+    */
+    plugins.setConfigs("tracking", {
+        self_tracking_app: "",
+        self_tracking_url: "",
+        self_tracking_app_key: "",
+        self_tracking_id_policy: "_id",
+        self_tracking_sessions: true,
+        self_tracking_events: true,
+        self_tracking_views: true,
+        self_tracking_feedback: true,
+        self_tracking_user_details: true,
+        server_sessions: true,
+        server_events: true,
+        server_crashes: true,
+        server_views: true,
+        server_feedback: true,
+        server_user_details: true,
+        /*user_sessions: true,
+        user_events: true,
+        user_crashes: true,
+        user_views: true,
+        user_feedback: true,
+        user_details: true*/
+    });
+
+    /*plugins.setUserConfigs("tracking", {
+        user_sessions: false,
+        user_events: false,
+        user_crashes: false,
+        user_views: false,
+        user_feedback: false
+    });*/
+
+    /**
+    * Initialize Plugins
+    */
     plugins.init();
     console.log('✓ Plugins initialized');
 

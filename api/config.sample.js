@@ -272,7 +272,7 @@ var countlyConfig = {
             enabled: false,
             key: "/path/to/ssl/private.key",
             cert: "/path/to/ssl/certificate.crt",
-            ca: "/path/to/ssl/ca_bundle.crt" // Optional: for client certificate verification
+            // ca: "/path/to/ssl/ca_bundle.crt" // Optional: for client certificate verification, uncomment to activate
         }
     },
     /**

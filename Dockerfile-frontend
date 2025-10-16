@@ -5,7 +5,12 @@ ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,vi
 #ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps,sdk,guides,journey_engine,content
 
 EXPOSE 6001
-HEALTHCHECK --start-period=400s CMD curl --fail http://localhost:6001/ping || exit 1
+HEALTHCHECK --start-period=400s CMD bash -c '\
+  if [ "$COUNTLY_CONFIG_FRONTEND_WEB_SSL_ENABLED" = "true" ] || [ "$COUNTLY_CONFIG_FRONTEND_WEB_SSL_ENABLED" = "\"true\"" ]; then \
+    curl -k --fail https://localhost:6001/ping || exit 1; \
+  else \
+    curl --fail http://localhost:6001/ping || exit 1; \
+  fi'
 
 USER root
 
@@ -19,6 +24,7 @@ ENV COUNTLY_CONTAINER="frontend" \
 
 WORKDIR /opt/countly
 COPY . .
+
 # install required dependencies which slim image doesn't have
 RUN apt-get update && \
 	apt-get install -y iputils-ping net-tools telnet apt-transport-https procps curl wget git make gcc g++ unzip xz-utils
