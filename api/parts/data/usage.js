@@ -868,19 +868,6 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
             }
         }
 
-        if (!isNewUser) {
-            /*
-                If metricChanges object contains a uid this means we have at least one metric that has changed
-                in this begin_session so we'll insert it into metric_changesAPPID collection.
-                Inserted document has below format;
-        
-                { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
-            */
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && metricChanges.uid && params.qstring.begin_session) {
-                common.db.collection('metric_changes' + params.app_id).insert(metricChanges, function() {});
-            }
-        }
-
         if (done) {
             done();
         }

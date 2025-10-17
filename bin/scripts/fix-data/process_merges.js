@@ -115,12 +115,6 @@ function mergeUserData(db, user, resolve) {
                                 db.collection('app_users' + app_id).update({_id: newAppUser._id}, {'$set': newAppUser}, function(err6) {
                                     //Dispatch to other plugins only after callback.
                                     if (!err6) {
-                                        //update metric changes document
-                                        db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUser.uid}}, {multi: true}, function(err7) {
-                                            if (err7) {
-                                                console.log("Failed metric changes update in app_users merge", err7);
-                                            }
-                                        });
                                         //delete old app users document
                                         db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(errRemoving) {
                                             if (errRemoving) {
@@ -145,14 +139,7 @@ function mergeUserData(db, user, resolve) {
                     if (err0) {
                         console.log(err0);
                     }
-                    db.collection("metric_changes" + app_id).update({uid: olduid}, {'$set': {uid: usersApi.merged_to}}, {multi: true}, function(err7) {
-                        if (err7) {
-                            console.log("Failed metric changes update in app_users merge", err7);
-                        }
-                        else {
-                            usersApi.mergeOtherPlugins({db: db, app_id: app_id, newAppUser: {uid: user.merged_to}, oldAppUser: {uid: olduid}, updateFields: {"cc": true, "mc": true}, mergeDoc: user}, resolve);
-                        }
-                    });
+                    usersApi.mergeOtherPlugins({db: db, app_id: app_id, newAppUser: {uid: user.merged_to}, oldAppUser: {uid: olduid}, updateFields: {"cc": true, "mc": true}, mergeDoc: user}, resolve);
                 });
             }
             else {
