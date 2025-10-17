@@ -13,7 +13,6 @@ var COUNTLY_DRILL = 'countly_drill',
 var PROCESS = [
     /^drill_events\.*/,
     /^app_crashes\.*/,
-    /^metric_changes\.*/,
     /^consent_history\.*/,
     /^feedback[^_]*/,
     /^symbolication_jobs/,
