@@ -1,0 +1,39 @@
+<component
+  v-model="section"
+  class="cly-content-builder-sidebar-step"
+  :is="wrapperComponent"
+>
+  <div
+    v-if="!collapsible"
+    class="cly-content-builder-sidebar-step__header"
+    :data-test-id="dataTestId"
+  >
+    {{ header }}
+  </div>
+  <component
+    v-bind="bodyComponentProps"
+    class="cly-content-builder-sidebar-step__body"
+    :is="bodyComponent"
+  >
+    <slot name="step-body">
+      <template v-for="input in formattedInputs">
+        <div
+          v-if="input.hasSubHeader"
+          class="cly-content-builder-sidebar-step__sub-header"
+          :key="`${input.id}-sub-header`"
+          :data-test-id="input.dataTestId"
+        >
+          {{ input.subHeader }}
+        </div>
+        <cly-content-builder-sidebar-input
+          v-bind="input"
+          class="cly-content-builder-sidebar-step__input"
+          :key="input.id"
+          @add-asset="onAddAsset({ input, payload: $event })"
+          @delete-asset="onDeleteAsset({ input, payload: $event })"
+          @input="onInputChange({ input, payload: $event })"
+        />
+      </template>
+    </slot>
+  </component>
+</component>

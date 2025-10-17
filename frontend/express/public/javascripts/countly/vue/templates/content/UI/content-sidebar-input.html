@@ -1,96 +1,117 @@
-<div class="cly-vue-content-builder-sidebar-input">
-  <div
-    v-if="subHeader"
-    class="cly-vue-content-builder-sidebar-input__sub-header"
-    :data-test-id="'content-drawer-sidebar-step-' + subHeader.toLowerCase().replaceAll(' ', '-') + '-label'"
+<div
+  class="cly-vue-content-builder-sidebar-input"
+  :class="{
+    'cly-vue-content-builder-sidebar-input--vertical': isVerticalInput,
+    [`cly-vue-content-builder-sidebar-input--${size}`]: !!size
+  }"
+>
+  <label
+    v-if="label"
+    class="cly-vue-content-builder-sidebar-input__label"
+    :data-test-id="'content-drawer-sidebar-step-' + $attrs.id + '-' + label.toLowerCase().replaceAll(' ', '-') + '-label'"
   >
-    {{ subHeader }}
-  </div>
-  <div
-    class="cly-vue-content-builder-sidebar-input__input-container"
-    :class="{
-      'cly-vue-content-builder-sidebar-input__input-container--vertical': isVerticalInput,
-      [`cly-vue-content-builder-sidebar-input__input-container--${size}`]: !!size
-    }"
-  >
-    <label
-      v-if="label"
-      class="cly-vue-content-builder-sidebar-input__label"
-      :data-test-id="'content-drawer-sidebar-step-' + $attrs.id + '-' + label.toLowerCase().replaceAll(' ', '-') + '-label'"
+    {{ label }}
+    <i
+      v-if="isLabelTooltipVisible"
+      v-tooltip.left="labelTooltip"
+      :class="labelIcon"
+      :data-test-id="'content-drawer-sidebar-step-' + $attrs.id + '-' + label.toLowerCase().replaceAll(' ', '-') + '-label-tooltip'"
+    />
+  </label>
+  <slot name="content-builder-layout-step">
+    <component
+      :is="mainComponent"
+      v-bind="computedAttrs"
+      v-loading="isUploadInput && loading"
+      v-model="componentValue"
+      v-tooltip.left="tooltip"
+      class="cly-vue-content-builder-sidebar-input__component"
+      :class="{
+        'cly-vue-content-builder-sidebar-input__component--slider': isSliderInput,
+        'cly-vue-content-builder-sidebar-input__component--upload': isUploadInput,
+        'cly-vue-content-builder-sidebar-input__component--image-radio': isImageRadioInput,
+        'cly-vue-content-builder-sidebar-input__component--list-block': isListBlockInput
+      }"
+      :controls="controlsProp"
+      :disabled="disabled"
+      :options="options"
+      :test-id="'content-drawer-sidebar-step-' + $attrs.id"
+      @add-asset="onAddAsset"
+      @delete-asset="onDeleteAsset"
     >
-      {{ label }}
-      <i
-        v-if="isLabelTooltipVisible"
-        v-tooltip.left="labelTooltip"
-        :class="labelIcon"
-        :data-test-id="'content-drawer-sidebar-step-' + $attrs.id + '-' + label.toLowerCase().replaceAll(' ', '-') + '-label-tooltip'"
-      />
-    </label>
-    <slot name="content-builder-layout-step">
-      <component
-        :is="mainComponent"
-        v-bind="computedAttrs"
-        v-loading="isUploadInput && loading"
-        v-model="componentValue"
-        v-tooltip.left="tooltip"
-        class="cly-vue-content-builder-sidebar-input__component"
-        :class="{
-          'cly-vue-content-builder-sidebar-input__component--slider': isSliderInput,
-          'cly-vue-content-builder-sidebar-input__component--upload': isUploadInput
-        }"
-        :controls="controlsProp"
-        :disabled="disabled"
-        :options="options"
-        :test-id="'content-drawer-sidebar-step-' + $attrs.id"
-      >
-        <template
-          v-if="isSuffixVisible"
-          #suffix
-        >
-          {{ suffix }}
-        </template>
-        <template v-if="isComponentWithOptions">
-          <el-option
-            v-for="(option, index) in options"
-            :key="`content-builder-sidebar-input-option-${index}`"
-            class="cly-vue-content-builder-sidebar-input__option"
-            :label="option.label"
-            :value="option.value"
-            :test-id="$attrs.id"
-          />
-        </template>
-        <template v-if="isUploadInput">
-          <img
-            v-if="value"
-            class="cly-vue-content-builder-sidebar-input__upload-value"
-            :src="value"
-          >
-          <i
-            v-else
-            class="cly-io cly-io-photograph cly-vue-content-builder-sidebar-input__upload-placeholder"
-          />
-          <div class="cly-vue-content-builder-sidebar-input__upload-actions">
-            <el-button
-              class="cly-vue-content-builder-sidebar-input__upload-action"
-              icon="cly-io cly-io-upload"
-              type="info"
-              @click.stop="onUploadAddButtonClick"
-            />
-            <el-button
-              class="cly-vue-content-builder-sidebar-input__upload-action"
-              icon="cly-io cly-io-trash"
-              type="info"
-              @click.stop="onUploadDeleteButtonClick"
-            />
-          </div>
-        </template>
-      </component>
-      <div
-        v-if="isSuffixVisible && type === 'number'"
-        class="cly-vue-content-builder-sidebar-input__number-input-suffix"
+      <template
+        v-if="isSuffixVisible"
+        #suffix
       >
         {{ suffix }}
-      </div>
-    </slot>
-  </div>
+      </template>
+      <template v-if="isComponentWithOptions">
+        <el-option
+          v-for="(option, index) in options"
+          :key="`content-builder-sidebar-input-option-${index}`"
+          class="cly-vue-content-builder-sidebar-input__option"
+          :label="option.label"
+          :value="option.value"
+          :test-id="$attrs.id"
+        />
+      </template>
+      <template v-if="isUploadInput">
+        <img
+          v-if="value"
+          class="cly-vue-content-builder-sidebar-input__upload-value"
+          :src="value"
+        >
+        <i
+          v-else
+          class="cly-io cly-io-photograph cly-vue-content-builder-sidebar-input__upload-placeholder"
+        />
+        <div class="cly-vue-content-builder-sidebar-input__upload-actions">
+          <el-button
+            class="cly-vue-content-builder-sidebar-input__upload-action"
+            icon="cly-io cly-io-upload"
+            type="info"
+            @click.stop="onUploadAddButtonClick"
+          />
+          <el-button
+            class="cly-vue-content-builder-sidebar-input__upload-action"
+            icon="cly-io cly-io-trash"
+            type="info"
+            @click.stop="onUploadDeleteButtonClick"
+          />
+        </div>
+      </template>
+      <template v-else-if="isImageRadioInput">
+        <el-radio
+          v-for="option in options"
+          :key="`content-block-layout-${option.value}`"
+          border
+          class="cly-vue-content-builder-sidebar-input__image-radio"
+          :test-id="'content-layout-type-' + option.value.toLowerCase()"
+          :label="option.value"
+          :value="value"
+          @input="$emit('input', $event)"
+        >
+          <div
+            class="cly-vue-content-builder-sidebar-input__image-radio-content"
+            :class="{
+              'cly-vue-content-builder-sidebar-input__image-radio-content--disabled': option.disabled
+            }"
+          >
+            <div class="square-button-preview">
+              <img :src="option.src">
+            </div>
+            <div class="cly-vue-content-builder-sidebar-input__image-radio-content-label">
+              {{ option.label }}
+            </div>
+          </div>
+        </el-radio>
+      </template>
+    </component>
+    <div
+      v-if="isSuffixVisible && type === 'number'"
+      class="cly-vue-content-builder-sidebar-input__number-input-suffix"
+    >
+      {{ suffix }}
+    </div>
+  </slot>
 </div>
