@@ -1,6 +1,7 @@
 ## Version 25.03.XX
 Enterprise Fixes:
 - [data-manager] Fixed segment data deletion
+- [data-manager] Fixed bug preventing transformation of events ending in a dot
 - [users] Fix add/remove user to profile group
 - [users] Remove link to profile group page after removing user from group
 
