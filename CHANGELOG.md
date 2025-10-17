@@ -1,6 +1,7 @@
 ## Version 24.05.XX
 Features:
 - [core] Implement go to link in notification
+- [data-manager] Fixed bug preventing transformation of events ending in a dot
 
 Fixes:
 - [dashboard] Allow users to select text inside the widget without dragging it
