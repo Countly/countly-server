@@ -1195,9 +1195,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 if (data.data && data.data.u) {
                                     ret_data.u = data.data.u;
                                 }
-                                else {
-                                    console.trace();
-                                }
                                 ret_data.lu = data.lu;
                                 if (ret_data.lu) {
                                     //get difference in seconds
