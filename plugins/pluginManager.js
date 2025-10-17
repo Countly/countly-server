@@ -125,6 +125,11 @@ var pluginManager = function pluginManager() {
                 //If file exists try including
                 var filepath = path.resolve(__dirname, pluginNames[i] + "/api/" + (options.filename || "api") + ".js");
                 if (fs.existsSync(filepath)) {
+                    //Require init_config if it exists
+                    var initConfigPath = path.resolve(__dirname, pluginNames[i] + "/api/init_configs.js");
+                    if (fs.existsSync(initConfigPath)) {
+                        require(initConfigPath);
+                    }
                     pluginsApis[pluginNames[i]] = require(filepath);
                 }
             }
@@ -177,7 +182,11 @@ var pluginManager = function pluginManager() {
     this.initPlugin = function(pluginName, filename) {
         try {
             filename = filename || "api";
-            pluginsApis[pluginName] = require("./" + pluginName + "/api/" + filename);
+            var initConfigPath = path.resolve(__dirname, "./" + pluginName + "/api/init_configs.js");
+            if (fs.existsSync(initConfigPath)) {
+                require(initConfigPath);
+            }
+            pluginsApis[pluginName] = require(path.resolve(__dirname, "./" + pluginName + "/api/" + filename));
             fullPluginsMap[pluginName] = true;
         }
         catch (ex) {

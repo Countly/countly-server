@@ -254,7 +254,7 @@ usage.processCoreMetrics = function(params) {
                 params.collectedMetrics.av_major = versionComponents.major;
                 params.collectedMetrics.av_minor = versionComponents.minor;
                 params.collectedMetrics.av_patch = versionComponents.patch;
-                params.collectedMetrics.av_prerelease = versionComponents.prerelease;
+                params.collectedMetrics.av_prerel = versionComponents.prerelease;
                 params.collectedMetrics.av_build = versionComponents.build;
             }
             else {
@@ -262,7 +262,7 @@ usage.processCoreMetrics = function(params) {
                 params.collectedMetrics.av_major = null;
                 params.collectedMetrics.av_minor = null;
                 params.collectedMetrics.av_patch = null;
-                params.collectedMetrics.av_prerelease = null;
+                params.collectedMetrics.av_prerel = null;
                 params.collectedMetrics.av_build = null;
             }
         }
@@ -473,7 +473,6 @@ usage.processSession = function(ob) {
             }
             if (params.app_user.lsid) {
                 params.qstring.events = params.qstring.events || [];
-                console.log("Ending previous session" + params.app_user.lsid);
                 usage.updateEndSessionParams(params, params.qstring.events, session_duration);
             }
         }

@@ -3,15 +3,7 @@ var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     log = common.log('views:ingestor');
 
-const FEATURE_NAME = 'views';
-
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
-    plugins.internalDrillEvents.push("[CLY]_view");
-    plugins.internalDrillEvents.push("[CLY]_action");
     /**
      *  Update view sg parameters - bounce,exit and duration (Moved from drill)
      *  @param {object} id - Object ID of drill document
