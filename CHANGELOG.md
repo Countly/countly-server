@@ -1,5 +1,6 @@
 ## Version 25.03.XX
 Enterprise Fixes:
+- [compliance-hub] Fixed query patterns
 - [data-manager] Fixed segment data deletion
 - [data-manager] Fixed bug preventing transformation of events ending in a dot
 - [users] Fix add/remove user to profile group
