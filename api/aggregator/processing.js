@@ -16,6 +16,24 @@ const UnifiedEventSource = require('../eventSource/UnifiedEventSource.js');
 var crypto = require('crypto');
 
 (function() {
+    var loaded_configs_time = 0;
+    const reloadConfig = function() {
+        return new Promise(function(resolve) {
+            var my_time = Date.now();
+            var reload_configs_after = common.config.reloadConfigAfter || 10000;
+            //once in minute
+            if (loaded_configs_time === 0 || (my_time - loaded_configs_time) >= reload_configs_after) {
+                plugins.loadConfigs(common.db, () => {
+                    loaded_configs_time = my_time;
+                    resolve();
+                }, true);
+            }
+            else {
+                resolve();
+            }
+        });
+    };
+
     /**
      * Determines the type of a value for aggregation purposes.
      * @param {*} value - The value to determine the type of.
@@ -315,6 +333,7 @@ var crypto = require('crypto');
         try {
             for await (const {/*token,*/ events} of eventSource) {
                 if (events && Array.isArray(events)) {
+                    await reloadConfig(); //reloads configs if needed.
                     // Process each event in the batch
                     var updates = {};
                     //Should sort before by event 

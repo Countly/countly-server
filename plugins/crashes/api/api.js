@@ -8,20 +8,10 @@ var plugin = {},
     Duplex = require('stream').Duplex,
     Promise = require("bluebird"),
     trace = require("./parts/stacktrace.js"),
-    { DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('./parts/custom_field.js'),
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 var log = common.log('crashes:api');
 const FEATURE_NAME = 'crashes';
-
-plugins.setConfigs("crashes", {
-    report_limit: 100,
-    grouping_strategy: "error_and_file",
-    smart_preprocessing: true,
-    smart_regexes: "{.*?}\n/.*?/",
-    same_app_version_crash_update: false,
-    max_custom_field_keys: DEFAULT_MAX_CUSTOM_FIELD_KEYS,
-});
 
 /**
 * Crash metrics

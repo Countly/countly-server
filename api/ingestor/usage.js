@@ -266,8 +266,6 @@ usage.processCoreMetrics = function(params) {
                 params.collectedMetrics.av_build = null;
             }
         }
-
-
     }
 };
 

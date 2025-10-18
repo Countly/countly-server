@@ -207,7 +207,6 @@ var pluginOb = {},
 
             if (last_started_view) {
                 // If we have a last started view, we store it
-
                 update.$set.last_view = {
                     "_idv": last_started_view.segmentation && last_started_view.segmentation._idv,
                     "name": last_started_view.name,
