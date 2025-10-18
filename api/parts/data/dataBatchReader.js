@@ -28,6 +28,9 @@ class DataBatchReader {
             log.w("Using aggregator config interval for dataBatchReader", plugins.getConfig("aggregator").interval);
             this.interval = plugins.getConfig("aggregator").interval;
         }
+        else {
+            log.d("Using default or provided interval for dataBatchReader", this.interval);
+        }
 
         this.reviveInterval = options.reviveInterval || 60000; //1 minute
         this.setUp();
