@@ -31,31 +31,31 @@
                 <div class="bu-level">
                     <div class="bu-level-left bu-is-flex-shrink-1" style="min-width: 0;">
                         <div class="bu-level-item bu-is-flex-shrink-1" style="min-width: 0;">
-                            <h2 class="has-ellipsis">{{dashboard.name}}</h2>
+                            <h2 class="has-ellipsis" data-test-id="dashboard-name">{{dashboard.name}}</h2>
                         </div>
                     </div>
                     <div class="bu-level-right">
                         <div class="bu-level-item">
-                            <cly-date-picker-g></cly-date-picker-g>
+                            <cly-date-picker-g test-id="dashboard-date-picker"></cly-date-picker-g>
                         </div>
                         <template v-if="!isInitLoad">
                             <template v-if="!fullscreen">
                                 <div class="bu-level-item" v-if="canUpdateGrid">
-                                    <el-button @click="newWidget" type="success" icon="el-icon-circle-plus">{{i18n('dashboards.add-widget')}}</el-button>
+                                    <el-button @click="newWidget" type="success" icon="el-icon-circle-plus" data-test-id="add-widget-button">{{i18n('dashboards.add-widget')}}</el-button>
                                 </div>
                                 <div class="bu-level-item">
-                                    <cly-more-options @command="onDashboardAction($event, dashboard)">
-                                        <el-dropdown-item command="fullscreen">{{i18n('dashboards.activate-full-screen')}}</el-dropdown-item>
-                                        <el-dropdown-item command="edit" v-if="canUpdateGrid && canUpdateDashboard">{{i18n('common.edit')}}</el-dropdown-item>
-                                        <el-dropdown-item v-if="canUpdateGrid"><a :href="'#/manage/reports/create/dashboard/' + dashboard._id">{{i18n('dashboards.create-email-reports')}}</a></el-dropdown-item>
-                                        <el-dropdown-item command="duplicate" v-if="canUpdateGrid">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
-                                        <el-dropdown-item command="delete" v-if="canUpdateGrid && canUpdateDashboard">{{i18n('common.delete')}}</el-dropdown-item>
+                                    <cly-more-options @command="onDashboardAction($event, dashboard)" test-id="dashboard">
+                                        <el-dropdown-item command="fullscreen" data-test-id="dashboard-more-button-fullscreen-option">{{i18n('dashboards.activate-full-screen')}}</el-dropdown-item>
+                                        <el-dropdown-item command="edit" v-if="canUpdateGrid && canUpdateDashboard" data-test-id="dashboard-more-button-edit-option">{{i18n('common.edit')}}</el-dropdown-item>
+                                        <el-dropdown-item v-if="canUpdateGrid"><a :href="'#/manage/reports/create/dashboard/' + dashboard._id" data-test-id="dashboard-more-button-create-email-reports-option">{{i18n('dashboards.create-email-reports')}}</a></el-dropdown-item>
+                                        <el-dropdown-item command="duplicate" v-if="canUpdateGrid" data-test-id="dashboard-more-button-duplicate-option">{{i18n('dashboards.duplicate-dashboard')}}</el-dropdown-item>
+                                        <el-dropdown-item command="delete" v-if="canUpdateGrid && canUpdateDashboard" data-test-id="dashboard-more-button-delete-option">{{i18n('common.delete')}}</el-dropdown-item>
                                     </cly-more-options>
                                 </div>
                             </template>
                             <template v-else>
                                 <div class="bu-level-item">
-                                    <el-button @click="exitFullScreen" icon="el-icon-circle-close"></el-button>
+                                    <el-button @click="exitFullScreen" icon="el-icon-circle-close" data-test-id="exit-fullscreen-button"></el-button>
                                 </div>
                             </template>
                         </template>
@@ -64,15 +64,15 @@
                 <div class="bu-level bu-mt-2" v-if="dashboard.creation.time || dashboard.creation.by">
                     <div class="bu-level-left">
                         <div class="bu-level-item">
-                            <div class="bu-level-item color-cool-gray-50 text-medium">
+                            <div class="bu-level-item color-cool-gray-50 text-medium" data-test-id="dashboard-creation-info">
                                 <span>
-                                    <i class="far fa-clock"></i>
-                                    {{i18nM('dashbaords.created')}}
+                                    <i class="far fa-clock" data-test-id="dashboard-creation-time-icon"></i>
+                                    <span data-test-id="dashboard-created-label">{{i18nM('dashbaords.created')}}</span>
                                 </span>
-                                <span v-if="dashboard.creation.time" class="bu-ml-1">
+                                <span v-if="dashboard.creation.time" class="bu-ml-1" data-test-id="dashboard-creation-time">
                                     {{dashboard.creation.time}}
                                 </span>
-                                <span v-if="dashboard.creation.by" class="bu-ml-1">
+                                <span v-if="dashboard.creation.by" class="bu-ml-1" data-test-id="dashboard-creation-by">
                                     {{i18n('dashbaords.created-by', dashboard.creation.by)}}
                                 </span>
                             </div>

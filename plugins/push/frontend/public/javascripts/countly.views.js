@@ -699,7 +699,7 @@
                         this.estimateIfNecessary();
                         return;
                     }
-                    CountlyHelpers.notify({type: 'error', message: 'No push credentials found for ' + this.getPlatformLabel(platform) + ' platform' });
+                    CountlyHelpers.notify({type: 'error', message: CV.i18n('push-notification.no-credentials', this.getPlatformLabel(platform)) || ('No push credentials found for ' + this.getPlatformLabel(platform) + ' platform') });
                 }
                 else {
                     this.pushNotificationUnderEdit.platforms = this.pushNotificationUnderEdit.platforms.filter(function(item) {
@@ -1122,6 +1122,10 @@
                 this.setIsLoading(true);
                 countlyPushNotification.service.fetchById(this.id)
                     .then(function(response) {
+                        //Set default settings
+                        response.isEe = (typeof countlySegmentation !== 'undefined');
+                        response.isGeo = (typeof countlyLocationTargetComponent !== 'undefined');
+                        response.isCohorts = (typeof countlyCohorts !== 'undefined');
                         self.setPushNotificationUnderEdit(response);
                         if (self.userCommand === self.UserCommandEnum.DUPLICATE) {
                             self.setId(null);

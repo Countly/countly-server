@@ -94,11 +94,11 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
             mongo: {
                 db: common.drillDb,
                 pipeline: [
-                    {"$match": {"operationType": "insert", "fullDocument.e": {"$in": ["[CLY]_custom", "[CLY]_session"]}}},
-                    {"$project": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd", "ts": "$fullDocument.ts", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "hour": "$fullDocument.up.hour", "dow": "$fullDocument.up.dow", "c": "$fullDocument.c"}}
+                    {"$match": {"operationType": "insert", "fullDocument.e": {"$in": ["[CLY]_custom", "[CLY]_session_begin"]}}},
+                    {"$project": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd", "ts": "$fullDocument.ts", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "hour": "$fullDocument.hour", "dow": "$fullDocument.dow", "up": {"dow": "$fullDocument.up.dow", "hour": "$fullDocument.up.hour"}, "c": "$fullDocument.c"}}
                 ],
                 fallback: {
-                    pipeline: [ {"$match": {"e": {"$in": ["[CLY]_custom", "[CLY]_session"]}}}, {"$project": {"__id": "$_id", "ts": "$ts", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "c": "$c", "hour": "$up.hour", "dow": "$up.dow"}}]
+                    pipeline: [ {"$match": {"e": {"$in": ["[CLY]_custom", "[CLY]_session_begin"]}}}, {"$project": {"__id": "$_id", "ts": "$ts", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "c": "$c", "hour": "$next.hour", "dow": "$next.dow", "up": {"dow": "$up.dow", "hour": "$up.hour"}}}]
                 }
             }
         });
@@ -116,7 +116,6 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
                             if (next.a && next.e && (next.dow || next.dow === 0) && (next.hour || next.hour === 0)) {
                                 try {
                                     var app = await common.readBatcher.getOne("apps", common.db.ObjectID(next.a), {projection: {timezone: 1}});
-
                                     if (app) {
                                         next.h = common.getDate(next.ts, app.timezone || "UTC");
                                         next.h = next.h.format("YYYY:MM:DD:HH");

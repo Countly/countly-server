@@ -43,13 +43,30 @@ catch (error) {
                 }
             }
 
-            match.e = "[CLY]_custom";
             if (events && events.length) {
-                if (events.length === 1) {
-                    match.n = events[0];
+                var isSystemEvents = false;
+                for (let i = 0; i < events.length; i++) {
+                    if (events[i].startsWith("[CLY]_")) {
+                        isSystemEvents = true;
+                        break;
+                    }
+                }
+                if (isSystemEvents) {
+                    if (events.length === 1) {
+                        match.e = events[0];
+                    }
+                    else {
+                        match.e = {$in: events};
+                    }
                 }
                 else {
-                    match.n = {$in: events};
+                    match.e = "[CLY]_custom";
+                    if (events.length === 1) {
+                        match.n = events[0];
+                    }
+                    else {
+                        match.n = {$in: events};
+                    }
                 }
             }
             match.ts = {"$gt": ts.$gt, "$lt": ts.$lt};
@@ -250,6 +267,27 @@ catch (error) {
         if (clickHouseRunner && clickHouseRunner.getViewsTableData) {
             queryDef.adapters.clickhouse = {
                 handler: clickHouseRunner.getViewsTableData
+            };
+        }
+        return common.queryRunner.executeQuery(queryDef, params, options);
+    };
+
+    agg.segmentValuesForPeriod = async function(params, options) {
+        if (!common.queryRunner) {
+            throw new Error('QueryRunner not initialized. Ensure API server is fully started.');
+        }
+
+        const queryDef = {
+            name: 'SEGMENT_VALUES_FOR_PERIOD',
+            adapters: {
+                mongodb: {
+                    handler: mongodbRunner.segmentValuesForPeriod
+                }
+            }
+        };
+        if (clickHouseRunner && clickHouseRunner.segmentValuesForPeriod) {
+            queryDef.adapters.clickhouse = {
+                handler: clickHouseRunner.segmentValuesForPeriod
             };
         }
         return common.queryRunner.executeQuery(queryDef, params, options);

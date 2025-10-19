@@ -221,5 +221,8 @@ describe("Testing checksum validations", function() {
                     done();
                 });
         });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:deletionManagerJob", done);
+        });
     });
 });

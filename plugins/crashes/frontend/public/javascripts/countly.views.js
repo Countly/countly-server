@@ -47,31 +47,31 @@
                 filterProperties.push(
                     new countlyQueryBuilder.Property({
                         id: "nonfatal",
-                        name: "Fatality",
+                        name: jQuery.i18n.prop("crashes.fatality-label") || "Fatality",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
                             return [
-                                {name: "Fatal", value: false},
-                                {name: "Non-fatal", value: true}
+                                {name: jQuery.i18n.prop("crashes.fatal") || "Fatal", value: false},
+                                {name: jQuery.i18n.prop("crashes.non-fatal") || "Non-fatal", value: true}
                             ];
                         }
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_hidden",
-                        name: "Visibility",
+                        name: jQuery.i18n.prop("crashes.visibility") || "Visibility",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
                             return [
-                                {name: "Hidden", value: true},
-                                {name: "Shown", value: false}
+                                {name: jQuery.i18n.prop("crashes.hidden") || "Hidden", value: true},
+                                {name: jQuery.i18n.prop("crashes.shown") || "Shown", value: false}
                             ];
                         }
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_new",
-                        name: "Viewed",
+                        name: jQuery.i18n.prop("crashes.viewed") || "Viewed",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
@@ -83,7 +83,7 @@
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_renewed",
-                        name: "Reoccured",
+                        name: jQuery.i18n.prop("crashes.reoccurred") || "Reoccurred",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
@@ -95,7 +95,7 @@
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_resolved",
-                        name: "Resolved",
+                        name: jQuery.i18n.prop("crashes.resolved") || "Resolved",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
@@ -107,7 +107,7 @@
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_resolving",
-                        name: "Resolving",
+                        name: jQuery.i18n.prop("crashes.resolving") || "Resolving",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
@@ -1338,7 +1338,7 @@
                     {"name": CV.i18n('crashes.unique'), "info": CV.i18n('crashes.home.unique'), "prop": "cru", "r": true},
                     {"name": CV.i18n('crashes.total-per-session'), "info": CV.i18n('crashes.home.per-session'), "prop": "cr-session", "r": true},
                     {"name": CV.i18n('crashes.free-users'), "info": CV.i18n('crashes.help-free-users'), "prop": "crau", "p": true},
-                    {"name": CV.i18n('crashes.free-sessions'), "info": CV.i18n('crashes.help-free-sessions'), "prop": "crses", "p": true}
+                    {"name": CV.i18n('crashes.free-sessions'), "info": CV.i18n('crashes.help-free-sessions'), "prop": "crinv", "p": true}
                 ];
 
                 for (var k = 0; k < getUs.length; k++) {

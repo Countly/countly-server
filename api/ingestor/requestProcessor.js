@@ -26,7 +26,24 @@ catch (error) {
     // This is a critical error since we need at least MongoDB for event storage
     throw error;
 }
+var loaded_configs_time = 0;
 
+const reloadConfig = function() {
+    return new Promise(function(resolve) {
+        var my_time = Date.now();
+        var reload_configs_after = common.config.reloadConfigAfter || 10000;
+        //once in minute
+        if (loaded_configs_time === 0 || (my_time - loaded_configs_time) >= reload_configs_after) {
+            plugins.loadConfigs(common.db, () => {
+                loaded_configs_time = my_time;
+                resolve();
+            }, true);
+        }
+        else {
+            resolve();
+        }
+    });
+};
 
 
 
@@ -438,7 +455,12 @@ var processToDrill = async function(params, drill_updates, callback) {
                         }
                     }
                     else {
-                        tmpSegVal = currEvent.segmentation[segKey];
+                        if (typeof currEvent.segmentation[segKey] === "string") {
+                            tmpSegVal = common.encodeCharacters(currEvent.segmentation[segKey] + "");
+                        }
+                        else {
+                            tmpSegVal = currEvent.segmentation[segKey];
+                        }
                     }
                     dbEventObject[common.dbEventMap.segmentations] = dbEventObject[common.dbEventMap.segmentations] || {};
                     dbEventObject[common.dbEventMap.segmentations][segKeyAsFieldName] = tmpSegVal;
@@ -977,94 +999,99 @@ const processRequest = (params) => {
     params.apiPath = apiPath;
     params.fullPath = paths.join("/");
 
-    switch (apiPath) {
-    case '/o/ping': {
-        common.db.collection("plugins").findOne({_id: "plugins"}, {_id: 1}).then(() => {
-            common.returnMessage(params, 200, 'Success');
-        }).catch(() => {
-            common.returnMessage(params, 404, 'DB Error');
-        });
-        return;
-    }
-    case '/i': {
-        if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
-            params.qstring = common.trimWhitespaceStartEnd(params.qstring);
+    reloadConfig().then(function() {
+        switch (apiPath) {
+        case '/o/ping': {
+            common.db.collection("plugins").findOne({_id: "plugins"}, {_id: 1}).then(() => {
+                common.returnMessage(params, 200, 'Success');
+            }).catch(() => {
+                common.returnMessage(params, 404, 'DB Error');
+            });
+            return;
         }
-        params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
-        params.user = {};
+        case '/i': {
+            if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
+                params.qstring = common.trimWhitespaceStartEnd(params.qstring);
+            }
+            params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
+            params.user = {};
 
-        if (!params.qstring.app_key || !params.qstring.device_id) {
-            common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
-            return false;
-        }
-        else {
+            if (!params.qstring.app_key || !params.qstring.device_id) {
+                common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
+                return false;
+            }
+            else {
             //make sure device_id is string
-            params.qstring.device_id += "";
-            params.qstring.app_key += "";
-            // Set app_user_id that is unique for each user of an application.
-            params.app_user_id = common.crypto.createHash('sha1')
-                .update(params.qstring.app_key + params.qstring.device_id + "")
-                .digest('hex');
-        }
-
-        if (params.qstring.events && typeof params.qstring.events === "string") {
-            try {
-                params.qstring.events = JSON.parse(params.qstring.events);
+                params.qstring.device_id += "";
+                params.qstring.app_key += "";
+                // Set app_user_id that is unique for each user of an application.
+                params.app_user_id = common.crypto.createHash('sha1')
+                    .update(params.qstring.app_key + params.qstring.device_id + "")
+                    .digest('hex');
             }
-            catch (SyntaxError) {
-                console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
+
+            if (params.qstring.events && typeof params.qstring.events === "string") {
+                try {
+                    params.qstring.events = JSON.parse(params.qstring.events);
+                }
+                catch (SyntaxError) {
+                    console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
+                    params.qstring.events = [];
+
+                }
+            }
+
+            if (!params.qstring.events && !Array.isArray(params.qstring.events)) {
                 params.qstring.events = [];
-
             }
-        }
-
-        if (!params.qstring.events && !Array.isArray(params.qstring.events)) {
-            params.qstring.events = [];
-        }
-        validateAppForWriteAPI(params, () => {
+            validateAppForWriteAPI(params, () => {
             //log request
-            plugins.dispatch("/sdk/log", {params: params});
-        });
-        break;
-    }
-    case '/i/bulk': {
-        let requests = params.qstring.requests;
-        if (requests && typeof requests === "string") {
-            try {
-                requests = JSON.parse(requests);
+                plugins.dispatch("/sdk/log", {params: params});
+            });
+            break;
+        }
+        case '/i/bulk': {
+            let requests = params.qstring.requests;
+            if (requests && typeof requests === "string") {
+                try {
+                    requests = JSON.parse(requests);
+                }
+                catch (SyntaxError) {
+                    console.log('Parse bulk JSON failed', requests, params.req.url, params.req.body);
+                    requests = null;
+                }
             }
-            catch (SyntaxError) {
-                console.log('Parse bulk JSON failed', requests, params.req.url, params.req.body);
-                requests = null;
+            if (!requests) {
+                common.returnMessage(params, 400, 'Missing parameter "requests"');
+                return false;
             }
-        }
-        if (!requests) {
-            common.returnMessage(params, 400, 'Missing parameter "requests"');
-            return false;
-        }
-        if (!Array.isArray(requests)) {
-            console.log("Passed invalid param for request. Expected Array, got " + typeof requests);
-            common.returnMessage(params, 400, 'Invalid parameter "requests"');
-            return false;
-        }
-        common.blockResponses(params);//no response till finished processing
+            if (!Array.isArray(requests)) {
+                console.log("Passed invalid param for request. Expected Array, got " + typeof requests);
+                common.returnMessage(params, 400, 'Invalid parameter "requests"');
+                return false;
+            }
+            common.blockResponses(params);//no response till finished processing
 
-        processBulkRequest(requests, params);
-        break;
-    }
-    default:
-        if (!plugins.dispatch(apiPath, {
-            params: params,
-            paths: paths
-        })) {
-            if (!plugins.dispatch(params.fullPath, {
+            processBulkRequest(requests, params);
+            break;
+        }
+        default:
+            if (!plugins.dispatch(apiPath, {
                 params: params,
                 paths: paths
             })) {
-                common.returnMessage(params, 400, 'Invalid path');
+                if (!plugins.dispatch(params.fullPath, {
+                    params: params,
+                    paths: paths
+                })) {
+                    common.returnMessage(params, 400, 'Invalid path');
+                }
             }
         }
-    }
+    }).catch((err) => {
+        log.e('Error reloading config:', err);
+        common.returnMessage(params, 500, 'Server error');
+    });
 
 };
 

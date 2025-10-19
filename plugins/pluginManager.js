@@ -10,7 +10,6 @@ var pluginDependencies = require('./pluginDependencies.js'),
     apiCountlyConfig = require('../api/config', 'dont-enclose'),
     utils = require('../api/utils/utils.js'),
     fs = require('fs'),
-    url = require('url'),
     querystring = require('querystring'),
     cp = require('child_process'),
     async = require("async"),
@@ -126,6 +125,11 @@ var pluginManager = function pluginManager() {
                 //If file exists try including
                 var filepath = path.resolve(__dirname, pluginNames[i] + "/api/" + (options.filename || "api") + ".js");
                 if (fs.existsSync(filepath)) {
+                    //Require init_config if it exists
+                    var initConfigPath = path.resolve(__dirname, pluginNames[i] + "/api/init_configs.js");
+                    if (fs.existsSync(initConfigPath)) {
+                        require(initConfigPath);
+                    }
                     pluginsApis[pluginNames[i]] = require(filepath);
                 }
             }
@@ -178,7 +182,11 @@ var pluginManager = function pluginManager() {
     this.initPlugin = function(pluginName, filename) {
         try {
             filename = filename || "api";
-            pluginsApis[pluginName] = require("./" + pluginName + "/api/" + filename);
+            var initConfigPath = path.resolve(__dirname, "./" + pluginName + "/api/init_configs.js");
+            if (fs.existsSync(initConfigPath)) {
+                require(initConfigPath);
+            }
+            pluginsApis[pluginName] = require(path.resolve(__dirname, "./" + pluginName + "/api/" + filename));
             fullPluginsMap[pluginName] = true;
         }
         catch (ex) {
@@ -1949,9 +1957,21 @@ var pluginManager = function pluginManager() {
         }
 
         if (config && typeof config.mongodb === "string") {
-            var urlParts = url.parse(config.mongodb, true);
-            if (urlParts && urlParts.query && urlParts.query.maxPoolSize) {
-                maxPoolSize = urlParts.query.maxPoolSize;
+            try {
+                const urlObj = new URL(config.mongodb);
+                // mongo connection string with multiple host like 'mongodb://localhost:30000,localhost:30001' will cause an error
+
+                maxPoolSize = urlObj.searchParams.get('maxPoolSize') !== null ? urlObj.searchParams.get('maxPoolSize') : maxPoolSize;
+            }
+            catch (_err) {
+                // we catch the error here and try to process only the query params part
+                const urlParts = config.mongodb.split('?');
+
+                if (urlParts.length > 1) {
+                    const queryParams = new URLSearchParams(urlParts[1]);
+
+                    maxPoolSize = queryParams.get('maxPoolSize') !== null ? queryParams.get('maxPoolSize') : maxPoolSize;
+                }
             }
         }
         else {

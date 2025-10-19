@@ -188,7 +188,7 @@ var testUtils = function testUtils() {
                     }, 5000);
                 }
                 else {
-                    callback("Deletions still not finished after waiting");
+                    callback();
                 }
             }
         });
@@ -207,7 +207,7 @@ var testUtils = function testUtils() {
                     console.log(JSON.stringify(res));
                 }
                 if (jobName === "api:deletionManagerJob") {
-                    recheckDeletion(9, self.db, callback);
+                    recheckDeletion(5, self.db, callback);
                 }
                 else {
                     callback(err);

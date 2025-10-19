@@ -22,7 +22,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     common.drillDb = drillDb;
     //GET APP
     try {
-        const app = await countlyDb.collection("apps").findOne({_id: ObjectId(APP_ID)}, {_id: 1, name: 1});
+        const app = await countlyDb.collection("apps").findOne({_id: new ObjectId(APP_ID)}, {_id: 1, name: 1});
         console.log("App:", app.name);
         //GET EVENTS
         let events = EVENTS;

@@ -3,15 +3,7 @@ var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     log = common.log('views:ingestor');
 
-const FEATURE_NAME = 'views';
-
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
-    plugins.internalDrillEvents.push("[CLY]_view");
-    plugins.internalDrillEvents.push("[CLY]_action");
     /**
      *  Update view sg parameters - bounce,exit and duration (Moved from drill)
      *  @param {object} id - Object ID of drill document
@@ -215,7 +207,6 @@ const FEATURE_NAME = 'views';
 
             if (last_started_view) {
                 // If we have a last started view, we store it
-
                 update.$set.last_view = {
                     "_idv": last_started_view.segmentation && last_started_view.segmentation._idv,
                     "name": last_started_view.name,

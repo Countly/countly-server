@@ -108,6 +108,9 @@ describe('Testing Language metrics', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:deletionManagerJob", done);
+        });
     });
     describe('verify empty language', function() {
         it('should have no languages', function(done) {

@@ -1,5 +1,6 @@
 <cly-form-field
     name="visualization"
+    test-id="visualization"
     :rules="{ required: { allowFalse: false } }"
     :subheading="!mute && i18nM('dashbaords.visualization-description')"
     :label="!mute && i18nM('dashbaords.visualization')">
@@ -14,6 +15,7 @@
                 :class="['clyd-visualization__item bu-is-clickable',
                         'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center bu-is-align-items-center',
                         {'selected': item.value === selectedType}]"
+                :data-test-id="`visualization-item-${item.value}`"
                 @click="onClick(item)">
                 <div class="text-smallish">{{item.label}}</div>
             </div>

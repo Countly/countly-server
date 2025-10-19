@@ -67,6 +67,37 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         if (testurl.indexOf(countlyCommon.API_PARTS.data.w) === 0 || testurl.indexOf(countlyCommon.API_PARTS.data.r) === 0) {
             //add token in header
             jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
+            try {
+                var offset = new Date().getTimezoneOffset();
+                var tzone = Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+                if (typeof options.data === "string") {
+                    if (options.data.indexOf('&periodOffset=') === -1) {
+                        options.data += '&periodOffset=' + offset;
+                    }
+                    if (tzone) {
+                        if (options.data.indexOf('&userTimezone=') === -1) {
+                            options.data += '&userTimezone=' + tzone;
+                        }
+                    }
+                }
+                else if (typeof options.data === "object") {
+                    options.data.periodOffset = offset;
+                    if (tzone) {
+                        options.data.userTimezone = tzone;
+                    }
+                }
+                else {
+                    var params0 = {};
+                    params0.periodOffset = offset;
+                    if (tzone) {
+                        params0.userTimezone = tzone;
+                    }
+                    options.data = params0;
+                }
+            }
+            catch (e) {
+                //ignore
+            }
 
             if (countlyGlobal.database_debug) {
                 const databaseDebugComparisonValue = localStorage.getItem(`database_debug_comparison_mode_${countlyCommon.ACTIVE_APP_ID}`);
