@@ -1984,7 +1984,7 @@ const processRequest = (params) => {
                         common.returnOutput(params, plugins.getPlugins());
                     }, params);
                     break;
-                case 'mutation-observability':
+                case 'observability':
                     validateUserForMgmtReadAPI(() => {
                         plugins.dispatch('/system/observability/collect', {params: params}, function(err, results) {
                             if (err) {
