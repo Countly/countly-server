@@ -172,7 +172,7 @@ var testUtils = function testUtils() {
     };
 
     function recheckDeletion(retry, db, callback) {
-        db.collection("deletion_manager").countDocuments({}, function(err, count) {
+        db.collection("deletion_manager").countDocuments({ status: { $ne: "deleted" }}, function(err, count) {
             if (err) {
                 callback(err);
             }

@@ -51,31 +51,6 @@ class DeletionManagerJob extends Job {
     }
 
     /**
-     * Load Deletion Manager thresholds from DB
-     * @returns {Promise<{CH_MAX_PARTS_PER_PARTITION:number, CH_MAX_TOTAL_MERGETREE_PARTS:number}>} thresholds
-     */
-    async ensureThresholdsLoaded() {
-        try {
-            const doc = await common.db.collection('plugins').findOne(
-                { _id: 'plugins' },
-                { 'deletion_manager.ch_max_parts_per_partition': 1, 'deletion_manager.ch_max_total_mergetree_parts': 1 }
-            );
-            const dmCfg = (doc && doc.deletion_manager) ? doc.deletion_manager : {};
-            return {
-                CH_MAX_PARTS_PER_PARTITION: Number(dmCfg.ch_max_parts_per_partition) || 1000,
-                CH_MAX_TOTAL_MERGETREE_PARTS: Number(dmCfg.ch_max_total_mergetree_parts) || 100000
-            };
-        }
-        catch (e) {
-            log.e('Failed to load deletion manager thresholds from DB, using defaults', e && e.message ? e.message : e + '');
-            return {
-                CH_MAX_PARTS_PER_PARTITION: 1000,
-                CH_MAX_TOTAL_MERGETREE_PARTS: 100000
-            };
-        }
-    }
-
-    /**
      * Run the job
      * @param {done} done callback
     */
@@ -86,7 +61,7 @@ class DeletionManagerJob extends Job {
 
         try {
             if (this.isClickhouseEnabled()) {
-                const thresholds = await this.ensureThresholdsLoaded();
+                const thresholds = await deletionManager.getDeletionClickhousePressureLimits();
                 const pre = await this.shouldDeferDueToClickhousePressure(thresholds);
                 if (pre && pre.defer) {
                     log.d("Run deferred due to ClickHouse pressure", pre.metrics || {});
@@ -155,8 +130,19 @@ class DeletionManagerJob extends Job {
                         summary.push({ query: task.query, status: "awaiting_validation" });
                     }
                     else if (mongoOk && !hasClickhouse) {
-                        await common.db.collection("deletion_manager").deleteOne({ _id: task._id });
-                        summary.push({ query: task.query, status: "deleted" });
+                        await common.db.collection("deletion_manager").updateOne(
+                            { _id: task._id },
+                            {
+                                $set: {
+                                    running: false,
+                                    status: deletionManager.DELETION_STATUS.DELETED,
+                                    hb: Date.now(),
+                                    deletion_completion_ts: new Date()
+                                },
+                                $unset: { batch_id: "" }
+                            }
+                        );
+                        summary.push({ query: task.query, status: "deleted_marked" });
                     }
                     else {
                         summary.push({ query: task.query, status: "error" });
@@ -217,8 +203,19 @@ class DeletionManagerJob extends Job {
                 if (task.db === "countly_drill" && task.collection === "drill_events" && clickHouseRunner && clickHouseRunner.getMutationStatus) {
                     const status = await this.getClickhouseMutationStatus(task);
                     if (status && status.is_done) {
-                        await common.db.collection("deletion_manager").deleteOne({ _id: task._id });
-                        summary.push({ query: task.query, status: "validated_deleted" });
+                        await common.db.collection("deletion_manager").updateOne(
+                            { _id: task._id },
+                            {
+                                $set: {
+                                    running: false,
+                                    status: deletionManager.DELETION_STATUS.DELETED,
+                                    hb: Date.now(),
+                                    deletion_completion_ts: new Date()
+                                },
+                                $unset: { batch_id: "" }
+                            }
+                        );
+                        summary.push({ query: task.query, status: "validated_deleted_marked" });
                     }
                     else if (status && (status.is_killed || status.latest_fail_reason)) {
                         await common.db.collection("deletion_manager").updateOne(
