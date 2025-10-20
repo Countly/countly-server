@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>countly/countly.template.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Namespaces</h3><ul><li><a href="CountlyHelpers.html">CountlyHelpers</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.alert">alert</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.appIdsToNames">appIdsToNames</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.confirm">confirm</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.createMetricModel">createMetricModel</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.formatPercentage">formatPercentage</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.generatePassword">generatePassword</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getBacklink">getBacklink</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getPeriodUrlQueryParameter">getPeriodUrlQueryParameter</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.getRandomValue">getRandomValue</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.goTo">goTo</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.isJSON">isJSON</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.isPluginEnabled">isPluginEnabled</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loadCSS">loadCSS</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.loadJS">loadJS</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.notify">notify</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.parseAndShowMsg">parseAndShowMsg</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.removePersistentNotification">removePersistentNotification</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.sha1">sha1</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.showBlockerDialog">showBlockerDialog</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.showQuickstartPopover">showQuickstartPopover</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.shuffleString">shuffleString</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.validateEmail">validateEmail</a></li><li data-type='method' style='display: none;'><a href="CountlyHelpers.html#.validatePassword">validatePassword</a></li></ul></li><li><a href="Pre%2520Login.html">Pre Login</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.addLocalization">addLocalization</a></li><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.encodeSomeHtml">encodeSomeHtml</a></li><li data-type='method' style='display: none;'><a href="Pre%252520Login.html#.showMessage">showMessage</a></li></ul></li><li><a href="T.html">T</a><ul class='methods'><li data-type='method' style='display: none;'><a href="T.html#.fetch">fetch</a></li><li data-type='method' style='display: none;'><a href="T.html#.get">get</a></li><li data-type='method' style='display: none;'><a href="T.html#.isCached">isCached</a></li><li data-type='method' style='display: none;'><a href="T.html#.prefetch">prefetch</a></li><li data-type='method' style='display: none;'><a href="T.html#.render">render</a></li><li data-type='method' style='display: none;'><a href="T.html#.renderSync">renderSync</a></li><li data-type='method' style='display: none;'><a href="T.html#.store">store</a></li><li data-type='method' style='display: none;'><a href="T.html#.urlFor">urlFor</a></li></ul></li><li><a href="app.html">app</a><ul class='methods'><li data-type='method' style='display: none;'><a href="app.html#addAppAddTypeCallback">addAppAddTypeCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppManagementSwitchCallback">addAppManagementSwitchCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppObjectModificator">addAppObjectModificator</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppSetting">addAppSetting</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppSwitchCallback">addAppSwitchCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#addAppType">addAppType</a></li><li data-type='method' style='display: none;'><a href="app.html#addDataExport">addDataExport</a></li><li data-type='method' style='display: none;'><a href="app.html#addPageScript">addPageScript</a></li><li data-type='method' style='display: none;'><a href="app.html#addRefreshScript">addRefreshScript</a></li><li data-type='method' style='display: none;'><a href="app.html#addUserEditCallback">addUserEditCallback</a></li><li data-type='method' style='display: none;'><a href="app.html#navigate">navigate</a></li><li data-type='method' style='display: none;'><a href="app.html#.addAppManagementInput">addAppManagementInput</a></li><li data-type='method' style='display: none;'><a href="app.html#.addAppManagementView">addAppManagementView</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenu">addMenu</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenuCategory">addMenuCategory</a></li><li data-type='method' style='display: none;'><a href="app.html#.addMenuForType">addMenuForType</a></li><li data-type='method' style='display: none;'><a href="app.html#.addSubMenu">addSubMenu</a></li><li data-type='method' style='display: none;'><a href="app.html#.addSubMenuForType">addSubMenuForType</a></li><li data-type='method' style='display: none;'><a href="app.html#.localize">localize</a></li><li data-type='method' style='display: none;'><a href="app.html#.noHistory">noHistory</a></li></ul></li><li><a href="countlyCommon.html">countlyCommon</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyCommon.html#.ACTIVE_APP_ID">ACTIVE_APP_ID</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.ACTIVE_APP_KEY">ACTIVE_APP_KEY</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.BROWSER_LANG">BROWSER_LANG</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.BROWSER_LANG_SHORT">BROWSER_LANG_SHORT</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.Levenshtein">Levenshtein</a></li><li data-type='member' style='display: none;'><a href="countlyCommon.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyCommon.html#.browserLang">browserLang</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calcSpecificPeriodObj">calcSpecificPeriodObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calculateBarData">calculateBarData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.calculateBarDataWPercentageOfTotal">calculateBarDataWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.checkGraphType">checkGraphType</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.decodeHtml">decodeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.deepObjectExtend">deepObjectExtend</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encodeHtml">encodeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.encodeSomeHtml">encodeSomeHtml</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extendDbObj">extendDbObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractBarDataWPercentageOfTotal">extractBarDataWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatDate">formatDate</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatNumber">formatNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatNumberSafe">formatNumberSafe</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatSecond">formatSecond</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAgo">formatTimeAgo</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAgoText">formatTimeAgoText</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.formatTimeAndDateShort">formatTimeAndDateShort</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getMonths">getMonths</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getOffsetCorrectionForTimestamp">getOffsetCorrectionForTimestamp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriod">getPeriod</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPeriodRange">getPeriodRange</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getPersistentSettings">getPersistentSettings</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getTickObj">getTickObj</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.getTime">getTime</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.round">round</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setActiveApp">setActiveApp</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.setPersistentSettings">setPersistentSettings</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.toFirstUpper">toFirstUpper</a></li><li data-type='method' style='display: none;'><a href="countlyCommon.html#.union">union</a></li></ul></li><li><a href="countlyDeviceList.html">countlyDeviceList</a></li><li><a href="countlyGlobal.html">countlyGlobal</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.admin_apps">admin_apps</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.apps">apps</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.cdn">cdn</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.countlyTitle">countlyTitle</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.csrf_token">csrf_token</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.defaultApp">defaultApp</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.member">member</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.plugins">plugins</a></li><li data-type='member' style='display: none;'><a href="countlyGlobal.html#.security">security</a></li></ul></li><li><a href="countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="countlyMetric.html#.callback">callback</a></li><li data-type='member' style='display: none;'><a href="countlyMetric.html#.fetchValue">fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyMetric.html#.clearObject">clearObject</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.extendDb">extendDb</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getBars">getBars</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getBarsWPercentageOfTotal">getBarsWPercentageOfTotal</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getDb">getDb</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getMeta">getMeta</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getOSSegmentedData">getOSSegmentedData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.getRangeData">getRangeData</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.reset">reset</a></li><li data-type='method' style='display: none;'><a href="countlyMetric.html#.setDb">setDb</a></li></ul></li><li><a href="countlyOsMapping.html">countlyOsMapping</a></li><li><a href="countlyView.html">countlyView</a><ul class='methods'><li data-type='method' style='display: none;'><a href="countlyView.html#afterRender">afterRender</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#appChanged">appChanged</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#beforeRender">beforeRender</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#dateChanged">dateChanged</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#destroy">destroy</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#render">render</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#renderCommon">renderCommon</a></li><li data-type='method' style='display: none;'><a href="countlyView.html#restart">restart</a></li></ul></li><li><a href="store.html">store</a><ul class='members'><li data-type='member' style='display: none;'><a href="store.html#.get">get</a></li><li data-type='member' style='display: none;'><a href="store.html#.set">set</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#checkIfEventViewHaveNotUpdatedChanges">checkIfEventViewHaveNotUpdatedChanges</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">countly/countly.template.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global Backbone, countlyAuth, countlyCommon, countlyGlobal, CountlyHelpers, moment, _, store, jQuery, $, countlyVue*/
+
+//redefine contains selector for jquery to be case insensitive
+$.expr[":"].contains = $.expr.createPseudo(function(arg) {
+    return function(elem) {
+        return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
+    };
+});
+
+/**
+ * Main app instance of Backbone AppRouter used to control views and view change flow
+ * @name app
+ * @global
+ * @instance
+ * @namespace app
+ */
+var AppRouter = Backbone.Router.extend({
+    routes: {
+        "/": "dashboard",
+        "*path": "main"
+    },
+    /**
+    * View that is currently being displayed
+    * @type {countlyView}
+    * @instance
+    * @memberof app
+    */
+    activeView: null, //current view
+    dateToSelected: null, //date to selected from the date picker
+    dateFromSelected: null, //date from selected from the date picker
+    activeAppName: '',
+    activeAppKey: '',
+    _isFirstLoad: false, //to know if we are switching between two apps or just loading page
+    refreshActiveView: 0, //refresh interval function reference
+    _myRequests: {}, //save requests not connected with view to prevent calling the same if previous not finished yet.
+    /**
+    * Navigate to another view programmatically. If you need to change the view without user clicking anything, like redirect. You can do this using this method. This method is not define by countly but is direct method of AppRouter object in Backbone js
+    * @name app#navigate
+    * @function
+    * @instance
+    * @param {string} fragment - url path (hash part) where to redirect user
+    * @param {boolean=} triggerRoute - to trigger route call, like initialize new view, etc. Default is false, so you may want to use false when redirecting to URL for your own same view where you are already, so no need to reload it
+    * @memberof app
+    * @example &lt;caption>Redirect to url of the same view&lt;/caption>
+    * //you are at #/manage/systemlogs
+    * app.navigate("#/manage/systemlogs/query/{}");
+    *
+    * @example &lt;caption>Redirect to url of other view&lt;/caption>
+    * //you are at #/manage/systemlogs
+    * app.navigate("#/crashes", true);
+    */
+    _removeUnfinishedRequests: function() {
+        for (var url in this._myRequests) {
+            for (var data in this._myRequests[url]) {
+                //4 means done, less still in progress
+                if (parseInt(this._myRequests[url][data].readyState) !== 4) {
+                    this._myRequests[url][data].abort_reason = "view_change";
+                    this._myRequests[url][data].abort();
+                }
+            }
+        }
+        this._myRequests = {};
+        if (this.activeView) {
+            this.activeView._removeMyRequests();//remove requests for view(if not finished)
+        }
+    },
+    switchApp: function(app_id, callback) {
+        countlyCommon.setActiveApp(app_id);
+
+        //removing requests saved in app
+        app._removeUnfinishedRequests();
+        if (app &amp;&amp; app.activeView) {
+            if (typeof callback === "function") {
+                app.activeView.appChanged(function() {
+                    app.onAppSwitch(app_id);
+                    callback();
+                });
+            }
+            else {
+                app.activeView.appChanged(function() {
+                    app.onAppSwitch(app_id);
+                });
+            }
+        }
+        else {
+            if (typeof callback === "function") {
+                callback();
+            }
+        }
+    },
+    _menuForTypes: {},
+    _subMenuForTypes: {},
+    _menuForAllTypes: [],
+    _subMenuForAllTypes: [],
+    _subMenuForCodes: {},
+    _subMenus: {},
+    _internalMenuCategories: ["management", "user"],
+    _uniqueMenus: {},
+    /**
+    * Add menu category. Categories will be copied for all app types and its visibility should be controled from the app type plugin
+    * @memberof app
+    * @param {string} category - new menu category
+    * @param {Object} node - object defining category lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {number} node.priority - priority order number, the less it is, the more on top category will be
+    * @param {string} node.classes - string with css classes to add to category element
+    * @param {string} node.style - string with css styling to add to category element
+    * @param {string} node.html - additional HTML to append after text
+    * @param {function} node.callback - called when and each time category is added passing same parameters as to this method plus added jquery category element as 3th param
+    **/
+    addMenuCategory: function(category, node) {
+        if (this._internalMenuCategories.indexOf(category) !== -1) {
+            throw "Category already exists with name: " + category;
+        }
+        if (typeof node.priority === "undefined") {
+            throw "Provide priority property for category element";
+        }
+
+        //New sidebar container hook
+        countlyVue.container.registerData("/sidebar/analytics/menuCategory", {
+            name: category,
+            priority: node.priority,
+            title: node.text || countlyVue.i18n("sidebar.category." + category),
+            node: node
+            /*
+                Following secondary params are simply passed to registry, but not directly used for now:
+
+                * node.classes - string with css classes to add to category element
+                * node.style - string with css styling to add to category element
+                * node.html - additional HTML to append after text
+                * node.callback 
+            */
+        });
+        this._internalMenuCategories.push(category);
+        if (typeof node.callback === "function") {
+            node.callback(category, node);
+        }
+    },
+    /**
+    * Add first level menu element for specific app type under specified category. You can only add app type specific menu to categories "understand", "explore", "reach", "improve", "utilities"
+    * @memberof app
+    * @param {string} app_type - type of the app for which to add menu
+    * @param {string} category - category under which to add menu: "understand", "explore", "reach", "improve", "utilities"
+    * @param {Object} node - object defining menu lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
+    * @param {string} node.icon - HTML code for icon to show, usually a div element with font icon classes
+    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
+    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
+    * @param {string} node.classes - string with css classes to add to menu element
+    * @param {string} node.style - string with css styling to add to menu element
+    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
+    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    **/
+    addMenuForType: function(app_type, category, node) {
+        if (this._internalMenuCategories.indexOf(category) === -1) {
+            throw "Wrong category for menu: " + category;
+        }
+        if (!node.text || !node.code || typeof node.priority === "undefined") {
+            throw "Provide code, text, icon and priority properties for menu element";
+        }
+
+        if (!this._uniqueMenus[app_type]) {
+            this._uniqueMenus[app_type] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][category]) {
+            this._uniqueMenus[app_type][category] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][category][node.code]) {
+            this._uniqueMenus[app_type][category][node.code] = true;
+        }
+        else {
+            //duplicate menu
+            return;
+        }
+
+        //New sidebar container hook
+        countlyVue.container.registerData("/sidebar/analytics/menu", {
+            app_type: app_type,
+            category: category,
+            name: node.code,
+            priority: node.priority,
+            title: node.text,
+            url: node.url,
+            icon: node.icon,
+            permission: node.permission,
+            tabsPath: node.tabsPath,
+            node: node
+            /*
+                Following secondary params are simply passed to registry, but not directly used for now:
+
+                * node.classes - string with css classes to add to category element
+                * node.style - string with css styling to add to category element
+                * node.html - additional HTML to append after text
+                * node.callback
+            */
+        });
+
+        if (!this.appTypes[app_type] &amp;&amp; category !== "management" &amp;&amp; category !== "users") {
+            //app type not yet register, queue
+            if (!this._menuForTypes[app_type]) {
+                this._menuForTypes[app_type] = [];
+            }
+            this._menuForTypes[app_type].push({category: category, node: node});
+            return;
+        }
+        if (!node.url &amp;&amp; category !== "management" &amp;&amp; category !== "users") {
+            this._subMenus[node.code] = true;
+        }
+
+        if (typeof node.callback === "function") {
+            node.callback(app_type, category, node);
+        }
+
+        //run all queued submenus for this parent
+        if (!node.url &amp;&amp; category !== "management" &amp;&amp; category !== "users" &amp;&amp; this._subMenuForCodes[node.code]) {
+            for (i = 0; i &lt; this._subMenuForCodes[node.code].length; i++) {
+                this.addSubMenuForType(this._subMenuForCodes[node.code][i].app_type, node.code, this._subMenuForCodes[node.code][i].node);
+            }
+            this._subMenuForCodes[node.code] = null;
+        }
+    },
+    /**
+    * Add second level menu element for specific app type under specified parent code.
+    * @memberof app
+    * @param {string} app_type - type of the app for which to add menu
+    * @param {string} parent_code - code for parent element under which to add this submenu element
+    * @param {Object} node - object defining menu lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
+    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
+    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
+    * @param {string} node.classes - string with css classes to add to menu element
+    * @param {string} node.style - string with css styling to add to menu element
+    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
+    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    **/
+    addSubMenuForType: function(app_type, parent_code, node) {
+        if (!parent_code) {
+            throw "Provide code name for parent category";
+        }
+        if (!node.text || !node.code || !node.url || !node.priority) {
+            throw "Provide text, code, url and priority for sub menu";
+        }
+
+        if (!this._uniqueMenus[app_type]) {
+            this._uniqueMenus[app_type] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][parent_code]) {
+            this._uniqueMenus[app_type][parent_code] = {};
+        }
+
+        if (!this._uniqueMenus[app_type][parent_code][node.code]) {
+            this._uniqueMenus[app_type][parent_code][node.code] = true;
+        }
+        else {
+            //duplicate menu
+            return;
+        }
+
+        //New sidebar container hook
+        countlyVue.container.registerData("/sidebar/analytics/submenu", {
+            app_type: app_type,
+            parent_code: parent_code,
+            name: node.code,
+            priority: node.priority,
+            title: node.text,
+            url: node.url,
+            permission: node.permission,
+            tabsPath: node.tabsPath,
+            node: node
+            /*
+                Following secondary params are simply passed to registry, but not directly used for now:
+
+                * node.classes - string with css classes to add to category element
+                * node.style - string with css styling to add to category element
+                * node.html - additional HTML to append after text
+                * node.callback
+            */
+        });
+
+        if (!this.appTypes[app_type]) {
+            //app type not yet register, queue
+            if (!this._subMenuForTypes[app_type]) {
+                this._subMenuForTypes[app_type] = [];
+            }
+            this._subMenuForTypes[app_type].push({parent_code: parent_code, node: node});
+            return;
+        }
+        if (!this._subMenus[parent_code]) {
+            //parent not yet registered, queue
+            if (!this._subMenuForCodes[parent_code]) {
+                this._subMenuForCodes[parent_code] = [];
+            }
+            this._subMenuForCodes[parent_code].push({app_type: app_type, node: node});
+            return;
+        }
+
+        if (typeof node.callback === "function") {
+            node.callback(app_type, parent_code, node);
+        }
+    },
+    /**
+    * Add first level menu element for all app types and special categories. 
+    * @memberof app
+    * @param {string} category - category under which to add menu: "understand", "explore", "reach", "improve", "utilities", "management", "user"
+    * @param {Object} node - object defining menu lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
+    * @param {string} node.icon - HTML code for icon to show, usually a div element with font icon classes
+    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
+    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
+    * @param {string} node.classes - string with css classes to add to menu element
+    * @param {string} node.style - string with css styling to add to menu element
+    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
+    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    **/
+    addMenu: function(category, node) {
+        if (node &amp;&amp; !node.pluginName &amp;&amp; !node.permission) {
+            console.warn('Please add permission to this menu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added');// eslint-disable-line no-console
+        }
+        if (node &amp;&amp; (node.pluginName || node.permission) &amp;&amp; !CountlyHelpers.isPluginEnabled(node.pluginName || node.permission)) {
+            return;
+        }
+        else {
+            if (category === "management" || category === "users") {
+                this.addMenuForType("default", category, node);
+            }
+            else {
+                for (var type in this.appTypes) {
+                    this.addMenuForType(type, category, node);
+                }
+                //queue for future added app types
+                this._menuForAllTypes.push({category: category, node: node});
+            }
+        }
+    },
+    /**
+    * Add second level sub menu element for all app types (not available for special categories as "management" and "user")
+    * @memberof app
+    * @param {string} parent_code - code for parent element under which to add this submenu element
+    * @param {Object} node - object defining menu lement
+    * @param {string} node.text - key for localization string which to use as text
+    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
+    * @param {string} node.icon - HTML code for icon to show, usually a div element with font icon classes
+    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
+    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
+    * @param {string} node.classes - string with css classes to add to menu element
+    * @param {string} node.style - string with css styling to add to menu element
+    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
+    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    **/
+    addSubMenu: function(parent_code, node) {
+        if (node &amp;&amp; !node.pluginName &amp;&amp; !node.permission) {
+            console.warn('Please add permission to this submenu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added');// eslint-disable-line no-console
+        }
+        if (node &amp;&amp; (node.pluginName || node.permission) &amp;&amp; !CountlyHelpers.isPluginEnabled(node.pluginName || node.permission)) {
+            return;
+        }
+        else {
+            for (var type in this.appTypes) {
+                this.addSubMenuForType(type, parent_code, node);
+            }
+            //queue for future added app types
+            this._subMenuForAllTypes.push({parent_code: parent_code, node: node});
+        }
+    },
+    main: function(/*forced*/) {
+        var change = true,
+            redirect = false;
+        // detect app switch like
+        //#/app/586e32ddc32cb30a01558cc1/analytics/events
+        if (Backbone.history.fragment.indexOf("/app/") === 0) {
+            var app_id = Backbone.history.fragment.replace("/app/", "");
+            redirect = "#/";
+            if (app_id &amp;&amp; app_id.length) {
+                if (app_id.indexOf("/") !== -1) {
+                    var parts = app_id.split("/");
+                    app_id = parts.shift();
+                    redirect = "#/" + parts.join("/");
+                }
+                if (app_id !== countlyCommon.ACTIVE_APP_ID &amp;&amp; countlyGlobal.apps[app_id]) {
+                    app.switchApp(app_id, function() {
+                        app.navigate(redirect, true);
+                    });
+                    return;
+                }
+            }
+        }
+        else if (Backbone.history.fragment.indexOf("/0/") === 0 &amp;&amp; countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
+            this.navigate("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history.fragment.replace("/0", ""), true);
+            return;
+        }
+        else if (Backbone.history.fragment !== "/" &amp;&amp; countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
+            var type = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type || "mobile";
+            var urls = countlyVue.container.getAllRoutes();
+            urls.sort(function(a, b) {
+                return b.url.length - a.url.length;
+            });
+            for (var i = 0; i &lt; urls.length; i++) {
+                if (urls[i].url === "#/") {
+                    continue;
+                }
+                if ("#" + Backbone.history.fragment === urls[i].url &amp;&amp; (type === urls[i].app_type || !urls[i].app_type)) {
+                    change = false;
+                    break;
+                }
+                else if (("#" + Backbone.history.fragment).indexOf(urls[i].url) === 0 &amp;&amp; (type === urls[i].app_type || !urls[i].app_type)) {
+                    redirect = urls[i].url;
+                    break;
+                }
+            }
+        }
+
+        if (redirect) {
+            app.navigate(redirect, true);
+        }
+        else if (change) {
+            if (Backbone.history.fragment !== "/") {
+                this.navigate("#/", true);
+            }
+            else if (countlyCommon.APP_NAMESPACE !== false) {
+                this.navigate("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history.fragment, true);
+            }
+            else {
+                this.dashboard();
+            }
+        }
+        else {
+            if (countlyCommon.APP_NAMESPACE !== false) {
+                this.navigate("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history.fragment, true);
+            }
+            else {
+                this.activeView.render();
+            }
+        }
+    },
+    dashboard: function() {
+        if (countlyGlobal.member.restrict &amp;&amp; countlyGlobal.member.restrict.indexOf("#/") !== -1) {
+            return;
+        }
+        if (_.isEmpty(countlyGlobal.apps)) {
+            this.renderWhenReady(this.manageAppsView);
+        }
+        else if (typeof this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type] !== "undefined") {
+            if (this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type] !== null) {
+                this.renderWhenReady(this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]);
+            }
+            else {
+                this.renderWhenReady(app.HomeView);
+            }
+        }
+        else {
+            this.renderWhenReady(this.dashboardView);
+        }
+    },
+    runRefreshScripts: function() {
+        var i = 0;
+        var l = 0;
+        if (this.refreshScripts[Backbone.history.fragment]) {
+            for (i = 0, l = this.refreshScripts[Backbone.history.fragment].length; i &lt; l; i++) {
+                this.refreshScripts[Backbone.history.fragment][i]();
+            }
+        }
+        for (var k in this.refreshScripts) {
+            if (k !== '#' &amp;&amp; k.indexOf('#') !== -1 &amp;&amp; Backbone.history.fragment.match("^" + k.replace(/#/g, '.*'))) {
+                for (i = 0, l = this.refreshScripts[k].length; i &lt; l; i++) {
+                    this.refreshScripts[k][i]();
+                }
+            }
+        }
+        if (this.refreshScripts["#"]) {
+            for (i = 0, l = this.refreshScripts["#"].length; i &lt; l; i++) {
+                this.refreshScripts["#"][i]();
+            }
+        }
+
+    },
+    performRefresh: function(self) {
+        //refresh only if we are on current period
+        if (countlyCommon.periodObj.periodContainsToday &amp;&amp; self.activeView.isLoaded &amp;&amp; !countlyCommon.DISABLE_AUTO_REFRESH) {
+            self.activeView.isLoaded = false;
+            $.when(self.activeView.refresh()).always(function() {
+                self.activeView.isLoaded = true;
+                self.runRefreshScripts();
+            });
+        }
+    },
+    renderWhenReady: function(viewName) { //all view renders end up here
+        // If there is an active view call its destroy function to perform cleanups before a new view renders
+        if (this.activeView &amp;&amp; this.activeView.destroy) {
+            this.activeView._removeMyRequests &amp;&amp; this.activeView._removeMyRequests();
+            this.activeView.destroy();
+        }
+
+        if (window.components &amp;&amp; window.components.slider &amp;&amp; window.components.slider.instance) {
+            window.components.slider.instance.close();
+        }
+
+        this.activeView = viewName;
+
+        clearInterval(this.refreshActiveView);
+        if (typeof countlyGlobal.member.password_changed === "undefined") {
+            countlyGlobal.member.password_changed = Math.round(new Date().getTime() / 1000);
+        }
+        this.routesHit++;
+
+        if (_.isEmpty(countlyGlobal.apps)) {
+            if (!countlyGlobal.member.global_admin) {
+                if (Backbone.history.fragment !== "/account-settings/no-access") {
+                    this.navigate("/account-settings/no-access", true);
+                }
+                else {
+                    viewName.render();
+                }
+            }
+            else if (Backbone.history.fragment !== "/initial-setup") {
+                this.navigate("/initial-setup", true);
+            }
+            else {
+                viewName.render();
+            }
+            return false;
+        }
+        else if ((countlyGlobal.security.password_expiration > 0) &amp;&amp;
+                (countlyGlobal.member.password_changed + countlyGlobal.security.password_expiration * 24 * 60 * 60 &lt; new Date().getTime() / 1000) &amp;&amp;
+                (!countlyGlobal.ssr)) {
+            if (Backbone.history.fragment !== "/account-settings/reset") {
+                this.navigate("/account-settings/reset", true);
+            }
+            else {
+                viewName.render();
+            }
+            return false;
+        }
+        viewName.render();
+        var self = this;
+        this.refreshActiveView = setInterval(function() {
+            self.performRefresh(self);
+        }, countlyCommon.DASHBOARD_REFRESH_MS);
+
+        if (countlyGlobal &amp;&amp; countlyGlobal.message) {
+            CountlyHelpers.parseAndShowMsg(countlyGlobal.message);
+        }
+
+        /**
+         * Identify the actuve sidebar menu item.
+         *
+         * countlyVue.sideBarComponent is null on the initial load.
+         * But don't worry, we identify selected menu items when its mounted aswell.
+         */
+        if (countlyVue.sideBarComponent) {
+            countlyVue.sideBarComponent.$children[0].identifySelected();
+        }
+    },
+    hasRoutingHistory: function() {
+        if (this.routesHit > 1) {
+            return true;
+        }
+        return false;
+    },
+    back: function(fallback_route) {
+        if (this.routesHit > 1) {
+            window.history.back();
+        }
+        else {
+            var fragment = Backbone.history.getFragment();
+            //route not passed, try  to guess from current location
+            if (typeof fallback_route === "undefined" || fallback_route === "") {
+                if (fragment) {
+                    var parts = fragment.split("/");
+                    if (parts.length > 1) {
+                        fallback_route = "/" + parts[1];
+                    }
+                }
+            }
+            if (fallback_route === fragment) {
+                fallback_route = '/';
+            }
+            this.navigate(fallback_route || '/', {trigger: true, replace: true});
+        }
+    },
+    initialize: function() { //initialize the dashboard, register helpers etc.
+
+        this.bind("route", function(name/*, args*/) {
+            $('#content').removeClass(function(index, className) {
+                return (className.match(/(^|\s)routename-\S*/g) || []).join(' ');
+            }).addClass("routename-" + name);
+        });
+
+        this.appTypes = {};
+        this.pageScripts = {};
+        this.dataExports = {};
+        this.appSwitchCallbacks = [];
+        this.appManagementSwitchCallbacks = [];
+        this.appObjectModificators = [];
+        this.appManagementViews = {};
+        this.appAddTypeCallbacks = [];
+        this.userEditCallbacks = [];
+        this.refreshScripts = {};
+        this.appSettings = {};
+        this.widgetCallbacks = {};
+        var self = this;
+        /**
+            * Add menus
+            **/
+        self.addMenuCategory("understand", {priority: 10});
+        self.addMenuCategory("explore", {priority: 20});
+        self.addMenuCategory("reach", {priority: 30});
+        self.addMenuCategory("improve", {priority: 40});
+        self.addMenuCategory("utilities", {priority: 50});
+        self.addMenu("understand", {code: "overview", permission: "core", url: "#/", text: "sidebar.home", icon: '&lt;div class="logo dashboard ion-speedometer">&lt;/div>', priority: 10, bottom: 20});
+        self.addMenu("understand", {code: "analytics", permission: "core", text: "sidebar.analytics", icon: '&lt;div class="logo analytics ion-ios-pulse-strong">&lt;/div>', priority: 20});
+        self.addMenu("understand", {code: "events", permission: "events", text: "sidebar.events", icon: '&lt;div class="logo events">&lt;i class="material-icons">bubble_chart&lt;/i>&lt;/div>', priority: 40});
+        // self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '&lt;div class="logo ion-happy-outline">&lt;/div>', priority: 30});
+        self.addSubMenu("events", {code: "events-overview", permission: "events", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
+        self.addSubMenu("events", {code: "all-events", permission: "events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
+        // if (countlyAuth.validateUpdate('events') || countlyAuth.validateDelete('events')) {
+        //     self.addSubMenu("events", {code: "manage-events", url: "#/analytics/manage-events", text: "sidebar.events.blueprint", priority: 100});
+        // }
+
+        self.addMenu("utilities", {
+            code: "management",
+            permission: "core",
+            text: "sidebar.utilities",
+            icon: '&lt;div class="logo management ion-wrench">&lt;/div>',
+            priority: 10000000,
+            callback: function(type, category, node, menu) {
+                //for backwards compatability of old plugins adding menu to management
+                menu.filter("#management-submenu").append("&lt;span class='help-toggle'>&lt;/span>");
+            }
+        });
+
+        if (countlyAuth.validateCreate('core')) {
+            self.addSubMenu("management", {code: "longtasks", permission: "core", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
+        }
+
+        //management is also a menu category which goes in default menu i.e. visible to all users
+
+        var jobsIconSvg = '&lt;svg width="20px" height="16px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">&lt;title>list-24px 2&lt;/title>&lt;g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">&lt;g id="list-24px-2" fill="#9f9f9f" fill-rule="nonzero">&lt;g id="list-24px">&lt;path d="M0,6 L2,6 L2,4 L0,4 L0,6 Z M0,10 L2,10 L2,8 L0,8 L0,10 Z M0,2 L2,2 L2,0 L0,0 L0,2 Z M3,6 L12,6 L12,4 L3,4 L3,6 Z M3,10 L12,10 L12,8 L3,8 L3,10 Z M3,0 L3,2 L12,2 L12,0 L3,0 Z" id="Shape">&lt;/path>&lt;/g>&lt;/g>&lt;/g>&lt;/svg>';
+        if (countlyAuth.validateAnyAppAdmin()) {
+            self.addMenu("management", {code: "applications", permission: "core", url: "#/manage/apps", text: "sidebar.management.applications", icon: '&lt;div class="logo-icon ion-ios-albums">&lt;/div>', priority: 20});
+        }
+        if (countlyAuth.validateGlobalAdmin()) {
+            self.addMenu("management", {code: "users", permission: "core", url: "#/manage/users", text: "sidebar.management.users", icon: '&lt;div class="logo-icon fa fa-user-friends">&lt;/div>', priority: 10});
+        }
+        if (countlyAuth.validateGlobalAdmin()) {
+            self.addMenu("management", {code: "jobs", permission: "core", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '&lt;div class="logo-icon">' + jobsIconSvg + '&lt;/div>', priority: 60});
+        }
+
+        // self.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '&lt;div class="logo-icon ion-help help">&lt;/div>', classes: "help-toggle", html: '&lt;div class="on-off-switch" id="help-toggle">&lt;input type="checkbox" class="on-off-switch-checkbox" id="help-toggle-cbox">&lt;label class="on-off-switch-label" for="help-toggle-cbox">&lt;/label>&lt;/div>', priority: 10000000});
+
+        // self.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '&lt;div class="logo ion-person-stalker">&lt;/div>', priority: 10});
+        // self.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '&lt;div class="logo ion-funnel">&lt;/div>', priority: 20});
+        $(document).ready(function() {
+            Backbone.history.checkUrl();
+        });
+
+        this.routesHit = 0; //keep count of number of routes handled by your application
+
+        $("body").addClass("lang-" + countlyCommon.BROWSER_LANG_SHORT);
+        jQuery.i18n.properties({
+            name: window.production ? 'localization/min/locale' : ["localization/dashboard/dashboard", "localization/help/help", "localization/mail/mail"].concat(countlyGlobal.plugins.map(function(plugin) {
+                return plugin + "/localization/" + plugin;
+            })),
+            cache: true,
+            language: countlyCommon.BROWSER_LANG_SHORT,
+            countlyVersion: countlyGlobal.countlyVersion + "&amp;" + countlyGlobal.pluginsSHA,
+            path: countlyGlobal.cdn,
+            mode: 'map',
+            callback: function() {
+                for (var key in jQuery.i18n.map) {
+                    if (countlyGlobal.company) {
+                        jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                    }
+                    jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(jQuery.i18n.map[key]);
+                }
+                self.origLang = JSON.stringify(jQuery.i18n.map);
+            }
+        });
+
+        $(document).ready(function() {
+            if (countlyGlobal.licenseNotification &amp;&amp; countlyGlobal.licenseNotification.length &amp;&amp; !_.isEmpty(countlyGlobal.apps)) {
+                for (var idx = 0; idx &lt; countlyGlobal.licenseNotification.length; idx++) {
+                    countlyGlobal.licenseNotification[idx].id = countlyCommon.generateId();
+                    CountlyHelpers.notify(countlyGlobal.licenseNotification[idx]);
+                }
+            }
+
+            $.ajaxPrefilter(function(options) {
+                var last5char = options.url.substring(options.url.length - 5, options.url.length);
+                if (last5char === ".html") {
+                    var version = countlyGlobal.countlyVersion || "";
+                    options.url = options.url + "?v=" + version;
+                }
+            });
+            var validateSession = function() {
+                $.ajax({
+                    url: countlyGlobal.path + "/session",
+                    data: {check_session: true},
+                    success: function(result) {
+                        if (result === "logout") {
+                            CountlyHelpers.logout("/logout");
+
+                        }
+                        if (result === "login") {
+                            CountlyHelpers.logout();
+                        }
+                        setTimeout(function() {
+                            validateSession();
+                        }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);
+                    }
+                });
+            };
+            setTimeout(function() {
+                validateSession();
+            }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);//validates session each 30 seconds
+            if (parseInt(countlyGlobal.config.session_timeout)) {
+                var minTimeout, tenSecondTimeout, logoutTimeout;
+                var shouldRecordAction = false;
+                var extendSession = function() {
+                    shouldRecordAction = false;
+                    $.ajax({
+                        url: countlyGlobal.path + "/session",
+                        success: function(result) {
+                            if (result === "logout") {
+                                CountlyHelpers.logout("/logout");
+                            }
+                            if (result === "login") {
+                                CountlyHelpers.logout();
+                            }
+                            else if (result === "success") {
+                                shouldRecordAction = false;
+                                var myTimeoutValue = parseInt(countlyGlobal.config.session_timeout) * 1000 * 60;
+                                if (myTimeoutValue > 2147483647) { //max value used by set timeout function
+                                    myTimeoutValue = 1800000;//30 minutes
+                                }
+                                setTimeout(function() {
+                                    shouldRecordAction = true;
+                                }, Math.round(myTimeoutValue / 2));
+                                resetSessionTimeouts(myTimeoutValue);
+                            }
+                        },
+                        error: function() {
+                            shouldRecordAction = true;
+                        }
+                    });
+                };
+
+                var resetSessionTimeouts = function(timeout) {
+                    var minute = timeout - 60 * 1000;
+                    if (minTimeout) {
+                        clearTimeout(minTimeout);
+                        minTimeout = null;
+                    }
+                    if (minute > 0) {
+                        minTimeout = setTimeout(function() {
+                            CountlyHelpers.notify({ title: jQuery.i18n.map["common.session-expiration"], message: jQuery.i18n.map["common.expire-minute"], info: jQuery.i18n.map["common.click-to-login"] });
+                        }, minute);
+                    }
+                    var tenSeconds = timeout - 10 * 1000;
+                    if (tenSecondTimeout) {
+                        clearTimeout(tenSecondTimeout);
+                        tenSecondTimeout = null;
+                    }
+                    if (tenSeconds > 0) {
+                        tenSecondTimeout = setTimeout(function() {
+                            CountlyHelpers.notify({ title: jQuery.i18n.map["common.session-expiration"], message: jQuery.i18n.map["common.expire-seconds"], info: jQuery.i18n.map["common.click-to-login"] });
+                        }, tenSeconds);
+                    }
+                    if (logoutTimeout) {
+                        clearTimeout(logoutTimeout);
+                        logoutTimeout = null;
+                    }
+                    logoutTimeout = setTimeout(function() {
+                        extendSession();
+                    }, timeout + 1000);
+                };
+
+                var myTimeoutValue = parseInt(countlyGlobal.config.session_timeout) * 1000 * 60;
+                //max value used by set timeout function
+                if (myTimeoutValue > 2147483647) {
+                    myTimeoutValue = 1800000;
+                }//30 minutes
+                resetSessionTimeouts(myTimeoutValue);
+                $(document).on("click mousemove extend-dashboard-user-session", function() {
+                    if (shouldRecordAction) {
+                        extendSession();
+                    }
+                });
+                extendSession();
+            }
+
+            // If date range is selected initialize the calendar with these
+            var periodObj = countlyCommon.getPeriod();
+            if (Object.prototype.toString.call(periodObj) === '[object Array]' &amp;&amp; periodObj.length === 2) {
+                self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
+                self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10));
+            }
+
+            // Initialize localization related stuff
+
+            // Localization test
+            /*
+             $.each(jQuery.i18n.map, function (key, value) {
+             jQuery.i18n.map[key] = key;
+             });
+             */
+
+            try {
+                moment.locale(countlyCommon.BROWSER_LANG_SHORT);
+            }
+            catch (e) {
+                moment.locale("en");
+            }
+        });
+
+        if (!_.isEmpty(countlyGlobal.apps)) {
+            if (!countlyCommon.ACTIVE_APP_ID) {
+                var activeApp = (countlyGlobal.member &amp;&amp; countlyGlobal.member.active_app_id &amp;&amp; countlyGlobal.apps[countlyGlobal.member.active_app_id])
+                    ? countlyGlobal.apps[countlyGlobal.member.active_app_id]
+                    : countlyGlobal.defaultApp;
+
+                countlyCommon.setActiveApp(activeApp._id);
+                self.activeAppName = activeApp.name;
+            }
+            else {
+                self.activeAppName = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name;
+            }
+        }
+
+        $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
+
+        $(document).bind("idle.idleTimer", function() {
+            clearInterval(self.refreshActiveView);
+        });
+
+        $(document).bind("active.idleTimer", function() {
+            self.activeView.restart();
+            self.refreshActiveView = setInterval(function() {
+                self.performRefresh(self);
+            }, countlyCommon.DASHBOARD_REFRESH_MS);
+        });
+
+        $(document).ready(function() {
+            setTimeout(function() {
+                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID, true, true);
+            }, 1);
+        });
+    },
+    /**
+    * Localize all found html elements with data-localize and data-help-localize attributes
+    * @param {jquery_object} el - jquery reference to parent element which contents to localize, by default all document is localized if not provided
+    * @memberof app
+    */
+    localize: function(el) {
+        var helpers = {
+            onlyFirstUpper: function(str) {
+                return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+            },
+            upper: function(str) {
+                return str.toUpperCase();
+            }
+        };
+
+        // translate help module
+        (el ? el.find('[data-help-localize]') : $("[data-help-localize]")).each(function() {
+            var elem = $(this);
+            if (typeof elem.data("help-localize") !== "undefined") {
+                elem.data("help", jQuery.i18n.map[elem.data("help-localize")]);
+            }
+        });
+
+        // translate dashboard
+        (el ? el.find('[data-localize]') : $("[data-localize]")).each(function() {
+            var elem = $(this),
+                toLocal = elem.data("localize").split("!"),
+                localizedValue = "";
+
+            if (toLocal.length === 2) {
+                if (helpers[toLocal[0]]) {
+                    localizedValue = helpers[toLocal[0]](jQuery.i18n.map[toLocal[1]]);
+                }
+                else {
+                    localizedValue = jQuery.i18n.prop(toLocal[0], (toLocal[1]) ? jQuery.i18n.map[toLocal[1]] : "");
+                }
+            }
+            else {
+                localizedValue = jQuery.i18n.map[elem.data("localize")];
+            }
+
+            if (elem.is("input[type=text]") || elem.is("input[type=password]") || elem.is("textarea")) {
+                elem.attr("placeholder", localizedValue);
+            }
+            else if (elem.is("input[type=button]") || elem.is("input[type=submit]")) {
+                elem.attr("value", localizedValue);
+            }
+            else {
+                elem.html(localizedValue);
+            }
+        });
+    },
+    /**
+    * Register new app type as mobile, web, desktop, etc. You can create new plugin to add new app type with its own dashboard
+    * @param {string} name - name of the app type as mobile, web, desktop etc
+    * @param {countlyView} view - instance of the countlyView to show as main dashboard for provided app type
+    * @memberof app
+    * @instance
+    * @example
+    * app.addAppType("mobile", MobileDashboardView);
+    */
+    addAppType: function(name, view) {
+        if (view) {
+            this.appTypes[name] = new view();
+        }
+        else {
+            this.appTypes[name] = null;
+        }
+        var menu = $("#default-type").clone();
+        menu.attr("id", name + "-type");
+        $("#sidebar-menu").append(menu);
+
+        //run all queued type menus
+        if (this._menuForTypes[name]) {
+            for (var i = 0; i &lt; this._menuForTypes[name].length; i++) {
+                this.addMenuForType(name, this._menuForTypes[name][i].category, this._menuForTypes[name][i].node);
+            }
+            this._menuForTypes[name] = null;
+        }
+
+        //run all queued type submenus
+        if (this._subMenuForTypes[name]) {
+            for (i = 0; i &lt; this._subMenuForTypes[name].length; i++) {
+                this.addSubMenuForType(name, this._subMenuForTypes[name][i].parent_code, this._subMenuForTypes[name][i].node);
+            }
+            this._subMenuForTypes[name] = null;
+        }
+
+        //run all queued all type menus
+        for (i = 0; i &lt; this._menuForAllTypes.length; i++) {
+            this.addMenuForType(name, this._menuForAllTypes[i].category, this._menuForAllTypes[i].node);
+        }
+
+        //run all queued all type submenus
+        for (i = 0; i &lt; this._subMenuForAllTypes.length; i++) {
+            this.addSubMenuForType(name, this._subMenuForAllTypes[i].parent_code, this._subMenuForAllTypes[i].node);
+        }
+    },
+    /**
+    * Add callback to be called when user changes app in dashboard, which can be used globally, outside of the view
+    * @param {function} callback - function receives app_id param which is app id of the new app to which user switched
+	* @param {string} name - Plugin name
+    * @memberof app
+    * @instance
+    * @example
+    * app.addAppSwitchCallback(function(appId){
+    *    countlyCrashes.loadList(appId);
+    * });
+    */
+    addAppSwitchCallback: function(callback, name) {
+        name = name || 'core';
+        this.appSwitchCallbacks.push({"name": name, "fn": callback});
+    },
+    /**
+    * Add callback to be called when user changes app in Managment -> Applications section, useful when providing custom input additions to app editing for different app types
+    * @param {function} callback - function receives app_id param which is app id and type which is app type
+    * @memberof app
+    * @instance
+    * @example
+    * app.addAppManagementSwitchCallback(function(appId, type){
+    *   if (type == "mobile") {
+    *       addPushHTMLIfNeeded(type);
+    *       $("#view-app .appmng-push").show();
+    *   } else {
+    *       $("#view-app .appmng-push").hide();
+    *   }
+    * });
+    */
+    addAppManagementSwitchCallback: function(callback) {
+        this.appManagementSwitchCallbacks.push(callback);
+    },
+    /**
+    * Modify app object on app create/update before submitting it to server
+    * @param {function} callback - function args object with all data that will be submitted to server on app create/update
+    * @memberof app
+    * @instance
+    * @example
+    * app.addAppObjectModificatorfunction(args){
+    *   if (args.type === "mobile") {
+    *       //do something for mobile
+    *   }
+    * });
+    */
+    addAppObjectModificator: function(callback) {
+        this.appObjectModificators.push(callback);
+    },
+    /**
+     * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
+     * @memberof app
+     * @param {string} plugin - plugin name
+     * @param {string} title  - plugin title
+     * @param {object} View - plugin view
+     */
+    addAppManagementView: function(plugin, title, View) {
+        if (CountlyHelpers.isPluginEnabled(plugin)) {
+            this.appManagementViews[plugin] = {title: title, view: View};
+        }
+    },
+    /**
+     * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
+     * @memberof app
+     * @param {string} plugin - plugin name
+     * @param {string} title  - plugin title
+     * @param {Array} inputs - plugin inputs
+     */
+    addAppManagementInput: function(plugin, title, inputs) {
+        if (CountlyHelpers.isPluginEnabled(plugin)) {
+            this.appManagementViews[plugin] = {title: title, inputs: inputs};
+        }
+    },
+    /**
+    * Add additional settings to app management. Allows you to inject html with css classes app-read-settings, app-write-settings and using data-id attribute for the key to store in app collection. And if your value or input needs additional processing, you may add the callbacks here
+    * @param {string} id - the same value on your input data-id attributes
+    * @param {object} options - different callbacks for data modification
+    * @param {function} options.toDisplay - function to be called when data is prepared for displaying, pases reference to html element with app-read-settings css class in which value should be displayed
+    * @param {function} options.toInput - function to be called when data is prepared for input, pases reference to html input element with app-write-settings css class in which value should be placed for editing
+    * @param {function} options.toSave - function to be called when data is prepared for saving, pases reference to object args that will be sent to server ad html input element with app-write-settings css class from which value should be taken and placed in args
+     * @param {function} options.toInject - function to be called when to inject HTML into app management view
+    * @memberof app
+    * @instance
+    * @example
+    * app.addAppSetting("my_setting", {
+    *     toDisplay: function(appId, elem){$(elem).text(process(countlyGlobal['apps'][appId]["my_setting"]));},
+    *     toInput: function(appId, elem){$(elem).val(process(countlyGlobal['apps'][appId]["my_setting"]));},
+    *     toSave: function(appId, args, elem){
+    *         args.my_setting = process($(elem).val());
+    *     },
+    *     toInject: function(){
+    *         var addApp = '&lt;tr class="help-zone-vs" data-help-localize="manage-apps.app-my_setting">'+
+    *             '&lt;td>'+
+    *                 '&lt;span data-localize="management-applications.my_setting">&lt;/span>'+
+    *             '&lt;/td>'+
+    *             '&lt;td>'+
+    *                 '&lt;input type="text" value="" class="app-write-settings" data-localize="placeholder.my_setting" data-id="my_setting">'+
+    *             '&lt;/td>'+
+    *         '&lt;/tr>';
+    *
+    *         $("#add-new-app table .table-add").before(addApp);
+    *
+    *         var editApp = '&lt;tr class="help-zone-vs" data-help-localize="manage-apps.app-my_settingt">'+
+    *             '&lt;td>'+
+    *                 '&lt;span data-localize="management-applications.my_setting">&lt;/span>'+
+    *             '&lt;/td>'+
+    *             '&lt;td>'+
+    *                 '&lt;div class="read app-read-settings" data-id="my_setting">&lt;/div>'+
+    *                 '&lt;div class="edit">'+
+    *                     '&lt;input type="text" value="" class="app-write-settings" data-id="my_setting" data-localize="placeholder.my_setting">'+
+    *                 '&lt;/div>'+
+    *             '&lt;/td>'+
+    *         '&lt;/tr>';
+    *
+    *         $(".app-details table .table-edit").before(editApp);
+    *     }
+    * });
+    */
+    addAppSetting: function(id, options) {
+        this.appSettings[id] = options;
+    },
+    /**
+    * Add callback to be called when user changes app type in UI in Managment -> Applications section (even without saving app type, just chaning in UI), useful when providing custom input additions to app editing for different app types
+    * @param {function} callback - function receives type which is app type
+    * @memberof app
+    * @instance
+    * @example
+    * app.addAppAddTypeCallback(function(type){
+    *   if (type == "mobile") {
+    *       $("#view-app .appmng-push").show();
+    *   } else {
+    *       $("#view-app .appmng-push").hide();
+    *   }
+    * });
+    */
+    addAppAddTypeCallback: function(callback) {
+        this.appAddTypeCallbacks.push(callback);
+    },
+    /**
+    * Add callback to be called when user open user edit UI in Managment -> Users section (even without saving, just opening), useful when providing custom input additions to user editing
+    * @param {function} callback - function receives user object and paramm which can be true if saving data, false if opening data, string to modify data
+    * @memberof app
+    * @instance
+    */
+    addUserEditCallback: function(callback) {
+        this.userEditCallbacks.push(callback);
+    },
+    /**
+    * Add custom data export handler from datatables to csv/xls exporter. Provide exporter name and callback function.
+    * Then add the same name as sExport attribute to the first datatables column.
+    * Then when user will want to export data from this table, your callback function will be called to get the data.
+    * You must perpare array of objects all with the same keys, where keys are columns and value are table data and return it from callback
+    * to be processed by exporter.
+    * @param {string} name - name of the export to expect in datatables sExport attribute
+    * @param {function} callback - callback to call when getting data
+    * @memberof app
+    * @instance
+    * @example
+    * app.addDataExport("userinfo", function(){
+    *    var ret = [];
+    *    var elem;
+    *    for(var i = 0; i &lt; tableData.length; i++){
+    *        //use same keys for each array element with different user data
+    *        elem ={
+    *            "fullname": tableData[i].firstname + " " + tableData[i].lastname,
+    *            "job": tableData[i].company + ", " + tableData[i].jobtitle,
+    *            "email": tableData[i].email
+    *        };
+    *        ret.push(elem);
+    *    }
+    *    //return array
+    *    return ret;
+    * });
+    */
+    addDataExport: function(name, callback) {
+        this.dataExports[name] = callback;
+    },
+    /**
+    * Add callback to be called everytime new view/page is loaded, so you can modify view with javascript after it has been loaded
+    * @param {string} view - view url/hash or with possible # as wildcard or simply providing # for any view
+    * @param {function} callback - function to be called when view loaded
+	* @param {string} name - Plugin name
+    * @memberof app
+    * @instance
+    * @example &lt;caption>Adding to single specific view with specific url&lt;/caption>
+    * //this will work only for view bind to #/analytics/events
+    * app.addPageScript("/analytics/events", function(){
+    *   $("#event-nav-head").after(
+    *       "&lt;a href='#/analytics/events/compare'>" +
+    *           "&lt;div id='compare-events' class='event-container'>" +
+    *               "&lt;div class='icon'>&lt;/div>" +
+    *               "&lt;div class='name'>" + jQuery.i18n.map["compare.button"] + "&lt;/div>" +
+    *           "&lt;/div>" +
+    *       "&lt;/a>"
+    *   );
+    * });
+
+    * @example &lt;caption>Add to all view subpages&lt;/caption>
+    * //this will work /users/ and users/1 and users/abs etc
+    * app.addPageScript("/users#", modifyUserDetailsForPush);
+
+    * @example &lt;caption>Adding script to any view&lt;/caption>
+    * //this will work for any view
+    * app.addPageScript("#", function(){
+    *   alert("I am an annoying popup appearing on each view");
+    * });
+    */
+    addPageScript: function(view, callback, name) {
+        if (!name || CountlyHelpers.isPluginEnabled(name)) {
+            if (!this.pageScripts[view]) {
+                this.pageScripts[view] = [];
+            }
+            this.pageScripts[view].push(callback);
+        }
+    },
+    /**
+    * Add callback to be called everytime view is refreshed, because view may reset some html, and we may want to remodify it again. By default this happens every 10 seconds, so not cpu intensive tasks
+    * @param {string} view - view url/hash or with possible # as wildcard or simply providing # for any view
+    * @param {function} callback - function to be called when view refreshed
+    * @memberof app
+    * @instance
+    * @example &lt;caption>Adding to single specific view with specific url&lt;/caption>
+    * //this will work only for view bind to #/analytics/events
+    * app.addPageScript("/analytics/events", function(){
+    *   $("#event-nav-head").after(
+    *       "&lt;a href='#/analytics/events/compare'>" +
+    *           "&lt;div id='compare-events' class='event-container'>" +
+    *               "&lt;div class='icon'>&lt;/div>" +
+    *               "&lt;div class='name'>" + jQuery.i18n.map["compare.button"] + "&lt;/div>" +
+    *           "&lt;/div>" +
+    *       "&lt;/a>"
+    *   );
+    * });
+
+    * @example &lt;caption>Add to all view subpage refreshed&lt;/caption>
+    * //this will work /users/ and users/1 and users/abs etc
+    * app.addRefreshScript("/users#", modifyUserDetailsForPush);
+
+    * @example &lt;caption>Adding script to any view&lt;/caption>
+    * //this will work for any view
+    * app.addRefreshScript("#", function(){
+    *   alert("I am an annoying popup appearing on each refresh of any view");
+    * });
+    */
+    addRefreshScript: function(view, callback) {
+        if (!this.refreshScripts[view]) {
+            this.refreshScripts[view] = [];
+        }
+        this.refreshScripts[view].push(callback);
+    },
+    onAppSwitch: function(appId, refresh, firstLoad) {
+        if (appId !== 0) {
+            this._isFirstLoad = firstLoad;
+            jQuery.i18n.map = JSON.parse(app.origLang);
+            if (!refresh) {
+                app.main(true);
+                if (window.components &amp;&amp; window.components.slider &amp;&amp; window.components.slider.instance) {
+                    window.components.slider.instance.close();
+                }
+            }
+            for (var i = 0; i &lt; this.appSwitchCallbacks.length; i++) {
+                if (CountlyHelpers.isPluginEnabled(this.appSwitchCallbacks[i].name)) {
+                    this.appSwitchCallbacks[i].fn(appId);
+                }
+            }
+            app.localize();
+        }
+    },
+    onAppManagementSwitch: function(appId, type) {
+        for (var i = 0; i &lt; this.appManagementSwitchCallbacks.length; i++) {
+            this.appManagementSwitchCallbacks[i](appId, type || countlyGlobal.apps[appId].type);
+        }
+    },
+    onAppAddTypeSwitch: function(type) {
+        for (var i = 0; i &lt; this.appAddTypeCallbacks.length; i++) {
+            this.appAddTypeCallbacks[i](type);
+        }
+    },
+    onUserEdit: function(user, param) {
+        for (var i = 0; i &lt; this.userEditCallbacks.length; i++) {
+            param = this.userEditCallbacks[i](user, param);
+        }
+        return param;
+    },
+    pageScript: function() { //scripts to be executed on each view change
+
+        var self = this;
+        $(document).ready(function() {
+
+            var selectedDateID = countlyCommon.getPeriod();
+
+            if (Object.prototype.toString.call(selectedDateID) !== '[object Array]') {
+                $("#" + selectedDateID).addClass("active");
+            }
+            var i = 0;
+            var l = 0;
+            if (self.pageScripts[Backbone.history.fragment]) {
+                for (i = 0, l = self.pageScripts[Backbone.history.fragment].length; i &lt; l; i++) {
+                    self.pageScripts[Backbone.history.fragment][i]();
+                }
+            }
+            for (var k in self.pageScripts) {
+                if (k !== '#' &amp;&amp; k.indexOf('#') !== -1 &amp;&amp; Backbone.history.fragment.match("^" + k.replace(/#/g, '.*'))) {
+                    for (i = 0, l = self.pageScripts[k].length; i &lt; l; i++) {
+                        self.pageScripts[k][i]();
+                    }
+                }
+            }
+            if (self.pageScripts["#"]) {
+                for (i = 0, l = self.pageScripts["#"].length; i &lt; l; i++) {
+                    self.pageScripts["#"][i]();
+                }
+            }
+
+            // Translate all elements with a data-help-localize or data-localize attribute
+            self.localize();
+        });
+    }
+});
+
+Backbone.history || (Backbone.history = new Backbone.History);
+Backbone.history._checkUrl = Backbone.history.checkUrl;
+Backbone.history.urlChecks = [];
+Backbone.history.checkOthers = function() {
+    var proceed = true;
+    for (var i = 0; i &lt; Backbone.history.urlChecks.length; i++) {
+        if (!Backbone.history.urlChecks[i]()) {
+            proceed = false;
+        }
+    }
+    return proceed;
+};
+Backbone.history.checkUrl = function() {
+    if (Backbone.history.checkOthers()) {
+        Backbone.history._checkUrl();
+    }
+};
+
+Backbone.history.noHistory = function(hash) {
+    if (history &amp;&amp; history.replaceState) {
+        history.replaceState(undefined, undefined, encodeURI(hash));
+    }
+    else {
+        location.replace(hash);
+    }
+};
+
+Backbone.history.__checkUrl = Backbone.history.checkUrl;
+Backbone.history._getFragment = Backbone.history.getFragment;
+Backbone.history.appIds = [];
+for (var i in countlyGlobal.apps) {
+    Backbone.history.appIds.push(i);
+}
+Backbone.history.getFragment = function() {
+    var fragment = Backbone.history._getFragment();
+    if (fragment.indexOf("/" + countlyCommon.ACTIVE_APP_ID) === 0) {
+        fragment = fragment.replace("/" + countlyCommon.ACTIVE_APP_ID, "");
+    }
+    return fragment;
+};
+Backbone.history.checkUrl = function() {
+    store.set("countly_fragment_name", Backbone.history._getFragment());
+    var app_id = Backbone.history._getFragment().split("/")[1] || "";
+    if (countlyCommon.APP_NAMESPACE !== false &amp;&amp; countlyCommon.ACTIVE_APP_ID !== 0 &amp;&amp; countlyCommon.ACTIVE_APP_ID !== app_id &amp;&amp; Backbone.history.appIds.indexOf(app_id) === -1) {
+        Backbone.history.noHistory("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
+        app_id = countlyCommon.ACTIVE_APP_ID;
+    }
+
+    if (countlyCommon.ACTIVE_APP_ID !== 0 &amp;&amp; countlyCommon.ACTIVE_APP_ID !== app_id &amp;&amp; Backbone.history.appIds.indexOf(app_id) !== -1) {
+        app.switchApp(app_id, function() {
+            if (Backbone.history.checkOthers()) {
+                Backbone.history.__checkUrl();
+            }
+        });
+    }
+    else {
+        if (Backbone.history.checkOthers()) {
+            Backbone.history.__checkUrl();
+        }
+    }
+};
+
+//initial hash check
+(function() {
+    if (!Backbone.history.getFragment() &amp;&amp; store.get("countly_fragment_name")) {
+        Backbone.history.noHistory("#" + store.get("countly_fragment_name"));
+    }
+    else {
+        var app_id = Backbone.history._getFragment().split("/")[1] || "";
+        if (countlyCommon.ACTIVE_APP_ID === app_id || Backbone.history.appIds.indexOf(app_id) !== -1) {
+            //we have app id
+            if (app_id !== countlyCommon.ACTIVE_APP_ID) {
+                // but it is not currently selected app, so let' switch
+                countlyCommon.setActiveApp(app_id);
+            }
+        }
+        else if (countlyCommon.APP_NAMESPACE !== false) {
+            //add current app id
+            Backbone.history.noHistory("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
+        }
+    }
+})();
+
+var app = new AppRouter();
+
+/**
+* Navigate to another hash address programmatically, without trigering view route and without leaving trace in history, if possible
+* @param {string} hash - url path (hash part) to change
+* @memberof app
+* @example
+* //you are at #/manage/systemlogs
+* app.noHistory("#/manage/systemlogs/query/{}");
+* //now pressing back would not go to #/manage/systemlogs
+*/
+app.noHistory = function(hash) {
+    if (countlyCommon.APP_NAMESPACE !== false) {
+        hash = "#/" + countlyCommon.ACTIVE_APP_ID + hash.substr(1);
+    }
+    if (history &amp;&amp; history.replaceState) {
+        history.replaceState(undefined, undefined, hash);
+    }
+    else {
+        location.replace(hash);
+    }
+};
+
+//collects requests for active views to dscard them if views changed
+$.ajaxPrefilter(function(options, originalOptions, jqXHR) {
+    //add to options for independent!!!
+
+    var myurl = "";
+    var mydata = "{}";
+    if (originalOptions &amp;&amp; originalOptions.url) {
+        myurl = originalOptions.url;
+    }
+    if (originalOptions &amp;&amp; originalOptions.data) {
+        mydata = JSON.stringify(originalOptions.data);
+    }
+    //request which is not killed on view change(only on app change)
+    jqXHR.my_set_url = myurl;
+    jqXHR.my_set_data = mydata;
+
+    if (originalOptions &amp;&amp; (originalOptions.type === 'GET' || originalOptions.type === 'get') &amp;&amp; originalOptions.url.substr(0, 2) === '/o') {
+        if (originalOptions.data &amp;&amp; originalOptions.data.preventGlobalAbort &amp;&amp; originalOptions.data.preventGlobalAbort === true) {
+            return true;
+        }
+
+        if (originalOptions.data &amp;&amp; originalOptions.data.preventRequestAbort &amp;&amp; originalOptions.data.preventRequestAbort === true) {
+            if (app._myRequests[myurl] &amp;&amp; app._myRequests[myurl][mydata]) {
+                jqXHR.abort_reason = "duplicate";
+                jqXHR.abort(); //we already have same working request
+            }
+            else {
+                jqXHR.always(function(data, textStatus, jqXHR1) {
+                    //if success jqxhr object is third, errored jqxhr object is in first parameter.
+                    if (jqXHR1 &amp;&amp; jqXHR1.my_set_url &amp;&amp; jqXHR1.my_set_data) {
+                        if (app._myRequests[jqXHR1.my_set_url] &amp;&amp; app._myRequests[jqXHR1.my_set_url][jqXHR1.my_set_data]) {
+                            delete app._myRequests[jqXHR1.my_set_url][jqXHR1.my_set_data];
+                        }
+                    }
+                    else if (data &amp;&amp; data.my_set_url &amp;&amp; data.my_set_data) {
+                        if (app._myRequests[data.my_set_url] &amp;&amp; app._myRequests[data.my_set_url][data.my_set_data]) {
+                            delete app._myRequests[data.my_set_url][data.my_set_data];
+                        }
+
+                    }
+                });
+                //save request in our object
+                if (!app._myRequests[myurl]) {
+                    app._myRequests[myurl] = {};
+                }
+                app._myRequests[myurl][mydata] = jqXHR;
+            }
+        }
+        else {
+            if (app.activeView) {
+                if (app.activeView._myRequests &amp;&amp; app.activeView._myRequests[myurl] &amp;&amp; app.activeView._myRequests[myurl][mydata]) {
+                    jqXHR.abort_reason = "duplicate";
+                    jqXHR.abort(); //we already have same working request
+                }
+                else {
+                    jqXHR.always(function(data, textStatus, jqXHR1) {
+                        //if success jqxhr object is third, errored jqxhr object is in first parameter.
+                        if (jqXHR1 &amp;&amp; jqXHR1.my_set_url &amp;&amp; jqXHR1.my_set_data) {
+                            if (app.activeView._myRequests[jqXHR1.my_set_url] &amp;&amp; app.activeView._myRequests[jqXHR1.my_set_url][jqXHR1.my_set_data]) {
+                                delete app.activeView._myRequests[jqXHR1.my_set_url][jqXHR1.my_set_data];
+                            }
+                        }
+                        else if (data &amp;&amp; data.my_set_url &amp;&amp; data.my_set_data) {
+                            if (app.activeView._myRequests[data.my_set_url] &amp;&amp; app.activeView._myRequests[data.my_set_url][data.my_set_data]) {
+                                delete app.activeView._myRequests[data.my_set_url][data.my_set_data];
+                            }
+                        }
+                    });
+                    //save request in our object
+                    if (!app.activeView._myRequests[myurl]) {
+                        app.activeView._myRequests[myurl] = {};
+                    }
+                    app.activeView._myRequests[myurl][mydata] = jqXHR;
+                }
+            }
+        }
+    }
+});</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> on Mon Oct 20 2025 09:22:32 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
