@@ -1984,6 +1984,20 @@ const processRequest = (params) => {
                         common.returnOutput(params, plugins.getPlugins());
                     }, params);
                     break;
+                case 'mutation-observability':
+                    validateUserForMgmtReadAPI(() => {
+                        plugins.dispatch('/system/observability/collect', {params: params}, function(err, results) {
+                            if (err) {
+                                common.returnMessage(params, 500, 'Error collecting observability data');
+                                return;
+                            }
+                            const data = (results || [])
+                                .filter(r => r && r.status === 'fulfilled' && r.value)
+                                .map(r => r.value);
+                            common.returnOutput(params, data);
+                        });
+                    }, params);
+                    break;
                 case 'aggregator':
                     validateUserForMgmtReadAPI(() => {
                         //fetch current aggregator status
