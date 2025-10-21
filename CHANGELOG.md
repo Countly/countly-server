@@ -5,6 +5,7 @@ Features:
 
 Fixes:
 - [dashboard] Allow users to select text inside the widget without dragging it
+- [jobs] Fix condition for scheduling alert job
 
 Enterprise Fixes:
 - [data-manager] Fixed segment data deletion
