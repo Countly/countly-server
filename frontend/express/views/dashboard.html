@@ -2013,8 +2013,19 @@
                 "email": countlyGlobal.member.email
             });
         }
-    }
-    </script>
+        </script>
+
+        <!--Countly auto-tracking script-->
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/auto-tracker/countly-tracker.min.js?<%= countlyVersion %>"></script>
+        <script>
+            countly.init({
+                url: 'https://stats.count.ly',
+                app_key: '8475f06e100c068a7b8ab27dd1a554ce59b3e0b2',
+                app_version: countlyGlobal.countlyVersion,
+                debug: false
+            }).start();
+        </script>
+    <% } %>
     <script type='text/javascript'>
     app.recordEvent = function (event) {
 
