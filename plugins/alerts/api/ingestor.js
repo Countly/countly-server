@@ -1,4 +1,4 @@
-
+const exported = {};
 const common = require('../../../api/utils/common.js');
 const log = common.log('alerts:ingestor');
 const plugins = require('../../pluginManager.js');
@@ -30,4 +30,24 @@ const commonLib = require("./parts/common-lib.js");
             }
         }
     });
-}());
+
+    plugins.register("/crashes/new", async function(ob) {
+        for (let { module, name } of TRIGGER_BY_EVENT) {
+            if (name === "crashes") {
+                try {
+                    await module.triggerByEvent(ob.data);
+                }
+                catch (err) {
+                    log.e("Alert module '" + name + "' couldn't be triggered by event", err);
+                }
+            }
+        }
+    });
+
+    plugins.register("/sdk/process_user", function() {
+        //var params = ob.params;
+    });
+
+}(exported));
+
+module.exports = exported;
