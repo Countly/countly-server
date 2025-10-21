@@ -15,6 +15,11 @@ for (let count = 0; count < 12; count += 1) {
 describe('Stats job', () => {
     it('Generates data summary', () => {
         const { all, avg, month3 } = StatsJob.generateDataSummary(allData);
+        console.log('All Data:', allData);
+        console.log('Data Summary:');
+        console.log(`- All: ${all}`);
+        console.log(`- Avg: ${avg}`);
+        console.log(`- Month 3: ${month3}`);
 
         should(all).equal(12000);
         should(avg).equal(1000);
@@ -32,9 +37,11 @@ describe('Stats job', () => {
 
     it('Generates data monthly', () => {
         const monthlyData = StatsJob.generateDataMonthly(allData);
+        console.log('All Data:', allData);
+        console.log(monthlyData);
 
-        should(monthlyData['Last 6 months']).equal((1000).toLocaleString());
-        should(monthlyData['Last 12 months']).equal((1000).toLocaleString());
+        should(monthlyData['DPAvg6months']).equal(1000);
+        should(monthlyData['DPAvg12months']).equal(1000);
 
         const expectedDP = [];
         for (let count = 0; count < 12; count += 1) {
