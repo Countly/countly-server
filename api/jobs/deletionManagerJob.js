@@ -11,6 +11,15 @@ catch {
     //
 }
 
+let chHealth = null;
+try {
+    chHealth = require('../../plugins/clickhouse/api/health.js');
+}
+catch {
+    //
+}
+
+
 // Constants for managing stale tasks and retries
 const STALE_MS = 24 * 60 * 60 * 1000; // 24h - consider tasks running longer than this as stale
 const RETRY_DELAY_MS = 30 * 60 * 1000; // 30m - delay before retrying a failed task
@@ -61,11 +70,13 @@ class DeletionManagerJob extends Job {
 
         try {
             if (this.isClickhouseEnabled()) {
-                const thresholds = await deletionManager.getDeletionClickhousePressureLimits();
-                const pre = await this.shouldDeferDueToClickhousePressure(thresholds);
+                const pre = await this.shouldDeferDueToClickhousePressure();
                 if (pre && pre.defer) {
-                    log.d("Run deferred due to ClickHouse pressure", pre.metrics || {});
-                    return [{ status: "deferred_due_to_ch_pressure", metrics: pre.metrics }];
+                    log.d("Run deferred due to ClickHouse pressure", pre || {});
+                    return [{ status: pre.reason || "deferred_due_to_ch_pressure", metrics: pre.metrics, utilization: pre.utilization, thresholds: pre.thresholds }];
+                }
+                else if (pre && (pre.risk_level === 'moderate')) {
+                    log.d('ClickHouse pressure moderate; proceeding', { utilization: pre.utilization, thresholds: pre.thresholds });
                 }
             }
         }
@@ -440,19 +451,33 @@ class DeletionManagerJob extends Job {
 
     /**
      * Fetches ClickHouse load metrics to determine if a task should be deferred.
-     * @param {Object} thresholds - Thresholds for deferring
      * @returns {object} Whether to defer due to ClickHouse pressure
      */
-    async shouldDeferDueToClickhousePressure(thresholds) {
+    async shouldDeferDueToClickhousePressure() {
         const m = await this.getClickhouseLoadMetrics();
         if (!m) {
             return { defer: false };
         }
-        // Defer if max parts per partition or total parts over limits
-        if (m.max_parts_per_partition >= thresholds.CH_MAX_PARTS_PER_PARTITION || m.total_merge_tree_parts >= thresholds.CH_MAX_TOTAL_MERGETREE_PARTS) {
-            return { defer: true, metrics: m, reason: 'threshold_exceeded' };
+        if (chHealth && typeof chHealth.getBackpressureSnapshot === 'function') {
+            try {
+                const bp = await chHealth.getBackpressureSnapshot({
+                    max_parts_per_partition: m.max_parts_per_partition,
+                    total_merge_tree_parts: m.total_merge_tree_parts
+                });
+                const defer = bp.deferred_due_to_clickhouse || bp.risk_level === 'high';
+                return {
+                    defer,
+                    reason: bp.defer_reason || (bp.risk_level && `risk_${bp.risk_level}`) || undefined,
+                    metrics: m,
+                    utilization: bp.utilization,
+                    thresholds: bp.thresholds,
+                    risk_level: bp.risk_level
+                };
+            }
+            catch (e) {
+                log.e('Backpressure snapshot failed.', e?.message || e + "");
+            }
         }
-        return { defer: false, metrics: m };
     }
 }
 
