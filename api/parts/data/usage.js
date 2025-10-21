@@ -1125,7 +1125,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
                 userProps.av_major = null;
                 userProps.av_minor = null;
                 userProps.av_patch = null;
-                userProps.av_rel = null;
+                userProps.av_prerel = null;
                 userProps.av_build = null;
             }
         }
