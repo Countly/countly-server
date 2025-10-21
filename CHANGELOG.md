@@ -1,5 +1,5 @@
 ## Version 25.03.XX
-Enterprise Fixes:
+Fixes:
 - [jobs] Fix condition for scheduling alert job
 
 Enterprise Fixes:
@@ -8,6 +8,7 @@ Enterprise Fixes:
 - [data-manager] Fixed bug preventing transformation of events ending in a dot
 - [users] Fix add/remove user to profile group
 - [users] Remove link to profile group page after removing user from group
+- [license] Stop sending metric after license expired
 
 Dependencies
 - Bump lint-staged from 16.2.3 to 16.2.4
