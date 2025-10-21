@@ -1,4 +1,4 @@
-## Version 24.05.XX
+## Version 24.05.43
 Features:
 - [core] Implement go to link in notification
 - [data-manager] Fixed bug preventing transformation of events ending in a dot
@@ -9,9 +9,9 @@ Fixes:
 
 Enterprise Fixes:
 - [data-manager] Fixed segment data deletion
+- [license] Stop sending metric after license expired
 - [users] Fix add/remove user to profile group
 - [users] Remove link to profile group page after removing user from group
-- [license] Stop sending metric after license expired
 
 ## Version 24.05.42
 Fixes:
