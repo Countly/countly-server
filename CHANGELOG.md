@@ -1,16 +1,20 @@
-## Version 25.03.XX
+## Version 25.03.24
+Fixes:
+- [jobs] Fix condition for scheduling alert job
+
 Enterprise Fixes:
 - [compliance-hub] Fixed query patterns
-- [data-manager] Fixed segment data deletion
 - [data-manager] Fixed bug preventing transformation of events ending in a dot
+- [data-manager] Fixed segment data deletion
+- [license] Stop sending metric after license expired
 - [users] Fix add/remove user to profile group
 - [users] Remove link to profile group page after removing user from group
 
 Dependencies
-- Bump lint-staged from 16.2.3 to 16.2.4
 - Bump @faker-js/faker from 10.0.0 to 10.1.0 in /ui-tests
-- Bump puppeteer from 24.23.0 to 24.24.1
 - Bump countly-sdk-nodejs from 24.10.2 to 24.10.3
+- Bump lint-staged from 16.2.3 to 16.2.4
+- Bump puppeteer from 24.23.0 to 24.24.1
 
 ## Version 25.03.23
 Fixes:
