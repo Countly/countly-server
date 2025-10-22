@@ -50,16 +50,6 @@ class DeletionManagerJob extends Job {
     }
 
     /**
-     * Check if ClickHouse is enabled
-     * @returns {boolean} true if ClickHouse is enabled, false otherwise
-     */
-    isClickhouseEnabled() {
-        return !!(common.queryRunner
-        && typeof common.queryRunner.isAdapterAvailable === 'function'
-        && common.queryRunner.isAdapterAvailable('clickhouse'));
-    }
-
-    /**
      * Run the job
      * @param {done} done callback
     */
@@ -69,7 +59,7 @@ class DeletionManagerJob extends Job {
         const summary = [];
 
         try {
-            if (this.isClickhouseEnabled()) {
+            if (deletionManager.isClickhouseEnabled()) {
                 const pre = await this.shouldDeferDueToClickhousePressure();
                 if (pre && pre.defer) {
                     log.d("Run deferred due to ClickHouse pressure", pre || {});
@@ -120,7 +110,7 @@ class DeletionManagerJob extends Job {
                 if (task.db === "countly_drill" && task.collection === "drill_events") {
                     const mongoOk = await this.deleteMongo(task);
                     let chScheduledOk = true;
-                    const clickhouseEnabled = this.isClickhouseEnabled();
+                    const clickhouseEnabled = deletionManager.isClickhouseEnabled();
                     const hasClickhouse = clickhouseEnabled && !!(clickHouseRunner && clickHouseRunner.deleteGranularDataByQuery);
                     if (hasClickhouse) {
                         chScheduledOk = await this.deleteClickhouse(task);
@@ -167,7 +157,7 @@ class DeletionManagerJob extends Job {
             }
         }
 
-        if (this.isClickhouseEnabled()) {
+        if (deletionManager.isClickhouseEnabled()) {
             await this.processAwaitingValidation(summary);
         }
 
@@ -211,8 +201,8 @@ class DeletionManagerJob extends Job {
 
         for (const task of awaiting) {
             try {
-                if (task.db === "countly_drill" && task.collection === "drill_events" && clickHouseRunner && clickHouseRunner.getMutationStatus) {
-                    const status = await this.getClickhouseMutationStatus(task);
+                if (task.db === "countly_drill" && task.collection === "drill_events" && chHealth && typeof chHealth.getMutationStatus === 'function') {
+                    const status = await chHealth.getMutationStatus({ validation_command_id: task.validation_command_id, table: task.collection, database: task.db });
                     if (status && status.is_done) {
                         await common.db.collection("deletion_manager").updateOne(
                             { _id: task._id },
@@ -356,34 +346,6 @@ class DeletionManagerJob extends Job {
     }
 
     /**
-     * Retrieves ClickHouse mutation status for a task via system.mutations.
-     * @param {object} task - Deletion task
-     * @returns {Promise<object|null>} Object with keys: is_done:boolean, is_killed:boolean, latest_fail_reason:string|null
-     */
-    async getClickhouseMutationStatus(task) {
-        if (!common.queryRunner) {
-            return null;
-        }
-        const commandId = task.validation_command_id;
-        const queryDef = {
-            name: 'GET_MUTATION_STATUS',
-            adapters: {
-                clickhouse: {
-                    handler: clickHouseRunner.getMutationStatus
-                }
-            }
-        };
-        try {
-            const res = await common.queryRunner.executeQuery(queryDef, { validation_command_id: commandId, table: task.collection, database: task.db }, {});
-            return res ? { is_done: !!res.is_done, is_killed: !!res.is_killed, latest_fail_reason: res.latest_fail_reason || null } : null;
-        }
-        catch (err) {
-            log.e("getClickhouseMutationStatus failed", { taskId: task._id, error: err?.message || err + "" });
-            return null;
-        }
-    }
-
-    /**
      * Marks a task as failed or schedules it for a retry based on the number of previous failures.
      * @param {Object} task - The task object to update.
      * @param {string} message - The error message to log
@@ -428,20 +390,15 @@ class DeletionManagerJob extends Job {
      * @returns {Promise<Object|null>} Object with metrics or null if fetch failed
      */
     async getClickhouseLoadMetrics() {
-        if (!common.queryRunner || !clickHouseRunner || !clickHouseRunner.getClickhouseHealthMetrics) {
+        if (!chHealth || typeof chHealth.getOperationalSnapshot !== 'function') {
             return null;
         }
         try {
-            const queryDef = {
-                name: 'GET_CH_HEALTH_METRICS',
-                adapters: {
-                    clickhouse: {
-                        handler: clickHouseRunner.getClickhouseHealthMetrics
-                    }
-                }
-            };
-            const res = await common.queryRunner.executeQuery(queryDef, {}, {});
-            return res || null;
+            const snapshot = await chHealth.getOperationalSnapshot({ database: 'countly_drill', table: 'drill_events' });
+            return snapshot ? {
+                max_parts_per_partition: snapshot.max_parts_per_partition,
+                total_merge_tree_parts: snapshot.total_merge_tree_parts
+            } : null;
         }
         catch (e) {
             log.e('CH health metrics fetch failed', e?.message || e + "");

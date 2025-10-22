@@ -3,12 +3,12 @@ const common = require('./common.js'),
     plugins = require('../../plugins/pluginManager.js'),
     manager = {};
 
-let clickHouseRunner;
+let chHealth = null;
 try {
-    clickHouseRunner = require('../../plugins/clickhouse/api/queries/clickhouseCoreQueries.js');
+    chHealth = require('../../plugins/clickhouse/api/health.js');
 }
-catch (e) {
-    clickHouseRunner = null;
+catch {
+    //
 }
 
 (function() {
@@ -18,6 +18,16 @@ catch (e) {
         FAILED: "failed",
         AWAITING_CH_MUTATION_VALIDATION: "awaiting_ch_mutation_validation",
         DELETED: "deleted"
+    };
+
+    /**
+     * Check if ClickHouse is enabled
+     * @returns {boolean} true if ClickHouse is enabled, false otherwise
+     */
+    manager.isClickhouseEnabled = function() {
+        return !!(common.queryRunner
+            && typeof common.queryRunner.isAdapterAvailable === 'function'
+            && common.queryRunner.isAdapterAvailable('clickhouse'));
     };
 
     plugins.register("/master", function() {
@@ -50,23 +60,27 @@ catch (e) {
     plugins.register('/system/observability/collect', async function() {
         try {
             const summary = await getQueueSummary();
-            const mutations = await getPendingMutationsFromCH();
+
+            const metrics = {
+                summary: {
+                    queued: summary.queued,
+                    running: summary.running,
+                    awaiting_validation: summary.awaiting_validation,
+                    failed: summary.failed,
+                    deleted: summary.deleted,
+                    oldest_wait_sec: summary.oldest_wait_sec
+                }
+            };
+
+            if (manager.isClickhouseEnabled()) {
+                metrics.mutations = await getPendingMutationsFromCH();
+            }
 
             return {
                 provider: 'deletion',
                 healthy: summary.failed === 0,
                 issues: [],
-                metrics: {
-                    summary: {
-                        queued: summary.queued,
-                        running: summary.running,
-                        awaiting_validation: summary.awaiting_validation,
-                        failed: summary.failed,
-                        deleted: summary.deleted,
-                        oldest_wait_sec: summary.oldest_wait_sec
-                    },
-                    mutations
-                },
+                metrics,
                 date: new Date().toISOString()
             };
         }
@@ -134,41 +148,22 @@ catch (e) {
      * @returns {Promise<Object>} - Operational snapshot
      */
     async function getPendingMutationsFromCH() {
-        if (!clickHouseRunner) {
-            return { pending: 0, details: [], error: 'clickHouseRunner_not_available'};
-        }
-        const res = await clickHouseRunner.listPendingMutations({ database: 'countly_drill', table: 'drill_events' });
-        const rows = res && res.data ? res.data : [];
-        return {
-            pending: rows.length,
-            details: rows.map(r => ({
-                command: r.command + '',
-                is_killed: r.is_killed === 1 || r.is_killed === '1',
-                latest_fail_reason: r.latest_fail_reason || null
-            }))
-        };
-    }
-
-    manager.getDeletionClickhousePressureLimits = async function() {
         try {
-            const doc = await common.db.collection('plugins').findOne(
-                { _id: 'plugins' },
-                { projection: { 'deletion_manager.ch_max_parts_per_partition': 1, 'deletion_manager.ch_max_total_mergetree_parts': 1 } }
-            );
-            const dmCfg = (doc && doc.deletion_manager) ? doc.deletion_manager : {};
+            const rows = await chHealth.listPendingMutations({ database: 'countly_drill', table: 'drill_events' });
+            const list = Array.isArray(rows) ? rows : [];
             return {
-                CH_MAX_PARTS_PER_PARTITION: Number(dmCfg.ch_max_parts_per_partition) || 1000,
-                CH_MAX_TOTAL_MERGETREE_PARTS: Number(dmCfg.ch_max_total_mergetree_parts) || 100000
+                pending: list.length,
+                details: list.map(r => ({
+                    command: r.command + '',
+                    is_killed: r.is_killed === 1 || r.is_killed === '1',
+                    latest_fail_reason: r.latest_fail_reason || null
+                }))
             };
         }
         catch (e) {
-            log.e('Failed to load deletion manager thresholds from DB, using defaults', e && e.message ? e.message : e);
-            return {
-                CH_MAX_PARTS_PER_PARTITION: 1000,
-                CH_MAX_TOTAL_MERGETREE_PARTS: 100000
-            };
+            return { pending: 0, details: [], error: 'clickhouse_health_unavailable' };
         }
-    };
+    }
 })(manager);
 
 module.exports = manager;
