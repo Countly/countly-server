@@ -59,6 +59,7 @@ catch (e) {
                 metrics: {
                     summary: {
                         queued: summary.queued,
+                        running: summary.running,
                         awaiting_validation: summary.awaiting_validation,
                         failed: summary.failed,
                         deleted: summary.deleted,
@@ -93,6 +94,7 @@ catch (e) {
                 $group: {
                     _id: null,
                     queued: { $sum: { $cond: [ { $eq: [ "$status", manager.DELETION_STATUS.QUEUED ] }, 1, 0 ] } },
+                    running: { $sum: { $cond: [ { $eq: [ "$status", manager.DELETION_STATUS.RUNNING ] }, 1, 0 ] } },
                     awaiting_validation: { $sum: { $cond: [ { $eq: [ "$status", manager.DELETION_STATUS.AWAITING_CH_MUTATION_VALIDATION ] }, 1, 0 ] } },
                     failed: { $sum: { $cond: [ { $eq: [ "$status", manager.DELETION_STATUS.FAILED ] }, 1, 0 ] } },
                     deleted_24h: {
@@ -107,10 +109,10 @@ catch (e) {
                     }
                 }
             },
-            { $project: { _id: 0, queued: 1, awaiting_validation: 1, failed: 1, deleted: "$deleted_24h" } }
+            { $project: { _id: 0, queued: 1, running: 1, awaiting_validation: 1, failed: 1, deleted: "$deleted_24h" } }
         ]).toArray();
 
-        const counts = agg[0] || { queued: 0, awaiting_validation: 0, failed: 0, deleted: 0 };
+        const counts = agg[0] || { queued: 0, running: 0, awaiting_validation: 0, failed: 0, deleted: 0 };
 
         let oldest_wait_sec = 0;
         if (counts.queued > 0) {
