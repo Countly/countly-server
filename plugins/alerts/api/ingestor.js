@@ -11,39 +11,6 @@ const commonLib = require("./parts/common-lib.js");
         name
     }));
 
-    plugins.register("/i", async function(ob) {
-        const events = ob.params?.qstring?.events;
-        const app = ob.app;
-
-        if (!events || !app) {
-            return;
-        }
-
-        for (let { module, name } of TRIGGER_BY_EVENT) {
-            if (name !== "crashes") {
-                try {
-                    await module.triggerByEvent({ events, app });
-                }
-                catch (err) {
-                    log.e("Alert module '" + name + "' couldn't be triggered by event", err);
-                }
-            }
-        }
-    });
-
-    plugins.register("/crashes/new", async function(ob) {
-        for (let { module, name } of TRIGGER_BY_EVENT) {
-            if (name === "crashes") {
-                try {
-                    await module.triggerByEvent(ob.data);
-                }
-                catch (err) {
-                    log.e("Alert module '" + name + "' couldn't be triggered by event", err);
-                }
-            }
-        }
-    });
-
     plugins.register("/sdk/process_request", async function(ob) {
         const events = ob.params?.qstring?.events;
         const app = ob.app;
