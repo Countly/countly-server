@@ -280,15 +280,19 @@ class DeletionManagerJob extends Job {
         }
 
         let res;
+        const start = Date.now();
         try {
             res = await common.drillDb.collection(task.collection).deleteMany(task.query || {});
         }
         catch (err) {
-            await this.markFailedOrRetry(task, "mongo_delete_error: " + err?.message || err + "");
+            const duration = Date.now() - start;
+            log.e("Mongo deletion failed", { taskId: task._id, durationMs: duration, error: (err?.message || err + "") });
+            await this.markFailedOrRetry(task, "mongo_delete_error: " + (err?.message || err + ""));
             return false;
         }
 
-        log.d("Mongo deletion done", { taskId: task._id, deletedCount: res?.deletedCount || 0 });
+        const duration = Date.now() - start;
+        log.d("Mongo deletion done", { taskId: task._id, deletedCount: res?.deletedCount || 0, durationMs: duration });
         return true;
     }
 
