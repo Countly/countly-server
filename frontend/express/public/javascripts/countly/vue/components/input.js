@@ -172,7 +172,7 @@
 
             value: {
                 handler(value) {
-                    if (this.isNewUIApplied && value) {
+                    if (value) {
                         this.setPickerInputValues();
                     }
                 },
