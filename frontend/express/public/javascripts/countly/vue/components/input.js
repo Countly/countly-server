@@ -220,7 +220,6 @@
 
             onPickerInput(color) {
                 const { a = 0, ...rgb } = color.rgba;
-
                 const alpha = Math.round(a * 100);
 
                 if (alpha !== this.colorAlpha) {
