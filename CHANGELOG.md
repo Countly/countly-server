@@ -1,3 +1,8 @@
+## Version 25.03.X
+Fixes:
+- [ab-testing] Add script for fixing variant cohort
+
+
 ## Version 25.03.24
 Fixes:
 - [jobs] Fix condition for scheduling alert job
