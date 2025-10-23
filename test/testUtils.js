@@ -172,7 +172,7 @@ var testUtils = function testUtils() {
     };
 
     function recheckDeletion(retry, db, callback) {
-        db.collection("deletion_manager").countDocuments({ status: { $ne: "deleted" }}, function(err, count) {
+        db.collection("mutation_manager").countDocuments({ type: 'delete', status: { $ne: "completed" }}, function(err, count) {
             if (err) {
                 callback(err);
             }
@@ -206,7 +206,7 @@ var testUtils = function testUtils() {
                     console.log("No response text");
                     console.log(JSON.stringify(res));
                 }
-                if (jobName === "api:deletionManagerJob") {
+                if (jobName === "api:mutationManagerJob") {
                     recheckDeletion(5, self.db, callback);
                 }
                 else {

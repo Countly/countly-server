@@ -30,7 +30,7 @@ console.log('=== END CONFIG DEBUG ===');
 var granuralQueries = require('./parts/queries/coreAggregation.js');
 
 //Add deletion manager endpoint
-require('./utils/deletionManager.js');
+require('./utils/mutationManager.js');
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
@@ -165,16 +165,16 @@ plugins.connectToAllDatabases().then(function() {
         common.db.collection('plugins').updateOne(
             {
                 _id: 'plugins',
-                'deletion_manager.ch_max_parts_per_partition': { $exists: false },
-                'deletion_manager.ch_max_total_mergetree_parts': { $exists: false }
+                'mutation_manager.ch_max_parts_per_partition': { $exists: false },
+                'mutation_manager.ch_max_total_mergetree_parts': { $exists: false }
             },
             {
                 $set: {
-                    'deletion_manager.ch_max_parts_per_partition': 1000,
-                    'deletion_manager.ch_max_total_mergetree_parts': 100000
+                    'mutation_manager.ch_max_parts_per_partition': 1000,
+                    'mutation_manager.ch_max_total_mergetree_parts': 100000
                 }
             }).catch(e => {
-            const message = `Failed to add deletion_manager defaults: ${e}`;
+            const message = `Failed to add mutation_manager defaults: ${e}`;
             log && log.e ? log.e(message) : console.log(message);
         });
     }
