@@ -774,6 +774,8 @@
         template: CV.T('/javascripts/countly/vue/templates/content/UI/content-sidebar-input.html')
     }));
 
+    const DEFAULT_LIST_BLOCK_IMAGE_PLACEHOLDER_URL = '/content/images/fullscreenPlaceholderImage.png';
+
     Vue.component('cly-content-block-list-input', countlyVue.components.create({
         props: {
             blockInputs: {
@@ -787,6 +789,19 @@
             'delete-asset',
             'input'
         ],
+
+        computed: {
+            mappedBlockInputs() {
+                return this.blockInputs.map(block => {
+                    return block.map(blockInput => ({
+                        ...blockInput,
+                        ...(blockInput.id.includes('image') && !blockInput.value) && {
+                            value: DEFAULT_LIST_BLOCK_IMAGE_PLACEHOLDER_URL
+                        }
+                    }));
+                });
+            }
+        },
 
         methods: {
             onAddAsset(payload) {
