@@ -860,7 +860,7 @@
                 // if it's in edit mode
                 if (this.settings.editMode) {
                     // is user member of a group?
-                    if (this.user.group_id && countlyGlobal.plugins.indexOf('groups') > -1) {
+                    if (this.user.group_id && this.user.group_id.length && countlyGlobal.plugins.indexOf('groups') > -1) {
                         // set groups state
                         if (Array.isArray(this.user.group_id)) {
                             this.groups = this.user.group_id;
