@@ -866,6 +866,7 @@
                 }
             },
             onOpen: function() {
+                this.patchUserPermission();
                 this.changePasswordFlag = false;
                 // types
                 var types = ['c', 'r', 'u', 'd'];
@@ -982,7 +983,31 @@
             },
             onRoleChange: function(role) {
                 this.roles[role.name] = role;
-            }
+            },
+            patchUserPermission: function() {
+                if (this.user && this.user.permission && this.user.permission._ && this.user.permission._.u) {
+                    var appIdReducer = function(acc, curr) {
+                        if (curr.length > 0) {
+                            acc.push(curr);
+                        }
+                        return acc;
+                    };
+
+                    var _u = this.user.permission._.u.reduce(function(acc, curr) {
+                        if (curr.length > 0) {
+                            var appIds = curr.reduce(appIdReducer, []);
+
+                            if (appIds.length > 0) {
+                                acc.push(appIds);
+                            }
+                        }
+                        return acc;
+                    }, []);
+
+                    this.user.permission._.u = _u;
+                    this.$refs.userDrawer.editedObject.permission._.u = _u;
+                }
+            },
         },
         watch: {
             'groups': function() {
