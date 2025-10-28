@@ -1,3 +1,7 @@
+## Version 24.05.xx
+Enterprise Fixes:
+- [revenue] Card in revenue page are now correctly indentified
+
 ## Version 24.05.43
 Features:
 - [core] Implement go to link in notification
