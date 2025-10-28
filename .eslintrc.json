@@ -629,8 +629,7 @@
             "env": {
                 "es2023": true,
                 "node": true,
-                "mocha": true,
-                "cypress": true
+                "mocha": true
             },
             "globals": {
                 "Cypress": "readonly",
