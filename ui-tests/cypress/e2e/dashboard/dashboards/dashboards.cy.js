@@ -1,3 +1,6 @@
+/* eslint-env mocha */
+/* global cy, Cypress, expect */
+
 import user from '../../../fixtures/user.json';
 const getApiKey = require('../../../api/getApiKey');
 const navigationHelpers = require('../../../support/navigations');

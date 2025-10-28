@@ -23,114 +23,109 @@ module.exports = defineConfig({
                 // --- Check if PDF contains any image ---
                 async verifyPdf({ filePath, options = {} }) {
                     // options: { referenceLogoPath: string, checkText: true/false }
-                    try {
-                        if (typeof global.DOMMatrix === "undefined") {
-                            global.DOMMatrix = class DOMMatrix { };
-                        }
+                    if (typeof global.DOMMatrix === "undefined") {
+                        global.DOMMatrix = class DOMMatrix { };
+                    }
 
-                        // PDF loading
-                        const data = new Uint8Array(fs.readFileSync(filePath));
-                        const pdfDoc = await pdfjsLib.getDocument({ data }).promise;
+                    // PDF loading
+                    const data = new Uint8Array(fs.readFileSync(filePath));
+                    const pdfDoc = await pdfjsLib.getDocument({ data }).promise;
 
-                        // Dynamic import pixelmatch if logo check is needed
-                        let pixelmatch;
-                        const doLogoCheck = !!options.referenceLogoPath;
-                        if (doLogoCheck) {
-                            const pm = await import("pixelmatch");
-                            pixelmatch = pm.default;
-                        }
+                    // Dynamic import pixelmatch if logo check is needed
+                    let pixelmatch;
+                    const doLogoCheck = !!options.referenceLogoPath;
+                    if (doLogoCheck) {
+                        const pm = await import("pixelmatch");
+                        pixelmatch = pm.default;
+                    }
 
-                        let hasImage = false;
-                        let logoFound = false;
-                        let extractedText = "";
+                    let hasImage = false;
+                    let logoFound = false;
+                    let extractedText = "";
 
-                        for (let p = 1; p <= pdfDoc.numPages; p++) {
-                            const page = await pdfDoc.getPage(p);
+                    for (let p = 1; p <= pdfDoc.numPages; p++) {
+                        const page = await pdfDoc.getPage(p);
 
-                            // --- Text extraction ---
-                            if (options.checkText) {
-                                extractedText += await new Promise((resolve, reject) => {
-                                    extract(filePath, (err, pages) => {
-                                        if (err) {
-                                            return reject(err);
-                                        }
-                                        resolve(pages.join("\n"));
-                                    });
+                        // --- Text extraction ---
+                        if (options.checkText) {
+                            extractedText += await new Promise((resolve, reject) => {
+                                extract(filePath, (err, pages) => {
+                                    if (err) {
+                                        return reject(err);
+                                    }
+                                    resolve(pages.join("\n"));
                                 });
-                            }
+                            });
+                        }
 
-                            const ops = await page.getOperatorList();
+                        const ops = await page.getOperatorList();
 
-                            for (let i = 0; i < ops.fnArray.length; i++) {
-                                const fn = ops.fnArray[i];
-                                const args = ops.argsArray[i];
+                        for (let i = 0; i < ops.fnArray.length; i++) {
+                            const fn = ops.fnArray[i];
+                            const args = ops.argsArray[i];
 
-                                // --- Image check ---
-                                if (
-                                    fn === pdfjsLib.OPS.paintImageXObject ||
-                                    fn === pdfjsLib.OPS.paintJpegXObject ||
-                                    fn === pdfjsLib.OPS.paintInlineImageXObject
-                                ) {
-                                    hasImage = true;
+                            // --- Image check ---
+                            if (
+                                fn === pdfjsLib.OPS.paintImageXObject ||
+                                fn === pdfjsLib.OPS.paintJpegXObject ||
+                                fn === pdfjsLib.OPS.paintInlineImageXObject
+                            ) {
+                                hasImage = true;
 
-                                    if (doLogoCheck && args[0]) {
-                                        const objName = args[0];
-                                        const imgData = await page.objs.get(objName);
-                                        if (!imgData) {
-                                            continue;
-                                        }
+                                if (doLogoCheck && args[0]) {
+                                    const objName = args[0];
+                                    const imgData = await page.objs.get(objName);
+                                    if (!imgData) {
+                                        continue;
+                                    }
 
-                                        const pdfImg = new PNG({ width: imgData.width, height: imgData.height });
-                                        pdfImg.data = imgData.data;
+                                    const pdfImg = new PNG({ width: imgData.width, height: imgData.height });
+                                    pdfImg.data = imgData.data;
 
-                                        // resize PDF image to reference logo size
-                                        const pdfBuffer = PNG.sync.write(pdfImg);
-                                        const refLogo = PNG.sync.read(fs.readFileSync(options.referenceLogoPath));
-                                        const resizedPdfBuffer = await sharp(pdfBuffer)
-                                            .resize(refLogo.width, refLogo.height)
-                                            .png()
-                                            .toBuffer();
+                                    // resize PDF image to reference logo size
+                                    const pdfBuffer = PNG.sync.write(pdfImg);
+                                    const refLogo = PNG.sync.read(fs.readFileSync(options.referenceLogoPath));
+                                    const resizedPdfBuffer = await sharp(pdfBuffer)
+                                        .resize(refLogo.width, refLogo.height)
+                                        .png()
+                                        .toBuffer();
 
-                                        const resizedPdfImg = PNG.sync.read(resizedPdfBuffer);
+                                    const resizedPdfImg = PNG.sync.read(resizedPdfBuffer);
 
-                                        // pixelmatch
-                                        const diff = new PNG({ width: refLogo.width, height: refLogo.height });
-                                        const mismatched = pixelmatch(
-                                            refLogo.data,
-                                            resizedPdfImg.data,
-                                            diff.data,
-                                            refLogo.width,
-                                            refLogo.height,
-                                            { threshold: 0.1 }
-                                        );
+                                    // pixelmatch
+                                    const diff = new PNG({ width: refLogo.width, height: refLogo.height });
+                                    const mismatched = pixelmatch(
+                                        refLogo.data,
+                                        resizedPdfImg.data,
+                                        diff.data,
+                                        refLogo.width,
+                                        refLogo.height,
+                                        { threshold: 0.1 }
+                                    );
 
-                                        if (mismatched === 0) {
-                                            logoFound = true;
-                                            break;
-                                        }
+                                    if (mismatched === 0) {
+                                        logoFound = true;
+                                        break;
                                     }
                                 }
                             }
-
-                            if ((doLogoCheck && logoFound) || (!doLogoCheck && hasImage)) {
-                                break;
-                            }
                         }
 
-                        if (doLogoCheck && !logoFound) {
-                            throw new Error("Logo in PDF does not match reference image");
+                        if ((doLogoCheck && logoFound) || (!doLogoCheck && hasImage)) {
+                            break;
                         }
+                    }
 
-                        return {
-                            hasImage,
-                            logoFound,
-                            text: extractedText,
-                            numPages: pdfDoc.numPages
-                        };
+                    if (doLogoCheck && !logoFound) {
+                        throw new Error("Logo in PDF does not match reference image");
                     }
-                    catch (err) {
-                        throw err;
-                    }
+
+                    return {
+                        hasImage,
+                        logoFound,
+                        text: extractedText,
+                        numPages: pdfDoc.numPages
+                    };
                 }
             });
             on('after:spec', (spec, results) => {
