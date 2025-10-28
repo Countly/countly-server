@@ -1,4 +1,8 @@
 ## Version 25.03.XX
+Fixes:
+- [crashes] Fixed resolving audit log recording
+- [location] Fixed updating none gps coordinate location after gps location was used
+
 Enterprise Fixes:
 - [compliance-hub] Fixed query patterns
 - [data-manager] Fixed segment data deletion
