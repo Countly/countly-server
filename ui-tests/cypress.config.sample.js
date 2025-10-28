@@ -3,9 +3,7 @@ const fs = require("fs");
 const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
 const { PNG } = require("pngjs");
 const sharp = require("sharp");
-const extractText = require("pdf-text-extract");
-const util = require("util");
-const extractTextAsync = util.promisify(extractText);
+const pdfParse = require("pdf-parse");
 
 module.exports = defineConfig({
     e2e: {
@@ -34,6 +32,13 @@ module.exports = defineConfig({
                     let logoFound = false;
                     let extractedText = "";
 
+                    // Text extraction Node-only
+                    if (options.checkText) {
+                        const dataBuffer = fs.readFileSync(filePath);
+                        const pdfData = await pdfParse(dataBuffer);
+                        extractedText = pdfData.text;
+                    }
+
                     // Pixelmatch lazy import
                     let pixelmatch;
                     if (options.referenceLogoPath) {
@@ -43,13 +48,6 @@ module.exports = defineConfig({
 
                     for (let p = 1; p <= pdfDoc.numPages; p++) {
                         const page = await pdfDoc.getPage(p);
-
-                        // Text extraction
-                        if (options.checkText) {
-                            const pagesText = await extractTextAsync(filePath);
-                            extractedText = pagesText.join("\n");
-                        }
-
                         const ops = await page.getOperatorList();
 
                         for (let i = 0; i < ops.fnArray.length; i++) {

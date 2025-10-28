@@ -14,7 +14,7 @@
     "chai": "^6.0.1",
     "cypress-file-upload": "^5.0.8",
     "moment": "^2.29.4",
-    "pdf-text-extract": "^1.5.0"
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "cypress": "^13.4.0",
