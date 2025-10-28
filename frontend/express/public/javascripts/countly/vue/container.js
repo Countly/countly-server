@@ -36,7 +36,6 @@
             else {
                 var found = false,
                     i = 0;
-
                 while (!found && i < _items.length) {
                     if (!Object.prototype.hasOwnProperty.call(_items[i], 'priority') || _items[i].priority > value.priority) {
                         found = true;
