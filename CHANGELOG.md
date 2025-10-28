@@ -1,7 +1,7 @@
-## Version 24.05.X
+## Version 24.05.44
 Enterprise Fixes:
 - [groups] Fix user permission update after updating user group permission
-- [revenue] Card in revenue page are now correctly indentified
+- [revenue] Card in revenue page are now correctly identified
 
 
 ## Version 24.05.43
