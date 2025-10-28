@@ -1,3 +1,8 @@
+## Version 24.05.X
+Enterprise Fixes:
+- [groups] Fix user permission update after updating user group permission
+
+
 ## Version 24.05.43
 Features:
 - [core] Implement go to link in notification
