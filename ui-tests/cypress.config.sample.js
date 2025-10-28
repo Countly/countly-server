@@ -5,6 +5,8 @@ const { PNG } = require("pngjs");
 const sharp = require("sharp");
 const pdfParse = require("pdf-parse");
 
+const pdfParseFn = typeof pdfParse === "function" ? pdfParse : pdfParse.default;
+
 module.exports = defineConfig({
     e2e: {
         baseUrl: "http://localhost",
@@ -20,7 +22,6 @@ module.exports = defineConfig({
         setupNodeEvents(on, config) {
             on("task", {
                 async verifyPdf({ filePath, options = {} }) {
-                    // DOMMatrix tanımı Node için
                     if (typeof global.DOMMatrix === "undefined") {
                         global.DOMMatrix = class DOMMatrix { };
                     }
@@ -35,11 +36,11 @@ module.exports = defineConfig({
                     // Text extraction Node-only
                     if (options.checkText) {
                         const dataBuffer = fs.readFileSync(filePath);
-                        const pdfData = await pdfParse(dataBuffer);
+                        const pdfData = await pdfParseFn(dataBuffer);
                         extractedText = pdfData.text;
                     }
 
-                    // Pixelmatch lazy import
+                    // Pixelmatch import
                     let pixelmatch;
                     if (options.referenceLogoPath) {
                         const pm = await import("pixelmatch");
@@ -64,7 +65,9 @@ module.exports = defineConfig({
                                 if (options.referenceLogoPath && args[0]) {
                                     const objName = args[0];
                                     const imgData = await page.objs.get(objName);
-                                    if (!imgData) continue;
+                                    if (!imgData) {
+                                        continue;
+                                    }
 
                                     const pdfImg = new PNG({ width: imgData.width, height: imgData.height });
                                     pdfImg.data = imgData.data;
