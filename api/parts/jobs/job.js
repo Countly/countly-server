@@ -254,32 +254,33 @@ class Job extends EventEmitter {
 
             this._json.next = next.getTime();
         }
-        if (this.name !== "alerts:monitor") {
-            //check if any job already scheduled or running
-            let query = {
-                status: {"$in": [STATUS.SCHEDULED, STATUS.RUNNING]},
-                name: this.name,
-            };
-            if (this._id) {
-                query._id = {$ne: this._id};
-            }
-            var self = this;
-            return new Promise((resolve, reject) => {
-                Job.findMany(this.db(), query).then(existing => {
-                    if (existing && existing.length) {
-                        log.d('Job already scheduled or running: %j', existing);
-                        this._json.status = STATUS.CANCELLED; //set this as cancelled now as we have other scheduled
-                    }
-                    else {
-                        self._save().then(resolve, reject);
-                    }
 
-                });
+        //check if any job already scheduled or running
+        let query = {
+            status: {"$in": [STATUS.SCHEDULED, STATUS.RUNNING]},
+            name: this.name,
+        };
+
+        if (this.name === 'alerts:monitor' && this.data && Object.keys(this.data).length) {
+            query.data = this.data;
+        }
+
+        if (this._id) {
+            query._id = {$ne: this._id};
+        }
+
+        var self = this;
+        return new Promise((resolve, reject) => {
+            Job.findMany(this.db(), query).then(existing => {
+                if (existing && existing.length) {
+                    log.d('Job already scheduled or running: %j', existing);
+                    this._json.status = STATUS.CANCELLED; //set this as cancelled now as we have other scheduled
+                }
+                else {
+                    self._save().then(resolve, reject);
+                }
             });
-        }
-        else {
-            return this._save();
-        }
+        });
     }
 
     /**
