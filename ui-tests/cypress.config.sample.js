@@ -51,7 +51,9 @@ module.exports = defineConfig({
                             if (options.checkText) {
                                 extractedText += await new Promise((resolve, reject) => {
                                     extract(filePath, (err, pages) => {
-                                        if (err) return reject(err);
+                                        if (err) {
+                                            return reject(err);
+                                        }
                                         resolve(pages.join("\n"));
                                     });
                                 });
@@ -74,7 +76,9 @@ module.exports = defineConfig({
                                     if (doLogoCheck && args[0]) {
                                         const objName = args[0];
                                         const imgData = await page.objs.get(objName);
-                                        if (!imgData) continue;
+                                        if (!imgData) {
+                                            continue;
+                                        }
 
                                         const pdfImg = new PNG({ width: imgData.width, height: imgData.height });
                                         pdfImg.data = imgData.data;
@@ -123,7 +127,8 @@ module.exports = defineConfig({
                             text: extractedText,
                             numPages: pdfDoc.numPages
                         };
-                    } catch (err) {
+                    }
+                    catch (err) {
                         throw err;
                     }
                 }

@@ -1,4 +1,5 @@
 import user from '../../../fixtures/user.json';
+const getApiKey = require('../../../api/getApiKey');
 const navigationHelpers = require('../../../support/navigations');
 const helper = require('../../../support/helper');
 const loginHelpers = require('../../../lib/login/login');
@@ -10,7 +11,7 @@ const { VISUALIZATION_TYPE, TIME_UNITS } = require('../../../support/constants')
 
 
 describe('Create New Custom Dashboard', () => {
-    beforeEach(function () {
+    beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
         navigationHelpers.openDashboardsMenu();
@@ -29,7 +30,7 @@ describe('Create New Custom Dashboard', () => {
         //***Report***
         Report Type: Dashboard Report
         Frequency: Daily
-    `, function () {
+    `, function() {
 
         const dashboard = generateDashboardFixture();
         const report = generateReportFixture();
@@ -132,7 +133,7 @@ describe('Create New Custom Dashboard', () => {
         });
     });
 
-    it(`Create a private custom dashboard and duplicate it and edit it and delete it then verify the flow`, function () {
+    it(`Create a private custom dashboard and duplicate it and edit it and delete it then verify the flow`, function() {
 
         const dashboard = generateDashboardFixture();
         const editedDashboard = generateDashboardFixture();
