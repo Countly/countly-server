@@ -6,20 +6,9 @@ var plugin = {},
     fs = require("fs"),
     path = require("path"),
     trace = require("./parts/stacktrace.js"),
-    { DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('./parts/custom_field.js'),
     plugins = require('../../pluginManager.js');
 
 const FEATURE_NAME = 'crashes';
-
-plugins.setConfigs("crashes", {
-    report_limit: 100,
-    grouping_strategy: "error_and_file",
-    smart_preprocessing: true,
-    smart_regexes: "{.*?}\n/.*?/",
-    same_app_version_crash_update: false,
-    max_custom_field_keys: DEFAULT_MAX_CUSTOM_FIELD_KEYS,
-    activate_custom_field_cleanup_job: false,
-});
 
 fs.chmod(path.resolve(__dirname + "/../bin/minidump_stackwalk"), 0o744, function(err) {
     if (err && !process.env.COUNTLY_CONTAINER) {

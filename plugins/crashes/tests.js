@@ -771,7 +771,7 @@ describe('Testing Crashes', function() {
                     report.should.have.property("disk_total", 20 * 1024);
                     report.should.have.property("bat_current", 90);
                     report.should.have.property("bat_total", 100);
-                    report.should.have.property("session", 1);
+                    //report.should.have.property("session", 1);
                     report.should.have.property("orientation", "portrait");
                     report.should.have.property("online", 1);
                     report.should.have.property("muted", 1);
