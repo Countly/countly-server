@@ -1,7 +1,6 @@
 <div class="cly-content-block-list-input">
-  <!-- v-tooltip.right="step.componentTooltip" -->
   <el-collapse
-    v-for="(block, blockIndex) in blockInputs"
+    v-for="(block, blockIndex) in mappedBlockInputs"
     :key="`list-block-${blockIndex}`"
     class="cly-content-block-list-input__list-block"
   >
@@ -12,7 +11,7 @@
               <img
                   class="cly-content-block-list-input__list-block-header-display-icon"
                   :data-test-id="'fullscreen-blocks-icon-block-' + blockIndex"
-                  :src="block[0].value || '/content/images/fullscreenPlaceholderImage.png'"
+                  :src="block[0].value"
               >
               <p
                   class="cly-content-block-list-input__list-block-header-display-title"

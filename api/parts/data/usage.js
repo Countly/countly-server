@@ -1030,7 +1030,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
 
                 if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true && !userProps.loc && typeof data.lat !== "undefined" && typeof data.lon !== "undefined") {
                     // only override lat/lon if no recent gps location exists in user document
-                    if (!params.app_user.loc || (params.app_user.loc.gps && params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
+                    if (!params.app_user.loc || !params.app_user.loc.gps || params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600) {
                         userProps.loc = {
                             gps: false,
                             geo: {
@@ -1061,7 +1061,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
 
                     if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true && !userProps.loc && data.ll && typeof data.ll[0] !== "undefined" && typeof data.ll[1] !== "undefined") {
                         // only override lat/lon if no recent gps location exists in user document
-                        if (!params.app_user.loc || (params.app_user.loc.gps && params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
+                        if (!params.app_user.loc || !params.app_user.loc.gps || params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600) {
                             userProps.loc = {
                                 gps: false,
                                 geo: {
