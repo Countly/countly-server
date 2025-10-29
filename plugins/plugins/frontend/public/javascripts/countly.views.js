@@ -298,7 +298,7 @@
                 back: this.$route.params.namespace === "search",
                 configsData: {},
                 configsList: [],
-                coreDefaults: ['api', 'frontend', 'logs', 'security'],
+                coreDefaults: ['api', 'frontend', 'logs', 'security', 'tracking'],
                 diff: [],
                 diff_: {},
                 selectedConfig: this.$route.params.namespace || "api",
@@ -344,10 +344,7 @@
                         app.configurationsView.registerInput("frontend.__user", {input: "el-select", attrs: {multiple: true}, list: list});
                     }
 
-                    if (self.configsData.frontend && countlyGlobal.plugins.includes('tracker')) {
-                        // disable countly tracking config for countly hosted instances
-                        delete self.configsData.frontend.countly_tracking;
-                    }
+                    delete self.configsData.frontend.countly_tracking;
 
                     self.configsList.push({
                         "label": self.getLabel("core"),
@@ -513,7 +510,7 @@
             },
             getLabelName: function(id, ns) {
                 ns = ns || this.selectedConfig;
-                if (ns !== "frontend" && ns !== "api" && ns !== "apps" && ns !== "logs" && ns !== "security" && ns !== "feedback" && countlyGlobal.plugins.indexOf(ns) === -1) {
+                if (this.coreDefaults.indexOf(ns) === -1 && ns !== "feedback" && countlyGlobal.plugins.indexOf(ns) === -1) {
                     return null;
                 }
 
@@ -533,6 +530,18 @@
             },
             getConfigType: function(id) {
                 return this.coreDefaults.includes(id) ? "Core" : "Plugins";
+            },
+            getWarningTags(configGroup, key) {
+                var warnings = countlyPlugins.getConfigWarnings(configGroup, key);
+                var tooltipColors = countlyPlugins.getTooltipColors();
+                return warnings.map(function(warning) {
+                    return {
+                        tooltipText: CV.i18n(warning.text),
+                        bgColor: tooltipColors[warning.type].bgColor,
+                        textColor: tooltipColors[warning.type].textColor,
+                        label: countlyPlugins.getTooltipLabel(warning.type)
+                    };
+                });
             },
             checkIfOverwritten: function(id, ns) {
                 ns = ns || this.selectedConfig;
@@ -1170,15 +1179,23 @@
         }
     });
 
-    var appList = [{value: "", label: jQuery.i18n.map["configs.frontend-self_tracking.none"]}];
+    var appList = [{value: "", label: jQuery.i18n.map["configs.tracking.self_tracking.none"]}];
     for (var a in countlyGlobal.apps) {
         appList.push({value: countlyGlobal.apps[a].key, label: countlyGlobal.apps[a].name});
     }
 
-    app.configurationsView.registerInput("frontend.self_tracking", {
+    app.configurationsView.registerInput("tracking.self_tracking_app", {
         input: "el-select",
         attrs: {},
         list: appList
+    });
+
+    var idList = [{value: "_id", label: "_id"}, {value: "email", label: "email"}];
+
+    app.configurationsView.registerInput("tracking.self_tracking_id_policy", {
+        input: "el-select",
+        attrs: {},
+        list: idList
     });
 
     app.configurationsView.registerStructure("api", {
@@ -1188,6 +1205,15 @@
             {label: "configs.api.cache", list: ["batch_read_processing", "batch_read_period", "batch_read_ttl", "batch_read_on_master"]},
             {label: "configs.api.limits", list: ["event_limit", "event_segmentation_limit", "event_segmentation_value_limit", "metric_limit", "session_duration_limit", "array_list_limit"]},
             {label: "configs.api.others", list: ["safe", "domain", "export_limit", "offline_mode", "reports_regenerate_interval", "request_threshold", "sync_plugins", "send_test_email", "city_data", "country_data", "session_cooldown", "total_users", "prevent_duplicate_requests", "metric_changes", "data_retention_period", "trim_trailing_ending_spaces"]},
+        ]
+    });
+
+    app.configurationsView.registerStructure("tracking", {
+        description: "configs.tracking.description",
+        groups: [
+            {label: "configs.tracking.self_tracking", list: ["self_tracking_app", "self_tracking_url", "self_tracking_app_key", "self_tracking_id_policy", "self_tracking_sessions", "self_tracking_events", "self_tracking_crashes", "self_tracking_views", "self_tracking_feedback", "self_tracking_user_details"]},
+            {label: "configs.tracking.user", list: ["user_sessions", "user_events", "user_crashes", "user_views", "user_feedback", "user_details"]},
+            {label: "configs.tracking.server", list: ["server_sessions", "server_events", "server_crashes", "server_views", "server_feedback", "server_user_details"]},
         ]
     });
 

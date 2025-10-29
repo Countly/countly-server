@@ -443,6 +443,10 @@
             placement: {
                 type: String,
                 default: 'auto'
+            },
+            tooltipClass: {
+                type: String,
+                default: ''
             }
         },
         computed: {
@@ -453,7 +457,7 @@
                 };
             }
         },
-        template: '<i v-if="tooltip" :class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltipConf"></i>'
+        template: '<i v-if="tooltip" :class="\'cly-vue-tooltip-icon \' + icon + \' \' + tooltipClass" v-tooltip="tooltipConf"></i>'
     }));
 
     Vue.component("cly-remover", countlyBaseComponent.extend({
@@ -1001,10 +1005,10 @@
         },
         template: '<div class="bu-is-flex bu-is-flex-wrap-wrap bu-is-align-items-center">\
                                 <div class="cly-vue-color-tag__color-tag-wrapper"  v-for="(tag,idx) in tags">\
-                                <div v-if="tag.value == selectedTag.value" @click="click(tag)" class="cly-vue-color-tag__color-tag cly-vue-color-tag__color-tag__selected bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}">\
+                                <div v-if="tag.value == selectedTag.value" @click="click(tag)" :data-test-id="`color-tag-${idx}`" class="cly-vue-color-tag__color-tag cly-vue-color-tag__color-tag__selected bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}">\
                                     <i class="ion-checkmark cly-vue-color-tag__checkmark"></i>\
                                 </div>\
-                                <div v-else @click="click(tag)" class="cly-vue-color-tag__color-tag bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}"></div>\
+                                <div v-else @click="click(tag)" :data-test-id="`color-tag-${idx}`" class="cly-vue-color-tag__color-tag bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}"></div>\
                                 </div>\
                     </div>'
     }));

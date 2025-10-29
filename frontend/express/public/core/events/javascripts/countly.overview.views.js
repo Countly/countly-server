@@ -5,7 +5,7 @@
         data: function() {
             return {
                 scoreTableExportSettings: {
-                    title: "Events",
+                    title: CV.i18n("events.title"),
                     timeDependent: true
                 }
             };

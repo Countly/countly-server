@@ -185,6 +185,7 @@ function escape_html_entities(key, value, more) {
 common.getJSON = getJSON;
 
 common.log = logger;
+const log = logger('api:utils:common');
 
 common.dbMap = {
     'events': 'e',
@@ -1319,8 +1320,9 @@ common.returnRaw = function(params, returnCode, body, heads) {
         }
         return;
     }
+    const defaultHeaders = {};
     //set provided in configuration headers
-    var headers = {};
+    let headers = {};
     if (heads) {
         for (var i in heads) {
             headers[i] = heads[i];
@@ -1328,7 +1330,13 @@ common.returnRaw = function(params, returnCode, body, heads) {
     }
     if (params && params.res && params.res.writeHead && !params.blockResponses) {
         if (!params.res.finished) {
-            params.res.writeHead(returnCode, headers);
+            try {
+                params.res.writeHead(returnCode, headers);
+            }
+            catch (err) {
+                log.e(`Error writing header in 'returnRaw' ${err}`);
+                params.res.writeHead(returnCode, defaultHeaders);
+            }
             if (body) {
                 params.res.write(body);
             }
@@ -1359,9 +1367,10 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
         return;
     }
     //set provided in configuration headers
-    var headers = {
+    const defaultHeaders = {
         'Content-Type': 'application/json; charset=utf-8'
     };
+    let headers = { ...defaultHeaders };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
     for (let i = 0; i < add_headers.length; i++) {
@@ -1385,7 +1394,13 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
     }
     if (params && params.res && params.res.writeHead && !params.blockResponses) {
         if (!params.res.finished) {
-            params.res.writeHead(returnCode, headers);
+            try {
+                params.res.writeHead(returnCode, headers);
+            }
+            catch (err) {
+                log.e(`Error writing header in 'returnMessage' ${err}`);
+                params.res.writeHead(returnCode, defaultHeaders);
+            }
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
             }
@@ -1427,9 +1442,10 @@ common.returnOutput = function(params, output, noescape, heads) {
         return;
     }
     //set provided in configuration headers
-    var headers = {
+    const defaultHeaders = {
         'Content-Type': 'application/json; charset=utf-8'
     };
+    let headers = { ...defaultHeaders };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
     for (let i = 0; i < add_headers.length; i++) {
@@ -1454,7 +1470,13 @@ common.returnOutput = function(params, output, noescape, heads) {
     }
     if (params && params.res && params.res.writeHead && !params.blockResponses) {
         if (!params.res.finished) {
-            params.res.writeHead(200, headers);
+            try {
+                params.res.writeHead(200, headers);
+            }
+            catch (err) {
+                log.e(`Error writing header in 'returnMessage' ${err}`);
+                params.res.writeHead(200, defaultHeaders);
+            }
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
             }
@@ -2083,19 +2105,16 @@ common.parseAppVersion = function(version) {
             version = String(version);
         }
 
-        // Ensure version has at least one decimal point
-        if (version.indexOf('.') === -1) {
-            version += '.0';
-        }
-
-        const parsedVersion = semver.valid(semver.coerce(version));
-        if (parsedVersion) {
-            const versionObj = semver.parse(parsedVersion);
+        const isValid = semver.valid(semver.coerce(version, {includePrerelease: true}));
+        if (isValid) {
+            const versionObj = semver.parse(semver.coerce(version, {includePrerelease: true}));
             if (versionObj) {
                 return {
                     major: versionObj.major,
                     minor: versionObj.minor,
                     patch: versionObj.patch,
+                    prerelease: versionObj.prerelease,
+                    build: versionObj.build,
                     original: version,
                     success: true
                 };

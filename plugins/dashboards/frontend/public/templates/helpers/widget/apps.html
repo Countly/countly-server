@@ -1,14 +1,14 @@
 <div class="clyd-apps">
     <hr>
-    <div class="bu-is-flex bu-is-flex-wrap-wrap apps">
+    <div class="bu-is-flex bu-is-flex-wrap-wrap apps" data-test-id="widget-apps">
         <span class="bu-ml-1 text-small has-ellipsis bu-is-flex-shrink-1" v-if="isMultiple" v-tooltip="tooltip">
             {{ i18n("dashboards.multiple-apps-count", apps.length) }}
         </span>
         <div v-else class="bu-is-flex apps__single">
             <div v-if="app.avatar" class="apps__single--avatar bu-mr-1" :style="app.avatar">
-                <span v-if="!app.image" class="has-ellipsis">{{getAppInitials(app.name)}}</span>
+                <span v-if="!app.image" class="has-ellipsis" data-test-id="widget-app-icon">{{getAppInitials(app.name)}}</span>
             </div>
-            <span class="text-small has-ellipsis bu-is-flex-shrink-1">{{app.name}}</span>
+            <span class="text-small has-ellipsis bu-is-flex-shrink-1" data-test-id="widget-app-name">{{app.name}}</span>
         </div>
     </div>
 </div>

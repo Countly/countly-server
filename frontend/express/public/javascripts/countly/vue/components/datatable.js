@@ -72,12 +72,33 @@
                 var currentArray = this.rows.slice();
                 if (this.displaySearch && this.controlParams.searchQuery) {
                     var queryLc = (this.controlParams.searchQuery + "").toLowerCase();
+
+                    var searchableFields = [];
+                    if (this.$refs.elTable && this.$refs.elTable.columns) {
+                        this.$refs.elTable.columns.forEach(function(col) {
+                            if (col.columnKey) {
+                                searchableFields.push(col.columnKey);
+                            }
+                        });
+                    }
+
                     currentArray = currentArray.filter(function(item) {
-                        return Object.keys(item).some(function(fieldKey) {
-                            if (item[fieldKey] === null || item[fieldKey] === undefined) {
+                        // If no searchable fields found from columns, use original search logic
+                        if (!searchableFields.length) {
+                            return Object.keys(item).some(function(fieldKey) {
+                                if (item[fieldKey] === null || item[fieldKey] === undefined) {
+                                    return false;
+                                }
+                                return (item[fieldKey] + "").toLowerCase().indexOf(queryLc) > -1;
+                            });
+                        }
+
+                        return searchableFields.some(function(fieldKey) {
+                            var value = item[fieldKey];
+                            if (value === null || value === undefined) {
                                 return false;
                             }
-                            return (item[fieldKey] + "").toLowerCase().indexOf(queryLc) > -1;
+                            return (value + "").toLowerCase().indexOf(queryLc) > -1;
                         });
                     });
                 }

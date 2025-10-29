@@ -26,14 +26,15 @@
           </div>
         </cly-form-field>
         <div class="bu-pt-3 bu-mt-2 bu-pb-1">
-          <el-checkbox class="text-smallish"
+          <el-checkbox test-id="parameter-description" class="text-smallish"
             v-bind:label="i18n('remote-config.use.description')"
             v-model="showDescription"
             >
           </el-checkbox>
           <div class="bu-pt-3 cly-vue-remote-config-conditions-drawer" v-if="showDescription">
-            <cly-form-field name="description" :label="i18n('remote-config.parameter.description')" rules="required">
+            <cly-form-field test-id="parameter-description" name="description" :label="i18n('remote-config.parameter.description')" rules="required">
               <textarea
+                data-test-id="parameter-description-input"
                 class="input"
                 v-model="drawerScope.editedObject.description"
                 :placeholder="i18n('remote-config.parameter.description.placeholder')">
@@ -77,6 +78,7 @@
               </remote-config-add-condition>
             </draggable>
             <cly-select-x
+              test-id="add-value-for-condition"
               ref="selectX"
               @change="handleSelect"
               v-model="currentConditionValue"
@@ -91,7 +93,7 @@
               </template>
               <template v-slot:action>
                 <div class="bu-ml-3">
-                  <el-button type="success" size="small" @click="showConditionDialog" icon="el-icon-circle-plus">{{i18n('remote-config.parameter.conditions.new.condition')}}
+                  <el-button data-test-id="new-condition-button" type="success" size="small" @click="showConditionDialog" icon="el-icon-circle-plus">{{i18n('remote-config.parameter.conditions.new.condition')}}
                   </el-button>
                 </div>
               </template>

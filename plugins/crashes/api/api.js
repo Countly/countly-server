@@ -462,6 +462,8 @@ const FEATURE_NAME = 'crashes';
                             report.app_version_major = versionComponents.major;
                             report.app_version_minor = versionComponents.minor;
                             report.app_version_patch = versionComponents.patch;
+                            report.app_version_prerelease = versionComponents.prerelease;
+                            report.app_version_build = versionComponents.build;
                         }
                     }
 
@@ -511,6 +513,8 @@ const FEATURE_NAME = 'crashes';
                                     { name: "app_version_major", type: "n" },
                                     { name: "app_version_minor", type: "n" },
                                     { name: "app_version_patch", type: "n" },
+                                    { name: "app_version_prerelease", type: "l" },
+                                    { name: "app_version_build", type: "l" },
                                     { name: "ram_current", type: "n" },
                                     { name: "ram_total", type: "n" },
                                     { name: "disk_current", type: "n" },
@@ -1352,6 +1356,10 @@ const FEATURE_NAME = 'crashes';
 
         switch (paths[3]) {
         case 'resolve':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in: crashes}}).toArray(function(crashGroupsErr, groups) {
@@ -1401,6 +1409,10 @@ const FEATURE_NAME = 'crashes';
             });
             break;
         case 'unresolve':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in: crashes}}).toArray(function(crashGroupsErr, groups) {
@@ -1432,7 +1444,11 @@ const FEATURE_NAME = 'crashes';
             });
             break;
         case 'view':
-            validateUpdate(obParams, function(params) {
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
+            validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in: crashes}}).toArray(function(crashGroupsErr, groups) {
                     if (groups) {
@@ -1465,6 +1481,10 @@ const FEATURE_NAME = 'crashes';
             });
             break;
         case 'share':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var id = common.crypto.createHash('sha1').update(params.qstring.app_id + params.qstring.args.crash_id + "").digest('hex');
                 common.db.collection('crash_share').insert({_id: id, app_id: params.qstring.app_id + "", crash_id: params.qstring.args.crash_id + ""}, function() {
@@ -1476,6 +1496,10 @@ const FEATURE_NAME = 'crashes';
             });
             break;
         case 'unshare':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var id = common.crypto.createHash('sha1').update(params.qstring.app_id + params.qstring.args.crash_id + "").digest('hex');
                 common.db.collection('crash_share').remove({'_id': id }, function() {
@@ -1487,6 +1511,10 @@ const FEATURE_NAME = 'crashes';
             });
             break;
         case 'modify_share':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 if (params.qstring.args.data) {
                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set": {share: params.qstring.args.data}}, function() {
@@ -1501,6 +1529,10 @@ const FEATURE_NAME = 'crashes';
             });
             break;
         case 'hide':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': {$in: crashes} }, {"$set": {is_hidden: true}}, {multi: true}, function() {
@@ -1513,6 +1545,10 @@ const FEATURE_NAME = 'crashes';
             });
             break;
         case 'show':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': {$in: crashes} }, {"$set": {is_hidden: false}}, {multi: true}, function() {
@@ -1525,6 +1561,10 @@ const FEATURE_NAME = 'crashes';
             });
             break;
         case 'resolving':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': {$in: crashes} }, {"$set": {is_resolving: true}}, {multi: true}, function() {
@@ -1537,6 +1577,10 @@ const FEATURE_NAME = 'crashes';
             });
             break;
         case 'add_comment':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateCreate(obParams, FEATURE_NAME, function() {
                 var comment = {};
                 if (obParams.qstring.args.time) {
@@ -1564,6 +1608,10 @@ const FEATURE_NAME = 'crashes';
             });
             break;
         case 'edit_comment':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function() {
                 common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).findOne({'_id': obParams.qstring.args.crash_id }, function(err, crash) {
                     var comment;
@@ -1602,6 +1650,10 @@ const FEATURE_NAME = 'crashes';
             });
             break;
         case 'delete_comment':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateDelete(obParams, FEATURE_NAME, function() {
                 common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).findOne({'_id': obParams.qstring.args.crash_id }, function(err, crash) {
                     var comment;
@@ -1629,6 +1681,10 @@ const FEATURE_NAME = 'crashes';
             });
             break;
         case 'delete':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateDelete(obParams, FEATURE_NAME, function() {
                 var params = obParams;
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];

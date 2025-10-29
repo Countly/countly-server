@@ -6,7 +6,12 @@ ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,vi
 
 ARG GEOIP=empty
 EXPOSE 3001
-HEALTHCHECK --start-period=400s CMD curl --fail http://localhost:3001/o/ping || exit 1
+HEALTHCHECK --start-period=400s CMD bash -c '\
+  if [ "$COUNTLY_CONFIG_API_API_SSL_ENABLED" = "true" ] || [ "$COUNTLY_CONFIG_API_API_SSL_ENABLED" = "\"true\"" ]; then \
+    curl -k --fail https://localhost:3001/o/ping || exit 1; \
+  else \
+    curl --fail http://localhost:3001/o/ping || exit 1; \
+  fi'
 
 USER root
 
