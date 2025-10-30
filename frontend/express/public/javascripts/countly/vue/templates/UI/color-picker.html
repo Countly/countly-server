@@ -3,7 +3,7 @@
     class="cly-vue-color-picker__input-container"
     :data-test-id="testId"
     @click.stop="onInputContainerClick"
-  >
+    >
     <div
       class="cly-vue-color-picker__input-drop-container"
       :data-test-id="testId + '-cly-color-picker-img-wrapper'"
@@ -15,11 +15,13 @@
       />
     </div>
     <input
-      v-model="localValue"
+      v-model="inputValue"
       class="cly-vue-color-picker__input"
+      :class="{ 'cly-vue-color-picker__input--new-ui': isNewUIApplied }"
       type="text"
     />
     <div
+      v-if="!isNewUIApplied"
       class="cly-vue-color-picker__input-arrow"
       :class="{ 'cly-vue-color-picker__input-arrow--open': isOpened }"
     >
@@ -29,16 +31,60 @@
   </div>
   <div
     v-if="isOpened"
-    v-click-outside="close"
+    v-click-outside="onClickOutside"
     class="cly-vue-color-picker__body"
     :class="bodyClasses"
   >
     <picker
       class="cly-vue-color-picker__picker"
+      :disable-fields="isNewUIApplied"
       :preset-colors="[]"
-      :value="localValue"
+      ref="pickerComponent"
+      :value="pickerColor"
       @input="onPickerInput"
     />
+    <div
+      v-if="isNewUIApplied"
+      class="cly-vue-color-picker__color-inputs-container"
+    >
+      <div class="cly-vue-color-picker__color-inputs-wrapper">
+        <el-input
+          v-model="colorAlpha"
+          class="cly-vue-color-picker__color-input cly-vue-color-picker__color-input--alpha"
+          max="100"
+          min="0"
+          type="number"
+        >
+          <template #append>
+            <span>%</span>
+          </template>
+        </el-input>
+        <el-input
+          v-model="hexColor"
+          class="cly-vue-color-picker__color-input cly-vue-color-picker__color-input--hex"
+          :test-id="testId + '-hex-input'"
+        >
+          <template #prepend>
+            <span>#</span>
+          </template>
+        </el-input>
+      </div>
+      <div class="cly-vue-color-picker__color-input-rgb">
+        <el-input
+          v-for="key in Object.keys(rgbColor || {})"
+          :key="`rgb-input-for-${key}`"
+          max="255"
+          min="0"
+          type="number"
+          :value="rgbColor[key]"
+          @input="onRGBInput(key, $event)"
+        >
+          <template #prepend>
+            <span>{{ key }}</span>
+          </template>
+        </el-input>
+      </div>
+    </div>
     <div class="cly-vue-color-picker__buttons-container">
       <cly-button
         class="cly-vue-color-picker__button"
