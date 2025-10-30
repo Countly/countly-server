@@ -1,3 +1,7 @@
+## Version 25.03.xx
+Enterprise Fixes:
+- [data-manager] Fixed bug when merging events with ampersand symbol in the name
+
 ## Version 25.03.25
 Fixes:
 - [crashes] Fixed resolving audit log recording
