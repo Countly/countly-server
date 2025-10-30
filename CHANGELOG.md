@@ -1,8 +1,12 @@
+## Version 25.03.xx
+Fixes:
+- [push] Fixed timeout setting
+
 ## Version 25.03.25
 Fixes:
 - [crashes] Fixed resolving audit log recording
 - [location] Fixed updating none gps coordinate location after gps location was used
-- 
+
 Enterprise Fixes:
 - [ab-testing] Add script for fixing variant cohort
 - [groups] Fix user permission update after updating user group permission
