@@ -1,3 +1,7 @@
+## Version 24.05.xx
+Enterprise Fixes:
+- [data-manager] Fixed bug when merging events with ampersand symbol in the name
+
 ## Version 24.05.44
 Enterprise Fixes:
 - [groups] Fix user permission update after updating user group permission
