@@ -55,7 +55,7 @@
     "countly-sdk-nodejs": "*",
     "countly-sdk-web": "*",
     "csurf": "^1.11.0",
-    "csvtojson": "2.0.10",
+    "csvtojson": "2.0.14",
     "ejs": "3.1.10",
     "errorhandler": "1.5.1",
     "express": "4.21.2",
