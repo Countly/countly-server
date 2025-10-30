@@ -15,7 +15,7 @@ pluginManager.dbConnection().then(function(countlyDb) {
             console.log("Adding crash collections to " + app.name);
             function cb() {
                 cnt++;
-                if (cnt == 15) {
+                if (cnt == 12) {
                     done();
                 }
             }
