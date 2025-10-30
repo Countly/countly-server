@@ -1497,58 +1497,6 @@ const processRequest = (params) => {
                 }
                 break;
             }
-            case '/i': {
-                if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
-                    params.qstring = common.trimWhitespaceStartEnd(params.qstring);
-                }
-                params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
-                params.user = {};
-
-                if (!params.qstring.app_key || !params.qstring.device_id) {
-                    common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
-                    return false;
-                }
-                else {
-                    //make sure device_id is string
-                    params.qstring.device_id += "";
-                    params.qstring.app_key += "";
-                    // Set app_user_id that is unique for each user of an application.
-                    params.app_user_id = common.crypto.createHash('sha1')
-                        .update(params.qstring.app_key + params.qstring.device_id + "")
-                        .digest('hex');
-                }
-
-                if (params.qstring.events && typeof params.qstring.events === "string") {
-                    try {
-                        params.qstring.events = JSON.parse(params.qstring.events);
-                    }
-                    catch (SyntaxError) {
-                        console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
-                    }
-                }
-
-                log.d('processing request %j', params.qstring);
-
-                params.promises = [];
-
-                validateAppForWriteAPI(params, () => {
-                    /**
-                    * Dispatches /sdk/end event upon finishing processing request
-                    **/
-                    function resolver() {
-                        plugins.dispatch("/sdk/end", {params: params});
-                    }
-
-                    Promise.all(params.promises)
-                        .then(resolver)
-                        .catch((error) => {
-                            console.log(error);
-                            resolver();
-                        });
-                });
-
-                break;
-            }
             case '/o/users': {
                 switch (paths[3]) {
                 case 'all':
