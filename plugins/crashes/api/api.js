@@ -204,8 +204,10 @@ const FEATURE_NAME = 'crashes';
                                             log.e("Error fetching crash reports from drill: " + cursorErr);
                                         }
                                         res0 = res0 || [];
+                                        console.log("Fetched " + res0.length + " crash reports from drill for crash group " + result._id);
                                         if (res0 && res0.length) {
                                             for (var z = 0; z < res0.length; z++) {
+                                                console.log("before", res0[z]);
                                                 //Converts to usual format
                                                 res0[z].sg = res0[z].sg || {};
                                                 var dd = res0[z].sg;
@@ -239,6 +241,7 @@ const FEATURE_NAME = 'crashes';
                                                 dd.cd = res0[z].cd;
                                                 res0[z] = dd;
                                                 trace.postprocessCrash(res0[z]);
+                                                console.log("after", res0[z]);
                                             }
                                         }
                                         common.returnOutput(params, res0);
