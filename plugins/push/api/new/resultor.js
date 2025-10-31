@@ -32,7 +32,6 @@ async function saveResults(db, results) {
         updateInternalsWithResults(results, log);
     }
     catch (error) {
-        console.error(error);
         log.e("Error while updating internals with results", results, error);
     }
 
@@ -346,88 +345,61 @@ function buildUpdateQueryForResult(result, query = {}, path = "result") {
 
 /**
  * Applies the given Result object to the Schedule and Message documents
- * identified by the provided scheduleId and messageId. It updates the stats
- * in the Result object, appends any provided events to the Schedule's events,
- * and updates the Schedule's status based on the progress of scheduled and
- * composed events.
+ * identified by the provided scheduleId and messageId.
  * @param {MongoDb} db - MongoDB database instance
  * @param {ObjectId} scheduleId - The ID of the Schedule document to update
  * @param {ObjectId} messageId - The ID of the Message document to update
  * @param {Result} resultObject - The Result object containing stats to apply
- * @param {{scheduled?: ScheduleEvent[]; composed?: ScheduleEvent[];}=} events - Optional events to append to the Schedule's events
  * @returns {Promise<void>} Promise that resolves when the operation is complete
  */
-async function applyResultObject(db, scheduleId, messageId, resultObject, events) {
+async function applyResultObject(db, scheduleId, messageId, resultObject) {
     // update the result object
     const $inc = buildUpdateQueryForResult(resultObject);
-    // update the events object (only for schedule)
-    /** @type {{[key: string]: any}=} */
-    let $push;
-    if (events) {
-        $push = {};
-        const entries = Object.entries(events);
-        for (const [key, value] of entries) {
-            /** @type {Schedule["events"]["composed"]} */
-            const occuredEvent = value.map(({ timezone, scheduledTo }) => ({
-                timezone,
-                scheduledTo,
-                date: new Date
-            }))
-            $push["events." + key] = { $each: occuredEvent };
-        }
-    }
     await db.collection("message_schedules")
-        .updateOne({ _id: scheduleId }, $push ? { $inc, $push } : { $inc });
+        .updateOne({ _id: scheduleId }, { $inc });
     await db.collection("messages")
         .updateOne({ _id: messageId }, { $inc });
+
     // set status of the schedule: "sending".
     await db.collection("message_schedules").updateOne({
         _id: scheduleId,
-        // there's at least one scheduled event:
-        "events.scheduled.0": { $exists: true },
         // not all schedules are composed:
-        $expr: {
-            $ne: [
-                { $size: "$events.scheduled" },
-                { $size: "$events.composed" }
-            ]
-        }
+        $and: [
+            { "events.status": "composed" },
+            { "events.status": "scheduled" }
+        ],
     }, {
         $set: { status: "sending" }
     });
+
     // set status of the schedule: "sent" or "failed".
     await db.collection("message_schedules").updateOne({
         _id: scheduleId,
         // all schedules are composed:
-        $expr: {
-            $eq: [
-                { $size: "$events.scheduled" },
-                { $size: "$events.composed" }
-            ]
-        }
+        "events.status": { $ne: "scheduled" }
     }, [{
         $set: { // sum of sent and failed are equal to total
             status: {
-                $cond: [
-                    {
-                        $eq: [
+                $cond: {
+                    if: {
+                        $lte: [
                             "$result.total",
                             { $add: ["$result.sent", "$result.failed"] }
                         ]
                     },
-                    "sent",
-                    "sending"
-                ]
+                    then: "sent",
+                    else: "sending"
+                }
             }
         }
     }, {
         $set: { // failed is equal to total (all of the messages are failed)
             status: {
-                $cond: [
-                    { $eq: ["$result.total", "$result.failed"] },
-                    "failed",
-                    "$status"
-                ]
+                $cond: {
+                    if: { $lte: ["$result.total", "$result.failed"] },
+                    then: "failed",
+                    else: "$status"
+                }
             }
         }
     }]);

@@ -44,7 +44,10 @@ describe("Android integration", () => {
                     "c.i": "67c9bb34630cd98e0fb95a14",
                     title: "test",
                     message: "test",
-                    sound: "default"
+                    sound: "default",
+                },
+                android: {
+                    ttl: 100000
                 }
             },
             appTimezone: "NA",

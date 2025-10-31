@@ -1,9 +1,8 @@
 import { ObjectId } from "mongodb";
 import { PlatformCredential } from "./credentials";
-import { ProxyConfiguration } from "./utils";
+import { ProxyConfiguration, ErrorObject } from "./utils";
 import { AutoTrigger, MessageTrigger } from "./message";
 import { PlatformKey, PlatformEnvKey } from "./message";
-import { ErrorObject } from "./message";
 
 export interface AndroidMessagePayload {
     data: {
@@ -21,7 +20,10 @@ export interface AndroidMessagePayload {
         // test: 'custom json data for android', // custom json
         // "c.e.cc": string; // extra user property: country code
         // "c.e.cty": string; // extra user property: city
-    }
+    };
+    android?: {
+        ttl?: number; // time to live in milliseconds (fcm sets it to 4 weeks (2419200000 ms) by default)
+    };
     // EXAMPLE:
     // data: {
     //     'c.i': '689607f8899e1ae6f88173cc',
@@ -37,6 +39,9 @@ export interface AndroidMessagePayload {
     //     'c.e.cty': 'Böston 墨尔本',
     //     'c.e.src': 'Android',
     //     'c.li': 'test-icon'
+    // }
+    // android: {
+    //   ttl: 2419200000
     // }
 }
 
@@ -176,16 +181,19 @@ export type PushEvent = AndroidPushEvent | HuaweiPushEvent | IOSPushEvent;
 export interface AndroidResultEvent extends AndroidPushEvent {
     response?: any;
     error?: ErrorObject;
+    sentAt: Date; // the date when this push was actually sent or attempted to be sent
 }
 
 export interface HuaweiResultEvent extends HuaweiPushEvent {
     response?: any;
     error?: ErrorObject;
+    sentAt: Date;
 }
 
 export interface IOSResultEvent extends IOSPushEvent {
     response?: any;
     error?: ErrorObject;
+    sentAt: Date;
 }
 
 export type ResultEvent = AndroidResultEvent | HuaweiResultEvent | IOSResultEvent;

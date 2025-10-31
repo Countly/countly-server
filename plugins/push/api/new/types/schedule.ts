@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { Result, Content, MessageAudienceFilter } from "./message";
-import { ScheduleEvent } from "./queue";
+import { ErrorObject } from "./utils";
 
 export interface AudienceFilter extends MessageAudienceFilter {
     // these are inherited from MessageAudienceFilter
@@ -16,6 +16,10 @@ export interface AudienceFilter extends MessageAudienceFilter {
         minTime?: number;
         messageId: ObjectId;
     };
+    // this is required for the cohort trigger with "cancel: true" option
+    // it is used to determine the current cohort status of the user
+    // so that we can cancel the scheduled message if the user is no longer in the cohort
+    // when the message is being sent
     userCohortStatuses?: Array<{
         uid: string;
         cohort: {
@@ -34,6 +38,7 @@ export interface Schedule {
     _id: ObjectId;
     appId: ObjectId;
     messageId: ObjectId;
+    // this is main scheduled time for the schedule in countly server timezone
     scheduledTo: Date;
     /** If true, the schedule event will be moved to the next day if the scheduled time has already passed. This property is important for the timezone-aware schedules. */
     rescheduleIfPassed?: boolean;
@@ -48,8 +53,11 @@ export interface Schedule {
         "canceled"  | // Canceled and not sent. No further action for this schedule
         "failed";     // All messages failed to send. No further action for this schedule
     result: Result;
-    events: {
-        scheduled: (Pick<ScheduleEvent,"timezone"|"scheduledTo">&{date: Date})[];
-        composed: (Pick<ScheduleEvent,"timezone"|"scheduledTo">&{date: Date})[];
-    };
+    events: Array<{
+        status: "scheduled"|"composed"|"failed";
+        // this is the timezone adjusted schedule date for the event to be received
+        scheduledTo: Date;
+        timezone?: string;
+        error?: ErrorObject;
+    }>;
 }

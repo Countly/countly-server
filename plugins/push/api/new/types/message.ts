@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { ErrorObject } from "./utils";
 
 export type PlatformKey = "a"|"i"|"h"; // android|ios|huawei
 export type PlatformEnvKey = "p"|"d"|"a"; // production|debug|adhoc
@@ -127,12 +128,6 @@ export interface Result {
     // for message: the error occured before the message's last schedule. this error should also change message's status to "failed"
     // for schedule: the error encountered before composing starts. this error should also change schedule's status to "failed"
     error?: ErrorObject;
-}
-
-export interface ErrorObject {
-    name: string;
-    message: string;
-    stack?: string;
 }
 
 export interface Info {

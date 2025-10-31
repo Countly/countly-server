@@ -1,7 +1,7 @@
 /**
  * @typedef {import('./types/queue.ts').PushEvent} PushEvent
  * @typedef {import('./types/queue.ts').ResultEvent} ResultEvent
- * @typedef {import('./types/message.ts').ErrorObject} ErrorObject
+ * @typedef {import('./types/utils.ts').ErrorObject} ErrorObject
  */
 
 const { send: androidSend } = require("./platforms/android.js");
@@ -50,6 +50,7 @@ async function sendAllPushes(pushes, autoHandleResults = true) {
             return {
                 ...pushEvent,
                 response: result.value,
+                sentAt: new Date,
             }
         }
         else {
@@ -74,7 +75,8 @@ async function sendAllPushes(pushes, autoHandleResults = true) {
             return {
                 ...pushEvent,
                 response,
-                error
+                error,
+                sentAt: new Date,
             }
         }
     });

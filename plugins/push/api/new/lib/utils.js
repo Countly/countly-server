@@ -34,9 +34,8 @@ async function loadPluginConfiguration(db) {
     }
     /** @type {PluginConfiguration} */
     const config = {
-        messageTimeout: typeof pushConfig.message_timeout === "number"
-            ? pushConfig.message_timeout
-            : undefined
+        messageResultsTTL: pushConfig.message_results_ttl,
+        messageTimeout: pushConfig.message_timeout
     };
     if (pushConfig.proxyhost && pushConfig.proxyport) {
         config.proxy = {

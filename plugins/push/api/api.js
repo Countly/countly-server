@@ -4,6 +4,7 @@
  * @typedef {import("./new/types/queue.ts").ScheduleEventHandler} ScheduleEventHandler
  * @typedef {import("./new/types/queue.ts").ResultEventHandler} ResultEventHandler
  */
+const JOB = require('../../../api/parts/jobs');
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api'),
@@ -71,31 +72,13 @@ plugins.setConfigs(FEATURE_NAME, {
     // },
     message_timeout: 3600000, // timeout for a message not sent yet (for TooLateToSend error)
     default_content_available: false, // sets content-available: 1 by default for ios
+    message_results_ttl: 90, // 90 days
 });
 
 plugins.internalEvents.push('[CLY]_push_sent');
 plugins.internalEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_sent');
 plugins.internalDrillEvents.push('[CLY]_push_action');
-
-/**
- * Initialize the push queue
- * @param {MongoDb} db - MongoDB database instance
- * @returns {Promise<void>}
- */
-async function queueInitializer(db) {
-    try {
-        await initPushQueue(
-            pushes => sendAllPushes(pushes),
-            schedules => composeAllScheduledPushes(db, schedules),
-            results => saveResults(db, results),
-            autoTriggerEvents => scheduleMessageByAutoTriggers(db, autoTriggerEvents),
-        );
-    }
-    catch(e) {
-        log.e("Error while initializing Push queue", e);
-    }
-}
 
 // plugins.register('/worker', async function() {
 //     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
@@ -114,18 +97,33 @@ async function queueInitializer(db) {
 //     await queueInitializer(common.db);
 // });
 
-// Initialize the push queue and setup Kafka topics and partitions
-if (false) {
-    setupTopicsAndPartitions()
-        .then(() => log.i("Kafka topics and partitions setup completed"))
-        .catch(err => log.e("Error setting up Kafka topics and partitions:", err));
-}
-// initialize the push queue
-if (true) {
-    queueInitializer(common.db)
-        .then(() => log.i("Push queue initialized successfully"))
-        .catch(err => log.e("Error initializing push queue:", err));
-}
+plugins.register("/master", async function() {
+    // Set up periodic jobs for cleaning up old message results
+    setTimeout(() => {
+        JOB.job("push:clear-message-results").replace().schedule("at 23:59 am every 1 day");
+    }, 10000);
+
+    // Initialize the push queue and setup Kafka topics and partitions
+    try {
+        await setupTopicsAndPartitions();
+        log.i("Kafka topics and partitions setup completed");
+    }
+    catch (err) {
+        log.e("Error setting up Kafka topics and partitions:", err);
+    }
+    try {
+        await initPushQueue(
+            pushes => sendAllPushes(pushes),
+            schedules => composeAllScheduledPushes(common.db, schedules),
+            results => saveResults(common.db, results),
+            autoTriggerEvents => scheduleMessageByAutoTriggers(common.db, autoTriggerEvents),
+        );
+        log.i("Push queue initialized successfully");
+    }
+    catch (err) {
+        log.e("Error initializing push queue:", err);
+    }
+});
 
 plugins.register('/i', async ob => {
     let params = ob.params,

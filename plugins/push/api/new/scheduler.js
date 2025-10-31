@@ -46,7 +46,7 @@ async function scheduleMessageByDateTrigger(db, messageId) {
 
     const message = await messageCol.findOne({ _id: messageId, status: "active" });
     if (!message) {
-        throw new Error("Message " + messageId + " doesn't exist or it's inactive");
+        throw new Error("Message " + messageId + " doesn't exist or it's not active");
     }
 
     const trigger = message.triggers
@@ -262,20 +262,17 @@ async function createSchedule(
         audienceFilter,
         messageOverrides,
         result: buildResultObject(),
-        events: {
-            scheduled: [],
-            composed: [],
-        }
+        events: [],
     };
 
     // save the events to keep track of the main schedule's status (there can be
     // multiple schedule events for a single schedule document when timezoneAware)
     const events = await createScheduleEvents(messageSchedule);
-    messageSchedule.events.scheduled = events.map(
+    messageSchedule.events = events.map(
         ({ scheduledTo, timezone }) => ({
+            status: "scheduled",
             scheduledTo,
             timezone,
-            date: new Date
         })
     );
 

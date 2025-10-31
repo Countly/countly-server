@@ -260,7 +260,7 @@ function mapMessageToPayload(messageDoc, content, userProps) {
             const key = removeUPFromUserPropertyKey(userPropKey);
             if (key in userProps) {
                 let value = userProps[key];
-                if (value !== undefined || value !== null) {
+                if (value !== undefined && value !== null) {
                     if (typeof value === "object") {
                         value = JSON.stringify(value);
                     }
@@ -280,8 +280,12 @@ function mapMessageToPayload(messageDoc, content, userProps) {
             payload.data["c.li"] = /** @type {string} */(largeIconItem.large_icon);
         }
     }
-    // TODO: collapseKey
-    // TODO: timeToLive
+    if (content.expiration) {
+        if (!payload.android) {
+            payload.android = {};
+        }
+        payload.android.ttl = content.expiration;
+    }
     return payload;
 }
 

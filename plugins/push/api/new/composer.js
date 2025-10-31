@@ -11,6 +11,7 @@
  * @typedef {import("./types/queue.ts").AndroidPushEvent} AndroidPushEvent
  * @typedef {import('./types/credentials.ts').PlatformCredential} PlatformCredential
  * @typedef {import('./types/utils.ts').PluginConfiguration} PluginConfiguration
+ * @typedef {import('./types/utils.ts').ErrorObject} ErrorObject
  * @typedef {import("mongodb").Db} MongoDb
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
  * @typedef {import('./types/schedule.ts').AudienceFilter} AudienceFilter
@@ -51,7 +52,30 @@ async function composeAllScheduledPushes(db, scheduleEvents) {
         }
         catch(err) {
             log.e("Error while composing scheduleEvents", scheduleEvent, err);
-            // TODO: handle error as result
+            /** @type {ErrorObject} */
+            let error = {
+                name: "UnknownError",
+                message: "Unknown error occured while composing the scheduled push messages"
+            };
+            if (err instanceof Error) {
+                error = {
+                    name: err.name,
+                    message: err.message,
+                    stack: err.stack
+                };
+            }
+            db.collection("message_schedules").updateOne(
+                {
+                    _id: scheduleEvent.scheduleId,
+                    "events.scheduledTo": scheduleEvent.scheduledTo
+                },
+                {
+                    $set: {
+                        "events.$.status": "failed",
+                        "events.$.error": error,
+                    }
+                }
+            );
         }
     }
     return totalNumberOfPushes;
@@ -66,7 +90,7 @@ async function composeAllScheduledPushes(db, scheduleEvents) {
  * @returns {Promise<number>} Number of composed push notifications
  */
 async function composeScheduledPushes(db, scheduleEvent) {
-    const { appId, scheduleId, messageId, timezone } = scheduleEvent
+    const { appId, scheduleId, messageId, timezone, scheduledTo } = scheduleEvent;
     // load necessary documents:
     /** @type {MessageCollection} */
     const messageCol = db.collection("messages");
@@ -74,18 +98,31 @@ async function composeScheduledPushes(db, scheduleEvent) {
     const scheduleCol = db.collection("message_schedules");
     /** @type {AppCollection} */
     const appCol = db.collection("apps");
+    // in case the schedule was deleted, canceled, already sent or
+    // already processed by the state fixing job, we do nothing
+    const scheduleDoc = await scheduleCol.findOne({
+        _id: scheduleId,
+        status: {
+            $in: ["scheduled", "sending"]
+        },
+        // make sure this specific schedule event is still scheduled
+        events: {
+            $elemMatch: {
+                scheduledTo,
+                status: "scheduled"
+            }
+        }
+    });
     const messageDoc = await messageCol.findOne({ _id: messageId, status: "active" });
     if (!messageDoc) {
-        await scheduleCol.deleteMany({ messageId });
         log.w("Message", messageId, "was deleted or became inactive.",
-            "Cleaning up all schedules for this message.");
+            "Canceling all schedules for this message.");
+        scheduleCol.updateMany({ messageId }, { $set: { status: "canceled" } });
         return 0;
     }
-    const scheduleDoc = await scheduleCol.findOne({
-        _id: scheduleId, status: { $in: ["scheduled", "sending"] }});
     if (!scheduleDoc) {
         log.i("Schedule", scheduleId, "for message",
-            messageId, "was deleted or canceled.");
+            messageId, "was deleted, canceled or failed.");
         return 0;
     }
     const appDoc = await appCol.findOne({ _id: scheduleDoc.appId });
@@ -122,8 +159,8 @@ async function composeScheduledPushes(db, scheduleEvent) {
     let events = [];
     const resultObject = buildResultObject();
     const stream = createPushStream(
-        db, appDoc, messageDoc, scheduleDoc, creds, pluginConfig, compileTemplate,
-        aggregationPipeline
+        db, appDoc, messageDoc, scheduleDoc, scheduledTo, creds, pluginConfig,
+        compileTemplate, aggregationPipeline
     );
     for await (let push of stream) {
         events.push(push);
@@ -139,8 +176,13 @@ async function composeScheduledPushes(db, scheduleEvent) {
         await queue.sendPushEvents(events);
     }
     // update the schedule and message document
-    await applyResultObject(db, scheduleId, messageId, resultObject,
-        { composed: [scheduleEvent] });
+    await applyResultObject(db, scheduleId, messageId, resultObject);
+    // mark this specific schedule event as 'composed'
+    await scheduleCol.updateOne(
+        { _id: scheduleId, "events.scheduledTo": scheduledTo },
+        { $set: { "events.$.status": "composed" } }
+    );
+
     // check if we need to re-schedule this message
     const reschedulableTrigger = messageDoc.triggers
         .find(trigger => RESCHEDULABLE_DATE_TRIGGERS.includes(trigger.kind))
@@ -162,13 +204,24 @@ async function composeScheduledPushes(db, scheduleEvent) {
  * @param {App} appDoc - Application document
  * @param {Message} messageDoc - Message document
  * @param {Schedule} scheduleDoc - Schedule document
+ * @param {Date} scheduledTo - Actual scheduled time
  * @param {Awaited<ReturnType<loadCredentials>>} creds - Credentials for each platform
  * @param {PluginConfiguration|undefined} pluginConfig - Plugin configuration
  * @param {ReturnType<createTemplate>} template - Function to create message template
  * @param {Document[]} pipeline - Aggregation pipeline to filter users
  * @returns {AsyncGenerator<PushEvent, void, void>} Push event stream
  */
-async function* createPushStream(db, appDoc, messageDoc, scheduleDoc, creds, pluginConfig, template, pipeline) {
+async function* createPushStream(
+    db,
+    appDoc,
+    messageDoc,
+    scheduleDoc,
+    scheduledTo,
+    creds,
+    pluginConfig,
+    template,
+    pipeline
+) {
     const stream = db.collection("app_users" + appDoc._id.toString())
         .aggregate(pipeline, { allowDiskUse: true })
         .stream();
@@ -192,7 +245,7 @@ async function* createPushStream(db, appDoc, messageDoc, scheduleDoc, creds, plu
                 ...(scheduleDoc.messageOverrides?.variables ?? {})
             };
             const sendBefore = typeof pluginConfig?.messageTimeout === "number"
-                ? new Date(Date.now() + pluginConfig?.messageTimeout)
+                ? new Date(scheduledTo.getTime() + pluginConfig?.messageTimeout)
                 : undefined;
             yield /** @type {PushEvent} */({
                 appId: appDoc._id,

@@ -119,18 +119,26 @@ async function sendScheduleEvents(scheduleEvents) {
     if (!PRODUCER) {
         throw new Error("Producer is not initialized");
     }
+    // important: if you ever need to update the partitioner, you also have to
+    // change it in the scheduler service (we use the default partitioner here
+    // which is based on the murmur2 algorithm and is the same as the one used
+    // by the schduler at the time of writing).
     await PRODUCER.send({
         topic: config.topics.SCHEDULE.name,
         messages: scheduleEvents.map(scheduleEvent => {
+            let targetKey = scheduleEvent.messageId.toString()
+                + "|" + scheduleEvent.scheduleId.toString()
+                + "|" + scheduleEvent.scheduledTo.toISOString();
             return {
                 value: JSON.stringify(scheduleEvent),
                 headers: {
                     "scheduler-target-topic": config.topics.COMPOSE.name,
+                    "scheduler-target-key": targetKey,
                     "scheduler-epoch": String(
                         Math.round(scheduleEvent.scheduledTo.getTime() / 1000)
                     ),
                 },
-                // in this case, key is required for the scheduler to work properly
+                // key is required in the scheduler for the tombstone messages
                 key: String(Math.random()),
             }
         })
@@ -215,7 +223,13 @@ async function setupTopicsAndPartitions(forceRecreation = false) {
         }
         await admin.createTopics({
             topics: topics.map(
-                ({ name, partitions }) => ({
+                ({ name, partitions, config }) => ({
+                    // eg. [{ name: 'cleanup.policy', value: 'compact' }],
+                    configEntries: config
+                        ? Object.entries(config).map(
+                            ([name, value]) => ({ name, value })
+                        )
+                        : undefined,
                     topic: name,
                     numPartitions: partitions
                 })
@@ -234,7 +248,12 @@ async function setupTopicsAndPartitions(forceRecreation = false) {
         if (topicsToCreate.length) {
             const result = await admin.createTopics({
                 topics: topicsToCreate.map(
-                    ({ name, partitions }) => ({
+                    ({ name, partitions, config }) => ({
+                        configEntries: config
+                            ? Object.entries(config).map(
+                                ([name, value]) => ({ name, value })
+                            )
+                            : undefined,
                         topic: name,
                         numPartitions: partitions
                     })
