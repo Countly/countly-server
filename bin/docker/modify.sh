@@ -17,12 +17,26 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 	# Run ab-testing models compilation if it's there
 	if [ -d /opt/countly/plugins/ab-testing ]; then
 		if [ "${ID}" == "debian" ] || [ "${ID}" == "ubuntu" ]; then
-			apt-get install -y python3-pip
+			echo "Debian noninteractive"
+            export DEBIAN_FRONTEND=noninteractive
+            export TZ=Etc/UTC
+
+           apt-get -y update
+           apt-get install -y software-properties-common build-essential python3-dev libncurses*-dev  libsqlite3-dev libreadline6-dev libgdbm-dev zlib1g-dev libbz2-dev sqlite3 tk-dev zip libssl-dev libncurses5-dev liblzma-dev lsb-core lsb-release
+
+           export LC_ALL="en_US.UTF-8"
+           export LC_CTYPE="en_US.UTF-8"
+           export -n CC
+           export -n CXX
+           add-apt-repository -y ppa:deadsnakes/ppa
+           apt -y install python3.12 python3.12-dev
+           curl -sSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+           python3.12 get-pip.py
 		else
 			yum install -y python36 python36-libs python36-devel python36-pip
 		fi
+		ln -s /usr/bin/python3 /usr/bin/python
 		# shellcheck disable=SC1091
-		python3.8 -m pip install -r /opt/countly/plugins/ab-testing/api/bayesian/requirements.txt
-		cd /opt/countly/plugins/ab-testing/api/bayesian && python3.8 model.py
+		python3.12 -m pip install -r "/opt/countly/plugins/ab-testing/api/bayesian/requirements_docker.txt" && sudo python3.12 "/opt/countly/plugins/ab-testing/api/bayesian/models/cmdstanpy_model.py"
 	fi
 fi
