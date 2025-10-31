@@ -37,6 +37,6 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 		fi
 		ln -s /usr/bin/python3 /usr/bin/python
 		# shellcheck disable=SC1091
-		python3.12 -m pip install -r "/opt/countly/plugins/ab-testing/api/bayesian/requirements.txt" && sudo python3.12 "/opt/countly/plugins/ab-testing/api/bayesian/models/cmdstanpy_model.py"
+		python3.12 -m pip install -r "/opt/countly/plugins/ab-testing/api/bayesian/requirements_docker.txt" && sudo python3.12 "/opt/countly/plugins/ab-testing/api/bayesian/models/cmdstanpy_model.py"
 	fi
 fi
