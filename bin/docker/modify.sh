@@ -36,6 +36,6 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 			yum install -y python36 python36-libs python36-devel python36-pip
 		fi
 		# shellcheck disable=SC1091
-		python3.12 -m pip install -r "/opt/plugins/ab-testing/api/bayesian/requirements.txt" && sudo python3.12 "/opt/plugins/ab-testing/api/bayesian/models/cmdstanpy_model.py"
+		python3.12 -m pip install -r "/opt/countly/plugins/ab-testing/api/bayesian/requirements.txt" && sudo python3.12 "/opt/countly/plugins/ab-testing/api/bayesian/models/cmdstanpy_model.py"
 	fi
 fi
