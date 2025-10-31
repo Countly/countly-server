@@ -366,36 +366,26 @@ const FEATURE_NAME = 'compliance_hub';
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        common.db.collection('consent_history').drop(function() {});
-        /*if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
-        }*/
+        common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent"}, function() {});
     });
 
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        common.db.collection('consent_history').drop(function() {});
-        /*if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
-        }*/
+        common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent"}, function() {});
     });
 
     plugins.register("/i/apps/clear_all", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        /*if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
-        }*/
+        common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent"}, function() {});
     });
 
     plugins.register("/i/apps/clear", function(ob) {
         var appId = ob.appId;
         var ids = ob.ids;
         common.db.collection('consents').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: ids}}]}, function() {});
-        /*if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).remove({ts: {$lt: ob.moment.valueOf()}}, function() {});
-        }*/
+        common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent", ts: {$lt: ob.moment.valueOf()}}, function() {});
     });
 }(plugin));
 
