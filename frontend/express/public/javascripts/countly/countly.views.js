@@ -66,6 +66,17 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         //if url is valid+auth_token and api_key not given
         if (testurl.indexOf(countlyCommon.API_PARTS.data.w) === 0 || testurl.indexOf(countlyCommon.API_PARTS.data.r) === 0) {
             //add token in header
+            var pack_data_after = false;
+            try {
+                if (typeof options.data === "string") {
+                    var unpackedData = JSON.parse(options.data);
+                    options.data = unpackedData;
+                    pack_data_after = true;
+                }
+            }
+            catch (e) {
+                //ignore
+            }
             jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
             try {
                 var offset = new Date().getTimezoneOffset();
@@ -145,6 +156,9 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
                         options.data = paramString;
                     }
                 }
+            }
+            if (pack_data_after) {
+                options.data = JSON.stringify(options.data);
             }
         }
     }
