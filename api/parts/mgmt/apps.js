@@ -289,8 +289,6 @@ appsApi.createApp = async function(params) {
                 common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"lac": -1}, { background: true }, function() {});
                 common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
                 common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
-                common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
-                common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
                 plugins.dispatch("/i/apps/create", {
                     params: params,
                     appId: app.ops[0]._id,
@@ -857,10 +855,6 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     }
     common.db.collection('app_users' + appId).drop(function() {
         if (!fromAppDelete) {
-            common.db.collection('metric_changes' + appId).drop(function() {
-                common.db.collection('metric_changes' + appId).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
-                common.db.collection('metric_changes' + appId).ensureIndex({uid: 1}, { background: true }, function() {});
-            });
             //Removes old app_user_merges collection
             common.db.collection('app_user_merges' + appId).drop(function() {});
             if (params.qstring.args.period === "reset") {
@@ -879,7 +873,6 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
             }
         }
         else {
-            common.db.collection('metric_changes' + appId).drop(function() {});
             common.db.collection('app_user_merges' + appId).drop(function() {});
             plugins.dispatch("/i/apps/delete", {
                 params: params,
@@ -985,12 +978,6 @@ function deletePeriodAppData(appId, fromAppDelete, params, app) {
     This prevents these users to be included as "total users" in the reports
     */
     common.db.collection('app_users' + appId).update({ls: {$lte: oldestTimestampWanted}}, {$set: {ls: 1}}, function() {});
-
-    /*
-    Remove all metric changes that happened before oldestTimestampWanted since we no longer need
-    old metric changes
-    */
-    common.db.collection('metric_changes' + appId).remove({ts: {$lte: oldestTimestampWanted}}, function() {});
 
     plugins.dispatch("/i/apps/clear", {
         params: params,

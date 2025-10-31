@@ -267,6 +267,7 @@ plugins.setConfigs("logger", {
                 m: params.req.method,
                 b: params.bulk || false,
                 c: (params.cancelRequest) ? params.cancelRequest : false,
+                p: (problems.length) ? problems : false,
                 res: response
             };
 
