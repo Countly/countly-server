@@ -335,22 +335,6 @@ const FEATURE_NAME = 'compliance_hub';
         }
     });
 
-    plugins.register("/i/device_id", function(ob) {
-        var oldUid = ob.oldUser.uid;
-        var newUid = ob.newUser.uid;
-        if (oldUid !== newUid) {
-            return new Promise(function(resolve, reject) {
-                common.db.collection('consent_history').update({uid: oldUid}, {'$set': {uid: newUid}}, {multi: true}, function(err) {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    resolve();
-                });
-            });
-        }
-    });
-
     plugins.register("/i/app_users/delete", function(ob) {
         var params = ob.params;
         common.recordCustomMetric(params, "consents", params.qstring.app_id, ["p"]);
