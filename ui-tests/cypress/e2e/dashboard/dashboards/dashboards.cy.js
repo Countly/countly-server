@@ -1,4 +1,8 @@
+/* eslint-env mocha */
+/* global cy, Cypress, expect */
+
 import user from '../../../fixtures/user.json';
+const getApiKey = require('../../../api/getApiKey');
 const navigationHelpers = require('../../../support/navigations');
 const helper = require('../../../support/helper');
 const loginHelpers = require('../../../lib/login/login');
@@ -84,6 +88,52 @@ describe('Create New Custom Dashboard', () => {
 
         reportHelper.openReportPreviewButton();
         reportHelper.verifyReportPreviewPageImage();
+
+        // Get the current URL
+        cy.url().then((currentUrl) => {
+
+            //Get API key
+            getApiKey.request(user.username, user.password).then((apiKey) => {
+
+                //Change preview to PDF and add api_key parameter
+                const urlObj = new URL(currentUrl);
+                urlObj.pathname = urlObj.pathname.replace('preview', 'pdf');
+                urlObj.searchParams.set('api_key', apiKey);
+                const pdfURL = urlObj.toString();
+
+                cy.log('Generated PDF URL:', pdfURL);
+
+                //Download the PDF and verify its content
+                cy.request({
+                    url: pdfURL,
+                    encoding: 'binary',
+                }).then((response) => {
+                    expect(response.status).to.eq(200);
+                    expect(response.headers['content-type']).to.include('application/pdf');
+
+                    const buf = Buffer.from(response.body, 'binary');
+                    expect(buf.slice(0, 4).toString()).to.eq('%PDF');
+                    expect(buf.length).to.be.greaterThan(50000); // More than 50KB to ensure it's not empty
+
+                    // Save the PDF to disk (optional)
+                    cy.writeFile('cypress/downloads/generated-report.pdf', buf);
+                });
+            });
+        });
+
+        // Verify PDF content
+        cy.task("verifyPdf", {
+            filePath: "cypress/downloads/generated-report.pdf",
+            options: {
+                referenceLogoPath: "Cypress/fixtures/testFiles/countly-logo.png",
+                checkText: true
+            }
+        }).then((result) => {
+            expect(result.logoFound).to.be.true;
+            expect(result.hasImage).to.be.true;
+            expect(result.text).to.include("Sent by Countly | Unsubscribe");
+            expect(result.text).to.include("Report settings | Get help");
+        });
     });
 
     it(`Create a private custom dashboard and duplicate it and edit it and delete it then verify the flow`, function() {
