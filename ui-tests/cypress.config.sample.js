@@ -69,7 +69,9 @@ module.exports = defineConfig({
                                 if (doLogoCheck && args[0]) {
                                     const objName = args[0];
                                     const imgData = await page.objs.get(objName);
-                                    if (!imgData) continue;
+                                    if (!imgData) {
+                                        continue;
+                                    }
 
                                     const pdfImg = new PNG({ width: imgData.width, height: imgData.height });
                                     pdfImg.data = imgData.data;
