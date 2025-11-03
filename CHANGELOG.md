@@ -1,3 +1,8 @@
+## Version 25.03.x
+
+Fixes:
+- [security] Fixed injection possibility on res.expose
+
 ## Version 25.03.25
 Fixes:
 - [crashes] Fixed resolving audit log recording
