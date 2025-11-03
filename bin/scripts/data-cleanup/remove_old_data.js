@@ -52,9 +52,6 @@ pluginManager.dbConnection().then(async(db) => {
                     var count = await db.collection(`consent_history${app._id}`).countDocuments({ ts: { $lt: lastUnixTimestamp } });
                     console.log("", count, "consents to be deleted");
                     checkThreshold(count);
-                    count = await db.collection(`metric_changes${app._id}`).countDocuments({ ts: { $lt: lastUnixTimestamp } });
-                    console.log("", count, "metric changes to be deleted");
-                    checkThreshold(count);
                     count = await db.collection(`eventTimes${app._id}`).countDocuments({ ts: { $lt: lastUnixTimestamp * 1000 } });
                     console.log("", count, "event times to be deleted");
                     checkThreshold(count);
@@ -63,9 +60,6 @@ pluginManager.dbConnection().then(async(db) => {
                     console.log(`Deleting data for ${app._id}`);
                     var res = await db.collection(`consent_history${app._id}`).deleteMany({ ts: { $lt: lastUnixTimestamp } });
                     console.log("", res, "consents deleted");
-                    await sleep(SLEEP);
-                    res = await db.collection(`metric_changes${app._id}`).deleteMany({ ts: { $lt: lastUnixTimestamp } });
-                    console.log("", res, "metric changes deleted");
                     await sleep(SLEEP);
                     res = await db.collection(`eventTimes${app._id}`).deleteMany({ ts: { $lt: lastUnixTimestamp * 1000 } });
                     console.log("", res, "event times deleted");
