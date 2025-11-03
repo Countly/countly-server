@@ -523,7 +523,7 @@ describe('Testing Compliance Hub', function() {
                     if (ob.aaData && ob.aaData.length > 0) {
                         ob.aaData.forEach(function(item) {
                             item.should.have.property('device_id');
-                            item.should.have.property('app_id');
+                            item.should.have.property('a');
                             item.should.have.property('ts');
                             item.should.have.property('type');
                             item.should.have.property('change');
