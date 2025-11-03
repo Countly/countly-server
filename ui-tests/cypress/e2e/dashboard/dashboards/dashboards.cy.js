@@ -116,15 +116,15 @@ describe('Create New Custom Dashboard', () => {
                     expect(buf.slice(0, 4).toString()).to.eq('%PDF');
                     expect(buf.length).to.be.greaterThan(50000); // More than 50KB to ensure it's not empty
 
-                    // Save the PDF to disk (optional)
-                    cy.writeFile('/cypress/downloads/generated-report.pdf', buf);
+                    // Save the PDF to disk
+                    cy.writeFile('cypress/downloads/generated-report.pdf', buf);
                 });
             });
         });
 
         // Verify PDF content
         cy.task("verifyPdf", {
-            filePath: "/cypress/downloads/generated-report.pdf",
+            filePath: "cypress/downloads/generated-report.pdf",
             options: {
                 referenceLogoPath: "cypress/fixtures/testFiles/countly-logo.png",
                 checkText: true
