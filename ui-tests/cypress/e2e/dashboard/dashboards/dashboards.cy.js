@@ -132,7 +132,7 @@ describe('Create New Custom Dashboard', () => {
         }).then((result) => {
             expect(result.logoFound).to.be.true;
             expect(result.hasImage).to.be.true;
-            //expect(result.text).to.include("Sent by Countly | Unsubscribe");
+            expect(result.text).to.include("Sent by Countly | Unsubscribe");
             //expect(result.text).to.include("Report settings | Get help");
         });
     });
