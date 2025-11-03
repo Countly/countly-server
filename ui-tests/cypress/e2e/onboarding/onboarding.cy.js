@@ -298,7 +298,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.isNavigatedToDashboard();
     });
 
-    it('should be complete onboarding flow with creating mobile type demo application and verify home page with Finance data', function() {
+    it('should be complete onboarding flow with creating mobile type demo application and verify all pages with Finance data', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,

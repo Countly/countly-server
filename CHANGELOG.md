@@ -2,6 +2,46 @@
 Dependencies:
 - Remove SQLite
 
+## Version 25.03.25
+Fixes:
+- [crashes] Fixed resolving audit log recording
+- [location] Fixed updating none gps coordinate location after gps location was used
+- 
+Enterprise Fixes:
+- [ab-testing] Add script for fixing variant cohort
+- [groups] Fix user permission update after updating user group permission
+
+## Version 25.03.24
+Fixes:
+- [jobs] Fix condition for scheduling alert job
+
+Enterprise Fixes:
+- [compliance-hub] Fixed query patterns
+- [data-manager] Fixed bug preventing transformation of events ending in a dot
+- [data-manager] Fixed segment data deletion
+- [license] Stop sending metric after license expired
+- [users] Fix add/remove user to profile group
+- [users] Remove link to profile group page after removing user from group
+
+Dependencies
+- Bump @faker-js/faker from 10.0.0 to 10.1.0 in /ui-tests
+- Bump countly-sdk-nodejs from 24.10.2 to 24.10.3
+- Bump lint-staged from 16.2.3 to 16.2.4
+- Bump puppeteer from 24.23.0 to 24.24.1
+
+## Version 25.03.23
+Fixes:
+- [events] Entries in the event list are now sorted alphabetically
+- [mail] Add smtp debug option for mail module
+
+Enterprise Fixes:
+- [block] Fixed filter for consent events
+- [drill] [survey] Fix survey answer in drill
+- [funnels] Show notification if funnel results are from cache/task manager
+- [revenue] Card in revenue page are now correctly indentified
+- [users] Add survey section to user feedback page
+- [users] Fixed uploading user profile pictures
+
 ## Version 25.03.22
 Fixes:
 - [alerts] Fix: Migrate alerts to the new events model
