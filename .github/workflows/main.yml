@@ -270,11 +270,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install Chrome
+      - name: Install Chrome + dependencies (including libvips for sharp)
         shell: bash
         run: |
           apt update
+          # Required for Chrome
           apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
+          # Required for 'sharp' (used in PDF image comparison)
+          apt install -y libvips-dev
+          # Install Chrome
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
           apt install -y /tmp/chrome.deb
 
