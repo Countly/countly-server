@@ -61,7 +61,7 @@ const FEATURE_NAME = 'compliance_hub';
             }
             validateRead(params, FEATURE_NAME, function() {
                 try {
-                    var columns = ["device_id", "device_id", "uid", "type", "after", "ts"];
+                    var columns = ["device_id", "device_id", "uid", "type", "ts", "ts"];
                     var checkOb;
                     if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
                         checkOb = {};
