@@ -124,7 +124,7 @@ describe('Create New Custom Dashboard', () => {
 
         // Verify PDF content
         cy.task("verifyPdf", {
-            filePath: "cypress/downloads/generated-report.pdf",
+            filePath: "cypress/downloads/generated-report2.pdf",
             options: {
                 referenceLogoPath: "cypress/fixtures/testFiles/countly-logo.png",
                 checkText: true
