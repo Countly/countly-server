@@ -22,12 +22,12 @@ module.exports = defineConfig({
         watchForFileChanges: true,
         video: true,
         setupNodeEvents(on, config) {
-            // ✅ Task: verify PDF images and logo
+            // Task: verify PDF images, logo, and text content
             on("task", {
                 async verifyPdf({ filePath, options = {} }) {
                     // options: { referenceLogoPath: string }
 
-                    // Load PDF
+                    // Load PDF file
                     const data = new Uint8Array(fs.readFileSync(filePath));
                     const pdfDoc = await pdfjsLib.getDocument({ data }).promise;
 
@@ -41,16 +41,24 @@ module.exports = defineConfig({
 
                     let hasImage = false;
                     let logoFound = false;
+                    let extractedText = ""; //store text here
 
+                    // Loop through all pages
                     for (let p = 1; p <= pdfDoc.numPages; p++) {
                         const page = await pdfDoc.getPage(p);
+
+                        //Extract text content from page
+                        const textContent = await page.getTextContent();
+                        const pageText = textContent.items.map((item) => item.str).join(" ");
+                        extractedText += pageText + "\n";
+
+                        //Check for image operators
                         const ops = await page.getOperatorList();
 
                         for (let i = 0; i < ops.fnArray.length; i++) {
                             const fn = ops.fnArray[i];
                             const args = ops.argsArray[i];
 
-                            // --- Image check ---
                             if (
                                 fn === pdfjsLib.OPS.paintImageXObject ||
                                 fn === pdfjsLib.OPS.paintJpegXObject ||
@@ -61,9 +69,7 @@ module.exports = defineConfig({
                                 if (doLogoCheck && args[0]) {
                                     const objName = args[0];
                                     const imgData = await page.objs.get(objName);
-                                    if (!imgData) {
-                                        continue;
-                                    }
+                                    if (!imgData) continue;
 
                                     const pdfImg = new PNG({ width: imgData.width, height: imgData.height });
                                     pdfImg.data = imgData.data;
@@ -105,14 +111,15 @@ module.exports = defineConfig({
                         throw new Error("Logo in PDF does not match reference image");
                     }
 
+                    //Return with extracted text
                     return {
                         hasImage,
                         logoFound,
+                        text: extractedText,
                         numPages: pdfDoc.numPages
                     };
                 },
             });
-
 
             on("after:spec", (spec, results) => {
                 if (results?.video) {
