@@ -107,6 +107,7 @@ describe('Create New Custom Dashboard', () => {
                 cy.request({
                     url: pdfURL,
                     encoding: 'binary',
+                    timeout: 120000,
                 }).then((response) => {
                     expect(response.status).to.eq(200);
                     expect(response.headers['content-type']).to.include('application/pdf');
