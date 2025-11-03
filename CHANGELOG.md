@@ -1,13 +1,25 @@
-## Version 25.03.x
-
+## Version 25.03.xx
 Fixes:
+- [push] Fixed timeout setting
 - [security] Fixed injection possibility on res.expose
+
+Dependencies:
+- Bump axios from 1.12.2 to 1.13.1 in /plugins/cognito
+- Bump csvtojson from 1.1.12 to 2.0.14
+- Bump eslint-plugin-vue from 10.5.0 to 10.5.1
+- Bump express-rate-limit from 8.1.0 to 8.2.0
+- Bump get-random-values from 4.0.0 to 4.1.0
+- Bump lint-staged from 16.2.4 to 16.2.6
+- Bump mockttp from 4.2.0 to 4.2.1 in /plugins/crash_symbolication
+- Bump nodemailer from 7.0.9 to 7.0.10
+- Bump puppeteer from 24.25.0 to 24.27.0
+- Bump vite from 7.1.10 to 7.1.12
 
 ## Version 25.03.25
 Fixes:
 - [crashes] Fixed resolving audit log recording
 - [location] Fixed updating none gps coordinate location after gps location was used
-- 
+
 Enterprise Fixes:
 - [ab-testing] Add script for fixing variant cohort
 - [groups] Fix user permission update after updating user group permission
