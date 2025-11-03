@@ -1,6 +1,7 @@
 ## Version 25.03.xx
 Fixes:
 - [push] Fixed timeout setting
+- [security] Fixed injection possibility on res.expose
 
 Dependencies:
 - Bump axios from 1.12.2 to 1.13.1 in /plugins/cognito
