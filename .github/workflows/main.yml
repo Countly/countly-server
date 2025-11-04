@@ -273,10 +273,10 @@ jobs:
       - name: Install Chrome
         shell: bash
         run: |
-          apt-get update
-          apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
+          apt update
+          apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
-          apt-get install -y /tmp/chrome.deb
+          apt install -y /tmp/chrome.deb
 
       - name: Install system dependencies (for Cypress + Sharp)
         shell: bash
