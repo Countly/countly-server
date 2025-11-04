@@ -4,7 +4,6 @@
  * @typedef {import("./new/types/queue.ts").ScheduleEventHandler} ScheduleEventHandler
  * @typedef {import("./new/types/queue.ts").ResultEventHandler} ResultEventHandler
  */
-const JOB = require('../../../api/parts/jobs');
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api'),
@@ -98,11 +97,6 @@ plugins.internalDrillEvents.push('[CLY]_push_action');
 // });
 
 plugins.register("/master", async function() {
-    // Set up periodic jobs for cleaning up old message results
-    setTimeout(() => {
-        JOB.job("push:clear-message-results").replace().schedule("at 23:59 am every 1 day");
-    }, 10000);
-
     // Initialize the push queue and setup Kafka topics and partitions
     try {
         await setupTopicsAndPartitions();

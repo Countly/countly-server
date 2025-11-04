@@ -1,8 +1,11 @@
 /**
  * @typedef {import("mongodb").Db} Db
+ * @typedef {() => void} DoneCallback
+ * @typedef {(i: number, j: number, message: string) => void} ProgressCallback
+ * @typedef {{ type: string; value: string; }} ScheduleConfig
  */
-const { Job } = require('../../../../api/parts/jobs/job.js');
-const log = require('../../../../api/utils/log.js')('push:clear-message-results');
+
+const { Job } = require('../../../../jobServer/index.js');
 const { loadPluginConfiguration } = require("../new/lib/utils.js");
 
 /**
@@ -10,13 +13,26 @@ const { loadPluginConfiguration } = require("../new/lib/utils.js");
  */
 class ClearMessageResultsJob extends Job {
     /**
+     * Get the schedule configuration for the job.
+     * @returns {ScheduleConfig} Schedule configuration object
+     */
+    getSchedule() {
+        return {
+            type: 'schedule',
+            value: '0 0 * * *'
+        };
+    }
+
+    /**
      * Clears old message results based on TTL configuration.
      *
-     * @param {Db} db - db object
-     * @returns {Promise<void>} Promise that resolves when the job is complete
+     * @param {Db} db - Database connection
+     * @param {DoneCallback} done - Callback to signal job completion
+     * @param {ProgressCallback} progress - Progress reporting function
      */
-    async run(db) {
+    async run(db, done, progress) {
         try {
+            this.log.i("Starting to clear old message results");
             const pluginConfig = await loadPluginConfiguration(db);
             if (pluginConfig?.messageResultsTTL) {
                 const result = await db.collection("message_results").deleteMany({
@@ -24,11 +40,13 @@ class ClearMessageResultsJob extends Job {
                         $lt: new Date(Date.now() - pluginConfig.messageResultsTTL * 24 * 60 * 60 * 1000)
                     }
                 });
-                log.i(`Deleted ${result.deletedCount} old message results`);
+                this.log.i(`Deleted ${result.deletedCount} old message results`);
+                progress(1, 1, "Task completed");
+                done();
             }
         }
         catch (error) {
-            log.e("Error while deleting old message results", error);
+            this.log.e("Error while deleting old message results", error);
         }
     }
 }
