@@ -4,6 +4,7 @@ Fixes:
 - [security] Fixed injection possibility on res.expose
 
 Enterprise Fixes:
+- [groups] Add logs for user updates
 - [surveys] Change question map log to debug log
 
 Dependencies:
