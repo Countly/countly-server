@@ -278,7 +278,7 @@ jobs:
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
           apt install -y /tmp/chrome.deb
 
-      - name: Install system dependencies (for Cypress + Sharp)
+      - name: Install Sharp dependencies for image processing
         shell: bash
         run: |
           export DEBIAN_FRONTEND=noninteractive
