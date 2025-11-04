@@ -1,12 +1,27 @@
-## Version 24.05.XX
+## Version 24.05.xx
+Enterprise Fixes:
+- [data-manager] Fixed bug when merging events with ampersand symbol in the name
+- [groups] Add logs for user updates
+
+
+## Version 24.05.44
+Enterprise Fixes:
+- [groups] Fix user permission update after updating user group permission
+- [revenue] Card in revenue page are now correctly identified
+
+
+## Version 24.05.43
 Features:
 - [core] Implement go to link in notification
+- [data-manager] Fixed bug preventing transformation of events ending in a dot
 
 Fixes:
 - [dashboard] Allow users to select text inside the widget without dragging it
+- [jobs] Fix condition for scheduling alert job
 
 Enterprise Fixes:
 - [data-manager] Fixed segment data deletion
+- [license] Stop sending metric after license expired
 - [users] Fix add/remove user to profile group
 - [users] Remove link to profile group page after removing user from group
 
