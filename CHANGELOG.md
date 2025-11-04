@@ -1,3 +1,8 @@
+## Version 24.10.xx
+Enterprise Fixes:
+- [nps] Sort widgets by internal name and search by name or internal name
+- [surveys] Sort widgets by internal name and search by name or internal name
+
 ## Version 24.10.12
 Features:
 - [core] Use correct rights validation for loyality
