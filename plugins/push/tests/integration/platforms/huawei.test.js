@@ -5,7 +5,7 @@
 const assert = require("assert");
 const { describe, it } = require("mocha");
 const { ObjectId } = require("mongodb");
-const { send, validateCredentials } = require("../../../api/new/platforms/huawei");
+const { getAuthToken, send, validateCredentials } = require("../../../api/new/platforms/huawei");
 const { credentialsDTOToObject } = require("../../../api/new/lib/dto");
 const mockedData = require("../../mock/data");
 const { HUAWEI_TEST_TOKEN, HUAWEI_TEST_CREDENTIALS } = process.env;
@@ -26,6 +26,13 @@ describe("Huawei integration", () => {
         return console.log("HUAWEI_TEST_CREDENTIALS couldn't be parsed, "
             + "skipping Huawei integration tests");
     }
+
+    describe("oauth authenticator and token retriever", () => {
+        it("should be able to retrieve an access token", async() => {
+            const token = await getAuthToken(credentials);
+            assert(typeof token === "string" && token.length > 0);
+        }).timeout(20000);
+    });
 
     describe("push notification sender", () => {
         if (!HUAWEI_TEST_TOKEN) {

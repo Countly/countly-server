@@ -72,7 +72,7 @@ async function getAuthToken(credentials, proxy) {
         let request = https.request({
             agent,
             hostname: 'oauth-login.cloud.huawei.com',
-            path: '/oauth2/v2/token',
+            path: '/oauth2/v3/token',
             method: 'POST',
             headers: {
                 accept: 'application/json',
