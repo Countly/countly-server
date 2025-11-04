@@ -267,80 +267,78 @@ usersApi.delete = function(app_id, query, params, callback) {
             console.log("Error generating list of uids", err0, res);
         }
         if (res && res[0] && res[0].uid && res[0].uid.length) {
-            common.db.collection("metric_changes" + app_id).remove({uid: {$in: res[0].uid}}, function() {
-                plugins.dispatch("/i/app_users/delete", {
-                    app_id: app_id,
-                    query: query,
-                    uids: res[0].uid,
-                    params: params
-                }, function(_, otherPluginResults) {
-                    const rejectReasons = otherPluginResults.reduce((acc, result) => {
-                        if (result.status === "rejected") {
-                            acc.push((result.reason && result.reason.message) || '');
-                        }
-
-                        return acc;
-                    }, []);
-
-                    if (rejectReasons.length > 0) {
-                        log.e("User deletion failed\n%j", rejectReasons.join("\n"));
-                        common.returnMessage(params, 500, { errorMessage: "User deletion failed. Failed to delete some data related to this user." });
-                        return;
+            plugins.dispatch("/i/app_users/delete", {
+                app_id: app_id,
+                query: query,
+                uids: res[0].uid,
+                params: params
+            }, function(_, otherPluginResults) {
+                const rejectReasons = otherPluginResults.reduce((acc, result) => {
+                    if (result.status === "rejected") {
+                        acc.push((result.reason && result.reason.message) || '');
                     }
 
-                    //remove from drill_events
-                    plugins.dispatch("/core/delete_granular_data", {
-                        db: "countly_drill",
-                        collection: "drill_events",
-                        query: { a: app_id + "", uid: { $in: res[0].uid } }
-                    });
+                    return acc;
+                }, []);
 
-                    common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}}, function(err) {
-                        if (res[0].exported) {
-                            //delete exports if exist
-                            for (let i = 0;i < res[0].exported.length; i++) {
-                                let id = res[0].exported[i].split("/");
-                                id = id[id.length - 1]; //last one is filename
-                                id = id.substr(id.length - 7);
+                if (rejectReasons.length > 0) {
+                    log.e("User deletion failed\n%j", rejectReasons.join("\n"));
+                    common.returnMessage(params, 500, { errorMessage: "User deletion failed. Failed to delete some data related to this user." });
+                    return;
+                }
 
-                                deleteMyExport(id).then(
-                                    function() {},
-                                    function(err5) {
-                                        console.log(err5);
-                                    }
-                                );
-                            }
+                //remove from drill_events
+                plugins.dispatch("/core/delete_granular_data", {
+                    db: "countly_drill",
+                    collection: "drill_events",
+                    query: { a: app_id + "", uid: { $in: res[0].uid } }
+                });
+
+                common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}}, function(err) {
+                    if (res[0].exported) {
+                        //delete exports if exist
+                        for (let i = 0;i < res[0].exported.length; i++) {
+                            let id = res[0].exported[i].split("/");
+                            id = id[id.length - 1]; //last one is filename
+                            id = id.substr(id.length - 7);
+
+                            deleteMyExport(id).then(
+                                function() {},
+                                function(err5) {
+                                    console.log(err5);
+                                }
+                            );
                         }
-                        //deleting userimages(if they exist);
-                        if (res[0].picture) {
-                            for (let i = 0;i < res[0].picture.length; i++) {
-                                //remove /userimages/ 
-                                let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
-                                var pp = path.resolve(__dirname, './../../../frontend/express/public/userimages/' + id);
-                                countlyFs.deleteFile("userimages", pp, {id: id}, function(err6) {
-                                    if (err6) {
-                                        console.log(err6);
-                                    }
-                                });
-                            }
+                    }
+                    //deleting userimages(if they exist);
+                    if (res[0].picture) {
+                        for (let i = 0;i < res[0].picture.length; i++) {
+                            //remove /userimages/ 
+                            let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
+                            var pp = path.resolve(__dirname, './../../../frontend/express/public/userimages/' + id);
+                            countlyFs.deleteFile("userimages", pp, {id: id}, function(err6) {
+                                if (err6) {
+                                    console.log(err6);
+                                }
+                            });
                         }
-                        try {
-                            fs.appendFileSync(path.resolve(__dirname, './../../../log/deletedUsers' + app_id + '.txt'), res[0].uid.join("\n") + "\n", "utf-8");
+                    }
+                    try {
+                        fs.appendFileSync(path.resolve(__dirname, './../../../log/deletedUsers' + app_id + '.txt'), res[0].uid.join("\n") + "\n", "utf-8");
+                    }
+                    catch (err2) {
+                        console.log(err2);
+                    }
+                    plugins.dispatch("/systemlogs", {
+                        params: params,
+                        action: "app_user_deleted",
+                        data: {
+                            app_id: app_id,
+                            query: JSON.stringify(query),
+                            uids: res[0].uid,
                         }
-                        catch (err2) {
-                            console.log(err2);
-                        }
-                        plugins.dispatch("/systemlogs", {
-                            params: params,
-                            action: "app_user_deleted",
-                            data: {
-                                app_id: app_id,
-                                query: JSON.stringify(query),
-                                uids: res[0].uid,
-                            }
-                        });
-                        callback(err, res[0].uid);
                     });
+                    callback(err, res[0].uid);
                 });
             });
         }
@@ -758,7 +756,6 @@ usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_i
             var iid = app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid;
             try {
                 await common.db.collection('app_user_merges').updateOne({"_id": iid, "cc": {"$ne": true}}, {'$set': {"u": true}}, {upsert: false});
-                await common.db.collection("metric_changes" + app_id).updateMany({uid: oldAppUser.uid}, {'$set': {uid: newAppUserP.uid}});
             }
             catch (e) {
                 log.e("Failed metric changes update in app_users merge", e);
@@ -1144,21 +1141,8 @@ usersApi.export = function(app_id, query, params, callback) {
             // }
 
             //try deleting old export
-            deleteMyExport(export_id).then(function(err) {
-                if (err) {
-                    log.e(err);
-                }
+            deleteMyExport(export_id).then(function() {
                 log.d("old export deleted");
-                return new Promise(function(resolve) {
-                    log.d("collection marked");
-                    //export data from metric_changes
-
-                    export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]}).finally(function() {
-                        resolve();
-                    });
-                });
-            }).then(function() {
-                log.d("metric_changes exported");
                 //export data from app_users
                 return export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "app_users" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/app_users" + app_id + ".json"]});
 

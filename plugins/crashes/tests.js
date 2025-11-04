@@ -327,6 +327,7 @@ describe('Testing Crashes', function() {
                     if (err) {
                         return done(err);
                     }
+                    console.log("crashes", res.text);
                     var ob = JSON.parse(res.text);
                     ob.should.have.property("_id", CRASHES[0]);
                     ob.should.have.property("os", "Android");
