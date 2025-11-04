@@ -1,13 +1,13 @@
 ## Version 25.03.xx
 Fixes:
-- [nps] Sort widgets by internal name and search by name or internal name
 - [push] Fixed timeout setting
 - [security] Fixed injection possibility on res.expose
-- [surveys] Sort widgets by internal name and search by name or internal name
 
 Enterprise Fixes:
 - [groups] Add logs for user updates
+- [nps] Sort widgets by internal name and search by name or internal name
 - [surveys] Change question map log to debug log
+- [surveys] Sort widgets by internal name and search by name or internal name
 
 Dependencies:
 - Bump axios from 1.12.2 to 1.13.1 in /plugins/cognito
