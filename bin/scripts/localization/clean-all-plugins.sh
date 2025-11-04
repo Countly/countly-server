@@ -224,7 +224,7 @@ echo "Failed: $FAILED"
 echo "Plugins with unused keys: $WITH_UNUSED_KEYS"
 echo
 
-if [ $FAILED -gt 0 ]; then
+if [ "$FAILED" -gt 0 ]; then
     echo "Failed plugins:"
     for plugin in "${FAILED_PLUGINS[@]}"; do
         echo "  - $plugin"
