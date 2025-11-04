@@ -1,7 +1,9 @@
 ## Version 25.03.xx
 Fixes:
+- [nps] Sort widgets by internal name and search by name or internal name
 - [push] Fixed timeout setting
 - [security] Fixed injection possibility on res.expose
+- [surveys] Sort widgets by internal name and search by name or internal name
 
 Enterprise Fixes:
 - [groups] Add logs for user updates
