@@ -9,7 +9,6 @@ Features:
 - [core] Use correct rights validation for loyality
 - [plugins] Add configuration warning tags to settings UI
 
-
 ## Version 24.10.11
 Enterprise Fixes:
 - [drill] Fix query for users in drill that leads to severe server slowdown
