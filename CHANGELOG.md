@@ -5,7 +5,9 @@ Fixes:
 
 Enterprise Fixes:
 - [groups] Add logs for user updates
+- [nps] Sort widgets by internal name and search by name or internal name
 - [surveys] Change question map log to debug log
+- [surveys] Sort widgets by internal name and search by name or internal name
 
 Enterprise Fixes:
 - [data-manager] Fixed bug when merging events with ampersand symbol in the name
