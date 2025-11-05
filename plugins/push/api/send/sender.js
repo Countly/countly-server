@@ -119,13 +119,21 @@ class Sender {
                     auth: !(plugins.push.proxyunauthorized || false),
                 };
             }
+            if (plugins.push.message_timeout) {
+                if (typeof plugins.push.message_timeout === "number") {
+                    cfg.message_timeout = plugins.push.message_timeout;
+                }
+                else {
+                    common.log(`push:send`).w('Invalid message timeout configuration: %j', plugins.push.message_timeout);
+                }
+            }
         }
 
         return cfg;
     }
 
     /**
-     * Watch push collection for pushes to send, 
+     * Watch push collection for pushes to send,
      */
     async watch() {
         let oid = dbext.oidBlankWithDate(new Date()),
@@ -133,7 +141,7 @@ class Sender {
         return count > 0;
     }
     // /**
-    //  * Watch push collection for pushes to send, 
+    //  * Watch push collection for pushes to send,
     //  */
     //  async watch() {
     //     let oid = dbext.oidBlankWithDate(new Date());

@@ -494,6 +494,9 @@
                     }
                 });
             }
+            allEvents.sort(function(a, b) {
+                return a.label.localeCompare(b.label);
+            });
             return allEvents;
         },
         getGroupData: function(groupData, selectedEventName) {

@@ -857,7 +857,7 @@ const FEATURE_NAME = 'crashes';
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': {$in: crashes} }, {"$set": {is_resolving: true}}, {multi: true}, function() {
                     for (var i = 0; i < crashes.length; i++) {
-                        plugins.dispatch("/systemlogs", {params: params, action: "crash_shown", data: {app_id: params.qstring.app_id, crash_id: params.qstring.args.crash_id}});
+                        plugins.dispatch("/systemlogs", {params: params, action: "crash_resolving", data: {app_id: params.qstring.app_id, crash_id: params.qstring.args.crash_id}});
                     }
                     common.returnMessage(params, 200, 'Success');
                     return true;
