@@ -47,6 +47,11 @@
             rows: {
                 default: () => [],
                 type: Array
+            },
+
+            perPage: {
+                default: 10,
+                type: Number
             }
         },
 
@@ -305,7 +310,7 @@
             getControlParams() {
                 const defaultState = {
                     page: 1,
-                    perPage: 10,
+                    perPage: this.perPage,
                     searchQuery: '',
                     selectedDynamicCols: false,
                     sort: []
