@@ -7,6 +7,9 @@ Enterprise Fixes:
 - [groups] Add logs for user updates
 - [surveys] Change question map log to debug log
 
+Enterprise Fixes:
+- [data-manager] Fixed bug when merging events with ampersand symbol in the name
+
 Dependencies:
 - Bump axios from 1.12.2 to 1.13.1 in /plugins/cognito
 - Bump csvtojson from 1.1.12 to 2.0.14
@@ -27,7 +30,6 @@ Fixes:
 Enterprise Fixes:
 - [ab-testing] Add script for fixing variant cohort
 - [groups] Fix user permission update after updating user group permission
-
 
 ## Version 25.03.24
 Fixes:
