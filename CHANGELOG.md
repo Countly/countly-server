@@ -2,6 +2,7 @@
 Enterprise Fixes:
 - [nps] Sort widgets by internal name and search by name or internal name
 - [surveys] Sort widgets by internal name and search by name or internal name
+- [users] Set correct users widget table rows amount according to selected setting
 
 ## Version 24.10.12
 Features:
