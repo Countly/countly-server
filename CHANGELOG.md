@@ -1,6 +1,11 @@
 ## Version 25.03.xx
 Fixes:
 - [push] Fixed timeout setting
+- [security] Fixed injection possibility on res.expose
+
+Enterprise Fixes:
+- [groups] Add logs for user updates
+- [surveys] Change question map log to debug log
 
 Enterprise Fixes:
 - [data-manager] Fixed bug when merging events with ampersand symbol in the name
