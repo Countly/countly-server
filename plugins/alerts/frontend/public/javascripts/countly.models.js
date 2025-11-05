@@ -567,7 +567,7 @@
                                     compareValue: list[j].users,
                                     compareValue2: list[j].minutes,
                                     alertValues: list[j].email,
-                                    createdByUser: "-",
+                                    createdByUser: list[j].createdByUser || '-',
                                     _canUpdate: countlyAuth.validateUpdate(
                                         FEATURE_NAME,
                                         countlyGlobal.member,
