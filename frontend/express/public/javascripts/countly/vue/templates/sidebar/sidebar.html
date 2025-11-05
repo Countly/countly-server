@@ -60,6 +60,28 @@
                     <el-button class="button" type="success" @click="handleButtonClick">{{i18n('sidebar.banner.upgrade-button')}}</el-button>
                 </div>
             </div>
+            <div v-else-if="isFlex" class="cly-vue-sidebar__version">
+                <div v-if="flexWidget.status === 'loaded'" class="cly-vue-sidebar__flex-widget">
+                    <div class="cly-vue-sidebar__flex-widget__header">
+                        <div class="cly-vue-sidebar__flex-widget__header--left">
+                            {{ flexWidget.used.toLocaleString() }}/{{ flexWidget.available.toLocaleString() }} MAU
+                        </div>
+                        <div class="cly-vue-sidebar__flex-widget__header--right" v-if="member.global_admin" @click="openFlexManageModal">
+                            <a href="javascript:void(0)">Manage</a>
+                        </div>
+                    </div>
+                    <div class="cly-vue-sidebar__flex-widget__body__progress-wrapper">
+                        <div class="cly-vue-sidebar__flex-widget__body__progress-bar" :style="{ width: mauPercentage + '%' }">
+                        </div>
+                    </div>
+                </div>
+                <div v-else-if="flexWidget.status === 'loading'" class="cly-vue-sidebar__flex-widget__body__status">
+                    Fetching subscription info...
+                </div>
+                <div v-else class="cly-vue-sidebar__flex-widget__body__status">
+                    Failed to fetch subscription info
+                </div>
+            </div>
             <a v-else :href="countlySidebarVersionPath">
                 <div class="cly-vue-sidebar__version" data-test-id="sidebar-menu-version">
                     {{versionInfo}}
