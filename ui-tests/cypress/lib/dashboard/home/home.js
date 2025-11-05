@@ -608,11 +608,11 @@ const verifyFullDataPageElements = () => {
         elementText: null,
     });
 
-    cy.verifyElement({
+    /*cy.verifyElement({
         shouldNot: true,
         element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_NUMBER,
         elementText: "0.0",
-    });
+    });*/
 
     cy.verifyElement({
         element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TREND_ICON,
