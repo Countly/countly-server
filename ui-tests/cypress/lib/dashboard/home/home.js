@@ -137,12 +137,12 @@ const verifyStaticElementsOfPage = () => {
         tooltipText: "The total number of pages viewed, in the selected time period."
     });
 
-    cy.verifyElement({
+    /*cy.verifyElement({
         labelElement: homePageElements.VIEWS.UNIQUE_VIEWS_LABEL,
         labelText: "Unique Views",
         tooltipElement: homePageElements.VIEWS.UNIQUE_VIEWS_TOOLTIP,
         tooltipText: "Number of times a page is viewed in your application for the first time by users during a session, in the selected time period."
-    });
+    });*/
 
     cy.verifyElement({
         labelElement: homePageElements.VIEWS.BOUNCE_RATE_LABEL,

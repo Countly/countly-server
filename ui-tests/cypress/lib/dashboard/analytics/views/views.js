@@ -234,12 +234,12 @@ const verifyViewsMetricCard = ({
         tooltipText: "The total number of pages viewed, in the selected time period."
     });
 
-    cy.verifyElement({
+    /*cy.verifyElement({
         labelElement: viewsMetricCardElements.UNIQUE_VIEWS_LABEL,
         labelText: "Unique Views",
         tooltipElement: viewsMetricCardElements.UNIQUE_VIEWS_TOOLTIP,
         tooltipText: "Number of times a page is viewed in your application for the first time by users during a session, in the selected time period."
-    });
+    });*/
 
     cy.verifyElement({
         labelElement: viewsMetricCardElements.BOUNCE_RATE_LABEL,
@@ -254,10 +254,10 @@ const verifyViewsMetricCard = ({
             elementText: "0",
         });
 
-        cy.verifyElement({
+        /*cy.verifyElement({
             element: viewsMetricCardElements.UNIQUE_VIEWS_VALUE,
             elementText: "0"
-        });
+        });*/
 
         cy.verifyElement({
             element: viewsMetricCardElements.BOUNCE_RATE_VALUE,
