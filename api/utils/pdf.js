@@ -42,7 +42,7 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
         }
         const updatedTimeout = 240000;
         const page = await browser.newPage();
-
+        await page.setBypassCSP(true);
         page.on('console', (msg) => {
             log.d("Headless chrome page log", msg.text());
         });
@@ -73,6 +73,16 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
             //page.setContent will be faster than page.goto if html is a static
             await page.setContent(html);
         }
+
+        const contentHeight = await page.evaluate(() => {
+            /*global document*/
+            return document.body.scrollHeight;
+        });
+
+        options.width = '210mm'; // A4 width, for example
+        options.height = `${contentHeight}px`; // full content height
+        options.printBackground = true;
+        options.preferCSSPageSize = true;
 
         await page.pdf(options).then(callback, function(error) {
             log.d('pdf generation error', error);

@@ -448,8 +448,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         next();
     });
 
-    app.use('*.svg', function(req, res, next) {
-        res.setHeader('Content-Type', 'image/svg+xml; charset=UTF-8');
+    app.use(function(req, res, next) {
+        if (req.path.endsWith('.svg')) {
+            res.setHeader('Content-Type', 'image/svg+xml; charset=UTF-8');
+        }
         next();
     });
 
