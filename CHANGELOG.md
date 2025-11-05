@@ -6,6 +6,7 @@ Fixes:
 Enterprise Fixes:
 - [groups] Add logs for user updates
 - [surveys] Change question map log to debug log
+- [users] Set correct users widget table rows amount according to selected setting
 
 Enterprise Fixes:
 - [data-manager] Fixed bug when merging events with ampersand symbol in the name
