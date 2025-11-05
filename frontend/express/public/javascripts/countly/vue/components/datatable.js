@@ -47,6 +47,10 @@
             preventDefaultSort: {
                 type: Boolean,
                 default: false
+            },
+            perPage: {
+                default: 10,
+                type: Number
             }
         },
         computed: {
@@ -300,7 +304,7 @@
             getControlParams: function() {
                 var defaultState = {
                     page: 1,
-                    perPage: 10,
+                    perPage: this.perPage,
                     searchQuery: '',
                     sort: [],
                     selectedDynamicCols: false
