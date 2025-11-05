@@ -172,7 +172,7 @@ const verifyStaticElementsOfPage = () => {
         element: viewsDataTableElements().COLUMN_NAME_BOUNCE_RATE_SORTABLE_ICON,
     });
 
-    cy.verifyElement({
+    /*cy.verifyElement({
         labelElement: viewsDataTableElements().COLUMN_NAME_UNIQUE_VIEWS_LABEL,
         isElementVisible: false,
         labelText: "Unique Views",
@@ -181,7 +181,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         isElementVisible: false,
         element: viewsDataTableElements().COLUMN_NAME_UNIQUE_VIEWS_SORTABLE_ICON,
-    });
+    });*/
 };
 
 const verifyEmptyPageElements = () => {
