@@ -73,6 +73,7 @@ const FEATURE_NAME = 'compliance_hub';
     });
 
     plugins.register("/i/user_merge", function(ob) {
+        console.log("compliance hub user merge called", ob.newAppUser, ob.oldAppUser);
         var newAppUser = ob.newAppUser;
         var oldAppUser = ob.oldAppUser;
         if (typeof oldAppUser.consent !== "undefined") {

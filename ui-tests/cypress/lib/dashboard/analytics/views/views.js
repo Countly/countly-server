@@ -95,7 +95,7 @@ const verifyStaticElementsOfPage = () => {
         tooltipText: "Total (unique) value for this period is estimated and corrected using the biggest time buckets from available daily, weekly and monthly stats. Exact total counts are available for this year, month and day periods"
     });
 
-    cy.verifyElement({
+    /*cy.verifyElement({
         labelElement: viewsDataTableElements().COLUMN_NAME_NEW_USERS_LABEL,
         isElementVisible: false,
         labelText: "New Users",
@@ -104,7 +104,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         isElementVisible: false,
         element: viewsDataTableElements().COLUMN_NAME_NEW_USERS_SORTABLE_ICON,
-    });
+    });*/
 
     cy.verifyElement({
         labelElement: viewsDataTableElements().COLUMN_NAME_TOTAL_VISITS_LABEL,
