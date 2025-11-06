@@ -5023,3 +5023,42 @@ x-vue-echarts > div:has(> .graph-tooltip-wrapper), x-vue-echarts > div:has(> .gr
   color: #81868D;
   cursor: pointer;
 }
+
+.cly-vue-sidebar__flex-widget {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    background-color: #383A3F;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cly-vue-sidebar__flex-widget__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cly-vue-sidebar__flex-widget__header--left {
+    color: white; font-weight: 500; font-size: 12px;
+}
+
+.cly-vue-sidebar__flex-widget__header--right {
+    color: white; font-size: 10px; cursor:pointer;
+}
+
+.cly-vue-sidebar__flex-widget__body__progress-wrapper {
+    background-color: #E2E4E8; height: 6px; border-radius: 40px; width: 100%;
+}
+
+.cly-vue-sidebar__flex-widget__body__progress-bar {
+    background-color: #0166D6; height: 6px; border-radius: 40px;
+}
+
+.cly-vue-sidebar__flex-widget__body__status {
+    position: absolute; bottom: 12px; left: 12px; right: 12px;background-color: #383A3F; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px;
+}

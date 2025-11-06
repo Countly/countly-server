@@ -1034,6 +1034,22 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     isLocked: isLocked,
                 };
 
+                if (IS_FLEX) {
+                    // Set flexDeploymentId from /opt/deployment_env.json if available
+                    try {
+                        const deploymentFile = path.resolve("/opt/deployment_env.json");
+                        if (fs.existsSync(deploymentFile)) {
+                            const deploymentConf = fs.readFileSync(deploymentFile, "utf8");
+                            const CONF = JSON.parse(deploymentConf);
+                            if (CONF && CONF.DEPLOYMENT_ID) {
+                                countlyGlobal.flexDeploymentId = CONF.DEPLOYMENT_ID;
+                            }
+                        }
+                    }
+                    catch (e) {
+                        // ignore fs/JSON errors
+                    }
+                }
 
                 var toDashboard = {
                     countlyTitle: req.countly.title,
