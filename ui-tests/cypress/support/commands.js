@@ -76,7 +76,7 @@ Cypress.Commands.add("selectCheckboxOption", (element, ...options) => {
 });
 
 Cypress.Commands.add("clickOption", (element, option) => {
-    cy.getElement(element).contains(new RegExp("^" + option + "$", "g")).click({force: true});
+    cy.getElement(element).contains(new RegExp("^" + option + "$", "g")).click({ force: true });
 });
 
 Cypress.Commands.add("selectValue", (element, valueText) => {
@@ -255,104 +255,160 @@ Cypress.Commands.add("scrollDataTableToLeft", (element = '.el-table__body-wrappe
     cy.get(element).eq(index).scrollTo('left', { ensureScrollable: false });
 });
 
-Cypress.Commands.add('verifyElement', ({
-    labelElement,
-    labelText,
-    tooltipElement,
-    tooltipText,
-    element,
-    isElementVisible = true,
-    elementText,
-    elementPlaceHolder,
-    hrefContainUrl,
-    value,
-    isChecked,
-    isDisabled,
-    unVisibleElement,
-    selectedIconColor,
-    selectedMainColor,
-    selectedFontColor,
-    attr,
-    attrText,
-    shouldNot = false
-}) => {
+Cypress.Commands.add('verifyElement', (options) => {
+    const {
+        labelElement,
+        labelText,
+        tooltipElement,
+        tooltipText,
+        element,
+        isElementVisible = true,
+        elementText,
+        elementPlaceHolder,
+        hrefContainUrl,
+        value,
+        isChecked,
+        isDisabled,
+        unVisibleElement,
+        selectedIconColor,
+        selectedMainColor,
+        selectedFontColor,
+        attr,
+        attrText,
+        shouldNot = false
+    } = options;
+
+    const safeCheck = (fn, description) => {
+        try {
+            fn();
+        }
+        catch (err) {
+            cy.softFail(`${description} - ${err.message}`);
+        }
+    };
 
     if (!shouldNot) {
-
         if (labelElement != null && isElementVisible === true) {
-            cy.shouldBeVisible(labelElement);
+            safeCheck(() => cy.shouldBeVisible(labelElement), `Element not visible: ${labelElement}`);
         }
 
         if (labelText != null) {
-            cy.shouldContainText(labelElement, labelText);
+            safeCheck(() => cy.shouldContainText(labelElement, labelText), `Label text mismatch: ${labelElement}`);
         }
 
         if (tooltipElement != null) {
-            cy.shouldBeVisible(tooltipElement);
+            safeCheck(() => cy.shouldBeVisible(tooltipElement), `Tooltip not visible: ${tooltipElement}`);
         }
 
         if (tooltipText != null) {
-            cy.shouldTooltipContainText(tooltipElement, tooltipText);
+            safeCheck(() => cy.shouldTooltipContainText(tooltipElement, tooltipText), `Tooltip text mismatch`);
         }
 
         if (element != null && isElementVisible === true) {
-            cy.shouldBeVisible(element);
+            safeCheck(() => cy.shouldBeVisible(element), `Element not visible: ${element}`);
         }
 
         if (elementText != null) {
-            cy.shouldContainText(element, elementText);
+            safeCheck(() => cy.shouldContainText(element, elementText), `Element text mismatch: ${element}`);
         }
 
         if (elementPlaceHolder != null) {
-            cy.shouldPlaceholderContainText(element, elementPlaceHolder);
+            safeCheck(() => cy.shouldPlaceholderContainText(element, elementPlaceHolder), `Placeholder mismatch: ${element}`);
         }
 
         if (hrefContainUrl != null) {
-            cy.shouldHrefContainUrl(element, hrefContainUrl);
+            safeCheck(() => cy.shouldHrefContainUrl(element, hrefContainUrl), `Href mismatch: ${element}`);
         }
 
         if (value != null) {
-            cy.shouldHaveValue(element, value);
+            safeCheck(() => cy.shouldHaveValue(element, value), `Value mismatch: ${element}`);
         }
 
         if (isChecked != null) {
-            isChecked ? cy.shouldBeVisible(`[data-test-id="${element}"]` + '.is-checked') : cy.shouldNotExist(`[data-test-id="${element}"]` + '.is-checked');
+            safeCheck(() => {
+                isChecked
+                    ? cy.shouldBeVisible(`[data-test-id="${element}"].is-checked`)
+                    : cy.shouldNotExist(`[data-test-id="${element}"].is-checked`);
+            }, `Checkbox state mismatch: ${element}`);
         }
 
         if (isDisabled != null) {
-            isDisabled ? cy.shouldBeDisabled(element) : cy.shouldNotBeDisabled(element);
+            safeCheck(() => {
+                isDisabled ? cy.shouldBeDisabled(element) : cy.shouldNotBeDisabled(element);
+            }, `Disabled state mismatch: ${element}`);
         }
 
         if (selectedIconColor != null) {
-            var selector;
-            unVisibleElement != null ? selector = unVisibleElement : selector = element;
-            cy.getElement(`[data-test-id="${selector}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedIconColor));
+            safeCheck(() => {
+                const selector = unVisibleElement ?? element;
+                cy.getElement(`[data-test-id="${selector}"]`)
+                    .invoke('attr', 'style')
+                    .should('contain', helper.hexToRgb(selectedIconColor));
+            }, `Icon color mismatch: ${element}`);
         }
 
         if (selectedFontColor != null) {
-            cy.getElement(`[data-test-id="${element}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedFontColor));
+            safeCheck(() => {
+                cy.getElement(`[data-test-id="${element}"]`)
+                    .invoke('attr', 'style')
+                    .should('contain', helper.hexToRgb(selectedFontColor));
+            }, `Font color mismatch: ${element}`);
         }
 
         if (selectedMainColor != null) {
-            cy.getElement(`[data-test-id="${element}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedMainColor));
+            safeCheck(() => {
+                cy.getElement(`[data-test-id="${element}"]`)
+                    .invoke('attr', 'style')
+                    .should('contain', helper.hexToRgb(selectedMainColor));
+            }, `Main color mismatch: ${element}`);
         }
 
         if (attr != null && attrText != null) {
-            cy.getElement(`[data-test-id="${element}"]`).invoke("attr", attr).should("contain", attrText);
+            safeCheck(() => {
+                cy.getElement(`[data-test-id="${element}"]`)
+                    .invoke('attr', attr)
+                    .should('contain', attrText);
+            }, `Attribute mismatch: ${element}`);
         }
     }
     else {
-
         if (element != null && isElementVisible === true) {
-            cy.shouldBeVisible(element);
-            cy.shouldNotBeEqual(element, elementText);
+            safeCheck(() => {
+                cy.shouldBeVisible(element);
+                cy.shouldNotBeEqual(element, elementText);
+            }, `Negative assertion failed: ${element}`);
         }
 
         if (labelElement != null && isElementVisible === true) {
-            cy.shouldBeVisible(labelElement);
-            cy.shouldNotBeEqual(labelElement, labelText);
+            safeCheck(() => {
+                cy.shouldBeVisible(labelElement);
+                cy.shouldNotBeEqual(labelElement, labelText);
+            }, `Negative assertion failed: ${labelElement}`);
         }
     }
+});
+
+// Soft assert setup
+// initializes the error list at the beginning of a new test.
+Cypress.Commands.add('initSoftAssert', () => {
+    cy.wrap([]).as('softErrors');
+});
+
+// collects soft assertion failures without failing the test immediately.
+Cypress.Commands.add('softFail', (message) => {
+    cy.get('@softErrors').then((errors) => {
+        errors.push(message);
+        cy.wrap(errors).as('softErrors');
+    });
+});
+
+// checks if there were any soft assertion failures and fails the test if there were.
+Cypress.Commands.add('assertAll', () => {
+    cy.get('@softErrors').then((errors) => {
+        if (errors.length > 0) {
+            throw new Error(`Soft assertion errors:\n${errors.join('\n')}`);
+        }
+    });
 });
 
 Cypress.Commands.add('dropMongoDatabase', () => {
