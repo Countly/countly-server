@@ -60,7 +60,7 @@ const verifyDefaultPageElements = (isDemoApp) => {
     if (isDemoApp) {
         cy.verifyElement({
             labelElement: initialSetupPageElements.PAGE_TITLE,
-            labelText: "Let's create a demo app for you!"
+            labelText: "Let\'s create a demo app for you!"
         });
 
         cy.verifyElement({
@@ -108,7 +108,7 @@ const verifyDefaultPageElements = (isDemoApp) => {
     else {
         cy.verifyElement({
             labelElement: initialSetupPageElements.PAGE_TITLE,
-            labelText: "Let's add your first application"
+            labelText: "Let\'s add your first application"
         });
 
         cy.verifyElement({
