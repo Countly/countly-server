@@ -249,6 +249,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         test_type: [dashboard, onboarding]
 
