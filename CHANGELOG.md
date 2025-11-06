@@ -1,16 +1,14 @@
-## Version 25.03.xx
+## Version 25.03.26
 Fixes:
 - [push] Fixed timeout setting
 - [security] Fixed injection possibility on res.expose
 
 Enterprise Fixes:
+- [data-manager] Fixed bug when merging events with ampersand symbol in the name
 - [groups] Add logs for user updates
 - [nps] Sort widgets by internal name and search by name or internal name
 - [surveys] Change question map log to debug log
 - [surveys] Sort widgets by internal name and search by name or internal name
-
-Enterprise Fixes:
-- [data-manager] Fixed bug when merging events with ampersand symbol in the name
 
 Dependencies:
 - Bump axios from 1.12.2 to 1.13.1 in /plugins/cognito
