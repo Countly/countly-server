@@ -5,6 +5,7 @@
  * @typedef {import('./types/queue.ts').IOSConfig} IOSConfig
  * @typedef {import('./types/queue.ts').AndroidConfig} AndroidConfig
  * @typedef {import('./types/queue.ts').HuaweiConfig} HuaweiConfig
+ * @typedef {import('./types/message.ts').MessageCollection} MessageCollection
  * @typedef {import('./types/message.ts').Message} Message
  * @typedef {import('./types/message.ts').PlatformKey} PlatformKey
  * @typedef {import('./types/message.ts').PlatformEnvKey} PlatformEnvKey
@@ -15,13 +16,12 @@
  * @typedef {import('./types/utils.ts').ErrorObject} ErrorObject
  * @typedef {import("mongodb").Db} MongoDb
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
+ * @typedef {import('./types/schedule.ts').ScheduleCollection} ScheduleCollection
  * @typedef {import('./types/schedule.ts').AudienceFilter} AudienceFilter
  * @typedef {import('./types/user.ts').User} User
  * @typedef {import('stream').Readable} Readable
  * @typedef {{_id: ObjectId; timezone: string;}} App
  * @typedef {import("mongodb").Collection<{ radius: number; unit: "mi"|"km"; geo: { coordinates: [number, number]; } }>} GeosCollection
- * @typedef {import("mongodb").Collection<Message>} MessageCollection
- * @typedef {import("mongodb").Collection<Schedule>} ScheduleCollection
  * @typedef {import("mongodb").Collection<App>} AppCollection
  * @typedef {import("mongodb").Document} Document
  * @typedef {{ $match: { [key: string]: any } }} MatchStage

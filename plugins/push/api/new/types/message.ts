@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import { ObjectId, Collection } from "mongodb";
 import { ErrorObject } from "./utils";
 
 export type PlatformKey = "a"|"i"|"h"; // android|ios|huawei
@@ -190,3 +190,5 @@ export interface Message {
     result: Result;
     info: Info;
 }
+
+export type MessageCollection = Collection<Message>;

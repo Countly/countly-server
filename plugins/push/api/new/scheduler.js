@@ -3,16 +3,16 @@
  * @typedef {import('./types/message.ts').MessageTrigger} MessageTrigger
  * @typedef {import('./types/message.ts').RecurringTrigger} RecurringTrigger
  * @typedef {import('./types/message.ts').MultiTrigger} MultiTrigger
+ * @typedef {import('./types/message.ts').MessageCollection} MessageCollection
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
  * @typedef {import('./types/schedule.ts').AudienceFilter} AudienceFilter
  * @typedef {import('./types/schedule.ts').MessageOverrides} MessageOverrides
+ * @typedef {import('./types/schedule.ts').ScheduleCollection} ScheduleCollection
  * @typedef {import('./types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import('./types/queue.ts').AutoTriggerEvent} AutoTriggerEvent
  * @typedef {import('./types/queue.ts').CohortTriggerEvent} CohortTriggerEvent
  * @typedef {import('./types/queue.ts').EventTriggerEvent} EventTriggerEvent
  * @typedef {import("mongodb").Db} MongoDb
- * @typedef {import("mongodb").Collection<Message>} MessageCollection
- * @typedef {import("mongodb").Collection<Schedule>} ScheduleCollection
  * @typedef {import("mongodb").Filter<MessageTrigger>} MessageTriggerFilter
  * @typedef {{ [eventName: string]: Set<string> }} AutoTriggerEventMap
  * @typedef {{ [cohortId: string]: { enter: Set<string>, exit: Set<string> } }} AutoTriggerCohortMap

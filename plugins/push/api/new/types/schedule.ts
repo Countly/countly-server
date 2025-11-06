@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import { ObjectId, Collection } from "mongodb";
 import { Result, Content, MessageAudienceFilter } from "./message";
 import { ErrorObject } from "./utils";
 
@@ -61,3 +61,5 @@ export interface Schedule {
         error?: ErrorObject;
     }>;
 }
+
+export type ScheduleCollection = Collection<Schedule>;
