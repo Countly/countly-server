@@ -281,23 +281,22 @@ Cypress.Commands.add('verifyElement', (options) => {
     const safeCheck = (fn, description) => {
         try {
             fn();
-        }
-        catch (err) {
+        } catch (err) {
             cy.softFail(`${description} - ${err.message}`);
         }
     };
 
     if (!shouldNot) {
         if (labelElement != null && isElementVisible === true) {
-            safeCheck(() => cy.shouldBeVisible(labelElement), `Element not visible: ${labelElement}`);
+            safeCheck(() => cy.getElement(labelElement, null, { soft: true }).should("be.visible"), `Element not visible: ${labelElement}`);
         }
 
         if (labelText != null) {
-            safeCheck(() => cy.shouldContainText(labelElement, labelText), `Label text mismatch: ${labelElement}`);
+            safeCheck(() => cy.getElement(labelElement, null, { soft: true }).should("contain", labelText), `Label text mismatch: ${labelElement}`);
         }
 
         if (tooltipElement != null) {
-            safeCheck(() => cy.shouldBeVisible(tooltipElement), `Tooltip not visible: ${tooltipElement}`);
+            safeCheck(() => cy.getElement(tooltipElement, null, { soft: true }).should("be.visible"), `Tooltip not visible: ${tooltipElement}`);
         }
 
         if (tooltipText != null) {
@@ -305,43 +304,45 @@ Cypress.Commands.add('verifyElement', (options) => {
         }
 
         if (element != null && isElementVisible === true) {
-            safeCheck(() => cy.shouldBeVisible(element), `Element not visible: ${element}`);
+            safeCheck(() => cy.getElement(element, null, { soft: true }).should("be.visible"), `Element not visible: ${element}`);
         }
 
         if (elementText != null) {
-            safeCheck(() => cy.shouldContainText(element, elementText), `Element text mismatch: ${element}`);
+            safeCheck(() => cy.getElement(element, null, { soft: true }).should("contain", elementText), `Element text mismatch: ${element}`);
         }
 
         if (elementPlaceHolder != null) {
-            safeCheck(() => cy.shouldPlaceholderContainText(element, elementPlaceHolder), `Placeholder mismatch: ${element}`);
+            safeCheck(() => cy.getElement(element, null, { soft: true }).invoke("attr", "placeholder").should("contain", elementPlaceHolder), `Placeholder mismatch: ${element}`);
         }
 
         if (hrefContainUrl != null) {
-            safeCheck(() => cy.shouldHrefContainUrl(element, hrefContainUrl), `Href mismatch: ${element}`);
+            safeCheck(() => cy.getElement(element, null, { soft: true }).invoke("attr", "href").should("contain", hrefContainUrl), `Href mismatch: ${element}`);
         }
 
         if (value != null) {
-            safeCheck(() => cy.shouldHaveValue(element, value), `Value mismatch: ${element}`);
+            safeCheck(() => cy.getElement(element, null, { soft: true }).should("have.value", value), `Value mismatch: ${element}`);
         }
 
         if (isChecked != null) {
             safeCheck(() => {
                 isChecked
-                    ? cy.shouldBeVisible(`[data-test-id="${element}"].is-checked`)
-                    : cy.shouldNotExist(`[data-test-id="${element}"].is-checked`);
+                    ? cy.getElement(`${element}.is-checked`, null, { soft: true }).should('exist')
+                    : cy.getElement(`${element}.is-checked`, null, { soft: true }).should('not.exist');
             }, `Checkbox state mismatch: ${element}`);
         }
 
         if (isDisabled != null) {
             safeCheck(() => {
-                isDisabled ? cy.shouldBeDisabled(element) : cy.shouldNotBeDisabled(element);
+                isDisabled
+                    ? cy.getElement(element, null, { soft: true }).should("be.disabled")
+                    : cy.getElement(element, null, { soft: true }).should("not.be.disabled");
             }, `Disabled state mismatch: ${element}`);
         }
 
         if (selectedIconColor != null) {
             safeCheck(() => {
                 const selector = unVisibleElement ?? element;
-                cy.getElement(`[data-test-id="${selector}"]`)
+                cy.getElement(selector, null, { soft: true })
                     .invoke('attr', 'style')
                     .should('contain', helper.hexToRgb(selectedIconColor));
             }, `Icon color mismatch: ${element}`);
@@ -349,7 +350,7 @@ Cypress.Commands.add('verifyElement', (options) => {
 
         if (selectedFontColor != null) {
             safeCheck(() => {
-                cy.getElement(`[data-test-id="${element}"]`)
+                cy.getElement(element, null, { soft: true })
                     .invoke('attr', 'style')
                     .should('contain', helper.hexToRgb(selectedFontColor));
             }, `Font color mismatch: ${element}`);
@@ -357,7 +358,7 @@ Cypress.Commands.add('verifyElement', (options) => {
 
         if (selectedMainColor != null) {
             safeCheck(() => {
-                cy.getElement(`[data-test-id="${element}"]`)
+                cy.getElement(element, null, { soft: true })
                     .invoke('attr', 'style')
                     .should('contain', helper.hexToRgb(selectedMainColor));
             }, `Main color mismatch: ${element}`);
@@ -365,24 +366,23 @@ Cypress.Commands.add('verifyElement', (options) => {
 
         if (attr != null && attrText != null) {
             safeCheck(() => {
-                cy.getElement(`[data-test-id="${element}"]`)
+                cy.getElement(element, null, { soft: true })
                     .invoke('attr', attr)
                     .should('contain', attrText);
             }, `Attribute mismatch: ${element}`);
         }
-    }
-    else {
+    } else {
         if (element != null && isElementVisible === true) {
             safeCheck(() => {
-                cy.shouldBeVisible(element);
-                cy.shouldNotBeEqual(element, elementText);
+                cy.getElement(element, null, { soft: true }).should("be.visible");
+                cy.getElement(element, null, { soft: true }).should("not.contain", elementText);
             }, `Negative assertion failed: ${element}`);
         }
 
         if (labelElement != null && isElementVisible === true) {
             safeCheck(() => {
-                cy.shouldBeVisible(labelElement);
-                cy.shouldNotBeEqual(labelElement, labelText);
+                cy.getElement(labelElement, null, { soft: true }).should("be.visible");
+                cy.getElement(labelElement, null, { soft: true }).should("not.contain", labelText);
             }, `Negative assertion failed: ${labelElement}`);
         }
     }
@@ -415,23 +415,33 @@ Cypress.Commands.add('dropMongoDatabase', () => {
     cy.exec("mongosh mongodb/countly --eval 'db.dropDatabase()'");
 });
 
-Cypress.Commands.add('getElement', (selector, parent = null) => {
+Cypress.Commands.overwrite('getElement', (originalFn, selector, parent = null, options = {}) => {
+    const { soft = false, timeout = 5000 } = options;
+    let finalSelector;
 
     if (!selector.includes('[data-test-id=')) {
         if (selector[0].includes('.') || selector[0].includes('#')) {
-            return cy.get(selector);
+            finalSelector = selector;
+        } else {
+            finalSelector = parent
+                ? `${parent} [data-test-id="${selector}"]`
+                : `[data-test-id="${selector}"]`;
         }
-        else {
-            if (parent !== null) {
-                selector = `${parent} [data-test-id="${selector}"]`;
-            }
-            else {
-                selector = `[data-test-id="${selector}"]`;
-            }
-            return cy.get(selector);
-        }
+    } else {
+        finalSelector = selector;
     }
-    else {
-        return cy.get(selector);
+
+    if (soft) {
+        return cy.get('body', { timeout }).then(($body) => {
+            const found = $body.find(finalSelector);
+            if (found.length > 0) {
+                return cy.wrap(found);
+            } else {
+                cy.softFail(`❌ Element not found: ${finalSelector}`);
+                return cy.wrap(Cypress.$([]));
+            }
+        });
+    } else {
+        return originalFn(finalSelector, { timeout });
     }
 });
