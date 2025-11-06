@@ -418,36 +418,38 @@ Cypress.Commands.add('dropMongoDatabase', () => {
 });
 
 Cypress.Commands.add(('getElement', (originalFn, selector, parent = null, options = {}) => {
-    const { soft = false, timeout = 5000 } = options;
-    let finalSelector;
+    Cypress.Commands.add('getElement', (selector, parent = null, options = {}) => {
+        const { soft = false, timeout = 5000 } = options;
+        let finalSelector;
 
-    if (!selector.includes('[data-test-id=')) {
-        if (selector[0].includes('.') || selector[0].includes('#')) {
-            finalSelector = selector;
-        }
-        else {
-            finalSelector = parent
-                ? `${parent} [data-test-id="${selector}"]`
-                : `[data-test-id="${selector}"]`;
-        }
-    }
-    else {
-        finalSelector = selector;
-    }
-
-    if (soft) {
-        return cy.get('body', { timeout }).then(($body) => {
-            const found = $body.find(finalSelector);
-            if (found.length > 0) {
-                return cy.wrap(found);
+        if (!selector.includes('[data-test-id=')) {
+            if (selector.startsWith('.') || selector.startsWith('#')) {
+                finalSelector = selector;
             }
             else {
-                cy.softFail(`❌ Element not found: ${finalSelector}`);
-                return cy.wrap(Cypress.$([]));
+                finalSelector = parent
+                    ? `${parent} [data-test-id="${selector}"]`
+                    : `[data-test-id="${selector}"]`;
             }
-        });
-    }
-    else {
-        return originalFn(finalSelector, { timeout });
-    }
+        }
+        else {
+            finalSelector = selector;
+        }
+
+        if (soft) {
+            return cy.get('body', { timeout }).then(($body) => {
+                const found = $body.find(finalSelector);
+                if (found.length > 0) {
+                    return cy.wrap(found);
+                }
+                else {
+                    cy.softFail(`❌ Element not found: ${finalSelector}`);
+                    return cy.wrap(Cypress.$([])); // Return empty set
+                }
+            });
+        }
+        else {
+            return cy.get(finalSelector, { timeout });
+        }
+    });
 }));
