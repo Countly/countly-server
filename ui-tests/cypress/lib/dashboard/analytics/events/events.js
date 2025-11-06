@@ -194,7 +194,7 @@ const verifyFullDataPageElements = () => {
 
     cy.scrollPageToTop();
 
-    cy.clickElement(eventStatsListBoxElements('Bill Payment').LIST_BOX_ITEM);
+    cy.clickElement(eventStatsListBoxElements('Bill Payment').LIST_BOX_ITEM, true);
 
     verifyStaticElementsOfEventStatsPage();
 

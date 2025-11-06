@@ -2,6 +2,69 @@
 Dependencies:
 - Remove SQLite
 
+## Version 25.03.xx
+Fixes:
+- [push] Fixed timeout setting
+- [security] Fixed injection possibility on res.expose
+
+Enterprise Fixes:
+- [groups] Add logs for user updates
+- [surveys] Change question map log to debug log
+
+Enterprise Fixes:
+- [data-manager] Fixed bug when merging events with ampersand symbol in the name
+
+Dependencies:
+- Bump axios from 1.12.2 to 1.13.1 in /plugins/cognito
+- Bump csvtojson from 1.1.12 to 2.0.14
+- Bump eslint-plugin-vue from 10.5.0 to 10.5.1
+- Bump express-rate-limit from 8.1.0 to 8.2.0
+- Bump get-random-values from 4.0.0 to 4.1.0
+- Bump lint-staged from 16.2.4 to 16.2.6
+- Bump mockttp from 4.2.0 to 4.2.1 in /plugins/crash_symbolication
+- Bump nodemailer from 7.0.9 to 7.0.10
+- Bump puppeteer from 24.25.0 to 24.27.0
+- Bump vite from 7.1.10 to 7.1.12
+
+## Version 25.03.25
+Fixes:
+- [crashes] Fixed resolving audit log recording
+- [location] Fixed updating none gps coordinate location after gps location was used
+
+Enterprise Fixes:
+- [ab-testing] Add script for fixing variant cohort
+- [groups] Fix user permission update after updating user group permission
+## Version 25.03.24
+Fixes:
+- [jobs] Fix condition for scheduling alert job
+
+Enterprise Fixes:
+- [compliance-hub] Fixed query patterns
+- [data-manager] Fixed bug preventing transformation of events ending in a dot
+- [data-manager] Fixed segment data deletion
+- [license] Stop sending metric after license expired
+- [users] Fix add/remove user to profile group
+- [users] Remove link to profile group page after removing user from group
+
+Dependencies
+- Bump @faker-js/faker from 10.0.0 to 10.1.0 in /ui-tests
+- Bump countly-sdk-nodejs from 24.10.2 to 24.10.3
+- Bump lint-staged from 16.2.3 to 16.2.4
+- Bump puppeteer from 24.23.0 to 24.24.1
+
+## Version 25.03.23
+Fixes:
+- [events] Entries in the event list are now sorted alphabetically
+- [mail] Add smtp debug option for mail module
+
+Enterprise Fixes:
+- [block] Fixed filter for consent events
+- [drill] [survey] Fix survey answer in drill
+- [funnels] Show notification if funnel results are from cache/task manager
+- [revenue] Card in revenue page are now correctly indentified
+- [users] Add survey section to user feedback page
+- [users] Fixed uploading user profile pictures
+
 ## Version 25.03.22
 Fixes:
 - [alerts] Fix: Migrate alerts to the new events model

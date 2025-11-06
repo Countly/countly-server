@@ -1,4 +1,4 @@
-/* global Vue, CV, countlyCommon */
+/* global Vue, CV, countlyCommon, ElementTiptap */
 (function(countlyVue) {
     Vue.component("cly-content-layout", countlyVue.components.create({
         template: CV.T('/javascripts/countly/vue/templates/content/content.html'),
@@ -369,65 +369,154 @@
         `,
     }));
 
-    Vue.component("cly-content-steps", countlyVue.components.create({
-        props: {
-            header: {
-                type: String,
-                required: false,
-                default: null
-            },
-            collapse: {
-                type: Boolean,
-                required: false,
-                default: true
-            }
-        },
-        data() {
-            return {
-                activeSection: ["section"]
-            };
-        },
-        methods: {
-        },
-        template: `
-            <div class="cly-vue-content-builder__layout-steps">
-                <div v-if="collapse">
-                    <el-collapse v-model="activeSection">
-                        <el-collapse-item :title="header" name="section" :test-id="header.toLowerCase().replaceAll(' ', '-')">
-                            <slot name="content-builder-layout-steps"></slot>
-                        </el-collapse-item>
-                    </el-collapse>  
-                </div>
-                <div v-else>
-                    <div class="cly-vue-content-builder__layout-steps__header text-medium font-weight-bold" :data-test-id="'content-drawer-sidebar-step-' + header.toLowerCase().replaceAll(' ', '-')">{{ header }}</div>
-                    <slot name="content-builder-layout-steps"></slot>
-                </div>
-            </div>
-        `,
-    }));
-
-
-    // CONSTANTS
-
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER = 'color-picker';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN = 'dropdown';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_IMAGE_RADIO = 'image-radio';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT = 'input';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_LIST_BLOCK = 'list-block';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER = 'number';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER = 'slider';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER = 'swapper';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH = 'switch';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB = 'tab';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TEXTAREA = 'textarea';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_UPLOAD = 'upload';
+
+    Vue.component('cly-content-builder-sidebar-step', countlyVue.components.create({
+        props: {
+            header: {
+                default: null,
+                type: String
+            },
+
+            collapsible: {
+                default: false,
+                type: Boolean
+            },
+
+            inputs: {
+                default: () => [],
+                type: Array
+            }
+        },
+
+        emits: [
+            'add-asset',
+            'delete-asset',
+            'input-value-change',
+            'upload-asset'
+        ],
+
+        data() {
+            return {
+                section: ['body']
+            };
+        },
+
+        computed: {
+            bodyComponent() {
+                return this.collapsible ? 'el-collapse-item' : 'div';
+            },
+
+            bodyComponentProps() {
+                if (!this.collapsible) {
+                    return null;
+                }
+
+                return {
+                    name: 'body',
+                    testId: this.dataTestId,
+                    title: this.header
+                };
+            },
+
+            dataTestId() {
+                return `content-drawer-sidebar-step-${this.header.toLowerCase().replaceAll(' ', '-')}`;
+            },
+
+            formattedInputs() {
+                if (this.inputs.length) {
+                    return this.inputs.map(input => ({
+                        ...input,
+                        ...!!input.subHeader && {
+                            hasSubHeader: true,
+                            dataTestId: `content-drawer-sidebar-step-${input.subHeader.toLowerCase().replaceAll(' ', '-')}-label`
+                        }
+                    }));
+                }
+
+                return [];
+            },
+
+            wrapperComponent() {
+                return this.collapsible ? 'el-collapse' : 'div';
+            }
+        },
+
+        methods: {
+            onAddAsset(payload) {
+                const { input, payload: eventPayload } = payload || {};
+                const { id, key, type } = input || {};
+
+                if (type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_LIST_BLOCK) {
+                    this.$emit('add-asset', eventPayload);
+                }
+                else {
+                    this.$emit('add-asset', { id, key });
+                }
+            },
+
+            onDeleteAsset(payload) {
+                const { input, payload: eventPayload } = payload || {};
+                const { id, key, type } = input || {};
+
+                if (type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_LIST_BLOCK) {
+                    this.$emit('delete-asset', eventPayload);
+                }
+                else {
+                    this.$emit('delete-asset', { id, key });
+                }
+            },
+
+            onUploadAsset(payload) {
+                this.$emit('upload-asset', payload);
+            },
+
+            onInputChange(payload) {
+                const { input, payload: inputPayload } = payload || {};
+                const { id, key, type } = input || {};
+
+                if (type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_LIST_BLOCK) {
+                    this.$emit('input-value-change', inputPayload);
+                }
+                else {
+                    this.$emit('input-value-change', {
+                        id,
+                        key,
+                        value: inputPayload
+                    });
+                }
+            }
+        },
+
+        template: CV.T('/javascripts/countly/vue/templates/content/UI/content-builder-sidebar-step.html'),
+    }));
+
+
+    // CONSTANTS
 
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE = {
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER]: 'cly-colorpicker',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN]: 'el-select',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_IMAGE_RADIO]: 'div',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT]: 'el-input',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_LIST_BLOCK]: 'cly-content-block-list-input',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER]: 'el-input-number',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER]: 'el-slider',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER]: 'cly-option-swapper',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH]: 'el-switch',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB]: 'div',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TEXTAREA]: 'el-tiptap',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_UPLOAD]: 'el-upload'
     };
 
@@ -452,7 +541,7 @@
             },
 
             labelIcon: {
-                default: 'cly-io cly-io-question-mark-circle',
+                default: 'ion ion-help-circled',
                 type: String
             },
 
@@ -481,6 +570,11 @@
                 type: String
             },
 
+            size: {
+                default: null,
+                type: String
+            },
+
             subHeader: {
                 default: null,
                 type: String
@@ -498,12 +592,7 @@
 
             value: {
                 default: null,
-                type: [String, Number, Boolean, Object]
-            },
-
-            size: {
-                default: null,
-                type: String
+                type: [String, Number, Boolean, Object, Array]
             },
 
             withComponentTooltip: {
@@ -520,8 +609,41 @@
         emits: [
             'add-asset',
             'delete-asset',
-            'input'
+            'input',
+            'upload-asset'
         ],
+
+        data() {
+            return {
+                textareaExtensions: [
+                    new ElementTiptap.Doc(),
+                    new ElementTiptap.Text(),
+                    new ElementTiptap.Paragraph(),
+                    new ElementTiptap.TextColor({colors: countlyCommon.GRAPH_COLORS}),
+                    new ElementTiptap.FontType({
+                        fontTypes: {
+                            Inter: 'Inter',
+                            Lato: 'Lato',
+                            Oswald: 'Oswald',
+                            'Roboto-Mono': 'Roboto-Mono',
+                            Ubuntu: 'Ubuntu'
+                        }
+                    }),
+                    new ElementTiptap.FontSize({
+                        fontSizes: ['8', '10', '12', '14', '16', '18', '20', '24', '30', '36', '48', '60', '72', '96']
+                    }),
+                    new ElementTiptap.LineHeight(),
+                    new ElementTiptap.Bold(),
+                    new ElementTiptap.Italic(),
+                    new ElementTiptap.Underline(),
+                    new ElementTiptap.ListItem(),
+                    new ElementTiptap.BulletList(),
+                    new ElementTiptap.OrderedList(),
+                    new ElementTiptap.FormatClear(),
+                    new ElementTiptap.History()
+                ],
+            };
+        },
 
         computed: {
             componentValue: {
@@ -538,25 +660,30 @@
                         return +this.value || 0;
                     }
 
+                    if (this.isListBlockInput) {
+                        return null;
+                    }
+
                     return this.value || null;
                 },
+
                 set(newValue) {
                     this.$emit('input', newValue);
                 }
             },
 
             computedAttrs() {
-                if (this.isUploadInput) {
-                    return {
+                return {
+                    ...this.$attrs,
+                    ...this.isColorPickerInput && { newUI: true },
+                    ...this.isTextareaInput && { extensions: this.textareaExtensions },
+                    ...this.isUploadInput && {
                         action: '',
                         drag: true,
                         multiple: false,
-                        showFileList: false,
-                        ...this.$attrs
-                    };
-                }
-
-                return this.$attrs;
+                        showFileList: false
+                    }
+                };
             },
 
             controlsProp() {
@@ -567,12 +694,24 @@
                 return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN;
             },
 
+            isColorPickerInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER;
+            },
+
             isComponentWithOptions() {
                 return this.isDropdownInput && Array.isArray(this.options) && this.options.length;
             },
 
+            isImageRadioInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_IMAGE_RADIO;
+            },
+
             isLabelTooltipVisible() {
                 return this.withLabelTooltip && this.labelTooltip;
+            },
+
+            isListBlockInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_LIST_BLOCK;
             },
 
             isSliderInput() {
@@ -588,6 +727,10 @@
 
             isSwapperInput() {
                 return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER;
+            },
+
+            isTextareaInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TEXTAREA;
             },
 
             isUploadInput() {
@@ -611,6 +754,14 @@
         },
 
         methods: {
+            onAddAsset(payload) {
+                this.$emit('add-asset', payload);
+            },
+
+            onDeleteAsset(payload) {
+                this.$emit('delete-asset', payload);
+            },
+
             onUploadAddButtonClick() {
                 this.$emit('add-asset');
             },
@@ -621,6 +772,52 @@
         },
 
         template: CV.T('/javascripts/countly/vue/templates/content/UI/content-sidebar-input.html')
+    }));
+
+    const DEFAULT_LIST_BLOCK_IMAGE_PLACEHOLDER_URL = '/content/images/fullscreenPlaceholderImage.png';
+
+    Vue.component('cly-content-block-list-input', countlyVue.components.create({
+        props: {
+            blockInputs: {
+                default: () => [],
+                type: Array
+            }
+        },
+
+        emits: [
+            'add-asset',
+            'delete-asset',
+            'input'
+        ],
+
+        computed: {
+            mappedBlockInputs() {
+                return this.blockInputs.map(block => {
+                    return block.map(blockInput => ({
+                        ...blockInput,
+                        ...(blockInput.id.includes('image') && !blockInput.value) && {
+                            value: DEFAULT_LIST_BLOCK_IMAGE_PLACEHOLDER_URL
+                        }
+                    }));
+                });
+            }
+        },
+
+        methods: {
+            onAddAsset(payload) {
+                this.$emit('add-asset', payload);
+            },
+
+            onDeleteAsset(payload) {
+                this.$emit('delete-asset', payload);
+            },
+
+            onInput(payload) {
+                this.$emit('input', payload);
+            }
+        },
+
+        template: CV.T('/javascripts/countly/vue/templates/content/UI/content-block-list-input.html'),
     }));
 
     Vue.component("cly-option-swapper", countlyVue.components.create({
