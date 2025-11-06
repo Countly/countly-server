@@ -1,4 +1,4 @@
-## Version 24.05.xx
+## Version 24.05.45
 Fixes:
 - [security] Fixed injection possibility on res.expose
   
