@@ -118,3 +118,31 @@
         cursor: pointer;
     }
 }
+
+.dbviewer-filter {
+    &__delete {
+        color: #81868d;
+        margin-left: -12px;
+        font-size: smaller;
+
+        &:hover {
+            background-color: unset;
+            border: unset;
+        }
+    }
+
+    &__conjuction {
+        margin-bottom: 8px !important;
+        margin-top: -16px !important;
+    }
+
+    &__row {
+        gap: 6px;
+    }
+
+    &__container {
+        height: 150px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+}

@@ -1,11 +1,24 @@
 'use strict';
 
-const job = require('../parts/jobs/job.js'),
-    plugins = require('../../plugins/pluginManager.js'),
-    tracker = require('../parts/mgmt/tracker.js');
+const plugins = require('../../plugins/pluginManager.js');
+const tracker = require('../parts/mgmt/tracker.js');
+const Job = require("../../jobServer/Job");
+
 
 /** Class for the job of pinging servers **/
-class PingJob extends job.Job {
+class PingJob extends Job {
+
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "0 1 * * *" // Every day at 1:00 AM
+        };
+    }
+
     /**
      * Run the ping job
      * @param {Db} db connection

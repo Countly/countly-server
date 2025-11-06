@@ -179,6 +179,9 @@ describe('Testing Reports', function() {
                         setTimeout(done, 500 * testUtils.testScalingFactor);
                     });
             });
+            it('trigger job for database cleanup', function(done) {
+                testUtils.triggerJobToRun("api:deletionManagerJob", done);
+            });
         });
 
     });

@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: countly-test
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: countly-test
+spec:
+  selector:
+    app: mongodb
+  ports:
+  - port: 27017
+    targetPort: 27017
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongodb
+  namespace: countly-test
+  labels:
+    app: mongodb
+spec:
+  containers:
+  - name: mongodb
+    image: mongo:8.0
+    ports:
+    - containerPort: 27017
+    env:
+    - name: MONGO_INITDB_DATABASE
+      value: countly
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse
+  namespace: countly-test
+spec:
+  selector:
+    app: clickhouse
+  ports:
+  - port: 8123
+    targetPort: 8123
+  - port: 9000
+    targetPort: 9000
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: clickhouse
+  namespace: countly-test
+  labels:
+    app: clickhouse
+spec:
+  containers:
+  - name: clickhouse
+    image: clickhouse/clickhouse-server:25.7-alpine
+    ports:
+    - containerPort: 8123
+    - containerPort: 9000
+    env:
+    - name: CLICKHOUSE_DB
+      value: countly_drill
+    - name: CLICKHOUSE_USER
+      value: default
+    - name: CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT
+      value: "1"
+    - name: CLICKHOUSE_PASSWORD
+      value: ""
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: countly-test-runner
+  namespace: countly-test
+spec:
+  containers:
+  - name: test
+    image: gcr.io/countly-01/countly-unified@sha256:5773cff3bb159de0086b5af7656d9be3d215a91c265e00b1cf64cf3d835fcd81
+    command: ["/bin/sh"]
+    args: 
+    - -c
+    - |
+      echo "Waiting for databases to be ready..."
+      sleep 30
+      echo "Installing dev dependencies..."
+      cd /opt/countly
+      npm install --include=dev
+      echo "Running tests..."
+      npx grunt mochaTest
+      echo "Tests completed"
+    env:
+    # MongoDB settings
+    - name: COUNTLY_CONFIG__MONGODB_HOST
+      value: mongodb.countly-test.svc.cluster.local
+    - name: COUNTLY_CONFIG__MONGODB_DB
+      value: countly
+    - name: COUNTLY_CONFIG__MONGODB_PORT
+      value: "27017"
+    - name: COUNTLY_CONFIG__MONGODB_MAX_POOL_SIZE
+      value: "100"
+    
+    # ClickHouse settings  
+    - name: COUNTLY_CONFIG__CLICKHOUSE_URL
+      value: http://clickhouse.countly-test.svc.cluster.local:8123
+    - name: COUNTLY_CONFIG__CLICKHOUSE_USERNAME
+      value: default
+    - name: COUNTLY_CONFIG__CLICKHOUSE_PASSWORD
+      value: ""
+    - name: COUNTLY_CONFIG__CLICKHOUSE_DATABASE
+      value: countly_drill
+    
+    # Database adapter settings
+    - name: COUNTLY_CONFIG__DATABASE_ADAPTERPREFERENCE
+      value: '["clickhouse","mongodb"]'
+    - name: COUNTLY_CONFIG__DATABASE_ADAPTERS_CLICKHOUSE_ENABLED
+      value: "true"
+    - name: COUNTLY_CONFIG__DATABASE_ADAPTERS_MONGODB_ENABLED
+      value: "true"
+    
+    # Test environment settings
+    - name: NODE_ENV
+      value: test
+    - name: COUNTLY_CONFIG_API_PREVENT_JOBS
+      value: "true"
+    - name: COUNTLY_CONFIG_API_API_HOST
+      value: "0.0.0.0"
+    - name: COUNTLY_CONFIG_FRONTEND_HOST
+      value: "0.0.0.0"
+  restartPolicy: Never

@@ -3,8 +3,7 @@
 (function(countlyViews) {
 
     //Private Properties
-    var _actionData = {},
-        _activeAppKey = 0,
+    var _activeAppKey = 0,
         _initialized = false,
         _segment = "",
         _segmentVal = "",
@@ -13,7 +12,6 @@
         _domains = [],
         _name = "views",
         _period = null,
-        _tableData = [],
         _selectedViews = [],
         _graphDataObj = {},
         _viewsCount = 0,
@@ -59,13 +57,17 @@
             _segmentVal = context.state.selectedSegmentValue;
             return $.when(countlyViews.initialize());
         },
-        fetchTotals: function() {
+        fetchTotals: function(passed) {
             var data = {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "views",
-                "period": countlyCommon.getPeriodForAjax(),
+                "period": countlyCommon.getPeriodAsDateStrings(),
+                "periodOffset": new Date().getTimezoneOffset(),
                 "action": "getTotals"
             };
+            if (passed && passed.no_cache) {
+                data.no_cache = true;
+            }
 
             return CV.$.ajax({
                 type: "GET",
@@ -162,14 +164,15 @@
     });
 
     var viewsTableResource = countlyVue.vuex.ServerDataTable("viewsMainTable", {
-        columns: ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'br', 'uvc', 'scr', 'actionLink'],
+        columns: ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'br', 'uvc', 'scr',],
         onRequest: function(context) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'views',
                 action: 'getTable',
                 visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols),
-                period: countlyCommon.getPeriodForAjax(),
+                "period": countlyCommon.getPeriodAsDateStrings(),
+                "periodOffset": new Date().getTimezoneOffset(),
             };
             data = data || {};
             var selectedInfo = context.getters.selectedData;
@@ -485,6 +488,7 @@
             return {
                 data: {},
                 totals: {},
+                unique: {},
                 isLoading: false,
                 hasError: false,
                 error: null,
@@ -511,8 +515,8 @@
                         context.dispatch('onFetchError', error);
                     });
             },
-            fetchTotals: function(context) {
-                return countlyViews.service.fetchTotals()
+            fetchTotals: function(context, data) {
+                return countlyViews.service.fetchTotals(data)
                     .then(function(response) {
                         context.commit('setTotals', response || {});
                         context.dispatch('onFetchSuccess');
@@ -714,7 +718,7 @@
             return this.refresh();
         }
 
-        _period = countlyCommon.getPeriodForAjax();
+        countlyCommon.getPeriodAsDateStrings(),
         this.reset();
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
@@ -733,7 +737,8 @@
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_view_segments",
-                        "period": _period
+                        "period": countlyCommon.getPeriodAsDateStrings(),
+                        "periodOffset": new Date().getTimezoneOffset(),
                     },
                     dataType: "json",
                     success: function(json) {
@@ -758,14 +763,23 @@
                 })
             ).then(//on initialize load only after getting list of selected
                 function() {
+                    var bucket = "d";
+                    if (countlyCommon.periodObj.period === "month") {
+                        bucket = "m";
+                    }
+                    if (countlyCommon.periodObj.numberOfDays === 1) {
+                        bucket = "h";
+                    }
                     return $.when($.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r,
                         data: {
                             "app_id": countlyCommon.ACTIVE_APP_ID,
                             "method": _name,
-                            "period": _period,
+                            "period": countlyCommon.getPeriodAsDateStrings(),
+                            "periodOffset": new Date().getTimezoneOffset(),
                             "selectedViews": JSON.stringify(selected),
+                            "bucket": bucket,
                             "segment": _segment,
                             "segmentVal": _segmentVal
                         },
@@ -874,6 +888,13 @@
     countlyViews.refresh = function() {
         if (!countlyCommon.DEBUG) {
 
+            var bucket = "d";
+            if (countlyCommon.periodObj._period === "month") {
+                bucket = "m";
+            }
+            if (countlyCommon.periodObj.numberOfDays === 1) {
+                bucket = "h";
+            }
             if (_activeAppKey !== countlyCommon.ACTIVE_APP_KEY) {
                 _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
                 this.reset();
@@ -884,10 +905,10 @@
                 return this.initialize();
             }
             var periodIsOk = true;
-            if (_period !== countlyCommon.getPeriodForAjax()) {
+            if (_period !== countlyCommon.getPeriodAsDateStrings()) {
                 periodIsOk = false;
             }
-            _period = countlyCommon.getPeriodForAjax();
+            _period = countlyCommon.getPeriodAsDateStrings();
 
             var selected = [];
 
@@ -909,7 +930,8 @@
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": "get_view_segments",
-                        "period": _period,
+                        "period": countlyCommon.getPeriodAsDateStrings(),
+                        "periodOffset": new Date().getTimezoneOffset(),
                         "display_loader": false
                     },
                     dataType: "json",
@@ -940,8 +962,10 @@
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "method": _name,
                         "action": "",
-                        "period": _period,
+                        "period": countlyCommon.getPeriodAsDateStrings(),
+                        "periodOffset": new Date().getTimezoneOffset(),
                         "selectedViews": JSON.stringify(selected),
+                        "bucket": bucket,
                         "segment": _segment,
                         "segmentVal": _segmentVal
                     },
@@ -983,7 +1007,6 @@
 
     countlyViews._reset = countlyViews.reset;
     countlyViews.reset = function() {
-        _actionData = {};
         _initialized = false;
         _segments = [];
         _domains = [];
@@ -1022,117 +1045,6 @@
 
     countlyViews.getDomains = function() {
         return _domains;
-    };
-
-    countlyViews.loadActionsData = function(view) {
-        _period = countlyCommon.getPeriodForAjax();
-
-        return $.when(
-            $.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "method": "get_view_segments",
-                    "period": _period
-                },
-                dataType: "json",
-                success: function(json) {
-                    if (json && json.segments) {
-                        for (var i = 0; i < json.segments.length; i++) {
-                            json.segments[i] = countlyCommon.decode(json.segments[i]);
-                        }
-                        _segments = json.segments;
-                        for (let segment in _segments) {
-                            _segments[segment].sort(Intl.Collator().compare);
-                        }
-                    }
-                }
-            }),
-            $.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r + "/actions",
-                data: {
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "view": view,
-                    "segment": _segment,
-                    "period": _period
-                },
-                dataType: "json",
-                success: function(json) {
-                    _actionData = json;
-                }
-            })
-        ).then(function() {
-            return true;
-        });
-    };
-
-    countlyViews.getActionsData = function() {
-        return _actionData;
-    };
-
-    countlyViews.getChartData = function(path, metric, name, segment, segmentVal) {
-        var chartData = [
-                { data: [], label: name, color: '#DDDDDD', mode: "ghost" },
-                { data: [], label: name, color: '#333933' }
-            ],
-            dataProps = [
-                {
-                    name: "p" + metric,
-                    func: function(dataObj) {
-                        return dataObj[metric];
-                    },
-                    period: "previous"
-                },
-                { name: metric}
-            ];
-        if (segment === "") {
-            segment = "no-segment";
-        }
-        var dbObj = {};
-        if (_graphDataObj && _graphDataObj[path] && _graphDataObj[path][segment]) {
-            dbObj = _graphDataObj[path][segment];
-            if (Object.keys(dbObj).length === 0) {
-                return false;
-            }
-        }
-        return countlyCommon.extractChartData(dbObj, countlyViews.clearObject, chartData, dataProps, segmentVal);
-    };
-
-    countlyViews.getData = function() {
-
-        var chartData = {};
-        chartData.chartData = _tableData;
-
-        var values = ["u", "t", "s", "b", "e", "d", "n", "scr"];
-        for (var z = 0; z < chartData.chartData.length; z++) {
-            for (var p = 0; p < values.length; p++) {
-                chartData.chartData[z][values[p]] = chartData.chartData[z][values[p]] || 0;
-            }
-
-        }
-        /*chartData.chartData={};
-        var chartData = countlyCommon.extractTwoLevelData(countlyViews.getDb(), countlyViews.getMeta(), countlyViews.clearObject, [
-            {
-                name: _name,
-                func: function(rangeArr) {
-                    return countlyCommon.decode(rangeArr);
-                }
-            },
-            { "name": "u" },
-            { "name": "t" },
-            { "name": "s" },
-            { "name": "b" },
-            { "name": "e" },
-            { "name": "d" },
-            { "name": "n" },
-            { "name": "scr" }
-        ]);
-
-        chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, _name);*/
-
-        return chartData;
     };
 
     countlyViews.setWidgetData = function(data) {
@@ -1175,56 +1087,6 @@
         return obj;
     };
 
-    /* countlyViews.renameViews = function(data, callback) {
-        $.ajax({
-            type: "POST",
-            url: countlyCommon.API_PARTS.data.w + '/views',
-            data: {
-                "app_id": countlyCommon.ACTIVE_APP_ID,
-                "method": "rename_views",
-                "data": JSON.stringify(data)
-            },
-            dataType: "json",
-            success: function(json) {
-                countlyViews.loadList(countlyCommon.ACTIVE_APP_ID); //reload views list
-                if (typeof callback === "function") {
-                    callback(json);
-                }
-            },
-            error: function() {
-                if (typeof callback === "function") {
-                    callback(false);
-                }
-            }
-        });
-    };
-    countlyViews.deleteView = function(view, callback) {
-        return $.ajax({
-            type: "POST",
-            url: countlyCommon.API_PARTS.data.w + '/views',
-            data: {
-                "app_id": countlyCommon.ACTIVE_APP_ID,
-                "method": "delete_view",
-                "view_id": view
-            },
-            dataType: "json",
-            success: function(json) {
-                countlyViews.loadList(countlyCommon.ACTIVE_APP_ID); //reload views list
-                if (json && json.result) {
-                    json = json.result;
-                }
-                if (typeof callback === "function") {
-                    callback(json);
-                }
-            },
-            error: function() {
-                if (typeof callback === "function") {
-                    callback(false);
-                }
-            }
-        });
-    };*/
-
 }(window.countlyViews = window.countlyViews || {}));
 
 (function(countlyViewsPerSession) {
@@ -1248,7 +1110,6 @@
     };
 
     countlyViewsPerSession.service = {
-
         mapViewsPerSessionSeries: function(dto) {
             var viewsPerSessionSerieData = dto.chartData.map(function(chartDataItem) {
                 return chartDataItem.t;

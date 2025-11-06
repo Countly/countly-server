@@ -58,6 +58,9 @@ describe('Reseting app', function() {
                     setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:deletionManagerJob", done);
+        });
     });
 });
 describe('Checking if app data reset', function() {

@@ -22,11 +22,11 @@ plugins.setConfigs("dashboards", {
 
 (function() {
 
-    plugins.register("/master", function() {
+    /*plugins.register("/master", function() {
         setTimeout(() => {
             require('../../../api/parts/jobs').job('dashboards:refreshDashboards').replace().schedule('every 5 minutes');
         }, 1000);
-    });
+    });*/
 
     /**
      * @api {get} /o/dashboards Get dashboard

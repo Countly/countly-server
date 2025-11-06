@@ -1,0 +1,68 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: countly
+
+# Core Countly services
+# Apply with: kubectl apply -k base/02-core-services/
+
+resources:
+# Countly services
+- countly-api.yaml
+- countly-frontend.yaml
+- countly-ingestor.yaml
+- countly-aggregator.yaml
+- countly-jobserver.yaml
+- countly-clickhouse-writer.yaml
+- countly-clickhouse-updater.yaml
+
+labels:
+- includeSelectors: true
+  pairs:
+    branch: newarchitecture
+
+# Dynamic image replacement handled by workflow
+images:
+  - name: countly-unified
+    # newName and digest will be set dynamically by kustomize edit set image
+
+# Generator options  
+generatorOptions:
+  labels:
+    app: countly
+    managed-by: kustomize
+
+configMapGenerator:
+- envs:
+  - ../configs/common.env
+  name: countly-config
+- envs:
+  - ../configs/api.env
+  name: countly-api-config
+- envs:
+  - ../configs/frontend.env
+  name: countly-frontend-config
+- envs:
+  - ../configs/ingestor.env
+  name: countly-ingestor-config
+- envs:
+  - ../configs/aggregator.env
+  name: countly-aggregator-config
+- envs:
+  - ../configs/jobserver.env
+  name: countly-jobserver-config
+- envs:
+  - ../configs/clickhouse-writer.env
+  name: countly-clickhouse-writer-config
+- envs:
+  - ../configs/clickhouse-updater.env
+  name: countly-clickhouse-updater-config
+- envs:
+  - ../configs/mongodb.env
+  name: countly-mongodb-config
+- envs:
+  - ../configs/clickhouse.env
+  name: countly-clickhouse-config
+- envs:
+  - ../configs/otel.env
+  name: observability-config-otlp

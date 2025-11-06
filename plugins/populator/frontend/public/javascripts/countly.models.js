@@ -1351,7 +1351,7 @@
         this.reportConversion = function(uid, campaingId, deviceId) {
             $.ajax({
                 type: "GET",
-                url: countlyCommon.API_URL + "/i",
+                url: (countlyCommon.INGESTOR_URL || countlyCommon.API_URL) + "/i",
                 data: {
                     campaign_id: uid,
                     campaign_user: campaingId,
@@ -1538,7 +1538,7 @@
             if (generating) {
                 $.ajax({
                     type: "POST",
-                    url: countlyCommon.API_URL + "/i/bulk",
+                    url: (countlyCommon.INGESTOR_URL || countlyCommon.API_URL) + "/i/bulk",
                     data: {
                         app_key: countlyCommon.ACTIVE_APP_KEY,
                         requests: JSON.stringify(req),

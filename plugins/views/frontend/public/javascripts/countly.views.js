@@ -260,12 +260,12 @@
                 label: CV.i18n('common.table.total-users'),
                 default: true
             },
-            {
+            /*{
                 value: "n",
                 width: "180",
                 label: CV.i18n('common.table.new-users'),
                 default: true
-            },
+            },*/
             {
                 value: "t",
                 width: "130",
@@ -312,13 +312,6 @@
                 });
             }
 
-            dynamicCols.push({
-                value: "uvc",
-                label: CV.i18n('views.uvc'),
-                width: "180",
-                default: true
-            });
-
             return {
                 description: CV.i18n('views.description'),
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyViews", "viewsMainTable"),
@@ -331,7 +324,7 @@
                 showViewCountWarning: false,
                 tableDynamicCols: dynamicCols,
                 isGraphLoading: true,
-                isTableLoading: true,
+                //isTableLoading: true,
                 showActionMapColumn: showActionMapColumn, //for action map
                 domains: [], //for action map
                 persistentSettings: [],
@@ -364,11 +357,17 @@
 
         },
         methods: {
+            refreshTotals: function() {
+                var self = this;
+                this.$store.dispatch('countlyViews/fetchTotals', {no_cache: true}).then(function() {
+                    self.totalCards = self.calculateTotalCards();
+                });
+            },
             refresh: function(force) {
                 var self = this;
                 if (force) {
                     self.isGraphLoading = true;
-                    self.isTableLoading = true;
+                    //self.isTableLoading = true;
                 }
                 this.$store.dispatch('countlyViews/fetchData').then(function() {
                     self.calculateGraphSeries();
@@ -383,7 +382,7 @@
                 });
 
                 this.$store.dispatch("countlyViews/fetchViewsMainTable", {"segmentKey": this.$store.state.countlyViews.selectedSegment, "segmentValue": this.$store.state.countlyViews.selectedSegmentValue}).then(function() {
-                    self.isTableLoading = false;
+                    //self.isTableLoading = false;
                 });
             },
             validateTotalViewCount: function() {
@@ -524,13 +523,13 @@
                 totals.uvc = totals.uvc || 0;
                 totals.s = totals.s || 0;
                 totals.b = totals.b || 0;
+                totals.u = totals.u || 0;
                 if (totals.s) {
                     totals.br = Math.round(totals.b / totals.s * 1000) / 10;
                 }
                 else {
                     totals.br = 0;
                 }
-
                 return [
                     {
                         "name": CV.i18n('views.total_page_views.title'),
@@ -540,9 +539,12 @@
                         isPercentage: false
                     },
                     {
-                        "name": CV.i18n('views.uvc'),
-                        "description": CV.i18n('views.unique_page_views.desc'),
-                        "value": countlyCommon.formatNumber(totals.uvc),
+                        "name": CV.i18n('views.u'),
+                        "description": CV.i18n('views.unique_users.desc'),
+                        "value": countlyCommon.formatNumber(totals.u),
+                        "lu": totals.lu,
+                        "ago": countlyCommon.formatTimeAgoTextFromDiff(totals.lu_diff),
+                        "lu_diff": totals.lu_diff,
                         "percent": 0,
                         isPercentage: false
                     },
@@ -693,14 +695,14 @@
                 return [
                     {"value": "t", "name": CV.i18n('views.total-visits')},
                     {"value": "u", "name": CV.i18n('common.table.total-users')},
-                    {"value": "n", "name": CV.i18n('common.table.new-users')},
+                    // {"value": "n", "name": CV.i18n('common.table.new-users')},
                     {"value": "d", "name": CV.i18n('views.avg-duration')},
                     {"value": "s", "name": CV.i18n('views.starts')},
                     {"value": "e", "name": CV.i18n('views.exits')},
                     {"value": "b", "name": CV.i18n('views.bounces')},
                     {"value": "br", "name": CV.i18n('views.br')},
                     {"value": "scr", "name": CV.i18n('views.scrolling-avg')},
-                    {"value": "uvc", "name": CV.i18n('views.uvc')},
+                    // {"value": "uvc", "name": CV.i18n('views.uvc')},
                 ];
             },
             topDropdown: function() {
@@ -1146,14 +1148,14 @@
                 var app = this.scope.editedObject.apps[0];
                 var metrics = [
                     { label: CV.i18n("views.u"), value: "u" },
-                    { label: CV.i18n("views.n"), value: "n" },
+                    //{ label: CV.i18n("views.n"), value: "n" },
                     { label: CV.i18n("views.t"), value: "t" },
                     { label: CV.i18n("views.d"), value: "d" },
                     { label: CV.i18n("views.s"), value: "s" },
                     { label: CV.i18n("views.e"), value: "e" },
                     { label: CV.i18n("views.b"), value: "b" },
                     { label: CV.i18n("views.br"), value: "br" },
-                    { label: CV.i18n("views.uvc"), value: "uvc" }
+                    // { label: CV.i18n("views.uvc"), value: "uvc" }
                 ];
                 if (app && countlyGlobal.apps[app] && countlyGlobal.apps[app].type === "web") {
                     metrics.push({ label: CV.i18n("views.scr"), value: "scr" });
@@ -1221,20 +1223,6 @@
         }
 
     });
-
-    jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
-        x = countlyViews.getFrequencyIndex(x);
-        y = countlyViews.getFrequencyIndex(y);
-
-        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-    };
-
-    jQuery.fn.dataTableExt.oSort['view-frequency-desc'] = function(x, y) {
-        x = countlyViews.getFrequencyIndex(x);
-        y = countlyViews.getFrequencyIndex(y);
-
-        return ((x < y) ? 1 : ((x > y) ? -1 : 0));
-    };
 
     app.addAppSwitchCallback(function(appId) {
         if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME) && CountlyHelpers.isPluginEnabled(FEATURE_NAME)) {

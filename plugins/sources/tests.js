@@ -7,6 +7,8 @@ var APP_KEY = "";
 var API_KEY_ADMIN = "";
 var APP_ID = "";
 var DEVICE_ID = "1234567890";
+var drill_db = "";
+var session_event = "[CLY]_session_begin";
 
 describe('Testing Store metrics', function() {
     describe('Empty sources', function() {
@@ -14,6 +16,7 @@ describe('Testing Store metrics', function() {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
+            drill_db = testUtils.client.db("countly_drill");
             request
                 .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=sources')
                 .expect(200)
@@ -39,19 +42,14 @@ describe('Testing Store metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 300 * testUtils.testScalingFactor);
+                    done();
                 });
         });
     });
 
     describe('Verify sources', function() {
         it('should have sources', function(done) {
-            request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=sources')
-                .expect(200)
-                .end(function(err, res) {
-                    testUtils.validateMetrics(err, res, done, {meta: {"sources": ['com&#46;android&#46;vending']}, "com&#46;android&#46;vending": {"n": 1, "t": 1, "u": 1}});
-                });
+            testUtils.validateTotalsInDrillData(drill_db, {app_id: APP_ID, event: session_event, query: {"up.src": "com&#46;android&#46;vending"}, values: {u: 1, t: 1, n: 1}}, done);
         });
     });
     describe('write bulk sources', function() {
@@ -64,7 +62,7 @@ describe('Testing Store metrics', function() {
                 {"device_id": DEVICE_ID + "5", "app_key": APP_KEY, "begin_session": 1, "metrics": {"_store": "iOS"}}
             ];
             request
-                .get('/i/bulk?requests=' + JSON.stringify(params))
+                .get('/i/bulk?safe_api_response=true&requests=' + JSON.stringify(params))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -72,18 +70,24 @@ describe('Testing Store metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor);
+                    done();
                 });
         });
     });
     describe('Verify bulk sources', function() {
         it('should match provided sources', function(done) {
-            request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=sources')
-                .expect(200)
-                .end(function(err, res) {
-                    testUtils.validateMetrics(err, res, done, {meta: {"sources": ["com&#46;android&#46;vending", "com&#46;google&#46;android&#46;feedback", "com&#46;slideme&#46;sam&#46;manager", "com&#46;amazon&#46;venezia", "iOS"]}, "com&#46;android&#46;vending": {"n": 2, "t": 2, "u": 2}, "com&#46;google&#46;android&#46;feedback": {"n": 1, "t": 1, "u": 1}, "com&#46;slideme&#46;sam&#46;manager": {"n": 1, "t": 1, "u": 1}, "com&#46;amazon&#46;venezia": {"n": 1, "t": 1, "u": 1}, "iOS": {"n": 1, "t": 1, "u": 1}});
-                });
+            testUtils.validateBreakdownTotalsInDrillData(drill_db, {
+                app_id: APP_ID,
+                event: session_event,
+                breakdownKeys: ["up.src"],
+                values: {
+                    "com&#46;android&#46;vending": {u: 2, t: 2, n: 2},
+                    "com&#46;google&#46;android&#46;feedback": {u: 1, t: 1, n: 1},
+                    "com&#46;slideme&#46;sam&#46;manager": {u: 1, t: 1, n: 1},
+                    "com&#46;amazon&#46;venezia": {u: 1, t: 1, n: 1},
+                    "iOS": {u: 1, t: 1, n: 1}
+                }
+            }, done);
         });
     });
     describe('reset app', function() {
@@ -100,6 +104,9 @@ describe('Testing Store metrics', function() {
                     ob.should.have.property('result', 'Success');
                     setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
+        });
+        it('trigger job for database cleanup', function(done) {
+            testUtils.triggerJobToRun("api:deletionManagerJob", done);
         });
     });
     describe('verify empty sources', function() {

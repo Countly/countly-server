@@ -95,6 +95,15 @@ common.encodeCharacters = function(str) {
     }
 };
 
+common.dbEncode = function(str) {
+    return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
+};
+
+/**
+* Decode escaped html 
+* @param  {string} string - The string to decode
+* @returns {string} escaped string
+**/
 common.decode_html = function(string) {
     string = string.replace(/&#39;/g, "'");
     string = string.replace(/&quot;/g, '"');
@@ -510,6 +519,9 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
 };
 
 common.getDate = function(timestamp, timezone) {
+    if (timestamp && timestamp.toString().length === 13) {
+        timestamp = Math.floor(timestamp / 1000);
+    }
     var tmpDate = (timestamp) ? moment.unix(timestamp) : moment();
 
     if (timezone) {
@@ -1905,6 +1917,8 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
     common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate, props.value);
 }
 
+common.collectMetric = recordMetric;
+
 /**
 * Record specific metric segment
 * @param {Params} params - params object
@@ -2361,7 +2375,15 @@ common.clearClashingQueryOperations = function(query) {
 
 };
 
-common.updateAppUser = function(params, update, no_meta, callback) {
+/**
+* Single method to update app_users document for specific user for SDK requests
+* @param {params} params - params object
+* @param {object} update - update query for mongodb, should contain operators on highest level, as $set or $unset
+* @param {boolean} no_meta - if true, won't update some auto meta data, like first api call, last api call, etc.
+* @param {function} callback - function to run when update is done or failes, passing error and result as arguments
+*/
+common.updateAppUser = async function(params, update, no_meta, callback) {
+
     //backwards compatability
     if (typeof no_meta === "function") {
         callback = no_meta;
@@ -2372,7 +2394,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             if (i.indexOf("$") !== 0) {
                 let err = "Unkown modifier " + i + " in " + update + " for " + params.href;
                 console.log(err);
-                if (callback) {
+                if (callback && typeof callback === "function") {
                     callback(err);
                 }
                 return;
@@ -2504,24 +2526,36 @@ common.updateAppUser = function(params, update, no_meta, callback) {
         }
 
         if (callback) {
-            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {
-                new: true,
-                upsert: true,
-                skipDataMasking: true
-            }, function(err, res) {
-                if (!err && res && res.value) {
-                    params.app_user = res.value;
+            try {
+                var res = await common.db.collection('app_users' + params.app_id).findOneAndUpdate({'_id': params.app_user_id}, common.clearClashingQueryOperations(update), {
+                    returnDocument: 'after',
+                    upsert: true,
+                });
+                if (res) {
+                    params.app_user = res;
                 }
-                callback(err, res);
-            });
+                if (callback && typeof callback === "function") {
+                    callback(null, res);
+                }
+            }
+            catch (err) {
+                if (callback && typeof callback === "function") {
+                    callback(err);
+                }
+            }
         }
         else {
             // using updateOne costs less than findAndModify, so we should use this 
             // when acknowledging writes and updated information is not relevant (aka callback is not passed)
-            common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, common.clearClashingQueryOperations(update), {upsert: true}, function() {});
+            try {
+                await common.db.collection('app_users' + params.app_id).findOneAndUpdate({'_id': params.app_user_id}, common.clearClashingQueryOperations(update), {upsert: true, skipDataMasking: true, returnDocument: 'after'});
+            }
+            catch (err) {
+                console.log(err);
+            }
         }
     }
-    else if (callback) {
+    else if (callback && typeof callback === "function") {
         callback();
     }
 };
@@ -2974,7 +3008,15 @@ common.mergeQuery = function(ob1, ob2) {
             if (!ob1[key]) {
                 ob1[key] = ob2[key];
             }
-            else if (key === "$set" || key === "$setOnInsert" || key === "$unset") {
+            else if (key === "$set" || key === "$setOnInsert") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob2[key][val];
+                    if (ob1.$unset && typeof ob1.$unset[val] !== "undefined") {
+                        delete ob1.$unset[val];
+                    }
+                }
+            }
+            else if (key === "$unset") {
                 for (let val in ob2[key]) {
                     ob1[key][val] = ob2[key][val];
                 }
@@ -3398,6 +3440,289 @@ class DataTable {
 
 common.DataTable = DataTable;
 
+common.applyUniqueOnModel = function(model, uniqueData, prop, segment) {
+    for (var z = 0; z < uniqueData.length; z++) {
+        var value = uniqueData[z][prop];
+        var iid = uniqueData[z]._id.replaceAll(":0", ":").split(":");
+        if (iid.length > 1) {
+            if (!model[iid[0]]) {
+                model[iid[0]] = {};
+            }
+            if (!model[iid[0]][iid[1]]) {
+                model[iid[0]][iid[1]] = {};
+            }
+            if (iid.length > 2) {
+                if (!model[iid[0]][iid[1]][iid[2]]) {
+                    model[iid[0]][iid[1]][iid[2]] = {};
+                }
+                if (iid.length > 3) {
+                    if (!model[iid[0]][iid[1]][iid[2]][iid[3]]) {
+                        model[iid[0]][iid[1]][iid[2]][iid[3]] = {};
+                    }
+                    if (segment) {
+                        model[iid[0]][iid[1]][iid[2]][iid[3]][segment] = model[iid[0]][iid[1]][iid[2]][iid[3]][segment] || {};
+                        model[iid[0]][iid[1]][iid[2]][iid[3]][segment][prop] = value;
+                    }
+                    else {
+                        model[iid[0]][iid[1]][iid[2]][iid[3]][prop] = value;
+                    }
+                }
+                else {
+                    if (segment) {
+                        model[iid[0]][iid[1]][iid[2]][segment] = model[iid[0]][iid[1]][iid[2]][segment] || {};
+                        model[iid[0]][iid[1]][iid[2]][segment][prop] = value;
+                    }
+                    else {
+                        model[iid[0]][iid[1]][iid[2]][prop] = value;
+                    }
+                }
+
+            }
+            else {
+                if (segment) {
+                    model[iid[0]][iid[1]][segment] = model[iid[0]][iid[1]][segment] || {};
+                    model[iid[0]][iid[1]][segment][prop] = value;
+                }
+                else {
+                    model[iid[0]][iid[1]][prop] = value;
+                }
+
+            }
+        }
+    }
+};
+/**
+ * Shifts hourly data (To be in different timezone)
+ * @param {*} data  array of data
+ * @param {*} offset (integer) - full hours
+ * @param {string} field - field to shift. Default is "_id"
+ * @returns {Array} shifted data
+ */
+common.shiftHourlyData = function(data, offset, field = "_id") {
+    var dd, iid;
+    if (typeof offset === "number") {
+        if (Array.isArray(data)) {
+            for (var z = 0; z < data.length; z++) {
+                iid = data[z][field].replace("h", "").split(":");
+                dd = Date.UTC(parseInt(iid[0], 10), parseInt(iid[1]), parseInt(iid[2]), parseInt(iid[3]), 0, 0);
+                dd = new Date(dd.valueOf() + offset * 60 * 60 * 1000);
+                iid = dd.getFullYear() + ":" + dd.getMonth() + ":" + dd.getDate() + ":" + dd.getHours();
+                data[z][field] = iid;
+            }
+        }
+        else {
+            iid = data[field].replace("h", "").split(":");
+            dd = Date.UTC(parseInt(iid[0], 10), parseInt(iid[1]), parseInt(iid[2]), parseInt(iid[3]), 0, 0);
+            dd = new Date(dd.valueOf() + offset * 60 * 60 * 1000);
+            iid = dd.getFullYear() + ":" + dd.getMonth() + ":" + dd.getDate() + ":" + dd.getHours();
+            data[field] = iid;
+        }
+    }
+    return data;
+};
+
+/**
+ * Function converts usual Countly model data to array. (Not useful for unique values). Normally used to shift data and turn back to model.
+ * @param {object} model  - countly model data
+ * @param {boolean} segmented  - true if segmented
+ * @returns {Array} model data as array
+ */
+common.convertModelToArray = function(model, segmented) {
+    var data = [];
+    for (var year in model) {
+        if (common.isNumber(year)) {
+            for (var month in model[year]) {
+                if (common.isNumber(month)) {
+                    for (var day in model[year][month]) {
+                        if (common.isNumber(day)) {
+                            for (var hour = 0; hour < 24; hour++) {
+                                if (model[year][month][day][hour + ""]) {
+                                    var id = year + ":" + month + ":" + day + ":" + hour;
+                                    if (segmented) {
+                                        for (var segment in model[year][month][day][hour]) {
+                                            var obj = {_id: id, "sg": segment};
+                                            for (var prop in model[year][month][day][hour][segment]) {
+                                                obj[prop] = model[year][month][day][hour][segment][prop];
+                                            }
+                                            data.push(obj);
+                                        }
+                                    }
+                                    else {
+                                        var obj3 = {_id: id};
+                                        for (var prop3 in model[year][month][day][hour]) {
+                                            obj3[prop3] = model[year][month][day][hour][prop3];
+                                        }
+                                        data.push(obj3);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return data;
+
+};
+
+/**
+ * Converts array of data to typical Countly model format. (Querying from granural data will give array. Use this to transform to model expected in frontend)
+ * @param {Array} arr data in format {"_id":"2014:1:1:1","u":1,"t":1,"n":1,"d":1,"m":1,"c":1,"b":1,"e":1,"s":1,"dur":1, "sg": "segment"}
+ * @param {boolean} segmented  - if it is segmented. If not true - will ignore sg field
+ * @param {object} props  - all expected props
+ * @returns {object} model data
+ */
+common.convertArrayToModel = function(arr, segmented, props) {
+    props = props || {"c": true, "s": true, "dur": true};
+    /**
+     * Creates empty object with all property values set to 0
+     * @param {object} my_props  - all properies
+     * @returns {object} - object with 0 values for each from
+     */
+    function createEmptyObj(my_props) {
+        var obj = {};
+        for (var pp2 in my_props) {
+            obj[pp2] = 0;
+        }
+        return obj;
+    }
+    var model = createEmptyObj(props);
+    var iid;
+    var z;
+    if (segmented) {
+        segmented = segmented.replace("sg.", "");
+        model.meta = {};
+        var values = {};
+        for (z = 0;z < arr.length;z++) {
+            iid = arr[z]._id.split(":");
+            values[arr[z].sg] = true;
+            for (var p in props) {
+                if (arr[z][p]) {
+                    model[arr[z].sg] = model[arr[z].sg] || createEmptyObj(props);
+                    model[arr[z].sg][p] += arr[z][p];
+                }
+            }
+            if (iid.length > 0) {
+                if (!model[iid[0]]) {
+                    model[iid[0]] = {};
+                }
+                if (!model[iid[0]][arr[z].sg]) {
+                    model[iid[0]][arr[z].sg] = createEmptyObj(props);
+                }
+                for (var p0 in props) {
+                    if (arr[z][p0]) {
+                        model[iid[0]][arr[z].sg][p0] += arr[z][p0];
+                    }
+                }
+
+                if (iid.length > 1) {
+
+                    if (!model[iid[0]][iid[1]]) {
+                        model[iid[0]][iid[1]] = {};
+                    }
+
+                    if (!model[iid[0]][iid[1]][arr[z].sg]) {
+                        model[iid[0]][iid[1]][arr[z].sg] = createEmptyObj(props);
+                    }
+                    for (var p1 in props) {
+                        if (arr[z][p1]) {
+                            model[iid[0]][iid[1]][arr[z].sg][p1] += arr[z][p1];
+                        }
+                    }
+                    if (iid.length > 2) {
+
+                        if (!model[iid[0]][iid[1]][iid[2]]) {
+                            model[iid[0]][iid[1]][iid[2]] = {};
+                        }
+
+                        if (!model[iid[0]][iid[1]][iid[2]][arr[z].sg]) {
+                            model[iid[0]][iid[1]][iid[2]][arr[z].sg] = createEmptyObj(props);
+                        }
+                        for (var p2 in props) {
+                            if (arr[z][p2]) {
+                                model[iid[0]][iid[1]][iid[2]][arr[z].sg][p2] += arr[z][p2];
+                            }
+                        }
+                        if (iid.length > 3) {
+                            if (!model[iid[0]][iid[1]][iid[2]][iid[3]]) {
+                                model[iid[0]][iid[1]][iid[2]][iid[3]] = {};
+                            }
+                            if (!model[iid[0]][iid[1]][iid[2]][iid[3]][arr[z].sg]) {
+                                model[iid[0]][iid[1]][iid[2]][iid[3]][arr[z].sg] = createEmptyObj(props);
+                            }
+                            for (var p33 in props) {
+                                if (arr[z][p33]) {
+                                    model[iid[0]][iid[1]][iid[2]][iid[3]][arr[z].sg][p33] += arr[z][p33];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        model.meta[segmented] = Object.keys(values);
+    }
+    else {
+        for (z = 0;z < arr.length;z++) {
+            iid = arr[z]._id.split(":");
+            for (var pp6 in props) {
+                if (arr[z][pp6]) {
+                    model[pp6] += arr[z][pp6];
+                }
+            }
+            if (iid.length > 0) {
+                if (!model[iid[0]]) {
+                    model[iid[0]] = createEmptyObj(props);
+                }
+                for (var p00 in props) {
+                    if (arr[z][p00]) {
+                        model[iid[0]][p00] += arr[z][p00];
+                    }
+                }
+
+                if (iid.length > 1) {
+                    if (!model[iid[0]][iid[1]]) {
+                        model[iid[0]][iid[1]] = createEmptyObj(props);
+                    }
+                    for (var p10 in props) {
+                        if (arr[z][p10]) {
+                            model[iid[0]][iid[1]][p10] += arr[z][p10];
+                        }
+                    }
+                    if (iid.length > 2) {
+                        if (!model[iid[0]][iid[1]][iid[2]]) {
+                            model[iid[0]][iid[1]][iid[2]] = createEmptyObj(props);
+                        }
+                        for (var p20 in props) {
+                            if (arr[z][p20]) {
+                                model[iid[0]][iid[1]][iid[2]][p20] += arr[z][p20];
+                            }
+                        }
+                        if (iid.length > 3) {
+                            if (!model[iid[0]][iid[1]][iid[2]][iid[3]]) {
+                                model[iid[0]][iid[1]][iid[2]][iid[3]] = createEmptyObj(props);
+                            }
+                            for (var p3 in props) {
+                                if (arr[z][p3]) {
+                                    model[iid[0]][iid[1]][iid[2]][iid[3]][p3] += arr[z][p3];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return model;
+};
+
+/**
+ * Sync license check results to request (and session if present)
+ * 
+ * @param {object} req request
+ * @param {object|undefined} check check results
+ */
 common.licenseAssign = function(req, check) {
     if (check && check.error) {
         req.licenseError = check.error;

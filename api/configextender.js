@@ -60,12 +60,106 @@ const OVERRIDES = {
         }
     },
 
+    CLICKHOUSE: {
+        URL: 'url',
+        USERNAME: 'username',
+        PASSWORD: 'password',
+        DATABASE: 'database',
+        REQUEST_TIMEOUT: 'request_timeout',
+        MAX_OPEN_CONNECTIONS: 'max_open_connections',
+        COMPRESSION: {
+            REQUEST: 'request',
+            RESPONSE: 'response'
+        },
+        APPLICATION: 'application',
+        KEEP_ALIVE: {
+            ENABLED: 'enabled',
+            IDLE_SOCKET_TTL: 'idle_socket_ttl'
+        },
+        // Mark CLICKHOUSE_SETTINGS as a passthrough object
+        // Any subkeys will be automatically mapped to lowercase
+        CLICKHOUSE_SETTINGS: 'clickhouse_settings'
+    },
+
+    DATABASE: {
+        DEBUG: 'debug',
+        FAILONCONNECTIONERROR: 'failOnConnectionError',
+        ADAPTERPREFERENCE: 'adapterPreference',
+        COMPARISONLOGS: {
+            MODE: 'mode'
+        },
+        ADAPTERS: {
+            MONGODB: {
+                ENABLED: 'enabled'
+            },
+            CLICKHOUSE: {
+                ENABLED: 'enabled'
+            }
+        }
+    },
+
+    KAFKA: {
+        ENABLED: 'enabled',
+        DRILLEVENTSTOPIC: 'drillEventsTopic',
+        GROUPIDPREFIX: 'groupIdPrefix',
+        PARTITIONS: 'partitions',
+        REPLICATIONFACTOR: 'replicationFactor',
+        RETENTIONMS: 'retentionMs',
+        ENABLETRANSACTIONS: 'enableTransactions',
+        TRANSACTIONALID: 'transactionalId',
+        TRANSACTIONTIMEOUT: 'transactionTimeout',
+        RDKAFKA: {
+            BROKERS: 'brokers',
+            CLIENTID: 'clientId',
+            REQUESTTIMEOUTMS: 'requestTimeoutMs',
+            CONNECTIONTIMEOUTMS: 'connectionTimeoutMs',
+            SECURITYPROTOCOL: 'securityProtocol',
+            SASLMECHANISM: 'saslMechanism',
+            SASLUSERNAME: 'saslUsername',
+            SASLPASSWORD: 'saslPassword',
+            LINGERMS: 'lingerMs',
+            RETRIES: 'retries',
+            INITIALRETRYTIME: 'initialRetryTime',
+            MAXRETRYTIME: 'maxRetryTime',
+            ACKS: 'acks'
+        },
+        PRODUCER: {
+            BATCHSIZE: 'batchSize',
+            BATCHNUMMESSAGES: 'batchNumMessages',
+            QUEUEBUFFERINGMAXMESSAGES: 'queueBufferingMaxMessages',
+            QUEUEBUFFERINGMAXKBYTES: 'queueBufferingMaxKbytes',
+            COMPRESSIONLEVEL: 'compressionLevel',
+            MESSAGETIMEOUTMS: 'messageTimeoutMs',
+            DELIVERYTIMEOUTMS: 'deliveryTimeoutMs'
+        },
+        CONSUMER: {
+            FETCHMINBYTES: 'fetchMinBytes',
+            FETCHMAXWAITMS: 'fetchMaxWaitMs',
+            FETCHMAXBYTES: 'fetchMaxBytes',
+            MAXPARTITIONFETCHBYTES: 'maxPartitionFetchBytes',
+            QUEUEDMINMESSAGES: 'queuedMinMessages',
+            QUEUEDMAXMESSAGESKBYTES: 'queuedMaxMessagesKbytes',
+            SESSIONTIMEOUTMS: 'sessionTimeoutMs',
+            MAXPOLLINTERVALMS: 'maxPollIntervalMs',
+            AUTOOFFSETRESET: 'autoOffsetReset',
+            ENABLEAUTOCOMMIT: 'enableAutoCommit',
+            PARTITIONSCONSUMEDCONCURRENTLY: 'partitionsConsumedConcurrently',
+            INVALIDJSONBEHAVIOR: 'invalidJsonBehavior',
+            INVALIDJSONMETRICS: 'invalidJsonMetrics'
+        }
+    },
+
+    EVENTSINK: {
+        SINKS: 'sinks'
+    },
+
     IGNOREPROXIES: 'ignoreProxies',
     FILESTORAGE: 'fileStorage',
     RELOADCONFIGAFTER: 'reloadConfigAfter',
     PREVENTJOBS: 'preventJobs',
     SHARED_CONNECTION: 'shared_connection',
-    PREVENT_JOBS: 'preventJobs'
+    PREVENT_JOBS: 'preventJobs',
+    JOBSERVER: 'jobServer',
 };
 
 /**

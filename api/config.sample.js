@@ -3,8 +3,44 @@
 * @module api/config
 */
 
-/** @lends module:api/config */
+/**
+ * @typedef {import('../types/config').CountlyAPIConfig} CountlyAPIConfig
+ */
+
+/** @type {CountlyAPIConfig} */
 var countlyConfig = {
+
+    /**
+     * Database connection and adapter configuration
+     * @type {object}
+     * @property {boolean} [failOnConnectionError=true] - whether to kill process if non-MongoDB database adapters fail connection on startup (MongoDB fallback behavior unchanged)
+     * @property {boolean} [debug=false] - enables db_override toggle and related debugging features in UI and backend for drill
+     * @property {array} [adapterPreference=['mongodb', 'clickhouse']] - Adapter preference order for QueryRunner (first match wins)
+     * @property {object} adapters - Adapter availability settings for QueryRunner
+     * @property {object} adapters.mongodb - MongoDB adapter settings
+     * @property {boolean} [adapters.mongodb.enabled=true] - Enable MongoDB adapter
+     * @property {object} adapters.clickhouse - ClickHouse adapter settings
+     * @property {boolean} [adapters.clickhouse.enabled=true] - Enable ClickHouse adapter
+     * @property {object} comparisonLogs - Configuration for QueryRunner comparison logging (DEVELOPMENT ONLY - disable in production)
+     * @property {string} [comparisonLogs.mode='disabled'] - Comparison logs mode: 'disabled' (no logging), 'files' (write to comparison_logs directory), 'logs' (write to application logs), or 'both'. WARNING: Should be disabled in production environments for performance reasons.
+     */
+    database: {
+        failOnConnectionError: true,
+        debug: false,
+        adapterPreference: ['mongodb'],
+        adapters: {
+            mongodb: {
+                enabled: true
+            },
+            clickhouse: {
+                enabled: false
+            }
+        },
+        comparisonLogs: {
+            mode: 'disabled' // Options: 'disabled', 'files', 'logs', 'both' - WARNING: DEVELOPMENT ONLY, use 'disabled' in production
+        }
+    },
+
     /**
     * MongoDB connection definition and options
     * @type {object} 
@@ -24,6 +60,7 @@ var countlyConfig = {
         db: "countly",
         port: 27017,
         max_pool_size: 500,
+        replicaName: "rs0",
         //username: test,
         //password: test,
         //mongos: false,
@@ -50,9 +87,171 @@ var countlyConfig = {
     },
     */
     /*  or define as a url
-	//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-	mongodb: "mongodb://localhost:27017/countly",
+ //mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
+ mongodb: "mongodb://localhost:27017/countly",
     */
+    /**
+    * ClickHouse connection definition and options
+    * @type {object|string}
+    * @property {string} [url=http://localhost:8123] - ClickHouse server URL
+    * @property {string} [username=default] - username for authenticating user
+    * @property {string} [password=] - password for authenticating user
+    * @property {string} [database=countly_drill] - ClickHouse database name
+    * @property {object} [compression] - compression settings
+    * @property {string} [application] - application name for connection
+    * @property {number} [request_timeout=1200000] - request timeout in milliseconds
+    * @property {object} [keep_alive] - keep alive settings
+    * @property {number} [max_open_connections=10] - maximum number of open connections
+    * @property {object} [clickhouse_settings] - ClickHouse specific settings
+    */
+    clickhouse: {
+        url: "http://localhost:8123",
+        username: "default",
+        password: "",
+        database: "countly_drill",
+        compression: {
+            request: false,
+            response: false,
+        },
+        application: "countly_drill",
+        request_timeout: 1200_000,
+        keep_alive: {
+            enabled: true,
+            idle_socket_ttl: 10000,
+        },
+        max_open_connections: 10,
+        clickhouse_settings: {
+            idle_connection_timeout: 11000 + '',
+            async_insert: 1,
+            wait_for_async_insert: 1,
+            wait_end_of_query: 1,
+            optimize_on_insert: 1,
+            allow_suspicious_types_in_group_by: 1,
+            allow_suspicious_types_in_order_by: 1,
+            optimize_move_to_prewhere: 1,
+            query_plan_optimize_lazy_materialization: 1
+        }
+    },
+    /**
+    * Kafka connection definition and options
+    * 
+    * ⚠️  IMPORTANT: When Kafka is enabled, it is treated as a HARD DEPENDENCY.
+    * Any connection failures during startup will cause the application to exit.
+    * 
+    * ⚠️  DATA LOSS WARNINGS:
+    * - acks=0 or acks=1: Can lose data on broker failures
+    * - messageTimeoutMs too low: Messages dropped after timeout
+    * - deliveryTimeoutMs too low: Messages lost when retries exhausted  
+    * - retries too low: Data lost on temporary network issues
+    * - enableAutoCommit=true: Data lost if consumer crashes before processing
+    * - sessionTimeoutMs too low: Rebalances lose in-flight messages
+    * - maxPollIntervalMs too low: Consumer kicked out, loses uncommitted offsets
+    * 
+    * @type {object}
+    * @property {boolean} [enabled=false] - Enable Kafka integration (when true, Kafka becomes a hard dependency)
+    * @property {string} [drillEventsTopic=countly-drill-events] - Topic name for drill events
+    * @property {string} [groupIdPrefix=cly_] - Prefix for consumer group IDs
+    * @property {number} [partitions=10] - Default number of partitions for topics
+    * @property {number} [replicationFactor=1] - Default replication factor for topics
+    * @property {number} [retentionMs=604800000] - Message retention time in milliseconds (7 days)
+    * @property {boolean} [enableTransactions=false] - Enable transactional producers
+    * @property {string} [transactionalId] - Custom transactional ID prefix
+    * @property {number} [transactionTimeout=60000] - Transaction timeout in milliseconds
+    * @property {object} rdkafka - librdkafka configuration settings
+    */
+    kafka: {
+        enabled: false, // Enable/disable Kafka integration globally (when true, becomes hard dependency)
+        drillEventsTopic: "drill-events", // Default topic name for event data
+        groupIdPrefix: "cly_", // Prefix added to all consumer group IDs
+        partitions: 10, // Default number of partitions for new topics
+        replicationFactor: 1, // Default replication factor for new topics (use 3+ in production)
+        retentionMs: 604800000, // Message retention time in milliseconds (default: 7 days)
+        enableTransactions: false, // Enable transactional producers (set per producer instance)
+        transactionTimeout: 60000, // Transaction timeout in milliseconds (default: 60 seconds)
+
+        // Basic connection and security settings (used by KafkaClient)
+        rdkafka: {
+            brokers: ["localhost:9092"], // List of Kafka broker addresses
+            clientId: "countly-kafka-client", // Client identifier for Kafka connections
+            requestTimeoutMs: 30000, // Request timeout for Kafka operations (default: 30 seconds)
+            connectionTimeoutMs: 10000, // Connection timeout for initial broker connections (default: 10 seconds)
+
+            // Security settings
+            securityProtocol: null, // Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL)
+            saslMechanism: null, // SASL mechanism (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512, GSSAPI)
+            saslUsername: null, // SASL username for authentication
+            saslPassword: null, // SASL password for authentication
+
+            // Common producer settings
+            lingerMs: 5, // Time to wait for more messages before sending batch (default: 5ms)
+            retries: 8, // Number of retries for failed requests (default: 8) - WARNING: Too low can cause data loss on temporary network issues
+            initialRetryTime: 100, // Initial retry backoff time in milliseconds (default: 100ms)
+            maxRetryTime: 30000, // Maximum retry backoff time in milliseconds (default: 30 seconds)
+            acks: -1 // Acknowledgment level (-1: all replicas, 1: leader only, 0: no acks) - WARNING: 0=no wait (data loss if broker fails), 1=leader only (data loss if leader fails before replication)
+        },
+
+        // Producer-specific settings (handled by KafkaProducer)
+        producer: {
+            // Batch size controls for throughput optimization
+            batchSize: 1048576, // Maximum batch size in bytes (default: 1MB)
+            batchNumMessages: 10000, // Maximum number of messages per batch (default: 10,000)
+
+            // Queue buffering for high throughput
+            queueBufferingMaxMessages: 100000, // Maximum messages to buffer in producer queue (default: 100,000)
+            queueBufferingMaxKbytes: 1048576, // Maximum memory for buffering in KB (default: 1GB)
+
+            // Compression and timeouts
+            compressionLevel: 1, // LZ4 compression level 1-12 (default: 1, balanced speed/compression)
+            messageTimeoutMs: 300000, // Maximum time to deliver a message in milliseconds (default: 5 minutes) - WARNING: Too low causes data loss when message drops after timeout
+            deliveryTimeoutMs: 300000 // Total time for delivery including retries in milliseconds (default: 5 minutes) - WARNING: Too low causes data loss when all retries exhausted
+        },
+
+        // Consumer-specific settings (handled by KafkaConsumer)
+        consumer: {
+            // Fetch size controls for batch processing optimization
+            fetchMinBytes: 262144, // Minimum bytes to fetch per request (default: 256KB, better than 1KB for throughput)
+            fetchMaxWaitMs: 1000, // Maximum wait time for fetch requests in milliseconds (default: 1000ms, better than 500ms)
+            fetchMaxBytes: 52428800, // Maximum bytes to fetch per request (default: 50MB)
+            maxPartitionFetchBytes: 1048576, // Maximum bytes per partition per fetch (default: 1MB)
+
+            // Queue controls for memory management
+            queuedMinMessages: 50000, // Minimum messages to queue before consuming (default: 50,000, lower memory usage)
+            queuedMaxMessagesKbytes: 524288, // Maximum memory for message queue in KB (default: 512MB, lower memory usage)
+
+            // Concurrency and performance settings
+            partitionsConsumedConcurrently: 4, // Number of partitions to consume concurrently per process (default: 4)
+
+            // Consumer group settings
+            sessionTimeoutMs: 30000, // Consumer session timeout in milliseconds (default: 30 seconds) - WARNING: Too low causes rebalances, potentially losing in-flight messages
+            maxPollIntervalMs: 300000, // Maximum time between polls in milliseconds (default: 5 minutes) - WARNING: Too low causes consumer to be kicked out, losing uncommitted offsets
+            autoOffsetReset: 'earliest', // Where to start reading when no offset exists (latest/earliest)
+            enableAutoCommit: false, // Disable auto-commit for exactly-once processing (default: false) - WARNING: true can cause data loss on consumer crash before processing
+
+            // Error handling settings
+            invalidJsonBehavior: "skip", // How to handle invalid JSON messages: 'skip' or 'fail' (default: skip)
+            invalidJsonMetrics: true // Whether to log metrics for invalid JSON messages (default: true)
+        }
+    },
+
+    /**
+    * EventSink configuration for writing events to multiple destinations
+    * EventSink provides a unified interface for writing events to MongoDB, Kafka, or both
+    * 
+    * @type {object}
+    * @property {Array<string>} [sinks=['mongo']] - Array of sink types to enable
+    *                                               Options: 'mongo', 'kafka', or both
+    *                                               MongoDB is always available as fallback
+    *                                               Kafka is only used if kafka.enabled is also true
+    * 
+    * Examples:
+    * - sinks: ['mongo'] - Write only to MongoDB (default)
+    * - sinks: ['kafka'] - Write only to Kafka (if enabled)
+    * - sinks: ['mongo', 'kafka'] - Write to both in parallel
+    */
+    eventSink: {
+        sinks: ['mongo'], // Default: MongoDB only. Add 'kafka' for dual writes
+    },
+
     /**
     * Default API configuration
     * @type {object} 
@@ -77,6 +276,39 @@ var countlyConfig = {
         }
     },
     /**
+    * Default Ingestor configuration
+    * @type {object} 
+    * @property {number} [port=3010] - api port number to use, default 3010
+    * @property {string} [host=localhost] - host to which to bind connection
+    * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
+    * @property {number} workers - amount of paralel countly processes to run, defaults to cpu/core amount
+    * @property {number} [timeout=120000] - nodejs server request timeout, need to also increase nginx timeout too for longer requests
+    * @property {number} maxUploadFileSize - limit the size of uploaded file
+    */
+    ingestor: {
+        port: 3010,
+        host: "localhost",
+        max_sockets: 1024,
+        timeout: 120000,
+        maxUploadFileSize: 200 * 1024 * 1024, // 200MB
+    },
+    /**
+    * Default Job Server configuration
+    * @type {object} 
+    * @property {number} [port=3020] - port number to use, default 3020
+    * @property {string} [host=localhost] - host to which to bind connection
+    * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
+    * @property {number} [timeout=120000] - nodejs server request timeout, need to also increase nginx timeout too for longer requests
+    * @property {number} maxUploadFileSize - limit the size of uploaded file
+    */
+    jobServer: {
+        port: 3020,
+        host: "localhost",
+        max_sockets: 1024,
+        timeout: 120000,
+        maxUploadFileSize: 200 * 1024 * 1024, // 200MB
+    },
+    /**
     * Path to use for countly directory, empty path if installed at root of website
     * @type {string} 
     */
@@ -86,8 +318,10 @@ var countlyConfig = {
     * @type {object} 
     * @property {string} [default=warn] - default level of logging for {@link logger}
     * @property {array=} info - modules to log for information level for {@link logger}
+    * @property {boolean} [prettyPrint=false] - whether to pretty print the logs
     */
     logging: {
+        prettyPrint: false,
         info: ["jobs", "push"],
         default: "warn"
     },
@@ -156,4 +390,5 @@ var countlyConfig = {
     }
 };
 
+/** @type {CountlyAPIConfig} */
 module.exports = require('./configextender')('API', countlyConfig, process.env);

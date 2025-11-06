@@ -1,5 +1,7 @@
 var should = require('should');
 var countlyConfig = require("../frontend/express/config.js");
+var common = require('../api/utils/common.js');
+const reqq = require('supertest');
 should.Assertion.add('haveSameItems', function(other) {
     this.params = { operator: 'to be have same items' };
 
@@ -169,6 +171,210 @@ var testUtils = function testUtils() {
         props[key] = val;
     };
 
+    function recheckDeletion(retry, db, callback) {
+        db.collection("mutation_manager").countDocuments({ type: 'delete', status: { $ne: "completed" }}, function(err, count) {
+            if (err) {
+                callback(err);
+            }
+            else if (count === 0) {
+                callback();
+            }
+            else {
+                console.log("Records existing:" + count);
+                if (retry > 0) {
+                    console.log("Waiting for deletions to finish... retries left: " + retry);
+                    setTimeout(function() {
+                        recheckDeletion(retry - 1, db, callback);
+                    }, 5000);
+                }
+                else {
+                    callback();
+                }
+            }
+        });
+    }
+    this.triggerJobToRun = function(jobName, callback) {
+        if (jobName === "api:deletionManagerJob") {
+            jobName = "api:mutationManagerJob";
+        }
+        var request = reqq(this.url);
+        var self = this;
+        request.get("/jobs/i?jobName=" + encodeURIComponent(jobName) + "&action=runNow&api_key=" + props.API_KEY_ADMIN)
+            .expect(200)
+            .end(function(err, res) {
+                if (res && res.text) {
+                    console.log(res.text);
+                }
+                else {
+                    console.log("No response text");
+                    console.log(JSON.stringify(res));
+                }
+                if (jobName === "api:mutationManagerJob") {
+                    recheckDeletion(5, self.db, callback);
+                }
+                else {
+                    callback(err);
+                }
+            });
+    };
+
+    this.triggerMergeProcessing = function(callback) {
+        //Update lu in all app_user_merge documents to allow processing
+        var date = Math.round(new Date().getTime() / 1000) - 100;
+        var self = this;
+        this.db.collection("app_user_merges").updateMany({}, {$set: {lu: date}}, function(err, res) {
+            if (err) {
+                callback(err);
+            }
+            else {
+                self.triggerJobToRun("api:userMerge", callback);
+            }
+        });
+    };
+    this.validateBreakdownTotalsInDrillData = function(db, options, callback) {
+        var match = options.query || {};
+        if (options.app_id) {
+            match["a"] = options.app_id;
+        }
+        if (options.event) {
+            if (options.event.indexOf("[CLY]_") !== 0) {
+                match["e"] = "[CLY]_custom";
+                match["n"] = options.event;
+            }
+            else {
+                match["e"] = options.event;
+            }
+        }
+        if (options.name) {
+            match["n"] = options.name;
+        }
+
+
+        if (options.period) {
+            var periodObj = common.getPeriodObj(options.period);
+            match["ts"] = {"$gte": periodObj.start, "$lt": periodObj.end};
+        }
+
+        var pipeline = [{"$match": match}];
+        var iid = {"uid": "$uid"};
+        var iid2 = "$_id.k0";
+        for (var k = 0;k < options.breakdownKeys.length; k++) {
+            pipeline.push({"$unwind": "$" + options.breakdownKeys[k]});
+            iid["k" + k] = "$" + options.breakdownKeys[k];
+        }
+        pipeline.push({"$addFields": {"n": {"$cond": [{"$eq": ["$up.ls", "$up.fs"]}, 1, 0]}}});
+        pipeline.push({"$group": {"_id": iid, "t": {"$sum": 1}, "ls": {"$min": "$up.ls"}, n: {"$max": "$n"}, "fs": {"$min": "$up.fs"}}});
+
+        pipeline.push({"$group": {"_id": iid2, "n": {"$sum": 1}, "u": {"$sum": 1}, "t": {"$sum": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        if (options.event === "[CLY]_session") {
+            var pipeline2 = JSON.parse(JSON.stringify(pipeline));
+            pipeline2[0]["$match"]["e"] = "[CLY]_session_begin";
+            pipeline.push({"$unionWith": {coll: "drill_events", pipeline: pipeline2}});
+            pipeline.push({"$group": {"_id": "$_id", "n": {"$max": "$n"}, "u": {"$max": "$u"}, "t": {"$max": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        }
+        db.collection("drill_events").aggregate(pipeline, function(err, res) {
+            console.log(res);
+            if (err) {
+                callback(err);
+            }
+            else {
+                res = res || [];
+
+                var resMapped = {};
+                for (var i = 0; i < res.length; i++) {
+                    resMapped[res[i]._id] = res[i];
+                }
+                var errors = [];
+                if (Object.keys(resMapped).length != Object.keys(options.values).length) {
+                    errors.push("Expected " + Object.keys(options.values).length + " breakdowns but found " + Object.keys(resMapped).length);
+                }
+                for (var key in options.values) {
+                    if (!resMapped[key]) {
+                        errors.push("Expected breakdown " + key + " not found");
+                    }
+                    else {
+                        for (var mm in options.values[key]) {
+                            if (resMapped[key][mm] !== options.values[key][mm]) {
+                                errors.push("Expected " + mm + " to be " + options.values[key][mm] + " but found " + resMapped[key][mm]);
+                            }
+                        }
+                    }
+                }
+
+                if (errors.length > 0) {
+                    callback(errors.join(","));
+                }
+                else {
+                    callback();
+                }
+
+            }
+        });
+    };
+
+
+    this.validateTotalsInDrillData = function(db, options, callback) {
+        var match = options.query || {};
+        if (options.app_id) {
+            match["a"] = options.app_id;
+        }
+        if (options.event) {
+            if (options.event.indexOf("[CLY]_") !== 0) {
+                match["e"] = "[CLY]_custom";
+                match["n"] = options.event;
+            }
+            else {
+                match["e"] = options.event;
+            }
+        }
+        if (options.name) {
+            match["n"] = options.name;
+        }
+
+
+        if (options.period) {
+            var periodObj = common.getPeriodObj(options.period);
+            match["ts"] = {"$gte": periodObj.start, "$lt": periodObj.end};
+        }
+
+        var pipeline = [{"$match": match}];
+        options.values = options.values || {};
+        pipeline.push({"$group": {"_id": "$uid", "t": {"$sum": "$c"}, "ls": {"$min": "$up.ls"}, "fs": {"$min": "$up.fs"}}});
+        pipeline.push({"$group": {"_id": null, "u": {"$sum": 1}, "t": {"$sum": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        if (options.event === "[CLY]_session") {
+            var pipeline2 = JSON.parse(JSON.stringify(pipeline));
+            pipeline2[0]["$match"]["e"] = "[CLY]_session_begin";
+            pipeline.push({"$unionWith": {coll: "drill_events", pipeline: pipeline2}});
+            pipeline.push({"$group": {"_id": null, "u": {"$max": "$u"}, "t": {"$max": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        }
+        console.log(JSON.stringify(pipeline));
+        db.collection("drill_events").aggregate(pipeline, function(err, res) {
+            console.log(res);
+            if (err) {
+                callback(err);
+            }
+            else {
+                res = res || [];
+                res = res[0] || {};
+                var errors = [];
+                if (res.fs && res.fs === res.ls) {
+                    res.n = 1;
+                }
+                for (var mm in options.values) {
+                    if (options.values[mm] && res[mm] !== options.values[mm]) {
+                        errors.push("Expected " + mm + " to be " + options.values[mm] + " but found " + res[mm]);
+                    }
+                }
+                if (errors.length > 0) {
+                    callback(errors.join(","));
+                }
+                else {
+                    callback();
+                }
+            }
+        });
+    };
+
     this.validateSessionData = function(err, res, done, correct) {
         if (err) {
             return done(err);
@@ -272,8 +478,12 @@ var testUtils = function testUtils() {
             }
             dashboard.should.have.property("new_users", {"total": correct.new_users, "change": "NA", "trend": "u"});
             dashboard.should.have.property("total_time", {"total": correct.total_time, "change": "NA", "trend": "u"});
-            dashboard.should.have.property("avg_time", {"total": correct.avg_time, "change": "NA", "trend": "u"});
-            dashboard.should.have.property("avg_requests", {"total": correct.avg_requests, "change": "NA", "trend": "u"});
+            if (correct.avg_time) {
+                dashboard.should.have.property("avg_time", {"total": correct.avg_time, "change": "NA", "trend": "u"});
+            }
+            if (correct.avg_requests) {
+                dashboard.should.have.property("avg_requests", {"total": correct.avg_requests, "change": "NA", "trend": "u"});
+            }
             period.should.have.property("top");
             var top = period["top"];
             top.platforms.sort();

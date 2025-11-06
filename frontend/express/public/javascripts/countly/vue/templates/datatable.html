@@ -44,6 +44,19 @@
                                     </el-radio-group>
                                 </div>
                             </div>
+                            <div class="bu-mx-4 bu-mt-4" v-if="showLimitOptions">
+                                <div class="bu-level-left">
+                                    <el-checkbox v-model="exportAllRows">
+                                        <span class="text-medium">
+                                             {{i18n('export.export-all-rows')}}
+                                        </span>
+                                    </el-checkbox>
+                                </div>
+                                <div v-if="!exportAllRows" class='bu-level-right text-small color-cool-gray-50' :data-test-id="testId + '-export-as-pop-up-rows-selected-count'">
+                                    <p class="text-medium bu-pr-5"> {{i18n('export.limit-rows')}}</p>
+                                    <el-input-number :test-id="testId + '-export-limit-input'"  v-model="exportLimit" controls-position="right" ></el-input-number>
+                                </div>
+                            </div>
                             <div v-if="exportColumnSelection" class="cly-vue-eldatatable__export--extended">
                                 <div class="bu-mx-4 bu-mb-3">
 		                            <div class="bu-level bu-mb-3">
@@ -138,7 +151,7 @@
             </div>
             <div class="bu-level-right">
                 <slot v-bind="commonScope" name="footer-right"></slot>
-                <div class="bu-level-item text-smallish bu-mr-0">
+                <div class="bu-level-item text-smallish bu-mr-0" v-if="pageSelectionAvailable">
                     <div class="cly-vue-eldatatable__table-page-selector" style="margin-top: 2px;" >
                         <el-select :test-id="testId + '-page-number'" :borderless="true" :adaptiveLength="true" v-if="totalPages <= 200" v-model="controlParams.page" size="mini">
                             <el-option v-for="page in availablePages" :key="page" :value="page" :label="page"></el-option>
@@ -146,7 +159,7 @@
                         <el-input v-else type="number" :min="1" style="width: 160px" class="bu-mr-1" :max="totalPages" v-model="controlParams.page" size="mini"></el-input>
                     </div>
                 </div>
-                <div class="bu-level-item text-smallish">
+                <div class="bu-level-item text-smallish" v-if="pageSelectionAvailable">
                     <span :test-id="testId + '-page-number-of-pages'">of {{formatNumber(totalPages)}} pages</span>
                 </div>
                 <div :data-test-id="testId + '-first-page-arrow-button'" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': prevAvailable, 'cool-gray-30': !prevAvailable}">
@@ -158,7 +171,7 @@
                 <div :data-test-id="testId + '-next-page-arrow-button'" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': nextAvailable, 'cool-gray-30': !nextAvailable}">
                     <span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="ion-ios-arrow-forward"></i></span>
                 </div>
-                <div :data-test-id="testId + '-last-page-arrow-button'" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': nextAvailable, 'cool-gray-30': !nextAvailable}">
+                <div :data-test-id="testId + '-last-page-arrow-button'" v-if="lastPageAvailable" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': nextAvailable, 'cool-gray-30': !nextAvailable}">
                     <span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="ion-ios-arrow-forward"></i><i class="ion-ios-arrow-forward"></i></span>
                 </div>
             </div>

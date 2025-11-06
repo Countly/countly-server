@@ -15,6 +15,7 @@ const countlyCommon = require('../lib/countly.common.js');
 const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
+const calculatedDataManager = require('./calculatedDataManager.js');
 const plugins = require('../../plugins/pluginManager.js');
 const versionInfo = require('../../frontend/express/version.info');
 const packageJson = require('./../../package.json');
@@ -28,7 +29,6 @@ const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 const request = require('countly-request')(plugins.getConfig("security"));
-const Handle = require('../../api/parts/jobs/index.js');
 const render = require('../../api/utils/render.js');
 
 var loaded_configs_time = 0;
@@ -175,35 +175,6 @@ const processRequest = (params) => {
 
         if (!params.cancelRequest) {
             switch (apiPath) {
-            case '/i/bulk': {
-                let requests = params.qstring.requests;
-
-                if (requests && typeof requests === "string") {
-                    try {
-                        requests = JSON.parse(requests);
-                    }
-                    catch (SyntaxError) {
-                        console.log('Parse bulk JSON failed', requests, params.req.url, params.req.body);
-                        requests = null;
-                    }
-                }
-                if (!requests) {
-                    common.returnMessage(params, 400, 'Missing parameter "requests"');
-                    return false;
-                }
-                if (!Array.isArray(requests)) {
-                    console.log("Passed invalid param for request. Expected Array, got " + typeof requests);
-                    common.returnMessage(params, 400, 'Invalid parameter "requests"');
-                    return false;
-                }
-                if (!params.qstring.safe_api_response && !plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-                    common.returnMessage(params, 200, 'Success');
-                }
-                common.blockResponses(params);
-
-                processBulkRequest(0, requests, params);
-                break;
-            }
             case '/i/users': {
                 if (params.qstring.args) {
                     try {
@@ -904,7 +875,7 @@ const processRequest = (params) => {
                         return false;
                     }
                     validateUpdate(params, 'events', function() {
-                        common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
+                        common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, async function(err, event) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
                                 return;
@@ -913,6 +884,21 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, "Could not find event");
                                 return;
                             }
+                            //Load available events
+
+                            const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
+
+                            var list = await common.drillDb.collection("drill_meta").aggregate(
+                                [
+                                    {$match: {"app_id": params.qstring.app_id, "type": "e", "biglist": {"$ne": true}}},
+                                    {$match: {"e": {"$not": /^(\[CLY\]_)/}}},
+                                    {"$group": {"_id": "$e"}},
+                                    {"$sort": {"_id": 1}},
+                                    {"$limit": pluginsGetConfig.event_limit || 500},
+                                    {"$group": {"_id": null, "list": {"$addToSet": "$_id"}}}
+                                ]
+                                , {"allowDiskUse": true}).toArray();
+                            event.list = list[0].list;
 
                             var update_array = {};
                             var update_segments = [];
@@ -1482,58 +1468,6 @@ const processRequest = (params) => {
                 }
                 break;
             }
-            case '/i': {
-                if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
-                    params.qstring = common.trimWhitespaceStartEnd(params.qstring);
-                }
-                params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
-                params.user = {};
-
-                if (!params.qstring.app_key || !params.qstring.device_id) {
-                    common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
-                    return false;
-                }
-                else {
-                    //make sure device_id is string
-                    params.qstring.device_id += "";
-                    params.qstring.app_key += "";
-                    // Set app_user_id that is unique for each user of an application.
-                    params.app_user_id = common.crypto.createHash('sha1')
-                        .update(params.qstring.app_key + params.qstring.device_id + "")
-                        .digest('hex');
-                }
-
-                if (params.qstring.events && typeof params.qstring.events === "string") {
-                    try {
-                        params.qstring.events = JSON.parse(params.qstring.events);
-                    }
-                    catch (SyntaxError) {
-                        console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
-                    }
-                }
-
-                log.d('processing request %j', params.qstring);
-
-                params.promises = [];
-
-                validateAppForWriteAPI(params, () => {
-                    /**
-                    * Dispatches /sdk/end event upon finishing processing request
-                    **/
-                    function resolver() {
-                        plugins.dispatch("/sdk/end", {params: params});
-                    }
-
-                    Promise.all(params.promises)
-                        .then(resolver)
-                        .catch((error) => {
-                            console.log(error);
-                            resolver();
-                        });
-                });
-
-                break;
-            }
             case '/o/users': {
                 switch (paths[3]) {
                 case 'all':
@@ -1967,6 +1901,57 @@ const processRequest = (params) => {
                 case 'plugins':
                     validateUserForMgmtReadAPI(() => {
                         common.returnOutput(params, plugins.getPlugins());
+                    }, params);
+                    break;
+                case 'observability':
+                    validateUserForMgmtReadAPI(() => {
+                        plugins.dispatch('/system/observability/collect', {params: params}, function(err, results) {
+                            if (err) {
+                                common.returnMessage(params, 500, 'Error collecting observability data');
+                                return;
+                            }
+                            const data = (results || [])
+                                .filter(r => r && r.status === 'fulfilled' && r.value)
+                                .map(r => r.value);
+                            common.returnOutput(params, data);
+                        });
+                    }, params);
+                    break;
+                case 'aggregator':
+                    validateUserForMgmtReadAPI(() => {
+                        //fetch current aggregator status
+                        common.db.collection("plugins").findOne({_id: "_changeStreams"}, function(err, pluginsData) {
+                            if (err) {
+                                common.returnMessage(params, 400, 'Error fetching aggregator status');
+                            }
+                            else {
+                                //find biggest cd value in drill database
+                                common.drillDb.collection("drill_events").find({}, {cd: 1}).sort({cd: -1}).limit(1).toArray(function(err2, drillData) {
+                                    var data = [];
+                                    var now = Date.now().valueOf();
+                                    var nowDrill = now;
+                                    if (drillData && drillData.length) {
+                                        nowDrill = new Date(drillData[0].cd).valueOf();
+                                    }
+
+                                    for (var key in pluginsData) {
+                                        if (key !== "_id") {
+                                            var lastAccepted = new Date(pluginsData[key].cd).valueOf();
+                                            data.push({
+                                                name: key,
+                                                last_cd: pluginsData[key].cd,
+                                                drill: drillData && drillData[0] && drillData[0].cd,
+                                                last_id: pluginsData[key]._id,
+                                                diff: (now - lastAccepted) / 1000,
+                                                diffDrill: (nowDrill - lastAccepted) / 1000
+                                            });
+                                        }
+                                    }
+                                    common.returnOutput(params, data);
+                                });
+                            }
+
+                        });
                     }, params);
                     break;
                 default:
@@ -2574,104 +2559,6 @@ const processRequest = (params) => {
                 }
 
                 switch (params.qstring.method) {
-                case 'jobs':
-                    /**
-                     * @api {get} /o?method=jobs Get Jobs Table Information
-                     * @apiName GetJobsTableInfo
-                     * @apiGroup Jobs
-                     * 
-                     * @apiDescription Get jobs information in the jobs table
-                     * @apiQuery {String} method which kind jobs requested, it should be 'jobs'
-                     * 
-                     * @apiSuccess {Number} iTotalRecords Total number of jobs
-                     * @apiSuccess {Number} iTotalDisplayRecords Total number of jobs by filtering
-                     * @apiSuccess {Objects[]} aaData Job details
-                     * @apiSuccess {Number} sEcho DataTable's internal counter
-                     * 
-                     * @apiSuccessExample {json} Success-Response:
-                     * HTTP/1.1 200 OK
-                     * {
-                     *   "sEcho": "0",
-                     *   "iTotalRecords": 14,
-                     *   "iTotalDisplayRecords": 14,
-                     *   "aaData": [{
-                     *     "_id": "server-stats:stats",
-                     *     "name": "server-stats:stats",
-                     *     "status": "SCHEDULED",
-                     *     "schedule": "every 1 day",
-                     *     "next": 1650326400000,
-                     *     "finished": 1650240007917,
-                     *     "total": 1
-                     *   }]
-                     * }
-                     */
-
-                    /**
-                    * @api {get} /o?method=jobs/name Get Job Details Table Information
-                    * @apiName GetJobDetailsTableInfo
-                    * @apiGroup Jobs
-                    * 
-                    * @apiDescription Get the information of the filtered job in the table
-                    * @apiQuery {String} method Which kind jobs requested, it should be 'jobs'
-                    * @apiQuery {String} name The job name is required to redirect to the selected job
-                    * 
-                    * @apiSuccess {Number} iTotalRecords Total number of jobs
-                    * @apiSuccess {Number} iTotalDisplayRecords Total number of jobs by filtering
-                    * @apiSuccess {Objects[]} aaData Job details
-                    * @apiSuccess {Number} sEcho DataTable's internal counter
-                    * 
-                    * @apiSuccessExample {json} Success-Response:
-                    * HTTP/1.1 200 OK
-                    * {
-                    *   "sEcho": "0",
-                    *   "iTotalRecords": 1,
-                    *   "iTotalDisplayRecords": 1,
-                    *   "aaData": [{
-                    *     "_id": "62596cd41307dc89c269b5a8",
-                    *     "name": "api:ping",
-                    *     "created": 1650027732240,
-                    *     "status": "SCHEDULED",
-                    *     "started": 1650240000865,
-                    *     "finished": 1650240000891,
-                    *     "duration": 30,
-                    *     "data": {},
-                    *     "schedule": "every 1 day",
-                    *     "next": 1650326400000,
-                    *     "modified": 1650240000895,
-                    *     "error": null
-                    *   }]
-                    * }
-                    */
-
-                    validateUserForGlobalAdmin(params, countlyApi.data.fetch.fetchJobs, 'jobs');
-                    break;
-                case 'suspend_job': {
-                    /**
-                     * @api {get} /o?method=suspend_job Suspend Job
-                     * @apiName SuspendJob
-                     * @apiGroup Jobs
-                     *  
-                     * @apiDescription Suspend the selected job
-                     * * 
-                     * @apiSuccessExample {json} Success-Response:
-                     * HTTP/1.1 200 OK
-                     * {
-                     *  "result": true,
-                     *  "message": "Job suspended successfully"
-                     * }
-                     * 
-                     * @apiErrorExample {json} Error-Response:
-                     * HTTP/1.1 400 Bad Request
-                     * {
-                     *  "result": "Updating job status failed" 
-                     * }
-                     * 
-                    */
-                    validateUserForGlobalAdmin(params, async() => {
-                        await Handle.suspendJob(params);
-                    });
-                    break;
-                }
                 case 'total_users':
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
                     break;
@@ -2724,6 +2611,9 @@ const processRequest = (params) => {
                     validateRead(params, 'core', countlyApi.data.fetch.fetchEventGroupById);
                     break;
                 case 'events':
+                    if (plugins.getConfig("api").calculate_aggregated_from_granular) {
+                        params.qstring.fetchFromGranular = true;
+                    }
                     if (params.qstring.events) {
                         try {
                             params.qstring.events = JSON.parse(params.qstring.events);
@@ -2749,7 +2639,71 @@ const processRequest = (params) => {
                     }
                     break;
                 case 'get_events':
-                    validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
+                    //validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
+                    validateRead(params, 'core', async function() {
+                        try {
+                            var result = await common.db.collection("events").findOne({ '_id': params.app_id });
+                            if (!result) {
+                                result = {};
+                            }
+                            result.list = [];
+                            result.segments = {};
+                            const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
+                            result.limits = {
+                                event_limit: pluginsGetConfig.event_limit,
+                                event_segmentation_limit: pluginsGetConfig.event_segmentation_limit,
+                                event_segmentation_value_limit: pluginsGetConfig.event_segmentation_value_limit,
+                            };
+
+                            var aggregation = [];
+                            aggregation.push({$match: {"app_id": params.qstring.app_id, "type": "e", "biglist": {"$ne": true}}});
+                            aggregation.push({"$project": {e: 1, _id: 0, "sg": 1}});
+                            //e does not start with [CLY]_
+                            aggregation.push({$match: {"e": {"$not": /^(\[CLY\]_)/}}});
+                            aggregation.push({"$sort": {"e": 1}});
+                            aggregation.push({"$limit": pluginsGetConfig.event_limit || 500});
+
+                            var res = await common.drillDb.collection("drill_meta").aggregate(aggregation).toArray();
+
+                            for (var k = 0; k < res.length; k++) {
+                                result.list.push(res[k].e);
+                                if (res[k].sg && Object.keys(res[k].sg).length > 0) {
+                                    result.segments[res[k].e] = Object.keys(res[k].sg);
+                                }
+                                if (result.omitted_segments && result.omitted_segments[res[k].e]) {
+                                    for (let kz = 0; kz < result.omitted_segments[res[k].e].length; kz++) {
+                                        //remove items that are in omitted list
+                                        result.segments[res[k].e].splice(result.segments[res[k].e].indexOf(result.omitted_segments[res[k].e][kz]), 1);
+                                    }
+                                }
+                                if (result.whitelisted_segments && result.whitelisted_segments[res[k].e] && Array.isArray(result.whitelisted_segments[res[k].e])) {
+                                    //remove all that are not whitelisted
+                                    for (let kz = 0; kz < result.segments[res[k].e].length; kz++) {
+                                        if (result.whitelisted_segments[res[k].e].indexOf(result.segments[res[k].e][kz]) === -1) {
+                                            result.segments[res[k].e].splice(kz, 1);
+                                            kz--;
+                                        }
+                                    }
+                                }
+                                //Sort segments
+                                if (result.segments[res[k].e]) {
+                                    result.segments[res[k].e].sort();
+                                }
+                            }
+                            if (result.list.length === 0) {
+                                delete result.list;
+                            }
+                            if (Object.keys(result.segments).length === 0) {
+                                delete result.segments;
+                            }
+                            common.returnOutput(params, result);
+
+                        }
+                        catch (ex) {
+                            console.error("Error fetching events", ex);
+                            common.returnMessage(params, 500, "Error fetching events");
+                        }
+                    }, 'events');
                     break;
                 case 'top_events':
                     validateRead(params, 'core', countlyApi.data.fetch.fetchDataTopEvents);
@@ -2825,6 +2779,70 @@ const processRequest = (params) => {
                     break;
                 }
 
+                break;
+            }
+            case '/o/aggregate': {
+                validateUser(params, () => {
+                    //Long task to run specific drill query. Give back task_id if running, result if done.
+                    if (params.qstring.query) {
+
+                        try {
+                            params.qstring.query = JSON.parse(params.qstring.query);
+                        }
+                        catch (ee) {
+                            log.e(ee);
+                            common.returnMessage(params, 400, 'Invalid query parameter');
+                            return;
+                        }
+
+                        if (params.qstring.query.appID) {
+                            if (Array.isArray(params.qstring.query.appID)) {
+                                //make sure member has access to all apps in this list
+                                for (var i = 0; i < params.qstring.query.appID.length; i++) {
+                                    if (!params.member.global_admin && params.member.user_of && params.member.user_of.indexOf(params.qstring.query.appID[i]) === -1) {
+                                        common.returnMessage(params, 401, 'User does not have access right for this app');
+                                        return;
+                                    }
+                                }
+                            }
+                            else {
+                                if (!params.member.global_admin && params.member.user_of && params.member.user_of.indexOf(params.qstring.query.appID) === -1) {
+                                    common.returnMessage(params, 401, 'User does not have access right for this app');
+                                    return;
+                                }
+                            }
+                        }
+                        else {
+                            params.qstring.query.appID = params.qstring.app_id;
+                        }
+                        if (params.qstring.period) {
+                            params.qstring.query.period = params.qstring.query.period || params.qstring.period || "30days";
+                        }
+                        if (params.qstring.periodOffset) {
+                            params.qstring.query.periodOffset = params.qstring.query.periodOffset || params.qstring.periodOffset || 0;
+                        }
+
+                        calculatedDataManager.longtask({
+                            db: common.db,
+                            no_cache: params.qstring.no_cache,
+                            threshold: plugins.getConfig("api").request_threshold,
+                            app_id: params.qstring.query.app_id,
+                            query_data: params.qstring.query,
+                            outputData: function(err, data) {
+                                if (err) {
+                                    common.returnMessage(params, 400, err);
+                                }
+                                else {
+                                    common.returnMessage(params, 200, data);
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing parameter "query"');
+                    }
+
+                });
                 break;
             }
             case '/o/countly_version': {
@@ -3133,79 +3151,6 @@ const processFetchRequest = (params, app, done) => {
     });
 };
 
-/**
- * Process Bulk Request
- * @param {number} i - request number in bulk
- * @param {Array<object>} requests - array of requests to process
- * @param {Params} params - params object
- * @returns {void} void
- */
-const processBulkRequest = (i, requests, params) => {
-    const appKey = params.qstring.app_key;
-    if (i === requests.length) {
-        common.unblockResponses(params);
-        if ((params.qstring.safe_api_response || plugins.getConfig("api", params.app && params.app.plugins, true).safe) && !params.res.finished) {
-            common.returnMessage(params, 200, 'Success');
-        }
-        return;
-    }
-
-    if (!requests[i] || (!requests[i].app_key && !appKey)) {
-        return processBulkRequest(i + 1, requests, params);
-    }
-    if (params.qstring.safe_api_response) {
-        requests[i].safe_api_response = true;
-    }
-    params.req.body = JSON.stringify(requests[i]);
-    const tmpParams = {
-        'app_id': '',
-        'app_cc': '',
-        'ip_address': requests[i].ip_address || common.getIpAddress(params.req),
-        'user': {
-            'country': requests[i].country_code || 'Unknown',
-            'city': requests[i].city || 'Unknown'
-        },
-        'qstring': requests[i],
-        'href': "/i",
-        'res': params.res,
-        'req': params.req,
-        'promises': [],
-        'bulk': true,
-        'populator': params.qstring.populator,
-        'blockResponses': true
-    };
-
-    tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
-
-    if (!tmpParams.qstring.device_id) {
-        return processBulkRequest(i + 1, requests, params);
-    }
-    else {
-        //make sure device_id is string
-        tmpParams.qstring.device_id += "";
-        tmpParams.app_user_id = common.crypto.createHash('sha1')
-            .update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "")
-            .digest('hex');
-    }
-
-    return validateAppForWriteAPI(tmpParams, () => {
-        /**
-        * Dispatches /sdk/end event upon finishing processing request
-        **/
-        function resolver() {
-            plugins.dispatch("/sdk/end", {params: tmpParams}, () => {
-                processBulkRequest(i + 1, requests, params);
-            });
-        }
-
-        Promise.all(tmpParams.promises)
-            .then(resolver)
-            .catch((error) => {
-                console.log(error);
-                resolver();
-            });
-    });
-};
 
 /**
  * @param  {object} params - params object

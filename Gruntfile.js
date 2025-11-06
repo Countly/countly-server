@@ -14,21 +14,8 @@ module.exports = function(grunt) {
             dom: {
                 src: [
                     'frontend/express/public/javascripts/dom/jquery/jquery.js',
-                    'frontend/express/public/javascripts/dom/jquery.form.js',
-                    'frontend/express/public/javascripts/dom/tipsy/jquery.tipsy.js',
-                    'frontend/express/public/javascripts/dom/jquery.noisy.min.js',
-                    'frontend/express/public/javascripts/dom/jquery.sticky.headers.js',
-                    'frontend/express/public/javascripts/dom/jqueryui/jquery-ui.js',
-                    'frontend/express/public/javascripts/dom/jqueryui/jquery-ui-i18n.js',
                     'frontend/express/public/javascripts/dom/gridstack/gridstack-h5.js',
-                    'frontend/express/public/javascripts/dom/slimScroll.min.js',
-                    'frontend/express/public/javascripts/dom/jquery.easing.1.3.js',
-                    'frontend/express/public/javascripts/dom/dataTables/js/jquery.dataTables.js',
-                    'frontend/express/public/javascripts/dom/dataTables/js/ZeroClipboard.js',
-                    'frontend/express/public/javascripts/dom/dataTables/js/TableTools.js',
                     'frontend/express/public/javascripts/dom/pace/pace.min.js',
-                    'frontend/express/public/javascripts/dom/drop/tether.min.js',
-                    'frontend/express/public/javascripts/dom/drop/drop.min.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.dom.concat.js'
             },
@@ -39,22 +26,13 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/lodash.merge.js',
                     'frontend/express/public/javascripts/utils/prefixfree.min.js',
                     'frontend/express/public/javascripts/utils/moment/moment-with-locales.min.js',
-                    'frontend/express/public/javascripts/utils/handlebars.js',
                     'frontend/express/public/javascripts/utils/backbone-min.js',
                     'frontend/express/public/javascripts/utils/jquery.i18n.properties.js',
-                    'frontend/express/public/javascripts/utils/jstz.min.js',
                     'frontend/express/public/javascripts/utils/store+json2.min.js',
                     'frontend/express/public/javascripts/utils/jquery.idle-timer.js',
-                    'frontend/express/public/javascripts/utils/textcounter.min.js',
                     'frontend/express/public/javascripts/utils/initialAvatar.js',
-                    'frontend/express/public/javascripts/utils/jquery.amaran.min.js',
-                    'frontend/express/public/javascripts/utils/jquery.titlealert.js',
-                    'frontend/express/public/javascripts/utils/jquery.hoverIntent.minified.js',
-                    'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.js',
                     'frontend/express/public/javascripts/utils/highlight/highlight.pack.js',
-                    'frontend/express/public/javascripts/utils/dropzone.js',
                     'frontend/express/public/javascripts/utils/webfont.js',
-                    'frontend/express/public/javascripts/utils/selectize.min.js',
                     'frontend/express/public/javascripts/utils/leaflet.js',
                     'frontend/express/public/javascripts/utils/js-deep-equals.unsorted.min.js',
                     'frontend/express/public/javascripts/utils/polyfill/es6-promise.auto.min.js',
@@ -77,16 +55,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/vue/vue-json-pretty.min.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
-                    'frontend/express/public/javascripts/utils/simpleUpload.min.js',
-                    'frontend/express/public/javascripts/utils/jsoneditor/codemirror.js',
-                    'frontend/express/public/javascripts/utils/jsoneditor/javascript.min.js',
-                    'frontend/express/public/javascripts/utils/jsoneditor/json2.js',
-                    'frontend/express/public/javascripts/utils/jsoneditor/jsonlint.js',
-                    'frontend/express/public/javascripts/utils/jsoneditor/minify.json.js',
-                    'frontend/express/public/javascripts/utils/jsoneditor/jsoneditor.js',
                     'frontend/express/public/javascripts/utils/Sortable.min.js',
                     'frontend/express/public/javascripts/utils/vue/vuedraggable.umd.min.js',
-                    'frontend/express/public/javascripts/utils/countly.checkbox.js',
                     'frontend/express/public/javascripts/utils/lodash.mergeWith.js',
                     'frontend/express/public/javascripts/utils/element-tiptap.umd.min.js'
                 ],
@@ -94,21 +64,6 @@ module.exports = function(grunt) {
             },
             visualization: {
                 src: [
-                    'frontend/express/public/javascripts/visualization/jquery.peity.min.js',
-                    'frontend/express/public/javascripts/visualization/jquery.sparkline.js',
-                    'frontend/express/public/javascripts/visualization/flot/jquery.flot.js',
-                    'frontend/express/public/javascripts/visualization/flot/jquery.flot.tickrotor.js',
-                    'frontend/express/public/javascripts/visualization/flot/jquery.flot.pie.js',
-                    'frontend/express/public/javascripts/visualization/flot/jquery.flot.resize.js',
-                    'frontend/express/public/javascripts/visualization/flot/jquery.flot.stack.js',
-                    'frontend/express/public/javascripts/visualization/flot/jquery.flot.spline.js',
-                    'frontend/express/public/javascripts/visualization/flot/jquery.flot.crosshair.js',
-                    'frontend/express/public/javascripts/visualization/flot/jquery.flot.orderBars.js',
-                    'frontend/express/public/javascripts/visualization/flot/jquery.flot.navigate.js',
-                    'frontend/express/public/javascripts/visualization/gauge.min.js',
-                    'frontend/express/public/javascripts/visualization/d3/d3.min.js',
-                    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.js',
-                    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.x.axis.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.visualization.concat.js'
             },
@@ -159,7 +114,6 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/vue/components/progress.js',
                     'frontend/express/public/javascripts/countly/vue/directives/scroll-shadow.js',
                     'frontend/express/public/javascripts/countly/vue/legacy.js',
-                    'frontend/express/public/javascripts/countly/countly.vue.legacy.js',
                     'frontend/express/public/javascripts/countly/countly.token.manager.js',
                     'frontend/express/public/javascripts/countly/countly.version.history.js',
                     'frontend/express/public/javascripts/countly/countly.analytics.js',
@@ -200,6 +154,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/home/javascripts/countly.views.js',
                     'frontend/express/public/core/notes/javascripts/countly.views.js',
                     'frontend/express/public/core/version-history/javascripts/countly.views.js',
+                    'frontend/express/public/core/aggregator-status/javascripts/countly.views.js',
+                    'frontend/express/public/core/aggregator-status/javascripts/countly.model.js',
                     'frontend/express/public/core/onboarding/javascripts/countly.models.js',
                     'frontend/express/public/core/onboarding/javascripts/countly.views.js'
                 ],
@@ -229,18 +185,10 @@ module.exports = function(grunt) {
                     'frontend/express/public/stylesheets/main.min.css': [
                         'frontend/express/public/stylesheets/main.css',
                         'frontend/express/public/stylesheets/vue/clyvue.css',
-                        'frontend/express/public/stylesheets/vue/vue-json-pretty.css',
-                        'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
-                        'frontend/express/public/stylesheets/selectize/selectize.css',
                         'frontend/express/public/stylesheets/leaflet/leaflet.css',
-                        'frontend/express/public/stylesheets/jsoneditor/codemirror.css',
-                        'frontend/express/public/stylesheets/countly-checkbox/countly.checkbox.css',
-                        'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
+                        'frontend/express/public/stylesheets/vue/vue-json-pretty.css',
                         'frontend/express/public/javascripts/dom/gridstack/gridstack.css',
-                        'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
                         'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',
-                        'frontend/express/public/javascripts/dom/drop/drop-theme-countly.min.css',
-                        'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.css',
                         'frontend/express/public/stylesheets/bulma/bulma-custom.css',
                         'frontend/express/public/stylesheets/styles/manifest2.css',
                         'frontend/express/public/stylesheets/vue/element-tiptap.css',
@@ -254,7 +202,11 @@ module.exports = function(grunt) {
                     reporter: 'spec',
                     timeout: 50000
                 },
-                src: ['test/*/*.js']
+                src: ['test/*/*.js'],
+                filter: function(filepath) {
+                    // Exclude unit test files
+                    return !filepath.includes('.unit.js');
+                }
             }
         },
         mocha_nyc: {

@@ -1,10 +1,11 @@
 var plugin = {},
-    crypto = require('crypto'),
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     appUsers = require('../../../api/parts/mgmt/app_users.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     plugins = require('../../pluginManager.js'),
+    log = common.log('compliance-hub:api'),
+    consentQueries = require('./queries/consents'),
     { validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'compliance_hub';
@@ -15,107 +16,6 @@ const FEATURE_NAME = 'compliance_hub';
     });
 
     plugins.internalDrillEvents.push("[CLY]_consent");
-
-    plugins.register("/master", function() {
-        common.db.collection('consent_history').ensureIndex({app_id: 1, device_id: 1}, function() {});
-        common.db.collection('consent_history').ensureIndex({app_id: 1, uid: 1}, function() {});
-        common.db.collection('consent_history').ensureIndex({app_id: 1, type: 1}, function() {});
-        common.db.collection('consent_history').ensureIndex({app_id: 1, ts: 1}, function() {});
-    });
-
-    //write api call
-    plugins.register("/sdk/user_properties", function(ob) {
-        var params = ob.params;
-        if (typeof params.qstring.consent === "string") {
-            try {
-                params.qstring.consent = JSON.parse(params.qstring.consent);
-            }
-            catch (SyntaxError) {
-                console.log('Parse consent JSON failed', params.qstring.consent, params.req.url, params.req.body);
-            }
-        }
-        if (params.qstring.consent) {
-            if (!params.app_user.consent) {
-                params.app_user.consent = {};
-            }
-
-            var update = {};
-            var changes = {};
-            var after = JSON.parse(JSON.stringify(params.app_user.consent));
-            var metrics = {i: {segments: {feature: []}, value: 1, hourlySegments: ["feature"]}, o: {segments: {feature: []}, value: 1, hourlySegments: ["feature"]}};
-            for (var i in params.qstring.consent) {
-                //check if we already dont have that setting
-                after[i] = params.qstring.consent[i];
-                if (params.app_user.consent[i] !== params.qstring.consent[i]) {
-                    //record only changes
-                    update["consent." + i] = params.qstring.consent[i];
-                    changes[i] = params.qstring.consent[i];
-                    if (params.qstring.consent[i]) {
-                        metrics.i.segments.feature.push(i);
-                    }
-                    else {
-                        metrics.o.segments.feature.push(i);
-                    }
-                }
-            }
-
-            if (!metrics.i.segments.feature.length) {
-                delete metrics.i;
-            }
-
-            if (!metrics.o.segments.feature.length) {
-                delete metrics.o;
-            }
-
-            if (Object.keys(metrics).length) {
-                common.recordMetric(params, {
-                    collection: "consents",
-                    id: params.app_id,
-                    metrics: metrics
-                });
-            }
-
-            if (Object.keys(update).length) {
-                var type = [];
-                if (metrics.i) {
-                    type.push("i");
-                }
-                if (metrics.o) {
-                    type.push("o");
-                }
-                if (type.length === 1) {
-                    type = type[0];
-                }
-                ob.updates.push({$set: update});
-                var m = params.qstring.metrics || {};
-                common.db.collection("consent_history").insert({
-                    before: params.app_user.consent || {},
-                    after: after,
-                    app_id: params.app_id.toString(),
-                    change: changes,
-                    type: type,
-                    ts: params.time.mstimestamp,
-                    cd: new Date(),
-                    device_id: params.qstring.device_id,
-                    uid: params.app_user.uid,
-                    p: params.app_user.p || m._os,
-                    pv: params.app_user.pv || m._os_version,
-                    d: params.app_user.d || m._device,
-                    av: params.app_user.av || m._app_version,
-                    sc: params.app_user.sc || 0
-                });
-
-                var events = [{
-                    key: "[CLY]_consent",
-                    count: 1,
-                    segmentation: params.qstring.consent
-                }];
-                plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: events});
-
-                plugins.dispatch("/consent/change", {params: params, changes: changes});
-            }
-        }
-    });
 
     plugins.register("/o", function(ob) {
         var params = ob.params;
@@ -136,7 +36,7 @@ const FEATURE_NAME = 'compliance_hub';
         case 'current': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                return false;
+                return true;
             }
             validateRead(params, FEATURE_NAME, function() {
                 var query = params.qstring.query || {};
@@ -155,6 +55,118 @@ const FEATURE_NAME = 'compliance_hub';
             break;
         }
         case 'search': {
+            if (!params.qstring.app_id) {
+                common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                return true;
+            }
+            validateRead(params, FEATURE_NAME, function() {
+                try {
+                    var columns = ["device_id", "device_id", "uid", "type", "ts", "ts"];
+                    var checkOb;
+                    if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
+                        checkOb = {};
+                        checkOb[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
+                    }
+                    else if (params.qstring.sort && typeof params.qstring.sort === 'object' && Object.keys(params.qstring.sort).length) {
+                        checkOb = params.qstring.sort;
+                    }
+                    else {
+                        checkOb = {};
+                    }
+                    var queryParams = {
+                        appID: params.qstring.app_id,
+                        period: params.qstring.period,
+                        qstring: params.qstring,
+                        sSearch: params.qstring.sSearch,
+                        sort: checkOb,
+                        project: params.qstring.project || params.qstring.projection || {}
+                    };
+
+                    let rawFilter = params.qstring.filter || params.qstring.query;
+                    if (rawFilter) {
+                        try {
+                            if (typeof rawFilter === 'string' && rawFilter.length) {
+                                rawFilter = JSON.parse(rawFilter);
+                            }
+                            queryParams.query = rawFilter;
+                        }
+                        catch (e) {
+                            log.e('Cannot parse filter/query', e);
+                        }
+                    }
+
+                    const adapter = params.qstring.db_override &&
+                                params.qstring.db_override !== 'compare' &&
+                                params.qstring.db_override !== 'config'
+                        ? params.qstring.db_override
+                        : undefined;
+                    const isClickHouse = adapter === 'clickhouse';
+                    if (isClickHouse) {
+                        queryParams.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 20;
+                        if (params.qstring.cursor) {
+                            queryParams.cursor = params.qstring.cursor;
+                        }
+                        if (params.qstring.paginationMode) {
+                            queryParams.paginationMode = params.qstring.paginationMode;
+                        }
+                        if (!queryParams.paginationMode) {
+                            queryParams.paginationMode = 'snapshot';
+                        }
+                    }
+                    else {
+                        queryParams.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 20;
+                        queryParams.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
+                    }
+                    consentQueries.fetchConsentsList(queryParams, { adapter: adapter, comparisonMode: params.qstring.comparison })
+                        .then(function(res) {
+                            var result;
+
+                            if (isClickHouse) {
+                                result = {
+                                    sEcho: params.qstring.sEcho,
+                                    iTotalRecords: res.total || 0,
+                                    iTotalDisplayRecords: res.total || 0,
+                                    aaData: res.data || []
+                                };
+                                if (res.hasNextPage) {
+                                    result.hasNextPage = true;
+                                    result.nextCursor = res.nextCursor;
+                                }
+                                if (res.paginationMode) {
+                                    result.paginationMode = res.paginationMode;
+                                }
+                                if (res.isApproximate !== undefined) {
+                                    result.isApproximate = res.isApproximate;
+                                }
+                            }
+                            else {
+                                result = {
+                                    sEcho: params.qstring.sEcho,
+                                    iTotalRecords: res.total || 0,
+                                    iTotalDisplayRecords: res.filteredTotal || res.total || 0,
+                                    aaData: res.data || []
+                                };
+                            }
+                            common.returnOutput(params, result);
+                        })
+                        .catch(function(e) {
+                            log.e(e);
+                            common.returnMessage(params, 400, 'Error. Please check logs.');
+                        });
+                }
+                catch (e) {
+                    log.e(e);
+                    common.returnMessage(params, 400, 'Error. Please check logs.');
+                }
+            });
+            break;
+        }
+        /*
+            Internal info: 
+            searchOld endpoint uses consent_history
+            we keep this endpoint as a backup in case we need to use old data
+        */
+        case 'searchOld': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
                 return false;
@@ -279,7 +291,7 @@ const FEATURE_NAME = 'compliance_hub';
         case 'consents': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                return false;
+                return true;
             }
             validateRead(params, FEATURE_NAME, function() {
                 appUsers.count(params.qstring.app_id, {}, function(err, total) {
@@ -324,39 +336,6 @@ const FEATURE_NAME = 'compliance_hub';
         }
     });
 
-    plugins.register("/i/user_merge", function(ob) {
-        var newAppUser = ob.newAppUser;
-        var oldAppUser = ob.oldAppUser;
-        if (typeof oldAppUser.consent !== "undefined") {
-            if (typeof newAppUser.consent === "undefined") {
-                newAppUser.consent = oldAppUser.consent;
-            }
-            else {
-                for (var i in oldAppUser.consent) {
-                    if (typeof newAppUser.consent[i] === "undefined") {
-                        newAppUser.consent[i] = oldAppUser.consent[i];
-                    }
-                }
-            }
-        }
-    });
-
-    plugins.register("/i/device_id", function(ob) {
-        var oldUid = ob.oldUser.uid;
-        var newUid = ob.newUser.uid;
-        if (oldUid !== newUid) {
-            return new Promise(function(resolve, reject) {
-                common.db.collection('consent_history').update({uid: oldUid}, {'$set': {app_id: ob.app_id, uid: newUid}}, {multi: true}, function(err) {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    resolve();
-                });
-            });
-        }
-    });
-
     plugins.register("/i/app_users/delete", function(ob) {
         var params = ob.params;
         common.recordCustomMetric(params, "consents", params.qstring.app_id, ["p"]);
@@ -372,27 +351,24 @@ const FEATURE_NAME = 'compliance_hub';
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        common.db.collection('consent_history').deleteMany({app_id: appId}, function() {});
         if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
+            common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent"}, function() {});
         }
     });
 
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        common.db.collection('consent_history').deleteMany({app_id: appId}, function() {});
         if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
+            common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent"}, function() {});
         }
     });
 
     plugins.register("/i/apps/clear_all", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        common.db.collection('consent_history').deleteMany({app_id: appId}, function() {});
         if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
+            common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent"}, function() {});
         }
     });
 
@@ -400,10 +376,10 @@ const FEATURE_NAME = 'compliance_hub';
         var appId = ob.appId;
         var ids = ob.ids;
         common.db.collection('consents').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: ids}}]}, function() {});
-        common.db.collection('consent_history').deleteMany({app_id: appId, ts: {$lt: ob.moment.valueOf()}}, function() {});
         if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).remove({ts: {$lt: ob.moment.valueOf()}}, function() {});
+            common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent", ts: {$lt: ob.moment.valueOf()}}, function() {});
         }
+
     });
 }(plugin));
 

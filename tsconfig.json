@@ -18,7 +18,13 @@
         "types/rights.d.ts",        // Rights validation type definitions
         "types/events.d.ts",        // Events processing type definitions
         "types/usage.d.ts",         // Usage processing type definitions
+        "types/eventSink.d.ts",     // Event sink type definitions
+        "types/eventSource.d.ts",   // Event source type definitions
         "api/utils/localization.js" // Include JS file for type checking
+    ],
+    // Include all type definition files from plugin types directories
+    "include": [
+        "plugins/*/types/**/*.d.ts"  // All type definitions from plugin types directories
     ],
     "compilerOptions": {
         // Language and Environment
@@ -43,6 +49,6 @@
         "forceConsistentCasingInFileNames": true, // Ensure that casing is correct in imports
 
         // Completeness
-        "typeRoots": ["./types", "./node_modules/@types"] // Specify multiple folders that act like './node_modules/@types'
+        "typeRoots": ["./types", "./plugins/*/types", "./node_modules/@types"] // Specify multiple folders that act like './node_modules/@types'
     }
 }
