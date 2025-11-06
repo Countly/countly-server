@@ -778,6 +778,8 @@
                 symbolicationEnabled: countlyGlobal.plugins.includes("crash_symbolication"),
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
+                pickerDate: '7days',
+
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
                 hasUserPermission: countlyAuth.validateRead('users'),
                 showSymbolicated: false,
@@ -789,6 +791,9 @@
             };
         },
         computed: {
+            currentLimit: function() {
+                return countlyGlobal.crashes_report_limit || 100;
+            },
             crashgroup: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/crashgroup"];
             },
@@ -809,9 +814,6 @@
             },
             mobileMetrics: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/mobileMetrics"];
-            },
-            chartData: function() {
-                return this.$store.getters["countlyCrashes/crashgroup/chartData"](this.$data.chartBy);
             },
             chartByOptions: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/chartByOptions"];
@@ -859,10 +861,17 @@
             isLoading: function() {
                 return this.$store.getters['countlyCrashes/crashgroup/isLoading'];
             },
+            isLoadingGraph: function() {
+                var isLoading = this.$store.getters['countlyCrashes/crashgroup/isGraphLoading'];
+                return isLoading;
+            }
         },
         methods: {
             refresh: function() {
                 return this.$store.dispatch("countlyCrashes/crashgroup/refresh");
+            },
+            chartData: function() {
+                return this.$store.getters["countlyCrashes/crashgroup/chartData"](this.$data.chartBy);
             },
             handleCommentCommand: function(command, comment) {
                 if (command === "edit-comment") {
@@ -1132,6 +1141,13 @@
                     }
 
                 }
+            },
+            handleChartByChange: function(value) {
+                this.$store.dispatch("countlyCrashes/crashgroup/fetchBarData", {value: value, period: this.pickerDate});
+            },
+            handleDatePickerChange: function(value) {
+                this.pickerDate = value.effectiveRange;
+                this.$store.dispatch("countlyCrashes/crashgroup/fetchBarData", {value: this.chartBy, period: this.pickerDate});
             },
             handleCrashgroupStacktraceCommand: function(command) {
                 if (command === "symbolicate") {
