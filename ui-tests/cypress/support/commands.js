@@ -417,39 +417,37 @@ Cypress.Commands.add('dropMongoDatabase', () => {
     cy.exec("mongosh mongodb/countly --eval 'db.dropDatabase()'");
 });
 
-Cypress.Commands.add(('getElement', (originalFn, selector, parent = null, options = {}) => {
-    Cypress.Commands.add('getElement', (selector, parent = null, options = {}) => {
-        const { soft = false, timeout = 5000 } = options;
-        let finalSelector;
+Cypress.Commands.add('getElement', (selector, parent = null, options = {}) => {
+    const { soft = false, timeout = 5000 } = options;
+    let finalSelector;
 
-        if (!selector.includes('[data-test-id=')) {
-            if (selector.startsWith('.') || selector.startsWith('#')) {
-                finalSelector = selector;
-            }
-            else {
-                finalSelector = parent
-                    ? `${parent} [data-test-id="${selector}"]`
-                    : `[data-test-id="${selector}"]`;
-            }
-        }
-        else {
+    if (!selector.includes('[data-test-id=')) {
+        if (selector.startsWith('.') || selector.startsWith('#')) {
             finalSelector = selector;
         }
-
-        if (soft) {
-            return cy.get('body', { timeout }).then(($body) => {
-                const found = $body.find(finalSelector);
-                if (found.length > 0) {
-                    return cy.wrap(found);
-                }
-                else {
-                    cy.softFail(`❌ Element not found: ${finalSelector}`);
-                    return cy.wrap(Cypress.$([])); // Return empty set
-                }
-            });
-        }
         else {
-            return cy.get(finalSelector, { timeout });
+            finalSelector = parent
+                ? `${parent} [data-test-id="${selector}"]`
+                : `[data-test-id="${selector}"]`;
         }
-    });
-}));
+    }
+    else {
+        finalSelector = selector;
+    }
+
+    if (soft) {
+        return cy.get('body', { timeout }).then(($body) => {
+            const found = $body.find(finalSelector);
+            if (found.length > 0) {
+                return cy.wrap(found);
+            }
+            else {
+                cy.softFail(`❌ Element not found: ${finalSelector}`);
+                return cy.wrap(Cypress.$([])); // Return empty set
+            }
+        });
+    }
+    else {
+        return cy.get(finalSelector, { timeout });
+    }
+});
