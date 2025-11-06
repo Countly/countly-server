@@ -415,7 +415,7 @@ Cypress.Commands.add('dropMongoDatabase', () => {
     cy.exec("mongosh mongodb/countly --eval 'db.dropDatabase()'");
 });
 
-Cypress.Commands.overwrite('getElement', (originalFn, selector, parent = null, options = {}) => {
+Cypress.Commands.add(('getElement', (originalFn, selector, parent = null, options = {}) => {
     const { soft = false, timeout = 5000 } = options;
     let finalSelector;
 
