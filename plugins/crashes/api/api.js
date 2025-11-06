@@ -9,9 +9,12 @@ var plugin = {},
     Promise = require("bluebird"),
     trace = require("./parts/stacktrace.js"),
     plugins = require('../../pluginManager.js'),
+    countlyCommon = require('../../../api/lib/countly.common.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 var log = common.log('crashes:api');
+var {getCrashesTable, getCrashesBreakdown} = require('./queries/crashes.js');
 const FEATURE_NAME = 'crashes';
+
 
 /**
 * Crash metrics
@@ -47,7 +50,6 @@ const FEATURE_NAME = 'crashes';
             }
         });
     });
-    var bools = {"root": true, "online": true, "muted": true, "signal": true, "background": true};
     plugins.internalDrillEvents.push("[CLY]_crash");
 
     plugins.register("/i/device_id", function(ob) {
@@ -182,9 +184,47 @@ const FEATURE_NAME = 'crashes';
                             common.returnOutput(params, res);
                         });
                     }
+                    else if (params.qstring.breakdown) {
+                        //Breakdown of property
+
+                        try {
+                            var query2 = {
+                                "a": (params.app_id + ""),
+                                "n": params.qstring.group,
+                                "e": "[CLY]_crash"
+                            };
+
+                            var currentTimezone = countlyCommon.getTimezone(params);
+                            if (!currentTimezone) {
+                                currentTimezone = 'UTC';
+                            }
+                            query2.ts = countlyCommon.getPeriodRange(params.qstring.period, currentTimezone);
+                            var field = "sg." + (params.qstring.field.replace("custom.", "custom_"));
+
+                            var breakdowndata = await getCrashesBreakdown({
+                                query: query2,
+                                field: field,
+                                limit: 10
+                            });
+                            var output = {
+                                app_id: params.app_id,
+                                group: params.qstring.group,
+                                field: params.qstring.field,
+                                data: {}
+                            };
+                            for (var z = 0; z < breakdowndata.length; z++) {
+                                output.data[breakdowndata[z]._id] = breakdowndata[z].count;
+                            }
+                            common.returnMessage(params, 200, output);
+                        }
+                        catch (err) {
+                            log.e("Error getting breakdown for crashes:", err);
+                            common.returnMessage(params, 500, 'Error getting breakdown for crashes');
+                        }
+                    }
                     else {
                         common.db.collection('app_users' + params.app_id).estimatedDocumentCount(function(err, total) {
-                            common.db.collection('app_crashgroups' + params.app_id).findOne({groups: params.qstring.group}, function(crashGroupsErr, result) {
+                            common.db.collection('app_crashgroups' + params.app_id).findOne({groups: params.qstring.group}, async function(crashGroupsErr, result) {
                                 if (result) {
                                     trace.postprocessCrash(result);
                                     result.total = total;
@@ -197,54 +237,20 @@ const FEATURE_NAME = 'crashes';
                                         }
                                     }
                                     //Fetch from drill. If not enough - check old collections.
-                                    var cursor0 = common.drillDb.collection("drill_events").find({"a": (params.app_id + ""), "e": "[CLY]_crash", "n": (result._id + "")}).sort({ts: -1});
-                                    cursor0.limit(plugins.getConfig("crashes").report_limit);
-                                    cursor0.toArray(function(cursorErr, res0) {
-                                        if (cursorErr) {
-                                            log.e("Error fetching crash reports from drill: " + cursorErr);
-                                        }
-                                        res0 = res0 || [];
-                                        console.log("Fetched " + res0.length + " crash reports from drill for crash group " + result._id);
-                                        if (res0 && res0.length) {
-                                            for (var z = 0; z < res0.length; z++) {
-                                                //Converts to usual format
-                                                res0[z].sg = res0[z].sg || {};
-                                                var dd = res0[z].sg;
-                                                dd.ts = res0[z].ts;
-                                                dd._id = res0[z]._id;
-                                                for (var bkey in bools) {
-                                                    if (res0[z].sg[bkey] === "true") {
-                                                        res0[z].sg[bkey] = 1;
-                                                    }
-                                                    else if (res0[z].sg[bkey] === "false") {
-                                                        res0[z].sg[bkey] = 0;
-                                                    }
-                                                }
-                                                var rw = ["not_os_specific", "nonfatal", "javascript", "native_cpp", "plcrash"];
-                                                for (var ii = 0; ii < rw.length; ii++) {
-                                                    if (res0[z].sg[rw[ii]] === "true") {
-                                                        res0[z].sg[rw[ii]] = true;
-                                                    }
-                                                    else if (res0[z].sg[rw[ii]] === "false") {
-                                                        res0[z].sg[rw[ii]] = false;
-                                                    }
-                                                }
-                                                dd.custom = res0[z].custom || {};
-                                                for (var key in res0[z].sg) {
-                                                    if (key.indexOf("custom_") === 0) {
-                                                        dd.custom[key.replace("custom_", "")] = res0[z].sg[key];
-                                                    }
-                                                }
-                                                dd.group = res0[z].n;
-                                                dd.uid = res0[z].uid;
-                                                dd.cd = res0[z].cd;
-                                                res0[z] = dd;
-                                                trace.postprocessCrash(res0[z]);
-                                            }
-                                            result.data = res0;
-                                        }
-                                        common.returnOutput(params, result);
-                                    });
+
+                                    var query = {
+                                        "a": (params.app_id + ""),
+                                        "n": params.qstring.group,
+                                        "e": "[CLY]_crash"
+                                    };
+
+                                    var limit = plugins.getConfig("crashes").report_limit;
+                                    var crashtable = await getCrashesTable({ query: query, limit: limit });
+                                    result.data = crashtable || [];
+
+
+                                    common.returnOutput(params, result);
+
                                     if (result.is_new) {
                                         common.db.collection('app_crashgroups' + params.app_id).update({groups: params.qstring.group}, {$set: {is_new: false}}, function() {});
                                         common.db.collection('app_crashgroups' + params.app_id).update({_id: "meta"}, {$inc: {isnew: -1}}, function() {});
