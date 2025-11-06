@@ -178,7 +178,7 @@ module.exports.drillPreprocessQuery = async function({query, params}) {
         }
     }
 
-    if (query.push) {
+    if (query && query.push) {
         let q;
         if (query.push.$nin) {
             q = {

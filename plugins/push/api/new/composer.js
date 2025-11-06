@@ -350,7 +350,7 @@ async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTime
         pipeline.push({ $match: { $or } });
     }
     // Cohorts:
-    if (Array.isArray(filters?.cohorts) && filters.cohorts.length) {
+    if (Array.isArray(filters.cohorts) && filters.cohorts.length) {
         /** @type {{ [cohortPath: string]: "true" }} */
         const $match = {};
         for (let i = 0; i < filters.cohorts.length; i++) {
@@ -359,7 +359,7 @@ async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTime
         pipeline.push({ $match });
     }
     // Geos:
-    if (Array.isArray(filters?.geos) && filters.geos.length) {
+    if (Array.isArray(filters.geos) && filters.geos.length) {
         /** @type {GeosCollection} */
         const col = db.collection("geos");
         const geoDocs = await col.find({
@@ -388,7 +388,7 @@ async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTime
         }
     }
     // User filter:
-    if (filters?.user) {
+    if (filters.user) {
         const userFilter = JSON.parse(filters.user);
         if (appTimezone) {
             let params = {
@@ -407,7 +407,7 @@ async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTime
     }
     // Drill:
     // TODO: BETTER IMPLEMENTATION OF THIS
-    if (filters?.drill && appTimezone) {
+    if (filters.drill && appTimezone) {
         const drillAPI = loadDrillAPI();
         if (!drillAPI) {
             pipeline.push({
@@ -463,7 +463,7 @@ async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTime
         }
     }
     // Cap filter (only for cohort and event trigger).
-    if (filters?.cap) {
+    if (filters.cap) {
         const field = "msgs." + filters.cap.messageId.toString();
         // limit the maximum number of push notifications for the given messageId
         if (typeof filters.cap.maxMessages === "number" && filters.cap.maxMessages > 0) {

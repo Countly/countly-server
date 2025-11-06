@@ -546,7 +546,7 @@ function mapMessageToPayload(messageDoc, content, context) {
             const key = removeUPFromUserPropertyKey(userPropKey);
             if (key in context) {
                 let value = context[key];
-                if (value !== undefined || value !== null) {
+                if (value !== undefined && value !== null) {
                     if (!payload.c.e) {
                         payload.c.e = {};
                     }
