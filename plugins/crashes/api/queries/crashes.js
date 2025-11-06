@@ -1,5 +1,5 @@
 /**
- * Retention Aggregation Query Definition
+ * Crashes Aggregation Query Definition
  * Provides both MongoDB and ClickHouse implementations for drill aggregation
  */
 const common = require('../../../../api/utils/common.js');
@@ -124,7 +124,6 @@ async function getCrashesBreakdownMongodb(params) {
             {"$sort": {"count": -1}},
             {"$limit": limit || 100}
         ];
-        console.log(JSON.stringify(aggregate));
         var data = await common.drillDb.collection("drill_events").aggregate(aggregate).toArray();
         data = data || [];
 
@@ -146,7 +145,7 @@ async function getCrashesBreakdownMongodb(params) {
 
 
 /**
- * Fetch table with crah occurences
+ * Fetch table with crash occurences
  * @param {*} params - Query parameters object containing all necessary data
  * @param {*} options - Options for the query
  * @returns {Promise<Cursor>} Returns cursor for traversing data
@@ -173,7 +172,7 @@ async function getCrashesTable(params, options) {
     return common.queryRunner.executeQuery(queryDef, params, options);
 }
 
-/** 
+/**
  * Fetch breakdown of crashes by specific field
  * @param {*} params - Query parameters object containing all necessary data
  * @param {*} options - Options for the query

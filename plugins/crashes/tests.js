@@ -850,7 +850,7 @@ describe('Testing Crashes', function() {
                 "orientation": {"landscape": 2, "portrait": 1},
                 "custom.facebook": {"3.0": 2, "3.5": 1},
                 "custom.googleplay": {"1.0": 2, "2.0": 1},
-            };'';
+            };
             for (var breakdown in breakdowns) {
                 var res = await request.get('/o?group=' + CRASHES[0] + '&method=crashes&breakdown=true&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&field=" + breakdown);
                 var tt = res.text;

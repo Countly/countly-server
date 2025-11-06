@@ -779,7 +779,6 @@
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
                 pickerDate: '7days',
-
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
                 hasUserPermission: countlyAuth.validateRead('users'),
                 showSymbolicated: false,
