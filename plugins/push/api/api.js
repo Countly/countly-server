@@ -65,6 +65,7 @@ plugins.setConfigs(FEATURE_NAME, {
     pool_concurrency: 5, // max number of same type connections
     pool_pools: 10, // max number of connections in total
     default_content_available: false, // sets content-available: 1 by default for ios
+    message_timeout: 3600000, // timeout for a message not sent yet (for TooLateToSend error)
 });
 
 plugins.internalEvents.push('[CLY]_push_sent');
