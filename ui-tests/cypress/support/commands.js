@@ -281,7 +281,8 @@ Cypress.Commands.add('verifyElement', (options) => {
     const safeCheck = (fn, description) => {
         try {
             fn();
-        } catch (err) {
+        }
+        catch (err) {
             cy.softFail(`${description} - ${err.message}`);
         }
     };
@@ -371,7 +372,8 @@ Cypress.Commands.add('verifyElement', (options) => {
                     .should('contain', attrText);
             }, `Attribute mismatch: ${element}`);
         }
-    } else {
+    }
+    else {
         if (element != null && isElementVisible === true) {
             safeCheck(() => {
                 cy.getElement(element, null, { soft: true }).should("be.visible");
@@ -422,12 +424,14 @@ Cypress.Commands.add(('getElement', (originalFn, selector, parent = null, option
     if (!selector.includes('[data-test-id=')) {
         if (selector[0].includes('.') || selector[0].includes('#')) {
             finalSelector = selector;
-        } else {
+        }
+        else {
             finalSelector = parent
                 ? `${parent} [data-test-id="${selector}"]`
                 : `[data-test-id="${selector}"]`;
         }
-    } else {
+    }
+    else {
         finalSelector = selector;
     }
 
@@ -436,12 +440,14 @@ Cypress.Commands.add(('getElement', (originalFn, selector, parent = null, option
             const found = $body.find(finalSelector);
             if (found.length > 0) {
                 return cy.wrap(found);
-            } else {
+            }
+            else {
                 cy.softFail(`❌ Element not found: ${finalSelector}`);
                 return cy.wrap(Cypress.$([]));
             }
         });
-    } else {
+    }
+    else {
         return originalFn(finalSelector, { timeout });
     }
-});
+}));
