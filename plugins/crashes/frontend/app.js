@@ -1,5 +1,6 @@
 var exportedPlugin = {},
     countlyConfig = require('../../../frontend/express/config', 'dont-enclose');
+var plugins = require('../../pluginManager.js');
 
 var config;
 try {
@@ -10,6 +11,9 @@ catch (err) {
 }
 var trace = require('../api/parts/stacktrace.js');
 (function(plugin) {
+    plugin.renderDashboard = function(ob) {
+        ob.data.countlyGlobal.crashes_report_limit = plugins.getConfig("crashes").report_limit;
+    };
     plugin.init = function(app, countlyDb) {
         app.get(countlyConfig.path + '/crashes/*', function(req, res) {
             var parts = req.url.split("/");

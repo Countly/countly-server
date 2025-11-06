@@ -181,7 +181,8 @@ const FEATURE_NAME = 'compliance_hub';
                         query = {};
                     }
                 }
-                common.db.collection("consent_history").count(query, function(err, total) {
+                query.app_id = params.app_id.toString();
+                common.db.collection("consent_history").countDocuments(query, function(err, total) {
                     if (err) {
                         common.returnMessage(params, 400, err);
                     }
@@ -350,26 +351,35 @@ const FEATURE_NAME = 'compliance_hub';
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent"}, function() {});
+        if (common.drillDb) {
+            common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent"}, function() {});
+        }
     });
 
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent"}, function() {});
+        if (common.drillDb) {
+            common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent"}, function() {});
+        }
     });
 
     plugins.register("/i/apps/clear_all", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent"}, function() {});
+        if (common.drillDb) {
+            common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent"}, function() {});
+        }
     });
 
     plugins.register("/i/apps/clear", function(ob) {
         var appId = ob.appId;
         var ids = ob.ids;
         common.db.collection('consents').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: ids}}]}, function() {});
-        common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent", ts: {$lt: ob.moment.valueOf()}}, function() {});
+        if (common.drillDb) {
+            common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_consent", ts: {$lt: ob.moment.valueOf()}}, function() {});
+        }
+
     });
 }(plugin));
 
