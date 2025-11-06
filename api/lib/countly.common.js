@@ -899,19 +899,16 @@ countlyCommon.getPeriodRange = function(period, timezone, offset) {
         if (Number.isInteger(period[0]) && Number.isInteger(period[1])) {
             period[0] = fixTimestampToMilliseconds(period[0]);
             period[1] = fixTimestampToMilliseconds(period[1]);
-            fromDate = moment(period[0]);
-            toDate = moment(period[1]);
+            fromDate = moment.tz(period[0], timezone);
+            toDate = moment.tz(period[1], timezone);
         }
         else {
-            fromDate = moment(period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
-            toDate = moment(period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
+            fromDate = moment.tz(period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"], timezone);
+            toDate = moment.tz(period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"], timezone);
         }
 
         startTimestamp = fromDate.clone().startOf("day");
         endTimestamp = toDate.clone().endOf("day");
-
-        fromDate.tz(timezone);
-        toDate.tz(timezone);
 
         if (fromDate.valueOf() > toDate.valueOf()) {
             //incorrect range - reset to 30 days
@@ -968,11 +965,11 @@ countlyCommon.getPeriodRange = function(period, timezone, offset) {
         let nDays = 30;
         startTimestamp = __currMoment.clone().startOf("day").subtract(nDays - 1, "days");
     }
-    if (!offset) {
-        offset = moment.tz(timezone).utcOffset();
-        offset = offset * -1;
-    }
-    return {"$gt": startTimestamp.valueOf() + offset * 60000 - 1, "$lt": endTimestamp.valueOf() + offset * 60000 + 1};
+
+    const offsetMs = (offset ?? 0) * 60000;
+    const tolerance = offset ? 1 : 0;
+
+    return { $gt: startTimestamp.valueOf() + offsetMs - tolerance, $lt: endTimestamp.valueOf() + offsetMs + tolerance };
 };
 
 /**
