@@ -215,16 +215,14 @@ const recalculateStats = async function(currEvent) {
             // events is an array of event, each event has the same structure as drill documents.
             // They will come this way in kafka, the pipeline above should make sure they are the same if coming from changestreams.
             if (events && Array.isArray(events)) {
+                var affected_apps = {};
                 for (let idx = 0; idx < events.length; idx += 1) {
                     const currEvent = events[idx];
                     // Kafka will send all events here, so filter out if needed.
                     if (currEvent.e === '[CLY]_crash' && 'a' in currEvent) {
-                        common.readBatcher.getOne('apps', common.db.ObjectID(currEvent.a), async(err, app) => {
-                            if (err) {
-                                log.e('Error getting app data for crash', err);
-                                return;
-                            }
-
+                        affected_apps[currEvent.a] = true;
+                        try {
+                            var app = await common.readBatcher.getOne('apps', common.db.ObjectID(currEvent.a));
                             if (app && '_id' in app) {
                                 const params = {app_id: currEvent.a, app: app, time: common.initTimeObj(app.timezone, currEvent.ts), appTimezone: (app.timezone || 'UTC')};
                                 const platform = currEvent.sg?.os || currEvent.up?.p;
@@ -375,14 +373,20 @@ const recalculateStats = async function(currEvent) {
                                     // Other segment types
                                     else if (props[i] in currEvent.sg && segments.includes(props[i])) {
                                         let safeKey = (currEvent.sg[props[i]] + '').replace(/^\$/, '').replace(/\./g, ':');
+                                        //In meta document for crash groups we store total stats for app_version and os. Need to record in crash group as needed to update meta on delete operation. Once we switch to calculating full data from granular, this can be removed from aggregation.
+                                        if (props[i] === "app_version" || props[i] === "os") {
+                                            if (safeKey) {
+                                                if (groupInc[props[i] + '.' + safeKey]) {
+                                                    groupInc[props[i] + '.' + safeKey]++;
+                                                }
+                                                else {
+                                                    groupInc[props[i] + '.' + safeKey] = 1;
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            groupSet[props[i]] = {};
 
-                                        if (safeKey) {
-                                            if (groupInc[props[i] + '.' + safeKey]) {
-                                                groupInc[props[i] + '.' + safeKey]++;
-                                            }
-                                            else {
-                                                groupInc[props[i] + '.' + safeKey] = 1;
-                                            }
                                         }
                                     }
                                 }
@@ -394,12 +398,13 @@ const recalculateStats = async function(currEvent) {
                                             let safeKey = (currEvent.sg[key] + '').replace(/^\$/, '').replace(/\./g, ':');
                                             key = key.replace(/^custom_/, '');
                                             if (safeKey) {
-                                                if (groupInc['custom.' + key + '.' + safeKey]) {
+                                                groupSet['custom.' + key] = {};
+                                                /* if (groupInc['custom.' + key + '.' + safeKey]) {
                                                     groupInc['custom.' + key + '.' + safeKey]++;
                                                 }
                                                 else {
                                                     groupInc['custom.' + key + '.' + safeKey] = 1;
-                                                }
+                                                }*/
                                             }
                                         }
                                     }
@@ -480,12 +485,20 @@ const recalculateStats = async function(currEvent) {
                                 //total numbers
                                 localWriteBatcher.add('app_crashgroups' + params.app_id, 'meta', {$inc: metaInc}, 'countly', {token: token});
                             }
-                        });
+                            else {
+                                log.e('App not found for crash aggregation:' + currEvent.a);
+                            }
+                        }
+                        catch (ee) {
+                            log.e('Error processing crash event:', ee);
+                        }
                     }
                 }
-
                 // Flush batchers
                 await localWriteBatcher.flush('countly', 'crashdata');
+                for (var appId in affected_apps) {
+                    await localWriteBatcher.flush('countly', 'app_crashgroups' + appId);
+                }
             }
         }
     });
