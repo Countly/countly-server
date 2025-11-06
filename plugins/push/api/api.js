@@ -44,7 +44,7 @@ const plugins = require('../../pluginManager'),
         }
     };
 
-const { initPushQueue, setupTopicsAndPartitions } = require("./new/lib/kafka.js");
+const { initPushQueue } = require("./new/lib/kafka.js");
 const { composeAllScheduledPushes } = require('./new/composer.js');
 const { sendAllPushes } = require('./new/sender.js');
 const { saveResults } = require("./new/resultor.js");
@@ -97,14 +97,6 @@ plugins.internalDrillEvents.push('[CLY]_push_action');
 // });
 
 plugins.register("/master", async function() {
-    // Initialize the push queue and setup Kafka topics and partitions
-    try {
-        await setupTopicsAndPartitions();
-        log.i("Kafka topics and partitions setup completed");
-    }
-    catch (err) {
-        log.e("Error setting up Kafka topics and partitions:", err);
-    }
     try {
         await initPushQueue(
             pushes => sendAllPushes(pushes),

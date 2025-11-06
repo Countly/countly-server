@@ -1,8 +1,4 @@
 {
-    "brokers": [
-        "localhost:19092"
-    ],
-    "clientId": "countly-push",
     "consumerGroupId": "countly-push-consumers",
     "topics": {
         "SEND": {
