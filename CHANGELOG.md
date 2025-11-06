@@ -5,6 +5,8 @@ Fixes:
 Enterprise Fixes:
 - [data-manager] Fixed bug when merging events with ampersand symbol in the name
 - [groups] Add logs for user updates
+- [nps] Sort widgets by internal name and search by name or internal name
+- [surveys] Sort widgets by internal name and search by name or internal name
 
 
 ## Version 24.05.44
