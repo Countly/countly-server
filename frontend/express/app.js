@@ -1045,7 +1045,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                 countlyGlobal.flexDeploymentId = CONF.DEPLOYMENT_ID;
                             }
                         }
-                    } catch (e) {
+                    }
+                    catch (e) {
                         // ignore fs/JSON errors
                     }
                 }
