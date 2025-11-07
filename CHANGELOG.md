@@ -1,5 +1,6 @@
 ## Version 25.03.xx
 Enterprise Fixes:
+- [surveys] Handle multiple survey submission from same user based on survey visibility
 - [users] Set correct users widget table rows amount according to selected setting
 
 ## Version 25.03.26
