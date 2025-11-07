@@ -1,7 +1,12 @@
+## Version 24.05.X
+Enterprise Fixes:
+- [surveys] Handle multiple survey submission from same user based on survey visibility
+
+
 ## Version 24.05.45
 Fixes:
 - [security] Fixed injection possibility on res.expose
-  
+
 Enterprise Fixes:
 - [data-manager] Fixed bug when merging events with ampersand symbol in the name
 - [groups] Add logs for user updates
