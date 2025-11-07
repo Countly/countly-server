@@ -104,7 +104,7 @@ describe('Testing Browser metrics', function() {
                 });
         });
         it('trigger job for database cleanup', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", done);
+            testUtils.triggerJobToRun("api:mutationManagerJob", done);
         });
     });
     describe('verify empty browser', function() {

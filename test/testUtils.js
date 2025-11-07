@@ -194,9 +194,6 @@ var testUtils = function testUtils() {
         });
     }
     this.triggerJobToRun = function(jobName, callback) {
-        if (jobName === "api:deletionManagerJob") {
-            jobName = "api:mutationManagerJob";
-        }
         var request = reqq(this.url);
         var self = this;
         request.get("/jobs/i?jobName=" + encodeURIComponent(jobName) + "&action=runNow&api_key=" + props.API_KEY_ADMIN)
