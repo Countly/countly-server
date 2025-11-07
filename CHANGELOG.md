@@ -1,4 +1,4 @@
-## Version 24.10.xx
+## Version 24.10.13
 Enterprise Fixes:
 - [nps] Sort widgets by internal name and search by name or internal name
 - [surveys] Sort widgets by internal name and search by name or internal name
