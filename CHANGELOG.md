@@ -1,3 +1,7 @@
+## Version 25.03.XX
+Fixes:
+- [push] Fixed the options of the request being made during mime detection
+
 ## Version 25.03.26
 Fixes:
 - [push] Fixed timeout setting
