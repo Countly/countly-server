@@ -1,3 +1,8 @@
+## Version 25.03.X
+Enterprise Fixes:
+- [surveys] Handle multiple survey submission from same user based on survey visibility
+- 
+
 ## Version 25.03.26
 Fixes:
 - [push] Fixed timeout setting
