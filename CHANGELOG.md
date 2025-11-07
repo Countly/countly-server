@@ -1,7 +1,9 @@
-## Version 25.03.X
+## Version 25.03.XX
+Fixes:
+- [push] Fixed the options of the request being made during mime detection
+
 Enterprise Fixes:
 - [surveys] Handle multiple survey submission from same user based on survey visibility
-- 
 
 ## Version 25.03.26
 Fixes:
