@@ -35,6 +35,7 @@ Fixes:
 Enterprise Fixes:
 - [ab-testing] Add script for fixing variant cohort
 - [groups] Fix user permission update after updating user group permission
+- [funnels] Fixed delete confirmation using correct button copy
 
 ## Version 25.03.24
 Fixes:
@@ -44,7 +45,6 @@ Enterprise Fixes:
 - [compliance-hub] Fixed query patterns
 - [data-manager] Fixed bug preventing transformation of events ending in a dot
 - [data-manager] Fixed segment data deletion
-- [funnels] Fixed delete confirmation using correct button copy
 - [license] Stop sending metric after license expired
 - [users] Fix add/remove user to profile group
 - [users] Remove link to profile group page after removing user from group
