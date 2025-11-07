@@ -1,6 +1,7 @@
 ## Version 24.05.X
 Enterprise Fixes:
 - [surveys] Handle multiple survey submission from same user based on survey visibility
+- [users] Set correct users widget table rows amount according to selected setting
 
 
 ## Version 24.05.45
@@ -12,7 +13,6 @@ Enterprise Fixes:
 - [groups] Add logs for user updates
 - [nps] Sort widgets by internal name and search by name or internal name
 - [surveys] Sort widgets by internal name and search by name or internal name
-- [users] Set correct users widget table rows amount according to selected setting
 
 
 ## Version 24.05.44
