@@ -1,4 +1,8 @@
 ## Version 25.03.xx
+Enterprise Fixes:
+- [users] Set correct users widget table rows amount according to selected setting
+
+## Version 25.03.26
 Fixes:
 - [push] Fixed timeout setting
 - [security] Fixed injection possibility on res.expose
@@ -9,7 +13,6 @@ Enterprise Fixes:
 - [nps] Sort widgets by internal name and search by name or internal name
 - [surveys] Change question map log to debug log
 - [surveys] Sort widgets by internal name and search by name or internal name
-- [users] Set correct users widget table rows amount according to selected setting
 
 Dependencies:
 - Bump axios from 1.12.2 to 1.13.1 in /plugins/cognito
@@ -31,6 +34,7 @@ Fixes:
 Enterprise Fixes:
 - [ab-testing] Add script for fixing variant cohort
 - [groups] Fix user permission update after updating user group permission
+- [funnels] Fixed delete confirmation using correct button copy
 
 ## Version 25.03.24
 Fixes:
