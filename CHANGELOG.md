@@ -1,4 +1,9 @@
-## Version 25.03.xx
+## Version 25.03.X
+Enterprise Fixes:
+- [surveys] Handle multiple survey submission from same user based on survey visibility
+- 
+
+## Version 25.03.26
 Fixes:
 - [push] Fixed timeout setting
 - [security] Fixed injection possibility on res.expose
@@ -9,7 +14,6 @@ Enterprise Fixes:
 - [nps] Sort widgets by internal name and search by name or internal name
 - [surveys] Change question map log to debug log
 - [surveys] Sort widgets by internal name and search by name or internal name
-- [surveys] Handle multiple survey submission from same user based on survey visibility
 
 Dependencies:
 - Bump axios from 1.12.2 to 1.13.1 in /plugins/cognito
@@ -40,6 +44,7 @@ Enterprise Fixes:
 - [compliance-hub] Fixed query patterns
 - [data-manager] Fixed bug preventing transformation of events ending in a dot
 - [data-manager] Fixed segment data deletion
+- [funnels] Fixed delete confirmation using correct button copy
 - [license] Stop sending metric after license expired
 - [users] Fix add/remove user to profile group
 - [users] Remove link to profile group page after removing user from group
