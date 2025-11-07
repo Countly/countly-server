@@ -144,11 +144,11 @@ Cypress.Commands.add("shouldNotBeDisabled", (element) => {
 });
 
 Cypress.Commands.add("shouldContainText", (element, text) => {
-    cy.getElement(element).should("contain", text);
+    cy.getElement(element).should("contain.text", text);
 });
 
 Cypress.Commands.add("shouldNotContainText", (element, text) => {
-    cy.getElement(element).eq(0).should("not.contain", text);
+    cy.getElement(element).eq(0).should("not.contain.text", text);
 });
 
 Cypress.Commands.add("shouldBeEqual", (element, text) => {
@@ -162,15 +162,15 @@ Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
 });
 
 Cypress.Commands.add("shouldPlaceholderContainText", (element, text) => {
-    cy.getElement(element).invoke("attr", "placeholder").should("contain", text);
+    cy.getElement(element).invoke("attr", "placeholder").should("contain.text", text);
 });
 
 Cypress.Commands.add("shouldDataOriginalTitleContainText", (element, text) => {
-    cy.getElement(element).invoke("attr", "data-original-title").should("contain", text);
+    cy.getElement(element).invoke("attr", "data-original-title").should("contain.text", text);
 });
 
 Cypress.Commands.add("shouldHrefContainUrl", (element, url) => {
-    cy.getElement(element).invoke("attr", "href").should("contain", url);
+    cy.getElement(element).invoke("attr", "href").should("contain.text", url);
 });
 
 Cypress.Commands.add("shouldHaveValue", (element, value) => {
@@ -293,7 +293,7 @@ Cypress.Commands.add('verifyElement', (options) => {
         }
 
         if (labelText != null) {
-            safeCheck(() => cy.getElement(labelElement, null, { soft: true }).should("contain", labelText), `Label text mismatch: ${labelElement}`);
+            safeCheck(() => cy.getElement(labelElement, null, { soft: true }).should("contain.text", labelText), `Label text mismatch: ${labelElement}`);
         }
 
         if (tooltipElement != null) {
@@ -309,15 +309,15 @@ Cypress.Commands.add('verifyElement', (options) => {
         }
 
         if (elementText != null) {
-            safeCheck(() => cy.getElement(element, null, { soft: true }).should("contain", elementText), `Element text mismatch: ${element}`);
+            safeCheck(() => cy.getElement(element, null, { soft: true }).should("contain.text", elementText), `Element text mismatch: ${element}`);
         }
 
         if (elementPlaceHolder != null) {
-            safeCheck(() => cy.getElement(element, null, { soft: true }).invoke("attr", "placeholder").should("contain", elementPlaceHolder), `Placeholder mismatch: ${element}`);
+            safeCheck(() => cy.getElement(element, null, { soft: true }).invoke("attr", "placeholder").should("contain.text", elementPlaceHolder), `Placeholder mismatch: ${element}`);
         }
 
         if (hrefContainUrl != null) {
-            safeCheck(() => cy.getElement(element, null, { soft: true }).invoke("attr", "href").should("contain", hrefContainUrl), `Href mismatch: ${element}`);
+            safeCheck(() => cy.getElement(element, null, { soft: true }).invoke("attr", "href").should("contain.text", hrefContainUrl), `Href mismatch: ${element}`);
         }
 
         if (value != null) {
@@ -398,10 +398,16 @@ Cypress.Commands.add('initSoftAssert', () => {
 
 // collects soft assertion failures without failing the test immediately.
 Cypress.Commands.add('softFail', (message) => {
-    cy.get('@softErrors').then((errors) => {
-        errors.push(message);
-        cy.wrap(errors).as('softErrors');
-    });
+    // First, check if @softErrors alias exists
+    cy.state('aliases')?.softErrors
+        ? cy.get('@softErrors', { log: false }).then((errors) => {
+            errors.push(message);
+            cy.wrap(errors, { log: false }).as('softErrors');
+        })
+        : (() => {
+            // Soft assert not initialized — fail immediately
+            throw new Error(message);
+        })();
 });
 
 // checks if there were any soft assertion failures and fails the test if there were.
