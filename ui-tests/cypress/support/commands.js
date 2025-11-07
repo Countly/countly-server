@@ -162,15 +162,15 @@ Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
 });
 
 Cypress.Commands.add("shouldPlaceholderContainText", (element, text) => {
-    cy.getElement(element).invoke("attr", "placeholder").should("contain.text", text);
+    cy.getElement(element).invoke("attr", "placeholder").should("contain", text);
 });
 
 Cypress.Commands.add("shouldDataOriginalTitleContainText", (element, text) => {
-    cy.getElement(element).invoke("attr", "data-original-title").should("contain.text", text);
+    cy.getElement(element).invoke("attr", "data-original-title").should("contain", text);
 });
 
 Cypress.Commands.add("shouldHrefContainUrl", (element, url) => {
-    cy.getElement(element).invoke("attr", "href").should("contain.text", url);
+    cy.getElement(element).invoke("attr", "href").should("contain", url);
 });
 
 Cypress.Commands.add("shouldHaveValue", (element, value) => {
@@ -313,11 +313,11 @@ Cypress.Commands.add('verifyElement', (options) => {
         }
 
         if (elementPlaceHolder != null) {
-            safeCheck(() => cy.getElement(element, null, { soft: true }).invoke("attr", "placeholder").should("contain.text", elementPlaceHolder), `Placeholder mismatch: ${element}`);
+            safeCheck(() => cy.getElement(element, null, { soft: true }).invoke("attr", "placeholder").should("contain", elementPlaceHolder), `Placeholder mismatch: ${element}`);
         }
 
         if (hrefContainUrl != null) {
-            safeCheck(() => cy.getElement(element, null, { soft: true }).invoke("attr", "href").should("contain.text", hrefContainUrl), `Href mismatch: ${element}`);
+            safeCheck(() => cy.getElement(element, null, { soft: true }).invoke("attr", "href").should("contain", hrefContainUrl), `Href mismatch: ${element}`);
         }
 
         if (value != null) {
