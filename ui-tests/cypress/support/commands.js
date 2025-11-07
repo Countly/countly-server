@@ -128,6 +128,18 @@ Cypress.Commands.add("clickBody", () => {
     cy.checkPaceRunning();
 });
 
+Cypress.Commands.add('dragAndDropFile', (element, filePath) => {
+    cy.getElement(element)
+        .attachFile(filePath, {
+            encoding: 'utf-8',
+            subjectType: 'drag-n-drop'
+        });
+});
+
+Cypress.Commands.add('uploadFile', (filePath) => {
+    cy.get('input[type="file"]').attachFile(filePath, { force: true });
+});
+
 // ─────────────────────────────────────────────
 // Selectors and Dropdowns
 // ─────────────────────────────────────────────
@@ -202,6 +214,14 @@ Cypress.Commands.add("shouldNotBeDisabled", (element) => {
     cy.getElement(element).should("not.be.disabled");
 });
 
+Cypress.Commands.add("shouldBeHasDisabledClass", (element) => {
+    cy.get(`[data-test-id="${element}"].is-disabled`).should("exist");
+});
+
+Cypress.Commands.add("shouldNotBeHasDisabledClass", (element) => {
+    cy.get(`[data-test-id="${element}"].is-disabled`).should("not.exist");
+});
+
 Cypress.Commands.add("shouldContainText", (element, text) => {
     cy.getElement(element).should("contain", text);
 });
@@ -224,12 +244,20 @@ Cypress.Commands.add("shouldPlaceholderContainText", (element, text) => {
     cy.getElement(element).invoke("attr", "placeholder").should("contain", text);
 });
 
+Cypress.Commands.add("shouldDataOriginalTitleContainText", (element, text) => {
+    cy.getElement(element).invoke("attr", "data-original-title").should("contain", text);
+});
+
 Cypress.Commands.add("shouldHrefContainUrl", (element, url) => {
     cy.getElement(element).invoke("attr", "href").should("contain", url);
 });
 
 Cypress.Commands.add("shouldHaveValue", (element, value) => {
     cy.getElement(element).should("have.value", value);
+});
+
+Cypress.Commands.add("shouldUrlInclude", (url) => {
+    cy.url().should('include', url);
 });
 
 // ─────────────────────────────────────────────
@@ -244,6 +272,14 @@ Cypress.Commands.add('elementExists', (selector) => {
     cy.get('body').then(($body) => {
         return $body.find(selector).length > 0;
     });
+});
+
+Cypress.Commands.add('shouldBeExist', (element) => {
+    cy.getElement(element).should('exist');
+});
+
+Cypress.Commands.add('shouldNotExist', (element) => {
+    cy.getElement(element).should('not.exist');
 });
 
 Cypress.Commands.add('checkPaceRunning', () => {
@@ -265,12 +301,36 @@ Cypress.Commands.add('checkPaceActive', () => {
 // ─────────────────────────────────────────────
 // Scroll Helpers
 // ─────────────────────────────────────────────
+Cypress.Commands.add("scrollPageSlightly", (element = '.main-view', index = 0) => {
+    cy.get(element).eq(index).then(($el) => {
+        const currentScroll = $el[0].scrollTop;
+        const newScroll = currentScroll + 550;
+
+        cy.wrap($el).scrollTo(0, newScroll, {
+            duration: 1000,
+            ensureScrollable: false,
+        });
+    });
+});
+
 Cypress.Commands.add("scrollPageToBottom", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('bottom', { ensureScrollable: false });
 });
 
 Cypress.Commands.add("scrollPageToTop", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('top', { ensureScrollable: false });
+});
+
+Cypress.Commands.add("scrollPageToCenter", (element = '.main-view', index = 0) => {
+    cy.get(element).eq(index).scrollTo('center', { ensureScrollable: false });
+});
+
+Cypress.Commands.add("scrollDataTableToRight", (element = '.el-table__body-wrapper', index = 0) => {
+    cy.get(element).eq(index).scrollTo('right', { ensureScrollable: false });
+});
+
+Cypress.Commands.add("scrollDataTableToLeft", (element = '.el-table__body-wrapper', index = 0) => {
+    cy.get(element).eq(index).scrollTo('left', { ensureScrollable: false });
 });
 
 // ─────────────────────────────────────────────
