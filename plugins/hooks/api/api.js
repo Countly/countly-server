@@ -80,27 +80,54 @@ class Hooks {
     /**
     *  fetch hook records from db 
     */
-    fetchRules() {
-        const self = this;
-        const db = common.db;
-        db && db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray(function(err, result) {
-            log.d("Fetch rules:", result, err, process.pid);
-            if (result) {
+    async fetchRules() {
+
+        try {
+            log.d("Fetching hook rules...", process.pid);
+            const self = this;
+            const db = common.db;
+
+            // Add check for database connection
+            if (!db) {
+                log.e("Database not available yet, will retry on next interval", process.pid);
+                return;
+            }
+
+            log.d("Database connection exists, querying hooks collection", process.pid);
+
+            let res = await db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray();
+            log.d("Fetch rules - found", res ? res.length : 0, "rules", process.pid);
+            db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray(function(err, result) {
+                if (err) {
+                    log.e("Fetch hook rules error:", err, process.pid);
+                    return;
+                }
+                log.d("Fetch rules - found", result ? result.length : 0, "rules", process.pid);
+                if (result) {
                 //change profile group triggers to cohorts triggers. There are no events which starts with /profile-group, in reality it is just cohort events 
-                for (var z = 0; z < result.length; z++) {
-                    if (result[z].trigger && result[z].trigger.type === "InternalEventTrigger" && result[z].trigger.configuration && result[z].trigger.configuration.eventType) {
-                        if (result[z].trigger.configuration.eventType === "/profile-group/enter") {
-                            result[z].trigger.configuration.eventType = "/cohort/enter";
-                        }
-                        else if (result[z].trigger.configuration.eventType === "/profile-group/exit") {
-                            result[z].trigger.configuration.eventType = "/cohort/exit";
+                    for (var z = 0; z < result.length; z++) {
+                        if (result[z].trigger && result[z].trigger.type === "InternalEventTrigger" && result[z].trigger.configuration && result[z].trigger.configuration.eventType) {
+                            if (result[z].trigger.configuration.eventType === "/profile-group/enter") {
+                                result[z].trigger.configuration.eventType = "/cohort/enter";
+                            }
+                            else if (result[z].trigger.configuration.eventType === "/profile-group/exit") {
+                                result[z].trigger.configuration.eventType = "/cohort/exit";
+                            }
                         }
                     }
+                    self._cachedRules = result;
+                    log.d("Cached rules updated, calling syncRulesWithTrigger", process.pid);
+                    self.syncRulesWithTrigger();
                 }
-                self._cachedRules = result;
-                self.syncRulesWithTrigger();
-            }
-        });
+                else {
+                    log.d("No rules found in database", process.pid);
+                }
+            });
+        }
+        catch (e) {
+            log.e("Fetch hook rules error:", e, process.pid);
+        }
+
     }
 
     /**
@@ -712,6 +739,8 @@ plugins.register("/i/hook/test", function(ob) {
     return true;
 });
 
+module.exports = Hooks;
+
 
 // init instnace;
-new Hooks();
+//new Hooks();

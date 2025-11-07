@@ -1,5 +1,4 @@
 
-const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
 const log = common.log('hooks:incoming_data_trigger');
@@ -76,40 +75,123 @@ class IncomingDataTrigger {
      * register trigger processor
      */
     register() {
-        InternalEvents.forEach((e) => {
-            plugins.register(e, (obj) => {
-                try {
-                    const ob = {
-                        params: {
-                            app_user: JSON.parse(JSON.stringify(obj.params.app_user)),
-                            app_id: common.db.ObjectID(obj.params.app_id.toString()),
-                            req: {
-                                header: JSON.parse(JSON.stringify(obj.params.req.headers || {})),
-                            },
-                            ip_address: obj.params.ip_address,
-                            qstring: JSON.parse(JSON.stringify(obj.params.qstring || {})),
+
+    }
+
+    /**
+ * Process events from aggregator
+ * @param {Array} events - array of drill events from change stream
+ */
+    async processFromAggregator(events) {
+        log.d("Processing events from aggregator:", events.length);
+
+        for (const event of events) {
+            try {
+            // Extract the event data from drill event structure
+                const eventData = this.extractEventData(event);
+
+                if (!eventData) {
+                    continue;
+                }
+
+                const ob = {
+                    params: {
+                        app_user: eventData.user || {},
+                        app_id: common.db.ObjectID(eventData.app_id),
+                        req: {
+                            headers: eventData.headers || {}
                         },
-                        events: JSON.parse(JSON.stringify(obj.events || [])),
-                    };
-                    log.d(e, ob, "[Incoming data capture]");
-                    if (e === '/plugins/drill') {
-                        const hooksData = {
-                            params: {...ob.params},
-                            event: e,
-                        };
-                        if (ob.events) {
-                            hooksData.params.qstring.events = ob.events;
+                        ip_address: eventData.ip_address,
+                        qstring: {
+                            events: eventData.events || []
                         }
-                        this.process(hooksData);
-                        return;
-                    }
-                    this.process(ob);
-                }
-                catch (err) {
-                    console.log(err);
-                }
-            });
-        });
+                    },
+                    events: eventData.events || []
+                };
+
+                await this.process(ob);
+            }
+            catch (err) {
+                log.e("Error processing event from aggregator:", err);
+            }
+        }
+    }
+
+    /**
+ * Extract event data from drill event structure
+ * @param {Object} event - drill event from change stream
+ * @returns {Object|null} extracted event data
+ */
+    extractEventData(event) {
+        try {
+            let doc;
+
+            // Check if it's a change stream event or direct document
+            if (event.fullDocument) {
+            // Change stream format
+                doc = event.fullDocument;
+            }
+            else {
+            // Direct document from aggregator
+                doc = event;
+            }
+
+            if (!doc) {
+                return null;
+            }
+
+            // Extract app_id (field 'a' in the event)
+            const appId = doc.a;
+
+            if (!appId) {
+                log.e("No app_id found in event:", doc);
+                return null;
+            }
+
+            // Extract event key (field 'e')
+            const eventKey = doc.e;
+
+            // Build user object from 'up' (user properties) field
+            const userObj = {
+                uid: doc.uid,
+                did: doc.did,
+                ...(doc.up || {})
+            };
+
+            // Build event data structure
+            return {
+                app_id: appId,
+                user: userObj,
+                events: [{
+                    key: eventKey,
+                    count: doc.c || 1,
+                    sum: doc.s || 0,
+                    dur: doc.dur || 0,
+                    segmentation: doc.sg || {},
+                    timestamp: doc.ts
+                }],
+                ip_address: doc.ip,
+                headers: {},
+                timestamp: doc.ts,
+                device_id: doc.did,
+                metrics: {
+                    _os: doc.up?.p,
+                    _os_version: doc.up?.pv,
+                    _app_version: doc.up?.av,
+                    _carrier: doc.up?.c,
+                    _density: doc.up?.dnst,
+                    _store: doc.up?.src,
+                    _locale: doc.up?.lo,
+                    _lang: doc.up?.la
+                },
+                custom: doc.custom || {},
+                campaign: doc.cmp || {}
+            };
+        }
+        catch (err) {
+            log.e("Error extracting event data:", err);
+            return null;
+        }
     }
 
     /**
@@ -309,7 +391,3 @@ class IncomingDataTrigger {
 }
 
 module.exports = IncomingDataTrigger;
-const InternalEvents = [
-    "/sdk",
-    "/hooks/incoming_data",
-];
