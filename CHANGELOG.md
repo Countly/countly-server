@@ -4,6 +4,7 @@ Fixes:
 
 Enterprise Fixes:
 - [surveys] Handle multiple survey submission from same user based on survey visibility
+- [concurrent_users] Fix alert threshold comparison
 
 ## Version 25.03.26
 Fixes:
