@@ -1,5 +1,6 @@
 ## Version 24.05.X
 Enterprise Fixes:
+- [concurrent_users] Fix alert threshold comparison
 - [surveys] Handle multiple survey submission from same user based on survey visibility
 - [users] Set correct users widget table rows amount according to selected setting
 
