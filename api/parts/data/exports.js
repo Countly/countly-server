@@ -645,6 +645,12 @@ exports.fromRequest = function(options) {
     common.processRequest(params);
 };
 
+/**
+ * Get cursor for export
+ * @param {object} options  - options for the export
+ * @param {object} body  - response from api with info for query
+ * @param {function} callback  - callback function with (err,cursor)
+ */
 async function getCursorForExport(options, body, callback) {
     if (options.db_name === "countly_drill") {
         try {
@@ -678,9 +684,9 @@ exports.fromRequestQuery = function(options) {
             method: "export"
         },
         //adding custom processing for API responses
-        'APICallback': function(err, body) {
-            if (err) {
-                log.e(err);
+        'APICallback': function(err0, body) {
+            if (err0) {
+                log.e(err0);
             }
             if (body) {
                 if (body.transformFunction) {
