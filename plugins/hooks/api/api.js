@@ -101,8 +101,6 @@ class Hooks {
 
             log.d("Database connection exists, querying hooks collection", process.pid);
 
-            let res = await db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray();
-            log.d("Fetch rules - found", res ? res.length : 0, "rules", process.pid);
             db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray(function(err, result) {
                 if (err) {
                     log.e("Fetch hook rules error:", err, process.pid);
