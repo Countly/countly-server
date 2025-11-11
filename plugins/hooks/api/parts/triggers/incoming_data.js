@@ -148,8 +148,8 @@ class IncomingDataTrigger {
                 return null;
             }
 
-            // Extract event key (field 'e')
-            const eventKey = doc.e;
+            // Extract event key (field 'n')
+            const eventKey = doc.n;
 
             // Build user object from 'up' (user properties) field
             const userObj = {

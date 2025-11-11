@@ -4,17 +4,78 @@ var plugins = require('../../pluginManager.js'),
 const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.js');
 var log = common.log('hooks:aggregator');
 const IncomingDataTrigger = require('./parts/triggers/incoming_data.js');
+const utils = require('./utils.js');
+const {HTTPEffect, EmailEffect, CustomCodeEffect} = require('./parts/effects/index.js');
 
 (function() {
 
     plugins.register("/aggregator", async function() {
 
+        log.d("Starting hooks aggregator initialization");
+
+        /**
+         * Process effects based on rule configuration
+         * @param {Object} data - Pipeline data with params and rule
+         */
+        const processEffects = async(data) => {
+            try {
+                const {rule} = data;
+
+                if (!rule || !rule.effects || !Array.isArray(rule.effects)) {
+                    log.d("No effects to process for rule:", rule?._id);
+                    return;
+                }
+
+                log.d("Processing effects for rule:", rule._id, "Effects count:", rule.effects.length);
+
+                for (const effectConfig of rule.effects) {
+                    try {
+                        let effect;
+
+                        switch (effectConfig.type) {
+                        case 'HTTPEffect':
+                            effect = new HTTPEffect(effectConfig);
+                            break;
+                        case 'EmailEffect':
+                            effect = new EmailEffect(effectConfig);
+                            break;
+                        case 'CustomCodeEffect':
+                            effect = new CustomCodeEffect(effectConfig);
+                            break;
+                        default:
+                            log.w("Unknown effect type:", effectConfig.type);
+                            continue;
+                        }
+
+                        if (effect && typeof effect.process === 'function') {
+                            await effect.process(data);
+                        }
+                    }
+                    catch (effectErr) {
+                        log.e("Error processing individual effect:", effectErr, effectErr.stack);
+                    }
+                }
+            }
+            catch (err) {
+                log.e("Error in processEffects:", err, err.stack);
+            }
+        };
+
         // Initialize the IncomingDataTrigger with pipeline callback
         const incomingDataTrigger = new IncomingDataTrigger({
-            pipeline: (data) => {
-                // This will be called when events match rules
-                // Send to the main Hooks processing queue
-                plugins.dispatch("/hooks/trigger", data);
+            pipeline: async(data) => {
+                try {
+                    log.d("Processing pipeline for rule:", data.rule._id);
+
+                    // Update rule trigger time
+                    utils.updateRuleTriggerTime(data.rule._id);
+
+                    // Process effects
+                    await processEffects(data);
+                }
+                catch (err) {
+                    log.e("Error processing hook pipeline:", err, err.stack);
+                }
             }
         });
 
@@ -27,6 +88,7 @@ const IncomingDataTrigger = require('./parts/triggers/incoming_data.js');
                 const rules = await common.db.collection("hooks")
                     .find({"enabled": true, "trigger.type": "IncomingDataTrigger"}, {error_logs: 0})
                     .toArray();
+                log.d("Synced rules:", rules.length);
                 incomingDataTrigger.syncRules(rules);
             }
             catch (err) {
@@ -63,7 +125,7 @@ const IncomingDataTrigger = require('./parts/triggers/incoming_data.js');
             }
         }
         catch (err) {
-            log.e("Could not start hooks event source", err);
+            log.e("Could not start hooks event source", err, err.stack);
         }
     });
 
