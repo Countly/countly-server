@@ -742,5 +742,5 @@ plugins.register("/i/hook/test", function(ob) {
 module.exports = Hooks;
 
 
-// init instnace;
-//new Hooks();
+// init instance;
+new Hooks();
