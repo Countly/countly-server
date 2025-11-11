@@ -47,6 +47,11 @@
         bom_d: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native }
     };
 
+    var nonJSONExperimentalKeys = ['eb', 'upb', 'sb', 'ew', 'upw', 'sw'];
+    var jsonExperimentalKeys = ['esb', 'esw'];
+    var shouldShowExperimental = true;
+    var experimentalKeys = ['upcl', 'filter_preset'].concat(nonJSONExperimentalKeys, jsonExperimentalKeys);
+
     var FEATURE_NAME = "sdk";
     var SDK = countlyVue.views.create({
         template: CV.T('/sdk/templates/sdk-main.html'),
@@ -121,14 +126,62 @@
                 var enforceData = enforcement || {};
                 for (var key in this.configs) {
                     if (this.diff.indexOf(key) === -1) {
-                        this.configs[key].value = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
+                        var stored = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
+                        // format experimental fields for UI
+                        if (nonJSONExperimentalKeys.indexOf(key) !== -1) {
+                            if (Array.isArray(stored)) {
+                                this.configs[key].value = this.arrayToCsv(stored);
+                            }
+                            else if (typeof stored === 'string') {
+                                this.configs[key].value = stored;
+                            }
+                            else {
+                                this.configs[key].value = '';
+                            }
+                        }
+                        else if (jsonExperimentalKeys.indexOf(key) !== -1) {
+                            if (typeof stored === 'object') {
+                                try {
+                                    this.configs[key].value = JSON.stringify(stored, null, 2);
+                                }
+                                catch (ex) {
+                                    this.configs[key].value = '{}';
+                                }
+                            }
+                            else if (typeof stored === 'string') {
+                                this.configs[key].value = stored;
+                            }
+                            else {
+                                this.configs[key].value = '{}';
+                            }
+                        }
+                        else {
+                            this.configs[key].value = stored;
+                        }
                         this.configs[key].enforced = !!enforceData[key];
                     }
                 }
+                if (this.diff.indexOf('filter_preset') === -1 && typeof data.filter_preset === 'undefined') {
+                    var hasBlacklist = (data.eb && data.eb.length) || (data.upb && data.upb.length) || (data.sb && data.sb.length) || (data.esb && Object.keys(data.esb || {}).length);
+                    var hasWhitelist = (data.ew && data.ew.length) || (data.upw && data.upw.length) || (data.sw && data.sw.length) || (data.esw && Object.keys(data.esw || {}).length);
+                    if (hasBlacklist && !hasWhitelist) {
+                        this.configs.filter_preset.value = 'Blacklisting';
+                    }
+                    else if (hasWhitelist && !hasBlacklist) {
+                        this.configs.filter_preset.value = 'Whitelisting';
+                    }
+                    else {
+                        this.configs.filter_preset.value = this.configs.filter_preset.default;
+                    }
+                }
+
                 return this.configs;
             },
             isTableLoading: function() {
                 return this.$store.getters["countlySDK/sdk/isTableLoading"];
+            },
+            showExperimental: function() {
+                return shouldShowExperimental;
             }
         },
         data: function() {
@@ -153,6 +206,10 @@
                     limits: {
                         label: "SDK Limits",
                         list: ["lkl", "lvs", "lsv", "lbc", "ltlpt", "ltl"]
+                    },
+                    experimental: {
+                        label: "Experimental",
+                        list: ["upcl", "filter_preset", "eb", "upb", "sb", "esb", "ew", "upw", "sw", "esw"]
                     },
                 },
                 configs: {
@@ -396,9 +453,102 @@
                         default: 60,
                         enforced: false,
                         value: null
+                    },
+                    upcl: {
+                        type: "number",
+                        name: "User Property Cache",
+                        description: "How many user property to store in cache before they would be batched and sent to server (default: 100)",
+                        default: 100,
+                        enforced: false,
+                        value: null
+                    },
+                    filter_preset: {
+                        type: "preset",
+                        name: "Filtering Preset",
+                        description: "Choose whether to use Blacklisting or Whitelisting presets for filtering",
+                        default: "Blacklisting",
+                        enforced: false,
+                        value: null,
+                        presets: [
+                            { name: "Blacklisting" },
+                            { name: "Whitelisting" },
+                        ]
+                    },
+                    eb: {
+                        type: "text",
+                        name: "Event Blacklist",
+                        description: "CSV* list of custom event keys to blacklist in SDK (default: empty)<br>* Use double quotes for values with commas",
+                        default: "",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'event1,event2 or "event3"' }
+                    },
+                    upb: {
+                        type: "text",
+                        name: "User Property Blacklist",
+                        description: "CSV* list of user property keys to blacklist in SDK (default: empty)<br>* Use double quotes for values with commas",
+                        default: "",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'prop1,prop2 or "prop3"' }
+                    },
+                    sb: {
+                        type: "text",
+                        name: "Segmentation Blacklist",
+                        description: "CSV* list of segmentation keys to blacklist in SDK (default: empty)<br>* Use double quotes for values with commas",
+                        default: "",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'key1,key2 or "key3"' }
+                    },
+                    esb: {
+                        type: "text",
+                        name: "Event Segmentation Blacklist",
+                        description: "Arrays of segmentation keys to blacklist for specific events (default: {})<br> Example: { \"event1\": [\"seg1\", \"seg2\"] }",
+                        default: "{}",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 6, placeholder: '{"event1": ["seg1","seg2"]}' }
+                    },
+                    ew: {
+                        type: "text",
+                        name: "Event Whitelist",
+                        description: "CSV* list of custom event keys to whitelist in SDK (default: empty)<br>* Use double quotes for values with commas",
+                        default: "",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'event1,event2 or "event3"' }
+                    },
+                    upw: {
+                        type: "text",
+                        name: "User Property Whitelist",
+                        description: "CSV* list of user property keys to whitelist in SDK (default: empty)<br>* Use double quotes for values with commas",
+                        default: "",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'prop1,prop2 or "prop3"' }
+                    },
+                    sw: {
+                        type: "text",
+                        name: "Segmentation Whitelist",
+                        description: "CSV* list of segmentation keys to whitelist in SDK (default: empty)<br>* Use double quotes for values with commas",
+                        default: "",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'key1,key2 or "key3"' }
+                    },
+                    esw: {
+                        type: "text",
+                        name: "Event Segmentation Whitelist",
+                        description: "Arrays of segmentation keys to whitelist for specific events (default: {})<br> Example: { \"event1\": [\"seg1\", \"seg2\"] }",
+                        default: "{}",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 6, placeholder: '{"event1": ["seg1","seg2"]}' }
                     }
                 },
                 diff: [],
+                validationErrors: {},
                 description: "Not all SDKs and SDK versions yet support this feature. Refer to respective SDK documentation for more information"
             };
         },
@@ -406,9 +556,67 @@
             var self = this;
             this.$nextTick(function() {
                 self.checkSdkSupport();
+                self.isJSONInputValid('esb');
+                self.isJSONInputValid('esw');
             });
         },
         methods: {
+            /**
+             * returns whether a given key should be shown in the UI
+             * @param {string} key - Config key to check
+             * @returns {boolean} - True if should be shown, false otherwise
+             */
+            shouldShowKey: function(key) {
+                if (!this.getData || !this.getData[key]) {
+                    return false;
+                }
+                if (!shouldShowExperimental && experimentalKeys.indexOf(key) !== -1) {
+                    return false;
+                }
+                if (key === 'filter_preset') {
+                    return true;
+                }
+                var blacklistKeys = ['eb', 'upb', 'sb', 'esb'];
+                var whitelistKeys = ['ew', 'upw', 'sw', 'esw'];
+                if (blacklistKeys.indexOf(key) !== -1) {
+                    return (this.getData.filter_preset && (this.getData.filter_preset.value === 'Blacklisting'));
+                }
+                if (whitelistKeys.indexOf(key) !== -1) {
+                    return (this.getData.filter_preset && (this.getData.filter_preset.value === 'Whitelisting'));
+                }
+                return (blacklistKeys.concat(whitelistKeys).indexOf(key) === -1);
+            },
+
+            /**
+             * normalized value retrieval (uses explicit value or default)
+             * @param {string} key - Config key to get value for
+             * @returns {*} - Normalized value (explicit or default)
+             */
+            valueFor: function(key) {
+                if (!this.getData || !this.getData[key]) {
+                    return undefined;
+                }
+                // prefer explicit value if not null/undefined
+                var val = this.getData[key].value;
+                if (typeof val !== 'undefined' && val !== null) {
+                    return val;
+                }
+                return this.getData[key].default;
+            },
+
+            /**
+             * Generate slug/test-id from display name or fallback key
+             * @param {string} key - Config key to get slug for
+             * @returns {string} - Slugified version of the display name or key
+             */
+            slugFor: function(key) {
+                if (!this.getData || !this.getData[key]) {
+                    return key;
+                }
+                var name = this.getData[key].name || key;
+                return name.toLowerCase().replaceAll(' ', '-');
+            },
+
             onChange: function(key, value) {
                 log("onChange", key, value);
                 this.configs[key].value = value;
@@ -417,6 +625,9 @@
                     if (this.diff.indexOf("bom_preset") === -1) {
                         this.diff.push("bom_preset");
                     }
+                }
+                if (jsonExperimentalKeys.indexOf(key) !== -1) {
+                    this.isJSONInputValid(key);
                 }
                 if (this.diff.indexOf(key) === -1) {
                     this.diff.push(key);
@@ -432,6 +643,87 @@
                     else if (this.configs[key].default === value) {
                         this.diff.splice(this.diff.indexOf(key), 1);
                     }
+                }
+            },
+
+            /**
+            * Quoted CSV to array parser
+            * @param {String} str - CSV string
+            * @returns {Array} - Array of parsed values
+            */
+            csvToArray: function(str) {
+                if (typeof str !== 'string') {
+                    return [];
+                }
+                var re = /(?:\s*("(?:[^"]|"")*"|[^,]*?)\s*)(?:,|$)/g;
+                return Array.from(str.matchAll(re))
+                    .map(function(m) {
+                        var val = m[1];
+                        if (!val) {
+                            return null;
+                        }
+                        if (val.charAt(0) === '"' && val.charAt(val.length - 1) === '"') {
+                            val = val.slice(1, -1).replace(/""/g, '"');
+                        }
+                        else {
+                            val = val.trim();
+                        }
+                        return val.length ? val : null;
+                    })
+                    .filter(function(v) {
+                        return v !== null;
+                    });
+            },
+
+            /**
+             * Convert an array to a CSV string
+             * @param {Array} arr - Array of values
+             * @returns {String} - CSV string
+             */
+            arrayToCsv: function(arr) {
+                if (!Array.isArray(arr)) {
+                    return '';
+                }
+                return arr.filter(function(e) {
+                    return e !== null;
+                }).map(function(e) {
+                    e = String(e);
+                    // quote if contains comma, quote, newline or carriage return, or starts/ends with whitespace
+                    if (/[,"\n\r]/.test(e) || /^\s|\s$/.test(e)) {
+                        return '"' + e.replace(/"/g, '""') + '"';
+                    }
+                    return e;
+                }).join(',');
+            },
+
+            /**
+             * Validate a string input and set validationErrors accordingly
+             * @param {String} key - Config key to validate
+             * @returns {Boolean} - True if valid, false otherwise
+             */
+            isJSONInputValid: function(key) {
+                if (!key) {
+                    return true;
+                }
+                var val = this.configs[key].value;
+                if (typeof val === 'string') {
+                    try {
+                        JSON.parse(val);
+                        this.validationErrors[key] = '';
+                        return true;
+                    }
+                    catch (ex) {
+                        this.validationErrors[key] = ex.message || 'Invalid JSON';
+                        return false;
+                    }
+                }
+                else if (typeof val === 'object') { // already parsed
+                    this.validationErrors[key] = '';
+                    return true;
+                }
+                else {
+                    this.validationErrors[key] = 'Invalid JSON';
+                    return false;
                 }
             },
             downloadConfig: function() {
@@ -480,6 +772,28 @@
                         }
                     });
                 }
+                if (key === 'filter_preset') {
+                    if (preset.name === 'Blacklisting') {
+                        ['ew', 'upw', 'sw', 'esw'].forEach(function(k) {
+                            if (this.configs[k]) {
+                                this.configs[k].enforced = false;
+                                if (this.diff.indexOf(k) === -1) {
+                                    this.diff.push(k);
+                                }
+                            }
+                        }, this);
+                    }
+                    else if (preset.name === 'Whitelisting') {
+                        ['eb', 'upb', 'sb', 'esb'].forEach(function(k) {
+                            if (this.configs[k]) {
+                                this.configs[k].enforced = false;
+                                if (this.diff.indexOf(k) === -1) {
+                                    this.diff.push(k);
+                                }
+                            }
+                        }, this);
+                    }
+                }
             },
             enforce(key) {
                 if (key && !this.configs[key]) {
@@ -492,8 +806,7 @@
                     helper_title = "Enforce current setting?";
                 }
                 var self = this;
-                // eslint-disable-next-line no-console
-                console.log(`enforce:[${key}]`);
+                log(`enforce:[${key}]`);
 
                 CountlyHelpers.confirm(helper_msg, "green", function(result) {
                     if (!result) {
@@ -589,6 +902,18 @@
                         }
                     }
                     if (self.diff.length !== 0) {
+                        try {
+                            if (typeof self.configs.esb.value === 'string') {
+                                JSON.parse(self.configs.esb.value || '{}');
+                            }
+                            if (typeof self.configs.esw.value === 'string') {
+                                JSON.parse(self.configs.esw.value || '{}');
+                            }
+                        }
+                        catch (ex) {
+                            CountlyHelpers.notify({ message: ex.message || 'Invalid experimental configuration', sticky: false, type: 'error' });
+                            return;
+                        }
                         self.save();
                     }
                 },
@@ -597,14 +922,80 @@
                 );
             },
             save: function(enforcement) {
+                if (this.validationErrors && Object.keys(this.validationErrors).some(function(k) {
+                    return !!this.validationErrors[k];
+                }, this)) {
+                    CountlyHelpers.notify({ message: 'Please fix format errors before saving', sticky: false, type: 'error' });
+                    return;
+                }
                 var params = this.$store.getters["countlySDK/sdk/all"];
                 log(`save with enforcement: ${JSON.stringify(enforcement)}`);
                 log(`save: ${JSON.stringify(params)} and diff: ${JSON.stringify(this.diff)}`);
                 var data = params || {};
                 for (var i = 0; i < this.diff.length; i++) {
-                    log(`save: ${this.diff[i]} = ${this.configs[this.diff[i]].value}`);
-                    data[this.diff[i]] = this.configs[this.diff[i]].value;
-                    this.configs[this.diff[i]].enforced = true;
+                    var dkey = this.diff[i];
+                    var val = this.configs[dkey].value;
+                    if (nonJSONExperimentalKeys.indexOf(dkey) !== -1) {
+                        if (typeof val === 'string') {
+                            var arr = this.csvToArray(val);
+                            data[dkey] = arr;
+                        }
+                        else if (Array.isArray(val)) {
+                            data[dkey] = val;
+                        }
+                        else {
+                            data[dkey] = [];
+                        }
+                    }
+                    else if (jsonExperimentalKeys.indexOf(dkey) !== -1) {
+                        if (typeof val === 'string') {
+                            try {
+                                data[dkey] = JSON.parse(val || '{}');
+                            }
+                            catch (ex) {
+                                CountlyHelpers.notify({ message: (dkey === 'esb' ? 'Event Segmentation Blacklist' : 'Event Segmentation Whitelist') + ' contains invalid JSON', sticky: false, type: 'error' });
+                                return;
+                            }
+                        }
+                        else if (typeof val === 'object') {
+                            data[dkey] = val;
+                        }
+                        else {
+                            data[dkey] = {};
+                        }
+                    }
+                    else {
+                        data[dkey] = val;
+                    }
+                    log(`save: ${dkey} = ${JSON.stringify(data[dkey])}`);
+                    this.configs[dkey].enforced = true;
+                }
+                if (this.diff.indexOf('filter_preset') !== -1) {
+                    var presetValue = this.configs.filter_preset.value;
+
+                    if (!enforcement) {
+                        enforcement = {};
+                        for (var ek in this.configs) {
+                            enforcement[ek] = !!this.configs[ek].enforced;
+                        }
+                    }
+
+                    if (presetValue === 'Blacklisting') {
+                        ['ew', 'upw', 'sw', 'esw'].forEach(function(k) {
+                            enforcement[k] = false;
+                            if (this.configs[k]) {
+                                this.configs[k].enforced = false;
+                            }
+                        }, this);
+                    }
+                    else if (presetValue === 'Whitelisting') {
+                        ['eb', 'upb', 'sb', 'esb'].forEach(function(k) {
+                            enforcement[k] = false;
+                            if (this.configs[k]) {
+                                this.configs[k].enforced = false;
+                            }
+                        }, this);
+                    }
                 }
                 if (!enforcement) {
                     enforcement = {};
@@ -627,7 +1018,38 @@
                 log("unpatch", params);
                 var data = params || {};
                 for (var key in this.configs) {
-                    this.configs[key].value = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
+                    var stored = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
+                    if (nonJSONExperimentalKeys.indexOf(key) !== -1) {
+                        if (Array.isArray(stored)) {
+                            this.configs[key].value = this.arrayToCsv(stored);
+                        }
+                        else if (typeof stored === 'string') {
+                            this.configs[key].value = stored;
+                        }
+                        else {
+                            this.configs[key].value = '';
+                        }
+                    }
+                    else if (jsonExperimentalKeys.indexOf(key) !== -1) {
+                        if (typeof stored === 'object') {
+                            try {
+                                this.configs[key].value = JSON.stringify(stored, null, 2);
+                            }
+                            catch (ex) {
+                                this.configs[key].value = '{}';
+                            }
+                        }
+                        else if (typeof stored === 'string') {
+                            this.configs[key].value = stored;
+                        }
+                        else {
+                            this.configs[key].value = '{}';
+                        }
+                        this.isJSONInputValid(key); // re-validate after discarding changes
+                    }
+                    else {
+                        this.configs[key].value = stored;
+                    }
                 }
             },
             semverToNumber: function(version) {
@@ -679,7 +1101,12 @@
             checkSdkSupport: function() {
                 log("checkSdkSupport");
                 for (var key in this.configs) {
+                    this.configs[key].experimental = false;
                     this.configs[key].tooltipMessage = "No SDK data present. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this option.";
+                    if (key === 'upcl' || key === 'eb' || key === 'upb' || key === 'sb' || key === 'esb') {
+                        this.configs[key].experimental = true;
+                        this.configs[key].tooltipMessage = "This is an experimental option. SDK support for this option may be limited or unavailable.";
+                    }
                     this.configs[key].tooltipClass = 'tooltip-neutral';
                 }
 

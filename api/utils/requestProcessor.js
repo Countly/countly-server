@@ -175,35 +175,6 @@ const processRequest = (params) => {
 
         if (!params.cancelRequest) {
             switch (apiPath) {
-            case '/i/bulk': {
-                let requests = params.qstring.requests;
-
-                if (requests && typeof requests === "string") {
-                    try {
-                        requests = JSON.parse(requests);
-                    }
-                    catch (SyntaxError) {
-                        console.log('Parse bulk JSON failed', requests, params.req.url, params.req.body);
-                        requests = null;
-                    }
-                }
-                if (!requests) {
-                    common.returnMessage(params, 400, 'Missing parameter "requests"');
-                    return false;
-                }
-                if (!Array.isArray(requests)) {
-                    console.log("Passed invalid param for request. Expected Array, got " + typeof requests);
-                    common.returnMessage(params, 400, 'Invalid parameter "requests"');
-                    return false;
-                }
-                if (!params.qstring.safe_api_response && !plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-                    common.returnMessage(params, 200, 'Success');
-                }
-                common.blockResponses(params);
-
-                processBulkRequest(0, requests, params);
-                break;
-            }
             case '/i/users': {
                 if (params.qstring.args) {
                     try {
@@ -1497,58 +1468,6 @@ const processRequest = (params) => {
                 }
                 break;
             }
-            case '/i': {
-                if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
-                    params.qstring = common.trimWhitespaceStartEnd(params.qstring);
-                }
-                params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
-                params.user = {};
-
-                if (!params.qstring.app_key || !params.qstring.device_id) {
-                    common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
-                    return false;
-                }
-                else {
-                    //make sure device_id is string
-                    params.qstring.device_id += "";
-                    params.qstring.app_key += "";
-                    // Set app_user_id that is unique for each user of an application.
-                    params.app_user_id = common.crypto.createHash('sha1')
-                        .update(params.qstring.app_key + params.qstring.device_id + "")
-                        .digest('hex');
-                }
-
-                if (params.qstring.events && typeof params.qstring.events === "string") {
-                    try {
-                        params.qstring.events = JSON.parse(params.qstring.events);
-                    }
-                    catch (SyntaxError) {
-                        console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
-                    }
-                }
-
-                log.d('processing request %j', params.qstring);
-
-                params.promises = [];
-
-                validateAppForWriteAPI(params, () => {
-                    /**
-                    * Dispatches /sdk/end event upon finishing processing request
-                    **/
-                    function resolver() {
-                        plugins.dispatch("/sdk/end", {params: params});
-                    }
-
-                    Promise.all(params.promises)
-                        .then(resolver)
-                        .catch((error) => {
-                            console.log(error);
-                            resolver();
-                        });
-                });
-
-                break;
-            }
             case '/o/users': {
                 switch (paths[3]) {
                 case 'all':
@@ -1984,6 +1903,20 @@ const processRequest = (params) => {
                         common.returnOutput(params, plugins.getPlugins());
                     }, params);
                     break;
+                case 'observability':
+                    validateUserForMgmtReadAPI(() => {
+                        plugins.dispatch('/system/observability/collect', {params: params}, function(err, results) {
+                            if (err) {
+                                common.returnMessage(params, 500, 'Error collecting observability data');
+                                return;
+                            }
+                            const data = (results || [])
+                                .filter(r => r && r.status === 'fulfilled' && r.value)
+                                .map(r => r.value);
+                            common.returnOutput(params, data);
+                        });
+                    }, params);
+                    break;
                 case 'aggregator':
                     validateUserForMgmtReadAPI(() => {
                         //fetch current aggregator status
@@ -2258,6 +2191,7 @@ const processRequest = (params) => {
                         });
 
                         countlyApi.data.exports.fromRequestQuery({
+                            db_name: params.qstring.db,
                             db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
                             params: params,
                             path: params.qstring.path,
@@ -3218,79 +3152,6 @@ const processFetchRequest = (params, app, done) => {
     });
 };
 
-/**
- * Process Bulk Request
- * @param {number} i - request number in bulk
- * @param {Array<object>} requests - array of requests to process
- * @param {Params} params - params object
- * @returns {void} void
- */
-const processBulkRequest = (i, requests, params) => {
-    const appKey = params.qstring.app_key;
-    if (i === requests.length) {
-        common.unblockResponses(params);
-        if ((params.qstring.safe_api_response || plugins.getConfig("api", params.app && params.app.plugins, true).safe) && !params.res.finished) {
-            common.returnMessage(params, 200, 'Success');
-        }
-        return;
-    }
-
-    if (!requests[i] || (!requests[i].app_key && !appKey)) {
-        return processBulkRequest(i + 1, requests, params);
-    }
-    if (params.qstring.safe_api_response) {
-        requests[i].safe_api_response = true;
-    }
-    params.req.body = JSON.stringify(requests[i]);
-    const tmpParams = {
-        'app_id': '',
-        'app_cc': '',
-        'ip_address': requests[i].ip_address || common.getIpAddress(params.req),
-        'user': {
-            'country': requests[i].country_code || 'Unknown',
-            'city': requests[i].city || 'Unknown'
-        },
-        'qstring': requests[i],
-        'href': "/i",
-        'res': params.res,
-        'req': params.req,
-        'promises': [],
-        'bulk': true,
-        'populator': params.qstring.populator,
-        'blockResponses': true
-    };
-
-    tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
-
-    if (!tmpParams.qstring.device_id) {
-        return processBulkRequest(i + 1, requests, params);
-    }
-    else {
-        //make sure device_id is string
-        tmpParams.qstring.device_id += "";
-        tmpParams.app_user_id = common.crypto.createHash('sha1')
-            .update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "")
-            .digest('hex');
-    }
-
-    return validateAppForWriteAPI(tmpParams, () => {
-        /**
-        * Dispatches /sdk/end event upon finishing processing request
-        **/
-        function resolver() {
-            plugins.dispatch("/sdk/end", {params: tmpParams}, () => {
-                processBulkRequest(i + 1, requests, params);
-            });
-        }
-
-        Promise.all(tmpParams.promises)
-            .then(resolver)
-            .catch((error) => {
-                console.log(error);
-                resolver();
-            });
-    });
-};
 
 /**
  * @param  {object} params - params object

@@ -172,7 +172,7 @@ var testUtils = function testUtils() {
     };
 
     function recheckDeletion(retry, db, callback) {
-        db.collection("deletion_manager").countDocuments({}, function(err, count) {
+        db.collection("mutation_manager").countDocuments({ type: 'delete', status: { $ne: "completed" }}, function(err, count) {
             if (err) {
                 callback(err);
             }
@@ -194,6 +194,9 @@ var testUtils = function testUtils() {
         });
     }
     this.triggerJobToRun = function(jobName, callback) {
+        if (jobName === "api:deletionManagerJob") {
+            jobName = "api:mutationManagerJob";
+        }
         var request = reqq(this.url);
         var self = this;
         request.get("/jobs/i?jobName=" + encodeURIComponent(jobName) + "&action=runNow&api_key=" + props.API_KEY_ADMIN)
@@ -206,7 +209,7 @@ var testUtils = function testUtils() {
                     console.log("No response text");
                     console.log(JSON.stringify(res));
                 }
-                if (jobName === "api:deletionManagerJob") {
+                if (jobName === "api:mutationManagerJob") {
                     recheckDeletion(5, self.db, callback);
                 }
                 else {

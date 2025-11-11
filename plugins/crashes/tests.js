@@ -340,7 +340,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.1");
                     ob.should.have.property("reports", 1);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"4:0": 1});
+                    /* ob.should.have.property("os_version", {"4:0": 1});
                     ob.should.have.property("manufacture", {"Samsung": 1});
                     ob.should.have.property("device", {"Galaxy S3": 1});
                     ob.should.have.property("resolution", {"480x800": 1});
@@ -348,7 +348,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 1});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 1});
                     ob.should.have.property("orientation", {"landscape": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:0": 1}, "googleplay": {"1:0": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:0": 1}, "googleplay": {"1:0": 1}});*/
                     ob.should.have.property("root", {"yes": 1});
                     ob.should.have.property("online", {"no": 1});
                     ob.should.have.property("muted", {"no": 1});
@@ -390,6 +390,31 @@ describe('Testing Crashes', function() {
                     report.should.have.property("ts");
                     done();
                 });
+        });
+        it("Validate breakdown data", async function() {
+            var breakdowns = {
+                "os_version": {"4.0": 1},
+                "manufacture": {"Samsung": 1},
+                "device": {"Galaxy S3": 1},
+                "resolution": {"480x800": 1},
+                "app_version": {"1.1": 1},
+                "cpu": {"armv7": 1},
+                "opengl": {"openGL ES 2.0": 1},
+                "orientation": {"landscape": 1},
+                "custom.facebook": {"3.0": 1},
+                "custom.googleplay": {"1.0": 1},
+            };
+
+            for (var breakdown in breakdowns) {
+                var res = await request.get('/o?group=' + CRASHES[0] + '&method=crashes&breakdown=true&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&field=" + breakdown);
+                var tt = res.text;
+                res = JSON.parse(tt);
+                res = res.result;
+                res.should.have.property("field", breakdown);
+                res.should.have.property("group", CRASHES[0]);
+                res.should.have.property("data", breakdowns[breakdown]);
+            }
+
         });
     });
 
@@ -522,7 +547,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.1");
                     ob.should.have.property("reports", 2);
                     ob.should.have.property("users", 2);
-                    ob.should.have.property("os_version", {"4:0": 2});
+                    /*ob.should.have.property("os_version", {"4:0": 2});
                     ob.should.have.property("manufacture", {"Samsung": 2});
                     ob.should.have.property("device", {"Galaxy S3": 2});
                     ob.should.have.property("resolution", {"480x800": 2});
@@ -530,7 +555,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 2});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 2});
                     ob.should.have.property("orientation", {"landscape": 2});
-                    ob.should.have.property("custom", {"facebook": {"3:0": 2}, "googleplay": {"1:0": 2}});
+                    ob.should.have.property("custom", {"facebook": {"3:0": 2}, "googleplay": {"1:0": 2}});*/
                     ob.should.have.property("root", {"yes": 2});
                     ob.should.have.property("online", {"no": 2});
                     ob.should.have.property("muted", {"no": 2});
@@ -600,6 +625,32 @@ describe('Testing Crashes', function() {
                     report2.should.have.property("ts");
                     done();
                 });
+        });
+
+        it("Validate breakdown data", async function() {
+            var breakdowns = {
+                "os_version": {"4.0": 2},
+                "manufacture": {"Samsung": 2},
+                "device": {"Galaxy S3": 2},
+                "resolution": {"480x800": 2},
+                "app_version": {"1.1": 2},
+                "cpu": {"armv7": 2},
+                "opengl": {"openGL ES 2.0": 2},
+                "orientation": {"landscape": 2},
+                "custom.facebook": {"3.0": 2},
+                "custom.googleplay": {"1.0": 2},
+            };
+
+            for (var breakdown in breakdowns) {
+                var res = await request.get('/o?group=' + CRASHES[0] + '&method=crashes&breakdown=true&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&field=" + breakdown);
+                var tt = res.text;
+                res = JSON.parse(tt);
+                res = res.result;
+                res.should.have.property("field", breakdown);
+                res.should.have.property("group", CRASHES[0]);
+                res.should.have.property("data", breakdowns[breakdown]);
+            }
+
         });
     });
 
@@ -732,7 +783,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.2");
                     ob.should.have.property("reports", 3);
                     ob.should.have.property("users", 2);
-                    ob.should.have.property("os_version", {"4:0": 2, "4:1": 1});
+                    /*ob.should.have.property("os_version", {"4:0": 2, "4:1": 1});
                     ob.should.have.property("manufacture", {"Samsung": 3});
                     ob.should.have.property("device", {"Galaxy S3": 2, "Galaxy S4": 1});
                     ob.should.have.property("resolution", {"480x800": 2, "800x1900": 1});
@@ -740,7 +791,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 3});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 3});
                     ob.should.have.property("orientation", {"landscape": 2, "portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:0": 2, "3:5": 1}, "googleplay": {"1:0": 2, "2:0": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:0": 2, "3:5": 1}, "googleplay": {"1:0": 2, "2:0": 1}});*/
                     ob.should.have.property("root", {"yes": 2, "no": 1});
                     ob.should.have.property("online", {"no": 2, "yes": 1});
                     ob.should.have.property("muted", {"no": 2, "yes": 1});
@@ -785,6 +836,30 @@ describe('Testing Crashes', function() {
 
                     done();
                 });
+        });
+
+        it("Validate breakdown data", async function() {
+            var breakdowns = {
+                "os_version": {"4.0": 2, "4.1": 1},
+                "manufacture": {"Samsung": 3},
+                "device": {"Galaxy S3": 2, "Galaxy S4": 1},
+                "resolution": {"480x800": 2, "800x1900": 1},
+                "app_version": {"1.1": 2, "1.2": 1},
+                "cpu": {"armv7": 3},
+                "opengl": {"openGL ES 2.0": 3},
+                "orientation": {"landscape": 2, "portrait": 1},
+                "custom.facebook": {"3.0": 2, "3.5": 1},
+                "custom.googleplay": {"1.0": 2, "2.0": 1},
+            };
+            for (var breakdown in breakdowns) {
+                var res = await request.get('/o?group=' + CRASHES[0] + '&method=crashes&breakdown=true&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&field=" + breakdown);
+                var tt = res.text;
+                res = JSON.parse(tt);
+                res = res.result;
+                res.should.have.property("field", breakdown);
+                res.should.have.property("group", CRASHES[0]);
+                res.should.have.property("data", breakdowns[breakdown]);
+            }
         });
     });
 
@@ -920,7 +995,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.2");
                     ob.should.have.property("reports", 1);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"4:1": 1});
+                    /*ob.should.have.property("os_version", {"4:1": 1});
                     ob.should.have.property("manufacture", {"Samsung": 1});
                     ob.should.have.property("device", {"Galaxy S4": 1});
                     ob.should.have.property("resolution", {"800x1900": 1});
@@ -928,7 +1003,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 1});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 1});
                     ob.should.have.property("orientation", {"portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:5": 1}, "googleplay": {"2:0": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:5": 1}, "googleplay": {"2:0": 1}});*/
                     ob.should.have.property("root", {"no": 1});
                     ob.should.have.property("online", {"yes": 1});
                     ob.should.have.property("muted", {"yes": 1});
@@ -971,6 +1046,30 @@ describe('Testing Crashes', function() {
 
                     done();
                 });
+        });
+
+        it("Validate breakdown data", async function() {
+            var breakdowns = {
+                "os_version": { "4.1": 1 },
+                "manufacture": {"Samsung": 1},
+                "device": {"Galaxy S4": 1},
+                "resolution": {"800x1900": 1},
+                "app_version": { "1.2": 1},
+                "cpu": {"armv7": 1},
+                "opengl": {"openGL ES 2.0": 1},
+                "orientation": {"portrait": 1},
+                "custom.facebook": {"3.5": 1},
+                "custom.googleplay": { "2.0": 1},
+            };
+            for (var breakdown in breakdowns) {
+                var res = await request.get('/o?group=' + CRASHES[1] + '&method=crashes&breakdown=true&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&field=" + breakdown);
+                var tt = res.text;
+                res = JSON.parse(tt);
+                res = res.result;
+                res.should.have.property("field", breakdown);
+                res.should.have.property("group", CRASHES[1]);
+                res.should.have.property("data", breakdowns[breakdown]);
+            }
         });
     });
 
@@ -1092,7 +1191,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.2");
                     ob.should.have.property("reports", 1);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"8:1": 1});
+                    /*ob.should.have.property("os_version", {"8:1": 1});
                     ob.should.have.property("manufacture", {"Nokia": 1});
                     ob.should.have.property("device", {"Lumia 560": 1});
                     ob.should.have.property("resolution", {"800x1900": 1});
@@ -1100,7 +1199,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 1});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 1});
                     ob.should.have.property("orientation", {"portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:5": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:5": 1}});*/
                     ob.should.have.property("root", {"no": 1});
                     ob.should.have.property("online", {"yes": 1});
                     ob.should.have.property("muted", {"yes": 1});
@@ -1143,6 +1242,28 @@ describe('Testing Crashes', function() {
 
                     done();
                 });
+        });
+        it("Validate breakdown data", async function() {
+            var breakdowns = {
+                "os_version": { "8.1": 1 },
+                "manufacture": {"Nokia": 1},
+                "device": {"Lumia 560": 1},
+                "resolution": {"800x1900": 1},
+                "app_version": { "1.2": 1},
+                "cpu": {"armv7": 1},
+                "opengl": {"openGL ES 2.0": 1},
+                "orientation": {"portrait": 1},
+                "custom.facebook": {"3.5": 1}
+            };
+            for (var breakdown in breakdowns) {
+                var res = await request.get('/o?group=' + CRASHES[2] + '&method=crashes&breakdown=true&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&field=" + breakdown);
+                var tt = res.text;
+                res = JSON.parse(tt);
+                res = res.result;
+                res.should.have.property("field", breakdown);
+                res.should.have.property("group", CRASHES[2]);
+                res.should.have.property("data", breakdowns[breakdown]);
+            }
         });
     });
 
@@ -1188,7 +1309,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.2");
                     ob.should.have.property("reports", 1);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"8:1": 1});
+                    /*ob.should.have.property("os_version", {"8:1": 1});
                     ob.should.have.property("manufacture", {"Nokia": 1});
                     ob.should.have.property("device", {"Lumia 560": 1});
                     ob.should.have.property("resolution", {"800x1900": 1});
@@ -1196,7 +1317,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 1});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 1});
                     ob.should.have.property("orientation", {"portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:5": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:5": 1}});*/
                     ob.should.have.property("root", {"no": 1});
                     ob.should.have.property("online", {"yes": 1});
                     ob.should.have.property("muted", {"yes": 1});
@@ -1284,7 +1405,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.2");
                     ob.should.have.property("reports", 1);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"8:1": 1});
+                    /*ob.should.have.property("os_version", {"8:1": 1});
                     ob.should.have.property("manufacture", {"Nokia": 1});
                     ob.should.have.property("device", {"Lumia 560": 1});
                     ob.should.have.property("resolution", {"800x1900": 1});
@@ -1292,7 +1413,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 1});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 1});
                     ob.should.have.property("orientation", {"portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:5": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:5": 1}});*/
                     ob.should.have.property("root", {"no": 1});
                     ob.should.have.property("online", {"yes": 1});
                     ob.should.have.property("muted", {"yes": 1});
@@ -1505,15 +1626,6 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.2");
                     ob.should.have.property("reports", 1);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"8:1": 1});
-                    ob.should.have.property("manufacture", {"Nokia": 1});
-                    ob.should.have.property("device", {"Lumia 560": 1});
-                    ob.should.have.property("resolution", {"800x1900": 1});
-                    ob.should.have.property("app_version", {"1:2": 1});
-                    ob.should.have.property("cpu", {"armv7": 1});
-                    ob.should.have.property("opengl", {"openGL ES 2:0": 1});
-                    ob.should.have.property("orientation", {"portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:5": 1}});
                     ob.should.have.property("root", {"no": 1});
                     ob.should.have.property("online", {"yes": 1});
                     ob.should.have.property("muted", {"yes": 1});
@@ -1585,15 +1697,6 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.2");
                     ob.should.have.property("reports", 1);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"8:1": 1});
-                    ob.should.have.property("manufacture", {"Nokia": 1});
-                    ob.should.have.property("device", {"Lumia 560": 1});
-                    ob.should.have.property("resolution", {"800x1900": 1});
-                    ob.should.have.property("app_version", {"1:2": 1});
-                    ob.should.have.property("cpu", {"armv7": 1});
-                    ob.should.have.property("opengl", {"openGL ES 2:0": 1});
-                    ob.should.have.property("orientation", {"portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:5": 1}});
                     ob.should.have.property("root", {"no": 1});
                     ob.should.have.property("online", {"yes": 1});
                     ob.should.have.property("muted", {"yes": 1});
@@ -1663,15 +1766,6 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.2");
                     ob.should.have.property("reports", 1);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"8:1": 1});
-                    ob.should.have.property("manufacture", {"Nokia": 1});
-                    ob.should.have.property("device", {"Lumia 560": 1});
-                    ob.should.have.property("resolution", {"800x1900": 1});
-                    ob.should.have.property("app_version", {"1:2": 1});
-                    ob.should.have.property("cpu", {"armv7": 1});
-                    ob.should.have.property("opengl", {"openGL ES 2:0": 1});
-                    ob.should.have.property("orientation", {"portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:5": 1}});
                     ob.should.have.property("root", {"no": 1});
                     ob.should.have.property("online", {"yes": 1});
                     ob.should.have.property("muted", {"yes": 1});
@@ -1745,7 +1839,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.2");
                     ob.should.have.property("reports", 3);
                     ob.should.have.property("users", 2);
-                    ob.should.have.property("os_version", {"4:0": 2, "4:1": 1});
+                    /*ob.should.have.property("os_version", {"4:0": 2, "4:1": 1});
                     ob.should.have.property("manufacture", {"Samsung": 3});
                     ob.should.have.property("device", {"Galaxy S3": 2, "Galaxy S4": 1});
                     ob.should.have.property("resolution", {"480x800": 2, "800x1900": 1});
@@ -1753,7 +1847,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 3});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 3});
                     ob.should.have.property("orientation", {"landscape": 2, "portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:0": 2, "3:5": 1}, "googleplay": {"1:0": 2, "2:0": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:0": 2, "3:5": 1}, "googleplay": {"1:0": 2, "2:0": 1}});*/
                     ob.should.have.property("root", {"yes": 2, "no": 1});
                     ob.should.have.property("online", {"no": 2, "yes": 1});
                     ob.should.have.property("muted", {"no": 2, "yes": 1});
@@ -1825,7 +1919,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.2");
                     ob.should.have.property("reports", 3);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"4:0": 2, "4:1": 1});
+                    /*ob.should.have.property("os_version", {"4:0": 2, "4:1": 1});
                     ob.should.have.property("manufacture", {"Samsung": 3});
                     ob.should.have.property("device", {"Galaxy S3": 2, "Galaxy S4": 1});
                     ob.should.have.property("resolution", {"480x800": 2, "800x1900": 1});
@@ -1833,7 +1927,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 3});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 3});
                     ob.should.have.property("orientation", {"landscape": 2, "portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:0": 2, "3:5": 1}, "googleplay": {"1:0": 2, "2:0": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:0": 2, "3:5": 1}, "googleplay": {"1:0": 2, "2:0": 1}});*/
                     ob.should.have.property("root", {"yes": 2, "no": 1});
                     ob.should.have.property("online", {"no": 2, "yes": 1});
                     ob.should.have.property("muted", {"no": 2, "yes": 1});
@@ -1905,7 +1999,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.2");
                     ob.should.have.property("reports", 3);
                     ob.should.have.property("users", 0);
-                    ob.should.have.property("os_version", {"4:0": 2, "4:1": 1});
+                    /*ob.should.have.property("os_version", {"4:0": 2, "4:1": 1});
                     ob.should.have.property("manufacture", {"Samsung": 3});
                     ob.should.have.property("device", {"Galaxy S3": 2, "Galaxy S4": 1});
                     ob.should.have.property("resolution", {"480x800": 2, "800x1900": 1});
@@ -1913,7 +2007,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 3});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 3});
                     ob.should.have.property("orientation", {"landscape": 2, "portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:0": 2, "3:5": 1}, "googleplay": {"1:0": 2, "2:0": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:0": 2, "3:5": 1}, "googleplay": {"1:0": 2, "2:0": 1}});*/
                     ob.should.have.property("root", {"yes": 2, "no": 1});
                     ob.should.have.property("online", {"no": 2, "yes": 1});
                     ob.should.have.property("muted", {"no": 2, "yes": 1});
@@ -1930,6 +2024,31 @@ describe('Testing Crashes', function() {
 
                     done();
                 });
+        });
+
+        it("Validate breakdown data", async function() {
+            var breakdowns = {
+                "os_version": { "4.0": 2, "4.1": 1},
+                "manufacture": {"Samsung": 3},
+                "device": {"Galaxy S3": 2, "Galaxy S4": 1},
+                "resolution": {"800x1900": 1, "480x800": 2},
+                "app_version": { "1.2": 1, "1.1": 2},
+                "cpu": {"armv7": 3},
+                "opengl": {"openGL ES 2.0": 3},
+                "orientation": {"landscape": 2, "portrait": 1},
+                "custom.facebook": {"3.0": 2, "3.5": 1},
+                "custom.googleplay": {"1.0": 2, "2.0": 1}
+            };
+
+            for (var breakdown in breakdowns) {
+                var res = await request.get('/o?group=' + CRASHES[0] + '&method=crashes&breakdown=true&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&field=" + breakdown);
+                var tt = res.text;
+                res = JSON.parse(tt);
+                res = res.result;
+                res.should.have.property("field", breakdown);
+                res.should.have.property("group", CRASHES[0]);
+                res.should.have.property("data", breakdowns[breakdown]);
+            }
         });
     });
 
@@ -2034,7 +2153,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.3");
                     ob.should.have.property("reports", 4);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"4:0": 3, "4:1": 1});
+                    /*ob.should.have.property("os_version", {"4:0": 3, "4:1": 1});
                     ob.should.have.property("manufacture", {"Samsung": 4});
                     ob.should.have.property("device", {"Galaxy S3": 3, "Galaxy S4": 1});
                     ob.should.have.property("resolution", {"480x800": 3, "800x1900": 1});
@@ -2042,7 +2161,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 4});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 4});
                     ob.should.have.property("orientation", {"landscape": 3, "portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:0": 3, "3:5": 1}, "googleplay": {"1:0": 3, "2:0": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:0": 3, "3:5": 1}, "googleplay": {"1:0": 3, "2:0": 1}});*/
                     ob.should.have.property("root", {"yes": 3, "no": 1});
                     ob.should.have.property("online", {"no": 3, "yes": 1});
                     ob.should.have.property("muted", {"no": 3, "yes": 1});
@@ -2059,6 +2178,30 @@ describe('Testing Crashes', function() {
 
                     done();
                 });
+        });
+        it("Validate breakdown data", async function() {
+            var breakdowns = {
+                "os_version": { "4.0": 3, "4.1": 1},
+                "manufacture": {"Samsung": 4},
+                "device": {"Galaxy S3": 3, "Galaxy S4": 1},
+                "resolution": {"800x1900": 1, "480x800": 3},
+                "app_version": { "1.1": 2, "1.2": 1, "1.3": 1},
+                "cpu": {"armv7": 4},
+                "opengl": {"openGL ES 2.0": 4},
+                "orientation": {"landscape": 3, "portrait": 1},
+                "custom.facebook": {"3.0": 3, "3.5": 1},
+                "custom.googleplay": {"1.0": 3, "2.0": 1}
+            };
+
+            for (var breakdown in breakdowns) {
+                var res = await request.get('/o?group=' + CRASHES[0] + '&method=crashes&breakdown=true&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&field=" + breakdown);
+                var tt = res.text;
+                res = JSON.parse(tt);
+                res = res.result;
+                res.should.have.property("field", breakdown);
+                res.should.have.property("group", CRASHES[0]);
+                res.should.have.property("data", breakdowns[breakdown]);
+            }
         });
     });
 
@@ -2178,7 +2321,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.3");
                     ob.should.have.property("reports", 5);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"4:0": 4, "4:1": 1});
+                    /*ob.should.have.property("os_version", {"4:0": 4, "4:1": 1});
                     ob.should.have.property("manufacture", {"Samsung": 5});
                     ob.should.have.property("device", {"Galaxy S3": 4, "Galaxy S4": 1});
                     ob.should.have.property("resolution", {"480x800": 4, "800x1900": 1});
@@ -2186,7 +2329,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 5});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 5});
                     ob.should.have.property("orientation", {"landscape": 4, "portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:0": 4, "3:5": 1}, "googleplay": {"1:0": 4, "2:0": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:0": 4, "3:5": 1}, "googleplay": {"1:0": 4, "2:0": 1}});*/
                     ob.should.have.property("root", {"yes": 4, "no": 1});
                     ob.should.have.property("online", {"no": 4, "yes": 1});
                     ob.should.have.property("muted", {"no": 4, "yes": 1});
@@ -2203,6 +2346,30 @@ describe('Testing Crashes', function() {
 
                     done();
                 });
+        });
+        it("Validate breakdown data", async function() {
+            var breakdowns = {
+                "os_version": { "4.0": 4, "4.1": 1},
+                "manufacture": {"Samsung": 5},
+                "device": {"Galaxy S3": 4, "Galaxy S4": 1},
+                "resolution": {"800x1900": 1, "480x800": 4},
+                "app_version": { "1.1": 2, "1.2": 1, "1.3": 2},
+                "cpu": {"armv7": 5},
+                "opengl": {"openGL ES 2.0": 5},
+                "orientation": {"landscape": 4, "portrait": 1},
+                "custom.facebook": {"3.0": 4, "3.5": 1},
+                "custom.googleplay": {"1.0": 4, "2.0": 1}
+            };
+
+            for (var breakdown in breakdowns) {
+                var res = await request.get('/o?group=' + CRASHES[0] + '&method=crashes&breakdown=true&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&field=" + breakdown);
+                var tt = res.text;
+                res = JSON.parse(tt);
+                res = res.result;
+                res.should.have.property("field", breakdown);
+                res.should.have.property("group", CRASHES[0]);
+                res.should.have.property("data", breakdowns[breakdown]);
+            }
         });
     });
 
@@ -2260,7 +2427,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.3");
                     ob.should.have.property("reports", 5);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"4:0": 4, "4:1": 1});
+                    /*ob.should.have.property("os_version", {"4:0": 4, "4:1": 1});
                     ob.should.have.property("manufacture", {"Samsung": 5});
                     ob.should.have.property("device", {"Galaxy S3": 4, "Galaxy S4": 1});
                     ob.should.have.property("resolution", {"480x800": 4, "800x1900": 1});
@@ -2268,7 +2435,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 5});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 5});
                     ob.should.have.property("orientation", {"landscape": 4, "portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:0": 4, "3:5": 1}, "googleplay": {"1:0": 4, "2:0": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:0": 4, "3:5": 1}, "googleplay": {"1:0": 4, "2:0": 1}});*/
                     ob.should.have.property("root", {"yes": 4, "no": 1});
                     ob.should.have.property("online", {"no": 4, "yes": 1});
                     ob.should.have.property("muted", {"no": 4, "yes": 1});
@@ -2285,6 +2452,30 @@ describe('Testing Crashes', function() {
 
                     done();
                 });
+        });
+        it("Validate breakdown data", async function() {
+            var breakdowns = {
+                "os_version": { "4.0": 4, "4.1": 1},
+                "manufacture": {"Samsung": 5},
+                "device": {"Galaxy S3": 4, "Galaxy S4": 1},
+                "resolution": {"800x1900": 1, "480x800": 4},
+                "app_version": { "1.1": 2, "1.2": 1, "1.3": 2},
+                "cpu": {"armv7": 5},
+                "opengl": {"openGL ES 2.0": 5},
+                "orientation": {"landscape": 4, "portrait": 1},
+                "custom.facebook": {"3.0": 4, "3.5": 1},
+                "custom.googleplay": {"1.0": 4, "2.0": 1}
+            };
+
+            for (var breakdown in breakdowns) {
+                var res = await request.get('/o?group=' + CRASHES[0] + '&method=crashes&breakdown=true&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&field=" + breakdown);
+                var tt = res.text;
+                res = JSON.parse(tt);
+                res = res.result;
+                res.should.have.property("field", breakdown);
+                res.should.have.property("group", CRASHES[0]);
+                res.should.have.property("data", breakdowns[breakdown]);
+            }
         });
     });
 
@@ -2342,7 +2533,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.3");
                     ob.should.have.property("reports", 5);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"4:0": 4, "4:1": 1});
+                    /*ob.should.have.property("os_version", {"4:0": 4, "4:1": 1});
                     ob.should.have.property("manufacture", {"Samsung": 5});
                     ob.should.have.property("device", {"Galaxy S3": 4, "Galaxy S4": 1});
                     ob.should.have.property("resolution", {"480x800": 4, "800x1900": 1});
@@ -2350,7 +2541,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 5});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 5});
                     ob.should.have.property("orientation", {"landscape": 4, "portrait": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:0": 4, "3:5": 1}, "googleplay": {"1:0": 4, "2:0": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:0": 4, "3:5": 1}, "googleplay": {"1:0": 4, "2:0": 1}});*/
                     ob.should.have.property("root", {"yes": 4, "no": 1});
                     ob.should.have.property("online", {"no": 4, "yes": 1});
                     ob.should.have.property("muted", {"no": 4, "yes": 1});
@@ -2512,7 +2703,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.3");
                     ob.should.have.property("reports", 1);
                     ob.should.have.property("users", 1);
-                    ob.should.have.property("os_version", {"8:1": 1});
+                    /*ob.should.have.property("os_version", {"8:1": 1});
                     ob.should.not.have.property("manufacture");
                     ob.should.have.property("device", {"iPad3,5": 1});
                     ob.should.have.property("resolution", {"1576x2048": 1});
@@ -2520,7 +2711,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 1});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 1});
                     ob.should.have.property("orientation", {"landscape": 1});
-                    ob.should.have.property("custom", {"facebook": {"3:0": 1}, "googleplay": {"1:0": 1}});
+                    ob.should.have.property("custom", {"facebook": {"3:0": 1}, "googleplay": {"1:0": 1}});*/
                     ob.should.have.property("root", {"yes": 1});
                     ob.should.have.property("online", {"no": 1});
                     ob.should.have.property("muted", {"no": 1});
@@ -2536,6 +2727,30 @@ describe('Testing Crashes', function() {
 
                     done();
                 });
+        });
+        it("Validate breakdown data", async function() {
+            var breakdowns = {
+                "os_version": {"8.1": 1},
+                "manufacture": {"null": 1},
+                "device": {"iPad3,5": 1},
+                "resolution": {"1576x2048": 1},
+                "app_version": {"1.3": 1},
+                "cpu": {"armv7": 1},
+                "opengl": {"openGL ES 2.0": 1},
+                "orientation": {"landscape": 1},
+                "custom.facebook": {"3.0": 1},
+                "custom.googleplay": {"1.0": 1}
+            };
+
+            for (var breakdown in breakdowns) {
+                var res = await request.get('/o?group=' + CRASHES[3] + '&method=crashes&breakdown=true&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&field=" + breakdown);
+                var tt = res.text;
+                res = JSON.parse(tt);
+                res = res.result;
+                res.should.have.property("field", breakdown);
+                res.should.have.property("group", CRASHES[3]);
+                res.should.have.property("data", breakdowns[breakdown]);
+            }
         });
     });
 
@@ -2680,7 +2895,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("latest_version", "1.3");
                     ob.should.have.property("reports", 2);
                     ob.should.have.property("users", 2);
-                    ob.should.have.property("os_version", {"8:1": 2});
+                    /*ob.should.have.property("os_version", {"8:1": 2});
                     ob.should.not.have.property("manufacture");
                     ob.should.have.property("device", {"iPad3,5": 2});
                     ob.should.have.property("resolution", {"1576x2048": 2});
@@ -2688,7 +2903,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("cpu", {"armv7": 2});
                     ob.should.have.property("opengl", {"openGL ES 2:0": 2});
                     ob.should.have.property("orientation", {"landscape": 2});
-                    ob.should.have.property("custom", {"facebook": {"3:0": 2}, "googleplay": {"1:0": 2}});
+                    ob.should.have.property("custom", {"facebook": {"3:0": 2}, "googleplay": {"1:0": 2}});*/
                     ob.should.have.property("root", {"yes": 2});
                     ob.should.have.property("online", {"no": 2});
                     ob.should.have.property("muted", {"no": 2});
@@ -2704,6 +2919,30 @@ describe('Testing Crashes', function() {
 
                     done();
                 });
+        });
+        it("Validate breakdown data", async function() {
+            var breakdowns = {
+                "os_version": {"8.1": 2},
+                "manufacture": {"null": 2},
+                "device": {"iPad3,5": 2},
+                "resolution": {"1576x2048": 2},
+                "app_version": {"1.3": 2},
+                "cpu": {"armv7": 2},
+                "opengl": {"openGL ES 2.0": 2},
+                "orientation": {"landscape": 2},
+                "custom.facebook": {"3.0": 2},
+                "custom.googleplay": {"1.0": 2}
+            };
+
+            for (var breakdown in breakdowns) {
+                var res = await request.get('/o?group=' + CRASHES[3] + '&method=crashes&breakdown=true&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID + "&field=" + breakdown);
+                var tt = res.text;
+                res = JSON.parse(tt);
+                res = res.result;
+                res.should.have.property("field", breakdown);
+                res.should.have.property("group", CRASHES[3]);
+                res.should.have.property("data", breakdowns[breakdown]);
+            }
         });
     });
 
@@ -3693,7 +3932,7 @@ describe('Testing Crashes', function() {
                 });
         });
         it('Trigger deletion job to run', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", function() {
+            testUtils.triggerJobToRun("api:mutationManagerJob", function() {
                 setTimeout(done, 5000);
             });
         });

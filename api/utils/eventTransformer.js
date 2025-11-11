@@ -25,6 +25,9 @@ function transformToKafkaEventFormat(doc) {
     result.did = doc.did;
     result._id = doc._id;
     result._uid = doc._uid;
+    if (doc.lsid) {
+        result.lsid = doc.lsid;
+    }
 
     // Timestamp handling - ensure numeric timestamp
     const ts = doc.ts;

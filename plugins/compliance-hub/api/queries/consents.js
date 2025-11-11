@@ -177,6 +177,9 @@ function transformConsentRows(rows) {
         if (out.did) {
             out.device_id = out.did;
         }
+        if (out.a) {
+            out.app_id = out.a;
+        }
         if (out.up) {
             Object.assign(out, out.up);
             delete out.up;

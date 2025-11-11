@@ -377,7 +377,6 @@ class QueryRunner {
      */
     async executeOnAdapter(query, adapterName, params, options = {}) {
         try {
-
             const handler = query.adapters[adapterName]?.handler;
             if (!handler) {
                 log.e(`No handler found for query '${query.name}' on adapter '${adapterName}'`);
