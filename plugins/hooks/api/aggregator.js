@@ -7,11 +7,24 @@ const IncomingDataTrigger = require('./parts/triggers/incoming_data.js');
 const utils = require('./utils.js');
 const {HTTPEffect, EmailEffect, CustomCodeEffect} = require('./parts/effects/index.js');
 
+plugins.setConfigs("hooks", {
+    batchActionSize: 0,
+    refreshRulesPeriod: 3000,
+    pipelineInterval: 1000,
+    requestLimit: 0,
+    timeWindowForRequestLimit: 60000,
+});
+
 (function() {
 
     plugins.register("/aggregator", async function() {
 
         log.d("Starting hooks aggregator initialization");
+
+        // Initialize global request counter for rate limiting
+        if (!global.triggerRequestCount) {
+            global.triggerRequestCount = [];
+        }
 
         /**
          * Process effects based on rule configuration
@@ -23,6 +36,13 @@ const {HTTPEffect, EmailEffect, CustomCodeEffect} = require('./parts/effects/ind
 
                 if (!rule || !rule.effects || !Array.isArray(rule.effects)) {
                     log.d("No effects to process for rule:", rule?._id);
+                    return;
+                }
+
+                // Add rate limiter check
+                if (utils.checkRateLimitReached(rule)) {
+                    log.e("[call limit reached]", `call limit reached for ${rule._id}`);
+                    utils.addErrorRecord(rule._id, `call limit reached for ${rule._id}`);
                     return;
                 }
 
@@ -49,18 +69,23 @@ const {HTTPEffect, EmailEffect, CustomCodeEffect} = require('./parts/effects/ind
 
                         if (effect && typeof effect.process === 'function') {
                             await effect.process(data);
+                            log.d("Effect processed successfully:", effectConfig.type);
                         }
                     }
                     catch (effectErr) {
                         log.e("Error processing individual effect:", effectErr, effectErr.stack);
+                        // Add error logging to rule document
+                        utils.addErrorRecord(rule._id, effectErr.message || effectErr.toString());
                     }
                 }
             }
             catch (err) {
                 log.e("Error in processEffects:", err, err.stack);
+                if (data.rule && data.rule._id) {
+                    utils.addErrorRecord(data.rule._id, err.message || err.toString());
+                }
             }
         };
-
         // Initialize the IncomingDataTrigger with pipeline callback
         const incomingDataTrigger = new IncomingDataTrigger({
             pipeline: async(data) => {
@@ -75,6 +100,9 @@ const {HTTPEffect, EmailEffect, CustomCodeEffect} = require('./parts/effects/ind
                 }
                 catch (err) {
                     log.e("Error processing hook pipeline:", err, err.stack);
+                    if (data.rule && data.rule._id) {
+                        utils.addErrorRecord(data.rule._id, err.message || err.toString());
+                    }
                 }
             }
         });

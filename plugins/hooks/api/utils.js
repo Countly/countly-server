@@ -85,6 +85,77 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
 };
 
 
+
+// Add these functions to your existing utils.js
+
+/**
+ * Check if rate limit is reached for a rule
+ * @param {Object} rule - hook rule
+ * @returns {Boolean} true if rate limit reached
+ */
+utils.checkRateLimitReached = function(rule) {
+    const plugins = require('../../pluginManager.js');
+
+    if (plugins.getConfig("hooks").requestLimit === 0) {
+        return false;
+    }
+
+    let requestCount = global.triggerRequestCount.find(item => {
+        return item.ruleId.toString() === rule._id.toString();
+    });
+
+    if (!requestCount) {
+        utils.addInitialRequestCounter(rule);
+        return false;
+    }
+
+    return utils.incrementRequestCounter(rule);
+};
+
+/**
+ * Add initial request counter for a rule
+ * @param {Object} rule - hook rule
+ */
+utils.addInitialRequestCounter = function(rule) {
+    const plugins = require('../../pluginManager.js');
+    let startTime = Date.now();
+    let endTime = startTime + plugins.getConfig("hooks").timeWindowForRequestLimit;
+    global.triggerRequestCount.push({
+        ruleId: rule._id.toString(),
+        startTime: startTime,
+        endTime: endTime,
+        counter: 1
+    });
+};
+
+/**
+ * Increment request counter for a rule
+ * @param {Object} rule - hook rule
+ * @returns {Boolean} true if limit exceeded
+ */
+utils.incrementRequestCounter = function(rule) {
+    const plugins = require('../../pluginManager.js');
+    const currentTimestamp = Date.now();
+
+    // Delete records which are not in time frame
+    global.triggerRequestCount = global.triggerRequestCount.filter(item => {
+        return currentTimestamp >= item.startTime && currentTimestamp <= item.endTime;
+    });
+
+    let counterIndex = global.triggerRequestCount.findIndex(item => {
+        return item.ruleId.toString() === rule._id.toString();
+    });
+
+    if (counterIndex < 0) {
+        return false;
+    }
+
+    global.triggerRequestCount[counterIndex].counter++;
+
+    return global.triggerRequestCount[counterIndex].counter > plugins.getConfig("hooks").requestLimit;
+};
+
+
 let a = `{{name}} is name. {{v}} is v, {{ e.l[1] }} is ll`;
 utils.parseStringTemplate(a, {name: 2, v: 3, e: {l: [0, 1, 2]}});
 

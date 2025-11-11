@@ -103,9 +103,12 @@ class IncomingDataTrigger {
                         },
                         ip_address: eventData.ip_address,
                         qstring: {
-                            events: eventData.events || []
+                            events: eventData.events || [],
+                            device_id: eventData.device_id,
+                            metrics: eventData.metrics
                         }
                     },
+                    is_mock: false,
                     events: eventData.events || []
                 };
 
