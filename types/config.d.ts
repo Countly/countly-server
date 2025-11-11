@@ -308,6 +308,12 @@ export interface EventSinkConfig {
   sinks?: Array<"mongo" | "kafka">; // default: ["mongo"]
 }
 
+/** ClickHouse dictionary configuration */
+export interface ClickHouseDictionaryConfig {
+  /** Enable MongoDB as a dictionary source (requires mongodb driver) */
+  enableMongoDBSource?: boolean; // default: true
+}
+
 /** ClickHouse database configuration */
 export interface ClickHouseConfig {
   /** ClickHouse server URL */
@@ -338,6 +344,8 @@ export interface ClickHouseConfig {
   };
   /** Maximum number of open connections */
   max_open_connections?: number; // default: 10
+  /** Dictionary configuration */
+  dictionary?: ClickHouseDictionaryConfig;
   /** ClickHouse specific settings */
   clickhouse_settings?: {
     /** Idle connection timeout */

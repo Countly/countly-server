@@ -550,30 +550,32 @@ usersApi.mergeOtherPlugins = function(options, callback) {
                         }
                         else {
                             //Merge data in drill_events collection
-                            common.drillDb.collection('drill_events').updateMany({"a": app_id, "uid": oldAppUser.uid}, {'$set': {"uid": newAppUser.uid}}, function(err1) {
-                                if (err1) {
-                                    log.e("Failed to update drill_events collection", err1);
-                                    common.db.collection('app_user_merges').update({"_id": iid}, {'$unset': {"cc": ""}, "$set": {"retry_error": "Failure while merging drill_events data", "lu": Math.round(new Date().getTime() / 1000)}}, {upsert: false}, function(err4) {
-                                        if (err4) {
-                                            log.e(err4);
-                                        }
-                                        if (callback && typeof callback === 'function') {
-                                            callback(err4);
-                                        }
-                                    });
-                                }
-                                else {
-                                    //data merged. Delete record from merges collection
-                                    common.db.collection('app_user_merges').remove({"_id": iid}, function(err5) {
-                                        if (err5) {
-                                            log.e("Failed to remove merge document", err5);
-                                        }
-                                        if (callback && typeof callback === 'function') {
-                                            callback(err5);
-                                        }
-                                    });
-                                }
-                            });
+                            // temporary disabled as we do not have drill_events collection in common db
+                            // common.drillDb.collection('drill_events').updateMany({"a": app_id, "uid": oldAppUser.uid}, {'$set': {"uid": newAppUser.uid}}, function(err1) {
+                            //     if (err1) {
+                            //         log.e("Failed to update drill_events collection", err1);
+                            //         common.db.collection('app_user_merges').update({"_id": iid}, {'$unset': {"cc": ""}, "$set": {"retry_error": "Failure while merging drill_events data", "lu": Math.round(new Date().getTime() / 1000)}}, {upsert: false}, function(err4) {
+                            //             if (err4) {
+                            //                 log.e(err4);
+                            //             }
+                            //             if (callback && typeof callback === 'function') {
+                            //                 callback(err4);
+                            //             }
+                            //         });
+                            //     }
+                            //     else {
+                            //         //data merged. Delete record from merges collection
+                            //         common.db.collection('app_user_merges').remove({"_id": iid}, function(err5) {
+                            //             if (err5) {
+                            //                 log.e("Failed to remove merge document", err5);
+                            //             }
+                            //             if (callback && typeof callback === 'function') {
+                            //                 callback(err5);
+                            //             }
+                            //         });
+                            //     }
+                            // });
+                            // *************************/
                         }
                     });
                 }
