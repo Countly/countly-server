@@ -374,7 +374,8 @@ exports.stream = function(params, stream, options) {
             params.res.write(head.join(',') + '\r\n');
         }
 
-        stream.stream(options.streamOptions).on('data', function(doc) {
+        stream.on('data', function(doc) {
+            doc = transformFunction(doc);
             var values = [];
             var valuesMap = {};
             getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd}); // if we have list at end - then we don'thave projection
@@ -385,7 +386,7 @@ exports.stream = function(params, stream, options) {
             params.res.write(values.join(',') + '\r\n');
         });
 
-        stream.once('close', function() {
+        stream.once('end', function() {
             setTimeout(function() {
                 if (listAtEnd) {
                     for (var p = 0; p < paramList.length; p++) {
@@ -398,20 +399,20 @@ exports.stream = function(params, stream, options) {
         });
     }
     else if (type === 'xlsx' || type === 'xls') {
-        options.streamOptions.transform = transformFunction;
         var xc = new XLSXTransformStream();
         xc.pipe(params.res);
         if (listAtEnd === false) {
             xc.write(paramList);
         }
-        stream.stream(options.streamOptions).on('data', function(doc) {
+        stream.on('data', function(doc) {
+            doc = transformFunction(doc);
             var values = [];
             var valuesMap = {};
             getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd});
             xc.write(values);
         });
 
-        stream.once('close', function() {
+        stream.once('end', function() {
             setTimeout(function() {
                 if (listAtEnd) {
                     xc.write(paramList);
@@ -423,7 +424,8 @@ exports.stream = function(params, stream, options) {
     else {
         params.res.write("[");
         var first = false;
-        stream.stream(options.streamOptions).on('data', function(doc) {
+        stream.on('data', function(doc) {
+            doc = transformFunction(doc);
             if (!first) {
                 first = true;
                 params.res.write(doc);
@@ -433,7 +435,7 @@ exports.stream = function(params, stream, options) {
             }
         });
 
-        stream.once('close', function() {
+        stream.once('end', function() {
             setTimeout(function() {
                 params.res.write("]");
                 params.res.end();
@@ -643,7 +645,27 @@ exports.fromRequest = function(options) {
     common.processRequest(params);
 };
 
+/**
+ * Get cursor for export
+ * @param {object} options  - options for the export
+ * @param {object} body  - response from api with info for query
+ * @param {function} callback  - callback function with (err,cursor)
+ */
+async function getCursorForExport(options, body, callback) {
+    if (options.db_name === "countly_drill") {
+        try {
+            var cursor = await common.drillQueryRunner.getDrillCursorForExport(body, {});
+            callback(null, cursor);
+        }
+        catch (err) {
+            callback(err, null);
+        }
 
+    }
+    else {
+        callback(null, options.db.collection(body.collection).aggregate(body.pipeline));
+    }
+}
 exports.fromRequestQuery = function(options) {
     options.db = options.db || common.db;
     options.path = options.path || "/";
@@ -662,37 +684,44 @@ exports.fromRequestQuery = function(options) {
             method: "export"
         },
         //adding custom processing for API responses
-        'APICallback': function(err, body) {
-            if (err) {
-                log.e(err);
+        'APICallback': function(err0, body) {
+            if (err0) {
+                log.e(err0);
             }
             if (body) {
                 if (body.transformFunction) {
                     options.transformFunction = body.transformFunction;
                 }
-                var cursor = options.db.collection(body.collection).aggregate(body.pipeline);
-                options.projection = body.projection;
-                var outputStream = new Transform({
-                    objectMode: true,
-                    transform: (data, _, done) => {
-                        done(null, data);
+                //body.pipeline - usual mongodb export aggregation
+                //body.clickhouse - object for clickhouse query.
+                getCursorForExport(options, body, function(err, cursor) {
+                    if (err) {
+                        log.e(err);
+                        options.output({"error": "Could not get data for export"});
+                        return;
                     }
+                    options.projection = body.projection;
+                    var outputStream = new Transform({
+                        objectMode: true,
+                        transform: (data, _, done) => {
+                            done(null, data);
+                        }
+                    });
+                    options.streamOptions = {};
+                    if (options.type === "stream" || options.type === "json") {
+                        options.streamOptions.transform = function(doc) {
+                            doc = transformValuesInObject(doc, options.mapper);
+                            if (body.transformFunction) {
+                                return JSON.stringify(body.transformFunction(doc));
+                            }
+                            else {
+                                return JSON.stringify(doc);
+                            }
+                        };
+                    }
+                    exports.stream({res: outputStream}, cursor, options);
+                    options.output(outputStream);
                 });
-                options.streamOptions = {};
-                if (options.type === "stream" || options.type === "json") {
-                    options.streamOptions.transform = function(doc) {
-                        doc = transformValuesInObject(doc, options.mapper);
-                        if (body.transformFunction) {
-                            return JSON.stringify(body.transformFunction(doc));
-                        }
-                        else {
-                            return JSON.stringify(doc);
-                        }
-                    };
-                }
-                exports.stream({res: outputStream}, cursor, options);
-
-                options.output(outputStream);
             }
         }
     };

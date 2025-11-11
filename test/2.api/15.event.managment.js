@@ -801,7 +801,7 @@ describe('Testing event settings', function() {
                 });
         });
         it('Trigger deletion job to run', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", done);
+            testUtils.triggerJobToRun("api:mutationManagerJob", done);
         });
         it('check if data reseted', function(done) {
             request

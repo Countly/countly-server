@@ -44,6 +44,19 @@
                                     </el-radio-group>
                                 </div>
                             </div>
+                            <div class="bu-mx-4 bu-mt-4" v-if="showLimitOptions">
+                                <div class="bu-level-left">
+                                    <el-checkbox v-model="exportAllRows">
+                                        <span class="text-medium">
+                                             {{i18n('export.export-all-rows')}}
+                                        </span>
+                                    </el-checkbox>
+                                </div>
+                                <div v-if="!exportAllRows" class='bu-level-right text-small color-cool-gray-50' :data-test-id="testId + '-export-as-pop-up-rows-selected-count'">
+                                    <p class="text-medium bu-pr-5"> {{i18n('export.limit-rows')}}</p>
+                                    <el-input-number :test-id="testId + '-export-limit-input'"  v-model="exportLimit" controls-position="right" ></el-input-number>
+                                </div>
+                            </div>
                             <div v-if="exportColumnSelection" class="cly-vue-eldatatable__export--extended">
                                 <div class="bu-mx-4 bu-mb-3">
 		                            <div class="bu-level bu-mb-3">

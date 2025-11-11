@@ -236,6 +236,9 @@
                     };
                 }));
             },
+            isEditMode: function() {
+                return this.controls && this.controls.initialEditedObject && this.controls.initialEditedObject.isEditMode;
+            },
         },
         props: {
             controls: {

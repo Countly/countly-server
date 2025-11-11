@@ -627,7 +627,7 @@ describe('Testing views plugin', function() {
                 });
         });
         it('Trigger deletion job to run to clean out data completely from granular data', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", function(error) {
+            testUtils.triggerJobToRun("api:mutationManagerJob", function(error) {
                 if (error) {
                     console.log(error);
                 }
@@ -1066,7 +1066,7 @@ describe('Testing views plugin', function() {
                 });
         });
         it('Trigger deletion job to run', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", function() {
+            testUtils.triggerJobToRun("api:mutationManagerJob", function() {
                 setTimeout(done, 5000);
             });
         });
@@ -1449,7 +1449,7 @@ describe('Testing views plugin', function() {
                 });
         });
         it('Trigger deletion job to run', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", function() {
+            testUtils.triggerJobToRun("api:mutationManagerJob", function() {
                 setTimeout(done, 500 * testUtils.testScalingFactor);
             });
         });

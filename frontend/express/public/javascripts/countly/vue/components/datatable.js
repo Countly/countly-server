@@ -826,6 +826,21 @@
                 default: null,
                 required: false
             },
+            showLimitOptions: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            exportAllRows: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            exportLimit: {
+                type: Number,
+                default: countlyGlobal.config.export_limit,
+                required: false
+            },
             exportApi: {
                 type: Function,
                 default: null,
@@ -885,7 +900,8 @@
         methods: {
             onExportClick: function() {
                 this.initiateExport({
-                    type: this.selectedExportType
+                    type: this.selectedExportType,
+                    limit: this.exportAllRows ? -1 : this.exportLimit
                 });
             },
             getDefaultFileName: function() {
@@ -978,7 +994,7 @@
                 var formData = null,
                     url = null;
                 if (this.exportApi) {
-                    formData = this.exportApi();
+                    formData = this.exportApi(params);
                     formData.type = params.type;
                     url = countlyCommon.API_URL + (formData.url || "/o/export/request");
                     if (this.exportFileName) {
@@ -988,6 +1004,9 @@
                 else if (this.exportQuery) {
                     formData = this.exportQuery();
                     formData.type = params.type;
+                    if (formData.limit) {
+                        formData.limit = params.limit;
+                    }
                     if (this.exportFileName) {
                         formData.filename = this.exportFileName;
                     }

@@ -109,7 +109,7 @@ describe('Testing Language metrics', function() {
                 });
         });
         it('Trigger deletion job to run', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", done);
+            testUtils.triggerJobToRun("api:mutationManagerJob", done);
         });
     });
     describe('verify empty language', function() {
