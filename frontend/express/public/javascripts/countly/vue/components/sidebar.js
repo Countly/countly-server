@@ -1,4 +1,4 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers, countlyCMS */
+/* global app, Countly, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers, countlyCMS */
 
 (function(countlyVue, $) {
 
@@ -612,7 +612,8 @@
                         status: 'loading',
                         used: 0,
                         available: 0,
-                        nextResetAt: ''
+                        nextResetAt: '',
+                        showManageLink: false
                     }
                 };
             },
@@ -1034,6 +1035,8 @@
                 window.addEventListener('flex-server-info-failed', () => {
                     this.flexWidget.status = 'failed';
                 });
+
+                this.flexWidget.showManageLink = Countly.get_remote_config("SHOW_SERVER_MANAGE_LINK") === 1;
             },
             created: function() {
                 var self = this;
