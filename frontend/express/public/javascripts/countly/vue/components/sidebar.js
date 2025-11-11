@@ -1,4 +1,4 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers, countlyCMS */
+/* global app, Countly, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers, countlyCMS */
 
 (function(countlyVue, $) {
 
