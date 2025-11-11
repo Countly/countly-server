@@ -862,7 +862,7 @@ countlyCommon.getPeriodRange = function(period, timezone, offset) {
     //Gets start and end points of period for querying in drill
     var startTimestamp = 0;
     var endTimestamp = 0;
-    var __currMoment = moment();
+    var __currMoment = moment().utc();
 
     period = period || "30days";
     if (typeof period === 'string' && period.indexOf(",") !== -1) {
@@ -899,16 +899,19 @@ countlyCommon.getPeriodRange = function(period, timezone, offset) {
         if (Number.isInteger(period[0]) && Number.isInteger(period[1])) {
             period[0] = fixTimestampToMilliseconds(period[0]);
             period[1] = fixTimestampToMilliseconds(period[1]);
-            fromDate = moment.tz(period[0], timezone);
-            toDate = moment.tz(period[1], timezone);
+            fromDate = moment.tz(period[0], "UTC");
+            toDate = moment.tz(period[1], "UTC");
         }
         else {
-            fromDate = moment.tz(period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"], timezone);
-            toDate = moment.tz(period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"], timezone);
+            fromDate = moment.tz(period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"], "UTC");
+            toDate = moment.tz(period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"], "UTC");
         }
 
         startTimestamp = fromDate.clone().startOf("day");
         endTimestamp = toDate.clone().endOf("day");
+
+        // fromDate.tz(timezone);
+        // toDate.tz(timezone);
 
         if (fromDate.valueOf() > toDate.valueOf()) {
             //incorrect range - reset to 30 days
@@ -965,11 +968,11 @@ countlyCommon.getPeriodRange = function(period, timezone, offset) {
         let nDays = 30;
         startTimestamp = __currMoment.clone().startOf("day").subtract(nDays - 1, "days");
     }
-
-    const offsetMs = (offset ?? 0) * 60000;
-    const tolerance = offset ? 1 : 0;
-
-    return { $gt: startTimestamp.valueOf() + offsetMs - tolerance, $lt: endTimestamp.valueOf() + offsetMs + tolerance };
+    if (!offset) {
+        offset = moment.tz(timezone).utcOffset();
+        offset = offset * -1;
+    }
+    return {"$gte": startTimestamp.valueOf() + offset * 60000, "$lte": endTimestamp.valueOf() + offset * 60000};
 };
 
 /**
