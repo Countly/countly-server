@@ -3,8 +3,9 @@ Fixes:
 - [push] Fixed the options of the request being made during mime detection
 
 Enterprise Fixes:
-- [surveys] Handle multiple survey submission from same user based on survey visibility
 - [concurrent_users] Fix alert threshold comparison
+- [surveys] Handle multiple survey submission from same user based on survey visibility
+- [users] Set correct users widget table rows amount according to selected setting
 
 ## Version 25.03.26
 Fixes:
