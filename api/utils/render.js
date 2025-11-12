@@ -68,7 +68,7 @@ exports.renderView = function(options, cb) {
                     XDG_CONFIG_HOME: pathModule.resolve(__dirname, "../../.cache/chrome/tmp/.chromium"),
                     XDG_CACHE_HOME: pathModule.resolve(__dirname, "../../.cache/chrome/tmp/.chromium")
                 },
-                args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'],
+                args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors', '--disable-web-security'],
                 ignoreHTTPSErrors: true,
                 userDataDir: pathModule.resolve(__dirname, "../../dump/chrome/" + Date.now())
             };
@@ -82,6 +82,7 @@ exports.renderView = function(options, cb) {
             try {
                 log.d('Started rendering images');
                 var page = await browser.newPage();
+                await page.setBypassCSP(true);
 
                 page.on('console', (msg) => {
                     log.d("Headless chrome page log", msg.text());

@@ -639,7 +639,7 @@ describe('Testing Rating plugin', function() {
             });
         });
         it('Trigger deletion job to run', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", function() {
+            testUtils.triggerJobToRun("api:mutationManagerJob", function() {
                 setTimeout(done, 500 * testUtils.testScalingFactor);
             });
         });

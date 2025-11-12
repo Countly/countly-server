@@ -868,19 +868,6 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
             }
         }
 
-        if (!isNewUser) {
-            /*
-                If metricChanges object contains a uid this means we have at least one metric that has changed
-                in this begin_session so we'll insert it into metric_changesAPPID collection.
-                Inserted document has below format;
-        
-                { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
-            */
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && metricChanges.uid && params.qstring.begin_session) {
-                common.db.collection('metric_changes' + params.app_id).insert(metricChanges, function() {});
-            }
-        }
-
         if (done) {
             done();
         }
@@ -1031,7 +1018,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
 
                 if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true && !userProps.loc && typeof data.lat !== "undefined" && typeof data.lon !== "undefined") {
                     // only override lat/lon if no recent gps location exists in user document
-                    if (!params.app_user.loc || (params.app_user.loc.gps && params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
+                    if (!params.app_user.loc || !params.app_user.loc.gps || params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600) {
                         userProps.loc = {
                             gps: false,
                             geo: {
@@ -1062,7 +1049,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
 
                     if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true && !userProps.loc && data.ll && typeof data.ll[0] !== "undefined" && typeof data.ll[1] !== "undefined") {
                         // only override lat/lon if no recent gps location exists in user document
-                        if (!params.app_user.loc || (params.app_user.loc.gps && params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600)) {
+                        if (!params.app_user.loc || !params.app_user.loc.gps || params.time.mstimestamp - params.app_user.loc.date > 7 * 24 * 3600) {
                             userProps.loc = {
                                 gps: false,
                                 geo: {
@@ -1126,7 +1113,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
                 userProps.av_major = null;
                 userProps.av_minor = null;
                 userProps.av_patch = null;
-                userProps.av_rel = null;
+                userProps.av_prerel = null;
                 userProps.av_build = null;
             }
         }

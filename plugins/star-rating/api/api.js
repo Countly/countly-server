@@ -875,58 +875,6 @@ function uploadFile(myfile, id, callback) {
     });
 
     plugins.register("/i/feedback/input", nonChecksumHandler);
-    plugins.register("/i", function(ob) {
-        var params = ob.params;
-        if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
-            params.qstring.events = params.qstring.events.filter(function(currEvent) {
-                if (currEvent.key === "[CLY]_star_rating") {
-                    /**
-                    *  register for process new  rating event data.
-                    *  the original event format like:
-                    *  { key: '[CLY]_star_rating', count:1, sum:1, segmentation:{ platform:"iOS", version:"3.2", rating:2}
-                    *  this function will add a field call "platform_version_rate" in segmentation.
-                    */
-                    currEvent.segmentation.platform = currEvent.segmentation.platform || "undefined"; //because we have a lot of old data with undefined
-                    currEvent.segmentation.rating = currEvent.segmentation.rating || "undefined";
-                    currEvent.segmentation.ratingSum = Number(currEvent.segmentation.rating) || 0;
-                    currEvent.segmentation.widget_id = currEvent.segmentation.widget_id || "undefined";
-                    currEvent.segmentation.app_version = currEvent.segmentation.app_version || "undefined";
-                    currEvent.segmentation.platform_version_rate = currEvent.segmentation.platform + "**" + currEvent.segmentation.app_version + "**" + currEvent.segmentation.rating + "**" + currEvent.segmentation.widget_id + "**";
-                    // is provided email & comment fields
-
-                    var collectionName = 'feedback' + ob.params.app._id;
-                    common.db.collection(collectionName).insert({
-                        "email": currEvent.segmentation.email || "No email provided",
-                        "comment": currEvent.segmentation.comment || "No comment provided",
-                        "ts": (currEvent.timestamp) ? common.initTimeObj(params.appTimezone, currEvent.timestamp).timestamp : params.time.timestamp,
-                        "device_id": params.qstring.device_id,
-                        "cd": new Date(),
-                        "uid": params.app_user.uid,
-                        "contact_me": currEvent.segmentation.contactMe,
-                        "rating": currEvent.segmentation.rating,
-                        "platform": currEvent.segmentation.platform,
-                        "app_version": currEvent.segmentation.app_version,
-                        "widget_id": currEvent.segmentation.widget_id
-                    }, function(err) {
-                        if (err) {
-                            return false;
-                        }
-                    });
-                    // increment ratings count for widget
-                    common.db.collection('feedback_widgets').update({
-                        _id: common.db.ObjectID(currEvent.segmentation.widget_id)
-                    }, {
-                        $inc: { ratingsSum: currEvent.segmentation.ratingSum, ratingsCount: 1 }
-                    }, function(err) {
-                        if (err) {
-                            return false;
-                        }
-                    });
-                }
-                return true;
-            });
-        }
-    });
 
     /**
      * @api {post} /i/feedback/widgets/status Bulk update feedback widgets
@@ -1636,25 +1584,12 @@ function uploadFile(myfile, id, callback) {
         }
         return false;
     });
-    plugins.register("/i/apps/create", function(ob) {
-        var appId = ob.appId;
-        common.db.collection('feedback' + appId).ensureIndex({
-            "uid": 1
-        }, function() {});
-        common.db.collection('feedback' + appId).ensureIndex({
-            "ts": 1
-        }, function() {});
-        common.db.collection('feedback' + appId).ensureIndex({
-            comment: 'text', email: 'text'
-        }, () => {});
-    });
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
         common.db.collection('feedback_widgets').remove({
             type: "rating",
             "app_id": appId
         });
-        common.db.collection('feedback' + appId).drop(function() {});
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
@@ -1662,11 +1597,6 @@ function uploadFile(myfile, id, callback) {
     });
     plugins.register("/i/apps/clear", function(ob) {
         var appId = ob.appId;
-        common.db.collection('feedback' + appId).remove({
-            ts: {
-                $lt: ob.moment.unix()
-            }
-        }, function() {});
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).remove({
             ts: {
                 $lt: ob.moment.unix()
@@ -1682,17 +1612,6 @@ function uploadFile(myfile, id, callback) {
     });
     plugins.register("/i/apps/clear_all", function(ob) {
         var appId = ob.appId;
-        common.db.collection('feedback' + appId).drop(function() {
-            common.db.collection('feedback' + appId).ensureIndex({
-                "uid": 1
-            }, function() {});
-            common.db.collection('feedback' + appId).ensureIndex({
-                "ts": 1
-            }, function() {});
-            common.db.collection('feedback' + appId).ensureIndex({
-                comment: 'text', email: 'text'
-            }, () => {});
-        });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
@@ -1703,17 +1622,6 @@ function uploadFile(myfile, id, callback) {
         common.db.collection('feedback_widgets').remove({
             type: "rating",
             "app_id": appId
-        });
-        common.db.collection('feedback' + appId).drop(function() {
-            common.db.collection('feedback' + appId).ensureIndex({
-                "uid": 1
-            }, function() {});
-            common.db.collection('feedback' + appId).ensureIndex({
-                "ts": 1
-            }, function() {});
-            common.db.collection('feedback' + appId).ensureIndex({
-                comment: 'text', email: 'text'
-            }, () => {});
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         /*if (common.drillDb) {
@@ -1737,15 +1645,15 @@ function uploadFile(myfile, id, callback) {
             });
         }
     });
-    plugins.register("/i/app_users/delete", async function(ob) {
+    /*plugins.register("/i/app_users/delete", function(ob) {
         var appId = ob.app_id;
         var uids = ob.uids;
         if (uids && uids.length) {
             // By using await and no callback, error in db operation will be thrown
             // This error will then be caught by app users api dispatch so that it can cancel app user deletion
-            await common.db.collection("feedback" + appId).remove({ uid: { $in: uids } });
+            //await common.db.collection("feedback" + appId).remove({ uid: { $in: uids } });
         }
-    });
+    });*/
     plugins.register("/i/app_users/export", function(ob) {
         return new Promise(function(resolve) {
             var uids = ob.uids;

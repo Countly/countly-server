@@ -2191,6 +2191,7 @@ const processRequest = (params) => {
                         });
 
                         countlyApi.data.exports.fromRequestQuery({
+                            db_name: params.qstring.db,
                             db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
                             params: params,
                             path: params.qstring.path,
