@@ -1,6 +1,8 @@
 ## Version 25.03.XX
 Fixes:
 - [push] Fixed the options of the request being made during mime detection
+- [views] Fix view name that is displayed in view table
+- [core-vis] Fix chart legend click event
 
 Enterprise Fixes:
 - [concurrent_users] Fix alert threshold comparison
