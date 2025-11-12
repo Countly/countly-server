@@ -461,7 +461,7 @@ describe('Testing Rating plugin', function() {
 
     describe('Verify rating', function() {
         it('verify in drill database', function(done) {
-            drill_db.collection("drill_events").findOne({"a": APP_ID, "e": "[CLY]_star_rating"}, function(err, res) {
+            drill_db.collection("drill_events").findOne({"a": APP_ID, "e": "[CLY]_star_rating", ts: 1419432000000}, function(err, res) {
                 if (err) {
                     done(err);
                 }

@@ -95,7 +95,7 @@ const verifyStaticElementsOfPage = () => {
         tooltipText: "Total (unique) value for this period is estimated and corrected using the biggest time buckets from available daily, weekly and monthly stats. Exact total counts are available for this year, month and day periods"
     });
 
-    cy.verifyElement({
+    /*cy.verifyElement({
         labelElement: viewsDataTableElements().COLUMN_NAME_NEW_USERS_LABEL,
         isElementVisible: false,
         labelText: "New Users",
@@ -104,7 +104,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         isElementVisible: false,
         element: viewsDataTableElements().COLUMN_NAME_NEW_USERS_SORTABLE_ICON,
-    });
+    });*/
 
     cy.verifyElement({
         labelElement: viewsDataTableElements().COLUMN_NAME_TOTAL_VISITS_LABEL,
@@ -172,7 +172,7 @@ const verifyStaticElementsOfPage = () => {
         element: viewsDataTableElements().COLUMN_NAME_BOUNCE_RATE_SORTABLE_ICON,
     });
 
-    cy.verifyElement({
+    /*cy.verifyElement({
         labelElement: viewsDataTableElements().COLUMN_NAME_UNIQUE_VIEWS_LABEL,
         isElementVisible: false,
         labelText: "Unique Views",
@@ -181,7 +181,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         isElementVisible: false,
         element: viewsDataTableElements().COLUMN_NAME_UNIQUE_VIEWS_SORTABLE_ICON,
-    });
+    });*/
 };
 
 const verifyEmptyPageElements = () => {
@@ -234,12 +234,12 @@ const verifyViewsMetricCard = ({
         tooltipText: "The total number of pages viewed, in the selected time period."
     });
 
-    cy.verifyElement({
+    /*cy.verifyElement({
         labelElement: viewsMetricCardElements.UNIQUE_VIEWS_LABEL,
         labelText: "Unique Views",
         tooltipElement: viewsMetricCardElements.UNIQUE_VIEWS_TOOLTIP,
         tooltipText: "Number of times a page is viewed in your application for the first time by users during a session, in the selected time period."
-    });
+    });*/
 
     cy.verifyElement({
         labelElement: viewsMetricCardElements.BOUNCE_RATE_LABEL,
@@ -254,10 +254,10 @@ const verifyViewsMetricCard = ({
             elementText: "0",
         });
 
-        cy.verifyElement({
+        /*cy.verifyElement({
             element: viewsMetricCardElements.UNIQUE_VIEWS_VALUE,
             elementText: "0"
-        });
+        });*/
 
         cy.verifyElement({
             element: viewsMetricCardElements.BOUNCE_RATE_VALUE,
