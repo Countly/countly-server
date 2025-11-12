@@ -8,6 +8,8 @@ Enterprise Fixes:
 - [concurrent_users] Fix alert threshold comparison
 - [surveys] Handle multiple survey submission from same user based on survey visibility
 - [users] Set correct users widget table rows amount according to selected setting
+- [users] Display user property limits in user profiles when exceeded
+- [dashboards] Add setting to disable public dashboards
 
 ## Version 25.03.26
 Fixes:
