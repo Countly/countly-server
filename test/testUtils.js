@@ -676,6 +676,40 @@ var testUtils = function testUtils() {
             setTimeout(resolve, timeToSleepInMs);
         });
     };
+
+    /**
+     * Reloads the ClickHouse identity dictionary (uid_map_dict).
+     * This forces immediate reload of the dictionary instead of waiting for automatic refresh.
+     * Useful in tests when you need immediate propagation of uid mapping changes.
+     * @param {Function} callback - Callback function to call when reload is complete
+     */
+    this.reloadIdentityDictionary = function(callback) {
+        try {
+            const clickhouseApi = require('../plugins/clickhouse/api/api.js');
+            const client = clickhouseApi.getClient();
+
+            if (!client) {
+                return callback(new Error('ClickHouse client not available'));
+            }
+
+            const Identity = require('../plugins/clickhouse/api/users/Identity.js');
+            const identity = new Identity(client);
+
+            identity.reloadDictionary()
+                .then(() => {
+                    console.log('Identity dictionary reloaded successfully');
+                    callback();
+                })
+                .catch((err) => {
+                    console.error('Failed to reload identity dictionary:', err);
+                    callback(err);
+                });
+        }
+        catch (err) {
+            console.error('Error setting up identity dictionary reload:', err);
+            callback(err);
+        }
+    };
 };
 
 module.exports = new testUtils();
