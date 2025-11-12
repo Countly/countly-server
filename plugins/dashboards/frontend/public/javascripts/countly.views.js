@@ -484,25 +484,6 @@
                 saveButtonLabel: "",
                 sharingAllowed: countlyGlobal.sharing_status || AUTHENTIC_GLOBAL_ADMIN,
                 groupSharingAllowed: countlyGlobal.plugins.indexOf("groups") > -1 && AUTHENTIC_GLOBAL_ADMIN,
-                constants: {
-                    sharingOptions: [
-                        {
-                            value: "all-users",
-                            name: this.i18nM("dashboards.share.all-users"),
-                            description: this.i18nM("dashboards.share.all-users.description"),
-                        },
-                        {
-                            value: "selected-users",
-                            name: this.i18nM("dashboards.share.selected-users"),
-                            description: this.i18nM("dashboards.share.selected-users.description"),
-                        },
-                        {
-                            value: "none",
-                            name: this.i18nM("dashboards.share.none"),
-                            description: this.i18nM("dashboards.share.none.description"),
-                        }
-                    ]
-                },
                 sharedEmailEdit: [],
                 sharedEmailView: [],
                 sharedGroupEdit: [],
@@ -511,6 +492,34 @@
             };
         },
         computed: {
+            constants: function() {
+                var allSharingOptions = [
+                    {
+                        value: "all-users",
+                        name: this.i18nM("dashboards.share.all-users"),
+                        description: this.i18nM("dashboards.share.all-users.description"),
+                    },
+                    {
+                        value: "selected-users",
+                        name: this.i18nM("dashboards.share.selected-users"),
+                        description: this.i18nM("dashboards.share.selected-users.description"),
+                    },
+                    {
+                        value: "none",
+                        name: this.i18nM("dashboards.share.none"),
+                        description: this.i18nM("dashboards.share.none.description"),
+                    }
+                ];
+
+                var allowPublicDashboards = countlyGlobal.allow_public_dashboards !== false;
+                var sharingOptions = allowPublicDashboards ? allSharingOptions : allSharingOptions.filter(function(option) {
+                    return option.value !== "all-users";
+                });
+
+                return {
+                    sharingOptions: sharingOptions
+                };
+            },
             canShare: function() {
                 var canShare = this.sharingAllowed && (this.controls.initialEditedObject.is_owner || AUTHENTIC_GLOBAL_ADMIN);
                 return canShare;
