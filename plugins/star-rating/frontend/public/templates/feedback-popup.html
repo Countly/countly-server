@@ -208,12 +208,10 @@
     <script src="../../star-rating/javascripts/tippy.all.min.js"></script>
     <script src="../../javascripts/dom/jquery/jquery.js"></script>
     <script>
+      var CLOSE_BUTTON_ID = '#close-btn';
+      var DEFAULT_PLATFORM = 'Web';
+
       (function() {
-        if (document.location.href.split('feedback/rating').length === 1) {
-          $('#close-btn').hide();
-          $('#question-area').css({ marginTop: '50px' });
-        }
-      
         /* Helper methods which we need */
         function hasClass(ele, cls) {
           return (typeof ele.className !== 'undefined' && !!ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)')));
@@ -283,6 +281,7 @@
         var device_id = getParameterByName('device_id');
         var dow = d.getDay();
         var h = d.getHours();
+        let isCloseButtonVisible = false;
         var parentOrigin = getParameterByName('origin');
         var platform = getParameterByName('platform');
         var sdk_name = getParameterByName('sdk_name') || 'javascript_feedback_popup';
@@ -299,7 +298,7 @@
         };
 
         if (!platform || (platform === 'undefined') || (platform === 'null')) {
-          platform = 'Web';
+          platform = DEFAULT_PLATFORM;
         }
       
         if (!app_version || (app_version === 'undefined') || (app_version === 'null')) {
@@ -466,6 +465,7 @@
 
         try {
           custom = JSON.parse(custom) ;
+          isCloseButtonVisible = platform === DEFAULT_PLATFORM || !!custom?.xb;
           
           if (custom && custom.sg) {
             custom = custom.sg;
@@ -476,6 +476,14 @@
         }
         catch (error) {
           custom = {};
+          isCloseButtonVisible = platform === DEFAULT_PLATFORM;
+        }
+
+        if (!isCloseButtonVisible) {
+          $(CLOSE_BUTTON_ID).hide();
+        }
+        else if ($(CLOSE_BUTTON_ID).is(":hidden")) {
+          $(CLOSE_BUTTON_ID).show();
         }
       
         for (var key in custom) {
