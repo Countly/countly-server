@@ -657,6 +657,12 @@ describe('Testing Compliance Hub', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
+        it('Trigger merging job', function(done) {
+            testUtils.triggerMergeProcessing(done);
+        });
+        it("wait a bit for merges to finish", function(done) {
+            setTimeout(done, 5000);
+        });
         it("validate if app users document is updated", function(done) {
             testUtils.db.collection('app_users' + APP_ID).findOne({did: DEVICE_ID + "2"}, function(err, user) {
                 if (err) {
