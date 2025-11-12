@@ -479,12 +479,12 @@
           isCloseButtonVisible = platform === DEFAULT_PLATFORM;
         }
 
-        // if (!isCloseButtonVisible) {
-          // $(CLOSE_BUTTON_ID).hide();
-        // }
-        // else {
+        if (!isCloseButtonVisible) {
+          $(CLOSE_BUTTON_ID).hide();
+        }
+        else {
           $(CLOSE_BUTTON_ID).show();
-        // }
+        }
       
         for (var key in custom) {
           if (!eventObject.segmentation[key]) {
