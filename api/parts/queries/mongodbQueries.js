@@ -327,5 +327,16 @@ var obb = {};
         };
     };
 
+    agg.getDrillCursorForExport = async function(options) {
+        var cursor = common.drillDb.collection("drill_events").aggregate(options.pipeline).stream();
+        return {
+            _queryMeta: {
+                adapter: 'mongodb',
+                query: options.pipeline || 'MongoDB event segmentation aggregation pipeline',
+            },
+            data: cursor
+        };
+    };
+
 }(obb));
 module.exports = obb;
