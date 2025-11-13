@@ -26,19 +26,18 @@ RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt \
         libxrandr2 libxrender1 libxss1 libxtst6 fonts-liberation libappindicator1 \
         lsb-release xdg-utils
 
-# 0.2  build & install CPython 3.8.
+# 0.2  build & install CPython 3.12.
 RUN --mount=type=cache,id=python-src,target=/usr/src,sharing=locked \
     set -eux; \
     cd /usr/src && \
-    wget -q https://www.python.org/ftp/python/3.8.20/Python-3.8.20.tar.xz && \
-    tar -xf Python-3.8.20.tar.xz && cd Python-3.8.20 && \
+    wget -q https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz && \
+    tar -xf Python-3.12.12.tar.xz && cd Python-3.12.12 && \
     ./configure --enable-optimizations --enable-shared && \
     make -j"$(nproc)" && make altinstall && \
     ldconfig && \
-    ln -sf /usr/local/bin/python3.8 /usr/bin/python3 && \
-    python3.8 -m pip install --no-cache-dir --no-build-isolation --upgrade pip setuptools wheel && \
+    ln -sf /usr/local/bin/python3.12 /usr/bin/python3 && \
+    python3.12 -m pip install --no-cache-dir --no-build-isolation --upgrade pip setuptools wheel && \
     rm -rf /usr/src/Python*
-
 WORKDIR /opt/countly
 
 ###############################################################################
@@ -61,9 +60,9 @@ RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip set -eux; \
            exit 0; }; \
     cd plugins/ab-testing/api/bayesian; \
     # 1. Stub distutils/msvccompiler.py (numpy pulls it even on Linux)
-    mkdir -p /usr/local/lib/python3.8/distutils && \
+    mkdir -p /usr/local/lib/python3.12/distutils && \
     echo 'def get_build_version(*a,**k): return 0' \
-      > /usr/local/lib/python3.8/distutils/msvccompiler.py; \
+      > /usr/local/lib/python3.12/distutils/msvccompiler.py; \
     # tell setuptools to always use the std‑lib copy we just patched
     export SETUPTOOLS_USE_DISTUTILS=stdlib; \
     # 2. Upgrade build tooling
@@ -71,10 +70,11 @@ RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip set -eux; \
     # 3. Read requirements.txt, split “first two” vs “the rest”
     HEAD_REQS="$(head -n 2 requirements.txt | grep -v '^#' | xargs echo)"; \
     REST_REQS="$(tail -n +3 requirements.txt | grep -v '^#' | xargs echo)"; \
+    python3 -m pip install --upgrade pip; \
     # 4. Install Cython & NumPy first (make headers / C‑API available)
     python3 -m pip install --no-cache-dir ${HEAD_REQS}; \
     # 5. Install remaining pins *without* build isolation (sees headers)
-    python3 -m pip install --no-cache-dir --no-build-isolation --no-use-pep517 \
+    python3 -m pip install --no-cache-dir --no-build-isolation \
         --no-deps ${REST_REQS}; \
     # 6. Compile Bayesian models if script present
     [ -f model.py ] && python3 model.py; \
@@ -175,9 +175,9 @@ RUN set -eux; apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 4.2 copy only python runtime (no headers)
-COPY --from=base /usr/local/bin/python3.8 /usr/local/bin/python3.8
-COPY --from=base /usr/local/lib/python3.8 /usr/local/lib/python3.8
-RUN ln -s /usr/local/bin/python3.8 /usr/local/bin/python3 && ldconfig
+COPY --from=base /usr/local/bin/python3.12 /usr/local/bin/python3.12
+COPY --from=base /usr/local/lib/python3.12 /usr/local/lib/python3.12
+RUN ln -s /usr/local/bin/python3.12 /usr/local/bin/python3 && ldconfig
 
 # 4.3 create countly user & dirs
 RUN groupadd -r countly && useradd -r -g countly -u 1001 countly && \
