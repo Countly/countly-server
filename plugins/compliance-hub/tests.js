@@ -620,7 +620,7 @@ describe('Testing Compliance Hub', function() {
     describe("Check user merge for app_user properties", function() {
         it('Add another user with consent', function(done) {
             request
-                .post('/i?app_key=' + APP_KEY + '&device_id=' + DEVICE_ID + '2' + '&consent={"events":true}')
+                .post('/i?app_key=' + APP_KEY + '&device_id=' + DEVICE_ID + '2' + '&begin_session=1&consent={"events":true}')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
