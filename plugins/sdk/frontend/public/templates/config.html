@@ -112,6 +112,7 @@
                                         <el-select 
                                             v-else-if="getData[key].type === 'switch'"
                                             :test-id="slugFor(key)"
+                                            :data-test-id="slugFor(key) + '-el-switch-wrapper'"
                                             @change="onChange(key, $event === 'enabled')"
                                             :value="getData[key].value ? 'enabled' : 'disabled'"
                                             class="sdk-switch-select"
