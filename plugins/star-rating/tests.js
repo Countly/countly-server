@@ -613,6 +613,14 @@ describe('Testing Rating plugin', function() {
         it('making sure merge is finished', function(done) {
             check_if_merges_finished(0, done);
         });
+        it("Trigger dictionary reload", function(done) {
+            testUtils.reloadIdentityDictionary(function(err) {
+                if (err) {
+                    console.log(err);
+                }
+                done();
+            });
+        });
         it('Validate in docs are correct in database', function(done) {
             testUtils.db.collection("app_users" + APP_ID).findOne({ "did": "NEW" }, function(err, res) {
                 console.log(JSON.stringify(res));
@@ -654,7 +662,7 @@ describe('Testing Rating plugin', function() {
         });
         it('Trigger deletion job to run', function(done) {
             testUtils.triggerJobToRun("api:mutationManagerJob", function() {
-                setTimeout(done, 500 * testUtils.testScalingFactor);
+                setTimeout(done, 500 * testUtils.testScalingFactor + 2000);
             });
         });
     });
