@@ -1,4 +1,4 @@
-## Version 24.10.xx
+## Version 24.10.14
 Enterprise Fixes:
 - [users] Set correct users widget table rows amount according to selected setting
 
