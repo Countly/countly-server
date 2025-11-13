@@ -36,13 +36,11 @@
       >
     </div>
     <div class="modal-content">
-      <div class="modal-content__top">
-        <div
-          class="close-button"
-          id="close-btn"
-        >
-          <i class="ion-ios-close-empty"></i>
-        </div>
+      <div
+        class="close-button"
+        id="close-btn"
+      >
+        <i class="ion-ios-close-empty"></i>
       </div>
       <p id="question-area">
         What is your opinion
@@ -482,7 +480,7 @@
         if (!isCloseButtonVisible) {
           $(CLOSE_BUTTON_ID).hide();
         }
-        else {
+        else if ($(CLOSE_BUTTON_ID).is(':hidden')) {
           $(CLOSE_BUTTON_ID).show();
         }
       
@@ -677,7 +675,7 @@
         // rate for feedback
         $('body').on('click', '.rating-emotion', rate);
         // event handler for popup closer
-        $('body').on('click', '#close-btn', closeHandler);
+        $('body').on('click', CLOSE_BUTTON_ID, closeHandler);
       })();
     </script>
     <% if (themeFiles && themeFiles.js) { %>
