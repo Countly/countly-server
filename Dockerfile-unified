@@ -67,9 +67,9 @@ RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip set -eux; \
     export SETUPTOOLS_USE_DISTUTILS=stdlib; \
     # 2. Upgrade build tooling
     python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel; \
-    # 3. Read requirements.txt, split “first two” vs “the rest”
-    HEAD_REQS="$(head -n 2 requirements.txt | grep -v '^#' | xargs echo)"; \
-    REST_REQS="$(tail -n +3 requirements.txt | grep -v '^#' | xargs echo)"; \
+    # 3. Read requirements_docker.txt, split “first two” vs “the rest”
+    HEAD_REQS="$(head -n 2 requirements_docker.txt | grep -v '^#' | xargs echo)"; \
+    REST_REQS="$(tail -n +3 requirements_docker.txt | grep -v '^#' | xargs echo)"; \
     python3 -m pip install --upgrade pip; \
     # 4. Install Cython & NumPy first (make headers / C‑API available)
     python3 -m pip install --no-cache-dir ${HEAD_REQS}; \
