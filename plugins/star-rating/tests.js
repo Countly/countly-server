@@ -8,7 +8,6 @@ var APP_ID = "";
 var APP_KEY = "";
 var DEVICE_ID = "123456789";
 var WIDGET_ID = "";
-var drill_db = "";
 
 var modelData = {};
 
@@ -45,7 +44,6 @@ describe('Testing Rating plugin', function() {
         it('should return 200 and empty widget list', function(done) {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID") || APP_ID;
-            drill_db = testUtils.client.db("countly_drill");
             request.get('/o/feedback/widgets?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
                 .expect(200)
                 .end(function(err, res) {
@@ -232,21 +230,6 @@ describe('Testing Rating plugin', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor + 2000);
                 });
         });
-        it('validate star rating event in drill database', function(done) {
-            drill_db.collection("drill_events").findOne({"a": APP_ID, "e": "[CLY]_star_rating", "did": "1"}, function(err, res) {
-                if (err) {
-                    done(err);
-                }
-                else {
-                    res.should.have.property("sg");
-                    res.sg.should.have.property("comment", "It's a test comment.1a");
-                    res.sg.should.have.property("rating", 5);
-                    res.sg.should.have.property("app_version", "1.23");
-                    res.sg.should.have.property("platform", "iOS");
-                    done();
-                }
-            });
-        });
         it("validate fetching table via endpint", function(done) {
             request.get("/o/feedback/data?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&period=30days")
                 .expect(200)
@@ -263,7 +246,7 @@ describe('Testing Rating plugin', function() {
                 });
         });
         it('calculate meta data from granural data', function(done) {
-            request.get("/o?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&method=star&period=30days&display_loader=true&fetchFromGranural=true")
+            request.get("/o?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&method=star&period=30days&display_loader=true&fetchFromGranural=true&no_cache=true")
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -277,7 +260,7 @@ describe('Testing Rating plugin', function() {
         });
 
         it('calculate model data from aggregated', function(done) {
-            request.get("/o?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&method=events&event=[CLY]_star_rating&segmentation=platform_version_rate&period=30days&display_loader=true&fetchFromGranural=true")
+            request.get("/o?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&method=events&event=[CLY]_star_rating&segmentation=platform_version_rate&period=30days&display_loader=true&fetchFromGranural=true&no_cache=true")
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -344,7 +327,7 @@ describe('Testing Rating plugin', function() {
                     "email": "someone@gmail.com",
                     "comment": "It's a test comment.2a",
                     "rating": 5,
-                    "app_version": "1.23",
+                    "app_version": "1.24",
                     "platform": "iOS"
                 }
             }];
@@ -357,30 +340,47 @@ describe('Testing Rating plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + 1000);
                 });
         });
-        it('validate star rating event in drill database', function(done) {
-            drill_db.collection("drill_events").findOne({"a": APP_ID, "e": "[CLY]_star_rating", "did": "2"}, function(err, res) {
-                if (err) {
-                    done(err);
-                }
-                else {
-                    res.should.have.property("sg");
-                    res.sg.should.have.property("comment", "It's a test comment.2a");
-                    res.sg.should.have.property("rating", 5);
-                    res.sg.should.have.property("app_version", "1.23");
-                    res.sg.should.have.property("platform", "iOS");
+        it('validate star rating event in granular data(default sort, ts:-1)', function(done) {
+            request.get("/o/feedback/data?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&period=30days")
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('iTotalRecords', 2);
+                    ob.should.have.property('aaData');
+                    ob.aaData.should.have.length(2);
+                    ob.aaData[1].should.have.property('rating', 5);
+                    ob.aaData[1].should.have.property('comment', "It&#39;s a test comment.1a");
                     done();
-                }
-            });
+                });
+        });
+
+        it('validate star rating event in granular data(app version is 1.24)', function(done) {
+            request.get("/o/feedback/data?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&period=30days&version=1.24")
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('iTotalRecords', 1);
+                    ob.should.have.property('aaData');
+                    ob.aaData.should.have.length(1);
+                    ob.aaData[0].should.have.property('rating', 5);
+                    ob.aaData[0].should.have.property('comment', "It&#39;s a test comment.2a");
+                    done();
+                });
         });
     });
 
     describe('Request to validate feedback input for ratings', function() {
         it('should success', function(done) {
             WIDGET_ID = testUtils.get("WIDGET_ID");
-
             var events = [{
                 "key": "[CLY]_star_rating",
                 "count": 1,
@@ -413,10 +413,8 @@ describe('Testing Rating plugin', function() {
 
     describe('Removing widget', function() {
         it('should success', function(done) {
-            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-            APP_ID = testUtils.get("APP_ID");
             WIDGET_ID = testUtils.get("WIDGET_ID");
-            request.get('/i/feedback/widgets/remove?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&widget_id=' + WIDGET_ID)
+            request.get('/i/feedback/widgets/remove?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&with_data=true&widget_id=' + WIDGET_ID)
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -440,6 +438,24 @@ describe('Testing Rating plugin', function() {
                     done();
                 });
         });
+        it("Trigger mutation job to run", function(done) {
+            //Should delete data from clickhouse and/or mongodb
+            testUtils.triggerJobToRun("api:mutationManagerJob", done);
+        });
+        it("Should not find any comments in feedback data", function(done) {
+            request.get("/o/feedback/data?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&period=30days&widget_id=" + WIDGET_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('iTotalRecords', 0);
+                    ob.should.have.property('aaData');
+                    ob.aaData.should.have.length(0);
+                    done();
+                });
+        });
     });
 
     describe('Creating widget before reset', function() {
@@ -460,20 +476,21 @@ describe('Testing Rating plugin', function() {
     });
 
     describe('Verify rating', function() {
-        it('verify in drill database', function(done) {
-            drill_db.collection("drill_events").findOne({"a": APP_ID, "e": "[CLY]_star_rating"}, function(err, res) {
-                if (err) {
-                    done(err);
-                }
-                else {
-                    res.should.have.property("sg");
-                    res.sg.should.have.property("comment", "It's a test comment.");
-                    res.sg.should.have.property("rating", 5);
-                    res.sg.should.have.property("app_version", "1.235a");
-                    res.sg.should.have.property("platform", "iOS");
+        it('validate star rating event in granular data(app version is 1.24)', function(done) {
+            request.get("/o/feedback/data?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&period=30days&version=1.24")
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('iTotalRecords', 1);
+                    ob.should.have.property('aaData');
+                    ob.aaData.should.have.length(1);
+                    ob.aaData[0].should.have.property('rating', 5);
+                    ob.aaData[0].should.have.property('comment', "It&#39;s a test comment.2a");
                     done();
-                }
-            });
+                });
         });
         /*it('should return 200 for request platform info', function(done) {
             APP_ID = testUtils.get("APP_ID") || APP_ID;
@@ -511,7 +528,7 @@ describe('Testing Rating plugin', function() {
             var events = [{
                 "key": "[CLY]_star_rating",
                 "count": 1,
-                "timestamp": 1419432000000,
+                "timestamp": (Date.now().valueOf() - 10000),
                 "hour": 10,
                 "dow": 2,
                 "segmentation": {
@@ -520,11 +537,10 @@ describe('Testing Rating plugin', function() {
                     "comment": "It's a old comment.",
                     "rating": 5,
                     "app_version": "5.5",
-                    "platform": "iOS",
-                    "widget_id": WIDGET_ID
+                    "platform": "iOS"
                 }
             }];
-            request.get('/i/feedback/input?app_key=' + APP_KEY + '&device_id=' + 'OLD' + "&events=" + JSON.stringify(events))
+            request.get('/i/feedback/input?app_key=' + APP_KEY + '&begin_session=1&device_id=' + 'OLD' + "&events=" + JSON.stringify(events))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -540,7 +556,7 @@ describe('Testing Rating plugin', function() {
             var events = [{
                 "key": "[CLY]_star_rating",
                 "count": 1,
-                "timestamp": 1419432000000,
+                "timestamp": (Date.now().valueOf() - 1000),
                 "hour": 10,
                 "dow": 2,
                 "segmentation": {
@@ -550,11 +566,10 @@ describe('Testing Rating plugin', function() {
                     "rating": 5,
                     "app_version": "5.5",
                     "platform": "iOS",
-                    "widget_id": WIDGET_ID
                 }
             }];
 
-            request.get('/i/feedback/input?app_key=' + APP_KEY + '&device_id=' + 'NEW' + "&events=" + JSON.stringify(events))
+            request.get('/i/feedback/input?app_key=' + APP_KEY + '&begin_session=1&device_id=' + 'NEW' + "&events=" + JSON.stringify(events))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -565,6 +580,7 @@ describe('Testing Rating plugin', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
+
 
         it('Merge users', function(done) {
             request
@@ -598,28 +614,26 @@ describe('Testing Rating plugin', function() {
             check_if_merges_finished(0, done);
         });
         it('Validate in docs are correct in database', function(done) {
-            testUtils.db.collection("app_users" + APP_ID).findOne({"did": "NEW"}, function(err, res) {
+            testUtils.db.collection("app_users" + APP_ID).findOne({ "did": "NEW" }, function(err, res) {
+                console.log(JSON.stringify(res));
                 if (err) {
-                    done("user not found");
+                    return done(err);
                 }
-                else {
-                    var uid = res.uid;
-
-                    drill_db.collection("drill_events").find({"a": APP_ID, "e": "[CLY]_star_rating", "uid": uid}).toArray(function(err, res) {
+                request.get("/o/feedback/data?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&period=30days&uid=" + res.uid)
+                    .expect(200)
+                    .end(function(err, res) {
                         if (err) {
-                            done(err);
+                            return done(err);
                         }
-                        else {
-                            if (res && res.length === 2) {
-                                done();
-                            }
-                            else {
-                                console.log(JSON.stringify(res));
-                                done("feedback collection not properly merged. Expected 2 records.");
-                            }
-                        }
+                        var ob = JSON.parse(res.text);
+                        console.log(res.text);
+                        ob.should.have.property('iTotalRecords', 2);
+                        ob.should.have.property('aaData');
+                        ob.aaData.should.have.length(2);
+                        ob.aaData[1].should.have.property('rating', 5);
+                        ob.aaData[1].should.have.property('comment', "It&#39;s a old comment.");
+                        done();
                     });
-                }
             });
         });
     });
@@ -678,7 +692,6 @@ describe('Testing Rating plugin', function() {
         });
     });
 
-
     describe('Try to get widgets by array parameter with created widget\'s id after reset', function() {
         it('should return widgets array', function(done) {
             API_KEY_ADMIN = testUtils.get('API_KEY_ADMIN');
@@ -701,8 +714,7 @@ describe('Testing Rating plugin', function() {
     describe('Try to get feedback data after reset', function() {
         it('should return 200 and empty object', function(done) {
             APP_ID = testUtils.get("APP_ID") || APP_ID;
-            var data;
-            request.get('/o?method=star&period=60days&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+            request.get('/o?method=star&period=60days&api_key=' + API_KEY_ADMIN + '&no_cache=true&app_id=' + APP_ID)
                 .expect(200)
                 .end(function(err, res) {
                     var ob = JSON.parse(res.text);
