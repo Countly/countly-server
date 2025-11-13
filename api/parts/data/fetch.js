@@ -111,8 +111,7 @@ fetch.prefetchEventData = async function(collection, params) {
     }
     else {
         var collectionName = crypto.createHash('sha1').update(params.qstring.event + params.app_id).digest('hex');
-        if (params.qstring.segmentation) {
-
+        if (params.qstring.segmentation && params.qstring.event !== "[CLY]_star_rating") {
             try {
                 var currentTimezone = countlyCommon.getTimezone(params);
                 if (!currentTimezone) {
@@ -1764,6 +1763,9 @@ async function fetchFromGranular(collection, params, options, callback) {
     if (params.qstring.event !== "[CLY]_star_rating") {
         queryObject.event = "[CLY]_custom";
         queryObject.name = params.qstring.event;
+    }
+    else {
+        queryObject.event = params.qstring.event;
     }
     if (collection === "users") {
         queryObject.event = "[CLY]_session";
