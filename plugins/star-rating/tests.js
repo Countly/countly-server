@@ -714,7 +714,7 @@ describe('Testing Rating plugin', function() {
     describe('Try to get feedback data after reset', function() {
         it('should return 200 and empty object', function(done) {
             APP_ID = testUtils.get("APP_ID") || APP_ID;
-            request.get('/o?method=star&period=60days&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+            request.get('/o?method=star&period=60days&api_key=' + API_KEY_ADMIN + '&no_cache=true&app_id=' + APP_ID)
                 .expect(200)
                 .end(function(err, res) {
                     var ob = JSON.parse(res.text);
