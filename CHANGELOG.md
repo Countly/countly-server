@@ -1,14 +1,13 @@
-## Version 24.05.X
+## Version 24.05.46
 Fixes:
-- [views] Fix view name that is displayed in view table
 - [core-vis] Fix chart legend click event
 - [data-manager] Fix last modified data for event and segment
+- [views] Fix view name that is displayed in view table
 
 Enterprise Fixes:
 - [concurrent_users] Fix alert threshold comparison
 - [surveys] Handle multiple survey submission from same user based on survey visibility
 - [users] Set correct users widget table rows amount according to selected setting
-
 
 ## Version 24.05.45
 Fixes:
