@@ -2,6 +2,7 @@
 Fixes:
 - [views] Fix view name that is displayed in view table
 - [core-vis] Fix chart legend click event
+- [data-manager] Fix last modified data for event and segment
 
 Enterprise Fixes:
 - [concurrent_users] Fix alert threshold comparison
