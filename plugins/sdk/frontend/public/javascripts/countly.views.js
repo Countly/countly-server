@@ -774,7 +774,7 @@
                 URL.revokeObjectURL(url);
             },
             onPresetChange(key, preset) {
-                log("SDK:onPresetChange", { key: key, preset: preset && preset.name });
+                log("SDK:onPresetChange", { key: key, preset: preset.name });
                 this.getData[key].value = preset.name;
                 if (this.diff.indexOf(key) === -1) {
                     this.diff.push(key);
