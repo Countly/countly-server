@@ -1,3 +1,7 @@
+## Version 24.10.xx
+Enterprise Fixes:
+- [users] Set correct users widget table rows amount according to selected setting
+
 ## Version 24.10.13
 Enterprise Fixes:
 - [nps] Sort widgets by internal name and search by name or internal name
@@ -7,7 +11,6 @@ Enterprise Fixes:
 Features:
 - [core] Use correct rights validation for loyality
 - [plugins] Add configuration warning tags to settings UI
-
 
 ## Version 24.10.11
 Enterprise Fixes:
