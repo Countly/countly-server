@@ -115,7 +115,7 @@
                                             :data-test-id="slugFor(key) + '-el-switch-wrapper'"
                                             @change="onChange(key, $event === 'enabled')"
                                             :value="getData[key].value ? 'enabled' : 'disabled'"
-                                            class="sdk-switch-select"
+                                            :class="['sdk-switch-select', getData[key].value ? 'is-checked' : '']"
                                             placeholder="Select">
                                             <el-option key="enabled" label="Enabled" value="enabled">
                                                 <span>Enabled<span v-if="getData[key].default === true" class="sdk-default-flag"> (Default)</span></span>
