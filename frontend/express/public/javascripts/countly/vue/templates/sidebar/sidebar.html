@@ -66,7 +66,7 @@
                         <div class="cly-vue-sidebar__flex-widget__header--left">
                             {{ flexWidget.used.toLocaleString() }}/{{ flexWidget.available.toLocaleString() }} {{ i18n('sidebar.flex-management-widget.mau') }}
                         </div>
-                        <div class="cly-vue-sidebar__flex-widget__header--right" v-if="flexWidget.showManageLink && member.global_admin" @click="openFlexManageModal">
+                        <div class="cly-vue-sidebar__flex-widget__header--right" v-if="member.global_admin" @click="openFlexManageModal">
                             <a href="javascript:void(0)">
                                 {{ i18n('sidebar.flex-management-widget.manage') }}
                             </a>
