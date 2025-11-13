@@ -16,9 +16,9 @@
               </span>
           </template>
       </el-table-column>
-      <el-table-column sortable="true" prop="cd" :label="i18n('feedback.time')" min-width="120">
+      <el-table-column sortable="true" prop="ts" :label="i18n('feedback.time')" min-width="120">
         <template v-slot="rowScope">
-            <span class="text-medium" :data-test-id="'ratings-comment-table-time-row-' + rowScope.$index">{{unescapeHtml(rowScope.row.cd)}}</span>
+            <span class="text-medium" :data-test-id="'ratings-comment-table-time-row-' + rowScope.$index">{{unescapeHtml(rowScope.row.ts)}}</span>
         </template>
       </el-table-column>
       <el-table-column prop="email" :label="i18n('feedback.email')" min-width="200">

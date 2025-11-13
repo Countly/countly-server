@@ -13,6 +13,7 @@ var ejs = require("ejs"),
     path = require('path'),
     reportUtils = require('../../reports/api/utils.js');
 var calculatedDataManager = require('../../../api/utils/calculatedDataManager.js');
+var {fetchCommentsTable} = require('./queries/star.js');
 
 var cohortsEnabled = plugins.getPlugins().indexOf('cohorts') > -1;
 var surveysEnabled = plugins.getPlugins().indexOf('surveys') > -1;
@@ -768,17 +769,12 @@ function uploadFile(myfile, id, callback) {
         return true;
     };
     var removeWidgetData = function(widgetId, app, callback) {
-        var collectionName = "feedback" + app;
-        common.db.collection(collectionName).remove({
-            "widget_id": widgetId
-        }, function(err) {
-            if (!err) {
-                callback(null);
-            }
-            else {
-                callback(err);
-            }
+        plugins.dispatch("/core/delete_granular_data", {
+            db: "countly_drill",
+            collection: "drill_events",
+            query: { a: app + "", e: "[CLY]_star_rating", n: widgetId }
         });
+        callback(null);
     };
     var increaseWidgetShowCount = function(ob) {
         var obParams = ob.params;
@@ -1073,100 +1069,27 @@ function uploadFile(myfile, id, callback) {
      * }
      */
     plugins.register('/o/feedback/data', function(ob) {
-        /*var params = ob.params;
-        var app = params.qstring.app_id;
-        var collectionName = 'feedback' + app;
-        var query = {};
-        var skip = parseInt(params.qstring.iDisplayStart || 0);
-        var limit = parseInt(params.qstring.iDisplayLength || 0);
-        var colNames = ['rating', 'comment', 'email', 'ts'];
-
-        if (params.qstring.widget_id) {
-            query.widget_id = params.qstring.widget_id;
-        }
-        if (params.qstring.rating) {
-            query.rating = parseInt(params.qstring.rating);
-        }
-        if (params.qstring.version) {
-            query.app_version = params.qstring.version;
-        }
-        if (params.qstring.platform) {
-            query.platform = params.qstring.platform;
-        }
-        if (params.qstring.device_id) {
-            query.device_id = params.qstring.device_id;
-        }
-        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-            query.$text = { $search: params.qstring.sSearch };
-        }
-        if (params.qstring.iSortCol_0) {
-            try {
-                var colIndex = parseInt(params.qstring.iSortCol_0);
-                var colName = colNames[colIndex];
-                var sortType = params.qstring.sSortDir_0 === 'asc' ? 1 : -1;
-                var sort = {};
-                sort[colName] = sortType;
-            }
-            catch (e) {
-                common.returnMessage(params, 400, 'Invalid column index for sorting');
-                return true;
-            }
-        }
-        if (params.qstring.uid) {
-            query.uid = params.qstring.uid;
-        }
-
-        validateRead(params, FEATURE_NAME, function() {
-            query.ts = countlyCommon.getTimestampRangeQuery(params, true);
-            var cursor = common.db.collection(collectionName).find(query);
-            cursor.count(function(err, total) {
-                if (!err) {
-                    if (sort) {
-                        cursor.sort(sort);
-                    }
-                    cursor.skip(skip);
-                    cursor.limit(limit);
-                    cursor.toArray(function(cursorErr, res) {
-                        if (!cursorErr) {
-                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, "aaData": res});
-                        }
-                        else {
-                            common.returnMessage(params, 500, cursorErr);
-                        }
-                    });
-                }
-                else {
-                    common.returnMessage(params, 500, err);
-                }
-            });
-        });
-        return true;*/
-
         var params = ob.params;
         var app = params.qstring.app_id;
-        var collectionName = "drill_events";
-        var query = {"a": app, "e": "[CLY]_star_rating"};
+        var query = {"a": (app + ""), "e": "[CLY]_star_rating"};
         var skip = parseInt(params.qstring.iDisplayStart || 0);
         var limit = parseInt(params.qstring.iDisplayLength || 0);
-        var colNames = ['sg.rating', 'sg.comment', 'sg.email', 'ts'];
+        var colNames = ['comment', 'ts', 'email', 'rating'];
 
         if (params.qstring.widget_id) {
             query.n = params.qstring.widget_id;
         }
         if (params.qstring.rating) {
-            query.sg.rating = parseInt(params.qstring.rating, 10);
+            query["sg.rating"] = parseInt(params.qstring.rating, 10);
         }
         if (params.qstring.version) {
-            query.sg.app_version = params.qstring.version;
+            query["sg.app_version"] = params.qstring.version;
         }
         if (params.qstring.platform) {
-            query.sg.platform = params.qstring.platform;
+            query["sg.platform"] = params.qstring.platform;
         }
         if (params.qstring.device_id) {
             query.did = params.qstring.device_id;
-        }
-        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-            query.$text = { $search: params.qstring.sSearch };
         }
 
         if (params.qstring.iSortCol_0) {
@@ -1186,29 +1109,23 @@ function uploadFile(myfile, id, callback) {
             query.uid = params.qstring.uid;
         }
 
-        validateRead(params, FEATURE_NAME, function() {
+        validateRead(params, FEATURE_NAME, async function() {
+            //{query:query, appID:app}
             query.ts = countlyCommon.getTimestampRangeQuery(params, false);
-            var cursor = common.drillDb.collection(collectionName).find(query, {_id: 1, comment: "$sg.comment", email: "$sg.email", rating: "$sg.rating", cd: 1, uid: 1});
-            cursor.count(function(err, total) {
-                if (!err) {
-                    if (sort) {
-                        cursor.sort(sort);
-                    }
-                    cursor.skip(skip);
-                    cursor.limit(limit);
-                    cursor.toArray(function(cursorErr, res) {
-                        if (!cursorErr) {
-                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, "aaData": res});
-                        }
-                        else {
-                            common.returnMessage(params, 500, cursorErr);
-                        }
-                    });
-                }
-                else {
-                    common.returnMessage(params, 500, err);
-                }
-            });
+            try {
+                var data = await fetchCommentsTable({
+                    query: query,
+                    sSearch: params.qstring.sSearch || "",
+                    appID: app,
+                    limit: limit,
+                    skip: skip,
+                    sort: sort
+                }, {});
+                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: data.total, iTotalDisplayRecords: data.display, "aaData": data.data});
+            }
+            catch (e) {
+                common.returnMessage(params, 500, e.message);
+            }
         });
         return true;
     });
@@ -1500,7 +1417,6 @@ function uploadFile(myfile, id, callback) {
             }
             countlyCommon.setPeriod(params.qstring.period, true);
             var periodObj = countlyCommon.periodObj;
-
             if (params.qstring.fetchFromGranural && common.drillDb) {
                 calculatedDataManager.longtask({
                     db: common.db,

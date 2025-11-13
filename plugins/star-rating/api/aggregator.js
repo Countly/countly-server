@@ -5,6 +5,10 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
 const log = require('../../../api/utils/log.js')('star-rating:aggregator');
 const usage = require('../../../api/aggregator/usage.js');
 
+/**
+ * Ratings are currently recording full model data for all segments.
+ * Granular data is used for comments.
+ */
 (function() {
     //Single for all star-rating events
     plugins.register("/aggregator", async function() {
@@ -61,6 +65,7 @@ const usage = require('../../../api/aggregator/usage.js');
                     }
                     //Flush batchers
                     await common.manualWriteBatcher.flush("countly", "feedback_widgets");
+                    await common.manualWriteBatcher.flush("countly", "events_data");
                 }
             }
         }
