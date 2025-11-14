@@ -15,6 +15,8 @@
     var v2_web = "25.4.1";
     var v2_flutter = "25.4.1";
     var v2_react_native = "25.4.0";
+    // dart sdk placeholder version to indicate experimental support
+    var v0_dart = "25.0.0";
     // Supporting SDK Versions for the SC options
     var supportedSDKVersion = {
         tracking: { android: v0_android, ios: v0_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
@@ -44,7 +46,17 @@
         bom_at: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
         bom_rqp: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
         bom_ra: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
-        bom_d: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native }
+        bom_d: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
+        upcl: { dart: v0_dart },
+        filter_preset: { dart: v0_dart },
+        eb: { dart: v0_dart },
+        upb: { dart: v0_dart },
+        sb: { dart: v0_dart },
+        esb: { dart: v0_dart },
+        ew: { dart: v0_dart },
+        upw: { dart: v0_dart },
+        sw: { dart: v0_dart },
+        esw: { dart: v0_dart }
     };
 
     var nonJSONExperimentalKeys = ['eb', 'upb', 'sb', 'ew', 'upw', 'sw'];
@@ -115,6 +127,7 @@
                 this.$store.dispatch("countlySDK/initializeEnforcement"),
                 this.$store.dispatch("countlySDK/fetchSDKStats") // fetch sdk version data for tooltips
             ]).then(function() {
+                log("SDK:init:complete", { params: self.$store.getters["countlySDK/sdk/all"], enforcement: self.$store.getters["countlySDK/sdk/enforcement"] });
                 self.$store.dispatch("countlySDK/sdk/setTableLoading", false);
             });
         },
@@ -216,7 +229,7 @@
                     tracking: {
                         type: "switch",
                         name: "Allow Tracking",
-                        description: "Enable or disable any tracking (gathering) of data in the SDK (default: enabled)",
+                        description: "Enable or disable any tracking (gathering) of data in the SDK",
                         default: true,
                         enforced: false,
                         value: null
@@ -224,7 +237,7 @@
                     networking: {
                         type: "switch",
                         name: "Allow Networking",
-                        description: "Enable or disable all networking calls from SDK except SDK behavior call. Does not effect tracking of data (default: enabled)",
+                        description: "Enable or disable all networking calls from SDK except SDK behavior call. Does not effect tracking of data",
                         default: true,
                         enforced: false,
                         value: null
@@ -232,7 +245,7 @@
                     crt: {
                         type: "switch",
                         name: "Allow Crash Tracking",
-                        description: "Enable or disable tracking of crashes (default: enabled)",
+                        description: "Enable or disable tracking of crashes",
                         default: true,
                         enforced: false,
                         value: null
@@ -240,7 +253,7 @@
                     vt: {
                         type: "switch",
                         name: "Allow View Tracking",
-                        description: "Enable or disable tracking of views (default: enabled)",
+                        description: "Enable or disable tracking of views",
                         default: true,
                         enforced: false,
                         value: null
@@ -248,7 +261,7 @@
                     st: {
                         type: "switch",
                         name: "Allow Session Tracking",
-                        description: "Enable or disable tracking of sessions (default: enabled)",
+                        description: "Enable or disable tracking of sessions",
                         default: true,
                         enforced: false,
                         value: null
@@ -256,7 +269,7 @@
                     sui: {
                         type: "number",
                         name: "Session Update Interval",
-                        description: "How often to send session update information to server in seconds (default: 60)",
+                        description: "How often to send session update information to server in seconds",
                         default: 60,
                         enforced: false,
                         value: null
@@ -264,7 +277,7 @@
                     cet: {
                         type: "switch",
                         name: "Allow Custom Event Tracking",
-                        description: "Enable or disable tracking of custom events (default: enabled)",
+                        description: "Enable or disable tracking of custom events",
                         default: true,
                         enforced: false,
                         value: null
@@ -272,7 +285,7 @@
                     lt: {
                         type: "switch",
                         name: "Allow Location Tracking",
-                        description: "Enable or disable tracking of location (default: enabled)",
+                        description: "Enable or disable tracking of location",
                         default: true,
                         enforced: false,
                         value: null
@@ -280,7 +293,7 @@
                     ecz: {
                         type: "switch",
                         name: "Enable Content Zone",
-                        description: "Enable or disable listening to Journey related contents (default: disabled)",
+                        description: "Enable or disable listening to Journey related contents",
                         default: false,
                         enforced: false,
                         value: null
@@ -288,7 +301,7 @@
                     cr: {
                         type: "switch",
                         name: "Require Consent",
-                        description: "Enable or disable requiring consent for tracking (default: disabled)",
+                        description: "Enable or disable requiring consent for tracking",
                         default: false,
                         enforced: false,
                         value: null
@@ -296,7 +309,7 @@
                     rqs: {
                         type: "number",
                         name: "Request Queue Size",
-                        description: "How many requests to store in queue, if SDK cannot connect to server (default: 1000)",
+                        description: "How many requests to store in queue, if SDK cannot connect to server",
                         default: 1000,
                         enforced: false,
                         value: null
@@ -304,7 +317,7 @@
                     eqs: {
                         type: "number",
                         name: "Event Queue Size",
-                        description: "How many events to store in queue before they would be batched and sent to server (default: 100)",
+                        description: "How many events to store in queue before they would be batched and sent to server",
                         default: 100,
                         enforced: false,
                         value: null
@@ -312,7 +325,7 @@
                     czi: {
                         type: "number",
                         name: "Content Zone Interval",
-                        description: "How often to check for new Journey content in seconds (default: 30, min: 15)",
+                        description: "How often to check for new Journey content in seconds (min: 15)",
                         default: 30,
                         enforced: false,
                         value: null
@@ -320,7 +333,7 @@
                     dort: {
                         type: "number",
                         name: "Request Drop Age",
-                        description: "Provide time in hours after which an old request should be dropped if they are not sent to server (default: 0 = disabled)",
+                        description: "Provide time in hours after which an old request should be dropped if they are not sent to server (0 = disabled)",
                         default: 0,
                         enforced: false,
                         value: null
@@ -328,7 +341,7 @@
                     lkl: {
                         type: "number",
                         name: "Max Key Length",
-                        description: "Maximum length of Event and segment keys (including name) (default: 128)",
+                        description: "Maximum length of Event and segment keys (including name)",
                         default: 128,
                         enforced: false,
                         value: null
@@ -336,7 +349,7 @@
                     lvs: {
                         type: "number",
                         name: "Max Value Size",
-                        description: "Maximum length of an Event's segment value (default: 256)",
+                        description: "Maximum length of an Event's segment value",
                         default: 256,
                         enforced: false,
                         value: null
@@ -344,7 +357,7 @@
                     lsv: {
                         type: "number",
                         name: "Max Number of Segments",
-                        description: "Maximum amount of segmentation key/value pairs per Event (default: 100)",
+                        description: "Maximum amount of segmentation key/value pairs per Event",
                         default: 100,
                         enforced: false,
                         value: null
@@ -352,7 +365,7 @@
                     lbc: {
                         type: "number",
                         name: "Max Breadcrumb Count",
-                        description: "Maximum breadcrumb count that can be provided by the developer (default: 100)",
+                        description: "Maximum breadcrumb count that can be provided by the developer",
                         default: 100,
                         enforced: false,
                         value: null
@@ -360,7 +373,7 @@
                     ltlpt: {
                         type: "number",
                         name: "Max Trace Line Per Thread",
-                        description: "Maximum stack trace lines that would be recorded per thread (default: 30)",
+                        description: "Maximum stack trace lines that would be recorded per thread",
                         default: 30,
                         enforced: false,
                         value: null
@@ -368,7 +381,7 @@
                     ltl: {
                         type: "number",
                         name: "Max Trace Length Per Line",
-                        description: "Maximum length of a stack trace line to be recorded (default: 200)",
+                        description: "Maximum length of a stack trace line to be recorded",
                         default: 200,
                         enforced: false,
                         value: null
@@ -376,7 +389,7 @@
                     scui: {
                         type: "number",
                         name: "SDK Behavior Update Interval",
-                        description: "How often to check for new behavior settings in hours (default: 4)",
+                        description: "How often to check for new behavior settings in hours",
                         default: 4,
                         enforced: false,
                         value: null
@@ -384,7 +397,7 @@
                     rcz: {
                         type: "switch",
                         name: "Allow Refresh Content Zone",
-                        description: "Enable or disable refreshing Journey content (default: enabled)",
+                        description: "Enable or disable refreshing Journey content",
                         default: true,
                         enforced: false,
                         value: null
@@ -417,7 +430,7 @@
                     bom: {
                         type: "switch",
                         name: "Enable Backoff Mechanism",
-                        description: "Enable or disable backoff mechanism for requests (default: enabled)",
+                        description: "Enable or disable backoff mechanism for requests",
                         default: true,
                         enforced: false,
                         value: null
@@ -425,7 +438,7 @@
                     bom_at: {
                         type: "number",
                         name: "Backoff Timeout Limit",
-                        description: "Maximum server delay acceptable before backoff mechanism can kick in (default: 10)",
+                        description: "Maximum server delay acceptable before backoff mechanism can kick in",
                         default: 10,
                         enforced: false,
                         value: null
@@ -433,7 +446,7 @@
                     bom_rqp: {
                         type: "number",
                         name: "Backoff Requests Queue Percentage",
-                        description: "Percentage of fullness that is acceptable for backoff mechanism to work (default: 50)",
+                        description: "Percentage of fullness that is acceptable for backoff mechanism to work",
                         default: 50,
                         enforced: false,
                         value: null
@@ -441,7 +454,7 @@
                     bom_ra: {
                         type: "number",
                         name: "Backoff Requests Age",
-                        description: "Maximum amount of request age(in hours) that is allowed in backoff (default: 24)",
+                        description: "Maximum amount of request age(in hours) that is allowed in backoff",
                         default: 24,
                         enforced: false,
                         value: null
@@ -449,7 +462,7 @@
                     bom_d: {
                         type: "number",
                         name: "Backoff Delay",
-                        description: "Delay in seconds that would be applied to requests in backoff (default: 60)",
+                        description: "Delay in seconds that would be applied to requests in backoff",
                         default: 60,
                         enforced: false,
                         value: null
@@ -457,7 +470,7 @@
                     upcl: {
                         type: "number",
                         name: "User Property Cache",
-                        description: "How many user property to store in cache before they would be batched and sent to server (default: 100)",
+                        description: "How many user property to store in cache before they would be batched and sent to server",
                         default: 100,
                         enforced: false,
                         value: null
@@ -477,7 +490,7 @@
                     eb: {
                         type: "text",
                         name: "Event Blacklist",
-                        description: "CSV* list of custom event keys to blacklist in SDK (default: empty)<br>* Use double quotes for values with commas",
+                        description: "CSV* list of custom event keys to blacklist in SDK<br>* Use double quotes for values with commas",
                         default: "",
                         enforced: false,
                         value: null,
@@ -486,7 +499,7 @@
                     upb: {
                         type: "text",
                         name: "User Property Blacklist",
-                        description: "CSV* list of user property keys to blacklist in SDK (default: empty)<br>* Use double quotes for values with commas",
+                        description: "CSV* list of user property keys to blacklist in SDK<br>* Use double quotes for values with commas",
                         default: "",
                         enforced: false,
                         value: null,
@@ -495,7 +508,7 @@
                     sb: {
                         type: "text",
                         name: "Segmentation Blacklist",
-                        description: "CSV* list of segmentation keys to blacklist in SDK (default: empty)<br>* Use double quotes for values with commas",
+                        description: "CSV* list of segmentation keys to blacklist in SDK<br>* Use double quotes for values with commas",
                         default: "",
                         enforced: false,
                         value: null,
@@ -504,7 +517,7 @@
                     esb: {
                         type: "text",
                         name: "Event Segmentation Blacklist",
-                        description: "Arrays of segmentation keys to blacklist for specific events (default: {})<br> Example: { \"event1\": [\"seg1\", \"seg2\"] }",
+                        description: "Arrays of segmentation keys to blacklist for specific events<br> Example: { \"event1\": [\"seg1\", \"seg2\"] }",
                         default: "{}",
                         enforced: false,
                         value: null,
@@ -513,7 +526,7 @@
                     ew: {
                         type: "text",
                         name: "Event Whitelist",
-                        description: "CSV* list of custom event keys to whitelist in SDK (default: empty)<br>* Use double quotes for values with commas",
+                        description: "CSV* list of custom event keys to whitelist in SDK<br>* Use double quotes for values with commas",
                         default: "",
                         enforced: false,
                         value: null,
@@ -522,7 +535,7 @@
                     upw: {
                         type: "text",
                         name: "User Property Whitelist",
-                        description: "CSV* list of user property keys to whitelist in SDK (default: empty)<br>* Use double quotes for values with commas",
+                        description: "CSV* list of user property keys to whitelist in SDK<br>* Use double quotes for values with commas",
                         default: "",
                         enforced: false,
                         value: null,
@@ -531,7 +544,7 @@
                     sw: {
                         type: "text",
                         name: "Segmentation Whitelist",
-                        description: "CSV* list of segmentation keys to whitelist in SDK (default: empty)<br>* Use double quotes for values with commas",
+                        description: "CSV* list of segmentation keys to whitelist in SDK<br>* Use double quotes for values with commas",
                         default: "",
                         enforced: false,
                         value: null,
@@ -540,7 +553,7 @@
                     esw: {
                         type: "text",
                         name: "Event Segmentation Whitelist",
-                        description: "Arrays of segmentation keys to whitelist for specific events (default: {})<br> Example: { \"event1\": [\"seg1\", \"seg2\"] }",
+                        description: "Arrays of segmentation keys to whitelist for specific events<br> Example: { \"event1\": [\"seg1\", \"seg2\"] }",
                         default: "{}",
                         enforced: false,
                         value: null,
@@ -549,13 +562,14 @@
                 },
                 diff: [],
                 validationErrors: {},
+                isSaving: true,
                 description: "Not all SDKs and SDK versions yet support this feature. Refer to respective SDK documentation for more information"
             };
         },
         mounted: function() {
             var self = this;
             this.$nextTick(function() {
-                self.checkSdkSupport();
+                self.checkSdkSupport(0);
                 self.isJSONInputValid('esb');
                 self.isJSONInputValid('esw');
             });
@@ -618,7 +632,7 @@
             },
 
             onChange: function(key, value) {
-                log("onChange", key, value);
+                log("SDK:onChange", { key: key, value: value, diffLength: this.diff.length });
                 this.configs[key].value = value;
                 if (key.startsWith("bom")) {
                     this.getData.bom_preset.value = "Custom";
@@ -727,7 +741,7 @@
                 }
             },
             downloadConfig: function() {
-                log("downloadConfig");
+                log("SDK:downloadConfig:start");
                 var params = this.$store.getters["countlySDK/sdk/all"] || {};
                 // we change bom_rqp to decimal percentage for sdk
                 if (typeof params.bom_rqp !== "undefined") {
@@ -748,6 +762,7 @@
                 data.t = Date.now();
                 data.c = params;
                 var configData = JSON.stringify(data, null, 2);
+                log("SDK:downloadConfig:payloadSize", configData.length);
                 var blob = new Blob([configData], { type: 'application/json' });
                 var url = URL.createObjectURL(blob);
                 var a = document.createElement('a');
@@ -759,6 +774,7 @@
                 URL.revokeObjectURL(url);
             },
             onPresetChange(key, preset) {
+                log("SDK:onPresetChange", { key: key, preset: preset.name });
                 this.getData[key].value = preset.name;
                 if (this.diff.indexOf(key) === -1) {
                     this.diff.push(key);
@@ -799,11 +815,11 @@
                 if (key && !this.configs[key]) {
                     key = null; // if key is not valid, enforce all
                 }
-                var helper_msg = "You are about to enforce all current settings. This would override these settings in your SDK. Do you want to continue?";
-                var helper_title = "Enforce all current settings?";
+                var helper_msg = "You are about to apply all current settings. This will override these settings in your SDK. Do you want to continue?";
+                var helper_title = "Apply all current settings?";
                 if (key) {
-                    helper_msg = "You are about to enforce the current setting. This would override this setting in your SDK. Do you want to continue?";
-                    helper_title = "Enforce current setting?";
+                    helper_msg = "You are about to apply the current setting. This will override this setting in your SDK. Do you want to continue?";
+                    helper_title = "Apply current setting?";
                 }
                 var self = this;
                 log(`enforce:[${key}]`);
@@ -831,7 +847,7 @@
                     }
                     self.save(enforcement);
                 },
-                ["No, don't enforce", "Yes, enforce"],
+                ["Cancel", "Apply to SDKs"],
                 { title: helper_title }
                 );
             },
@@ -839,8 +855,8 @@
                 if (key && !this.configs[key]) {
                     return;
                 }
-                var helper_msg = "You are about to revert the enforcement of the current setting. Your SDK would use default or developer set value if exist. Do you want to continue?";
-                var helper_title = "Revert Enforced Setting?";
+                var helper_msg = "SDKs will use their default or developer set behavior (if any). Are you sure you want to remove this setting?";
+                var helper_title = "Remove from SDKs";
                 var self = this;
                 CountlyHelpers.confirm(helper_msg, "red", function(result) {
                     if (!result) {
@@ -854,16 +870,19 @@
                         log(`reversing enforce key ${key}`);
                         enforcement[key] = false;
                         self.$store.dispatch("countlySDK/sdk/updateEnforcement", enforcement).then(function() {
+                            log("SDK:reverseEnforce:dispatched", { key: key });
                             self.$store.dispatch("countlySDK/initializeEnforcement");
+                        }).catch(function(err) {
+                            log("SDK:reverseEnforce:error", err);
                         });
                     }
                 },
-                ["No, don't revert", "Yes, revert"],
+                ["Cancel", "Remove from SDKs"],
                 { title: helper_title }
                 );
             },
             resetSDKConfiguration: function() {
-                var helper_msg = "You are about to reset your SDK behavior to default state. This would override all these settings if set in your SDK. Do you want to continue?";
+                var helper_msg = "You are about to reset all your SDK behavior settings values to their default state. Do you want to continue?";
                 var helper_title = "Reset Behavior?";
                 var self = this;
 
@@ -874,6 +893,8 @@
 
                     var params = self.$store.getters["countlySDK/sdk/all"];
                     var data = params || {};
+
+                    log("SDK:reset:start", { currentParams: data });
 
                     for (var key in self.configs) {
                         var current = self.configs[key].value;
@@ -914,10 +935,12 @@
                             CountlyHelpers.notify({ message: ex.message || 'Invalid experimental configuration', sticky: false, type: 'error' });
                             return;
                         }
+                        var changedKeys = self.diff.slice();
+                        log("SDK:reset:changedKeys", changedKeys);
                         self.save();
                     }
                 },
-                ["No, don't reset", "Yes, reset"],
+                ["Cancel", "Reset to default"],
                 { title: helper_title }
                 );
             },
@@ -929,8 +952,7 @@
                     return;
                 }
                 var params = this.$store.getters["countlySDK/sdk/all"];
-                log(`save with enforcement: ${JSON.stringify(enforcement)}`);
-                log(`save: ${JSON.stringify(params)} and diff: ${JSON.stringify(this.diff)}`);
+                log("SDK:save:start", { enforcement: enforcement, params: params, diff: this.diff.slice() });
                 var data = params || {};
                 for (var i = 0; i < this.diff.length; i++) {
                     var dkey = this.diff[i];
@@ -967,7 +989,7 @@
                     else {
                         data[dkey] = val;
                     }
-                    log(`save: ${dkey} = ${JSON.stringify(data[dkey])}`);
+                    log("SDK:save:field", { key: dkey, value: data[dkey] });
                     this.configs[dkey].enforced = true;
                 }
                 if (this.diff.indexOf('filter_preset') !== -1) {
@@ -1006,10 +1028,16 @@
                 this.diff = [];
                 var self = this;
                 this.$store.dispatch("countlySDK/sdk/updateEnforcement", enforcement).then(() => {
-                    this.$store.dispatch("countlySDK/initializeEnforcement");
+                    self.$store.dispatch("countlySDK/initializeEnforcement");
+                    log("SDK:updateEnforcement:dispatched", enforcement);
+                }).catch(function(err) {
+                    log("SDK:updateEnforcement:error", err);
                 });
                 this.$store.dispatch("countlySDK/sdk/update", data).then(function() {
                     self.$store.dispatch("countlySDK/initialize");
+                    log("SDK:save:success", { data: data, enforcement: enforcement });
+                }).catch(function(err) {
+                    log("SDK:save:error", err);
                 });
             },
             unpatch: function() {
@@ -1098,12 +1126,12 @@
                     context.unsupportedList.push(text);
                 }
             },
-            checkSdkSupport: function() {
+            checkSdkSupport: function(retryCount) {
                 log("checkSdkSupport");
                 for (var key in this.configs) {
                     this.configs[key].experimental = false;
                     this.configs[key].tooltipMessage = "No SDK data present. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this option.";
-                    if (key === 'upcl' || key === 'eb' || key === 'upb' || key === 'sb' || key === 'esb') {
+                    if (key === 'upcl' || key === 'eb' || key === 'upb' || key === 'sb' || key === 'esb' || key === 'ew' || key === 'upw' || key === 'sw' || key === 'esw' || key === 'filter_preset') {
                         this.configs[key].experimental = true;
                         this.configs[key].tooltipMessage = "This is an experimental option. SDK support for this option may be limited or unavailable.";
                     }
@@ -1115,12 +1143,19 @@
                     !this.$store.state.countlySDK.stats.sdk ||
                     !this.$store.state.countlySDK.stats.sdk.versions ||
                     this.$store.state.countlySDK.stats.sdk.versions.length === 0) {
+                    log("SDK data not yet available, retrying. countlySDK:[" + JSON.stringify(this.$store.state.countlySDK) + "]");
                     setTimeout(() => {
-                        this.checkSdkSupport();
-                    }, 500);
+                        retryCount = (retryCount || 0) + 1;
+                        if (retryCount > 10) {
+                            log("Max retries reached, giving up.");
+                            return;
+                        }
+                        this.checkSdkSupport(retryCount);
+                    }, 1000);
                     return;
                 }
 
+                log("SDK data available, processing:[" + JSON.stringify(this.$store.state.countlySDK.stats.sdk.versions) + "]");
                 const availableData = this.$store.state.countlySDK.stats.sdk.versions;
                 const latestVersions = availableData.reduce((acc, sdk) => {
                     if (!sdk.data || sdk.data.length === 0) {
@@ -1147,7 +1182,8 @@
                     { label: 'js-rnb-android', configKey: 'react_native', name: 'React Native SDK' },
                     { label: 'js-rnbnp-android', configKey: 'react_native', name: 'React Native SDK' },
                     { label: 'js-rnb-ios', configKey: 'react_native', name: 'React Native SDK' },
-                    { label: 'js-rnbnp-ios', configKey: 'react_native', name: 'React Native SDK' }
+                    { label: 'js-rnbnp-ios', configKey: 'react_native', name: 'React Native SDK' },
+                    { label: 'dart-native', configKey: 'dart', name: 'Dart SDK' } // TODO: this might change if naming changes
                 ];
 
                 const uniqueLabels = new Set();
