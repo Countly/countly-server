@@ -4,7 +4,7 @@
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>{{i18n('push-notification.ios-settings')}} </h3>
             <el-button type="danger" @click="onDeleteKey(PlatformEnum.IOS)" :disabled="isKeyEmpty(PlatformEnum.IOS)">{{i18n('push-notification.delete')}}</el-button>
-        </div>        
+        </div>
         <cly-inline-form-field :label="i18n('push-notification.authentication-type')">
             <el-select  :value="iosAuthConfigType" @change="onIOSAuthTypeChange">
                 <el-option :key="iosAuthType.value" :value="iosAuthType.value" :label="iosAuthType.label" v-for="iosAuthType in iosAuthConfigTypeOptions"></el-option>
@@ -31,7 +31,7 @@
                 <div v-if="viewModel[PlatformEnum.IOS].hasKeyFile"> {{i18n('push-notification.key-file-already-uploaded',viewModel[PlatformEnum.IOS].authType)}} </div>
             </div>
         </cly-inline-form-field>
-        <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P8"> 
+        <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P8">
             <cly-inline-form-field :label="i18n('push-notification.key-id')" :rules="{required:isIOSConfigRequired}">
                 <el-input :value="viewModel[PlatformEnum.IOS].keyId" @input="onInput('keyId', $event, PlatformEnum.IOS)" autocomplete="off"></el-input>
             </cly-inline-form-field>
@@ -51,7 +51,7 @@
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>{{i18n('push-notification.android-settings')}} </h3>
             <el-button type="danger" @click="onDeleteKey(PlatformEnum.ANDROID)" :disabled="isKeyEmpty(PlatformEnum.ANDROID)">{{i18n('push-notification.delete')}}</el-button>
-        </div>     
+        </div>
 
         <cly-inline-form-field :label="i18n('push-notification.firebase-service-account-json')">
             <div class="bu-is-flex bu-is-flex-direction-column">
@@ -84,7 +84,7 @@
             <el-input :value="viewModel[PlatformEnum.HUAWEI].appSecret" @input="onInput('appSecret',$event,PlatformEnum.HUAWEI)" autocomplete="off"></el-input>
         </cly-inline-form-field>
 
-        <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
+        <!-- <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">
             <h3>{{i18n('push-notification.rate-limit')}}</h3>
         </div>
         <cly-inline-form-field :label="i18n('push-notification.maximum-notifications-per-period')" rules="numeric">
@@ -92,7 +92,7 @@
         </cly-inline-form-field>
         <cly-inline-form-field :label="i18n('push-notification.period-in-seconds')" rules="numeric">
             <el-input :value="viewModel.period" @input="onInput('period',$event)" autocomplete="off"></el-input>
-        </cly-inline-form-field>
+        </cly-inline-form-field> -->
         </form>
     </div>
     <div class="cly-vue-section bu-mr-4 cly-vue-section--has-default-skin">
@@ -112,12 +112,12 @@
                 <el-link type="primary" size="small" @click="onShowTestUserList">{{i18n('push-notification.see-user-list')}} </el-link>
             </div>
         </cly-section>
-        <cly-drawer 
+        <cly-drawer
             @submit="onSubmit"
             @open="onOpen"
             :requires-async-submit="true"
-            v-bind="drawers.testUsersDrawer" 
-            :title="i18n('push-notification.define-new-user-title')" 
+            v-bind="drawers.testUsersDrawer"
+            :title="i18n('push-notification.define-new-user-title')"
             :saveButtonLabel="i18n('push-notification.add-test-users-label')">
             <template v-slot:default="formScope">
                 <cly-form-step id="step1" name="Define new user">

@@ -1,7 +1,9 @@
 'use strict';
 
 const { PushError } = require('./error'),
-    { S, Validatable, PERS_TYPES } = require('./const');
+    { Validatable, PERS_TYPES } = require('./const');
+
+const platforms = require('../../new/constants/platform-keymap');
 
 /**
  * Message `contents` array consists of Content objects, it's to be defined the following way (each line below is an element of `contents` array):
@@ -13,7 +15,7 @@ const { PushError } = require('./error'),
 class Content extends Validatable {
     /**
      * Constructor
-     * 
+     *
      * @param {object}      data                    contents data
      * @param {string}      data.p                  this content overrides default content for this platform
      * @param {string}      data.la                 this content overrides default content for this language
@@ -32,7 +34,7 @@ class Content extends Validatable {
      * @param {string}      data.buttons[].url      button action URL
      * @param {string}      data.buttons[].title    button title
      * @param {string}      data.buttons[].pers     button title personalization
-     * @param {object[]}    data.specific[]         ... any other platform-specific field in a form of Object[], i.e. [{subtitle: 'Subtitle'}, {large_icon: 'icon'}]. 
+     * @param {object[]}    data.specific[]         ... any other platform-specific field in a form of Object[], i.e. [{subtitle: 'Subtitle'}, {large_icon: 'icon'}].
      *                                              Currently supported for iOS:
      *                                                  {subtitle: 'Subtitle'}
      *                                              Currently supported for Android:
@@ -50,7 +52,7 @@ class Content extends Validatable {
             p: {
                 type: 'String',
                 required: false,
-                in: () => require('../platforms').platforms
+                in: () => Object.keys(platforms),
             },
             la: {type: 'String', required: false},
             title: {type: 'String', required: false, trim: true},
@@ -82,7 +84,7 @@ class Content extends Validatable {
 
     /**
      * Validate personalisation object {'0': {c: true, f: 'Fallback', k: 'custom.x'}}
-     * 
+     *
      * @param {object} obj personalisation object to validate
      * @returns {string|undefined} string error if validation failed
      */
@@ -133,7 +135,7 @@ class Content extends Validatable {
 
     /**
      * Getter for p (platform)
-     * 
+     *
      * @returns {string|undefined} Content p (platform)
      */
     get p() {
@@ -142,7 +144,7 @@ class Content extends Validatable {
 
     /**
      * Setter for p (platform)
-     * 
+     *
      * @param {string|undefined} p Content p (platform)
      */
     set p(p) {
@@ -156,7 +158,7 @@ class Content extends Validatable {
 
     /**
      * Getter for la (language)
-     * 
+     *
      * @returns {string|undefined} Content la (language)
      */
     get la() {
@@ -165,7 +167,7 @@ class Content extends Validatable {
 
     /**
      * Setter for la (language)
-     * 
+     *
      * @param {string|undefined} la Content la (language)
      */
     set la(la) {
@@ -179,7 +181,7 @@ class Content extends Validatable {
 
     /**
      * Getter for title
-     * 
+     *
      * @returns {string|undefined} message title text
      */
     get title() {
@@ -188,7 +190,7 @@ class Content extends Validatable {
 
     /**
      * Setter for title
-     * 
+     *
      * @param {string|undefined} title message title text
      */
     set title(title) {
@@ -202,7 +204,7 @@ class Content extends Validatable {
 
     /**
      * Getter for titlePers
-     * 
+     *
      * @returns {object|undefined} title personalization
      */
     get titlePers() {
@@ -211,7 +213,7 @@ class Content extends Validatable {
 
     /**
      * Setter for titlePers
-     * 
+     *
      * @param {object|undefined} titlePers title personalization
      */
     set titlePers(titlePers) {
@@ -225,7 +227,7 @@ class Content extends Validatable {
 
     /**
      * Getter for titlePers with leading "up." removed from field names
-     * 
+     *
      * @returns {object|undefined} title personalization
      */
     get titlePersDeup() {
@@ -237,7 +239,7 @@ class Content extends Validatable {
 
     /**
      * Getter for message
-     * 
+     *
      * @returns {string|undefined} message text
      */
     get message() {
@@ -246,7 +248,7 @@ class Content extends Validatable {
 
     /**
      * Setter for message
-     * 
+     *
      * @param {string|undefined} message message text
      */
     set message(message) {
@@ -260,7 +262,7 @@ class Content extends Validatable {
 
     /**
      * Getter for messagePers
-     * 
+     *
      * @returns {object|undefined} message personalization
      */
     get messagePers() {
@@ -269,7 +271,7 @@ class Content extends Validatable {
 
     /**
      * Setter for messagePers
-     * 
+     *
      * @param {object|undefined} messagePers message personalization
      */
     set messagePers(messagePers) {
@@ -283,7 +285,7 @@ class Content extends Validatable {
 
     /**
      * Getter for titlePers with leading "up." removed from field names
-     * 
+     *
      * @returns {object|undefined} title personalization
      */
     get messagePersDeup() {
@@ -295,7 +297,7 @@ class Content extends Validatable {
 
     /**
      * Deup (remove leading "up.") from personalisation object and return new one
-     * 
+     *
      * @param {object} obj object to deup
      * @returns {object} object with keys deupped
      */
@@ -315,7 +317,7 @@ class Content extends Validatable {
 
     /**
      * Getter for sound
-     * 
+     *
      * @returns {string|undefined} notification sound
      */
     get sound() {
@@ -324,7 +326,7 @@ class Content extends Validatable {
 
     /**
      * Setter for sound
-     * 
+     *
      * @param {string|undefined} sound notification sound
      */
     set sound(sound) {
@@ -338,7 +340,7 @@ class Content extends Validatable {
 
     /**
      * Getter for badge
-     * 
+     *
      * @returns {number|undefined} notification badge
      */
     get badge() {
@@ -347,7 +349,7 @@ class Content extends Validatable {
 
     /**
      * Setter for badge
-     * 
+     *
      * @param {number|undefined} badge notification badge
      */
     set badge(badge) {
@@ -361,7 +363,7 @@ class Content extends Validatable {
 
     /**
      * Get additional data to send with the message
-     * 
+     *
      * @returns {object|undefined} data to send
      */
     get data() {
@@ -373,7 +375,7 @@ class Content extends Validatable {
 
     /**
      * Set additional data to send with the message
-     * 
+     *
      * @param {object|undefined} data data to send
      */
     set data(data) {
@@ -387,7 +389,7 @@ class Content extends Validatable {
 
     /**
      * Getter for extras
-     * 
+     *
      * @returns {string[]} array of user prop keys to send
      */
     get extras() {
@@ -396,7 +398,7 @@ class Content extends Validatable {
 
     /**
      * Setter for extras
-     * 
+     *
      * @param {string[]|undefined} extras array of user prop keys to send
      */
     set extras(extras) {
@@ -410,7 +412,7 @@ class Content extends Validatable {
 
     /**
      * Getter for extras with leading "up." removed
-     * 
+     *
      * @returns {string[]} array of user prop keys to send
      */
     get extrasDeup() {
@@ -422,7 +424,7 @@ class Content extends Validatable {
 
     /**
      * Deup (remove leading "up.") property key array
-     * 
+     *
      * @param {string[]} arr array of property keys
      * @returns {string[]} array with keys deupped
      */
@@ -432,7 +434,7 @@ class Content extends Validatable {
 
     /**
      * Getter for expiration
-     * 
+     *
      * @returns {number} ms for a push to expire in push provider queue
      */
     get expiration() {
@@ -441,7 +443,7 @@ class Content extends Validatable {
 
     /**
      * Setter for expiration
-     * 
+     *
      * @param {number} expiration ms for a push to expire in push provider queue
      */
     set expiration(expiration) {
@@ -455,7 +457,7 @@ class Content extends Validatable {
 
     /**
      * Add user prop key to the set
-     * 
+     *
      * @param {string} key user prop key to push
      */
     push(key) {
@@ -469,7 +471,7 @@ class Content extends Validatable {
 
     /**
      * Remove user prop key from the set
-     * 
+     *
      * @param {string} key user prop key to push
      */
     pop(key) {
@@ -483,7 +485,7 @@ class Content extends Validatable {
 
     /**
      * Getter for url
-     * 
+     *
      * @returns {string|undefined} on-tap URL
      */
     get url() {
@@ -492,7 +494,7 @@ class Content extends Validatable {
 
     /**
      * Setter for url
-     * 
+     *
      * @param {string|undefined} url on-tap URL
      */
     set url(url) {
@@ -506,7 +508,7 @@ class Content extends Validatable {
 
     /**
      * Getter for media
-     * 
+     *
      * @returns {string|undefined} media URL
      */
     get media() {
@@ -515,7 +517,7 @@ class Content extends Validatable {
 
     /**
      * Setter for media
-     * 
+     *
      * @param {string|undefined} media media URL
      */
     set media(media) {
@@ -529,7 +531,7 @@ class Content extends Validatable {
 
     /**
      * Getter for mediaMime
-     * 
+     *
      * @returns {string|undefined} media MIME type
      */
     get mediaMime() {
@@ -538,7 +540,7 @@ class Content extends Validatable {
 
     /**
      * Setter for mediaMime
-     * 
+     *
      * @param {string|undefined} mediaMime media MIME type
      */
     set mediaMime(mediaMime) {
@@ -555,7 +557,7 @@ class Content extends Validatable {
      * - call button(i) to get full button object
      * - call button(i, "http://google.com", "Google", {0: ...}) to set the button
      * - call platform(i, null, null, null) to remove the button at index i
-     * 
+     *
      * @param {string} i button index
      * @param {string|null|undefined} url button url or null to remove button
      * @param {string|null|undefined} title button title
@@ -598,7 +600,7 @@ class Content extends Validatable {
 
     /**
      * Getter for buttons
-     * 
+     *
      * @returns {object[]|undefined} buttons array
      */
     get buttons() {
@@ -607,7 +609,7 @@ class Content extends Validatable {
 
     /**
      * Getter for specific
-     * 
+     *
      * @returns {object[]|undefined} media MIME type
      */
     get specific() {
@@ -616,7 +618,7 @@ class Content extends Validatable {
 
     /**
      * Setter for specific
-     * 
+     *
      * @param {object[]|undefined} specific platform specific objects
      */
     set specific(specific) {
@@ -634,7 +636,7 @@ class Content extends Validatable {
      * - call specific(key) to get data for a key
      * - call specific(key, "smth") to set the field
      * - call specific(key, null) to remove data
-     * 
+     *
      * @param {string} key field key
      * @param {any|null|undefined} value field data (pass undefined to get, pass null to remove)
      * @returns {any} stored value
@@ -660,85 +662,8 @@ class Content extends Validatable {
     }
 
     /**
-     * Backwards-compatibility conversion of Note to Content
-     * 
-     * @deprecated
-     * @param {object} note Note object
-     * @returns {Content|Content[]} array of Content instances
-     */
-    static fromNote(note) {
-        let mpl = note.messagePerLocale || {},
-            locales = Object.keys(mpl).filter(k => {
-                let v = mpl[k];
-                if (typeof v !== 'string' || !v || k.indexOf('default') === 0) {
-                    return false;
-                }
-                else if (k.indexOf(S) === -1) {
-                    return true;
-                }
-                else if (k.endsWith('|t')) {
-                    return true;
-                }
-                return false;
-            }).map(k => {
-                if (k.indexOf(S) !== -1) {
-                    return k.substr(0, k.indexOf(S));
-                }
-                else {
-                    return k;
-                }
-            }),
-            /**
-             * Returns the parameter if object has any keys
-             * 
-             * @param {object} obj object
-             * @returns {object|undefined} obj if it has any keys
-             */
-            nonEmpty = obj => {
-                for (let _ in obj) {
-                    return obj;
-                }
-            };
-        locales = locales.filter((k, i) => locales.indexOf(k) === i);
-
-        return [new Content({ // default content
-            title: mpl[`default${S}t`],
-            titlePers: nonEmpty(mpl[`default${S}tp`]),
-            message: mpl.default,
-            messagePers: nonEmpty(mpl[`default${S}p`]),
-            sound: note.sound,
-            media: note.media,
-            mediaMime: note.mediaMime,
-            expiration: note.expiration,
-            buttons: note.buttons ? new Array(note.buttons).fill(0).map((_, i) => ({
-                title: mpl[`default${S}${i}${S}t`],
-                url: mpl[`default${S}${i}${S}l`],
-            })) : undefined
-        })]
-            .concat(locales.map(l => new Content({ // localised messages & titles
-                la: l,
-                title: mpl[`${l}${S}t`],
-                titlePers: nonEmpty(mpl[`${l}${S}tp`]),
-                message: mpl[l],
-                messagePers: nonEmpty(mpl[`${l}${S}p`]),
-                buttons: note.buttons && mpl[`${l}${S}0|t`] ? new Array(note.buttons).fill(0).map((_, i) => ({
-                    title: mpl[`${l}${S}${i}${S}t`],
-                    url: mpl[`${l}${S}${i}${S}l`],
-                })) : undefined
-            })))
-            .concat(note.platforms.map(p => new Content({ // platform-specific stuff to comply with new UI
-                p,
-                sound: note.sound,
-                badge: note.badge,
-                data: note.data,
-                url: note.url,
-                extras: note.userProps,
-            })));
-    }
-
-    /**
      * Construct Content if needed
-     * 
+     *
      * @param {Content|object} data Content instance of content data
      * @returns {Content} Content instance
      */

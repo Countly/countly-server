@@ -1,7 +1,8 @@
 'use strict';
 
-const log = require('../../../api/utils/common.js').log('push:frontend'),
-    { FIELDS } = require('../api/send/platforms');
+const log = require('../../../api/utils/common.js').log('push:frontend');
+
+const platformEnvCombinedKeys = Object.values(require("../api/new/constants/platform-keymap.js")).map(k => k.combined).flat();
 
 module.exports = {
     init: (app, db) => {
@@ -18,7 +19,9 @@ module.exports = {
         db.collection('apps').find().toArray(function(err, apps) {
             if (apps && apps.length) {
                 apps.forEach(a => {
-                    db.collection(`app_users${a._id}`).createIndexes(Object.values(FIELDS).map(f => ({name: 'tk' + f, key: {['tk' + f]: 1}}))).catch(() => {});
+                    db.collection(`app_users${a._id}`).createIndexes(
+                        platformEnvCombinedKeys.map(f => ({name: 'tk' + f, key: {['tk' + f]: 1}, sparse: true}))
+                    ).catch(() => {});
                 });
             }
         });

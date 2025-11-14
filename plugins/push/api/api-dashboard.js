@@ -1,8 +1,14 @@
+/**
+ * @typedef {import("./new/types/message").PlatformKey} PlatformKey
+ */
+
 const common = require('../../../api/utils/common'),
     crypto = require('crypto'),
     moment = require('moment-timezone'),
-    log = common.log('push:api:dashboard'),
-    { platforms, fields, FIELDS_TITLES, PLATFORMS_TITLES } = require('./send');
+    log = common.log('push:api:dashboard');
+
+const platforms = require("./new/constants/platform-keymap.js");
+const platformKeys = /** @type {PlatformKey[]} */(Object.keys(platforms));
 
 /**
  * Add chart data from from to to
@@ -13,41 +19,6 @@ function add(from, to) {
     from.data.forEach((n, i) => {
         to.data[i] += n;
     });
-}
-
-/**
- * Generate event ids for event docs query
- * @param {string} event event name
- * @param {string} app_id application id
- * @param {number} agy ago year
- * @param {number} agm ago month
- * @param {number} noy now year
- * @param {number[]} mts month numbers array
- * @param {number} nom now month
- * @returns {string[]} event doc ids
- */
-function eventIdFilter(event, app_id, agy, agm, noy, mts, nom) {
-    const eventHash = crypto
-        .createHash('sha1')
-        .update(common.fixEventKey(event) + app_id)
-        .digest('hex');
-    const prefix = app_id + "_" + eventHash + "_";
-    /**
-     * Generate ids of event docs
-     * @param {string} seg segment name
-     * @param {string} val segment value
-     * @returns {string[]} event doc ids
-     */
-    const ids = (seg, val) => ([
-        prefix + seg + '_' + noy + ':' + (nom + 1) + '_' + crypto.createHash('md5').update(val + '').digest('base64')[0],
-        prefix + seg + '_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + '_' + crypto.createHash('md5').update(val + '').digest('base64')[0]
-    ]);
-    return mts.map((m, i) => prefix + 'no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m)
-        .concat(platforms.map(p => mts.map((m, i) => prefix + 'p_' + (agm + i >= 12 ? noy : agy) + ':' + m + '_' + crypto.createHash('md5').update(p).digest('base64')[0])).flat())
-        .concat(ids('a', 'true'))
-        .concat(ids('t', 'true'))
-        .concat(platforms.map(p => ids('ap', 'true' + p)).flat())
-        .concat(platforms.map(p => ids('tp', 'true' + p)).flat());
 }
 
 /**
@@ -160,17 +131,32 @@ module.exports.dashboard = async function(params) {
         wkt = wks.map(w => 'W' + w),
         // wkt = wks.map((w, i) => (i === 0 || w > wks[0] ? agy : noy) + '-w' + w),
 
+        /**
+         * Generate ids of event docs
+         *
+         * @param {string} seg segment name
+         * @param {string} val segment value
+         * @returns {string[]} event doc ids
+         */
+        ids = (seg, val) => ([
+            seg + '_' + noy + ':' + (nom + 1) + '_' + crypto.createHash('md5').update(val + '').digest('base64')[0],
+            seg + '_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + '_' + crypto.createHash('md5').update(val + '').digest('base64')[0]
+        ]),
+
         // event docs query
-        sentQuery = {
-            e: "[CLY]_push_sent",
-            _id: { $in: eventIdFilter('[CLY]_push_sent', app_id, agy, agm, noy, mts, nom) }
-        },
-        actionQuery = {
-            e: "[CLY]_push_action",
-            _id: { $in: eventIdFilter('[CLY]_push_action', app_id, agy, agm, noy, mts, nom) }
+        que = {
+            _id: {
+                $in: mts.map((m, i) => 'no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m)
+                    .concat(platformKeys.map(p => mts.map((m, i) => 'p_' + (agm + i >= 12 ? noy : agy) + ':' + m + '_' + crypto.createHash('md5').update(p).digest('base64')[0])).flat())
+                    .concat(ids('a', 'true'))
+                    .concat(ids('t', 'true'))
+                    .concat(platformKeys.map(p => ids('ap', 'true' + p)).flat())
+                    .concat(platformKeys.map(p => ids('tp', 'true' + p)).flat())
+            }
         },
 
-        // app users collection name
+        sen = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_sent') + app_id).digest('hex'),
+        act = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_action') + app_id).digest('hex'),
         app = 'app_users' + app_id,
 
         // platform token queries ({$or: [{tkip: true}, {tkia: true}, {tkid: true}]}, {$or: [{tkap: true}, {tkat: true}]})
@@ -181,16 +167,14 @@ module.exports.dashboard = async function(params) {
 
         rxp = /([0-9]{4}):([0-9]{1,2})/;
 
-
-    platforms.forEach(p => {
-        ptq.push({
-            $or: fields([p], true).map(f => ({
-                [f]: {$exists: true}
-            }))
-        });
-        any.$or.push(...fields([p], true).map(f => ({
-            [f]: {$exists: true}
-        })));
+    platformKeys.forEach(p => {
+        const filters = platforms[p].combined.map(combined => ({
+            ["tk" + combined]: {
+                $exists: true
+            }
+        }));
+        ptq.push({ $or: filters });
+        any.$or.push(...filters);
     });
 
     if (moment().isoWeek() === wks[0]) {
@@ -198,28 +182,24 @@ module.exports.dashboard = async function(params) {
         wkt.push(wkt.shift());
     }
 
+    log.d('sen', sen, 'act', act);
     log.d('mts', mts);
     log.d('wks', wks);
-    log.d('sentQuery', JSON.stringify(sentQuery));
-    log.d('actionQuery', JSON.stringify(actionQuery));
+    log.d('que', que);
     log.d('ptq', JSON.stringify(ptq));
     log.d('any', JSON.stringify(any));
 
-    let results = await Promise.all(
-        ptq.map(q => common.dbPromise(app, 'count', q))
-            .concat([common.dbPromise(app, 'count', any)])
-            .concat([
-                common.dbPromise("events_data", 'find', sentQuery),
-                common.dbPromise("events_data", 'find', actionQuery),
-                common.dbPromise(app, 'estimatedDocumentCount'),
-            ])
-    );
+    let results = await Promise.all(ptq.map(q => common.dbPromise(app, 'count', q)).concat([common.dbPromise(app, 'count', any)]).concat([
+        common.dbPromise(sen, 'find', que),
+        common.dbPromise(act, 'find', que),
+        common.dbPromise(app, 'estimatedDocumentCount'),
+    ]));
 
     try {
         let counts = results.splice(0, ptq.length + 1),
             enabled = {total: counts[counts.length - 1]};
 
-        platforms.forEach((p, i) => {
+        platformKeys.forEach((p, i) => {
             enabled[p] = counts[i] || 0;
         });
 
@@ -241,7 +221,7 @@ module.exports.dashboard = async function(params) {
                     platforms: {}
                 };
 
-            platforms.forEach(p => {
+            platformKeys.forEach(p => {
                 ret.platforms[p] = {
                     weekly: {data: Array(wks.length).fill(0), keys: wkt},
                     monthly: {data: Array(mts.length).fill(0), keys: mtt},
@@ -311,7 +291,7 @@ module.exports.dashboard = async function(params) {
                             ret.total -= e.d[d].true.c;
                         }
                         else if (e.s === 'p') {
-                            platforms.forEach(p => {
+                            platformKeys.forEach(p => {
                                 if (!e.d[d][p]) {
                                     return;
                                 }
@@ -322,7 +302,7 @@ module.exports.dashboard = async function(params) {
                         }
                         else if (e.s === 'ap' && diff <= 29) {
                             target = 29 - diff;
-                            platforms.forEach(p => {
+                            platformKeys.forEach(p => {
                                 let k = 'true' + p;
                                 if (!e.d[d][k]) {
                                     return;
@@ -337,7 +317,7 @@ module.exports.dashboard = async function(params) {
                         }
                         else if (e.s === 'tp' && diff <= 29) {
                             target = 29 - diff;
-                            platforms.forEach(p => {
+                            platformKeys.forEach(p => {
                                 let k = 'true' + p;
                                 if (!e.d[d][k]) {
                                     return;
@@ -374,27 +354,6 @@ module.exports.dashboard = async function(params) {
             };
         });
 
-        let pltfms = {},
-            tokens = {};
-
-        for (let p in PLATFORMS_TITLES) {
-            if (p !== 't' && p !== 'h') {
-                pltfms[p] = PLATFORMS_TITLES[p];
-                for (let tk in FIELDS_TITLES) {
-                    if (tk[2] === p) {
-                        tokens[tk] = FIELDS_TITLES[tk];
-                    }
-                }
-            }
-        }
-
-        // check if fcm configured for legacy api
-        let legacyFcm = false;
-        let cred = await common.db.collection("creds").findOne({ type: "fcm" });
-        if (cred && cred.key && !cred.serviceAccountFile) {
-            legacyFcm = true;
-        }
-
         common.returnOutput(params, {
             sent: events[0].m,
             sent_automated: events[0].a,
@@ -404,9 +363,16 @@ module.exports.dashboard = async function(params) {
             actions_tx: events[1].t,
             enabled,
             users: results[2] ? results[2] : 0,
-            platforms: pltfms,
-            tokens,
-            legacyFcm
+            platforms: Object.fromEntries(
+                Object.entries(platforms)
+                    .map(([platformKey, { title }]) => [platformKey, title])
+            ),
+            tokens: Object.fromEntries(Object.entries(platforms).map(
+                ([platformKey, { environmentTitles }]) => {
+                    return Object.entries(environmentTitles)
+                        .map(([envKey, envTitle]) => [`tk${platformKey}${envKey}`, envTitle]);
+                }
+            ).flat()),
         });
     }
     catch (error) {
