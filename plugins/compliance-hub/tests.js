@@ -620,7 +620,7 @@ describe('Testing Compliance Hub', function() {
     describe("Check user merge for app_user properties", function() {
         it('Add another user with consent', function(done) {
             request
-                .post('/i?app_key=' + APP_KEY + '&device_id=' + DEVICE_ID + '2' + '&consent={"events":true}')
+                .post('/i?app_key=' + APP_KEY + '&device_id=' + DEVICE_ID + '2' + '&begin_session=1&consent={"events":true}')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -657,6 +657,22 @@ describe('Testing Compliance Hub', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
+        it('Trigger user merging job to make sure all plugins are merged', function(done) {
+            testUtils.triggerMergeProcessing(function() {
+                setTimeout(done, 100 * testUtils.testScalingFactor);
+            });
+        });
+        it('making sure merge is finished', function(done) {
+            testUtils.check_if_merges_finished(3, APP_ID, done);
+        });
+        it("Trigger dictionary reload", function(done) {
+            testUtils.reloadIdentityDictionary(function(err) {
+                if (err) {
+                    console.log(err);
+                }
+                done();
+            });
+        });
         it("validate if app users document is updated", function(done) {
             testUtils.db.collection('app_users' + APP_ID).findOne({did: DEVICE_ID + "2"}, function(err, user) {
                 if (err) {
@@ -689,7 +705,7 @@ describe('Testing Compliance Hub', function() {
                 });
         });
         it('Trigger deletion job to run', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", done);
+            testUtils.triggerJobToRun("api:mutationManagerJob", done);
         });
     });
 

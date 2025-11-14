@@ -119,7 +119,7 @@ describe('Bulk writing. Tests against data provided by aggregator.', function() 
                     });
             });
             it('trigger job for database cleanup', function(done) {
-                testUtils.triggerJobToRun("api:deletionManagerJob", done);
+                testUtils.triggerJobToRun("api:mutationManagerJob", done);
             });
         });
     });
@@ -216,7 +216,7 @@ describe('Bulk writing. Tests against data provided by aggregator.', function() 
                     });
             });
             it('trigger job for database cleanup', function(done) {
-                testUtils.triggerJobToRun("api:deletionManagerJob", done);
+                testUtils.triggerJobToRun("api:mutationManagerJob", done);
             });
         });
     });
@@ -489,7 +489,7 @@ describe('Bulk writing. Tests against data provided by aggregator.', function() 
                     });
             });
             it('trigger job for database cleanup', function(done) {
-                testUtils.triggerJobToRun("api:deletionManagerJob", done);
+                testUtils.triggerJobToRun("api:mutationManagerJob", done);
             });
         });
     });

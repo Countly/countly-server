@@ -102,6 +102,8 @@ var countlyConfig = {
     * @property {number} [request_timeout=1200000] - request timeout in milliseconds
     * @property {object} [keep_alive] - keep alive settings
     * @property {number} [max_open_connections=10] - maximum number of open connections
+    * @property {object} [dictionary] - dictionary configuration
+    * @property {boolean} [dictionary.enableMongoDBSource=true] - enable MongoDB as a dictionary source (requires mongodb driver)
     * @property {object} [clickhouse_settings] - ClickHouse specific settings
     */
     clickhouse: {
@@ -120,6 +122,10 @@ var countlyConfig = {
             idle_socket_ttl: 10000,
         },
         max_open_connections: 10,
+        // Dictionary configuration for DictionaryManager
+        // dictionary: {
+        //     enableMongoDBSource: true // Enable/disable MongoDB as a dictionary source (default: true, auto-disabled if mongodb driver not available)
+        // },
         clickhouse_settings: {
             idle_connection_timeout: 11000 + '',
             async_insert: 1,
