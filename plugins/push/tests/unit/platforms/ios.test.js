@@ -10,7 +10,7 @@ const { describe, it } = require("mocha");
 const { parseP12Certificate } = require("../../../api/new/platforms/ios");
 
 describe("IOS platform", () => {
-    describe("credential validator", () => {
+    describe("Credential validator", () => {
         it("should parse a valid p12 certificate without passphrase correctly", async() => {
             const certificate = await fsPromise.readFile(
                 path.join(

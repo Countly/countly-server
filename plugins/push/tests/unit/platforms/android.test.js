@@ -24,7 +24,7 @@ describe("Android platform", () => {
         "https-proxy-agent": { HttpsProxyAgent: MockHttpsProxyAgent }
     });
 
-    describe("push notification sender", () => {
+    describe("Push notification sender", () => {
         const serviceAccount = {
             type: 'service_account',
             project_id: 'countlydemo',
@@ -117,7 +117,7 @@ describe("Android platform", () => {
         });
     });
 
-    describe("message mapper", () => {
+    describe("Message mapper", () => {
         const messageId = new ObjectId();
         const baseMessageDoc = {
             _id: messageId,
@@ -325,7 +325,7 @@ describe("Android platform", () => {
         });
     });
 
-    describe("credential validator", () => {
+    describe("Credential validator", () => {
         it("should throw when there's a missing property", async() => {
             let invalidCredentials = /** @type {any} */({type: "apn_universal"});
             await assert.rejects(validateCredentials(invalidCredentials));

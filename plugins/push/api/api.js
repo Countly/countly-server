@@ -71,6 +71,7 @@ plugins.setConfigs(FEATURE_NAME, {
     // },
     message_timeout: 3600000, // timeout for a message not sent yet (for TooLateToSend error)
     default_content_available: false, // sets content-available: 1 by default for ios
+    save_results_by_default: true,
     message_results_ttl: 90, // 90 days
 });
 

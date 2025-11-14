@@ -13,7 +13,7 @@ const mockedData = require("../../mock/data");
 const { IOS_TEST_TOKEN, IOS_TEST_CREDENTIALS_P8, IOS_TEST_CREDENTIALS_P12 } = process.env;
 
 describe("IOS integration", () => {
-    describe("push notification sender", () => {
+    describe("Push notification sender", () => {
         if (!IOS_TEST_TOKEN || !IOS_TEST_CREDENTIALS_P8) {
             return console.log("IOS_TEST_TOKEN and/or IOS_TEST_CREDENTIALS_P8 "
                 + "are not defined, skipping sender tests");
@@ -103,7 +103,7 @@ describe("IOS integration", () => {
         }).timeout(100000);
     });
 
-    describe("credential validator", () => {
+    describe("Credential validator", () => {
         it("should validate p12 credentials by sending a test message", async() => {
             if (!IOS_TEST_CREDENTIALS_P12) {
                 return console.log("IOS_TEST_CREDENTIALS_P12 is not defined, "

@@ -27,14 +27,14 @@ describe("Huawei integration", () => {
             + "skipping Huawei integration tests");
     }
 
-    describe("oauth authenticator and token retriever", () => {
+    describe("Oauth authenticator and token retriever", () => {
         it("should be able to retrieve an access token", async() => {
             const token = await getAuthToken(credentials);
             assert(typeof token === "string" && token.length > 0);
         }).timeout(20000);
     });
 
-    describe("push notification sender", () => {
+    describe("Push notification sender", () => {
         if (!HUAWEI_TEST_TOKEN) {
             return console.log(
                 "HUAWEI_TEST_TOKEN are not defined, skipping sender tests",
@@ -98,7 +98,7 @@ describe("Huawei integration", () => {
         }).timeout(100000);
     });
 
-    describe("credential validator", () => {
+    describe("Credential validator", () => {
         it("shouldn't be able to validate invalid credentials", async() => {
             await assert.rejects(validateCredentials({
                 app: "invalidapp",

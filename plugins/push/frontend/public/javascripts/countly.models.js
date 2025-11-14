@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/*global countlyVue,CV,countlyCommon,countlySegmentation,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
+/*global countlyVue,CV,countlyPlugins,countlyCommon,countlySegmentation,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
@@ -243,13 +243,15 @@
             return result;
         },
         getInitialBaseModel: function(dto) {
+            const settings = countlyPlugins.getConfigsData();
+            const pushSettings = settings?.push || {};
             return {
                 isEe: typeof countlySegmentation !== 'undefined',
                 isGeo: typeof countlyLocationTargetComponent !== 'undefined',
                 isCohorts: typeof countlyCohorts !== 'undefined',
                 _id: null,
                 demo: false,
-                saveResults: false,
+                saveResults: pushSettings.save_results_by_default ?? false,
                 name: (dto && dto.name ? dto.name : ""),
                 platforms: [],
                 message: {

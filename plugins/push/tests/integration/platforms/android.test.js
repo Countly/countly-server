@@ -11,7 +11,7 @@ const mockedData = require("../../mock/data");
 const { ANDROID_TEST_TOKEN, ANDROID_TEST_CREDENTIALS } = process.env;
 
 describe("Android integration", () => {
-    describe("push notification sender", () => {
+    describe("Push notification sender", () => {
         if (!ANDROID_TEST_TOKEN || !ANDROID_TEST_CREDENTIALS) {
             return console.log("ANDROID_TEST_TOKEN and/or "
                 + "ANDROID_TEST_CREDENTIALS are not defined, skipping tests");
@@ -90,7 +90,7 @@ describe("Android integration", () => {
         }).timeout(100000);
     });
 
-    describe("credential validator", () => {
+    describe("Credential validator", () => {
         it("should try and send a test message to validate the credential and then fail", async() => {
             const invalidCredentials = /** @type {FCMCredentials} */({
                 _id: new ObjectId,

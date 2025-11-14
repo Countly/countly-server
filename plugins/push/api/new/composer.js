@@ -469,7 +469,7 @@ async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTime
         if (typeof filters.cap.maxMessages === "number" && filters.cap.maxMessages > 0) {
             pipeline.push({
                 $match: {
-                    [field + "." + String(filters.cap.maxMessages)]: {
+                    [field + "." + String(filters.cap.maxMessages - 1)]: {
                         $exists: false
                     }
                 }
@@ -563,4 +563,5 @@ module.exports = {
     loadCredentials,
     buildUserAggregationPipeline,
     userPropsProjection,
+    convertAudienceFiltersToMatchStage,
 };
