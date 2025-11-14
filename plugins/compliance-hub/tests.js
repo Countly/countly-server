@@ -657,11 +657,21 @@ describe('Testing Compliance Hub', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
-        it('Trigger merging job', function(done) {
-            testUtils.triggerMergeProcessing(done);
+        it('Trigger user merging job to make sure all plugins are merged', function(done) {
+            testUtils.triggerMergeProcessing(function() {
+                setTimeout(done, 100 * testUtils.testScalingFactor);
+            });
         });
-        it("wait a bit for merges to finish", function(done) {
-            setTimeout(done, 5000);
+        it('making sure merge is finished', function(done) {
+            testUtils.check_if_merges_finished(3, APP_ID, done);
+        });
+        it("Trigger dictionary reload", function(done) {
+            testUtils.reloadIdentityDictionary(function(err) {
+                if (err) {
+                    console.log(err);
+                }
+                done();
+            });
         });
         it("validate if app users document is updated", function(done) {
             testUtils.db.collection('app_users' + APP_ID).findOne({did: DEVICE_ID + "2"}, function(err, user) {
