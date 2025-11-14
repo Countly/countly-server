@@ -583,7 +583,7 @@ describe('Testing Rating plugin', function() {
         });
         //Rechecks up to 3 times each 10 seconds if merges are done
         it('making sure merge is finished', function(done) {
-            testUtils.check_if_merges_finished(3,APP_ID, done);
+            testUtils.check_if_merges_finished(3, APP_ID, done);
         });
         //Triggers dictionary reload on clickhouse. It makes this less flaky.
         it("Trigger dictionary reload", function(done) {
@@ -630,7 +630,7 @@ describe('Testing Rating plugin', function() {
                 }
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('result', 'Success');
-                setTimeout(done, 500 * testUtils.testScalingFactor);
+                setTimeout(done, 500 * testUtils.testScalingFactor + 2000);
             });
         });
         it('Trigger deletion job to run', function(done) {
