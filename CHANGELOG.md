@@ -2,6 +2,19 @@
 Dependencies:
 - Remove SQLite
 
+## Version 25.03.27
+Fixes:
+- [core-vis] Fix chart legend click event
+- [push] Fixed the options of the request being made during mime detection
+- [views] Fix view name that is displayed in view table
+
+Enterprise Fixes:
+- [concurrent_users] Fix alert threshold comparison
+- [dashboards] Add setting to disable public dashboards
+- [surveys] Handle multiple survey submission from same user based on survey visibility
+- [users] Display user property limits in user profiles when exceeded
+- [users] Set correct users widget table rows amount according to selected setting
+
 ## Version 25.03.26
 Fixes:
 - [push] Fixed timeout setting
@@ -34,6 +47,8 @@ Fixes:
 Enterprise Fixes:
 - [ab-testing] Add script for fixing variant cohort
 - [groups] Fix user permission update after updating user group permission
+- [funnels] Fixed delete confirmation using correct button copy
+
 ## Version 25.03.24
 Fixes:
 - [jobs] Fix condition for scheduling alert job
@@ -42,7 +57,6 @@ Enterprise Fixes:
 - [compliance-hub] Fixed query patterns
 - [data-manager] Fixed bug preventing transformation of events ending in a dot
 - [data-manager] Fixed segment data deletion
-- [funnels] Fixed delete confirmation using correct button copy
 - [license] Stop sending metric after license expired
 - [users] Fix add/remove user to profile group
 - [users] Remove link to profile group page after removing user from group
