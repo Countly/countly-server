@@ -503,26 +503,6 @@ describe('Testing Rating plugin', function() {
             });
         });*/
     });
-
-    var check_if_merges_finished = function(tries, done) {
-        if (tries == 3) {
-            done();
-        }
-        else {
-            testUtils.db.collection("app_user_merges").find({"_id": {"$regex": "^" + APP_ID}}).toArray(function(err, res) {
-                if (res && res.length > 0) {
-                    console.log(JSON.stringify(res));
-                    setTimeout(function() {
-                        check_if_merges_finished(tries + 1, done);
-                    }, 10000);
-                }
-                else {
-                    done();
-                }
-            });
-        }
-    };
-
     describe('Test user merging', function() {
         it('Send in some user', function(done) {
             var events = [{
@@ -595,24 +575,17 @@ describe('Testing Rating plugin', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
-        it("update merge documents to allow them be triggered by job", function(done) {
-            testUtils.db.collection("app_user_merges").updateMany({}, {"$set": {"lu": 0}}, function(err, res) {
-                if (err) {
-                    done(err);
-                }
-                else {
-                    done();
-                }
-            });
-        });
+        //Updates data to ake sure all merges are run and triggers job
         it('Trigger user merging job to make sure all plugins are merged', function(done) {
-            testUtils.triggerJobToRun("api:userMerge", function() {
+            testUtils.triggerMergeProcessing(function() {
                 setTimeout(done, 100 * testUtils.testScalingFactor);
             });
         });
+        //Rechecks up to 3 times each 10 seconds if merges are done
         it('making sure merge is finished', function(done) {
-            check_if_merges_finished(0, done);
+            testUtils.check_if_merges_finished(3, done);
         });
+        //Triggers dictionary reload on clickhouse. It makes this less flaky.
         it("Trigger dictionary reload", function(done) {
             testUtils.reloadIdentityDictionary(function(err) {
                 if (err) {

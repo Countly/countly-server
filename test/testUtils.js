@@ -231,6 +231,27 @@ var testUtils = function testUtils() {
             }
         });
     };
+
+    this.check_if_merges_finished = function(tries, APP_ID, done) {
+        if (tries <= 0) {
+            done();
+        }
+        else {
+            var self = this;
+            this.db.collection("app_user_merges").find({"_id": {"$regex": "^" + APP_ID}}).toArray(function(err, res) {
+                if (res && res.length > 0) {
+                    console.log(JSON.stringify(res));
+                    setTimeout(function() {
+                        tries--;
+                        self.check_if_merges_finished(tries, APP_ID, done);
+                    }, 10000);
+                }
+                else {
+                    done();
+                }
+            });
+        }
+    };
     this.validateBreakdownTotalsInDrillData = function(db, options, callback) {
         var match = options.query || {};
         if (options.app_id) {
