@@ -1,16 +1,15 @@
-## Version 25.03.XX
+## Version 25.03.27
 Fixes:
+- [core-vis] Fix chart legend click event
 - [push] Fixed the options of the request being made during mime detection
 - [views] Fix view name that is displayed in view table
-- [core-vis] Fix chart legend click event
-- [data-manager] Fix last modified data for event and segment
 
 Enterprise Fixes:
 - [concurrent_users] Fix alert threshold comparison
-- [surveys] Handle multiple survey submission from same user based on survey visibility
-- [users] Set correct users widget table rows amount according to selected setting
-- [users] Display user property limits in user profiles when exceeded
 - [dashboards] Add setting to disable public dashboards
+- [surveys] Handle multiple survey submission from same user based on survey visibility
+- [users] Display user property limits in user profiles when exceeded
+- [users] Set correct users widget table rows amount according to selected setting
 
 ## Version 25.03.26
 Fixes:
