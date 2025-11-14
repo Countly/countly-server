@@ -278,6 +278,13 @@ jobs:
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
           apt install -y /tmp/chrome.deb
 
+      - name: Install Sharp dependencies for image processing
+        shell: bash
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -y
+          apt-get install -y libvips-dev
+
       - name: Copy code
         shell: bash
         run: cp -rf ./* /opt/countly
@@ -331,6 +338,6 @@ jobs:
         working-directory: /opt/countly/ui-tests/cypress
         run: |
           ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}_${{ matrix.test_type }}.tar.gz"
-          mkdir -p screenshots videos
-          tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos
+          mkdir -p screenshots videos downloads
+          tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos downloads
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
