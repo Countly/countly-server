@@ -9,6 +9,6 @@ describe('1.Neutral tooltip (default at app creation)', () => {
     });
     it('1.3-Test', function() {
         goToConfigTab(true);
-        checkTooltipAppears('neutral');
+        checkTooltipAppears('neutral', 34);
     });
 });
