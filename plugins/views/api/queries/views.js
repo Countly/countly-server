@@ -212,9 +212,9 @@ async function getTotals(params, options) {
         }
     };
 
-    if (clickHouseRunner && clickHouseRunner.getViewsTotals) {
+    if (clickHouseRunner && clickHouseRunner.getViewTotals) {
         queryDef.adapters.clickhouse = {
-            handler: clickHouseRunner.getViewsTotals
+            handler: clickHouseRunner.getViewTotals
         };
     }
     return common.queryRunner.executeQuery(queryDef, params, options);
