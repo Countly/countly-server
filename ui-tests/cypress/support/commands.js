@@ -24,12 +24,13 @@ Cypress.Commands.add('softFail', (message) => {
 });
 
 // Safe wrapper to continue test after a failed Cypress command
-Cypress.Commands.add('safeCheck', (fn, description) => {
-    cy.then(() => {
-        return fn().catch((err) => {
-            cy.softFail(`${description} - ${err.message}`);
-            return null;
-        });
+Cypress.Commands.add('safeCheck', (fn, description = '') => {
+    return cy.then(() => {
+        return Cypress.Promise.try(() => fn())
+            .catch((err) => {
+                cy.softFail(`${description} - ${err.message || err}`);
+                return null; // test devam eder
+            });
     });
 });
 
