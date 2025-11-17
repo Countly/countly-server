@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "firebase-admin": "^13.2.0",
+    "http-proxy-agent": "^7.0.2",
     "http2-wrapper": "^2.2.1",
     "https-proxy-agent": "^7.0.5",
     "jsonwebtoken": "9.0.2",

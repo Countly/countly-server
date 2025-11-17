@@ -33,7 +33,7 @@ class ClearMessageResultsJob extends Job {
     async run(db, done, progress) {
         try {
             this.log.i("Starting to clear old message results");
-            const pluginConfig = await loadPluginConfiguration(db);
+            const pluginConfig = await loadPluginConfiguration();
             if (pluginConfig?.messageResultsTTL) {
                 const result = await db.collection("message_results").deleteMany({
                     sentAt: {

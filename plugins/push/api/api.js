@@ -80,23 +80,6 @@ plugins.internalEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_sent');
 plugins.internalDrillEvents.push('[CLY]_push_action');
 
-// plugins.register('/worker', async function() {
-//     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
-//     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
-//     await queueInitializer(common.db);
-// });
-
-// plugins.register('/master', async function() {
-//     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
-//     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
-//     setTimeout(() => {
-//         const jobManager = require('../../../api/parts/jobs');
-//         jobManager.job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
-//         jobManager.job("push:clear-stats").replace().schedule("at 3:00 am every 7 days");
-//     }, 10000);
-//     await queueInitializer(common.db);
-// });
-
 plugins.register("/master", async function() {
     try {
         await initPushQueue(

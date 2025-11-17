@@ -147,7 +147,7 @@ async function composeScheduledPushes(db, scheduleEvent) {
         scheduleDoc.audienceFilter
     );
     const compileTemplate = createTemplate(messageDoc);
-    const pluginConfig = await loadPluginConfiguration(db);
+    const pluginConfig = await loadPluginConfiguration();
     const creds = await loadCredentials(db, appId);
     // check if there's a missing credential
     for (let i = 0; i < messageDoc.platforms.length; i++) {

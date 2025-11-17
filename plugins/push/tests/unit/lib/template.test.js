@@ -60,18 +60,13 @@ describe("Message template", () => {
                 "c.m": "https://example.com/example-media.png",
                 "title": "en message title",
                 "sound": "sound",
-                "badge": 423,
+                "badge": "423",
                 "c.l": "https://example.com",
                 "message": "en message content var1: Sdk_gphone64_arm64 some text",
-                "c.b": [
-                    {
-                        "t": "<En> Button",
-                        "l": "https://example.com"
-                    }
-                ],
+                "c.b": '[{"t":"<En> Button","l":"https://example.com"}]',
                 "custom": "json",
                 "c.e.did": "0b5efc45fa4885ed",
-                "c.e.fs": 1700549799,
+                "c.e.fs": "1700549799",
                 "c.li": "https://example.com/logo.png"
             }
         });
@@ -89,18 +84,13 @@ describe("Message template", () => {
                 "c.m": "https://example.com/example-media.png",
                 "title": "Default message title",
                 "sound": "sound",
-                "badge": 423,
+                "badge": "423",
                 "c.l": "https://example.com",
                 "message": "Default message contentMobilefallbackValue",
-                "c.b": [
-                    {
-                        "t": "<Default> Button",
-                        "l": "https://example.com"
-                    }
-                ],
+                "c.b": '[{"t":"<Default> Button","l":"https://example.com"}]',
                 "custom": "json",
                 "c.e.did": "0b5efc45fa4885ed",
-                "c.e.fs": 1700549799,
+                "c.e.fs": "1700549799",
                 "c.li": "https://example.com/logo.png"
             }
         });

@@ -132,7 +132,7 @@ describe("Push composer", async() => {
         it("shouldn't return anything when plugin is not configured", async() => {
             collection.findOne.resolves({});
 
-            const pluginConfig = await loadPluginConfiguration(db);
+            const pluginConfig = await loadPluginConfiguration();
 
             assert(db.collection.calledWith("plugins"));
             assert(collection.findOne.calledWith({ _id: "plugins" }));
@@ -164,7 +164,7 @@ describe("Push composer", async() => {
                 }
             };
             collection.findOne.resolves(pluginDocument);
-            const config = await loadPluginConfiguration(db);
+            const config = await loadPluginConfiguration();
             assert(db.collection.calledWith("plugins"));
             assert(collection.findOne.calledWith({ _id: "plugins" }));
             assert.deepStrictEqual(config, result);

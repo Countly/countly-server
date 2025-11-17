@@ -3,6 +3,9 @@
  * @typedef {import("./new/types/message").Message} IMessage
  * @typedef {import("./new/types/schedule").Schedule} ISchedule
  * @typedef {IMessage["status"]|ISchedule["status"]} MessageStatus
+ * @typedef {import("mongodb").Db} Db
+ * @typedef {import("http").IncomingHttpHeaders} IncomingHttpHeaders
+ * @typedef {{ url: string; status?: number; headers: IncomingHttpHeaders; }} MimeInfo
  */
 const { Message, Result, Creds, Status, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info } = require('./send'),
     crypto = require("crypto"),
@@ -10,17 +13,22 @@ const { Message, Result, Creds, Status, ValidationError, TriggerKind, PlainTrigg
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
     moment = require('moment-timezone'),
-    { request } = require('./proxy'),
     {ObjectId} = require("mongodb");
 
+const { HttpProxyAgent } = require("http-proxy-agent");
+const { HttpsProxyAgent } = require("https-proxy-agent");
+const { URL } = require('node:url');
+const https = require("node:https");
+const http = require("node:http");
 const countlyFetch = require("../../../api/parts/data/fetch.js");
 const { buildResultObject } = require("./new/resultor.js");
 const { scheduleIfEligible, DATE_TRIGGERS } = require("./new/scheduler.js");
 const { buildUserAggregationPipeline, createPushStream, loadCredentials } = require("./new/composer.js");
-const { loadPluginConfiguration } = require("./new/lib/utils");
+const { loadPluginConfiguration, buildProxyUrl } = require("./new/lib/utils");
 const { createTemplate } = require("./new/lib/template");
 const { sendAllPushes } = require("./new/sender.js");
 const platforms = require("./new/constants/platform-keymap.js");
+const { PROXY_CONNECTION_TIMEOUT } = require("./new/constants/proxy-config.json");
 
 /**
  * Decide which status to use for scheduling based on message and last schedule
@@ -226,10 +234,10 @@ module.exports.test = async params => {
         }
         const template = createTemplate(msg._data);
         const creds = await loadCredentials(common.db, msg.app);
-        const pluginConfig = await loadPluginConfiguration(common.db);
+        const pluginConfig = await loadPluginConfiguration();
         const schedule = { _id: common.db.ObjectID() };
         const stream = createPushStream(common.db, app, msg, schedule,
-            creds, pluginConfig?.proxy, template, pipeline);
+            creds, new Date, pluginConfig, template, pipeline);
         let results = [];
         for await (const push of stream) {
             results.push(await sendAllPushes([push], false));
@@ -1391,30 +1399,47 @@ async function generateDemoData(msg, demo) {
  *
  * @param {string} url - url to get info from
  * @param {string} method - http method to use
- * @returns {Promise} - {status, headers} in case of success, PushError otherwise
+ * @returns {Promise<MimeInfo>} resolves to mime info object
  */
-function mimeInfo(url, method = 'HEAD') {
-    let conf = common.plugins.getConfig('push'),
-        ok = common.validateArgs({url}, {
-            url: {type: 'URLString', required: true},
-        }, true);
-
+async function mimeInfo(url, method = 'HEAD') {
+    const ok = common.validateArgs({url}, {
+        url: {type: 'URLString', required: true},
+    }, true);
     if (ok.result) {
         url = ok.obj.url.toString();
     }
     else {
         throw new ValidationError(ok.errors);
     }
-
+    const pluginConfig = await loadPluginConfiguration();
+    const proxy = pluginConfig?.proxy;
     return new Promise((resolve, reject) => {
-        let req = request(url.toString(), method, conf);
-
+        const urlObj = new URL(url);
+        const isHttps = urlObj.protocol === 'https:';
+        let agent = undefined;
+        if (proxy) {
+            const proxyUrl = buildProxyUrl(proxy);
+            const proxyOptions = {
+                keepAlive: true,
+                timeout: PROXY_CONNECTION_TIMEOUT,
+                rejectUnauthorized: proxy.auth,
+            };
+            if (isHttps) {
+                agent = new HttpsProxyAgent(proxyUrl, proxyOptions);
+            }
+            else {
+                agent = new HttpProxyAgent(proxyUrl, proxyOptions);
+            }
+        }
+        const req = isHttps
+            ? https.request(urlObj, { method, agent })
+            : http.request(urlObj, { method, agent });
         req.on('response', res => {
             let status = res.statusCode,
                 headers = res.headers,
                 data = 0;
             if (method === 'HEAD') {
-                resolve({url: url.toString(), status, headers});
+                resolve({ url: url.toString(), status, headers });
             }
             else {
                 res.on('data', dt => {
@@ -1427,20 +1452,17 @@ function mimeInfo(url, method = 'HEAD') {
                 });
                 res.on('end', () => {
                     if (!headers['content-length']) {
-                        headers['content-length'] = data || 0;
+                        headers['content-length'] = String(data || 0);
                     }
-                    resolve({url: url.toString(), status, headers});
+                    resolve({ url: url.toString(), status, headers });
                 });
             }
         });
-
         req.on('error', err => {
             log.e('error when HEADing ' + url, err);
             reject(new ValidationError('Cannot access proxied URL'));
         });
-
         req.end();
-
     });
 }
 

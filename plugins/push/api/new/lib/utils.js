@@ -1,5 +1,5 @@
 /**
- * @typedef {import("../types/utils").PluginDocument} PluginDocument
+ * @typedef {import("../types/utils").PluginConfigDocument} PluginConfigDocument
  * @typedef {import("../types/utils").PluginConfiguration} PluginConfiguration
  * @typedef {import("../types/utils").ProxyConfiguration} ProxyConfiguration
  * @typedef {import("../types/credentials").APNP12Credentials} APNP12Credentials
@@ -23,14 +23,11 @@ const platforms = require('../constants/platform-keymap');
 
 /**
  * Loads the plugin configuration from the MongoDB database.
- * @param {MongoDb} db - The MongoDB database instance to query for the plugin configuration.
  * @returns {Promise<PluginConfiguration|undefined>} The plugin configuration object or undefined if not found.
  */
-async function loadPluginConfiguration(db) {
-    /** @type {import("mongodb").Collection<PluginDocument>} */
-    const col = db.collection('plugins');
-    const plugins = await col.findOne({ _id: "plugins" });
-    const pushConfig = plugins?.push;
+async function loadPluginConfiguration() {
+    /** @type {PluginConfigDocument} */
+    const pushConfig = common.plugins.getConfig("push");
     if (!pushConfig) {
         return;
     }

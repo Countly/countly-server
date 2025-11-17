@@ -177,7 +177,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
             if (credentialTypes.includes(c.type)) {
                 let creds, view;
                 try {
-                    const pluginConfig = await loadPluginConfiguration(common.db);
+                    const pluginConfig = await loadPluginConfiguration();
                     if (c.type === "fcm") {
                         ({ creds, view } = await validateAndroidCredentials(c, pluginConfig?.proxy));
                     }
