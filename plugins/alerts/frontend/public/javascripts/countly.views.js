@@ -7,12 +7,28 @@
     countlyCommon,
     app,
     countlyAuth,
+    countlyPlugins,
     CV,
     groupsModel,
     _,
+    VeeValidate,
  */
 (function() {
     var ALERTS_FEATURE_NAME = "alerts";
+
+    VeeValidate.extend('alert_interval', function(inpValue, args) {
+        var min = parseInt(args[0] || 0, 10);
+        var max = parseInt(args[1] || 60, 10);
+        var valid = parseInt(inpValue, 10) >= min && inpValue <= max;
+
+        if (valid) {
+            return {
+                valid: valid,
+            };
+        }
+
+        return 'Alert interval has to be between ' + min + ' and ' + max;
+    });
 
     var AlertDrawer = countlyVue.views.BaseView.extend({
         template: "#alert-drawer",
@@ -410,6 +426,27 @@
                 else {
                     return;
                 }
+            },
+            filteredEmailOptions: function() {
+                if (!countlyGlobal.plugins.includes("groups")) {
+                    return this.emailOptions.filter(
+                        (option) => option.value !== "toGroup"
+                    );
+                }
+                return this.emailOptions;
+            },
+            alertIntervalValidationRules: function() {
+                var rule = 'required';
+
+                if (this.$refs.drawerData.editedObject.alertDataType === 'onlineUsers') {
+                    var concurrentUserConfig = countlyPlugins.getConfigsData().concurrent_users || {};
+                    var concurrentAlertIntervalMin = concurrentUserConfig.alert_interval || 3;
+                    var concurrentAlertIntervalMax = Math.min(concurrentAlertIntervalMin + 60, 90);
+
+                    rule += '|alert_interval:' + concurrentAlertIntervalMin + ',' + concurrentAlertIntervalMax;
+                }
+
+                return rule;
             },
         },
         props: {
