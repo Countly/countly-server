@@ -292,5 +292,26 @@ catch (error) {
         }
         return common.queryRunner.executeQuery(queryDef, params, options);
     };
+
+    agg.getDrillCursorForExport = async function(params, options) {
+        if (!common.queryRunner) {
+            throw new Error('QueryRunner not initialized. Ensure API server is fully started.');
+        }
+
+        const queryDef = {
+            name: 'GET_CURSOR_FOR_EXPORT',
+            adapters: {
+                mongodb: {
+                    handler: mongodbRunner.getDrillCursorForExport
+                }
+            }
+        };
+        if (clickHouseRunner && clickHouseRunner.getDrillCursorForExport) {
+            queryDef.adapters.clickhouse = {
+                handler: clickHouseRunner.getDrillCursorForExport
+            };
+        }
+        return common.queryRunner.executeQuery(queryDef, params, options);
+    };
 }(coreAggregator));
 module.exports = coreAggregator;

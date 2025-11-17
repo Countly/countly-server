@@ -1498,7 +1498,7 @@ describe('Writing app events', function() {
                     });
             });
             it('Trigger deletion job to run', function(done) {
-                testUtils.triggerJobToRun("api:deletionManagerJob", function() {
+                testUtils.triggerJobToRun("api:mutationManagerJob", function() {
                     setTimeout(done, 5000);
                 });
             });
