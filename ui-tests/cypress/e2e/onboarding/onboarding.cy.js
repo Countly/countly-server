@@ -155,7 +155,6 @@ describe('Complete Onboarding', () => {
         });
 
         navigationHelpers.isNavigatedToDashboard();
-        cy.initSoftAssert();
         quickstartPopoeverHelpers.verifyDefaultPageElements();
         quickstartPopoeverHelpers.closeQuickStartPopover();
         homePageHelpers.verifyEmptyPageElements();
@@ -269,7 +268,6 @@ describe('Complete Onboarding', () => {
         dbCountlyOutPageHelpers.verifyEmptyPageElements();
         dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
         dbCountlyFsPageHelpers.verifyEmptyPageElements();
-        cy.assertAll();
     });
 
     it('should be complete onboarding flow with creating own desktop type application with default app key and enable tracking and subscribe to newsletter', function() {
@@ -325,7 +323,6 @@ describe('Complete Onboarding', () => {
         });
 
         navigationHelpers.isNavigatedToDashboard();
-        cy.initSoftAssert();
         quickstartPopoeverHelpers.closeQuickStartPopover();
         homePageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToAnalyticsUsersOverview();
@@ -448,6 +445,5 @@ describe('Complete Onboarding', () => {
         dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
         //dbCountlyFsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
         dbCountlyFsPageHelpers.verifyEmptyPageElements();
-        cy.assertAll();
     });
 });
