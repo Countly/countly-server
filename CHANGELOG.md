@@ -1,4 +1,9 @@
 ## Version 24.05.46
+Enterprise Fixes:
+- [concurrent_users] Fix email check for alert
+
+
+## Version 24.05.46
 Fixes:
 - [core-vis] Fix chart legend click event
 - [data-manager] Fix last modified data for event and segment
