@@ -1,8 +1,6 @@
 import 'cypress-file-upload';
 const helper = require('./helper');
 const chai = require('chai');
-const expect = chai.expect;
-
 let softErrors = [];
 
 /* ---------------- Soft Assertions ---------------- */
@@ -170,17 +168,58 @@ Cypress.Commands.add("shouldHrefContainUrl", (selector, expected) => {
     });
 });
 
-/* ---------------- Visibility & Disabled ---------------- */
+/* ---------------- Visibility & Disabled (Soft Assert) ---------------- */
 
-Cypress.Commands.add("shouldBeVisible", (element) => cy.getElement(element).should("be.visible"));
+Cypress.Commands.add("shouldBeVisible", (element) => {
+    cy.getElement(element).then($el => {
+        const isVisible = $el.is(":visible");
+        cy.softAssert(
+            isVisible,
+            `Element: "${element}"\nExpected: visible\nActual: not visible`
+        );
+    });
+});
 
-Cypress.Commands.add("shouldBeDisabled", (element) => cy.getElement(element).should("be.disabled"));
+Cypress.Commands.add("shouldBeDisabled", (element) => {
+    cy.getElement(element).then($el => {
+        const isDisabled = $el.is(":disabled");
+        cy.softAssert(
+            isDisabled,
+            `Element: "${element}"\nExpected: disabled\nActual: enabled`
+        );
+    });
+});
 
-Cypress.Commands.add("shouldNotBeDisabled", (element) => cy.getElement(element).should("not.be.disabled"));
+Cypress.Commands.add("shouldNotBeDisabled", (element) => {
+    cy.getElement(element).then($el => {
+        const isDisabled = $el.is(":disabled");
+        cy.softAssert(
+            !isDisabled,
+            `Element: "${element}"\nExpected: enabled\nActual: disabled`
+        );
+    });
+});
 
-Cypress.Commands.add("shouldBeHasDisabledClass", (element) => cy.get(`[data-test-id="${element}"].is-disabled`).should("exist"));
 
-Cypress.Commands.add("shouldNotBeHasDisabledClass", (element) => cy.get(`[data-test-id="${element}"].is-disabled`).should("not.exist"));
+Cypress.Commands.add("shouldBeHasDisabledClass", (element) => {
+    cy.get(`[data-test-id="${element}"]`).then($el => {
+        const hasClass = $el.hasClass("is-disabled");
+        cy.softAssert(
+            hasClass,
+            `Element: "${element}"\nExpected: has class "is-disabled"\nActual: does NOT have class`
+        );
+    });
+});
+
+Cypress.Commands.add("shouldNotBeHasDisabledClass", (element) => {
+    cy.get(`[data-test-id="${element}"]`).then($el => {
+        const hasClass = $el.hasClass("is-disabled");
+        cy.softAssert(
+            !hasClass,
+            `Element: "${element}"\nExpected: NOT to have class "is-disabled"\nActual: class found`
+        );
+    });
+});
 
 /* ---------------- Tooltip ---------------- */
 
