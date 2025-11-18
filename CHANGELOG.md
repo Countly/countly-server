@@ -1,3 +1,8 @@
+## Version 25.03.X
+Enterprise Fixes:
+- [concurrent_users] Fix email check for alert
+
+
 ## Version 25.03.27
 Fixes:
 - [core-vis] Fix chart legend click event
