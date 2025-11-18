@@ -19,8 +19,8 @@ const DEFAULT_LIMITS = {
     view_name_limit: 128,
     view_segment_limit: 100,
     view_segment_value_limit: 10,
-    //custom_prop_limit: 20,
-    custom_property_limit: 20,
+    custom_prop_limit: 20,
+    //custom_property_limit: 20,
     custom_prop_value_limit: 50,
 };
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
@@ -56,8 +56,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         view_name_limit: pluginsCollectionPlugins?.views?.view_name_limit || DEFAULT_LIMITS.view_name_limit,
                         view_segment_limit: pluginsCollectionPlugins?.views?.segment_limit || DEFAULT_LIMITS.view_segment_limit,
                         view_segment_value_limit: pluginsCollectionPlugins?.views?.segment_value_limit || DEFAULT_LIMITS.view_segment_value_limit,
-                        //custom_prop_limit: pluginsCollectionPlugins?.users?.custom_prop_limit || DEFAULT_LIMITS.custom_prop_limit,
-                        custom_property_limit: pluginsCollectionPlugins?.drill?.custom_property_limit || DEFAULT_LIMITS.custom_property_limit,
+                        custom_prop_limit: pluginsCollectionPlugins?.users?.custom_prop_limit || DEFAULT_LIMITS.custom_prop_limit,
+                        //custom_property_limit: pluginsCollectionPlugins?.drill?.custom_property_limit || DEFAULT_LIMITS.custom_property_limit,
                         custom_prop_value_limit: pluginsCollectionPlugins?.users?.custom_set_limit || DEFAULT_LIMITS.custom_prop_value_limit,
                     };
                     // GETTING REAL DATA PER APP
@@ -247,10 +247,10 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 });
                 app_results['View Segments Unique Values'] = {"default": defaultVal, "set": currentVal, "real": realVal};
                 // USER PROPERTIES
-                //defaultVal = DEFAULT_LIMITS.custom_prop_limit;
-                //currentVal = CURRENT_LIMITS.custom_prop_limit;
-                defaultVal = DEFAULT_LIMITS.custom_property_limit;
-                currentVal = CURRENT_LIMITS.custom_property_limit;
+                defaultVal = DEFAULT_LIMITS.custom_prop_limit;
+                currentVal = CURRENT_LIMITS.custom_prop_limit;
+                //defaultVal = DEFAULT_LIMITS.custom_property_limit;
+                //currentVal = CURRENT_LIMITS.custom_property_limit;
                 realVal = customPropsPerApp && customPropsPerApp[0]?.customPropertiesCount || 0;
                 app_results['Max user custom properties'] = {"default": defaultVal, "set": currentVal, "real": realVal};
                 // VALUES IN AN ARRAY FOR ONE USER PROPERTY
