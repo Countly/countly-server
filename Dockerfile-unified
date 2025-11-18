@@ -120,6 +120,24 @@ RUN --mount=type=cache,id=npm-plugin-cache,target=/root/.npm,sharing=locked \
     find plugins -mindepth 2 -maxdepth 2 -name package.json \
          -execdir npm install --omit=dev --unsafe-perm=true \;
 
+# 4.1) Build vite-based plugins (journey_engine and content)
+RUN --mount=type=cache,id=npm-plugin-cache,target=/root/.npm,sharing=locked \
+    set -eux; \
+    # Build journey_engine plugin if it exists
+    if [ -d "plugins/journey_engine" ] && [ -f "plugins/journey_engine/package.json" ]; then \
+        cd plugins/journey_engine && \
+        npm install && \
+        npm run build && \
+        cd /opt/countly; \
+    fi; \
+    # Build content plugin if it exists
+    if [ -d "plugins/content" ] && [ -f "plugins/content/package.json" ]; then \
+        cd plugins/content && \
+        npm install && \
+        npm run build && \
+        cd /opt/countly; \
+    fi
+
  # NOTE: No COPY . . here! JS source files aren't copied yet to keep cache tight
 
 ###############################################################################
