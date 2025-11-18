@@ -25,6 +25,6 @@ Cypress.on('uncaught:exception', (err, runnable) => {
     return false;
 });
 
-afterEach(() => {
+after(() => {
     cy.assertAll();
 });
