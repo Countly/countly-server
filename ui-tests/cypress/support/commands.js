@@ -7,7 +7,8 @@ let softErrors = [];
 
 Cypress.Commands.add("softAssert", (condition, errorMessage) => {
     if (!condition) {
-        softErrors.push(errorMessage);
+        const testName = Cypress.currentTest.title || "Unknown Test";
+        softErrors.push(`Test: "${testName}"\n${errorMessage}`);
     }
 });
 
