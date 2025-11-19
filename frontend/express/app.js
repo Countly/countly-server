@@ -67,13 +67,13 @@ var versionInfo = require('./version.info'),
     url = require('url'),
     authorize = require('../../api/utils/authorizer.js'), //for token validations
     languages = require('../../frontend/express/locale.conf'),
-    render = require('../../api/utils/render.js'),
     rateLimit = require("express-rate-limit"),
     membersUtility = require("./libs/members.js"),
     argon2 = require('argon2'),
     countlyCommon = require('../../api/lib/countly.common.js'),
     timezones = require('../../api/utils/timezones.js').getTimeZones,
-    { validateCreate } = require('../../api/utils/rights.js');
+    { validateCreate } = require('../../api/utils/rights.js'),
+    tracker = require('../../api/parts/mgmt/tracker.js');
 
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
@@ -137,20 +137,8 @@ plugins.setConfigs("frontend", {
     session_timeout: 30,
     use_google: true,
     code: true,
-    offline_mode: false,
-    self_tracking: "",
+    offline_mode: false
 });
-
-if (!plugins.isPluginEnabled('tracker')) {
-    plugins.setConfigs('frontend', {
-        countly_tracking: null,
-    });
-}
-else {
-    plugins.setConfigs('frontend', {
-        countly_tracking: true,
-    });
-}
 
 plugins.setUserConfigs("frontend", {
     production: false,
@@ -196,16 +184,13 @@ if (countlyConfig.web && countlyConfig.web.track === "all") {
     countlyConfig.web.track = null;
 }
 
-var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
-
 Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_fs")]).then(function(dbs) {
     var countlyDb = dbs[0];
     //reference for consistency between app and api processes
     membersUtility.db = common.db = countlyDb;
     countlyFs.setHandler(dbs[1]);
+    tracker.enable();
 
-    //checking remote configuration
-    membersUtility.recheckConfigs(countlyConfigOrig, countlyConfig);
     /**
     * Create sha1 hash string
     * @param {string} str - string to hash
@@ -418,6 +403,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     };
 
     plugins.loadConfigs(countlyDb, function() {
+        tracker.enable();
         curTheme = plugins.getConfig("frontend").theme;
         app.loadThemeFiles(curTheme);
         app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
@@ -452,8 +438,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         next();
     });
 
-    app.use('*.svg', function(req, res, next) {
-        res.setHeader('Content-Type', 'image/svg+xml; charset=UTF-8');
+    app.use(function(req, res, next) {
+        if (req.path.endsWith('.svg')) {
+            res.setHeader('Content-Type', 'image/svg+xml; charset=UTF-8');
+        }
         next();
     });
 
@@ -835,11 +823,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         res.send(plugins.getConfig("security").robotstxt);
     });
 
-    app.get(countlyConfig.path + '/configs', function(req, res) {
-        membersUtility.recheckConfigs(countlyConfigOrig, countlyConfig);
-        res.send("Success");
-    });
-
     app.get(countlyConfig.path + '/session', function(req, res, next) {
         if (req.session.auth_token) {
             authorize.verify_return({
@@ -932,7 +915,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     **/
     function renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
         var configs = plugins.getConfig("frontend", member.settings),
-            countly_tracking = plugins.isPluginEnabled('tracker') ? true : plugins.getConfig('frontend').countly_tracking,
             countly_domain = plugins.getConfig('api').domain,
             licenseNotification, licenseError;
         var isLocked = false;
@@ -1009,6 +991,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     member: member,
                     config: req.config,
                     security: plugins.getConfig("security"),
+                    tracking: plugins.getConfig("tracking"),
                     plugins: plugins.getPlugins(),
                     pluginsFull: plugins.getPlugins(true),
                     path: countlyConfig.path || "",
@@ -1021,9 +1004,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     countlyTypeName: overriddenCountlyNamedType,
                     countlyTypeTrack: COUNTLY_TRACK_TYPE,
                     countlyTypeCE: COUNTLY_TYPE_CE,
-                    countly_tracking,
                     countly_domain,
-                    frontend_app: versionInfo.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',
+                    frontend_app: versionInfo.frontend_app || "9c28c347849f2c03caf1b091ec7be8def435e85e",
                     frontend_server: versionInfo.frontend_server || 'https://stats.count.ly/',
                     usermenu: {
                         feedbackLink: COUNTLY_FEEDBACK_LINK,
@@ -1875,48 +1857,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.send(result);
             });
         }
-    });
-
-    app.get(countlyConfig.path + '/render', function(req, res) {
-        if (!req.session.uid) {
-            return res.redirect(countlyConfig.path + '/login');
-        }
-
-        var options = {};
-        var view = req.query.view || "";
-        var route = req.query.route || "";
-        var id = req.query.id || "";
-
-        options.view = view + "#" + route;
-        options.id = id ? "#" + id : "";
-
-        var randomString = (+new Date()).toString() + (Math.random()).toString();
-        var imageName = "screenshot_" + sha1Hash(randomString) + ".png";
-
-        options.savePath = path.resolve(__dirname, "./public/images/screenshots/" + imageName);
-        options.source = "core";
-
-        authorize.save({
-            db: countlyDb,
-            multi: false,
-            owner: req.session.uid,
-            ttl: 300,
-            purpose: "LoginAuthToken",
-            callback: function(err2, token) {
-                if (err2) {
-                    console.log(err2);
-                    return res.send(false);
-                }
-                options.token = token;
-                render.renderView(options, function(err3) {
-                    if (err3) {
-                        return res.send(false);
-                    }
-
-                    return res.send({path: countlyConfig.path + "/images/screenshots/" + imageName});
-                });
-            }
-        });
     });
 
     app.get(countlyConfig.path + '/login/token/:token', function(req, res) {

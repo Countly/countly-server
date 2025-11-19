@@ -6,93 +6,153 @@
         _mixins = countlyVue.mixins;
 
     var TableExtensionsMixin = {
+        // NOTE: since this is a mixin and props are component specific, we should not define props here
+        // mixins should be a complement to the component, not a dependency
         props: {
-            persistKey: {
-                type: String,
-                default: null
-            },
-            dataSource: {
-                type: Object,
-                default: function() {
-                    return null;
-                }
-            },
-            rows: {
-                type: Array,
-                default: function() {
-                    return [];
-                }
-            },
             availableDynamicCols: {
-                type: Array,
-                default: function() {
-                    return [];
-                }
+                default: () => [],
+                type: Array
             },
-            paused: {
-                type: Boolean,
-                default: false
+
+            dataSource: {
+                default: () => null,
+                type: Object
             },
-            displaySearch: {
-                type: Boolean,
-                default: true
-            },
+
             defaultSort: {
-                type: Object,
-                default: function() {
-                    return { prop: '_id', order: 'asc' };
-                },
-                required: false
+                default: () => ({ prop: '_id', order: 'asc' }),
+                type: Object
             },
+
+            displaySearch: {
+                default: true,
+                type: Boolean
+            },
+
+            paused: {
+                default: false,
+                type: Boolean
+            },
+
+            persistKey: {
+                default: null,
+                type: String
+            },
+
             preventDefaultSort: {
-                type: Boolean,
-                default: false
+                default: false,
+                type: Boolean
+            },
+
+            rows: {
+                default: () => [],
+                type: Array
+            },
+
+            perPage: {
+                default: 10,
+                type: Number
             }
         },
+
+        emits: [
+            'params-change',
+            'search-query-changed'
+        ],
+
+        data() {
+            const controlParams = this.getControlParams();
+
+            if (!Array.isArray(controlParams?.selectedDynamicCols)) {
+                controlParams.selectedDynamicCols = this.availableDynamicCols.reduce((acc, option) => {
+                    if (option.default || option.required) {
+                        acc.push(option.value);
+                    }
+
+                    return acc;
+                }, []);
+            }
+
+            return {
+                controlParams: controlParams,
+
+                firstPage: 1
+            };
+        },
+
         computed: {
-            hasDynamicCols: function() {
-                return this.availableDynamicCols.length > 0;
-            },
-            availableDynamicColsLookup: function() {
-                return this.availableDynamicCols.reduce(function(acc, col) {
+            availableDynamicColsLookup() {
+                return this.availableDynamicCols.reduce((acc, col) => {
                     acc[col.value] = col;
+
                     return acc;
                 }, {});
             },
-            publicDynamicCols: function() {
-                var self = this;
-                var cols = this.controlParams.selectedDynamicCols.map(function(val) {
-                    return self.availableDynamicColsLookup[val];
-                }).filter(function(val) {
-                    return !!val;
-                });
-                return cols;
-            },
-            localSearchedRows: function() {
-                var currentArray = this.rows.slice();
-                if (this.displaySearch && this.controlParams.searchQuery) {
-                    var queryLc = (this.controlParams.searchQuery + "").toLowerCase();
-                    currentArray = currentArray.filter(function(item) {
-                        return Object.keys(item).some(function(fieldKey) {
-                            if (item[fieldKey] === null || item[fieldKey] === undefined) {
-                                return false;
-                            }
-                            return (item[fieldKey] + "").toLowerCase().indexOf(queryLc) > -1;
-                        });
-                    });
-                }
-                return currentArray;
-            },
-            localDataView: function() {
-                var currentArray = this.localSearchedRows;
-                if (this.controlParams.sort.length > 0) {
-                    var sorting = this.controlParams.sort[0],
-                        dir = sorting.type === "asc" ? 1 : -1;
 
-                    currentArray = currentArray.slice();
-                    currentArray.sort(function(a, b) {
-                        var priA = a[sorting.field],
-                            priB = b[sorting.field];
+            availablePages() {
+                const pages = [];
+
+                // NOTE: We should use a better variable name than I, it is not clear what this variable refers to
+                for (let i = this.firstPage, I = Math.min(this.lastPage, 10000); i <= I; i++) {
+                    pages.push(i);
+                }
+
+                return pages;
+            },
+
+            dataView() {
+                return this.dataSource ? this.externalData : this.localDataView;
+            },
+
+            externalData() {
+                if (!this.dataSource) {
+                    return [];
+                }
+
+                const { dataAddress } = this.dataSource;
+
+                return dataAddress.store.getters[dataAddress.path];
+            },
+
+            externalParams() {
+                if (!this.dataSource) {
+                    return undefined;
+                }
+
+                const { paramsAddress } = this.dataSource;
+
+                return paramsAddress.store.getters[paramsAddress.path];
+            },
+
+            externalStatus() {
+                if (!this.dataSource) {
+                    return undefined;
+                }
+
+                const { statusAddress } = this.dataSource;
+
+                return statusAddress.store.getters[statusAddress.path];
+            },
+
+            hasDynamicCols() {
+                return this.availableDynamicCols.length > 0;
+            },
+
+            lastPage() {
+                return this.totalPages;
+            },
+
+            localDataView() {
+                let currentArray = this.localSearchedRows;
+                const totalRows = currentArray.length;
+
+                if (this.controlParams.sort.length > 0) {
+                    const sorting = this.controlParams.sort[0];
+                    const sortingType = sorting.type === "asc" ? 1 : -1;
+
+                    currentArray.sort((a, b) => {
+                        let priA = a[sorting.field];
+                        let priB = b[sorting.field];
 
                         if (typeof priA === 'object' && priA !== null && priA.sortBy) {
                             priA = priA.sortBy;
@@ -100,218 +160,166 @@
                         }
 
                         if (priA < priB) {
-                            return -dir;
+                            return -sortingType;
                         }
+
                         if (priA > priB) {
-                            return dir;
+                            return sortingType;
                         }
+
                         return 0;
                     });
                 }
-                var filteredTotal = currentArray.length;
+
+                // NOTE: displayMode seams to be a prop from cly-datatable component, since this is a mixin, it should
+                // not reference variables from the component using it, beside being confusing,
+                // it can lead to hard to debug issues
                 if (this.displayMode === 'list') {
-                    this.controlParams.perPage = currentArray.length;
+                    this.controlParams.perPage = totalRows;
                 }
-                if (this.controlParams.perPage < currentArray.length) {
-                    var startIndex = (this.controlParams.page - 1) * this.controlParams.perPage,
-                        endIndex = startIndex + this.controlParams.perPage;
+
+                if (this.controlParams.perPage < totalRows) {
+                    const startIndex = (this.controlParams.page - 1) * this.controlParams.perPage;
+                    const endIndex = startIndex + this.controlParams.perPage;
+
                     currentArray = currentArray.slice(startIndex, endIndex);
                 }
+
                 return {
+                    notFilteredTotalRows: this.rows.length,
                     rows: currentArray,
-                    totalRows: filteredTotal,
-                    notFilteredTotalRows: this.rows.length
+                    totalRows
                 };
             },
-            dataView: function() {
-                if (this.dataSource) {
-                    return this.externalData;
+
+            localSearchedRows() {
+                let currentArray = this.rows;
+
+                if (this.displaySearch && this.controlParams.searchQuery) {
+                    const lowerCaseSearchQuery = (`${this.controlParams.searchQuery}`).toLowerCase();
+
+                    currentArray = currentArray.filter(item => {
+                        return Object.keys(item).some(fieldKey => {
+                            if (!item[fieldKey]) {
+                                return false;
+                            }
+
+                            return (`${item[fieldKey]}`).toLowerCase().indexOf(lowerCaseSearchQuery) > -1;
+                        });
+                    });
                 }
-                else {
-                    return this.localDataView;
-                }
+
+                return currentArray;
             },
-            totalPages: function() {
-                return Math.ceil(this.dataView.totalRows / this.controlParams.perPage);
-            },
-            lastPage: function() {
-                return this.totalPages;
-            },
-            prevAvailable: function() {
-                return this.controlParams.page > this.firstPage;
-            },
-            nextAvailable: function() {
+
+            nextAvailable() {
                 return this.controlParams.page < this.lastPage;
             },
-            paginationInfo: function() {
-                var page = this.controlParams.page,
-                    perPage = this.controlParams.perPage,
-                    searchQuery = this.controlParams.searchQuery,
-                    grandTotal = this.dataView.notFilteredTotalRows,
-                    filteredTotal = this.dataView.totalRows,
-                    startEntries = (page - 1) * perPage + 1,
-                    endEntries = Math.min(startEntries + perPage - 1, filteredTotal),
-                    info = this.i18n("common.table.no-data");
+
+            paginationInfo() {
+                const { page, perPage, searchQuery } = this.controlParams || {};
+                const { notFilteredTotalRows: grandTotal, totalRows: filteredTotal } = this.dataView || {};
+
+                const startEntries = (page - 1) * perPage + 1;
+                const endEntries = Math.min(startEntries + perPage - 1, filteredTotal);
+                let info = this.i18n('common.table.no-data');
 
                 if (filteredTotal > 0) {
-                    info = this.i18n("common.showing")
-                        .replace("_START_", countlyCommon.formatNumber(startEntries))
-                        .replace("_END_", countlyCommon.formatNumber(endEntries))
-                        .replace("_TOTAL_", countlyCommon.formatNumber(filteredTotal));
+                    info = this.i18n('common.showing')
+                        .replace('_START_', countlyCommon.formatNumber(startEntries))
+                        .replace('_END_', countlyCommon.formatNumber(endEntries))
+                        .replace('_TOTAL_', countlyCommon.formatNumber(filteredTotal));
                 }
 
                 if (this.displaySearch && searchQuery) {
-                    info += " " + this.i18n("common.filtered").replace("_MAX_", grandTotal);
+                    info += `${this.i18n('common.filtered').replace('_MAX_', grandTotal)}`;
                 }
+
                 return info;
             },
-            externalData: function() {
-                if (!this.dataSource) {
-                    return [];
-                }
-                var addr = this.dataSource.dataAddress;
-                return addr.store.getters[addr.path];
+
+            prevAvailable() {
+                return this.controlParams.page > this.firstPage;
             },
-            externalStatus: function() {
-                if (!this.dataSource) {
-                    return undefined;
-                }
-                var addr = this.dataSource.statusAddress;
-                return addr.store.getters[addr.path];
+
+            publicDynamicCols() {
+                return this.controlParams.selectedDynamicCols.map(val => this.availableDynamicColsLookup[val])
+                    .filter(Boolean);
             },
-            externalParams: function() {
-                if (!this.dataSource) {
-                    return undefined;
-                }
-                var addr = this.dataSource.paramsAddress;
-                return addr.store.getters[addr.path];
-            },
-            availablePages: function() {
-                var pages = [];
-                for (var i = this.firstPage, I = Math.min(this.lastPage, 10000); i <= I; i++) {
-                    pages.push(i);
-                }
-                return pages;
+
+            totalPages() {
+                return Math.ceil(this.dataView.totalRows / this.controlParams.perPage);
             }
         },
+
         watch: {
             controlParams: {
                 deep: true,
+
                 handler: _.debounce(function() {
                     this.triggerExternalSource();
                     this.setControlParams();
                 }, 500)
             },
-            'controlParams.page': function() {
+
+            'controlParams.page'() {
                 this.checkPageBoundaries();
             },
-            'controlParams.selectedDynamicCols': function() {
+
+            'controlParams.selectedDynamicCols'() {
                 this.$refs.elTable.store.updateColumns(); // TODO: Hacky, check for memory leaks.
             },
-            'controlParams.searchQuery': function(newVal) {
+
+            'controlParams.searchQuery'(newVal) {
                 this.$emit('search-query-changed', newVal);
             },
-            lastPage: function() {
+
+            lastPage() {
                 this.checkPageBoundaries();
             },
-            paused: function(newVal) {
+
+            paused(newVal) {
                 if (newVal) {
-                    this.dataSource.updateParams({
-                        ready: false
-                    });
+                    this.dataSource.updateParams({ ready: false });
                 }
                 else {
                     this.triggerExternalSource();
                 }
             }
         },
-        data: function() {
-            var controlParams = this.getControlParams();
 
-            if (!controlParams.selectedDynamicCols || !Array.isArray(controlParams.selectedDynamicCols)) {
-                controlParams.selectedDynamicCols = this.availableDynamicCols.reduce(function(acc, option) {
-                    if (option.default || option.required) {
-                        acc.push(option.value);
-                    }
-                    return acc;
-                }, []);
-            }
-
-            return {
-                controlParams: controlParams,
-                firstPage: 1
-            };
-        },
-        mounted: function() {
-            this.triggerExternalSource();
-        },
-        beforeDestroy: function() {
+        beforeDestroy() {
             this.setControlParams();
         },
+
+        mounted() {
+            this.triggerExternalSource();
+        },
+
         methods: {
-            checkPageBoundaries: function() {
+            checkPageBoundaries() {
                 if (this.lastPage > 0 && this.controlParams.page > this.lastPage) {
                     this.controlParams.page = this.lastPage;
                 }
+
                 if (this.controlParams.page < 1) {
                     this.controlParams.page = 1;
                 }
             },
-            goToFirstPage: function() {
-                this.controlParams.page = this.firstPage;
-            },
-            goToLastPage: function() {
-                this.controlParams.page = this.lastPage;
-            },
-            goToPrevPage: function() {
-                if (this.prevAvailable) {
-                    this.controlParams.page--;
-                }
-            },
-            goToNextPage: function() {
-                if (this.nextAvailable) {
-                    this.controlParams.page++;
-                }
-            },
-            onSortChange: function(elTableSorting) {
-                if (elTableSorting.order) {
-                    this.updateControlParams({
-                        sort: [{
-                            field: elTableSorting.column.sortBy || elTableSorting.prop,
-                            type: elTableSorting.order === "ascending" ? "asc" : "desc"
-                        }]
-                    });
-                }
-                else {
-                    this.updateControlParams({
-                        sort: []
-                    });
-                }
-            },
-            triggerExternalSource: function() {
-                if (!this.dataSource || this.paused) {
-                    return;
-                }
-                if (this.dataSource.fetch) {
-                    this.dataSource.fetch(this.controlParams);
-                }
-                this.$emit("params-change", this.controlParams);
-            },
-            updateControlParams: function(newParams) {
-                _.extend(this.controlParams, newParams);
-            },
-            getControlParams: function() {
-                var defaultState = {
+
+            getControlParams() {
+                const defaultState = {
                     page: 1,
-                    perPage: 10,
+                    perPage: this.perPage,
                     searchQuery: '',
-                    sort: [],
-                    selectedDynamicCols: false
+                    selectedDynamicCols: false,
+                    sort: []
                 };
+
                 if (this.defaultSort && this.preventDefaultSort === false) {
                     defaultState.sort = [{
                         field: this.defaultSort.prop,
-                        type: this.defaultSort.order === "ascending" ? "asc" : "desc"
+                        type: this.defaultSort.order === 'ascending' ? 'asc' : 'desc'
                     }];
                 }
                 else {
@@ -321,51 +329,114 @@
                 if (!this.persistKey) {
                     return defaultState;
                 }
-                var loadedState = localStorage.getItem(this.persistKey);
+
+                const loadedState = localStorage.getItem(this.persistKey);
+
                 try {
-                    if (countlyGlobal.member.columnOrder && countlyGlobal.member.columnOrder[this.persistKey].tableSortMap) {
+                    if (
+                        countlyGlobal.member.columnOrder &&
+                        countlyGlobal.member.columnOrder[this.persistKey].tableSortMap
+                    ) {
                         defaultState.selectedDynamicCols = countlyGlobal.member.columnOrder[this.persistKey].tableSortMap;
                     }
+
                     if (loadedState) {
-                        var parsed = JSON.parse(loadedState);
+                        const parsed = JSON.parse(loadedState);
+
                         defaultState.page = parsed.page;
                         defaultState.perPage = parsed.perPage;
                         defaultState.sort = parsed.sort;
                     }
+
                     return defaultState;
                 }
                 catch (ex) {
                     return defaultState;
                 }
             },
-            setControlParams: function() {
+
+            goToFirstPage() {
+                this.controlParams.page = this.firstPage;
+            },
+
+            goToLastPage() {
+                this.controlParams.page = this.lastPage;
+            },
+
+            goToNextPage() {
+                if (this.nextAvailable) {
+                    this.controlParams.page++;
+                }
+            },
+
+            goToPrevPage() {
+                if (this.prevAvailable) {
+                    this.controlParams.page--;
+                }
+            },
+
+            onSortChange(elTableSorting) {
+                if (elTableSorting.order) {
+                    this.updateControlParams({
+                        sort: [{
+                            field: elTableSorting.column.sortBy || elTableSorting.prop,
+                            type: elTableSorting.order === "ascending" ? "asc" : "desc"
+                        }]
+                    });
+                }
+                else {
+                    this.updateControlParams({ sort: [] });
+                }
+            },
+
+            setControlParams() {
                 if (this.persistKey) {
-                    var self = this;
-                    var localControlParams = {};
+                    const localControlParams = {};
+
                     localControlParams.page = this.controlParams.page;
                     localControlParams.perPage = this.controlParams.perPage;
                     localControlParams.sort = this.controlParams.sort;
+
                     localStorage.setItem(this.persistKey, JSON.stringify(localControlParams));
+
                     $.ajax({
-                        type: "POST",
-                        url: countlyGlobal.path + "/user/settings/column-order",
                         data: {
-                            "tableSortMap": this.controlParams.selectedDynamicCols,
-                            "columnOrderKey": this.persistKey,
-                            _csrf: countlyGlobal.csrf_token
+                            columnOrderKey: this.persistKey,
+                            _csrf: countlyGlobal.csrf_token,
+                            tableSortMap: this.controlParams.selectedDynamicCols
                         },
-                        success: function() {
-                            //since countlyGlobal.member does not updates automatically till refresh
+                        success: () => {
+                            // NOTE: since countlyGlobal.member does not updates automatically till refresh
                             if (!countlyGlobal.member.columnOrder) {
                                 countlyGlobal.member.columnOrder = {};
                             }
-                            if (!countlyGlobal.member.columnOrder[self.persistKey]) {
-                                countlyGlobal.member.columnOrder[self.persistKey] = {};
+
+                            if (!countlyGlobal.member.columnOrder[this.persistKey]) {
+                                countlyGlobal.member.columnOrder[this.persistKey] = {};
                             }
-                            countlyGlobal.member.columnOrder[self.persistKey].tableSortMap = self.controlParams.selectedDynamicCols;
-                        }
+
+                            countlyGlobal.member.columnOrder[this.persistKey].tableSortMap = this.controlParams.selectedDynamicCols;
+                        },
+                        type: 'POST',
+                        url: `${countlyGlobal.path}/user/settings/column-order`
                     });
                 }
+            },
+
+            triggerExternalSource() {
+                if (!this.dataSource || this.paused) {
+                    return;
+                }
+
+                if (this.dataSource.fetch) {
+                    this.dataSource.fetch(this.controlParams);
+                }
+
+                this.$emit('params-change', this.controlParams);
+            },
+
+            updateControlParams(newParams) {
+                _.extend(this.controlParams, newParams);
             }
         }
     };

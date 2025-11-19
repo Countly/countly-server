@@ -4,6 +4,9 @@
 
     var _mixins = countlyVue.mixins;
     var HEX_COLOR_REGEX = new RegExp('^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$', 'i');
+    const COLOR_ALPHA = 'alpha';
+    const COLOR_FORMAT_HEX = 'hex';
+    const COLOR_FORMAT_RGB = 'rgb';
 
     Vue.component("cly-colorpicker", countlyVue.components.create({
         template: CV.T('/javascripts/countly/vue/templates/UI/color-picker.html'),
@@ -12,7 +15,16 @@
             picker: window.VueColor.Sketch
         },
 
+        mixins: [
+            _mixins.i18n
+        ],
+
         props: {
+            newUI: {
+                type: Boolean,
+                default: false
+            },
+
             placement: {
                 default: 'left',
                 type: String
@@ -39,12 +51,10 @@
             'input'
         ],
 
-        mixins: [
-            _mixins.i18n
-        ],
-
-        data: function() {
+        data() {
             return {
+                colorByFormats: {},
+
                 isOpened: false,
 
                 previousColor: null
@@ -53,65 +63,210 @@
 
         computed: {
             bodyClasses() {
-                return ['cly-vue-color-picker__body--' + this.placement];
+                return {
+                    [`cly-vue-color-picker__body--${this.placement}`]: true,
+                    'cly-vue-color-picker__body--new-ui': this.isNewUIApplied
+                };
+            },
+
+            colorAlpha: {
+                get() {
+                    const alpha = typeof this.colorByFormats[COLOR_ALPHA] === 'number' ?
+                        this.colorByFormats[COLOR_ALPHA] :
+                        0;
+
+                    return Math.round(100 * alpha);
+                },
+                set(value) {
+                    const valueAsNumber = +value;
+
+                    if (valueAsNumber >= 0 && valueAsNumber <= 100) {
+                        this.colorByFormats[COLOR_ALPHA] = valueAsNumber ? valueAsNumber / 100 : 0;
+                    }
+                }
             },
 
             dropStyles() {
-                return { color: this.localValue };
+                return { backgroundColor: `rgba(${Object.values(this.pickerColor).join(', ')})` };
             },
 
-            localValue: {
+            hexColor: {
                 get() {
-                    return (this.value || this.resetValue);
+                    const hexColor = this.colorByFormats[COLOR_FORMAT_HEX];
+
+                    return hexColor.startsWith('#') ? hexColor.slice(1) : hexColor;
                 },
                 set(value) {
-                    let finalValue = value;
+                    this.colorByFormats[COLOR_FORMAT_HEX] = value;
+                }
+            },
 
-                    if (!finalValue.startsWith('#')) {
-                        finalValue = `#${finalValue}`;
+            inputValue: {
+                get() {
+                    return this.rgbToHex(this.pickerColor);
+                },
+                set(value) {
+                    if (value.match(HEX_COLOR_REGEX)) {
+                        this.pickerColor = this.hexToRgb(value, true);
                     }
+                }
+            },
 
-                    if (finalValue.match(HEX_COLOR_REGEX)) {
-                        this.$emit('input', finalValue);
-                    }
+            isNewUIApplied() {
+                return this.newUI;
+            },
+
+            pickerColor: {
+                get() {
+                    return this.hexToRgb(this.value || this.resetValue, true);
+                },
+                set(rgbColor) {
+                    this.$emit('input', this.rgbToHex(rgbColor, true));
+                }
+            },
+
+            rgbColor: {
+                get() {
+                    return this.colorByFormats[COLOR_FORMAT_RGB];
+                },
+                set(value) {
+                    this.colorByFormats[COLOR_FORMAT_RGB] = JSON.parse(JSON.stringify(value));
                 }
             }
         },
 
         watch: {
+            [`colorByFormats.${COLOR_ALPHA}`]: {
+                handler(value) {
+                    if (typeof value === 'number') {
+                        this.pickerColor = this.rgbColor;
+                    }
+                }
+            },
+
+            [`colorByFormats.${COLOR_FORMAT_HEX}`]: {
+                handler(value) {
+                    if (value) {
+                        const hexValue = `#${value}`;
+
+                        if (hexValue.match(HEX_COLOR_REGEX)) {
+                            this.pickerColor = this.hexToRgb(hexValue);
+                        }
+                    }
+                }
+            },
+
+            [`colorByFormats.${COLOR_FORMAT_RGB}`]: {
+                handler(value) {
+                    if (value) {
+                        this.pickerColor = value;
+                    }
+                }
+            },
+
             isOpened(value) {
                 if (value) {
                     this.previousColor = JSON.parse(JSON.stringify(this.value));
                 }
+            },
+
+            value: {
+                handler(value) {
+                    if (value) {
+                        this.setPickerInputValues();
+                    }
+                },
+                immediate: true
             }
         },
 
         methods: {
+            closePicker() {
+                this.isOpened = false;
+            },
+
+            hexToRgb(hex, includeAlpha = false) {
+                let hexString = hex.replace('#', '');
+
+                if (hexString.length === 3) {
+                    hexString = hexString.split('').map(c => c + c).join('');
+                }
+
+                return {
+                    r: parseInt(hexString.slice(0, 2), 16) || 0,
+                    g: parseInt(hexString.slice(2, 4), 16) || 0,
+                    b: parseInt(hexString.slice(4, 6), 16) || 0,
+                    a: includeAlpha && hexString.length === 8 ? parseInt(hexString.slice(6, 8), 16) / 255 : 1
+                };
+            },
+
+            onCancelClick() {
+                this.inputValue = this.previousColor;
+                this.closePicker();
+            },
+
+            onClickOutside() {
+                this.closePicker();
+            },
+
+            onConfirmClick() {
+                this.$emit('change', this.inputValue);
+                this.closePicker();
+            },
+
             onInputContainerClick() {
                 this.isOpened = true;
             },
 
-            close() {
-                this.isOpened = false;
-            },
-
-            onCancelClick() {
-                this.localValue = this.previousColor;
-                this.close();
-            },
-
-            onConfirmClick() {
-                this.$emit('change', this.localValue);
-                this.close();
-            },
-
             onPickerInput(color) {
-                this.localValue = color.hex8 || color.hex;
+                const { a = 0, ...rgb } = color.rgba;
+                const alpha = Math.round(a * 100);
+
+                if (alpha !== this.colorAlpha) {
+                    this.colorAlpha = alpha;
+                }
+
+                if (!_.isEqual(this.rgbColor, rgb)) {
+                    this.pickerColor = rgb;
+                }
             },
 
             onResetClick() {
-                this.localValue = this.resetValue;
-                this.close();
+                this.inputValue = this.resetValue;
+                this.closePicker();
+            },
+
+            onRGBInput(key, value) {
+                this.rgbColor = JSON.parse(JSON.stringify({
+                    ...this.rgbColor,
+                    [key]: +value
+                }));
+            },
+
+            rgbToHex(rgbColor, includeAlpha = false) {
+                const { r, g, b } = rgbColor || {};
+                const hexString = `#${this.valueToHex(r)}${this.valueToHex(g)}${this.valueToHex(b)}`;
+                const opacity = this.colorAlpha ? Math.round((this.colorAlpha / 100) * 255) : 0;
+
+                return `${hexString}${includeAlpha ? this.valueToHex(opacity) : ''}`;
+            },
+
+            setPickerInputValues() {
+                const { a, ...rgb } = this.pickerColor;
+
+                if (!_.isEqual(this.rgbColor, rgb)) {
+                    this.colorByFormats = JSON.parse(JSON.stringify({
+                        [COLOR_ALPHA]: a,
+                        [COLOR_FORMAT_RGB]: rgb,
+                        [COLOR_FORMAT_HEX]: this.rgbToHex(rgb)
+                    }));
+                }
+            },
+
+            valueToHex(value) {
+                const hex = value.toString(16);
+
+                return hex.length === 1 ? '0' + hex : hex;
             }
         }
     }));
@@ -540,8 +695,8 @@
                                 <div\
                                     class="text-medium cly-vue-listbox__item"\
                                     :style="[option.disabled ? {\'pointer-events\' : \'none\'} : {\'pointer-events\': \'all\'}]"\
-                                    :key="option.value"\
-                                    v-for="option in searchedOptions">\
+                                    :key="option.value + \'-\' + index"\
+                                    v-for="(option, index) in searchedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
                                     <el-checkbox :test-id="testId + \'-\' + (option.label ? option.label.replaceAll(\' \', \'-\').toLowerCase() : \'el-checkbox\')" :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
                                 </div>\

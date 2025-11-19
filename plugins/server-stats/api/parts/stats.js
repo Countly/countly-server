@@ -128,8 +128,10 @@ function increaseDataPoints(object, data) {
     object.ratings += (data.str || 0);
     object.apm += (data.apm || 0);
     object.custom += (data.ce || 0);
-    object.cs = (data.cs || 0);
-    object.ps = (data.ps || 0);
+    object.cs += (data.cs || 0);
+    object.ps += (data.ps || 0);
+    object.llm += (data.llm || 0);
+    object.aclk += (data.aclk || 0);
     if (data.dp) {
         object.dp += data.dp;
     }
@@ -234,6 +236,7 @@ function punchCard(db, filter, options) {
  *  @param {object} options - array with periods
  *  @param {boolean} options.monthlyBreakdown - if true, will calculate monthly data points breakdown for all apps (used to get license metric)
  *  @param {string} options.license_hosting - client hosting type, could be countly hosted or self hosted. This will determine how consolidated data points should be added to total data points
+ *  @param {boolean} options.dailyDates - array of dates in YYYY:M:D format for daily data points (used to get data points for last 30 days)
  *  @param {function} callback - callback
  */
 function fetchDatapoints(db, filter, options, callback) {
@@ -241,7 +244,7 @@ function fetchDatapoints(db, filter, options, callback) {
     options.dateObjPrev = options.dateObjPrev || {};
     db.collection("server_stats_data_points").find(filter, {}).toArray(function(err, result) {
         var toReturn = {
-            "all-apps": {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0, "crash": 0, "views": 0, "actions": 0, "nps": 0, "surveys": 0, "ratings": 0, "apm": 0, "custom": 0},
+            "all-apps": {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0, "crash": 0, "views": 0, "actions": 0, "nps": 0, "surveys": 0, "ratings": 0, "apm": 0, "custom": 0, cs: 0, ps: 0, llm: 0, aclk: 0},
         };
 
         if (err || !result) {
@@ -272,6 +275,22 @@ function fetchDatapoints(db, filter, options, callback) {
                         acc[current.m] = dp;
                     }
 
+                    if (options.dailyDates && options.dailyDates.length && current.m && (!/^\[CLY\]_consolidated/.test(current._id) || options.license_hosting === 'Countly-Hosted')) {
+                        if (!acc.daily) {
+                            acc.daily = {};
+                        }
+                        options.dailyDates.forEach(date => {
+                            if (date.startsWith(current.m)) {
+                                var day = date.split(":")[2];
+                                if (current.d && current.d[day] && Object.keys(current.d[day]).length) {
+                                    for (var hour in current.d[day]) {
+                                        acc.daily[date] = (acc.daily[date] || 0) + (current.d[day][hour].e || 0) + (current.d[day][hour].s || 0);
+                                    }
+                                }
+                            }
+                        });
+                    }
+
                     return acc;
                 }, {});
 
@@ -280,7 +299,7 @@ function fetchDatapoints(db, filter, options, callback) {
 
         for (let i = 0; i < result.length; i++) {
             if (!toReturn[result[i].a]) {
-                toReturn[result[i].a] = {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0, "crash": 0, "views": 0, "actions": 0, "nps": 0, "surveys": 0, "ratings": 0, "apm": 0, "custom": 0};
+                toReturn[result[i].a] = {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0, "crash": 0, "views": 0, "actions": 0, "nps": 0, "surveys": 0, "ratings": 0, "apm": 0, "custom": 0, cs: 0, ps: 0, llm: 0, aclk: 0};
             }
             const dates = result[i].d;
             if (options.dateObj[result[i].m]) {

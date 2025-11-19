@@ -17,7 +17,8 @@ var pluginOb = {},
 var ejs = require("ejs");
 
 plugins.setConfigs("dashboards", {
-    sharing_status: true
+    sharing_status: true,
+    allow_public_dashboards: true
 });
 
 (function() {
@@ -455,17 +456,24 @@ plugins.setConfigs("dashboards", {
                     groups = [groups];
                 }
                 groups = groups.map(group_id => group_id + "");
+
+                var orConditions = [
+                    {owner_id: memberId},
+                    {shared_with_edit: memberId},
+                    {shared_with_view: memberId},
+                    {shared_email_view: memberEmail},
+                    {shared_email_edit: memberEmail},
+                    {shared_user_groups_edit: {$in: groups}},
+                    {shared_user_groups_view: {$in: groups}}
+                ];
+
+                var allowPublicDashboards = plugins.getConfig("dashboards").allow_public_dashboards;
+                if (allowPublicDashboards !== false) {
+                    orConditions.push({share_with: "all-users"});
+                }
+
                 filterCond = {
-                    $or: [
-                        {owner_id: memberId},
-                        {share_with: "all-users"},
-                        {shared_with_edit: memberId},
-                        {shared_with_view: memberId},
-                        {shared_email_view: memberEmail},
-                        {shared_email_edit: memberEmail},
-                        {shared_user_groups_edit: {$in: groups}},
-                        {shared_user_groups_view: {$in: groups}}
-                    ]
+                    $or: orConditions
                 };
             }
             let projection = {};
@@ -684,6 +692,12 @@ plugins.setConfigs("dashboards", {
                 sharedEmailView = [];
                 sharedUserGroupEdit = [];
                 sharedUserGroupView = [];
+            }
+
+            var allowPublicDashboards = plugins.getConfig("dashboards").allow_public_dashboards;
+            if (shareWith === "all-users" && allowPublicDashboards === false) {
+                common.returnMessage(params, 400, 'Public dashboards are disabled');
+                return true;
             }
 
             var sharing = checkSharingStatus(params.member, shareWith, sharedEmailEdit, sharedEmailView, sharedUserGroupEdit, sharedUserGroupView);
@@ -976,6 +990,12 @@ plugins.setConfigs("dashboards", {
                 sharedEmailView = [];
                 sharedUserGroupEdit = [];
                 sharedUserGroupView = [];
+            }
+
+            var allowPublicDashboards = plugins.getConfig("dashboards").allow_public_dashboards;
+            if (shareWith === "all-users" && allowPublicDashboards === false) {
+                common.returnMessage(params, 400, 'Public dashboards are disabled');
+                return true;
             }
 
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
@@ -1747,6 +1767,16 @@ plugins.setConfigs("dashboards", {
         }
 
         if (dashboard.share_with === "all-users") {
+            var allowPublicDashboards = plugins.getConfig("dashboards").allow_public_dashboards;
+            if (allowPublicDashboards === false) {
+                if (member._id + "" === dashboard.owner_id) {
+                    return cb(null, true);
+                }
+                if (member.global_admin) {
+                    return cb(null, true);
+                }
+                return cb(null, false);
+            }
             return cb(null, true);
         }
 
@@ -1815,6 +1845,13 @@ plugins.setConfigs("dashboards", {
 
         if (dashboard.share_with === "none") {
             return cb(null, false);
+        }
+
+        if (dashboard.share_with === "all-users") {
+            var allowPublicDashboards = plugins.getConfig("dashboards").allow_public_dashboards;
+            if (allowPublicDashboards === false) {
+                return cb(null, false);
+            }
         }
 
         if ((Array.isArray(dashboard.shared_with_edit) && dashboard.shared_with_edit.indexOf(member._id + "") !== -1) ||

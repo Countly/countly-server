@@ -4,41 +4,41 @@
   >
     <template v-slot:header-right>
       <div class="bu-level-item" v-if="hasCreateRight">
-        <el-button @click="create" type="success" size="small" icon="el-icon-circle-plus">Add Condition</el-button>
+        <el-button data-test-id="add-condition-button" @click="create" type="success" size="small" icon="el-icon-circle-plus">Add Condition</el-button>
       </div>
     </template>
   </cly-header>
   <cly-main>
-    <cly-datatable-n :rows="tableRows" :force-loading="isTableLoading" class="cly-vue-remote-config-conditions-table"  :row-class-name="tableRowClassName">
+    <cly-datatable-n test-id="condition" :rows="tableRows" :force-loading="isTableLoading" class="cly-vue-remote-config-conditions-table"  :row-class-name="tableRowClassName">
       <template v-slot="scope">
         <el-table-column  prop="condition_name" :label="i18n('remote-config.condition-name')" sortable="custom">
           <template v-slot="rowScope">
             <div>
-              <div class="cly-vue-remote-config-conditions-drawer__margin-bottom"> {{rowScope.row.condition_name}}</div>
-              <div class="color-cool-gray-40 text-small">  {{rowScope.row.used_in_parameters}} {{i18n('remote-config.conditions.parameter.affected')}}</div>
+              <div :data-test-id="'datatable-condition-name-' + rowScope.$index" class="cly-vue-remote-config-conditions-drawer__margin-bottom"> {{rowScope.row.condition_name}}</div>
+              <div :data-test-id="'datatable-condition-parameter-affect-' + rowScope.$index" class="color-cool-gray-40 text-small">  {{rowScope.row.used_in_parameters}} {{i18n('remote-config.conditions.parameter.affected')}}</div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="condition_description" :label="i18n('remote-config.description')">
+        <el-table-column test-id="condition" prop="condition_description" :label="i18n('remote-config.description')">
           <template v-slot:default="rowScope">
-            {{displayDescription(rowScope.row.condition_description)}}
+            <div :data-test-id="'datatable-condition-description-' + rowScope.$index"> {{displayDescription(rowScope.row.condition_description)}}</div>
           </template>
         </el-table-column>
-        <el-table-column prop="condition_definition" :label="i18n('remote-config.definition')">
+        <el-table-column test-id="condition" prop="condition_definition" :label="i18n('remote-config.definition')">
           <template v-slot:default="rowScope">
-            <div v-html="rowScope.row.condition_definition"></div>
+            <div :data-test-id="'datatable-condition-description-' + rowScope.$index" v-html="rowScope.row.condition_definition"></div>
           </template>
         </el-table-column>
-        <el-table-column prop="seed_value" :label="i18n('remote-config.seed-value')">
+        <el-table-column test-id="condition" prop="seed_value" :label="i18n('remote-config.seed-value')">
           <template v-slot:default="rowScope">
-            {{rowScope.row.seed_value || "Default"}}
+            <div :data-test-id="'datatable-condition-seed-value-' + rowScope.$index"> {{rowScope.row.seed_value || "Default"}}</div>
           </template>
         </el-table-column>
         <el-table-column type="options" v-if="hasUpdateRight || hasDeleteRight">
           <template v-slot="rowScope">
-            <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
-              <el-dropdown-item v-if="hasUpdateRight" command="edit">{{i18n('common.edit')}}</el-dropdown-item>
-              <el-dropdown-item v-if="hasDeleteRight" command="remove">{{i18n('common.delete')}}</el-dropdown-item>
+            <cly-more-options :test-id="'more-option-button-' + rowScope.$index" v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
+              <el-dropdown-item v-if="hasUpdateRight" command="edit" data-test-id="condition-data-table-more-option-edit-button">{{i18n('common.edit')}}</el-dropdown-item>
+              <el-dropdown-item v-if="hasDeleteRight" command="remove" data-test-id="condition-data-table-more-option-delete-button">{{i18n('common.delete')}}</el-dropdown-item>
             </cly-more-options>
           </template>
         </el-table-column>

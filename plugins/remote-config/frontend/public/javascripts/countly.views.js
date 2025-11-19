@@ -67,11 +67,11 @@
 			<tbody>\
                 <tr><td class="cly-vue-remote-config-percentages-breakdown__sequence__heading"><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2" :data-test-id="testId + \'-order-label\'">1</div></td><td class="has-ellipsis cly-vue-remote-config-percentages-breakdown__condition__heading bu-pr-1"><div class="has-ellipsis cly-vue-remote-config-percentages-breakdown__data bu-py-2 bu-px-1  cly-vue-remote-config-percentages-breakdown__default-value"><span class="bu-ml-2 bu-mr-3 text-medium" :data-test-id="testId + \'-default-value-label\'">{{i18n("remote-config.default-value")}}</span><span class="cly-vue-remote-config-percentages-breakdown__default-value__value bu-py-1 bu-px-2 text-small" v-tooltip="defaultValue.value" :data-test-id="testId + \'-default-value\'">{{defaultValue.value}}</span></div></td><td class="cly-vue-remote-config-percentages-breakdown__percentage__heading"><div class="bu-is-flex"><div class="text-big font-weight-bold" :data-test-id="testId + \'-percentage\'">{{defaultValue.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1" :data-test-id="testId + \'-percent-of-total\'">{{i18n("remote-config.percent.of.total")}}</div></div></td></tr>\
 				<tr v-if="isDrillEnabled" v-for="(condition, i) in conditions" :key="i">\
-                    <td class="cly-vue-remote-config-percentages-breakdown__sequence__heading"><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2" :data-test-id="testId + \'other-order-label\'">{{i+2}}</div>\
+                    <td class="cly-vue-remote-config-percentages-breakdown__sequence__heading"><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2" :data-test-id="testId + \'-other-order-label-\' + i">{{i+2}}</div>\
                     </td>\
-					<td class="has-ellipsis cly-vue-remote-config-percentages-breakdown__condition__heading bu-pr-1"><div class="has-ellipsis cly-vue-remote-config-percentages-breakdown__data bu-py-2 bu-px-1 cly-vue-remote-config-percentages-breakdown__condition" :style="{backgroundColor: condition.color}"><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align"><img src="/remote-config/images/call_split.svg"/></span><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align bu-ml-2 bu-mr-3 text-medium" :data-test-id="testId + \'condition-name-label\'">{{condition.name}}</span><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align cly-vue-remote-config-percentages-breakdown__condition__value bu-py-1 bu-px-2 text-small" v-tooltip="condition.value" :data-test-id="testId + \'condition-value\'">{{condition.value}}</span></div></td>\
+					<td class="has-ellipsis cly-vue-remote-config-percentages-breakdown__condition__heading bu-pr-1"><div class="has-ellipsis cly-vue-remote-config-percentages-breakdown__data bu-py-2 bu-px-1 cly-vue-remote-config-percentages-breakdown__condition" :style="{backgroundColor: condition.color}"><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align"><img src="/remote-config/images/call_split.svg"/></span><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align bu-ml-2 bu-mr-3 text-medium" :data-test-id="testId + \'-condition-name-label-\' + i">{{condition.name}}</span><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align cly-vue-remote-config-percentages-breakdown__condition__value bu-py-1 bu-px-2 text-small" v-tooltip="condition.value" :data-test-id="testId + \'-condition-value-\' + i">{{condition.value}}</span></div></td>\
 					<td class="cly-vue-remote-config-percentages-breakdown__percentage__heading">\
-                    <div class="bu-is-flex"><div class="text-big font-weight-bold" :data-test-id="testId + \'percentage-label\'">{{condition.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1" :data-test-id="testId + \'percent-of-label\'">{{i18n("remote-config.percent.of.total")}}</div></div>\
+                    <div class="bu-is-flex"><div class="text-big font-weight-bold" :data-test-id="testId + \'-percentage-label-\' + i">{{condition.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1" :data-test-id="testId + \'-percent-of-label-\' + i">{{i18n("remote-config.percent.of.total")}}</div></div>\
 					</td>\
 				</tr>\
 			</tbody>\
@@ -216,7 +216,8 @@
                     value: 1,
                     label: "#6C47FF"
                 },
-                colorTag: COLOR_TAG
+                colorTag: COLOR_TAG,
+                modifyPropType: { 'up.av': countlyQueryBuilder.PropertyType.APP_VERSION_LIST },
             };
         },
         computed: {
@@ -636,7 +637,6 @@
                 name: CV.i18n("remote-config.conditions.random.percentile"),
                 type: countlyQueryBuilder.PropertyType.NUMBER,
                 group: 'User Properties',
-
             }));
             return {
                 remoteConfigFilterRules: remoteConfigFilterRules,
@@ -651,7 +651,8 @@
                     value: 1,
                     label: "#6C47FF"
                 },
-                colorTag: COLOR_TAG
+                colorTag: COLOR_TAG,
+                modifyPropType: { 'up.av': countlyQueryBuilder.PropertyType.APP_VERSION_LIST },
             };
         },
         methods: {
@@ -836,7 +837,7 @@
                             self.onSubmit();
                         });
 
-                    }, [this.i18n["common.no-dont-delete"], this.i18n["remote-config.yes-delete-parameter"]], {title: this.i18n["remote-config.delete-parameter-title"], image: "delete-email-report"});
+                    }, [this.i18n("common.no-dont-delete"), this.i18n("remote-config.yes-delete-parameter")], {title: this.i18n("remote-config.delete-parameter-title"), image: "delete-email-report"});
                     break;
                 }
             },
@@ -920,7 +921,7 @@
                     break;
 
                 case "remove":
-                    CountlyHelpers.confirm(this.i18n("remote-config.confirm-condition-delete", "<b>" + name + "</b>"), "popStyleGreen", function(result) {
+                    CountlyHelpers.confirm(this.i18n("remote-config.confirm-condition-delete", "<b>" + row.condition_name + "</b>"), "popStyleGreen", function(result) {
                         if (!result) {
                             return false;
                         }
@@ -929,7 +930,7 @@
                             self.onSubmit();
                         });
 
-                    }, [this.i18n["common.no-dont-delete"], this.i18n["remote-config.yes-delete-condition"]], {title: this.i18n["remote-config.delete-condition-title"], image: "delete-email-report"});
+                    }, [this.i18n("common.no-dont-delete"), this.i18n("remote-config.yes-delete-condition")], {title: this.i18n("remote-config.delete-condition-title"), image: "delete-email-report"});
                     break;
                 }
             },
