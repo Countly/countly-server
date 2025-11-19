@@ -1,4 +1,4 @@
-## Version 24.05.46
+## Version 24.05.47
 Fixes:
 - [alerts] Add alert interval validation in the frontend
 
