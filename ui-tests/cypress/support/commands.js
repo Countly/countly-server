@@ -29,36 +29,24 @@ Cypress.Commands.add("assertAll", () => {
 /* ---------------- Element Get Helper ---------------- */
 
 Cypress.Commands.add('getElement', (selector, parent = null) => {
-    cy.wait(50);
+
     if (!selector.includes('[data-test-id=')) {
-
-        if (selector.startsWith('.') || selector.startsWith('#')) {
-
-            return cy.get(selector, { timeout: 0 }).then($el => {
-                if ($el.length === 0) {
-                    cy.softAssert(false, `Element not found: "${selector}"`);
-                    return null; // allow test to continue
-                }
-                return cy.wrap($el);
-            });
+        if (selector[0].includes('.') || selector[0].includes('#')) {
+            return cy.get(selector);
         }
-
-        selector = parent
-            ? `${parent} [data-test-id="${selector}"]`
-            : `[data-test-id="${selector}"]`;
+        else {
+            if (parent !== null) {
+                selector = `${parent} [data-test-id="${selector}"]`;
+            }
+            else {
+                selector = `[data-test-id="${selector}"]`;
+            }
+            return cy.get(selector);
+        }
     }
-
-    // Safe get logic
-    return cy.get('body').then($body => {
-        const found = $body.find(selector);
-
-        if (found.length === 0) {
-            cy.softAssert(false, `Element not found: "${selector}"`);
-            return null; // continue test
-        }
-
-        return cy.get(selector); // return real Cypress chain
-    });
+    else {
+        return cy.get(selector);
+    }
 });
 
 /* ---------------- Input Helpers ---------------- */
