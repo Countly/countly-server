@@ -1,4 +1,7 @@
 ## Version 24.05.46
+Fixes:
+- [alerts] Add alert interval validation in the frontend
+
 Enterprise Fixes:
 - [concurrent_users] Fix email check for alert
 
