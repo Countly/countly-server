@@ -1,6 +1,8 @@
 ## Version 25.03.X
 Enterprise Fixes:
 - [concurrent_users] Fix email check for alert
+- [dashboards] Keep dashboard sidebar sorted alphabetically after additions
+- [applications] Ensure application management list reorders after create/update
 
 
 ## Version 25.03.27
