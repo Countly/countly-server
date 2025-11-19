@@ -29,6 +29,7 @@ Cypress.Commands.add("assertAll", () => {
 /* ---------------- Element Get Helper ---------------- */
 
 Cypress.Commands.add('getElement', (selector, parent = null) => {
+    cy.wait(25);
     if (!selector.includes('[data-test-id=')) {
 
         if (selector.startsWith('.') || selector.startsWith('#')) {
@@ -284,7 +285,7 @@ Cypress.Commands.add("shouldNotBeHasDisabledClass", (element) => {
 
 Cypress.Commands.add("shouldTooltipContainText", (element, expectedText) => {
     cy.getElement(element).eq(0).invoke('show').trigger('mouseenter');
-    cy.wait(500);
+    cy.wait(25);
 
     cy.getElement('.tooltip-inner:visible').then($tooltip => {
         if (!$tooltip) {
