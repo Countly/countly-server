@@ -6,7 +6,8 @@ Fixes:
 Enterprise Fixes:
 - [concurrent_users] Fix email check for alert
 - [data-manager] Correctly show last triggered for events if data masking is enabled
-
+- [dashboards] Keep dashboard sidebar sorted alphabetically after additions
+- [applications] Ensure application management list reorders after create/update
 
 ## Version 25.03.27
 Fixes:
