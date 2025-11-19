@@ -29,7 +29,7 @@ Cypress.Commands.add("assertAll", () => {
 /* ---------------- Element Get Helper ---------------- */
 
 Cypress.Commands.add('getElement', (selector, parent = null) => {
-    cy.wait(25);
+    cy.wait(50);
     if (!selector.includes('[data-test-id=')) {
 
         if (selector.startsWith('.') || selector.startsWith('#')) {
