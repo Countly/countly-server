@@ -1,3 +1,6 @@
+## Version 25.03.XX
+[dashboards] Do not show error if request is cancelled
+
 ## Version 25.03.28
 Fixes:
 - [alerts] Add alert interval validation in the frontend
