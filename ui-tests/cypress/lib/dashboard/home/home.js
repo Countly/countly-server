@@ -35,6 +35,7 @@ const verifyStaticElementsOfPage = () => {
         elementText: "", //TODO 'Nov 5, 2023 - Dec 4, 2023' => Last month - Yesterday
     });
 
+    cy.wait(500);
     cy.verifyElement({
         labelElement: homePageElements.AUDIENCE.LABEL,
         labelText: "Audience",
