@@ -1,6 +1,7 @@
 ## Version 25.03.X
 Fixes:
 - [events] Correctly navigate to event groupmin events menu
+- [alerts] Add alert interval validation in the frontend
 
 Enterprise Fixes:
 - [concurrent_users] Fix email check for alert
