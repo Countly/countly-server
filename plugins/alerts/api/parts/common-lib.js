@@ -120,8 +120,9 @@ function increaseAlertCounter(app, triggerDate, email) {
     if (email) {
         query = { _id: 'email:' + email };
     }
+
     return common.db.collection("alerts_data")
-        .findAndModify(query, {}, update, { new: true, upsert: true });
+        .findOneAndUpdate(query, update, { returnDocument: 'after', upsert: true });
 }
 
 /**
