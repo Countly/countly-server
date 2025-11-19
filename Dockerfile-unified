@@ -198,7 +198,7 @@ ENV COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
 
 RUN mkdir -p log data .cache && chown -R 1001:0 . && chmod -R g=u .
 
-EXPOSE 3001 3010 6001
+EXPOSE 3001 3010 6001 3020
 
 # Create entrypoint script for proper NODE_OPTIONS handling
 RUN echo '#!/bin/sh\n\
