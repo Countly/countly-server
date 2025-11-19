@@ -79,6 +79,9 @@ const verifyConfirmPasswordHintSymbolMessage = () => {
 };
 
 const verifyDefaultPageElements = () => {
+    
+    cy.wait(500);
+
     cy.verifyElement({
         element: setupPageElements.LOGO,
     });
