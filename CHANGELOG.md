@@ -1,8 +1,20 @@
+## Version 25.03.28
+Fixes:
+- [alerts] Add alert interval validation in the frontend
+- [events] Correctly navigate to event groupmin events menu
+
+Enterprise Fixes:
+- [applications] Ensure application management list reorders after create/update
+- [concurrent_users] Fix email check for alert
+- [dashboards] Keep dashboard sidebar sorted alphabetically after additions
+- [data-manager] Correctly show last triggered for events if data masking is enabled
+
 ## Version 25.03.27
 Fixes:
 - [core-vis] Fix chart legend click event
 - [push] Fixed the options of the request being made during mime detection
 - [views] Fix view name that is displayed in view table
+- [data-manager] Fix last modified data for event and segment
 
 Enterprise Fixes:
 - [concurrent_users] Fix alert threshold comparison
