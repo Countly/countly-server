@@ -14,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "got": "^11.8.5",
+    "got": "^14.6.4",
     "hpagent": "^1.2.0"
   },
   "devDependencies": {
