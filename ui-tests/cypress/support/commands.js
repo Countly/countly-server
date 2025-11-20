@@ -65,6 +65,10 @@ Cypress.Commands.add("typeSelectInput", (element, ...tags) => {
     cy.clickBody();
 });
 
+Cypress.Commands.add('getText', { prevSubject: true }, (subject) => {
+    return cy.wrap(subject).invoke('text');
+});
+
 /* ---------------- Click & Select Helpers ---------------- */
 
 Cypress.Commands.add("clickElement", (element, isForce = false, index = 0) => {
