@@ -2,53 +2,26 @@
 // npm i typescript --save-dev
 //
 // to run the summary check, call:
-// npx tsc --checkJs --noEmit
+// npx tsc
 {
-    // Explicitly specify which files to include in compilation
-    "files": [
-        "types/global.d.ts",        // Global type declarations for legacy compatibility
-        "types/common.d.ts",        // Common utility functions type definitions
-        "types/requestProcessor.d.ts", // Request processor type definitions
-        "types/localization.d.ts",  // Localization module type definitions
-        "types/log.d.ts",           // Logging module type definitions
-        "types/config.d.ts",        // Configuration type definitions
-        "types/pluginManager.d.ts", // Plugin manager type definitions
-        "types/utils.d.ts",         // Utility functions type definitions
-        "types/batcher.d.ts",       // Database batcher type definitions
-        "types/rights.d.ts",        // Rights validation type definitions
-        "types/events.d.ts",        // Events processing type definitions
-        "types/usage.d.ts",         // Usage processing type definitions
-        "types/eventSink.d.ts",     // Event sink type definitions
-        "types/eventSource.d.ts",   // Event source type definitions
-        "api/utils/localization.js" // Include JS file for type checking
-    ],
-    // Include all type definition files from plugin types directories
     "include": [
-        "plugins/*/types/**/*.d.ts"  // All type definitions from plugin types directories
+        "plugins/push/**/*.ts",
+        "plugins/push/**/*.js",
+        "plugins/push_approver/**/*.ts",
+        "plugins/push_approver/**/*.js",
+        "api/utils/common.js",
+        "api/utils/localization.js",
+        "api/lib/countly.common.js",
+        "api/utils/requestProcessor.js"
+    ],
+    "exclude": [
+        "node_modules"
     ],
     "compilerOptions": {
-        // Language and Environment
-        "target": "ES2022",                    // Set the JavaScript language version for emitted JavaScript
-        "lib": ["ES2022", "DOM"],             // Specify a set of bundled library declaration files
-
-        // Modules
-        "moduleResolution": "Node",            // Specify how TypeScript looks up a file from a given module specifier
-        "baseUrl": ".",                        // Specify the base directory to resolve non-relative module names
-        "paths": {                             // Specify a set of entries that re-map imports to additional lookup locations
-            "@countly/*": ["./api/*"],         // Map @countly imports to api directory
-            "@plugins/*": ["./plugins/*"],     // Map @plugins imports to plugins directory
-            "@frontend/*": ["./frontend/*"]    // Map @frontend imports to frontend directory
-        },
-        "resolveJsonModule": true,             // Enable importing .json files
-
-        // JavaScript Support
-        "allowJs": true,                       // Allow JavaScript files to be a part of your program
-
-        // Interop Constraints
-        "esModuleInterop": true,               // Emit additional JavaScript to ease support for importing CommonJS modules
-        "forceConsistentCasingInFileNames": true, // Ensure that casing is correct in imports
-
-        // Completeness
-        "typeRoots": ["./types", "./plugins/*/types", "./node_modules/@types"] // Specify multiple folders that act like './node_modules/@types'
+        "outDir": "dist", // we're not building the app. but still necessary for, reasons...
+        "allowJs": true,
+        "checkJs": true,
+        "resolveJsonModule": true,
+        "strict": true
     }
 }

@@ -102,7 +102,7 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
 
 # Install argon2 separately (requires native compilation)
 RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
-    npm install argon2 --omit=dev --build-from-source --unsafe-perm=true
+    npm install argon2 --omit=dev --build-from-source
 
 # Update GeoIP database if license key provided (with error handling for Node.js 24.x compatibility)
 RUN --mount=type=cache,id=geoip-cache,target=/tmp/geoip-cache,sharing=locked \
@@ -118,7 +118,7 @@ RUN --mount=type=cache,id=geonames-cache,target=/opt/countly/bin/offline-geocode
 COPY plugins ./plugins
 RUN --mount=type=cache,id=npm-plugin-cache,target=/root/.npm,sharing=locked \
     find plugins -mindepth 2 -maxdepth 2 -name package.json \
-         -execdir npm install --omit=dev --unsafe-perm=true \;
+         -execdir npm install \;
 
  # NOTE: No COPY . . here! JS source files aren't copied yet to keep cache tight
 
@@ -163,6 +163,9 @@ RUN npm remove -y --no-save mocha nyc should supertest && \
 ###############################################################################
 FROM node:24.5-bookworm-slim AS runtime
 
+# Redeclare ARG to make it available in this stage
+ARG COUNTLY_PLUGINS
+
 # 4.1 runtime libs (no -dev)
 RUN set -eux; apt-get update && apt-get install -y --no-install-recommends \
       zlib1g libncurses6 libgdbm6 libnss3 libreadline8 libffi8 libbz2-1.0 \
@@ -189,11 +192,13 @@ COPY --from=builder --chown=countly:countly /opt/countly .
 ENV COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
     COUNTLY_CONFIG_FRONTEND_HOST="0.0.0.0" \
     PUPPETEER_CACHE_DIR=/opt/countly/.cache/puppeteer \
-    NODE_ENV=production
+    NODE_ENV=production \
+    COUNTLY_CONTAINER="api" \
+    COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}"
 
 RUN mkdir -p log data .cache && chown -R 1001:0 . && chmod -R g=u .
 
-EXPOSE 3001 3010 6001
+EXPOSE 3001 3010 6001 3020
 
 # Create entrypoint script for proper NODE_OPTIONS handling
 RUN echo '#!/bin/sh\n\
