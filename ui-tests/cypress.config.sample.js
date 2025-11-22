@@ -21,6 +21,7 @@ module.exports = defineConfig({
         chromeWebSecurity: false,
         watchForFileChanges: true,
         video: true,
+        softAssertMode: true,
         setupNodeEvents(on, config) {
             // Task: verify PDF images, logo, and text content
             on("task", {
