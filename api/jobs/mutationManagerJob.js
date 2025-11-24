@@ -2,6 +2,8 @@ const common = require('../utils/common.js');
 const log = require("../utils/log.js")("job:mutationManager");
 const Job = require("../../jobServer/Job.js");
 const mutationManager = require('../utils/mutationManager.js');
+const tracker = require("../parts/mgmt/tracker.js");
+const plugins = require('../../plugins/pluginManager.js');
 
 let clickHouseRunner;
 try {
@@ -488,6 +490,16 @@ class MutationManagerJob extends Job {
                         $unset: { batch_id: "" }
                     }
                 );
+                await this.reportFailureToStats(
+                    task,
+                    'Some records could not be deleted and the maximum retry limit has been reached. Please review these records, otherwise they will remain on the server. ' +
+                    message +
+                    (
+                        task && task.error
+                            ? ` | Task error: ${String(task.error).slice(0, 900)}`
+                            : ''
+                    )
+                );
             }
             else {
                 await common.db.collection("mutation_manager").updateOne(
@@ -564,6 +576,74 @@ class MutationManagerJob extends Job {
             }
         }
     }
-}
 
+    /**
+     * Ensure tracker is enabled
+     * @returns {boolean} if enabled
+     */
+    ensureTracker() {
+        try {
+            if (!tracker || typeof tracker.isEnabled === 'undefined') {
+                return false;
+            }
+
+            const trackingCfg = plugins.getConfig && plugins.getConfig('tracking');
+            if (trackingCfg && trackingCfg.server_crashes === false) {
+                return false;
+            }
+
+            if (tracker.isEnabled()) {
+                return true;
+            }
+
+            if (typeof tracker.enable !== 'undefined') {
+                tracker.enable();
+            }
+            return tracker.isEnabled();
+        }
+        catch (e) {
+            log.e('ensureTracker failed', e?.message || e + "");
+            return false;
+        }
+    }
+
+    /**
+     * Report failed mutations to stats (crashes/new hook)
+     * @param {Object} task - The mutation task
+     * @param {string} message - Failure reason
+     */
+    async reportFailureToStats(task, message) {
+        try {
+            if (!this.ensureTracker()) {
+                return;
+            }
+
+            const Countly = tracker.getSDK && tracker.getSDK();
+            const payload = {
+                message: (message || '').toString().slice(0, 900),
+                db: task && task.db || '',
+                collection: task && task.collection || '',
+                type: task && task.type || '',
+                task_id: task && task._id ? String(task._id) : '',
+                error: task && task.error ? String(task.error).slice(0, 900) : '',
+                fail_count: String(task && task.fail_count || 0)
+            };
+
+            if (task && task.query) {
+                try {
+                    payload.query = JSON.stringify(task.query).slice(0, 900);
+                }
+                catch (e) {
+                    payload.query = '[unserializable_query]';
+                }
+            }
+            if (Countly && typeof Countly.log_error !== 'undefined') {
+                Countly.log_error(new Error(`mutation_manager_job_failed: ${payload.message || 'unknown'}`), payload);
+            }
+        }
+        catch (e) {
+            log.e("reportFailureToStats failed", e?.message || e + "");
+        }
+    }
+}
 module.exports = MutationManagerJob;
