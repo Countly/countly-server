@@ -141,10 +141,6 @@ Cypress.Commands.add('uploadFile', (filePath) => {
 
 Cypress.Commands.add("shouldContainText", (selector, expected) => {
     cy.getElement(selector).then($el => {
-        if (!$el) {
-            return;
-        }
-
         const actual = $el.text().trim();
         cy.softAssert(actual.includes(expected), `Element: "${selector}"\nExpected to contain: "${expected}"\nActual value: "${actual}"`);
     });
@@ -152,10 +148,6 @@ Cypress.Commands.add("shouldContainText", (selector, expected) => {
 
 Cypress.Commands.add("shouldNotContainText", (selector, expected) => {
     cy.getElement(selector).then($el => {
-        if (!$el) {
-            return;
-        }
-
         const actual = $el.text().trim();
         cy.softAssert(!actual.includes(expected), `Element: "${selector}"\nExpected NOT to contain: "${expected}"\nActual value: "${actual}"`);
     });
@@ -163,10 +155,6 @@ Cypress.Commands.add("shouldNotContainText", (selector, expected) => {
 
 Cypress.Commands.add("shouldBeEqual", (selector, expected) => {
     cy.getElement(selector).then($el => {
-        if (!$el) {
-            return;
-        }
-
         const actual = $el.text().trim();
         cy.softAssert(actual === expected, `Element: "${selector}"\nExpected to be equal: "${expected}"\nActual value: "${actual}"`);
     });
@@ -174,10 +162,6 @@ Cypress.Commands.add("shouldBeEqual", (selector, expected) => {
 
 Cypress.Commands.add("shouldNotBeEqual", (selector, expected) => {
     cy.getElement(selector).then($el => {
-        if (!$el) {
-            return;
-        }
-
         const actual = $el.text().trim();
         cy.softAssert(actual !== expected, `Element: "${selector}"\nExpected NOT to be equal: "${expected}"\nActual value: "${actual}"`);
     });
@@ -205,10 +189,6 @@ Cypress.Commands.add("shouldHrefContainUrl", (selector, expected) => {
 
 Cypress.Commands.add("shouldBeVisible", (element) => {
     cy.getElement(element).then($el => {
-        if (!$el) {
-            return;
-        }
-
         const isVisible = $el.is(":visible");
         cy.softAssert(
             isVisible,
@@ -219,10 +199,6 @@ Cypress.Commands.add("shouldBeVisible", (element) => {
 
 Cypress.Commands.add("shouldBeDisabled", (element) => {
     cy.getElement(element).then($el => {
-        if (!$el) {
-            return;
-        }
-
         const isDisabled = $el.is(":disabled");
         cy.softAssert(
             isDisabled,
@@ -233,10 +209,6 @@ Cypress.Commands.add("shouldBeDisabled", (element) => {
 
 Cypress.Commands.add("shouldNotBeDisabled", (element) => {
     cy.getElement(element).then($el => {
-        if (!$el) {
-            return;
-        }
-
         const isDisabled = $el.is(":disabled");
         cy.softAssert(
             !isDisabled,
@@ -248,10 +220,6 @@ Cypress.Commands.add("shouldNotBeDisabled", (element) => {
 
 Cypress.Commands.add("shouldBeHasDisabledClass", (element) => {
     cy.get(`[data-test-id="${element}"]`).then($el => {
-        if (!$el) {
-            return;
-        }
-
         const hasClass = $el.hasClass("is-disabled");
         cy.softAssert(
             hasClass,
@@ -262,10 +230,6 @@ Cypress.Commands.add("shouldBeHasDisabledClass", (element) => {
 
 Cypress.Commands.add("shouldNotBeHasDisabledClass", (element) => {
     cy.get(`[data-test-id="${element}"]`).then($el => {
-        if (!$el) {
-            return;
-        }
-
         const hasClass = $el.hasClass("is-disabled");
         cy.softAssert(
             !hasClass,
