@@ -495,9 +495,7 @@ class MutationManagerJob extends Job {
                     'Some records could not be deleted and the maximum retry limit has been reached. Please review these records, otherwise they will remain on the server. ' +
                     message +
                     (
-                        task && task.error
-                            ? ` | Task error: ${String(task.error).slice(0, 900)}`
-                            : ''
+                        task.error ? ` | Task error: ${String(task.error).slice(0, 900)}` : ''
                     )
                 );
             }
