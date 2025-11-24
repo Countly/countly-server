@@ -92,44 +92,6 @@ const ERROR = {
      */
     EXCEPTION: ERROR_TYPE.EXCEPTION
 };
-
-// /**
-//  * Stardardized provider error code
-//  */
-// const PROVIDER_STATUS = {
-//     /**
-//      * Message was sent
-//      */
-//     OK: 0,
-
-//     /**
-//      * Token is invalid, delete token
-//      */
-//     TOKEN_INVALID: -1,
-//     /**
-//      * Token is expired, delete token
-//      */
-//     TOKEN_EXPIRED: -2,
-//     /**
-//      * Token has been refreshed, use new one
-//      */
-//     TOKEN_REFRESH: -3,
-//     /**
-//      * Wrong configuration (MistmatchSenderId for FCM or device token not for topic for APN)
-//      */
-//     TOKEN_MISCONFIGURATION: -4,
-
-//     /**
-//      * Invalid request, check parameters
-//      */
-//     ERROR_DATA: -5,
-
-//     /**
-//      * Invalid request, check parameters
-//      */
-//     ERROR_REQUEST: -6,
-// };
-
 /**
  * Base class for all push errors
  */
@@ -177,7 +139,7 @@ class PushError extends Error {
 
     /**
      * Check that error type is bitwise same as typ
-     * 
+     *
      * @param {int} typ error flag
      * @returns {boolean} true if the error corresponds to the typ
      */
@@ -201,7 +163,7 @@ class PushError extends Error {
 
     /**
      * Reconstruct error to a correct type from serialized JSON
-     * 
+     *
      * @param {object} data error JSON
      * @param {constructor} C default error constructor used when data is a generic Error instance or string / object / nothing
      * @returns {PushError} correct error class instance
@@ -241,7 +203,7 @@ class PushError extends Error {
 
     /**
      * Returns total bytes of this error (0 for PushError)
-     * 
+     *
      * @returns {number} how many bytes is in this error
      */
     bytes() {
@@ -250,7 +212,7 @@ class PushError extends Error {
 
     /**
      * Returns total number of pushes of this error (0 for PushError)
-     * 
+     *
      * @returns {number} how many pushes is in this error
      */
     length() {
@@ -264,7 +226,7 @@ class PushError extends Error {
 class ValidationError extends PushError {
     /**
      * Construct validation error
-     * 
+     *
      * @param {string[]|string} errors array of error strings
      */
     constructor(errors) {
@@ -274,7 +236,7 @@ class ValidationError extends PushError {
 
     /**
      * toString override
-     * 
+     *
      * @returns {string} string representation of the error
      */
     toString() {
@@ -316,9 +278,9 @@ class ProcessingError extends PushError {
 
     /**
      * Set affected push objects which were in flight when error happened and therefore could be not sent, returns this for chaining
-     * 
+     *
      * Affected pushes will be returned in a recoverable error. Once 3 ProcessingError happen in a row, sending will be terminated with the rest (left) removed from the queue.
-     * 
+     *
      * @param {string[]} affected Array of push object ids which might not be sent due to this error
      * @param {number} bytes number of bytes in affected
      * @returns {ProcessingError} this instance
@@ -331,9 +293,9 @@ class ProcessingError extends PushError {
 
     /**
      * Set affected push objects which were in flight when error happened and therefore could be not sent, returns this for chaining
-     * 
+     *
      * Affected pushes will be returned in a recoverable error. Once 3 ProcessingError happen in a row, sending will be terminated with the rest (left) removed from the queue.
-     * 
+     *
      * @param {string|string[]} id ID of push object which might not be sent due to this error
      * @param {number} bytes number of bytes in push object behind id
      * @returns {ProcessingError} this instance
@@ -350,9 +312,9 @@ class ProcessingError extends PushError {
     }
 
     /**
-     * Return new SendError containing affected from this instance as a way to report these notifications being failed to send. 
+     * Return new SendError containing affected from this instance as a way to report these notifications being failed to send.
      * @see {@link ProcessingError#setAffected}
-     * 
+     *
      * @returns {SendError} with affected from this instance
      */
     affectedError() {
@@ -362,8 +324,8 @@ class ProcessingError extends PushError {
     }
 
     /**
-     * Return new SendError not containing affected/left from this instance to be saved in a message 
-     * 
+     * Return new SendError not containing affected/left from this instance to be saved in a message
+     *
      * @returns {SendError} with no affected/left from this instance
      */
     messageError() {
@@ -374,7 +336,7 @@ class ProcessingError extends PushError {
 
     /**
      * Set left to send push objects which were not sent due to this error, returns this for chaining
-     * 
+     *
      * @param {string[]} left Array of push ids left to send due to this error
      * @param {array} bytes number of bytes in left
      * @returns {ProcessingError} this instance
@@ -387,7 +349,7 @@ class ProcessingError extends PushError {
 
     /**
      * Add left push object which was still in queue when unrecoverable error happened
-     * 
+     *
      * @param {string|string[]} id ID of push object which won't be sent because an unrecoverable error happened earlier
      * @param {number} bytes number of bytes in push object behind id
      * @returns {ProcessingError} this instance
@@ -418,7 +380,7 @@ class ProcessingError extends PushError {
 
     /**
      * Returns total bytes of this error (left + affected)
-     * 
+     *
      * @returns {number} how much bytes is in this error
      */
     bytes() {
@@ -427,7 +389,7 @@ class ProcessingError extends PushError {
 
     /**
      * Returns total number of pushes of this error (left + affected)
-     * 
+     *
      * @returns {number} how many pushes is in this error
      */
     length() {
@@ -441,7 +403,7 @@ class ProcessingError extends PushError {
  */
 class SendError extends ProcessingError {
     /**
-     * 
+     *
      * @param {string} message Error message
      * @param {number} type Error type, {@see ERROR}
      * @param {number} date Error ms timestamp
@@ -457,7 +419,7 @@ class SendError extends ProcessingError {
  */
 class ConnectionError extends ProcessingError {
     /**
-     * 
+     *
      * @param {string} message Error message
      * @param {number} type Error type, {@see ERROR}
      * @param {number} date Error ms timestamp
@@ -469,7 +431,7 @@ class ConnectionError extends ProcessingError {
 
     /**
      * Set connection error info, returns this for chaining
-     * 
+     *
      * @param {array} message connection error code (i.e., Unauthorized for wrong credentials)
      * @param {array} code connection error code (i.e., 401 for wrong credentials)
      * @returns {ConnectionError} this instance
@@ -490,121 +452,6 @@ class ConnectionError extends ProcessingError {
             connectionErrorMessage: this.connectionErrorMessage,
         });
     }
-
-    // /**
-    //  * Method to get error description
-    //  * @returns {string} error description
-    //  */
-    // toString() {
-    //     return `${this.name}: ${this.connectionErrorMessage}, affected ${this.affected.length} / ${this.affectedBytes}, left ${this.left.length} / ${this.leftBytes}`;
-    // }
 }
 
-const FCM_SDK_ERRORS = {
-    'messaging/invalid-argument': {
-        // this is the object key inside firebase-admin package. keeping here just in case
-        libraryKey: "INVALID_ARGUMENT",
-        mapTo: ERROR.DATA_PROVIDER,
-        message: 'Invalid argument provided.',
-    },
-    'messaging/invalid-recipient': {
-        libraryKey: "INVALID_RECIPIENT",
-        mapTo: ERROR.DATA_PROVIDER,
-        message: 'Invalid message recipient provided.',
-    },
-    'messaging/invalid-payload': {
-        libraryKey: "INVALID_PAYLOAD",
-        mapTo: ERROR.DATA_PROVIDER,
-        message: 'Invalid message payload provided.',
-    },
-    'messaging/invalid-data-payload-key': {
-        libraryKey: "INVALID_DATA_PAYLOAD_KEY",
-        mapTo: ERROR.DATA_PROVIDER,
-        message: 'The data message payload contains an invalid key. See the reference documentation ' +
-            'for the DataMessagePayload type for restricted keys.',
-    },
-    'messaging/payload-size-limit-exceeded': {
-        libraryKey: "PAYLOAD_SIZE_LIMIT_EXCEEDED",
-        mapTo: ERROR.DATA_PROVIDER,
-        message: 'The provided message payload exceeds the FCM size limits. See the error documentation ' +
-            'for more details.',
-    },
-    'messaging/invalid-options': {
-        libraryKey: "INVALID_OPTIONS",
-        mapTo: ERROR.DATA_PROVIDER,
-        message: 'Invalid message options provided.',
-    },
-    'messaging/invalid-registration-token': {
-        libraryKey: "INVALID_REGISTRATION_TOKEN",
-        mapTo: ERROR.DATA_TOKEN_INVALID,
-        message: 'Invalid registration token provided. Make sure it matches the registration token ' +
-            'the client app receives from registering with FCM.',
-    },
-    'messaging/registration-token-not-registered': {
-        libraryKey: "REGISTRATION_TOKEN_NOT_REGISTERED",
-        mapTo: ERROR.DATA_TOKEN_EXPIRED,
-        message: 'The provided registration token is not registered. A previously valid registration ' +
-            'token can be unregistered for a variety of reasons. See the error documentation for more ' +
-            'details. Remove this registration token and stop using it to send messages.',
-    },
-    'messaging/mismatched-credential': {
-        libraryKey: "MISMATCHED_CREDENTIAL",
-        mapTo: ERROR.DATA_TOKEN_INVALID,
-        message: 'The credential used to authenticate this SDK does not have permission to send ' +
-            'messages to the device corresponding to the provided registration token. Make sure the ' +
-            'credential and registration token both belong to the same Firebase project.',
-    },
-    'messaging/invalid-package-name': {
-        libraryKey: "INVALID_PACKAGE_NAME",
-        mapTo: ERROR.DATA_TOKEN_INVALID,
-        message: 'The message was addressed to a registration token whose package name does not match ' +
-            'the provided "restrictedPackageName" option.',
-    },
-    'messaging/device-message-rate-exceeded': {
-        libraryKey: "DEVICE_MESSAGE_RATE_EXCEEDED",
-        message: 'The rate of messages to a particular device is too high. Reduce the number of ' +
-            'messages sent to this device and do not immediately retry sending to this device.',
-    },
-    'messaging/topics-message-rate-exceeded': {
-        libraryKey: "TOPICS_MESSAGE_RATE_EXCEEDED",
-        message: 'The rate of messages to subscribers to a particular topic is too high. Reduce the ' +
-            'number of messages sent for this topic, and do not immediately retry sending to this topic.',
-    },
-    'messaging/message-rate-exceeded': {
-        libraryKey: "MESSAGE_RATE_EXCEEDED",
-        message: 'Sending limit exceeded for the message target.',
-    },
-    'messaging/third-party-auth-error': {
-        libraryKey: "THIRD_PARTY_AUTH_ERROR",
-        message: 'A message targeted to an iOS device could not be sent because the required APNs ' +
-            'SSL certificate was not uploaded or has expired. Check the validity of your development ' +
-            'and production certificates.',
-    },
-    'messaging/too-many-topics': {
-        libraryKey: "TOO_MANY_TOPICS",
-        message: 'The maximum number of topics the provided registration token can be subscribed to ' +
-            'has been exceeded.',
-    },
-    'messaging/authentication-error': {
-        libraryKey: "AUTHENTICATION_ERROR",
-        mapTo: ERROR.INVALID_CREDENTIALS,
-        message: 'An error occurred when trying to authenticate to the FCM servers. Make sure the ' +
-            'credential used to authenticate this SDK has the proper permissions. See ' +
-            'https://firebase.google.com/docs/admin/setup for setup instructions.',
-    },
-    'messaging/server-unavailable': {
-        libraryKey: "SERVER_UNAVAILABLE",
-        message: 'The FCM server could not process the request in time. See the error documentation ' +
-            'for more details.',
-    },
-    'messaging/internal-error': {
-        libraryKey: "INTERNAL_ERROR",
-        message: 'An internal error has occurred. Please retry the request.',
-    },
-    'messaging/unknown-error': {
-        libraryKey: "UNKNOWN_ERROR",
-        message: 'An unknown server error was returned.',
-    },
-};
-
-module.exports = { PushError, SendError, ConnectionError, ValidationError, ERROR, FCM_SDK_ERRORS };
+module.exports = { PushError, SendError, ConnectionError, ValidationError, ERROR };

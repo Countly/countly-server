@@ -1,25 +1,45 @@
-const common = require('../../../api/utils/common'),
-    log = common.log('push:api:push'),
-    Sender = require('./send/sender'),
-    { extract, field, allAppUserFields, platforms, PLATFORM, ValidationError, Creds, DBMAP } = require('./send');
+/**
+ * @typedef {import('./new/types/credentials').PlatformCredential} PlatformCredential
+ * @typedef {import('./new/types/message').PlatformKey} PlatformKey
+ */
+/* eslint-disable no-inner-declarations */
+const common = require('../../../api/utils/common');
+const log = common.log('push:api:push');
+const { ValidationError, DBMAP } = require('./send');
+const { validateCredentials: validateAndroidCredentials } = require("./new/platforms/android");
+const { validateCredentials: validateIOSCredentials } = require("./new/platforms/ios");
+const { validateCredentials: validateHuaweiCredentials } = require("./new/platforms/huawei");
+const { loadPluginConfiguration } = require('./new/lib/utils');
+const { extractTokenFromQuerystring } = require("./new/lib/utils");
+const platforms = require("./new/constants/platform-keymap.js");
+const platformKeys = /** @type {PlatformKey[]} */(Object.keys(platforms));
+const allAppUserFields = [...new Set(
+    Object.values(platforms)
+        .map(platform => platform.combined)
+        .flat()
+        .map(combined => `tk${combined}`)
+)];
 
 module.exports.onTokenSession = async(dbAppUser, params) => {
-    let stuff = extract(params.qstring);
+    let stuff = extractTokenFromQuerystring(params.qstring);
     if (stuff) {
-        let [p, f, token, hash] = stuff,
-            appusersField = field(p, f, true),
-            pushField = field(p, f, false),
-            pushCollection = common.db.collection(`push_${params.app_id}`),
-            appusersCollection = common.db.collection(`app_users${params.app_id}`);
+        const [p, f, token, hash] = stuff;
+        const app_id = params.app_id;
+        const uid = dbAppUser.uid;
+        const app_user_id = params.app_user_id;
+        const appusersField = `tk${p}${f}`;
+        const pushField = `tk.${p}${f}`;
+        const pushCollection = common.db.collection(`push_${app_id}`);
+        const appusersCollection = common.db.collection(`app_users${app_id}`);
 
         log.d('push token: %s/%s/%s', p, f, token);
 
-        let push = await pushCollection.findOne({_id: dbAppUser.uid});
+        let push = await pushCollection.findOne({_id: uid});
         if (token && (!push || common.dot(push, pushField) !== token)) {
-            appusersCollection.updateOne({_id: params.app_user_id}, {$set: {[appusersField]: hash}}, () => {}); // don't wait
-            pushCollection.updateOne({_id: params.app_user.uid}, {$set: {[pushField]: token}}, {upsert: true}, () => {});
+            appusersCollection.updateOne({_id: app_user_id}, {$set: {[appusersField]: hash}}, () => {}); // don't wait
+            pushCollection.updateOne({_id: uid}, {$set: {[pushField]: token}}, {upsert: true}, () => {});
 
-            appusersCollection.find({[appusersField]: hash, _id: {$ne: dbAppUser._id}}, {uid: 1}).toArray(function(err, docs) {
+            appusersCollection.find({[appusersField]: hash, _id: {$ne: app_user_id}}, {uid: 1}).toArray(function(err, docs) {
                 if (err) {
                     log.e('Failed to look for same tokens', err);
                 }
@@ -31,7 +51,7 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
                             log.e('Failed to look for same tokens', err2);
                         }
                         else if (pushes && pushes.length) {
-                            pushes = pushes.filter(user => user._id !== dbAppUser.uid && user.tk[p + f] === token);
+                            pushes = pushes.filter(user => user._id !== uid && user.tk[p + f] === token);
                             if (pushes.length) {
                                 log.d('Unsetting same tokens (%s) for users %j', token, pushes.map(x => x._id));
 
@@ -44,29 +64,18 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
             });
 
             setTimeout(() => {
-                common.db.collection(`app_users${params.app_id}`).findOne({_id: dbAppUser._id}, (er, user) => {
+                common.db.collection(`app_users${app_id}`).findOne({_id: app_user_id}, {projection: {_id: 1}}, (er, user) => {
                     if (er) {
                         log.e('Error while loading user', er);
                     }
                     else if (!user) {
-                        log.w('Removing stale push_%s record for user %s/%s', params.app_id, dbAppUser._id, dbAppUser.uid);
-                        common.db.collection(`push_${params.app_id}`).deleteOne({_id: dbAppUser.uid}, () => {});
+                        log.w('Removing stale push_%s record for user %s/%s', app_id, app_user_id, uid);
+                        common.db.collection(`push_${app_id}`).deleteOne({_id: uid}, () => {});
                     }
                 });
             }, 10000);
         }
-        // else {
-        //     appusersCollection.updateOne({_id: params.app_user_id}, {$unset: {[appusersField]: 1}}, function() {});
-        //     pushCollection.updateOne({_id: params.app_user.uid}, {$unset: {[pushField]: 1}}, function() {});
-        // }
     }
-    else {
-        log.d('no push token in token_session:', params.qstring);
-    }
-    // else if (params.qstring.locale) {
-    //     common.db.collection(`app_users${params.app_id}`).updateOne({_id: params.app_user_id}, {$set: {[common.dbUserMap.locale]: params.qstring.locale}}, function() {});
-    //     dbAppUser[common.dbUserMap.locale] = params.qstring.locale;
-    // }
 };
 
 module.exports.onSessionUser = ({params, dbAppUser}) => {
@@ -144,53 +153,58 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
     }
     let pushcfg = app.plugins.push;
     let old = JSON.stringify(pushcfg);
-    for (let i = 0; i < platforms.length; i++) {
-        let p = platforms[i],
+    for (let i = 0; i < platformKeys.length; i++) {
+        let p = platformKeys[i],
             c = config[p];
-
-        if (c === null) { // delete credentials
-            log.d('Unsetting %s config for app %s', p, app._id);
+        // delete credentials
+        if (c === null) {
             if (pushcfg[p] && pushcfg[p]._id) {
-                await Creds.deleteOne({_id: common.db.ObjectID(pushcfg[p]._id)});
+                await common.db.collection("creds").deleteOne({
+                    _id: common.db.ObjectID(pushcfg[p]._id)
+                });
             }
             pushcfg[p] = {};
-            await common.db.collection('apps').updateOne({_id: app._id}, {$set: {[`plugins.push.${p}`]: {}}});
+            await common.db.collection('apps').updateOne({
+                _id: app._id
+            }, {
+                $set: {[`plugins.push.${p}`]: {}}
+            });
         }
-        else if (c && c.type && !c.hash) { // new credentials
-            if (PLATFORM[p].CREDS[c.type]) {
-                log.i('Checking %s / %s credentials', p, c.type);
-                // check credentials for validity
-                let creds = new PLATFORM[p].CREDS[c.type](c),
-                    errors = creds.validate(),
-                    cfg = await Sender.loadConfig();
-                if (errors) {
-                    throw new ValidationError(errors);
+        // new credentials
+        else if (c && c.type && !c.hash) {
+            /** @type {Array<PlatformCredential["type"]>} */
+            const credentialTypes = ["apn_token", "apn_universal", "fcm", "hms"];
+            if (credentialTypes.includes(c.type)) {
+                let creds, view;
+                try {
+                    const pluginConfig = await loadPluginConfiguration();
+                    if (c.type === "fcm") {
+                        ({ creds, view } = await validateAndroidCredentials(c, pluginConfig?.proxy));
+                    }
+                    else if (c.type === "hms") {
+                        ({ creds, view } = await validateHuaweiCredentials(c, pluginConfig?.proxy));
+                    }
+                    else {
+                        ({ creds, view } = await validateIOSCredentials(c, pluginConfig?.proxy));
+                    }
+                    // insert/update new credentials while removing old ones
+                    if (pushcfg[p] && pushcfg[p]._id) {
+                        await common.db.collection('creds').deleteOne({
+                            _id: common.db.ObjectID(pushcfg[p]._id)
+                        });
+                    }
+                    pushcfg[p] = view;
+                    await common.db.collection("creds").insertOne(creds);
+                    await common.db.collection('apps').updateOne({
+                        _id: app._id
+                    }, {
+                        $set: { [`plugins.push.${p}`]: view }
+                    });
                 }
-                log.i('Checking %s / %s credentials: validation passed', p, c.type);
-
-                // verify connectivity with the credentials given
-                let connection = new PLATFORM[p].connection('push:api:push', p + 'p', creds, [], cfg),
-                    valid = await connection.connect();
-                if (valid) {
-                    log.i('Checking %s / %s credentials: provider check passed', p, c.type);
+                catch (error) {
+                    log.e("error while updating credentials", error);
+                    throw new ValidationError(error.message || 'Invalid credentials');
                 }
-                else {
-                    log.i('Checking %s / %s credentials: provider check failed', p, c.type);
-                    connection.destroy();
-                    throw new ValidationError('Credentials were rejected by push notification provider');
-                }
-
-                // insert/update new credentials while removing old ones
-                if (pushcfg[p] && pushcfg[p]._id) {
-                    await Creds.deleteOne({_id: common.db.ObjectID(pushcfg[p]._id)});
-                }
-                creds._id = common.db.ObjectID();
-                pushcfg[p] = creds.view;
-                await creds.save();
-                await common.db.collection('apps').updateOne({_id: app._id}, {$set: {[`plugins.push.${p}`]: creds.view}});
-                log.d('Checking %s / %s credentials: saved', p, c.type);
-
-                connection.destroy();
             }
             else {
                 throw new ValidationError('Wrong credentials type');
@@ -284,80 +298,93 @@ module.exports.onMerge = ({app_id, oldUser, newUser}) => {
         nuid = newUser.uid;
 
     if (ouid && nuid) {
-        log.d(`Merging push data of ${ouid} into ${nuid}`);
-        common.db.collection(`push_${app_id}`).find({_id: {$in: [ouid, nuid]}}).toArray((err, users) => {
-            if (err || !users) {
-                log.e('Couldn\'t load users to merge', err);
-                return;
-            }
+        return new Promise(function(resolve, reject) {
+            log.d(`Merging push data of ${ouid} into ${nuid}`);
+            common.db.collection(`push_${app_id}`).find({_id: {$in: [ouid, nuid]}}).toArray((err, users) => {
+                if (err || !users) {
+                    log.e('Couldn\'t load users to merge', err);
+                    reject();
+                    return;
+                }
 
-            let ou = users.filter(u => u._id === ouid)[0],
-                nu = users.filter(u => u._id === nuid)[0],
-                update = {},
-                opts = {};
+                let ou = users.filter(u => u._id === ouid)[0],
+                    nu = users.filter(u => u._id === nuid)[0],
+                    update = {},
+                    opts = {};
 
-            if (ou && nu) {
-                log.d('Merging %j into %j', ou, nu);
-                if (ou.tk && Object.keys(ou.tk).length) {
-                    update.$set = {};
+                if (ou && nu) {
+                    log.d('Merging %j into %j', ou, nu);
+                    if (ou.tk && Object.keys(ou.tk).length) {
+                        update.$set = {};
+                        for (let k in ou.tk) {
+                            update.$set['tk.' + k] = ou.tk[k];
+                            newUser['tk' + k] = oldUser['tk' + k];
+                        }
+                    }
+                    if (ou.msgs && ou.msgs.length) {
+                        let ids = nu.msgs && nu.msgs.map(m => m[0].toString()) || [],
+                            msgs = [];
+
+                        ou.msgs.forEach(m => {
+                            if (ids.indexOf(m[0].toString()) === -1) {
+                                msgs.push(m);
+                            }
+                        });
+
+                        if (msgs.length) {
+                            update.$push = {msgs: {$each: msgs}};
+                        }
+                    }
+                }
+                else if (ou && Object.keys(ou).length > 1 && !nu) {
+                    log.d('No new uid, setting old');
+                    update.$set = ou;
+                    opts.upsert = true;
+                    delete update.$set._id;
                     for (let k in ou.tk) {
-                        update.$set['tk.' + k] = ou.tk[k];
                         newUser['tk' + k] = oldUser['tk' + k];
                     }
                 }
-                if (ou.msgs && ou.msgs.length) {
-                    let ids = nu.msgs && nu.msgs.map(m => m[0].toString()) || [],
-                        msgs = [];
-
-                    ou.msgs.forEach(m => {
-                        if (ids.indexOf(m[0].toString()) === -1) {
-                            msgs.push(m);
+                else if (ou && Object.keys(ou).length === 1 && !nu) {
+                    log.d('Empty old uid, nothing to merge');
+                }
+                else if (!ou && nu) {
+                    log.d('No old uid, nothing to merge');
+                }
+                else {
+                    log.d('Nothing to merge at all');
+                }
+                if (ou) {
+                    log.d('Removing old push data for %s', ouid);
+                    common.db.collection(`push_${app_id}`).deleteOne({_id: ouid}, e => e && log.e('Error while deleting old uid push data', e));
+                }
+                if (Object.keys(update).length) {
+                    log.d('Updating push data for %s: %j', nuid, update);
+                    common.db.collection(`push_${app_id}`).updateOne({_id: nuid}, update, opts, function(ee) {
+                        if (ee) {
+                            log.e('Error while updating new uid with push data', ee);
+                            reject();
+                        }
+                        else {
+                            resolve();
+                            setTimeout(() => {
+                                common.db.collection(`app_users${app_id}`).findOne({_id: newUser._id}, (er, user) => {
+                                    if (er) {
+                                        log.e('Error while loading user', er);
+                                    }
+                                    else if (!user) {
+                                        log.w('Removing stale push_%s record for user %s/%s', app_id, newUser._id, nuid);
+                                        common.db.collection(`push_${app_id}`).deleteOne({_id: nuid}, () => {});
+                                    }
+                                });
+                            }, 10000);
                         }
                     });
-
-                    if (msgs.length) {
-                        update.$push = {msgs: {$each: msgs}};
-                    }
                 }
-            }
-            else if (ou && Object.keys(ou).length > 1 && !nu) {
-                log.d('No new uid, setting old');
-                update.$set = ou;
-                opts.upsert = true;
-                delete update.$set._id;
-                for (let k in ou.tk) {
-                    newUser['tk' + k] = oldUser['tk' + k];
+                else {
+                    resolve();
                 }
-            }
-            else if (ou && Object.keys(ou).length === 1 && !nu) {
-                log.d('Empty old uid, nothing to merge');
-            }
-            else if (!ou && nu) {
-                log.d('No old uid, nothing to merge');
-            }
-            else {
-                log.d('Nothing to merge at all');
-            }
-
-            if (ou) {
-                log.d('Removing old push data for %s', ouid);
-                common.db.collection(`push_${app_id}`).deleteOne({_id: ouid}, e => e && log.e('Error while deleting old uid push data', e));
-            }
-            if (Object.keys(update).length) {
-                log.d('Updating push data for %s: %j', nuid, update);
-                common.db.collection(`push_${app_id}`).updateOne({_id: nuid}, update, opts, e => e && log.e('Error while updating new uid with push data', e));
-                setTimeout(() => {
-                    common.db.collection(`app_users${app_id}`).findOne({_id: newUser._id}, (er, user) => {
-                        if (er) {
-                            log.e('Error while loading user', er);
-                        }
-                        else if (!user) {
-                            log.w('Removing stale push_%s record for user %s/%s', app_id, newUser._id, nuid);
-                            common.db.collection(`push_${app_id}`).deleteOne({_id: nuid}, () => {});
-                        }
-                    });
-                }, 10000);
-            }
+            });
         });
     }
 };
