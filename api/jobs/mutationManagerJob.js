@@ -5,6 +5,14 @@ const mutationManager = require('../utils/mutationManager.js');
 const tracker = require("../parts/mgmt/tracker.js");
 const plugins = require('../../plugins/pluginManager.js');
 
+const DEFAULT_JOB_CONFIG = {
+    STALE_MS: 24 * 60 * 60 * 1000, // 24h - consider tasks running longer than this as stale
+    RETRY_DELAY_MS: 30 * 60 * 1000, // 30m - delay before retrying a failed task
+    MAX_RETRIES: 3, // Max number of retries before marking a task as failed
+    VALIDATION_INTERVAL_MS: 3 * 60 * 1000 // 3m - interval between mutation status checks
+};
+let jobConfigState = { ...DEFAULT_JOB_CONFIG };
+
 let clickHouseRunner;
 try {
     clickHouseRunner = require('../../plugins/clickhouse/api/queries/clickhouseCoreQueries.js');
@@ -21,12 +29,42 @@ catch {
     //
 }
 
+/**
+ * Normalize mutation manager job configuration values
+ * @param {Object} cfg - Raw configuration object from the DB
+ * @returns {Object} Normalized configuration
+ */
+function buildJobConfig(cfg = {}) {
+    return {
+        STALE_MS: common.isNumber(cfg.stale_ms) ? Number(cfg.stale_ms) : DEFAULT_JOB_CONFIG.STALE_MS,
+        RETRY_DELAY_MS: common.isNumber(cfg.retry_delay_ms) ? Number(cfg.retry_delay_ms) : DEFAULT_JOB_CONFIG.RETRY_DELAY_MS,
+        MAX_RETRIES: common.isNumber(cfg.max_retries) ? Number(cfg.max_retries) : DEFAULT_JOB_CONFIG.MAX_RETRIES,
+        VALIDATION_INTERVAL_MS: common.isNumber(cfg.validation_interval_ms) ? Number(cfg.validation_interval_ms) : DEFAULT_JOB_CONFIG.VALIDATION_INTERVAL_MS
+    };
+}
 
-// Constants for managing stale tasks and retries
-const STALE_MS = 24 * 60 * 60 * 1000; // 24h - consider tasks running longer than this as stale
-const RETRY_DELAY_MS = 30 * 60 * 1000; // 30m - delay before retrying a failed task
-const MAX_RETRIES = 3; // Max number of retries before marking a task as failed
-const VALIDATION_INTERVAL_MS = 3 * 60 * 1000; // 3m - interval between mutation status checks
+/**
+ * Fetch mutation manager job configuration from the plugins collection
+ * @returns {Promise<Object>} Job configuration
+ */
+async function loadMutationManagerJobConfig() {
+    if (!common.db) {
+        return { ...DEFAULT_JOB_CONFIG };
+    }
+
+    try {
+        const doc = await common.db.collection('plugins').findOne(
+            { _id: 'plugins' },
+            { projection: { 'mutation_manager.max_retries': 1, 'mutation_manager.retry_delay_ms': 1, 'mutation_manager.validation_interval_ms': 1, 'mutation_manager.stale_ms': 1 } }
+        );
+        const cfg = (doc && doc.mutation_manager) || {};
+        return buildJobConfig(cfg);
+    }
+    catch (e) {
+        log.e("Failed to load mutation manager job config; using defaults", e?.message || e);
+        return { ...DEFAULT_JOB_CONFIG };
+    }
+}
 
 const BATCH_LIMIT = 10; // Number of tasks to process in one run
 
@@ -56,6 +94,7 @@ class MutationManagerJob extends Job {
      * @param {done} done callback
     */
     async run() {
+        jobConfigState = await loadMutationManagerJobConfig();
         const now = Date.now();
         const batchId = common.db.ObjectID() + '';
         const summary = [];
@@ -113,8 +152,9 @@ class MutationManagerJob extends Job {
      * Process a single mutation task (delete/update)
      * @param {Object} task - Task document
      * @param {Array} summary - Summary array to push statuses
+     * @param {Object} [jobConfig] - Job configuration
      */
-    async processTask(task, summary) {
+    async processTask(task, summary, jobConfig = jobConfigState || DEFAULT_JOB_CONFIG) {
         const type = task.type;
         if (type !== 'delete' && type !== 'update') {
             await common.db.collection("mutation_manager").updateOne(
@@ -140,7 +180,7 @@ class MutationManagerJob extends Job {
                     const now = Date.now();
                     await common.db.collection('mutation_manager').updateOne(
                         { _id: task._id },
-                        { $set: { running: false, status: mutationManager.MUTATION_STATUS.QUEUED, hb: now, error: pre.reason || 'deferred_due_to_ch_pressure', retry_at: now + RETRY_DELAY_MS }, $unset: { batch_id: '' } }
+                        { $set: { running: false, status: mutationManager.MUTATION_STATUS.QUEUED, hb: now, error: pre.reason || 'deferred_due_to_ch_pressure', retry_at: now + jobConfig.RETRY_DELAY_MS }, $unset: { batch_id: '' } }
                     );
                     summary.push({ query: task.query, status: 'deferred_due_to_ch_pressure', reason: pre.reason });
                     return;
@@ -175,7 +215,7 @@ class MutationManagerJob extends Job {
                         running: false,
                         status: mutationManager.MUTATION_STATUS.AWAITING_CH_MUTATION_VALIDATION,
                         hb: Date.now(),
-                        retry_at: Date.now() + VALIDATION_INTERVAL_MS
+                        retry_at: Date.now() + jobConfig.VALIDATION_INTERVAL_MS
                     },
                     $unset: { batch_id: "" }
                 }
@@ -206,9 +246,10 @@ class MutationManagerJob extends Job {
      * Processes a batch of tasks awaiting ClickHouse mutation validation.
      * Reserves a batch, checks mutation status via system.mutations and updates/deletes tasks accordingly.
      * @param {Array} summary - Summary array to push status logs
+     * @param {Object} [jobConfig] - Job configuration
      * @returns {Promise<void>} Resolves when awaiting validation batch is processed
      */
-    async processAwaitingValidation(summary) {
+    async processAwaitingValidation(summary, jobConfig = jobConfigState || DEFAULT_JOB_CONFIG) {
         const validationBatchId = common.db.ObjectID() + '';
         const nowTs = Date.now();
         await common.db.collection("mutation_manager").aggregate([
@@ -270,7 +311,7 @@ class MutationManagerJob extends Job {
                         await common.db.collection("mutation_manager").updateOne(
                             { _id: task._id },
                             {
-                                $set: { running: false, status: mutationManager.MUTATION_STATUS.AWAITING_CH_MUTATION_VALIDATION, hb: Date.now(), retry_at: Date.now() + VALIDATION_INTERVAL_MS },
+                                $set: { running: false, status: mutationManager.MUTATION_STATUS.AWAITING_CH_MUTATION_VALIDATION, hb: Date.now(), retry_at: Date.now() + jobConfig.VALIDATION_INTERVAL_MS },
                                 $unset: { batch_id: "" }
                             }
                         );
@@ -287,14 +328,15 @@ class MutationManagerJob extends Job {
 
     /**
      * Reset stale mutation tasks that have been running longer than STALE_MS.
+     * @param {Object} [jobConfig] - Job configuration
      */
-    async resetStaleTasks() {
+    async resetStaleTasks(jobConfig = jobConfigState || DEFAULT_JOB_CONFIG) {
         try {
             const now = Date.now();
             await common.db.collection("mutation_manager").updateMany(
                 {
                     running: true,
-                    $expr: { $lt: [{ $ifNull: ["$hb", "$ts"] }, now - STALE_MS] }
+                    $expr: { $lt: [{ $ifNull: ["$hb", "$ts"] }, now - jobConfig.STALE_MS] }
                 },
                 {
                     $set: { running: false, status: mutationManager.MUTATION_STATUS.QUEUED, hb: now, error: "stale_reset" },
@@ -477,12 +519,13 @@ class MutationManagerJob extends Job {
      * Marks a task as failed or schedules it for a retry based on the number of previous failures.
      * @param {Object} task - The task object to update.
      * @param {string} message - The error message to log
+     * @param {Object} [jobConfig] - Job configuration
      */
-    async markFailedOrRetry(task, message) {
+    async markFailedOrRetry(task, message, jobConfig = jobConfigState || DEFAULT_JOB_CONFIG) {
         try {
             const now = Date.now();
             const failCount = (task.fail_count || 0) + 1;
-            if (failCount >= MAX_RETRIES) {
+            if (failCount >= jobConfig.MAX_RETRIES) {
                 await common.db.collection("mutation_manager").updateOne(
                     { _id: task._id },
                     {
@@ -503,7 +546,7 @@ class MutationManagerJob extends Job {
                 await common.db.collection("mutation_manager").updateOne(
                     { _id: task._id },
                     {
-                        $set: { running: false, status: mutationManager.MUTATION_STATUS.QUEUED, fail_count: failCount, error: message, retry_at: now + RETRY_DELAY_MS, hb: now },
+                        $set: { running: false, status: mutationManager.MUTATION_STATUS.QUEUED, fail_count: failCount, error: message, retry_at: now + jobConfig.RETRY_DELAY_MS, hb: now },
                         $unset: { batch_id: "" }
                     }
                 );

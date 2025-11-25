@@ -161,6 +161,25 @@ plugins.connectToAllDatabases().then(function() {
         }
     );
 
+    // mutation manager default settings
+    [
+        { key: 'max_retries', value: 3 },
+        { key: 'retry_delay_ms', value: 30 * 60 * 1000 },
+        { key: 'validation_interval_ms', value: 3 * 60 * 1000 },
+        { key: 'stale_ms', value: 24 * 60 * 60 * 1000 }
+    ].forEach(item => {
+        const path = `mutation_manager.${item.key}`;
+        const update = {};
+        update[path] = item.value;
+        common.db.collection('plugins').updateOne(
+            { _id: 'plugins', [path]: { $exists: false } },
+            { $set: update }
+        ).catch(e => {
+            const message = `Failed to add mutation_manager default for ${item.key}: ${e}`;
+            log && log.e ? log.e(message) : console.log(message);
+        });
+    });
+
     if (common.queryRunner && typeof common.queryRunner.isAdapterAvailable === 'function' && common.queryRunner.isAdapterAvailable('clickhouse')) {
         common.db.collection('plugins').updateOne(
             {
