@@ -166,7 +166,8 @@ plugins.connectToAllDatabases().then(function() {
         { key: 'max_retries', value: 3 },
         { key: 'retry_delay_ms', value: 30 * 60 * 1000 },
         { key: 'validation_interval_ms', value: 3 * 60 * 1000 },
-        { key: 'stale_ms', value: 24 * 60 * 60 * 1000 }
+        { key: 'stale_ms', value: 24 * 60 * 60 * 1000 },
+        { key: 'batch_limit', value: 10 }
     ].forEach(item => {
         const path = `mutation_manager.${item.key}`;
         const update = {};

@@ -9,7 +9,8 @@ const DEFAULT_JOB_CONFIG = {
     STALE_MS: 24 * 60 * 60 * 1000, // 24h - consider tasks running longer than this as stale
     RETRY_DELAY_MS: 30 * 60 * 1000, // 30m - delay before retrying a failed task
     MAX_RETRIES: 3, // Max number of retries before marking a task as failed
-    VALIDATION_INTERVAL_MS: 3 * 60 * 1000 // 3m - interval between mutation status checks
+    VALIDATION_INTERVAL_MS: 3 * 60 * 1000, // 3m - interval between mutation status checks
+    BATCH_LIMIT: 10 // Number of tasks to process in one run
 };
 let jobConfigState = { ...DEFAULT_JOB_CONFIG };
 
@@ -39,7 +40,8 @@ function buildJobConfig(cfg = {}) {
         STALE_MS: common.isNumber(cfg.stale_ms) ? Number(cfg.stale_ms) : DEFAULT_JOB_CONFIG.STALE_MS,
         RETRY_DELAY_MS: common.isNumber(cfg.retry_delay_ms) ? Number(cfg.retry_delay_ms) : DEFAULT_JOB_CONFIG.RETRY_DELAY_MS,
         MAX_RETRIES: common.isNumber(cfg.max_retries) ? Number(cfg.max_retries) : DEFAULT_JOB_CONFIG.MAX_RETRIES,
-        VALIDATION_INTERVAL_MS: common.isNumber(cfg.validation_interval_ms) ? Number(cfg.validation_interval_ms) : DEFAULT_JOB_CONFIG.VALIDATION_INTERVAL_MS
+        VALIDATION_INTERVAL_MS: common.isNumber(cfg.validation_interval_ms) ? Number(cfg.validation_interval_ms) : DEFAULT_JOB_CONFIG.VALIDATION_INTERVAL_MS,
+        BATCH_LIMIT: common.isNumber(cfg.batch_limit) ? Number(cfg.batch_limit) : DEFAULT_JOB_CONFIG.BATCH_LIMIT
     };
 }
 
@@ -55,7 +57,7 @@ async function loadMutationManagerJobConfig() {
     try {
         const doc = await common.db.collection('plugins').findOne(
             { _id: 'plugins' },
-            { projection: { 'mutation_manager.max_retries': 1, 'mutation_manager.retry_delay_ms': 1, 'mutation_manager.validation_interval_ms': 1, 'mutation_manager.stale_ms': 1 } }
+            { projection: { 'mutation_manager.max_retries': 1, 'mutation_manager.retry_delay_ms': 1, 'mutation_manager.validation_interval_ms': 1, 'mutation_manager.stale_ms': 1, 'mutation_manager.batch_limit': 1 } }
         );
         const cfg = (doc && doc.mutation_manager) || {};
         return buildJobConfig(cfg);
@@ -65,8 +67,6 @@ async function loadMutationManagerJobConfig() {
         return { ...DEFAULT_JOB_CONFIG };
     }
 }
-
-const BATCH_LIMIT = 10; // Number of tasks to process in one run
 
 /** Class for the mutation manager job **/
 class MutationManagerJob extends Job {
@@ -95,6 +95,7 @@ class MutationManagerJob extends Job {
     */
     async run() {
         jobConfigState = await loadMutationManagerJobConfig();
+        const jobConfig = jobConfigState || DEFAULT_JOB_CONFIG;
         const now = Date.now();
         const batchId = common.db.ObjectID() + '';
         const summary = [];
@@ -112,7 +113,7 @@ class MutationManagerJob extends Job {
                 }
             },
             { $sort: { ts: 1 } },
-            { $limit: BATCH_LIMIT },
+            { $limit: jobConfig.BATCH_LIMIT },
             { $set: { running: true, status: mutationManager.MUTATION_STATUS.RUNNING, hb: now, error: null, batch_id: batchId } },
             {
                 $merge: {
@@ -261,7 +262,7 @@ class MutationManagerJob extends Job {
                 }
             },
             { $sort: { ts: 1 } },
-            { $limit: BATCH_LIMIT },
+            { $limit: jobConfig.BATCH_LIMIT },
             { $set: { running: true, hb: nowTs, batch_id: validationBatchId } },
             {
                 $merge: {
