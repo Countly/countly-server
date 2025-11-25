@@ -3,7 +3,10 @@ This script backfills audit fields (created_at, created_by, updated_at, updated_
 that don't have these fields. It uses the earliest available timestamp field or current time as fallback.
 */
 
-var pluginManager = require('../../../plugins/pluginManager.js');
+// Use the top-level Countly pluginManager so config.js is resolved correctly
+// Script path: core/bin/upgrade/DEV/backfill_audit_fields.js
+// Root plugins path: ../../../../plugins/pluginManager.js
+var pluginManager = require('../../../../plugins/pluginManager.js');
 const OPERATION_BATCH_SIZE = 200;
 const MS_THRESHOLD = 10000000000;
 
@@ -88,10 +91,15 @@ console.log("Starting audit fields backfill...");
                     const update = {};
                     let needsUpdate = false;
 
-                    // Set created_at
+                    // Set or normalize created_at
                     if (typeof doc.created_at === "undefined") {
                         const timestampValue = timestampField ? getNestedValue(doc, timestampField) : undefined;
                         update.created_at = coerceTimestamp(timestampValue, now);
+                        needsUpdate = true;
+                    }
+                    else if (typeof doc.created_at === "number" && doc.created_at > MS_THRESHOLD) {
+                        // Normalize ms -> s for existing created_at
+                        update.created_at = Math.floor(doc.created_at / 1000);
                         needsUpdate = true;
                     }
 
@@ -104,7 +112,7 @@ console.log("Starting audit fields backfill...");
                         }
                     }
 
-                    // Set updated_at (use created_at if available, otherwise use timestamp field or now)
+                    // Set or normalize updated_at (use created_at if available, otherwise use timestamp field or now)
                     if (typeof doc.updated_at === "undefined") {
                         if (doc.created_at || update.created_at) {
                             update.updated_at = doc.created_at || update.created_at;
@@ -113,6 +121,11 @@ console.log("Starting audit fields backfill...");
                             const timestampValue = timestampField ? getNestedValue(doc, timestampField) : undefined;
                             update.updated_at = coerceTimestamp(timestampValue, now);
                         }
+                        needsUpdate = true;
+                    }
+                    else if (typeof doc.updated_at === "number" && doc.updated_at > MS_THRESHOLD) {
+                        // Normalize ms -> s for existing updated_at
+                        update.updated_at = Math.floor(doc.updated_at / 1000);
                         needsUpdate = true;
                     }
 
@@ -243,7 +256,7 @@ console.log("Starting audit fields backfill...");
             await backfillCollection('alerts', 'createdAt', 'createdBy');
 
             console.log("\n=== Backfilling dashboards ===");
-            await backfillCollection('dashboards', 'created_at', 'owner');
+            await backfillCollection('dashboards', 'created_at', 'owner_id');
 
             console.log("\n=== Backfilling widgets ===");
             await backfillCollection('widgets', null, null);
