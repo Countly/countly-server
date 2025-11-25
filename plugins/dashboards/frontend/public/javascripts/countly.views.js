@@ -1722,7 +1722,22 @@
             allDashboards: function() {
                 var query = this.searchQuery;
 
-                var dashboards = this.$store.getters["countlyDashboards/all"];
+                var dashboards = (this.$store.getters["countlyDashboards/all"] || []).slice();
+
+                dashboards.sort(function(a, b) {
+                    var nameA = (a.name || "").toLowerCase();
+                    var nameB = (b.name || "").toLowerCase();
+
+                    if (nameA < nameB) {
+                        return -1;
+                    }
+
+                    if (nameA > nameB) {
+                        return 1;
+                    }
+
+                    return 0;
+                });
 
                 if (!query) {
                     return dashboards;
