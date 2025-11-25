@@ -1,12 +1,13 @@
-## Version 25.03.X
+## Version 25.03.28
 Fixes:
+- [alerts] Add alert interval validation in the frontend
 - [events] Correctly navigate to event groupmin events menu
 
 Enterprise Fixes:
-- [concurrent_users] Fix email check for alert
-- [data-manager] Correctly show last triggered for events if data masking is enabled
-- [dashboards] Keep dashboard sidebar sorted alphabetically after additions
 - [applications] Ensure application management list reorders after create/update
+- [concurrent_users] Fix email check for alert
+- [dashboards] Keep dashboard sidebar sorted alphabetically after additions
+- [data-manager] Correctly show last triggered for events if data masking is enabled
 
 ## Version 25.03.27
 Fixes:
