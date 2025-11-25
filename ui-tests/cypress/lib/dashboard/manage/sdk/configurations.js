@@ -38,20 +38,22 @@ const verifyStaticElementsOfPage = () => {
         labelText: "Allow Tracking",
     });
 
-    cy.verifyElement({
-        labelElement: sdkConfiguratonsPageElements.SDK_TRACKING_DESCRIPTION,
-        labelText: "Enable or disable any tracking (gathering) of data in the SDK (default: enabled)",
-    });
+    // Transferred to SDK tests
+    // cy.verifyElement({
+    //     labelElement: sdkConfiguratonsPageElements.SDK_TRACKING_DESCRIPTION,
+    //     labelText: "Enable or disable any tracking (gathering) of data in the SDK",
+    // });
 
     cy.verifyElement({
         labelElement: sdkConfiguratonsPageElements.SDK_NETWORKING_LABEL,
         labelText: "Allow Networking",
     });
 
-    cy.verifyElement({
-        labelElement: sdkConfiguratonsPageElements.SDK_NETWORKING_DESCRIPTION,
-        labelText: "Enable or disable all networking calls from SDK except SDK behavior call. Does not effect tracking of data (default: enabled)",
-    });
+    // Transferred to SDK tests
+    // cy.verifyElement({
+    //     labelElement: sdkConfiguratonsPageElements.SDK_NETWORKING_DESCRIPTION,
+    //     labelText: "Enable or disable all networking calls from SDK except SDK behavior call. Does not effect tracking of data",
+    // });
 };
 
 const verifyPageElements = ({

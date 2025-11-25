@@ -10,6 +10,7 @@ var countlyFs = require('../../../api/utils/countlyFs.js');
 
     plugin.renderDashboard = function(ob) {
         ob.data.countlyGlobal.sharing_status = plugins.getConfig("dashboards").sharing_status;
+        ob.data.countlyGlobal.allow_public_dashboards = plugins.getConfig("dashboards").allow_public_dashboards;
     };
 
     plugin.staticPaths = function(app/*, countlyDb*/) {
