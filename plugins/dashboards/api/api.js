@@ -12,7 +12,8 @@ var pluginOb = {},
     localize = require('../../../api/utils/localization.js'),
     async = require('async'),
     mail = require("../../../api/parts/mgmt/mail"),
-    { validateUser } = require('../../../api/utils/rights.js');
+    { validateUser } = require('../../../api/utils/rights.js'),
+    metadata = require('../../../api/utils/metadata.js');
 
 var ejs = require("ejs");
 
@@ -746,8 +747,7 @@ plugins.setConfigs("dashboards", {
                     shared_email_view: sharedEmailView,
                     shared_user_groups_edit: sharedUserGroupEdit,
                     shared_user_groups_view: sharedUserGroupView,
-                    theme: theme,
-                    created_at: new Date().getTime()
+                    theme: theme
                 };
                 if (refreshRate > 0) {
                     dashData.refreshRate = refreshRate;
@@ -758,6 +758,7 @@ plugins.setConfigs("dashboards", {
                     dashData.widgets = widgets;
                 }
 
+                metadata.addCreationMetadata(params, dashData);
                 common.db.collection("dashboards").insert(dashData, function(err, result) {
                     if (!err && result && result.insertedIds && result.insertedIds[0]) {
                         dataObj.dashboard_id = result.insertedIds[0];
@@ -1040,12 +1041,13 @@ plugins.setConfigs("dashboards", {
                             unset.refreshRate = ""; //unset refresh rate for dashboard
                         }
 
+                        var updateSpec = metadata.addUpdateMetadata(params, {
+                            $set: changedFields,
+                            $unset: unset
+                        });
                         common.db.collection("dashboards").update(
                             filterCond,
-                            {
-                                $set: changedFields,
-                                $unset: unset
-                            },
+                            updateSpec,
                             async function(e, res) {
                                 if (!e && res) {
                                     if (send_email_invitation === 'true') {
@@ -1218,6 +1220,7 @@ plugins.setConfigs("dashboards", {
                         var hasViewAccess = results[1];
 
                         if (hasEditAccess) {
+                            metadata.addCreationMetadata(params, widget);
                             common.db.collection("widgets").insert(widget, function(er, result) {
                                 if (!er && result && result.insertedIds && result.insertedIds[0]) {
                                     var newWidgetId = result.insertedIds[0];
@@ -1304,7 +1307,8 @@ plugins.setConfigs("dashboards", {
                             unsetQuery.$unset = {"isPluginWidget": ""};
                         }
                         if (hasEditAccess) {
-                            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget, ...unsetQuery }, {new: false}, function(er, result) {
+                            var widgetUpdateSpec = metadata.addUpdateMetadata(params, {$set: widget, ...unsetQuery });
+                            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, widgetUpdateSpec, {new: false}, function(er, result) {
                                 if (er || !result || !result.value) {
                                     common.returnMessage(params, 500, "Failed to update widget");
                                 }
@@ -2297,6 +2301,7 @@ plugins.setConfigs("dashboards", {
         return new Promise((resolve, reject)=>{
             importData.data._id = common.db.ObjectID(importData.data._id);
             importData.data.widgets = importData.data.widgets.map(id=>common.db.ObjectID(id));
+            metadata.addCreationMetadata(params, importData.data);
             common.db.collection("dashboards").insert(importData.data, function(err, result) {
                 if (!err && result && result.insertedIds && result.insertedIds[0]) {
                     plugins.dispatch("/systemlogs", {params: params, action: "dashboard_added", data: importData.data});
@@ -2327,6 +2332,7 @@ plugins.setConfigs("dashboards", {
             if (importData.data?.widget_type === 'drill') {
                 delete importData.data.drill_report;
             }
+            metadata.addCreationMetadata(params, importData.data);
             common.db.collection("widgets").insert(importData.data, function(er, result) {
                 if (!er && result && result.insertedIds && result.insertedIds[0]) {
                     plugins.dispatch("/systemlogs", {params: params, action: "widget_added", data: importData.data});

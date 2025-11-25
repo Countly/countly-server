@@ -8,6 +8,7 @@ const _ = require('lodash');
 const { validateCreate, validateRead, validateUpdate } = require('../../../api/utils/rights.js');
 const FEATURE_NAME = 'alerts';
 const commonLib = require("./parts/common-lib.js");
+const metadata = require('../../../api/utils/metadata.js');
 
 /**
  * Alerts that can be triggered when an event is received.
@@ -210,11 +211,11 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                 if (alertConfig._id) {
                     const id = alertConfig._id;
                     delete alertConfig._id;
-                    alertConfig.createdBy = params.member._id;
+                    const updateSpec = metadata.addUpdateMetadata(params, {$set: alertConfig});
                     return common.db.collection("alerts").findAndModify(
                         { _id: common.db.ObjectID(id) },
                         {},
-                        {$set: alertConfig},
+                        updateSpec,
                         function(err, result) {
                             if (!err) {
                                 if (result && result.value) {
@@ -229,10 +230,7 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                             }
                         });
                 }
-                if (!alertConfig._id) {
-                    alertConfig.createdAt = new Date().getTime();
-                }
-                alertConfig.createdBy = params.member._id;
+                metadata.addCreationMetadata(params, alertConfig);
                 return common.db.collection("alerts").insert(
                     alertConfig,
                     function(err, result) {
@@ -321,11 +319,12 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
             const statusList = JSON.parse(params.qstring.status);
             const batch = [];
             for (const appID in statusList) {
+                const updateSpec = metadata.addUpdateMetadata(params, { $set: { enabled: statusList[appID] } });
                 batch.push(
                     common.db.collection("alerts").findAndModify(
                         { _id: common.db.ObjectID(appID) },
                         {},
-                        { $set: { enabled: statusList[appID] } },
+                        updateSpec,
                         { new: false, upsert: false }
                     )
                 );

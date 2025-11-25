@@ -14,6 +14,7 @@ var usersApi = {},
 const countlyCommon = require('../../lib/countly.common.js');
 const log = require('../../utils/log.js')('core:mgmt.users');
 const _ = require('lodash');
+const metadata = require('../../utils/metadata.js');
 
 //for password checking when deleting own account. Could be removed after merging with next
 var argon2 = require('argon2');
@@ -253,7 +254,7 @@ usersApi.createUser = async function(params) {
         var accessTypes = ["c", "r", "u", "d"];
         newMember.password = await common.argon2Hash(newMember.password + secret);
         newMember.password_changed = 0;
-        newMember.created_at = Math.floor(((new Date()).getTime()) / 1000); //TODO: Check if UTC
+        metadata.addCreationMetadata(params, newMember);
         for (var type in accessTypes) {
             if (typeof newMember.permission[accessTypes[type]] === "undefined") {
                 newMember.permission[accessTypes[type]] = {};
@@ -350,7 +351,8 @@ usersApi.updateHomeSettings = function(params) {
         }
         var updateObj = {};
         updateObj["homeSettings." + params.qstring.app_id] = params.qstring.homeSettings;
-        common.db.collection('members').update({_id: common.db.ObjectID(params.member._id + "")}, {"$set": updateObj}, function(err3 /* , res1*/) {
+        const updateSpec = metadata.addUpdateMetadata(params, {"$set": Object.assign({}, updateObj)});
+        common.db.collection('members').update({_id: common.db.ObjectID(params.member._id + "")}, updateSpec, function(err3 /* , res1*/) {
             if (err3) {
                 console.log(err3);
                 common.returnMessage(params, 400, 'Mongo error');
@@ -541,14 +543,20 @@ usersApi.updateUser = async function(params) {
     }
 
 
+    const setPayload = Object.assign({}, updatedMember);
+    const updateSpec = metadata.addUpdateMetadata(params, { '$set': setPayload });
     common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err, memberBefore) {
-        common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function(errUpdatingUser) {
+        common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, updateSpec, { safe: true }, function(errUpdatingUser) {
             if (errUpdatingUser) {
                 common.returnMessage(params, 500, 'Error updating user. Please check api logs.');
                 return false;
             }
             common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err2, member) {
                 if (member && !err2) {
+                    updatedMember.updated_at = updateSpec.$set.updated_at;
+                    if (updateSpec.$set.updated_by) {
+                        updatedMember.updated_by = updateSpec.$set.updated_by;
+                    }
                     updatedMember._id = params.qstring.args.user_id;
                     plugins.dispatch("/i/users/update", {
                         params: params,
@@ -704,7 +712,8 @@ function sha512Hash(str, addSalt) {
 * @param {string} password - password to hash
 **/
 function updateUserPasswordToArgon2(id, password) {
-    common.db.collection('members').update({ _id: id}, { $set: { password: password}});
+    const updateSpec = metadata.addUpdateMetadata(null, { $set: { password: password } });
+    common.db.collection('members').update({ _id: id}, updateSpec);
 }
 
 /**
@@ -1151,13 +1160,15 @@ usersApi.fetchNotes = async function(params) {
 };
 
 usersApi.ackNotification = function(params) {
-    common.db.collection('members').updateOne({"_id": common.db.ObjectID(params.member._id)}, {$set: {['notes.' + params.qstring.path]: true}}, err => {
+    var notePath = 'notes.' + params.qstring.path;
+    const updateSpec = metadata.addUpdateMetadata(params, {$set: {[notePath]: true}});
+    common.db.collection('members').updateOne({"_id": common.db.ObjectID(params.member._id)}, updateSpec, err => {
         if (err) {
             log.e('Error while acking member notification', err);
             return common.returnMessage(params, 500, 'Unknown error');
         }
         else {
-            common.returnOutput(params, {['notes.' + params.qstring.path]: true});
+            common.returnOutput(params, {[notePath]: true});
         }
     });
 };
