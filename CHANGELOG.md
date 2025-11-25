@@ -1,3 +1,8 @@
+## Version 25.03.XX
+Fixes:
+[core] Do not output password in logs on mongodb connection initialisation error
+[dashboards] Do not show error if request is cancelled.
+
 ## Version 25.03.28
 Fixes:
 - [alerts] Add alert interval validation in the frontend
