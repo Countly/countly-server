@@ -8,7 +8,7 @@ const helper = require('../../../../support/helper');
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         labelElement: usersOverviewPageElements.PAGE_TITLE,
-        labelText: "Users Overview",
+        labelText: "Users Overview2",
         tooltipElement: usersOverviewPageElements.PAGE_TITLE_TOOLTIP,
         tooltipText: "Overview of the main metrics and stats about your audience."
     });
