@@ -1,7 +1,10 @@
 ## Version 25.03.XX
 Fixes:
-[core] Do not output password in logs on mongodb connection initialisation error
-[dashboards] Do not show error if request is cancelled.
+- [core] Do not output password in logs on mongodb connection initialisation error
+- [core] Hide error details on render error from response
+- [dashboards] Do not show error if request is cancelled.
+- [dbviewer] Hide api_key from requests
+- [events] Do not throw error in UI on returned group data if there is no segmentation set
 
 ## Version 25.03.28
 Fixes:
