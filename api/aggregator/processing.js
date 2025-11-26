@@ -5,6 +5,7 @@ var common = require('../utils/common.js');
 //const { DataBatchReader } = require('../parts/data/dataBatchReader');
 const plugins = require('../../plugins/pluginManager.js');
 var usage = require('./usage.js');
+var moment = require('moment');
 const log = require('../utils/log.js')('aggregator-core:api');
 const {WriteBatcher} = require('../parts/data/batcher.js');
 const {Cacher} = require('../parts/data/cacher.js');
@@ -355,18 +356,28 @@ var crypto = require('crypto');
                             var meta = await drillMetaCache.getOne("drill_meta", {_id: events[z].a + "_meta_" + event_hash});
                             var app_id = events[z].a;
                             if ((!meta || !meta._id) && !updates[app_id + "_meta_" + event_hash]) {
+                                var lts = Date.now();
                                 updates[app_id + "_meta_" + event_hash] = {
                                     _id: app_id + "_meta_" + event_hash,
                                     app_id: events[z].a,
                                     e: events[z].e,
-                                    type: "e"
+                                    type: "e",
+                                    lts: lts
                                 };
                                 meta = {
                                     _id: app_id + "_meta_" + event_hash,
                                     app_id: events[z].a,
                                     e: events[z].e,
-                                    type: "e"
+                                    type: "e",
+                                    lts: lts
                                 };
+                            }
+
+                            if (!meta.lts || moment(Date.now()).isAfter(moment(meta.lts), 'day')) {
+                                var lts2 = Date.now();
+                                updates[app_id + "_meta_" + event_hash] = updates[app_id + "_meta_" + event_hash] || {};
+                                updates[app_id + "_meta_" + event_hash].lts = lts2;
+                                meta.lts = lts2;
                             }
                             for (var sgk in events[z].sg) {
                                 if (!meta.sg || !meta.sg[sgk]) {
