@@ -1,5 +1,6 @@
 const { defineConfig } = require("cypress");
 const fs = require("fs");
+const path = require("path");
 const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
 const { PNG } = require("pngjs");
 const sharp = require("sharp");
@@ -123,14 +124,36 @@ module.exports = defineConfig({
                 },
             });
 
-            on("after:spec", (spec, results) => {
-                if (results?.video) {
-                    const hasFailures = results.tests.some((t) => t.attempts.some((a) => a.state === "failed"));
-                    if (!hasFailures && fs.existsSync(results.video)) {
+            module.exports = (on, config) => {
+                on("after:spec", (spec, results) => {
+                    const hasFailures = results?.tests?.some((t) =>
+                        t.attempts.some((a) => a.state === "failed")
+                    );
+
+                    const videosFolder = config.videosFolder;
+                    const screenshotsFolder = config.screenshotsFolder;
+
+                    if (results?.video && !hasFailures && fs.existsSync(results.video)) {
                         fs.unlinkSync(results.video);
                     }
-                }
-            });
+
+                    if (!hasFailures) {
+                        const specRelative = path.relative(config.integrationFolder, spec.relative);
+                        const specName = path.basename(specRelative, path.extname(specRelative));
+
+                        const videoDir = path.join(videosFolder, specName);
+                        const screenshotDir = path.join(screenshotsFolder, specName);
+
+                        [videoDir, screenshotDir].forEach((dir) => {
+                            if (fs.existsSync(dir)) {
+                                fs.rmSync(dir, { recursive: true, force: true });
+                            }
+                        });
+                    }
+                });
+
+                return config;
+            };
 
             on("before:browser:launch", (browser, launchOptions) => {
                 if (["chrome", "edge", "electron"].includes(browser.name)) {
