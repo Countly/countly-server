@@ -1,4 +1,4 @@
-/* global app, jQuery, CV, Vue, Vuex, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers, countlyCMS */
+/* global app, Countly, jQuery, CV, Vue, Vuex, countlyGlobal, _, Backbone, store, moment, countlyCommon, CountlyHelpers, countlyCMS */
 
 (function(countlyVue, $) {
 
@@ -661,7 +661,14 @@
                             noSelect: true,
                             tooltip: "Report Manager"
                         }
-                    ]
+                    ],
+                    flexWidget: {
+                        status: 'loading',
+                        used: 0,
+                        available: 0,
+                        nextResetAt: '',
+                        showManageLink: false
+                    }
                 };
             },
             computed: {
@@ -740,10 +747,23 @@
                 },
                 isCommunityEdition: function() {
                     return countlyGlobal.countlyTypeCE;
+                },
+                isFlex: function() {
+                    return typeof countlyGlobal.flexDeploymentId !== "undefined";
+                },
+                mauPercentage: function() {
+                    if (this.flexWidget.available && this.flexWidget.used) {
+                        return this.flexWidget.used / this.flexWidget.available * 100;
+                    }
+                    return 0;
                 }
             },
             methods: {
                 ...Vuex.mapMutations("countlySidebar", ["toggleMainMenu"]),
+                openFlexManageModal: function() {
+                    window.dispatchEvent(new CustomEvent('open-flex-manage-modal'));
+                },
+
                 guidesMouseOver: function() {
                     var state = this.$store.getters["countlySidebar/getGuidesButton"];
                     if (state !== 'selected' && state !== 'highlighted') {
@@ -998,6 +1018,19 @@
                         });
                     });
                 }, 0);
+
+                window.addEventListener('flex-server-info-updated', () => {
+                    this.flexWidget.status = 'loaded';
+                    this.flexWidget.used = countlyGlobal.mau.used.value;
+                    this.flexWidget.available = countlyGlobal.mau.available.value;
+                    this.flexWidget.nextResetAt = countlyGlobal.mau.term.endsAt;
+                });
+
+                window.addEventListener('flex-server-info-failed', () => {
+                    this.flexWidget.status = 'failed';
+                });
+
+                this.flexWidget.showManageLink = Countly.get_remote_config("SHOW_SERVER_MANAGE_LINK") === 1;
             },
             created: function() {
                 var self = this;
