@@ -352,7 +352,7 @@ describe('Create New Widget', () => {
             index: 0,
             question: widget.question,
             internalName: widget.widgetName,
-            pages: "/mrb, /test, /abcdefg",
+            pages: "/homepage', '/shopping', '/checkout",
             isActive: true
         });
 
@@ -449,7 +449,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.typeAddUserConsentLinkText(1, widget.secondConsentLinkText);
         widgetsHelpers.typeAddUserConsentLinkUrl(1, widget.secondConsentLinkUrl);
         widgetsHelpers.typeButtonCallOut(widget.buttonCallOut);
-        //widgetsHelpers.clickNextStepButton();
+        widgetsHelpers.clickNextStepButton();
 
         widgetsHelpers.selectRatingSymbol(RATING_SYMBOLS.STARS);
         widgetsHelpers.clickUploadCustomLogoRadioButton();
