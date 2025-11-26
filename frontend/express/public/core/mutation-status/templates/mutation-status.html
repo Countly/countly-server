@@ -3,19 +3,55 @@
         :title="i18n('mutation-status.overview.title')"
         :tooltip="{description: i18n('mutation-status.overview.tooltip')}"
     >
-        <!-- <template v-slot:header-bottom>
-            <i class="cly-io cly-io-clock color-cool-gray-50 bu-mr-1"></i>
-            <span class="text-medium color-cool-gray-50 bu-mr-2">16 hours ago</span>
-        </template> -->
     </cly-header>
 
     <cly-main>
-        <cly-section>
+        <div class="bu-mb-4">
+            <cly-notification
+                v-if="!clickhouseHealthy && showClickhouseMetrics"
+                :text="i18n('mutation-status.alert.clickhouse-unhealthy')"
+                color="light-warning"
+                :closable="false"
+            >
+            </cly-notification>
+            <cly-notification
+                v-if="(mutationSummary.failed || 0) > 0"
+                :text="i18n('mutation-status.alert.failed-tasks')"
+                color="light-destructive"
+                :closable="false"
+            >
+            </cly-notification>
+        </div>
+        <cly-section v-if="showClickhouseMetrics" :title="i18n('mutation-status.metrics.title')" :tooltip="i18n('mutation-status.metrics.tooltip')">
+            <cly-metric-cards :multiline="true">
+                <cly-metric-card
+                    v-for="card in systemCards"
+                    :key="card.title"
+                    color="#097EFF">
+                    <template v-slot:default>
+                        {{ card.title }}
+                        <cly-tooltip-icon v-if="card.tooltip" class="bu-ml-1" :tooltip="card.tooltip"></cly-tooltip-icon>
+                    </template>
+                    <template v-slot:number>
+                        <span :class="card.numberClass || ''">{{ card.value.toUpperCase() || '—' }}</span>
+                    </template>
+                    <template v-slot:description>
+                        <span class="text-small color-cool-gray-600">{{ card.detail }}</span>
+                    </template>
+                </cly-metric-card>
+            </cly-metric-cards>
+        </cly-section>
+
+        <cly-section :title="i18n('mutation-status.summary.title')" :tooltip="i18n('mutation-status.summary.tooltip')">
+            <cly-chart-bar :option="summaryBarOption" :showToggle="false" :force-loading="isLoading" v-loading="isLoading"></cly-chart-bar>
+        </cly-section>
+
+        <cly-section :title="i18n('mutation-status.table.title')" :tooltip="i18n('mutation-status.table.tooltip')">
             <cly-datatable-n :rows="mutationStatusData" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column fixed="left" width="150" sortable="custom" prop="status" :label="i18n('mutation-status.table.status')">
                         <template v-slot="rowScope">
-                            <div v-tooltip="i18n('mutation-status.table.completed-at', formatDate(rowScope.row.mutation_completion_ts))">
+                            <div v-tooltip="rowScope.row.status === 'completed' ? i18n('mutation-status.table.completed-at', formatDate(rowScope.row.mutation_completion_ts)) : null">
                                 <cly-status-tag
                                     :text="rowScope.row.status.toUpperCase()"
                                     :color="rowScope.row.status === 'failed' ? 'red' : (rowScope.row.status === 'completed' ? 'green' : 'yellow')">
@@ -42,7 +78,7 @@
                     </el-table-column>
                     <el-table-column sortable="custom" prop="type" :label="i18n('mutation-status.table.type')" min-width="140">
                         <template v-slot="rowScope">
-                            <div> {{ rowScope.row.type }} </div>
+                            <div class="text-medium font-weight-bold"> {{ rowScope.row.type.toUpperCase() }} </div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="ts" :label="i18n('mutation-status.table.timestamp')" min-width="200">
@@ -57,7 +93,7 @@
                     </el-table-column>
                     <el-table-column sortable="custom" prop="error" :label="i18n('mutation-status.table.error')" min-width="280">
                         <template v-slot="rowScope">
-                            <div> {{ rowScope.row.error }} </div>
+                            <div class="has-ellipsis" v-tooltip="{content: rowScope.row.error}"> {{ rowScope.row.error }} </div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="fail_count" :label="i18n('mutation-status.table.attempts')" min-width="140">

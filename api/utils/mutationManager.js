@@ -31,7 +31,7 @@ catch {
     };
 
     plugins.register("/master", function() {
-        common.db.collection('mutation_manager').ensureIndex({"mutation_completion_ts": 1}, {expireAfterSeconds: 3 * 24 * 60 * 60}, function() {});
+        common.db.collection('mutation_manager').ensureIndex({"mutation_completion_ts": 1}, {expireAfterSeconds: 30 * 24 * 60 * 60}, function() {});
     });
 
     plugins.register("/core/delete_granular_data", async function(ob) {
@@ -129,8 +129,6 @@ catch {
      */
     async function getQueueSummary() {
         const now = Date.now();
-        const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
-
         const agg = await common.db.collection('mutation_manager').aggregate([
             {
                 $group: {
@@ -139,19 +137,10 @@ catch {
                     running: { $sum: { $cond: [ { $eq: [ "$status", manager.MUTATION_STATUS.RUNNING ] }, 1, 0 ] } },
                     awaiting_validation: { $sum: { $cond: [ { $eq: [ "$status", manager.MUTATION_STATUS.AWAITING_CH_MUTATION_VALIDATION ] }, 1, 0 ] } },
                     failed: { $sum: { $cond: [ { $eq: [ "$status", manager.MUTATION_STATUS.FAILED ] }, 1, 0 ] } },
-                    completed_24h: {
-                        $sum: {
-                            $cond: [ {
-                                $and: [
-                                    { $eq: [ "$status", manager.MUTATION_STATUS.COMPLETED ] },
-                                    { $gte: [ "$mutation_completion_ts", dayAgo ] }
-                                ]
-                            }, 1, 0 ]
-                        }
-                    }
+                    completed: { $sum: { $cond: [ { $eq: [ "$status", manager.MUTATION_STATUS.COMPLETED ] }, 1, 0 ] } }
                 }
             },
-            { $project: { _id: 0, queued: 1, running: 1, awaiting_validation: 1, failed: 1, completed: "$completed_24h" } }
+            { $project: { _id: 0, queued: 1, running: 1, awaiting_validation: 1, failed: 1, completed: 1 } }
         ]).toArray();
 
         const counts = agg[0] || { queued: 0, running: 0, awaiting_validation: 0, failed: 0, completed: 0 };
