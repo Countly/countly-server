@@ -77,6 +77,7 @@ catch {
     plugins.register('/system/observability/collect', async function() {
         try {
             const summary = await getQueueSummary();
+            const queue = await getQueueDetails();
 
             const metrics = {
                 summary: {
@@ -86,7 +87,8 @@ catch {
                     failed: summary.failed,
                     completed: summary.completed,
                     oldest_wait_sec: summary.oldest_wait_sec
-                }
+                },
+                queue
             };
 
             if (manager.isClickhouseEnabled()) {
@@ -111,6 +113,15 @@ catch {
             };
         }
     });
+
+    /**
+     * Get full queue details
+     * @returns {Promise<Array>} - All mutation_manager documents
+     */
+    async function getQueueDetails() {
+        const rows = await common.db.collection('mutation_manager').find({}).sort({ ts: 1 }).toArray();
+        return rows;
+    }
 
     /**
      * Get deletion queue summary
