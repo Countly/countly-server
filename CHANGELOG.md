@@ -1,7 +1,39 @@
-## Version 25.03.xx
+## Version 25.03.28
+Fixes:
+- [alerts] Add alert interval validation in the frontend
+- [events] Correctly navigate to event groupmin events menu
+
+Enterprise Fixes:
+- [applications] Ensure application management list reorders after create/update
+- [concurrent_users] Fix email check for alert
+- [dashboards] Keep dashboard sidebar sorted alphabetically after additions
+- [data-manager] Correctly show last triggered for events if data masking is enabled
+
+## Version 25.03.27
+Fixes:
+- [core-vis] Fix chart legend click event
+- [push] Fixed the options of the request being made during mime detection
+- [views] Fix view name that is displayed in view table
+- [data-manager] Fix last modified data for event and segment
+
+Enterprise Fixes:
+- [concurrent_users] Fix alert threshold comparison
+- [dashboards] Add setting to disable public dashboards
+- [surveys] Handle multiple survey submission from same user based on survey visibility
+- [users] Display user property limits in user profiles when exceeded
+- [users] Set correct users widget table rows amount according to selected setting
+
+## Version 25.03.26
 Fixes:
 - [push] Fixed timeout setting
 - [security] Fixed injection possibility on res.expose
+
+Enterprise Fixes:
+- [data-manager] Fixed bug when merging events with ampersand symbol in the name
+- [groups] Add logs for user updates
+- [nps] Sort widgets by internal name and search by name or internal name
+- [surveys] Change question map log to debug log
+- [surveys] Sort widgets by internal name and search by name or internal name
 
 Dependencies:
 - Bump axios from 1.12.2 to 1.13.1 in /plugins/cognito
@@ -23,7 +55,7 @@ Fixes:
 Enterprise Fixes:
 - [ab-testing] Add script for fixing variant cohort
 - [groups] Fix user permission update after updating user group permission
-
+- [funnels] Fixed delete confirmation using correct button copy
 
 ## Version 25.03.24
 Fixes:

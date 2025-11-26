@@ -137,6 +137,8 @@ fetch.fetchEventGroups = function(params) {
 fetch.fetchMergedEventGroups = function(params) {
     const { qstring: { event } } = params;
     fetch.getMergedEventGroups(params, event, {}, function(result) {
+        result = result || {};
+        result.eventName = params.qstring.event;
         common.returnOutput(params, result);
     });
 };

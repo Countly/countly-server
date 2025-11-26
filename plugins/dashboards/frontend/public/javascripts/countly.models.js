@@ -2,6 +2,13 @@
 
 (function(countlyDashboards) {
 
+    var isRequestCancelled = function(e) {
+        var isCancelled = false;
+        if (e && e.statusText === "abort") {
+            isCancelled = true;
+        }
+        return isCancelled;
+    };
     countlyDashboards.factory = {
         dashboards: {
             getEmpty: function() {
@@ -643,11 +650,16 @@
 
                     return dashbaord;
                 }).catch(function(e) {
-                    log(e);
-                    CountlyHelpers.notify({
-                        message: "Something went wrong while fetching the dashbaord!",
-                        type: "error"
-                    });
+                    if (!isRequestCancelled(e)) {
+                        log(e);
+                        CountlyHelpers.notify({
+                            message: "Something went wrong while fetching the dashbaord!",
+                            type: "error"
+                        });
+                    }
+                    else {
+                        log("Request cancelled: " + e);
+                    }
 
                     return false;
                 });
