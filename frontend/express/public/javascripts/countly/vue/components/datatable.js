@@ -1,7 +1,6 @@
 /* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge, Sortable */
 
 (function(countlyVue, $) {
-
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
@@ -75,7 +74,7 @@
 
             return {
                 controlParams: controlParams,
-
+                lastSearchQuery: '',
                 firstPage: 1
             };
         },
@@ -213,22 +212,70 @@
             },
 
             nextAvailable() {
+                if (this.isCursorPagination) {
+                    // Can go next if there's a next cursor or if we're not on the last page
+                    return this.dataView.hasNextPage && this.dataView.nextCursor;
+                }
                 return this.controlParams.page < this.lastPage;
             },
-
+            lastPageAvailable: function() {
+                // Last page button is only available for traditional pagination (MongoDB)
+                // and when we can actually navigate to the last page
+                return !this.isCursorPagination && this.lastPage > 1 && this.controlParams.page < this.lastPage;
+            },
+            pageSelectionAvailable: function() {
+                // Page selection dropdown is only available for traditional pagination (MongoDB)
+                return !this.isCursorPagination && this.lastPage > 1;
+            },
+            isCursorPagination: function() {
+                // Check if we're using cursor pagination based on the control params
+                // For MongoDB/traditional pagination, this should be false
+                // For ClickHouse, this should be true
+                const result = this.controlParams && this.controlParams.useCursorPagination === true;
+                return result;
+            },
             paginationInfo() {
-                const { page, perPage, searchQuery } = this.controlParams || {};
-                const { notFilteredTotalRows: grandTotal, totalRows: filteredTotal } = this.dataView || {};
+                var page = this.controlParams.page,
+                    perPage = this.controlParams.perPage,
+                    searchQuery = this.controlParams.searchQuery,
+                    grandTotal = this.dataView.notFilteredTotalRows,
+                    filteredTotal = this.dataView.totalRows,
+                    currentRows = this.dataView.rows.length,
+                    info = this.i18n("common.table.no-data");
 
-                const startEntries = (page - 1) * perPage + 1;
-                const endEntries = Math.min(startEntries + perPage - 1, filteredTotal);
-                let info = this.i18n('common.table.no-data');
+                if (this.isCursorPagination) {
+                    // For cursor pagination, show current page entries without total count calculation
+                    if (currentRows > 0) {
+                        var cursorStartEntries = (page - 1) * perPage + 1,
+                            cursorEndEntries = cursorStartEntries + currentRows - 1;
 
-                if (filteredTotal > 0) {
-                    info = this.i18n('common.showing')
-                        .replace('_START_', countlyCommon.formatNumber(startEntries))
-                        .replace('_END_', countlyCommon.formatNumber(endEntries))
-                        .replace('_TOTAL_', countlyCommon.formatNumber(filteredTotal));
+                        if (filteredTotal > 0 && !this.dataView.isApproximate) {
+                            // Show total if available and exact
+                            info = this.i18n("common.showing")
+                                .replace("_START_", countlyCommon.formatNumber(cursorStartEntries))
+                                .replace("_END_", countlyCommon.formatNumber(cursorEndEntries))
+                                .replace("_TOTAL_", countlyCommon.formatNumber(filteredTotal));
+                        }
+                        else {
+                            // Show current range without total for cursor pagination
+                            info = "Showing " + countlyCommon.formatNumber(cursorStartEntries) + " to " + countlyCommon.formatNumber(cursorEndEntries) + " entries";
+                            if (this.dataView.isApproximate && filteredTotal > 0) {
+                                info += " (≈" + countlyCommon.formatNumber(filteredTotal) + " total)";
+                            }
+                        }
+                    }
+                }
+                else {
+                    // Traditional pagination info
+                    var traditionalStartEntries = (page - 1) * perPage + 1,
+                        traditionalEndEntries = Math.min(traditionalStartEntries + perPage - 1, filteredTotal);
+
+                    if (filteredTotal > 0) {
+                        info = this.i18n("common.showing")
+                            .replace("_START_", countlyCommon.formatNumber(traditionalStartEntries))
+                            .replace("_END_", countlyCommon.formatNumber(traditionalEndEntries))
+                            .replace("_TOTAL_", countlyCommon.formatNumber(filteredTotal));
+                    }
                 }
 
                 if (this.displaySearch && searchQuery) {
@@ -239,6 +286,14 @@
             },
 
             prevAvailable() {
+                if (this.isCursorPagination) {
+                    // Can go back if we have cursor history or if not on first page
+                    const hasHistory = this.controlParams.cursorHistory.length > 0;
+                    const notFirstPage = this.controlParams.page > this.firstPage;
+                    const canGoBackToPage1 = this.canGoBackToPage1();
+                    const result = hasHistory || notFirstPage || canGoBackToPage1;
+                    return result;
+                }
                 return this.controlParams.page > this.firstPage;
             },
 
@@ -253,10 +308,32 @@
         },
 
         watch: {
+            dataView: {
+                handler: function(newDataView) {
+                    // Update useCursorPagination based on the data view
+                    if (newDataView) {
+                        const hasCursorData = newDataView.hasNextPage !== undefined || newDataView.nextCursor !== undefined;
+                        const shouldUseCursor = hasCursorData && (newDataView.hasNextPage || newDataView.nextCursor);
+
+                        if (shouldUseCursor && !this.controlParams.useCursorPagination) {
+                            this.controlParams.useCursorPagination = true;
+                        }
+                        else if (!shouldUseCursor && this.controlParams.useCursorPagination) {
+                            this.controlParams.useCursorPagination = false;
+                        }
+                    }
+                },
+                deep: true
+            },
             controlParams: {
                 deep: true,
 
                 handler: _.debounce(function() {
+                    // Clear cursor history when search or filters change
+                    if (this.controlParams.searchQuery !== this.lastSearchQuery) {
+                        this.controlParams.cursorHistory = [];
+                        this.lastSearchQuery = this.controlParams.searchQuery;
+                    }
                     this.triggerExternalSource();
                     this.setControlParams();
                 }, 500)
@@ -308,12 +385,22 @@
             },
 
             getControlParams() {
+                // Check if we should use cursor pagination based on the data view
+                var shouldUseCursorPagination = false;
+                if (this.dataView && (this.dataView.hasNextPage || this.dataView.nextCursor)) {
+                    shouldUseCursorPagination = true;
+                }
+
                 const defaultState = {
                     page: 1,
                     perPage: this.perPage,
                     searchQuery: '',
                     selectedDynamicCols: false,
-                    sort: []
+                    sort: [],
+                    cursor: null,
+                    paginationMode: 'snapshot',
+                    cursorHistory: [], // Store previous cursors for backward navigation
+                    useCursorPagination: shouldUseCursorPagination // Auto-detect based on data view
                 };
 
                 if (this.defaultSort && this.preventDefaultSort === false) {
@@ -356,37 +443,135 @@
             },
 
             goToFirstPage() {
-                this.controlParams.page = this.firstPage;
+                if (this.isCursorPagination) {
+                    // For cursor pagination, reset to first page by clearing cursor and history
+                    this.updateControlParams({
+                        page: this.firstPage,
+                        cursor: null,
+                        cursorHistory: []
+                    });
+                }
+                else {
+                    // For traditional pagination (MongoDB), go to first page
+                    this.controlParams.page = this.firstPage;
+                }
             },
 
             goToLastPage() {
-                this.controlParams.page = this.lastPage;
+                if (this.isCursorPagination) {
+                    // For cursor pagination, last page navigation is not supported
+                    // Users can navigate forward using next cursor
+                    return;
+                }
+                // For traditional pagination (MongoDB), go to last page
+                if (this.lastPage > 0) {
+                    this.controlParams.page = this.lastPage;
+                }
             },
 
             goToNextPage() {
                 if (this.nextAvailable) {
-                    this.controlParams.page++;
+                    if (this.isCursorPagination) {
+                        // For cursor pagination, use the nextCursor from the response
+                        // Store current cursor in history before moving to next page
+                        this.addToCursorHistory();
+
+                        this.updateControlParams({
+                            page: this.controlParams.page + 1,
+                            cursor: this.dataView.nextCursor
+                        });
+                    }
+                    else {
+                        this.controlParams.page++;
+                    }
                 }
             },
 
             goToPrevPage() {
                 if (this.prevAvailable) {
-                    this.controlParams.page--;
+                    if (this.isCursorPagination) {
+                        // Get previous cursor from history
+                        const previousCursorData = this.getPreviousCursor();
+                        if (previousCursorData) {
+                            this.updateControlParams({
+                                page: previousCursorData.page,
+                                cursor: previousCursorData.cursor
+                            });
+                        }
+                        else if (this.canGoBackToPage1()) {
+                            // Find and remove the page 1 entry from history
+                            const page1Index = this.controlParams.cursorHistory.findIndex(entry => entry.page === 1);
+                            if (page1Index !== -1) {
+                                this.controlParams.cursorHistory.splice(page1Index, 1);
+                            }
+                            this.updateControlParams({
+                                page: 1,
+                                cursor: null
+                            });
+                        }
+                        else {
+                            // Fallback: just go back one page (will show first page data)
+                            this.controlParams.page--;
+                        }
+                    }
+                    else {
+                        this.controlParams.page--;
+                    }
                 }
+            },
+            resetPaginationOnRefresh: function() {
+                // Reset to page 1 and clear cursor on page refresh
+                this.updateControlParams({
+                    page: 1,
+                    cursor: null,
+                    cursorHistory: []
+                });
+            },
+            addToCursorHistory: function() {
+                // Add current cursor to history before navigating to next page
+                // For page 1, store null cursor to represent the first page state
+                const historyEntry = {
+                    page: this.controlParams.page,
+                    cursor: this.controlParams.cursor || null
+                };
+                this.controlParams.cursorHistory.push(historyEntry);
+            },
+            getPreviousCursor: function() {
+                // Get the previous cursor from history
+                if (this.controlParams.cursorHistory.length > 0) {
+                    const previousCursor = this.controlParams.cursorHistory.pop();
+                    return previousCursor;
+                }
+                return null;
+            },
+            canGoBackToPage1: function() {
+                // Check if we can go back to page 1 (when we have history but no cursor)
+                return this.controlParams.cursorHistory.length > 0 &&
+                        this.controlParams.cursorHistory.some(entry => entry.page === 1);
             },
 
             onSortChange(elTableSorting) {
+                var updateParams = {};
                 if (elTableSorting.order) {
-                    this.updateControlParams({
-                        sort: [{
-                            field: elTableSorting.column.sortBy || elTableSorting.prop,
-                            type: elTableSorting.order === "ascending" ? "asc" : "desc"
-                        }]
-                    });
+                    updateParams.sort = [{
+                        field: elTableSorting.column.sortBy || elTableSorting.prop,
+                        type: elTableSorting.order === "ascending" ? "asc" : "desc"
+                    }];
+
+
                 }
                 else {
-                    this.updateControlParams({ sort: [] });
+                    updateParams.sort = [];
                 }
+
+                // Reset cursor and page when sorting changes in cursor pagination
+                if (this.isCursorPagination) {
+                    updateParams.cursor = null;
+                    updateParams.page = this.firstPage;
+                    updateParams.cursorHistory = [];
+                }
+
+                this.updateControlParams(updateParams);
             },
 
             setControlParams() {
@@ -433,6 +618,15 @@
                 }
 
                 this.$emit('params-change', this.controlParams);
+            },
+            updateCursorFromResponse: function(response) {
+                // Update cursor state from API response
+                if (response && response.nextCursor) {
+                    // Store current cursor in history if we have one
+                    if (this.controlParams.cursor) {
+                        this.addToCursorHistory(this.controlParams.cursor);
+                    }
+                }
             },
 
             updateControlParams(newParams) {
@@ -676,6 +870,21 @@
                 default: null,
                 required: false
             },
+            showLimitOptions: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            exportAllRows: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            exportLimit: {
+                type: Number,
+                default: countlyGlobal.config.export_limit,
+                required: false
+            },
             exportApi: {
                 type: Function,
                 default: null,
@@ -735,7 +944,8 @@
         methods: {
             onExportClick: function() {
                 this.initiateExport({
-                    type: this.selectedExportType
+                    type: this.selectedExportType,
+                    limit: this.exportAllRows ? -1 : this.exportLimit
                 });
             },
             getDefaultFileName: function() {
@@ -828,7 +1038,7 @@
                 var formData = null,
                     url = null;
                 if (this.exportApi) {
-                    formData = this.exportApi();
+                    formData = this.exportApi(params);
                     formData.type = params.type;
                     url = countlyCommon.API_URL + (formData.url || "/o/export/request");
                     if (this.exportFileName) {
@@ -838,6 +1048,9 @@
                 else if (this.exportQuery) {
                     formData = this.exportQuery();
                     formData.type = params.type;
+                    if (formData.limit) {
+                        formData.limit = params.limit;
+                    }
                     if (this.exportFileName) {
                         formData.filename = this.exportFileName;
                     }
@@ -1101,6 +1314,7 @@
         template: CV.T('/javascripts/countly/vue/templates/datatable.html'),
         mounted: function() {
             var self = this;
+            this.resetPaginationOnRefresh();
             if (this.sortable) {
                 const table = document.querySelector('.el-table__body-wrapper tbody');
                 Sortable.create(table, {
