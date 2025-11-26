@@ -135,13 +135,20 @@ module.exports = defineConfig({
             });
 
             on("after:run", () => {
-                const videosFolder = config.videosFolder;
-                const screenshotsFolder = config.screenshotsFolder;
+                const folders = [config.videosFolder, config.screenshotsFolder];
 
-                // remove empty folders AFTER Cypress finishes writing videos
-                [videosFolder, screenshotsFolder].forEach(folder => {
-                    fs.readdirSync(folder).forEach(entry => {
+                folders.forEach((folder) => {
+                    if (!fs.existsSync(folder)) {
+                        return; // folder yoksa skip
+                    }
+
+                    fs.readdirSync(folder).forEach((entry) => {
                         const fullPath = path.join(folder, entry);
+
+                        if (!fs.existsSync(fullPath)) {
+                            return;
+                        }
+
                         if (fs.statSync(fullPath).isDirectory()) {
                             const content = fs.readdirSync(fullPath);
                             if (content.length === 0) {
@@ -151,7 +158,7 @@ module.exports = defineConfig({
                     });
                 });
             });
-            
+
             on("before:browser:launch", (browser, launchOptions) => {
                 if (["chrome", "edge", "electron"].includes(browser.name)) {
                     if (browser.isHeadless) {
