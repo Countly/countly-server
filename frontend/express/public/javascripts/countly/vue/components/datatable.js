@@ -6,114 +6,153 @@
         _mixins = countlyVue.mixins;
 
     var TableExtensionsMixin = {
+        // NOTE: since this is a mixin and props are component specific, we should not define props here
+        // mixins should be a complement to the component, not a dependency
         props: {
-            persistKey: {
-                type: String,
-                default: null
-            },
-            dataSource: {
-                type: Object,
-                default: function() {
-                    return null;
-                }
-            },
-            rows: {
-                type: Array,
-                default: function() {
-                    return [];
-                }
-            },
             availableDynamicCols: {
-                type: Array,
-                default: function() {
-                    return [];
-                }
+                default: () => [],
+                type: Array
             },
-            paused: {
-                type: Boolean,
-                default: false
+
+            dataSource: {
+                default: () => null,
+                type: Object
             },
-            displaySearch: {
-                type: Boolean,
-                default: true
-            },
+
             defaultSort: {
-                type: Object,
-                default: function() {
-                    return { prop: '_id', order: 'asc' };
-                },
-                required: false
+                default: () => ({ prop: '_id', order: 'asc' }),
+                type: Object
             },
+
+            displaySearch: {
+                default: true,
+                type: Boolean
+            },
+
+            paused: {
+                default: false,
+                type: Boolean
+            },
+
+            persistKey: {
+                default: null,
+                type: String
+            },
+
             preventDefaultSort: {
-                type: Boolean,
-                default: false
+                default: false,
+                type: Boolean
+            },
+
+            rows: {
+                default: () => [],
+                type: Array
+            },
+
+            perPage: {
+                default: 10,
+                type: Number
             }
         },
+
+        emits: [
+            'params-change',
+            'search-query-changed'
+        ],
+
+        data() {
+            const controlParams = this.getControlParams();
+
+            if (!Array.isArray(controlParams?.selectedDynamicCols)) {
+                controlParams.selectedDynamicCols = this.availableDynamicCols.reduce((acc, option) => {
+                    if (option.default || option.required) {
+                        acc.push(option.value);
+                    }
+
+                    return acc;
+                }, []);
+            }
+
+            return {
+                controlParams: controlParams,
+
+                firstPage: 1
+            };
+        },
+
         computed: {
-            hasDynamicCols: function() {
-                return this.availableDynamicCols.length > 0;
-            },
-            availableDynamicColsLookup: function() {
-                return this.availableDynamicCols.reduce(function(acc, col) {
+            availableDynamicColsLookup() {
+                return this.availableDynamicCols.reduce((acc, col) => {
                     acc[col.value] = col;
+
                     return acc;
                 }, {});
             },
-            publicDynamicCols: function() {
-                var self = this;
-                var cols = this.controlParams.selectedDynamicCols.map(function(val) {
-                    return self.availableDynamicColsLookup[val];
-                }).filter(function(val) {
-                    return !!val;
-                });
-                return cols;
-            },
-            localSearchedRows: function() {
-                var currentArray = this.rows.slice();
-                if (this.displaySearch && this.controlParams.searchQuery) {
-                    var queryLc = (this.controlParams.searchQuery + "").toLowerCase();
 
-                    var searchableFields = [];
-                    if (this.$refs.elTable && this.$refs.elTable.columns) {
-                        this.$refs.elTable.columns.forEach(function(col) {
-                            if (col.columnKey) {
-                                searchableFields.push(col.columnKey);
-                            }
-                        });
-                    }
+            availablePages() {
+                const pages = [];
 
-                    currentArray = currentArray.filter(function(item) {
-                        // If no searchable fields found from columns, use original search logic
-                        if (!searchableFields.length) {
-                            return Object.keys(item).some(function(fieldKey) {
-                                if (item[fieldKey] === null || item[fieldKey] === undefined) {
-                                    return false;
-                                }
-                                return (item[fieldKey] + "").toLowerCase().indexOf(queryLc) > -1;
-                            });
-                        }
-
-                        return searchableFields.some(function(fieldKey) {
-                            var value = item[fieldKey];
-                            if (value === null || value === undefined) {
-                                return false;
-                            }
-                            return (value + "").toLowerCase().indexOf(queryLc) > -1;
-                        });
-                    });
+                // NOTE: We should use a better variable name than I, it is not clear what this variable refers to
+                for (let i = this.firstPage, I = Math.min(this.lastPage, 10000); i <= I; i++) {
+                    pages.push(i);
                 }
-                return currentArray;
-            },
-            localDataView: function() {
-                var currentArray = this.localSearchedRows;
-                if (this.controlParams.sort.length > 0) {
-                    var sorting = this.controlParams.sort[0],
-                        dir = sorting.type === "asc" ? 1 : -1;
 
-                    currentArray = currentArray.slice();
-                    currentArray.sort(function(a, b) {
-                        var priA = a[sorting.field],
-                            priB = b[sorting.field];
+                return pages;
+            },
+
+            dataView() {
+                return this.dataSource ? this.externalData : this.localDataView;
+            },
+
+            externalData() {
+                if (!this.dataSource) {
+                    return [];
+                }
+
+                const { dataAddress } = this.dataSource;
+
+                return dataAddress.store.getters[dataAddress.path];
+            },
+
+            externalParams() {
+                if (!this.dataSource) {
+                    return undefined;
+                }
+
+                const { paramsAddress } = this.dataSource;
+
+                return paramsAddress.store.getters[paramsAddress.path];
+            },
+
+            externalStatus() {
+                if (!this.dataSource) {
+                    return undefined;
+                }
+
+                const { statusAddress } = this.dataSource;
+
+                return statusAddress.store.getters[statusAddress.path];
+            },
+
+            hasDynamicCols() {
+                return this.availableDynamicCols.length > 0;
+            },
+
+            lastPage() {
+                return this.totalPages;
+            },
+
+            localDataView() {
+                let currentArray = this.localSearchedRows;
+                const totalRows = currentArray.length;
+
+                if (this.controlParams.sort.length > 0) {
+                    const sorting = this.controlParams.sort[0];
+                    const sortingType = sorting.type === "asc" ? 1 : -1;
+
+                    currentArray.sort((a, b) => {
+                        let priA = a[sorting.field];
+                        let priB = b[sorting.field];
 
                         if (typeof priA === 'object' && priA !== null && priA.sortBy) {
                             priA = priA.sortBy;
@@ -121,418 +160,166 @@
                         }
 
                         if (priA < priB) {
-                            return -dir;
+                            return -sortingType;
                         }
+
                         if (priA > priB) {
-                            return dir;
+                            return sortingType;
                         }
+
                         return 0;
                     });
                 }
-                var filteredTotal = currentArray.length;
+
+                // NOTE: displayMode seams to be a prop from cly-datatable component, since this is a mixin, it should
+                // not reference variables from the component using it, beside being confusing,
+                // it can lead to hard to debug issues
                 if (this.displayMode === 'list') {
-                    this.controlParams.perPage = currentArray.length;
+                    this.controlParams.perPage = totalRows;
                 }
-                if (this.controlParams.perPage < currentArray.length) {
-                    var startIndex = (this.controlParams.page - 1) * this.controlParams.perPage,
-                        endIndex = startIndex + this.controlParams.perPage;
+
+                if (this.controlParams.perPage < totalRows) {
+                    const startIndex = (this.controlParams.page - 1) * this.controlParams.perPage;
+                    const endIndex = startIndex + this.controlParams.perPage;
+
                     currentArray = currentArray.slice(startIndex, endIndex);
                 }
+
                 return {
+                    notFilteredTotalRows: this.rows.length,
                     rows: currentArray,
-                    totalRows: filteredTotal,
-                    notFilteredTotalRows: this.rows.length
+                    totalRows
                 };
             },
-            dataView: function() {
-                if (this.dataSource) {
-                    return this.externalData;
+
+            localSearchedRows() {
+                let currentArray = this.rows;
+
+                if (this.displaySearch && this.controlParams.searchQuery) {
+                    const lowerCaseSearchQuery = (`${this.controlParams.searchQuery}`).toLowerCase();
+
+                    currentArray = currentArray.filter(item => {
+                        return Object.keys(item).some(fieldKey => {
+                            if (!item[fieldKey]) {
+                                return false;
+                            }
+
+                            return (`${item[fieldKey]}`).toLowerCase().indexOf(lowerCaseSearchQuery) > -1;
+                        });
+                    });
                 }
-                else {
-                    return this.localDataView;
-                }
+
+                return currentArray;
             },
-            totalPages: function() {
-                return Math.ceil(this.dataView.totalRows / this.controlParams.perPage);
-            },
-            lastPage: function() {
-                return this.totalPages;
-            },
-            prevAvailable: function() {
-                if (this.isCursorPagination) {
-                    // Can go back if we have cursor history or if not on first page
-                    const hasHistory = this.controlParams.cursorHistory.length > 0;
-                    const notFirstPage = this.controlParams.page > this.firstPage;
-                    const canGoBackToPage1 = this.canGoBackToPage1();
-                    const result = hasHistory || notFirstPage || canGoBackToPage1;
-                    return result;
-                }
-                return this.controlParams.page > this.firstPage;
-            },
-            nextAvailable: function() {
-                if (this.isCursorPagination) {
-                    // Can go next if there's a next cursor or if we're not on the last page
-                    return this.dataView.hasNextPage && this.dataView.nextCursor;
-                }
+
+            nextAvailable() {
                 return this.controlParams.page < this.lastPage;
             },
-            lastPageAvailable: function() {
-                // Last page button is only available for traditional pagination (MongoDB)
-                // and when we can actually navigate to the last page
-                return !this.isCursorPagination && this.lastPage > 1 && this.controlParams.page < this.lastPage;
-            },
-            pageSelectionAvailable: function() {
-                // Page selection dropdown is only available for traditional pagination (MongoDB)
-                return !this.isCursorPagination && this.lastPage > 1;
-            },
-            isCursorPagination: function() {
-                // Check if we're using cursor pagination based on the control params
-                // For MongoDB/traditional pagination, this should be false
-                // For ClickHouse, this should be true
-                const result = this.controlParams && this.controlParams.useCursorPagination === true;
-                return result;
-            },
-            paginationInfo: function() {
-                var page = this.controlParams.page,
-                    perPage = this.controlParams.perPage,
-                    searchQuery = this.controlParams.searchQuery,
-                    grandTotal = this.dataView.notFilteredTotalRows,
-                    filteredTotal = this.dataView.totalRows,
-                    currentRows = this.dataView.rows.length,
-                    info = this.i18n("common.table.no-data");
 
-                if (this.isCursorPagination) {
-                    // For cursor pagination, show current page entries without total count calculation
-                    if (currentRows > 0) {
-                        var cursorStartEntries = (page - 1) * perPage + 1,
-                            cursorEndEntries = cursorStartEntries + currentRows - 1;
+            paginationInfo() {
+                const { page, perPage, searchQuery } = this.controlParams || {};
+                const { notFilteredTotalRows: grandTotal, totalRows: filteredTotal } = this.dataView || {};
 
-                        if (filteredTotal > 0 && !this.dataView.isApproximate) {
-                            // Show total if available and exact
-                            info = this.i18n("common.showing")
-                                .replace("_START_", countlyCommon.formatNumber(cursorStartEntries))
-                                .replace("_END_", countlyCommon.formatNumber(cursorEndEntries))
-                                .replace("_TOTAL_", countlyCommon.formatNumber(filteredTotal));
-                        }
-                        else {
-                            // Show current range without total for cursor pagination
-                            info = "Showing " + countlyCommon.formatNumber(cursorStartEntries) + " to " + countlyCommon.formatNumber(cursorEndEntries) + " entries";
-                            if (this.dataView.isApproximate && filteredTotal > 0) {
-                                info += " (≈" + countlyCommon.formatNumber(filteredTotal) + " total)";
-                            }
-                        }
-                    }
-                }
-                else {
-                    // Traditional pagination info
-                    var traditionalStartEntries = (page - 1) * perPage + 1,
-                        traditionalEndEntries = Math.min(traditionalStartEntries + perPage - 1, filteredTotal);
+                const startEntries = (page - 1) * perPage + 1;
+                const endEntries = Math.min(startEntries + perPage - 1, filteredTotal);
+                let info = this.i18n('common.table.no-data');
 
-                    if (filteredTotal > 0) {
-                        info = this.i18n("common.showing")
-                            .replace("_START_", countlyCommon.formatNumber(traditionalStartEntries))
-                            .replace("_END_", countlyCommon.formatNumber(traditionalEndEntries))
-                            .replace("_TOTAL_", countlyCommon.formatNumber(filteredTotal));
-                    }
+                if (filteredTotal > 0) {
+                    info = this.i18n('common.showing')
+                        .replace('_START_', countlyCommon.formatNumber(startEntries))
+                        .replace('_END_', countlyCommon.formatNumber(endEntries))
+                        .replace('_TOTAL_', countlyCommon.formatNumber(filteredTotal));
                 }
 
                 if (this.displaySearch && searchQuery) {
-                    info += " " + this.i18n("common.filtered").replace("_MAX_", grandTotal);
+                    info += `${this.i18n('common.filtered').replace('_MAX_', grandTotal)}`;
                 }
+
                 return info;
             },
-            externalData: function() {
-                if (!this.dataSource) {
-                    return [];
-                }
-                var addr = this.dataSource.dataAddress;
-                return addr.store.getters[addr.path];
+
+            prevAvailable() {
+                return this.controlParams.page > this.firstPage;
             },
-            externalStatus: function() {
-                if (!this.dataSource) {
-                    return undefined;
-                }
-                var addr = this.dataSource.statusAddress;
-                return addr.store.getters[addr.path];
+
+            publicDynamicCols() {
+                return this.controlParams.selectedDynamicCols.map(val => this.availableDynamicColsLookup[val])
+                    .filter(Boolean);
             },
-            externalParams: function() {
-                if (!this.dataSource) {
-                    return undefined;
-                }
-                var addr = this.dataSource.paramsAddress;
-                return addr.store.getters[addr.path];
-            },
-            availablePages: function() {
-                var pages = [];
-                for (var i = this.firstPage, I = Math.min(this.lastPage, 10000); i <= I; i++) {
-                    pages.push(i);
-                }
-                return pages;
+
+            totalPages() {
+                return Math.ceil(this.dataView.totalRows / this.controlParams.perPage);
             }
         },
+
         watch: {
-            dataView: {
-                handler: function(newDataView) {
-                    // Skip if component is paused or has no data
-                    if (this.paused || !newDataView || !newDataView.rows || newDataView.rows.length === 0) {
-                        return;
-                    }
-
-                    // Update useCursorPagination based on the data view
-                    const hasCursorData = newDataView.hasNextPage !== undefined || newDataView.nextCursor !== undefined;
-                    const shouldUseCursor = hasCursorData && (newDataView.hasNextPage || newDataView.nextCursor);
-
-                    if (shouldUseCursor && !this.controlParams.useCursorPagination) {
-                        this.controlParams.useCursorPagination = true;
-                    }
-                    else if (!shouldUseCursor && this.controlParams.useCursorPagination) {
-                        this.controlParams.useCursorPagination = false;
-                    }
-                },
-                deep: true
-            },
             controlParams: {
                 deep: true,
+
                 handler: _.debounce(function() {
-                    // Skip if component is paused or has no data
-                    if (this.paused || !this.dataView || !this.dataView.rows || this.dataView.rows.length === 0) {
-                        return;
-                    }
-
-                    // Clear cursor history when search or filters change
-                    if (this.controlParams.searchQuery !== this.lastSearchQuery) {
-                        this.controlParams.cursorHistory = [];
-                        this.lastSearchQuery = this.controlParams.searchQuery;
-                    }
-
                     this.triggerExternalSource();
                     this.setControlParams();
                 }, 500)
             },
-            'controlParams.page': function() {
+
+            'controlParams.page'() {
                 this.checkPageBoundaries();
             },
-            'controlParams.selectedDynamicCols': function() {
+
+            'controlParams.selectedDynamicCols'() {
                 this.$refs.elTable.store.updateColumns(); // TODO: Hacky, check for memory leaks.
             },
-            'controlParams.searchQuery': function(newVal) {
+
+            'controlParams.searchQuery'(newVal) {
                 this.$emit('search-query-changed', newVal);
             },
-            lastPage: function() {
+
+            lastPage() {
                 this.checkPageBoundaries();
             },
-            paused: function(newVal) {
+
+            paused(newVal) {
                 if (newVal) {
-                    this.dataSource.updateParams({
-                        ready: false
-                    });
+                    this.dataSource.updateParams({ ready: false });
                 }
                 else {
                     this.triggerExternalSource();
                 }
             }
         },
-        data: function() {
-            var controlParams = this.getControlParams();
 
-            if (!controlParams.selectedDynamicCols || !Array.isArray(controlParams.selectedDynamicCols)) {
-                controlParams.selectedDynamicCols = this.availableDynamicCols.reduce(function(acc, option) {
-                    if (option.default || option.required) {
-                        acc.push(option.value);
-                    }
-                    return acc;
-                }, []);
-            }
-
-            return {
-                controlParams: controlParams,
-                firstPage: 1,
-                lastSearchQuery: ''
-            };
-        },
-        mounted: function() {
-            this.triggerExternalSource();
-        },
-        beforeDestroy: function() {
+        beforeDestroy() {
             this.setControlParams();
         },
+
+        mounted() {
+            this.triggerExternalSource();
+        },
+
         methods: {
-            checkPageBoundaries: function() {
+            checkPageBoundaries() {
                 if (this.lastPage > 0 && this.controlParams.page > this.lastPage) {
                     this.controlParams.page = this.lastPage;
                 }
+
                 if (this.controlParams.page < 1) {
                     this.controlParams.page = 1;
                 }
             },
-            goToFirstPage: function() {
-                if (this.isCursorPagination) {
-                    // For cursor pagination, reset to first page by clearing cursor and history
-                    this.updateControlParams({
-                        page: this.firstPage,
-                        cursor: null,
-                        cursorHistory: []
-                    });
-                }
-                else {
-                    // For traditional pagination (MongoDB), go to first page
-                    this.controlParams.page = this.firstPage;
-                }
-            },
-            goToLastPage: function() {
-                if (this.isCursorPagination) {
-                    // For cursor pagination, last page navigation is not supported
-                    // Users can navigate forward using next cursor
-                    return;
-                }
-                // For traditional pagination (MongoDB), go to last page
-                if (this.lastPage > 0) {
-                    this.controlParams.page = this.lastPage;
-                }
-            },
-            goToPrevPage: function() {
-                if (this.prevAvailable) {
-                    if (this.isCursorPagination) {
-                        // Get previous cursor from history
-                        const previousCursorData = this.getPreviousCursor();
-                        if (previousCursorData) {
-                            this.updateControlParams({
-                                page: previousCursorData.page,
-                                cursor: previousCursorData.cursor
-                            });
-                        }
-                        else if (this.canGoBackToPage1()) {
-                            // Find and remove the page 1 entry from history
-                            const page1Index = this.controlParams.cursorHistory.findIndex(entry => entry.page === 1);
-                            if (page1Index !== -1) {
-                                this.controlParams.cursorHistory.splice(page1Index, 1);
-                            }
-                            this.updateControlParams({
-                                page: 1,
-                                cursor: null
-                            });
-                        }
-                        else {
-                            // Fallback: just go back one page (will show first page data)
-                            this.controlParams.page--;
-                        }
-                    }
-                    else {
-                        this.controlParams.page--;
-                    }
-                }
-            },
-            goToNextPage: function() {
-                if (this.nextAvailable) {
-                    if (this.isCursorPagination) {
-                        // For cursor pagination, use the nextCursor from the response
-                        // Store current cursor in history before moving to next page
-                        this.addToCursorHistory();
 
-                        this.updateControlParams({
-                            page: this.controlParams.page + 1,
-                            cursor: this.dataView.nextCursor
-                        });
-                    }
-                    else {
-                        this.controlParams.page++;
-                    }
-                }
-            },
-            resetPaginationOnRefresh: function() {
-                // Reset to page 1 and clear cursor on page refresh
-                this.updateControlParams({
+            getControlParams() {
+                const defaultState = {
                     page: 1,
-                    cursor: null,
-                    cursorHistory: []
-                });
-            },
-            addToCursorHistory: function() {
-                // Add current cursor to history before navigating to next page
-                // For page 1, store null cursor to represent the first page state
-                const historyEntry = {
-                    page: this.controlParams.page,
-                    cursor: this.controlParams.cursor || null
-                };
-                this.controlParams.cursorHistory.push(historyEntry);
-            },
-            getPreviousCursor: function() {
-                // Get the previous cursor from history
-                if (this.controlParams.cursorHistory.length > 0) {
-                    const previousCursor = this.controlParams.cursorHistory.pop();
-                    return previousCursor;
-                }
-                return null;
-            },
-            canGoBackToPage1: function() {
-                // Check if we can go back to page 1 (when we have history but no cursor)
-                return this.controlParams.cursorHistory.length > 0 &&
-                        this.controlParams.cursorHistory.some(entry => entry.page === 1);
-            },
-            onSortChange: function(elTableSorting) {
-                var updateParams = {};
-                if (elTableSorting.order) {
-                    updateParams.sort = [{
-                        field: elTableSorting.column.sortBy || elTableSorting.prop,
-                        type: elTableSorting.order === "ascending" ? "asc" : "desc"
-                    }];
-                }
-                else {
-                    updateParams.sort = [];
-                }
-
-                // Reset cursor and page when sorting changes in cursor pagination
-                if (this.isCursorPagination) {
-                    updateParams.cursor = null;
-                    updateParams.page = this.firstPage;
-                    updateParams.cursorHistory = [];
-                }
-
-                this.updateControlParams(updateParams);
-            },
-            triggerExternalSource: function() {
-                if (!this.dataSource || this.paused) {
-                    return;
-                }
-                if (this.dataSource.fetch) {
-                    this.dataSource.fetch(this.controlParams);
-                }
-                this.$emit("params-change", this.controlParams);
-            },
-            updateCursorFromResponse: function(response) {
-                // Update cursor state from API response
-                if (response && response.nextCursor) {
-                    // Store current cursor in history if we have one
-                    if (this.controlParams.cursor) {
-                        this.addToCursorHistory(this.controlParams.cursor);
-                    }
-                }
-            },
-            updateControlParams: function(newParams) {
-                _.extend(this.controlParams, newParams);
-            },
-            getControlParams: function() {
-                // Check if we should use cursor pagination based on the data view
-                var shouldUseCursorPagination = false;
-                if (this.dataView && (this.dataView.hasNextPage || this.dataView.nextCursor)) {
-                    shouldUseCursorPagination = true;
-                }
-
-                var defaultState = {
-                    page: 1,
-                    perPage: 10,
+                    perPage: this.perPage,
                     searchQuery: '',
-                    sort: [],
                     selectedDynamicCols: false,
-                    cursor: null,
-                    paginationMode: 'snapshot',
-                    cursorHistory: [], // Store previous cursors for backward navigation
-                    useCursorPagination: shouldUseCursorPagination // Auto-detect based on data view
+                    sort: []
                 };
+
                 if (this.defaultSort && this.preventDefaultSort === false) {
                     defaultState.sort = [{
                         field: this.defaultSort.prop,
-                        type: this.defaultSort.order === "ascending" ? "asc" : "desc"
+                        type: this.defaultSort.order === 'ascending' ? 'asc' : 'desc'
                     }];
                 }
                 else {
@@ -542,51 +329,114 @@
                 if (!this.persistKey) {
                     return defaultState;
                 }
-                var loadedState = localStorage.getItem(this.persistKey);
+
+                const loadedState = localStorage.getItem(this.persistKey);
+
                 try {
-                    if (countlyGlobal.member.columnOrder && countlyGlobal.member.columnOrder[this.persistKey].tableSortMap) {
+                    if (
+                        countlyGlobal.member.columnOrder &&
+                        countlyGlobal.member.columnOrder[this.persistKey].tableSortMap
+                    ) {
                         defaultState.selectedDynamicCols = countlyGlobal.member.columnOrder[this.persistKey].tableSortMap;
                     }
+
                     if (loadedState) {
-                        var parsed = JSON.parse(loadedState);
+                        const parsed = JSON.parse(loadedState);
+
                         defaultState.page = parsed.page;
                         defaultState.perPage = parsed.perPage;
                         defaultState.sort = parsed.sort;
                     }
+
                     return defaultState;
                 }
                 catch (ex) {
                     return defaultState;
                 }
             },
-            setControlParams: function() {
+
+            goToFirstPage() {
+                this.controlParams.page = this.firstPage;
+            },
+
+            goToLastPage() {
+                this.controlParams.page = this.lastPage;
+            },
+
+            goToNextPage() {
+                if (this.nextAvailable) {
+                    this.controlParams.page++;
+                }
+            },
+
+            goToPrevPage() {
+                if (this.prevAvailable) {
+                    this.controlParams.page--;
+                }
+            },
+
+            onSortChange(elTableSorting) {
+                if (elTableSorting.order) {
+                    this.updateControlParams({
+                        sort: [{
+                            field: elTableSorting.column.sortBy || elTableSorting.prop,
+                            type: elTableSorting.order === "ascending" ? "asc" : "desc"
+                        }]
+                    });
+                }
+                else {
+                    this.updateControlParams({ sort: [] });
+                }
+            },
+
+            setControlParams() {
                 if (this.persistKey) {
-                    var self = this;
-                    var localControlParams = {};
+                    const localControlParams = {};
+
                     localControlParams.page = this.controlParams.page;
                     localControlParams.perPage = this.controlParams.perPage;
                     localControlParams.sort = this.controlParams.sort;
+
                     localStorage.setItem(this.persistKey, JSON.stringify(localControlParams));
+
                     $.ajax({
-                        type: "POST",
-                        url: countlyGlobal.path + "/user/settings/column-order",
                         data: {
-                            "tableSortMap": this.controlParams.selectedDynamicCols,
-                            "columnOrderKey": this.persistKey,
-                            _csrf: countlyGlobal.csrf_token
+                            columnOrderKey: this.persistKey,
+                            _csrf: countlyGlobal.csrf_token,
+                            tableSortMap: this.controlParams.selectedDynamicCols
                         },
-                        success: function() {
-                            //since countlyGlobal.member does not updates automatically till refresh
+                        success: () => {
+                            // NOTE: since countlyGlobal.member does not updates automatically till refresh
                             if (!countlyGlobal.member.columnOrder) {
                                 countlyGlobal.member.columnOrder = {};
                             }
-                            if (!countlyGlobal.member.columnOrder[self.persistKey]) {
-                                countlyGlobal.member.columnOrder[self.persistKey] = {};
+
+                            if (!countlyGlobal.member.columnOrder[this.persistKey]) {
+                                countlyGlobal.member.columnOrder[this.persistKey] = {};
                             }
-                            countlyGlobal.member.columnOrder[self.persistKey].tableSortMap = self.controlParams.selectedDynamicCols;
-                        }
+
+                            countlyGlobal.member.columnOrder[this.persistKey].tableSortMap = this.controlParams.selectedDynamicCols;
+                        },
+                        type: 'POST',
+                        url: `${countlyGlobal.path}/user/settings/column-order`
                     });
                 }
+            },
+
+            triggerExternalSource() {
+                if (!this.dataSource || this.paused) {
+                    return;
+                }
+
+                if (this.dataSource.fetch) {
+                    this.dataSource.fetch(this.controlParams);
+                }
+
+                this.$emit('params-change', this.controlParams);
+            },
+
+            updateControlParams(newParams) {
+                _.extend(this.controlParams, newParams);
             }
         }
     };
@@ -826,21 +676,6 @@
                 default: null,
                 required: false
             },
-            showLimitOptions: {
-                type: Boolean,
-                default: false,
-                required: false
-            },
-            exportAllRows: {
-                type: Boolean,
-                default: false,
-                required: false
-            },
-            exportLimit: {
-                type: Number,
-                default: countlyGlobal.config.export_limit,
-                required: false
-            },
             exportApi: {
                 type: Function,
                 default: null,
@@ -900,8 +735,7 @@
         methods: {
             onExportClick: function() {
                 this.initiateExport({
-                    type: this.selectedExportType,
-                    limit: this.exportAllRows ? -1 : this.exportLimit
+                    type: this.selectedExportType
                 });
             },
             getDefaultFileName: function() {
@@ -994,7 +828,7 @@
                 var formData = null,
                     url = null;
                 if (this.exportApi) {
-                    formData = this.exportApi(params);
+                    formData = this.exportApi();
                     formData.type = params.type;
                     url = countlyCommon.API_URL + (formData.url || "/o/export/request");
                     if (this.exportFileName) {
@@ -1004,9 +838,6 @@
                 else if (this.exportQuery) {
                     formData = this.exportQuery();
                     formData.type = params.type;
-                    if (formData.limit) {
-                        formData.limit = params.limit;
-                    }
                     if (this.exportFileName) {
                         formData.filename = this.exportFileName;
                     }
@@ -1270,10 +1101,6 @@
         template: CV.T('/javascripts/countly/vue/templates/datatable.html'),
         mounted: function() {
             var self = this;
-
-            // Reset pagination to page 1 on page refresh
-            this.resetPaginationOnRefresh();
-
             if (this.sortable) {
                 const table = document.querySelector('.el-table__body-wrapper tbody');
                 Sortable.create(table, {
