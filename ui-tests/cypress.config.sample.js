@@ -124,37 +124,34 @@ module.exports = defineConfig({
                 },
             });
 
-            module.exports = (on, config) => {
-                on("after:spec", (spec, results) => {
-                    const hasFailures = results?.tests?.some((t) =>
-                        t.attempts.some((a) => a.state === "failed")
-                    );
+            on("after:spec", (spec, results) => {
+                const hasFailures = results?.tests?.some((t) =>
+                    t.attempts.some((a) => a.state === "failed")
+                );
 
-                    const videosFolder = config.videosFolder;
-                    const screenshotsFolder = config.screenshotsFolder;
+                if (!hasFailures && results?.video && fs.existsSync(results.video)) {
+                    fs.unlinkSync(results.video);
+                }
+            });
 
-                    if (results?.video && !hasFailures && fs.existsSync(results.video)) {
-                        fs.unlinkSync(results.video);
-                    }
+            on("after:run", () => {
+                const videosFolder = config.videosFolder;
+                const screenshotsFolder = config.screenshotsFolder;
 
-                    if (!hasFailures) {
-                        const specRelative = path.relative(config.integrationFolder, spec.relative);
-                        const specName = path.basename(specRelative, path.extname(specRelative));
-
-                        const videoDir = path.join(videosFolder, specName);
-                        const screenshotDir = path.join(screenshotsFolder, specName);
-
-                        [videoDir, screenshotDir].forEach((dir) => {
-                            if (fs.existsSync(dir)) {
-                                fs.rmSync(dir, { recursive: true, force: true });
+                // remove empty folders AFTER Cypress finishes writing videos
+                [videosFolder, screenshotsFolder].forEach(folder => {
+                    fs.readdirSync(folder).forEach(entry => {
+                        const fullPath = path.join(folder, entry);
+                        if (fs.statSync(fullPath).isDirectory()) {
+                            const content = fs.readdirSync(fullPath);
+                            if (content.length === 0) {
+                                fs.rmSync(fullPath, { recursive: true, force: true });
                             }
-                        });
-                    }
+                        }
+                    });
                 });
-
-                return config;
-            };
-
+            });
+            
             on("before:browser:launch", (browser, launchOptions) => {
                 if (["chrome", "edge", "electron"].includes(browser.name)) {
                     if (browser.isHeadless) {
