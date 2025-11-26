@@ -89,17 +89,16 @@
     "nginx-conf": "2.1.0",
     "nodemailer": "7.0.10",
     "object-hash": "3.0.0",
-    "offline-geocoder": "git+https://github.com/Countly/offline-geocoder.git",
     "properties-parser": "0.6.0",
     "puppeteer": "^24.6.1",
     "sass": "1.93.3",
     "semver": "^7.7.1",
     "sharp": "^0.34.2",
-    "sqlite3": "^5.1.7",
     "tslib": "^2.6.3",
     "uglify-js": "3.19.3",
     "underscore": "1.13.7",
-    "xlsx-write-stream": "^1.0.0"
+    "xlsx-write-stream": "^1.0.0",
+    "yauzl": "^3.2.0"
   },
   "overrides": {
     "jimp": {

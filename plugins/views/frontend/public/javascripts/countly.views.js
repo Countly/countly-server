@@ -1223,20 +1223,6 @@
 
     });
 
-    jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
-        x = countlyViews.getFrequencyIndex(x);
-        y = countlyViews.getFrequencyIndex(y);
-
-        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-    };
-
-    jQuery.fn.dataTableExt.oSort['view-frequency-desc'] = function(x, y) {
-        x = countlyViews.getFrequencyIndex(x);
-        y = countlyViews.getFrequencyIndex(y);
-
-        return ((x < y) ? 1 : ((x > y) ? -1 : 0));
-    };
-
     app.addAppSwitchCallback(function(appId) {
         if (app._isFirstLoad !== true && countlyAuth.validateRead(FEATURE_NAME) && CountlyHelpers.isPluginEnabled(FEATURE_NAME)) {
             countlyViews.loadList(appId);
