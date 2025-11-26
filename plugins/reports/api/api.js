@@ -94,6 +94,8 @@ const FEATURE_NAME = 'reports';
             }
             catch (SyntaxError) {
                 console.log('Parse ' + paramsInstance.qstring.args + ' JSON failed');
+                common.returnMessage(paramsInstance, 400, 'Invalid JSON in args');
+                return true;
             }
         }
 
@@ -218,6 +220,8 @@ const FEATURE_NAME = 'reports';
             }
             catch (SyntaxError) {
                 console.log('Parse ' + paramsInstance.qstring.args + ' JSON failed');
+                common.returnMessage(paramsInstance, 400, 'Invalid JSON in args');
+                return true;
             }
         }
         const recordUpdateOrDeleteQuery = function(params, recordID) {
@@ -255,6 +259,11 @@ const FEATURE_NAME = 'reports';
                 convertToTimezone(props);
 
                 // TODO: handle report type check
+
+                if (!props.apps || !Array.isArray(props.apps) || props.apps.length === 0) {
+                    common.returnMessage(params, 400, 'Invalid or missing apps');
+                    return;
+                }
 
                 let userApps = getUserApps(params.member);
                 let notPermitted = false;
