@@ -352,7 +352,7 @@ describe('Create New Widget', () => {
             index: 0,
             question: widget.question,
             internalName: widget.widgetName,
-            pages: "/homepage, /shopping, /checkout2",
+            pages: "/homepage, /shopping, /checkout",
             isActive: true
         });
 
