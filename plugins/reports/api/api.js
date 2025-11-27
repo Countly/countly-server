@@ -314,17 +314,19 @@ const FEATURE_NAME = 'reports';
                 convertToTimezone(props);
 
                 // TODO: Handle report type check
-                const userApps = getUserApps(params.member);
-                let notPermitted = false;
+                if (props.apps && Array.isArray(props.apps) && props.apps.length > 0) {
+                    const userApps = getUserApps(params.member);
+                    let notPermitted = false;
 
-                for (var i = 0; i < props.apps.length; i++) {
-                    if (userApps.indexOf(props.apps[i]) === -1) {
-                        notPermitted = true;
+                    for (var i = 0; i < props.apps.length; i++) {
+                        if (userApps.indexOf(props.apps[i]) === -1) {
+                            notPermitted = true;
+                        }
                     }
-                }
 
-                if (notPermitted && !params.member.global_admin) {
-                    return common.returnMessage(params, 401, 'User does not have right to access this information');
+                    if (notPermitted && !params.member.global_admin) {
+                        return common.returnMessage(params, 401, 'User does not have right to access this information');
+                    }
                 }
                 common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err_update, report) {
                     if (err_update) {
