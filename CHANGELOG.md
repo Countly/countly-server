@@ -1,10 +1,31 @@
-## Version 24.05.xx
+## Version 24.05.47
+Fixes:
+- [alerts] Add alert interval validation in the frontend
+
+Enterprise Fixes:
+- [concurrent_users] Fix email check for alert
+
+
+## Version 24.05.46
+Fixes:
+- [core-vis] Fix chart legend click event
+- [data-manager] Fix last modified data for event and segment
+- [views] Fix view name that is displayed in view table
+
+Enterprise Fixes:
+- [concurrent_users] Fix alert threshold comparison
+- [surveys] Handle multiple survey submission from same user based on survey visibility
+- [users] Set correct users widget table rows amount according to selected setting
+
+## Version 24.05.45
 Fixes:
 - [security] Fixed injection possibility on res.expose
-  
+
 Enterprise Fixes:
 - [data-manager] Fixed bug when merging events with ampersand symbol in the name
 - [groups] Add logs for user updates
+- [nps] Sort widgets by internal name and search by name or internal name
+- [surveys] Sort widgets by internal name and search by name or internal name
 
 
 ## Version 24.05.44
