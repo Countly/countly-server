@@ -6,6 +6,9 @@ Fixes:
 - [dbviewer] Hide api_key from requests
 - [events] Do not throw error in UI on returned group data if there is no segmentation set
 
+Enterprise Fixes:
+-[surveys] Do not fetch survey meta data if plugin is disabled
+
 ## Version 25.03.28
 Fixes:
 - [alerts] Add alert interval validation in the frontend
