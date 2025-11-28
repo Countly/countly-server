@@ -74,16 +74,17 @@ catch {
         });
     });
 
-    plugins.register('/system/observability/collect', async function() {
+    plugins.register('/system/observability/collect', async function(ob) {
         try {
+            const filters = buildQueueFilters(ob && ob.params);
             const summary = await getQueueSummary();
-            const queue = await getQueueDetails();
+            const queue = await getQueueDetails(filters);
 
             const metrics = {
                 summary: {
                     queued: summary.queued,
                     running: summary.running,
-                    awaiting_validation: summary.awaiting_validation,
+                    awaiting_ch_mutation_validation: summary.awaiting_ch_mutation_validation,
                     failed: summary.failed,
                     completed: summary.completed,
                     oldest_wait_sec: summary.oldest_wait_sec
@@ -116,10 +117,12 @@ catch {
 
     /**
      * Get full queue details
+     * @param {object} filters - Mongo query filters
      * @returns {Promise<Array>} - All mutation_manager documents
      */
-    async function getQueueDetails() {
-        const rows = await common.db.collection('mutation_manager').find({}).sort({ ts: 1 }).toArray();
+    async function getQueueDetails(filters) {
+        const query = filters || {};
+        const rows = await common.db.collection('mutation_manager').find(query).sort({ ts: 1 }).toArray();
         return rows;
     }
 
@@ -135,15 +138,15 @@ catch {
                     _id: null,
                     queued: { $sum: { $cond: [ { $eq: [ "$status", manager.MUTATION_STATUS.QUEUED ] }, 1, 0 ] } },
                     running: { $sum: { $cond: [ { $eq: [ "$status", manager.MUTATION_STATUS.RUNNING ] }, 1, 0 ] } },
-                    awaiting_validation: { $sum: { $cond: [ { $eq: [ "$status", manager.MUTATION_STATUS.AWAITING_CH_MUTATION_VALIDATION ] }, 1, 0 ] } },
+                    awaiting_ch_mutation_validation: { $sum: { $cond: [ { $eq: [ "$status", manager.MUTATION_STATUS.AWAITING_CH_MUTATION_VALIDATION ] }, 1, 0 ] } },
                     failed: { $sum: { $cond: [ { $eq: [ "$status", manager.MUTATION_STATUS.FAILED ] }, 1, 0 ] } },
                     completed: { $sum: { $cond: [ { $eq: [ "$status", manager.MUTATION_STATUS.COMPLETED ] }, 1, 0 ] } }
                 }
             },
-            { $project: { _id: 0, queued: 1, running: 1, awaiting_validation: 1, failed: 1, completed: 1 } }
+            { $project: { _id: 0, queued: 1, running: 1, awaiting_ch_mutation_validation: 1, failed: 1, completed: 1 } }
         ]).toArray();
 
-        const counts = agg[0] || { queued: 0, running: 0, awaiting_validation: 0, failed: 0, completed: 0 };
+        const counts = agg[0] || { queued: 0, running: 0, awaiting_ch_mutation_validation: 0, failed: 0, completed: 0 };
 
         let oldest_wait_sec = 0;
         if (counts.queued > 0) {
@@ -175,6 +178,33 @@ catch {
             return { pending: 0, details: [], error: 'clickhouse_health_unavailable' };
         }
     }
+
+    /**
+     * Build Mongo filter object for queue listing from query params
+     * @param {object} params - request params
+     * @returns {object} mongo query
+     */
+    function buildQueueFilters(params = {}) {
+        const qs = params.qstring || {};
+        const keys = ['status', 'db', 'collection', 'type'];
+
+        return keys.reduce((acc, key) => {
+            let val = qs[key];
+            if (Array.isArray(val)) {
+                val = val[0];
+            }
+            if (typeof val !== 'string') {
+                return acc;
+            }
+            val = val.trim();
+            if (!val || val === 'all') {
+                return acc;
+            }
+            acc[key] = val;
+            return acc;
+        }, {});
+    }
+
 })(manager);
 
 module.exports = manager;

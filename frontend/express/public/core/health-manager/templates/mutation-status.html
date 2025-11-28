@@ -1,10 +1,4 @@
 <div v-bind:class="[componentId]" class="mutation-status-view">
-    <cly-header
-        :title="i18n('mutation-status.overview.title')"
-        :tooltip="{description: i18n('mutation-status.overview.tooltip')}"
-    >
-    </cly-header>
-
     <cly-main>
         <div class="bu-mb-4">
             <cly-notification
@@ -33,7 +27,7 @@
                         <cly-tooltip-icon v-if="card.tooltip" class="bu-ml-1" :tooltip="card.tooltip"></cly-tooltip-icon>
                     </template>
                     <template v-slot:number>
-                        <span :class="card.numberClass || ''">{{ card.value.toUpperCase() || '—' }}</span>
+                        <span :class="card.numberClass || ''">{{ card.value.toUpperCase() || '-' }}</span>
                     </template>
                     <template v-slot:description>
                         <span class="text-small color-cool-gray-600">{{ card.detail }}</span>
@@ -48,10 +42,75 @@
 
         <cly-section :title="i18n('mutation-status.table.title')" :tooltip="i18n('mutation-status.table.tooltip')">
             <cly-datatable-n :rows="mutationStatusData" :force-loading="isLoading">
+                <template v-slot:header-left>
+                    <cly-dropdown ref="filterDropdown" :width="320" @hide="onFilterCancel" @show="onFilterShow">
+                        <template v-slot:trigger="dropdown">
+                            <cly-input-dropdown-trigger
+                                v-tooltip="filterSummaryText"
+                                :selected-options="filterSummaryText"
+                                :focused="dropdown.focused"
+                                :opened="dropdown.visible"
+                                :adaptive-length="true">
+                            </cly-input-dropdown-trigger>
+                        </template>
+                        <template>
+                            <cly-form
+                                :key="filterFormKey"
+                                :initial-edited-object="filterForm"
+                                ref="filterForm"
+                                @submit="onFilterApply">
+                                <template v-slot="formScope">
+                                    <cly-form-step id="filter-form-step">
+                                        <div class="bu-m-4">
+                                            <div class="bu-level">
+                                                <div class="bu-level-left">
+                                                    <div class="bu-level-item">
+                                                        <h4>{{ i18n('mutation-status.filters.title') }}</h4>
+                                                    </div>
+                                                </div>
+                                                <div class="bu-level-right">
+                                                    <div class="bu-level-item">
+                                                        <el-button type="text" class="cly-multi-select__reset" @click="onFilterReset">
+                                                            {{ i18n('mutation-status.filters.reset') }}
+                                                        </el-button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <cly-form-field :label="i18n('mutation-status.filters.status')">
+                                                <el-select v-model="formScope.editedObject.status" :placeholder="i18n('mutation-status.filters.status-all')" class="select-full-width" placement="bottom-start" clearable>
+                                                    <el-option v-for="option in statusOptions" :key="option.value" :label="option.label" :value="option.value"></el-option>
+                                                </el-select>
+                                            </cly-form-field>
+                                            <cly-form-field :label="i18n('mutation-status.filters.db')">
+                                                <el-select v-model="formScope.editedObject.db" clearable :placeholder="i18n('mutation-status.filters.db-all')" class="select-full-width" placement="bottom-start">
+                                                    <el-option v-for="value in availableDbs" :key="value" :label="value === 'all' ? i18n('mutation-status.filters.db-all') : value" :value="value"></el-option>
+                                                </el-select>
+                                            </cly-form-field>
+                                            <cly-form-field :label="i18n('mutation-status.filters.collection')">
+                                                <el-select v-model="formScope.editedObject.collection" clearable :placeholder="i18n('mutation-status.filters.collection-all')" class="select-full-width" placement="bottom-start">
+                                                    <el-option v-for="value in availableCollections" :key="value" :label="value === 'all' ? i18n('mutation-status.filters.collection-all') : value" :value="value"></el-option>
+                                                </el-select>
+                                            </cly-form-field>
+                                            <cly-form-field :label="i18n('mutation-status.filters.type')">
+                                                <el-select v-model="formScope.editedObject.type" clearable :placeholder="i18n('mutation-status.filters.type-all')" class="select-full-width" placement="bottom-start">
+                                                    <el-option v-for="value in availableTypes" :key="value" :label="value === 'all' ? i18n('mutation-status.filters.type-all') : value" :value="value"></el-option>
+                                                </el-select>
+                                            </cly-form-field>
+                                            <div class="bu-has-text-right bu-pt-3">
+                                                <el-button type="secondary" @click="onFilterCancel">{{ i18n('common.cancel') }}</el-button>
+                                                <el-button type="success" @click="formScope.submit()">{{ i18n('common.apply') }}</el-button>
+                                            </div>
+                                        </div>
+                                    </cly-form-step>
+                                </template>
+                            </cly-form>
+                        </template>
+                    </cly-dropdown>
+                </template>
                 <template v-slot="scope">
                     <el-table-column fixed="left" width="150" sortable="custom" prop="status" :label="i18n('mutation-status.table.status')">
                         <template v-slot="rowScope">
-                            <div v-tooltip="rowScope.row.status === 'completed' ? i18n('mutation-status.table.completed-at', formatDate(rowScope.row.mutation_completion_ts)) : null">
+                            <div v-tooltip="rowScope.row.status === 'completed' ? i18n('mutation-status.table.completed-at', formatDate(rowScope.row.mutation_completion_ts)) : rowScope.row.status.toUpperCase()">
                                 <cly-status-tag
                                     :text="rowScope.row.status.toUpperCase()"
                                     :color="rowScope.row.status === 'failed' ? 'red' : (rowScope.row.status === 'completed' ? 'green' : 'yellow')">
