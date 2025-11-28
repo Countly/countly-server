@@ -1,64 +1,85 @@
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
-const cluster = require('cluster');
 const formidable = require('formidable');
-const os = require('os');
 const countlyConfig = require('./config', 'dont-enclose');
 const plugins = require('../plugins/pluginManager.js');
-const jobs = require('./parts/jobs');
 const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
-const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
 const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher.js');
+const QueryRunner = require('./parts/data/QueryRunner.js');
 const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
 const tracker = require('./parts/mgmt/tracker.js');
 
+// EXTENSIVE DEBUGGING - Print configuration
+console.log('=== COUNTLY API STARTUP DEBUG ===');
+console.log('Process ENV SERVICE_TYPE:', process.env.SERVICE_TYPE);
+console.log('Config loaded:', !!countlyConfig);
+console.log('Config keys:', Object.keys(countlyConfig));
+console.log('Full config:', JSON.stringify(countlyConfig, null, 2));
+console.log('API config:', JSON.stringify(countlyConfig.api, null, 2));
+console.log('MongoDB config:', JSON.stringify(countlyConfig.mongodb, null, 2));
+console.log('ClickHouse config:', JSON.stringify(countlyConfig.clickhouse, null, 2));
+console.log('Logging config:', JSON.stringify(countlyConfig.logging, null, 2));
+console.log('=== END CONFIG DEBUG ===');
+
+var granuralQueries = require('./parts/queries/coreAggregation.js');
+
+//Add deletion manager endpoint
+require('./utils/mutationManager.js');
+
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
 
-if (cluster.isMaster) {
-    console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
-    if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
-        log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
-    }
-    t.push("master");
-    t.push("node");
-    t.push(process.argv[1]);
+console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
+console.log('=== DATABASE CONFIG CHECK ===');
+console.log('countlyConfig.mongodb:', JSON.stringify(countlyConfig.mongodb, null, 2));
+console.log('frontendConfig.mongodb:', JSON.stringify(frontendConfig.mongodb, null, 2));
+if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
+    log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
+    console.log('WARNING: Database configs do not match!');
 }
-else {
-    t.push("worker");
-    t.push("node");
-}
+console.log('=== END DATABASE CONFIG CHECK ===');
 
 // Finaly set the visible title
 process.title = t.join(' ');
 
+console.log('=== CONNECTING TO DATABASES ===');
 plugins.connectToAllDatabases().then(function() {
+    console.log('✓ Database connection successful');
+    console.log('common.db available:', !!common.db);
+    console.log('common.drillDb available:', !!common.drillDb);
+
     plugins.loadConfigs(common.db, function() {
         tracker.enable();
     });
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);
+    common.queryRunner = new QueryRunner();
+    console.log('✓ Batchers and QueryRunner initialized');
+
+    common.drillQueryRunner = granuralQueries;
     if (common.drillDb) {
         common.drillReadBatcher = new ReadBatcher(common.drillDb);
+        console.log('✓ Drill database components initialized');
     }
 
-    let workers = [];
-
     /**
-    * Set Max Sockets
-    */
+     * Set Max Sockets
+     */
+    console.log('=== SETTING MAX SOCKETS ===');
+    console.log('countlyConfig.api.max_sockets:', countlyConfig.api.max_sockets);
     http.globalAgent.maxSockets = countlyConfig.api.max_sockets || 1024;
+    console.log('✓ Max sockets set to:', http.globalAgent.maxSockets);
 
     /**
-    * Set Plugins APIs Config
-    */
+     * Set Plugins APIs Config
+     */
     plugins.setConfigs("api", {
         domain: "",
         safe: false,
@@ -89,12 +110,13 @@ plugins.connectToAllDatabases().then(function() {
         batch_read_ttl: 600,
         batch_read_period: 60,
         user_merge_paralel: 1,
-        trim_trailing_ending_spaces: false
+        trim_trailing_ending_spaces: false,
+        calculate_aggregated_from_granular: false
     });
 
     /**
-    * Set Plugins APPs Config
-    */
+     * Set Plugins APPs Config
+     */
     plugins.setConfigs("apps", {
         country: "TR",
         timezone: "Europe/Istanbul",
@@ -102,8 +124,8 @@ plugins.connectToAllDatabases().then(function() {
     });
 
     /**
-    * Set Plugins Security Config
-    */
+     * Set Plugins Security Config
+     */
     plugins.setConfigs("security", {
         login_tries: 3,
         login_wait: 5 * 60,
@@ -127,25 +149,60 @@ plugins.connectToAllDatabases().then(function() {
     });
 
     /**
-    * Set Plugins Logs Config
-    */
-    plugins.setConfigs('logs', {
-        debug: (countlyConfig.logging && countlyConfig.logging.debug) ? countlyConfig.logging.debug.join(', ') : '',
-        info: (countlyConfig.logging && countlyConfig.logging.info) ? countlyConfig.logging.info.join(', ') : '',
-        warn: (countlyConfig.logging && countlyConfig.logging.warn) ? countlyConfig.logging.warn.join(', ') : '',
-        error: (countlyConfig.logging && countlyConfig.logging.error) ? countlyConfig.logging.error.join(', ') : '',
-        default: (countlyConfig.logging && countlyConfig.logging.default) ? countlyConfig.logging.default : 'warn',
-    }, undefined, () => {
-        const cfg = plugins.getConfig('logs'), msg = {
-            cmd: 'log',
-            config: cfg
-        };
-        if (process.send) {
-            process.send(msg);
+     * Set Plugins Logs Config
+     */
+    plugins.setConfigs('logs',
+        {
+            debug: (countlyConfig.logging && countlyConfig.logging.debug) ? countlyConfig.logging.debug.join(', ') : '',
+            info: (countlyConfig.logging && countlyConfig.logging.info) ? countlyConfig.logging.info.join(', ') : '',
+            warn: (countlyConfig.logging && countlyConfig.logging.warn) ? countlyConfig.logging.warn.join(', ') : '',
+            error: (countlyConfig.logging && countlyConfig.logging.error) ? countlyConfig.logging.error.join(', ') : '',
+            default: (countlyConfig.logging && countlyConfig.logging.default) ? countlyConfig.logging.default : 'warn',
         }
-        require('./utils/log.js').ipcHandler(msg);
+    );
+
+    // mutation manager default settings
+    [
+        { key: 'max_retries', value: 3 },
+        { key: 'retry_delay_ms', value: 30 * 60 * 1000 },
+        { key: 'validation_interval_ms', value: 3 * 60 * 1000 },
+        { key: 'stale_ms', value: 24 * 60 * 60 * 1000 },
+        { key: 'batch_limit', value: 10 }
+    ].forEach(item => {
+        const path = `mutation_manager.${item.key}`;
+        const update = {};
+        update[path] = item.value;
+        common.db.collection('plugins').updateOne(
+            { _id: 'plugins', [path]: { $exists: false } },
+            { $set: update }
+        ).catch(e => {
+            const message = `Failed to add mutation_manager default for ${item.key}: ${e}`;
+            log && log.e ? log.e(message) : console.log(message);
+        });
     });
 
+    if (common.queryRunner && typeof common.queryRunner.isAdapterAvailable === 'function' && common.queryRunner.isAdapterAvailable('clickhouse')) {
+        common.db.collection('plugins').updateOne(
+            {
+                _id: 'plugins',
+                'mutation_manager.ch_max_parts_per_partition': { $exists: false },
+                'mutation_manager.ch_max_total_mergetree_parts': { $exists: false }
+            },
+            {
+                $set: {
+                    'mutation_manager.ch_max_parts_per_partition': 1000,
+                    'mutation_manager.ch_max_total_mergetree_parts': 100000
+                }
+            }).catch(e => {
+            const message = `Failed to add mutation_manager defaults: ${e}`;
+            log && log.e ? log.e(message) : console.log(message);
+        });
+    }
+
+    /**
+     * Initialize Plugins
+     */
+    console.log('=== INITIALIZING PLUGINS ===');
     /**
     * Set tracking config
     */
@@ -185,13 +242,27 @@ plugins.connectToAllDatabases().then(function() {
     * Initialize Plugins
     */
     plugins.init();
+    console.log('✓ Plugins initialized');
 
     /**
-    *  Trying to gracefully handle the batch state
-    *  @param {number} code - error code
-    */
+     *  Trying to gracefully handle the batch state
+     *  @param {number} code - error code
+     */
     async function storeBatchedData(code) {
         try {
+
+            await new Promise((resolve) => {
+                server.close((err) => {
+                    if (err) {
+                        console.log("Error closing server:", err);
+                    }
+                    else {
+                        console.log("Server closed successfully");
+                        resolve();
+                    }
+                });
+            });
+
             await common.writeBatcher.flushAll();
             await common.insertBatcher.flushAll();
             console.log("Successfully stored batch state");
@@ -203,16 +274,16 @@ plugins.connectToAllDatabases().then(function() {
     }
 
     /**
-    *  Handle before exit for gracefull close
-    */
+     *  Handle before exit for gracefull close
+     */
     process.on('beforeExit', (code) => {
         console.log('Received exit, trying to save batch state: ', code);
         storeBatchedData(code);
     });
 
     /**
-    *  Handle exit events for gracefull close
-    */
+     *  Handle exit events for gracefull close
+     */
     ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT',
         'SIGBUS', 'SIGFPE', 'SIGSEGV', 'SIGTERM',
     ].forEach(function(sig) {
@@ -223,8 +294,8 @@ plugins.connectToAllDatabases().then(function() {
     });
 
     /**
-    * Uncaught Exception Handler
-    */
+     * Uncaught Exception Handler
+     */
     process.on('uncaughtException', (err) => {
         console.log('Caught exception: %j', err, err.stack);
         if (log && log.e) {
@@ -235,8 +306,8 @@ plugins.connectToAllDatabases().then(function() {
     });
 
     /**
-    * Unhandled Rejection Handler
-    */
+     * Unhandled Rejection Handler
+     */
     process.on('unhandledRejection', (reason, p) => {
         console.log('Unhandled rejection for %j with reason %j stack ', p, reason, reason ? reason.stack : undefined);
         if (log && log.e) {
@@ -245,181 +316,72 @@ plugins.connectToAllDatabases().then(function() {
         console.trace();
     });
 
-    /**
-    * Pass To Master
-    * @param {cluster.Worker} worker - worker thatw as spawned by master
-    */
-    const passToMaster = (worker) => {
-        worker.on('message', (msg) => {
-            if (msg.cmd === 'log') {
-                workers.forEach((w) => {
-                    if (w !== worker) {
-                        w.send({
-                            cmd: 'log',
-                            config: msg.config
-                        });
-                    }
-                });
-                require('./utils/log.js').ipcHandler(msg);
-            }
-            else if (msg.cmd === "checkPlugins") {
-                plugins.checkPluginsMaster();
-            }
-            else if (msg.cmd === "startPlugins") {
-                plugins.startSyncing();
-            }
-            else if (msg.cmd === "endPlugins") {
-                plugins.stopSyncing();
-            }
-            else if (msg.cmd === "batch_insert") {
-                const {collection, doc, db} = msg.data;
-                common.insertBatcher.insert(collection, doc, db);
-            }
-            else if (msg.cmd === "batch_write") {
-                const {collection, id, operation, db} = msg.data;
-                common.writeBatcher.add(collection, id, operation, db);
-            }
-            else if (msg.cmd === "batch_read") {
-                const {collection, query, projection, multi, msgId} = msg.data;
-                common.readBatcher.get(collection, query, projection, multi).then((data) => {
-                    worker.send({ cmd: "batch_read", data: {msgId, data} });
-                })
-                    .catch((err) => {
-                        worker.send({ cmd: "batch_read", data: {msgId, err} });
-                    });
-            }
-            else if (msg.cmd === "batch_invalidate") {
-                const {collection, query, projection, multi} = msg.data;
-                common.readBatcher.invalidate(collection, query, projection, multi);
-            }
-            else if (msg.cmd === "dispatchMaster" && msg.event) {
-                plugins.dispatch(msg.event, msg.data);
-            }
-            else if (msg.cmd === "dispatch" && msg.event) {
-                workers.forEach((w) => {
-                    w.send(msg);
-                });
-            }
-        });
-    };
-
-    if (cluster.isMaster) {
-        plugins.installMissingPlugins(common.db);
-        common.runners = require('./parts/jobs/runner');
-        common.cache = new CacheMaster();
-        common.cache.start().then(() => {
-            setImmediate(() => {
-                plugins.dispatch('/cache/init', {});
-            });
-        }, e => {
-            console.log(e);
-            process.exit(1);
-        });
-
-        const workerCount = (countlyConfig.api.workers)
-            ? countlyConfig.api.workers
-            : os.cpus().length;
-
-        for (let i = 0; i < workerCount; i++) {
-            // there's no way to define inspector port of a worker in the code. So if we don't
-            // pick a unique port for each worker, they conflict with each other.
-            let nodeOptions = {};
-            if (countlyConfig?.symlinked !== true) { // countlyConfig.symlinked is passed when running in a symlinked setup
-                const inspectorPort = i + 1 + (common?.config?.masterInspectorPort || 9229);
-                nodeOptions = { NODE_OPTIONS: "--inspect-port=" + inspectorPort };
-            }
-            const worker = cluster.fork(nodeOptions);
-            workers.push(worker);
+    var utcMoment = moment.utc();
+    var incObj = {};
+    incObj.r = 1;
+    incObj[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.r`] = 1;
+    common.db.collection("diagnostic").updateOne({"_id": "no-segment_" + utcMoment.format("YYYY:M")}, {"$set": {"m": utcMoment.format("YYYY:M")}, "$inc": incObj}, {"upsert": true}, function(err) {
+        if (err) {
+            log.e(err);
         }
+    });
 
-        workers.forEach(passToMaster);
 
-        cluster.on('exit', (worker) => {
-            workers = workers.filter((w) => {
-                return w !== worker;
-            });
-            const newWorker = cluster.fork();
-            workers.push(newWorker);
-            passToMaster(newWorker);
-        });
+    plugins.installMissingPlugins(common.db);
+    const taskManager = require('./utils/taskmanager.js');
+    //since process restarted mark running tasks as errored
+    taskManager.errorResults({db: common.db});
 
-        plugins.dispatch("/master", {});
+    plugins.dispatch("/master", {}); // init hook
 
-        // Allow configs to load & scanner to find all jobs classes
-        setTimeout(() => {
-            jobs.job('api:topEvents').replace().schedule('at 00:01 am ' + 'every 1 day');
-            jobs.job('api:ping').replace().schedule('at 00:01 am ' + 'every 1 day');
-            jobs.job('api:clear').replace().schedule('every 1 day');
-            jobs.job('api:clearTokens').replace().schedule('every 1 day');
-            jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
-            jobs.job('api:task').replace().schedule('every 5 minutes');
-            jobs.job('api:userMerge').replace().schedule('every 10 minutes');
-            jobs.job("api:ttlCleanup").replace().schedule("every 1 minute");
-            //jobs.job('api:appExpire').replace().schedule('every 1 day');
-        }, 10000);
+    console.log('=== CREATING SERVER ===');
+    console.log('common.config.api:', JSON.stringify(common.config.api, null, 2));
+    const serverOptions = {
+        port: common.config.api.port,
+        host: common.config.api.host || ''
+    };
+    console.log('Server options:', serverOptions);
 
-        //Record as restarted
-
-        var utcMoment = moment.utc();
-
-        var incObj = {};
-        incObj.r = 1;
-        incObj[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.r`] = 1;
-        common.db.collection("diagnostic").updateOne({"_id": "no-segment_" + utcMoment.format("YYYY:M")}, {"$set": {"m": utcMoment.format("YYYY:M")}, "$inc": incObj}, {"upsert": true}, function(err) {
-            if (err) {
-                log.e(err);
-            }
-        });
+    let server;
+    if (common.config.api.ssl && common.config.api.ssl.enabled) {
+        console.log('Creating HTTPS server with SSL');
+        const sslOptions = {
+            key: fs.readFileSync(common.config.api.ssl.key),
+            cert: fs.readFileSync(common.config.api.ssl.cert)
+        };
+        if (common.config.api.ssl.ca) {
+            sslOptions.ca = fs.readFileSync(common.config.api.ssl.ca);
+        }
+        server = https.createServer(sslOptions, handleRequest);
     }
     else {
-        console.log("Starting worker", process.pid, "parent:", process.ppid);
-        const taskManager = require('./utils/taskmanager.js');
-
-        common.cache = new CacheWorker();
-        common.cache.start();
-
-        //since process restarted mark running tasks as errored
-        taskManager.errorResults({db: common.db});
-
-        process.on('message', common.log.ipcHandler);
-
-        process.on('message', (msg) => {
-            if (msg.cmd === 'log') {
-                common.log.ipcHandler(msg);
-            }
-            else if (msg.cmd === "dispatch" && msg.event) {
-                plugins.dispatch(msg.event, msg.data || {});
-            }
-        });
-
-        process.on('exit', () => {
-            console.log('Exiting due to master exited');
-        });
-
-        plugins.dispatch("/worker", {common: common});
-
-        const serverOptions = {
-            port: common.config.api.port,
-            host: common.config.api.host || ''
-        };
-
-        let server;
-        if (common.config.api.ssl && common.config.api.ssl.enabled) {
-            const sslOptions = {
-                key: fs.readFileSync(common.config.api.ssl.key),
-                cert: fs.readFileSync(common.config.api.ssl.cert)
-            };
-            if (common.config.api.ssl.ca) {
-                sslOptions.ca = fs.readFileSync(common.config.api.ssl.ca);
-            }
-            server = https.createServer(sslOptions, handleRequest);
-        }
-        else {
-            server = http.createServer(handleRequest);
-        }
-
-        server.listen(serverOptions.port, serverOptions.host).timeout = common.config.api.timeout || 120000;
+        console.log('Creating HTTP server');
+        server = http.createServer(handleRequest);
     }
+
+    console.log('Starting server on', serverOptions.host + ':' + serverOptions.port);
+    server.listen(serverOptions.port, serverOptions.host, () => {
+        console.log('✓ Server listening on', serverOptions.host + ':' + serverOptions.port);
+    });
+
+    server.timeout = common.config.api.timeout || 120000;
+    server.keepAliveTimeout = common.config.api.timeout || 120000;
+    server.headersTimeout = (common.config.api.timeout || 120000) + 1000; // Slightly higher
+    console.log('✓ Server timeouts configured:', {
+        timeout: server.timeout,
+        keepAliveTimeout: server.keepAliveTimeout,
+        headersTimeout: server.headersTimeout
+    });
+
+
+    console.log('=== LOADING PLUGIN CONFIGS ===');
+    plugins.loadConfigs(common.db);
+    console.log('✓ Plugin configs loaded');
+    console.log('=== API STARTUP COMPLETE ===');
+}).catch(function(error) {
+    console.error('❌ DATABASE CONNECTION FAILED:', error);
+    console.error('Error details:', error.stack);
+    process.exit(1);
 });
 
 /**
@@ -433,6 +395,9 @@ function handleRequest(req, res) {
         res: res,
         req: req
     };
+
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Keep-Alive', 'timeout=5, max=1000');
 
     if (req.method.toLowerCase() === 'post') {
         const formidableOptions = {};

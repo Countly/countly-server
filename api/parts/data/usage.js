@@ -11,6 +11,7 @@ var usage = {},
     log = require('../../utils/log.js')('api:usage'),
     async = require('async'),
     plugins = require('../../../plugins/pluginManager.js'),
+    crypto = require('crypto'),
     moment = require('moment-timezone');
 
 /**
@@ -867,19 +868,6 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
             }
         }
 
-        if (!isNewUser) {
-            /*
-                If metricChanges object contains a uid this means we have at least one metric that has changed
-                in this begin_session so we'll insert it into metric_changesAPPID collection.
-                Inserted document has below format;
-        
-                { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
-            */
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_changes && metricChanges.uid && params.qstring.begin_session) {
-                common.db.collection('metric_changes' + params.app_id).insert(metricChanges, function() {});
-            }
-        }
-
         if (done) {
             done();
         }
@@ -1285,6 +1273,41 @@ plugins.register("/sdk/user_properties", async function(ob) {
 
     if (Object.keys(update).length) {
         ob.updates.push(update);
+    }
+});
+
+
+//Granural data deletion
+plugins.register("/i/event/delete", async function(ob) {
+    if (ob.event_key && ob.appId) {
+        // var collectionNameWoPrefix = crypto.createHash('sha1').update(ob.event_key + ob.appId).digest('hex');
+        // common.drillDb.collection("drill_events" + collectionNameWoPrefix).drop(function() {});
+        let promises = [];
+        if (Array.isArray(ob.event_key)) {
+            plugins.dispatch("/core/delete_granular_data", {
+                db: "countly_drill",
+                query: { "a": ob.appId + "", "e": "[CLY]_custom", "n": {"$in": ob.event_key}},
+                collection: "drill_events"
+            });
+            for (var z = 0; z < ob.event_key.length; z++) {
+                promises.push(common.drillDb.collection('drill_bookmarks').remove({ 'app_id': ob.appId, 'event_key': ob.event_key[z] }));
+                let hash = crypto.createHash('sha1').update(ob.event_key[z] + ob.appId).digest('hex');
+                promises.push(common.drillDb.collection("drill_meta").remove({'_id': {"$regex": `${ob.appId}_meta_${hash}.*`}}));
+            }
+        }
+        else {
+
+            plugins.dispatch("/core/delete_granular_data", {
+                db: "countly_drill",
+                query: { "a": ob.appId + "", "e": "[CLY]_custom", "n": ob.event_key},
+                collection: "drill_events"
+            });
+            promises.push(common.drillDb.collection('drill_bookmarks').remove({ 'app_id': ob.appId, 'event_key': ob.event_key }));
+            let hash = crypto.createHash('sha1').update(ob.event_key + ob.appId).digest('hex');
+            promises.push(common.drillDb.collection("drill_meta").remove({'_id': {"$regex": `^${ob.appId}_meta_${hash}.*`}}));
+        }
+
+        await Promise.all(promises);
     }
 });
 

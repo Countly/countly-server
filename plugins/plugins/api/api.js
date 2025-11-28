@@ -29,51 +29,6 @@ var plugin = {},
                         common.returnMessage(params, 200, "started");
                     }
                 });
-                /*
-                try {
-                    params.qstring.plugin = JSON.parse(params.qstring.plugin);
-                }
-                catch (err) {
-                    console.log('Error parsing plugins');
-                }
-
-                if (params.qstring.plugin && typeof params.qstring.plugin === 'object') {
-                    // updatePluginState("start");
-
-                    var before = {};
-                    var fordb = {};
-                    var arr = plugins.getPlugins();
-                    for (var i in params.qstring.plugin) {
-                        fordb['plugins.' + i] = params.qstring.plugin[i];
-                        if (arr.indexOf(i) === -1) {
-                            before[i] = false;
-                        }
-                        else {
-                            before[i] = true;
-                        }
-                    }
-                    common.db.collection('plugins').updateOne({'_id': 'plugins'}, {'$set': fordb}, function(err1) {
-                        if (err1) {
-                            log.e(err1);
-                        }
-                        else {
-                            plugins.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
-                            // process.send({ cmd: "startPlugins" });
-                            plugins.loadConfigs(common.db, function() {
-                                
-                                 plugins.syncPlugins(params.qstring.plugin, function(err) {
-									if (!err) {
-										process.send({ cmd: "endPlugins" });
-										updatePluginState("end");
-									}
-									else {
-										updatePluginState("failed");
-									}
-								}, common.db);
-                            });
-                        }
-                    });
-                }*/
             }
             else {
                 common.returnOutput(params, "Not enough parameters");

@@ -6,8 +6,10 @@
 /** @lends module:api/parts/mgmt/app_users */
 var usersApi = {},
     common = require('./../../utils/common.js'),
-    plugins = require('../../../plugins/pluginManager.js');
+    plugins = require('../../../plugins/pluginManager.js'),
+    { ObjectId } = require('mongodb');
 var path = require('path');
+var config = require("../../config.js");
 const fs = require('fs');
 var countlyFs = require('./../../utils/countlyFs.js');
 //var cp = require('child_process'); //call process
@@ -108,6 +110,77 @@ usersApi.create = function(app_id, doc, params, callback) {
     });
 };
 
+usersApi.createUserDocument = function(params, done) {
+    usersApi.getUid(params.app_id, async function(err, uid) {
+        if (uid) {
+            params.app_user.uid = uid;
+            if (!params.app_user._id) {
+                var doc = {
+                    uid: uid,
+                    did: params.qstring.device_id
+                };
+                if (params && params.href) {
+                    doc.first_req_get = (params.href + "") || "";
+                }
+                else {
+                    doc.first_req_get = "";
+                }
+                if (params && params.req && params.req.body) {
+                    doc.first_req_post = (params.req.body + "") || "";
+                }
+                else {
+                    doc.first_req_post = "";
+                }
+                doc._id = params.app_user_id;
+                try {
+                    var appUserDoc = await common.db.collection('app_users' + params.app_id).findOneAndUpdate({"_id": params.app_user_id}, {"$setOnInsert": doc}, {upsert: true, returnDocument: "after"});
+                    if (appUserDoc) {
+                        if (appUserDoc.value && appUserDoc.value.uid) {
+                            appUserDoc = appUserDoc.value;
+                        }
+                        done(null, appUserDoc);
+                    }
+                    else {
+                        done("Failed user processing.");
+                    }
+                }
+                catch (error) {
+                    done(error);
+                }
+            }
+            else {
+                //document was created, but has no uid
+                //here we add uid only if it does not exist in db
+                //so if paralel request inserted it, we will not overwrite it
+                //and retrieve that uid on retry
+                try {
+                    var userdoc = await common.db.collection('app_users' + params.app_id).findOneAndUpdate({
+                        _id: params.app_user_id,
+                        uid: {$exists: false}
+                    }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]});
+                    if (userdoc) {
+                        if (userdoc.value && userdoc.value.uid) {
+                            userdoc = userdoc.value;
+                        }
+                        done(null, userdoc);
+                    }
+                    else {
+                        done('User merged. Failed to record data.');
+                    }
+                }
+                catch (ee) {
+                    done(ee);
+                }
+            }
+        }
+        else {
+            //cannot create uid, so cannot process request now
+            console.log("Cannot create uid", err, uid);
+            done("User creation failed");
+        }
+    });
+};
+
 /**
 * Update existing app_users document. Cannot replace document, must have modifiers like $set, $unset, etc
 * @param {string} app_id - _id of the app
@@ -195,73 +268,78 @@ usersApi.delete = function(app_id, query, params, callback) {
             console.log("Error generating list of uids", err0, res);
         }
         if (res && res[0] && res[0].uid && res[0].uid.length) {
-            common.db.collection("metric_changes" + app_id).remove({uid: {$in: res[0].uid}}, function() {
-                plugins.dispatch("/i/app_users/delete", {
-                    app_id: app_id,
-                    query: query,
-                    uids: res[0].uid,
-                    params: params
-                }, function(_, otherPluginResults) {
-                    const rejectReasons = otherPluginResults.reduce((acc, result) => {
-                        if (result.status === "rejected") {
-                            acc.push((result.reason && result.reason.message) || '');
-                        }
-
-                        return acc;
-                    }, []);
-
-                    if (rejectReasons.length > 0) {
-                        log.e("User deletion failed\n%j", rejectReasons.join("\n"));
-                        common.returnMessage(params, 500, { errorMessage: "User deletion failed. Failed to delete some data related to this user." });
-                        return;
+            plugins.dispatch("/i/app_users/delete", {
+                app_id: app_id,
+                query: query,
+                uids: res[0].uid,
+                params: params
+            }, function(_, otherPluginResults) {
+                const rejectReasons = otherPluginResults.reduce((acc, result) => {
+                    if (result.status === "rejected") {
+                        acc.push((result.reason && result.reason.message) || '');
                     }
 
-                    common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}}, function(err) {
-                        if (res[0].exported) {
-                            //delete exports if exist
-                            for (let i = 0;i < res[0].exported.length; i++) {
-                                let id = res[0].exported[i].split("/");
-                                id = id[id.length - 1]; //last one is filename
-                                id = id.substr(id.length - 7);
+                    return acc;
+                }, []);
 
-                                deleteMyExport(id).then(
-                                    function() {},
-                                    function(err1) {
-                                        console.log(err1);
-                                    }
-                                );
-                            }
+                if (rejectReasons.length > 0) {
+                    log.e("User deletion failed\n%j", rejectReasons.join("\n"));
+                    common.returnMessage(params, 500, { errorMessage: "User deletion failed. Failed to delete some data related to this user." });
+                    return;
+                }
+
+                //remove from drill_events
+                plugins.dispatch("/core/delete_granular_data", {
+                    db: "countly_drill",
+                    collection: "drill_events",
+                    query: { a: app_id + "", uid: { $in: res[0].uid } }
+                });
+
+                common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}}, function(err) {
+                    if (res[0].exported) {
+                        //delete exports if exist
+                        for (let i = 0;i < res[0].exported.length; i++) {
+                            let id = res[0].exported[i].split("/");
+                            id = id[id.length - 1]; //last one is filename
+                            id = id.substr(id.length - 7);
+
+                            deleteMyExport(id).then(
+                                function() {},
+                                function(err5) {
+                                    console.log(err5);
+                                }
+                            );
                         }
-                        //deleting userimages(if they exist);
-                        if (res[0].picture) {
-                            for (let i = 0;i < res[0].picture.length; i++) {
-                                //remove /userimages/ 
-                                let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
-                                var pp = path.resolve(__dirname, './../../../frontend/express/public/userimages/' + id);
-                                countlyFs.deleteFile("userimages", pp, {id: id}, function(err1) {
-                                    if (err1) {
-                                        console.log(err1);
-                                    }
-                                });
-                            }
+                    }
+                    //deleting userimages(if they exist);
+                    if (res[0].picture) {
+                        for (let i = 0;i < res[0].picture.length; i++) {
+                            //remove /userimages/ 
+                            let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
+                            var pp = path.resolve(__dirname, './../../../frontend/express/public/userimages/' + id);
+                            countlyFs.deleteFile("userimages", pp, {id: id}, function(err6) {
+                                if (err6) {
+                                    console.log(err6);
+                                }
+                            });
                         }
-                        try {
-                            fs.appendFileSync(path.resolve(__dirname, './../../../log/deletedUsers' + app_id + '.txt'), res[0].uid.join("\n") + "\n", "utf-8");
+                    }
+                    try {
+                        fs.appendFileSync(path.resolve(__dirname, './../../../log/deletedUsers' + app_id + '.txt'), res[0].uid.join("\n") + "\n", "utf-8");
+                    }
+                    catch (err2) {
+                        console.log(err2);
+                    }
+                    plugins.dispatch("/systemlogs", {
+                        params: params,
+                        action: "app_user_deleted",
+                        data: {
+                            app_id: app_id,
+                            query: JSON.stringify(query),
+                            uids: res[0].uid,
                         }
-                        catch (err2) {
-                            console.log(err2);
-                        }
-                        plugins.dispatch("/systemlogs", {
-                            params: params,
-                            action: "app_user_deleted",
-                            data: {
-                                app_id: app_id,
-                                query: JSON.stringify(query),
-                                uids: res[0].uid,
-                            }
-                        });
-                        callback(err, res[0].uid);
                     });
+                    callback(err, res[0].uid);
                 });
             });
         }
@@ -364,23 +442,42 @@ usersApi.count = function(app_id, query, callback) {
 * @param {string} app_id - _id of the app
 * @param {function} callback - called when finished providing error (if any) as first param and new uid as second
 */
-usersApi.getUid = function(app_id, callback) {
-    common.db.collection('apps').findAndModify({_id: common.db.ObjectID(app_id)}, {}, {$inc: {seq: 1}}, {
-        new: true,
-        upsert: true
-    }, function(err, result) {
-        result = result && result.ok ? result.value : null;
+usersApi.getUid = async function(app_id, callback) {
+    try {
+        var result = await common.db.collection('apps').findOneAndUpdate({_id: new ObjectId(app_id + "")}, {$inc: {seq: 1}}, {
+            returnDocument: 'after',
+            upsert: false
+        });
+        //When connected through our wrapper it returns value in value property not as root doc.
+        if (result && result.value && result.value.seq) {
+            result = result.value;
+        }
         if (result && result.seq) {
             if (callback) {
-                callback(err, common.parseSequence(result.seq));
+                callback(null, common.parseSequence(result.seq));
             }
         }
         else if (callback) {
-            callback(err);
+            callback("Document not returned for app:" + app_id);
         }
-    });
+    }
+    catch (ee) {
+        callback(ee);
+    }
 };
 
+/** 
+ * Function to determine if app is recorded in mongodb database 
+ * @returns {boolean} true if data is recorded in mongo, false otherwise
+ */
+function dataIsRecordedInMongo() {
+    if (config.eventSink && Array.isArray(config.eventSink.sinks) && config.eventSink.sinks.indexOf('mongo') !== -1) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
 
 usersApi.mergeOtherPlugins = function(options, callback) {
     var db = options.db;
@@ -436,18 +533,22 @@ usersApi.mergeOtherPlugins = function(options, callback) {
                             log.e(err9);
                         }
                         var retry = false;
+                        var retry_error = "";
                         if (result && result.length) {
                             for (let index = 0; index < result.length; index++) {
                                 if (result[index].status === "rejected") {
-                                    log.e(result[index]);
+                                    console.log(JSON.stringify(result[index]));
+                                    retry_error += result[index].reason.message + "\n";
                                     retry = true;
                                     break;
                                 }
                             }
+                            retry_error = retry_error.substring(0, 1000);
+
                         }
                         if (retry) {
                             //Unmark cc to let it be retried later in job.
-                            common.db.collection('app_user_merges').update({"_id": iid}, {'$unset': {"cc": ""}, "$set": {"lu": Math.round(new Date().getTime() / 1000)}}, {upsert: false}, function(err4) {
+                            common.db.collection('app_user_merges').update({"_id": iid}, {'$unset': {"cc": ""}, "$set": {"retry_error": retry_error, "lu": Math.round(new Date().getTime() / 1000)}}, {upsert: false}, function(err4) {
                                 if (err4) {
                                     log.e(err4);
                                 }
@@ -457,15 +558,43 @@ usersApi.mergeOtherPlugins = function(options, callback) {
                             });
                         }
                         else {
-                            //data merged. Delete record from merges collection
-                            common.db.collection('app_user_merges').remove({"_id": iid}, function(err5) {
-                                if (err5) {
-                                    log.e("Failed to remove merge document", err5);
-                                }
-                                if (callback && typeof callback === 'function') {
-                                    callback(err5);
-                                }
-                            });
+                            //Merge data in drill_events collection
+                            if (dataIsRecordedInMongo()) {
+                                common.drillDb.collection('drill_events').updateMany({"a": app_id, "uid": oldAppUser.uid}, {'$set': {"uid": newAppUser.uid}}, function(err1) {
+                                    if (err1) {
+                                        log.e("Failed to update drill_events collection", err1);
+                                        common.db.collection('app_user_merges').update({"_id": iid}, {'$unset': {"cc": ""}, "$set": {"retry_error": "Failure while merging drill_events data", "lu": Math.round(new Date().getTime() / 1000)}}, {upsert: false}, function(err4) {
+                                            if (err4) {
+                                                log.e(err4);
+                                            }
+                                            if (callback && typeof callback === 'function') {
+                                                callback(err4);
+                                            }
+                                        });
+                                    }
+                                    else {
+                                    //data merged. Delete record from merges collection
+                                        common.db.collection('app_user_merges').remove({"_id": iid}, function(err5) {
+                                            if (err5) {
+                                                log.e("Failed to remove merge document", err5);
+                                            }
+                                            if (callback && typeof callback === 'function') {
+                                                callback(err5);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                            else {
+                                common.db.collection('app_user_merges').remove({"_id": iid}, function(err5) {
+                                    if (err5) {
+                                        log.e("Failed to remove merge document", err5);
+                                    }
+                                    if (callback && typeof callback === 'function') {
+                                        callback(err5);
+                                    }
+                                });
+                            }
                         }
                     });
                 }
@@ -619,7 +748,7 @@ async function updateStatesInTransaction(common, app_id, newAppUserP, oldAppUser
 * @param {string} old_device_id - old user's device_id
 * @param {function} callback - called when finished providing error (if any) as first param and resulting merged document as second
 */
-usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old_device_id, callback) {
+usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_id, old_device_id, callback) {
     /**
     * Inner function to merge user data
     * @param {object} newAppUserP  - new user data
@@ -631,100 +760,49 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
             app_id: app_id,
             newAppUser: newAppUserP,
             oldAppUser: oldAppUser
-        }, function() {
+        }, async function() {
             //merge user data
-            usersApi.mergeUserProperties(newAppUserP, oldAppUser);
-            //update states in transaction to ensure integrity
-
-            //we could use transactions, which makes it more stable, but we can't for now on all servers.
-            //keeping for future reference
-            /*  
-                updateStatesInTransaction(common, app_id, newAppUserP, oldAppUser, function(err) {
-                    if (err) {
-                        log.e("Failed to update states in transaction", err);
-                    }
-                    if (callback && typeof callback === 'function') {
-                        callback(err, newAppUserP);
-                    }
-                    if (!err) {
-                        common.db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUserP.uid}}, {multi: true}, function(err7) {
-                            if (err7) {
-                                log.e("Failed metric changes update in app_users merge", err7);
-                            }
-                            else {
-                                usersApi.mergeOtherPlugins(common.db, app_id, newAppUserP, oldAppUser, {"cc": true, "mc": true}, function() {
+            try {
+                await common.db.collection('app_users' + app_id).updateOne({_id: newAppUserP._id}, {'$set': newAppUserP});
+                usersApi.mergeUserProperties(newAppUserP, oldAppUser);
+                await common.db.collection('app_users' + app_id).deleteOne({_id: oldAppUser._id});
 
 
-                                });
-                            }
-                        });
-                    }
-                });
-            */
-            common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, function(err) {
-                if (err) {
-                    if (callback && typeof callback === 'function') {
-                        callback(err, newAppUserP); //Filed. Old and new exists. SDK will re
-                    }
+            }
+            catch (err) {
+                if (callback && typeof callback === 'function') {
+                    callback(err, newAppUserP);
                 }
-                else {
-                    common.db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(errRemoving) {
-                        if (errRemoving) {
-                            log.e("Failed to remove merged user from database", errRemoving); //Failed. Old and new exists. SDK will retry
-                        }
-                        if (callback && typeof callback === 'function') {
-                            callback(errRemoving, newAppUserP);
-                        }
-                        //Dispatch to other plugins only after callback.
-                        if (!errRemoving) {
-                            //If it fails now - job will retry.
-                            //update metric changes document
-                            var iid = app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid;
-                            common.db.collection('app_user_merges').update({"_id": iid, "cc": {"$ne": true}}, {'$set': {"u": true}}, {upsert: false}, function(err1) {
-                                if (err1) {
-                                    log.e(err1);
-                                }
-                                else {
-                                    common.db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUserP.uid}}, {multi: true}, function(err7) {
-                                        if (err7) {
-                                            log.e("Failed metric changes update in app_users merge", err7);
-                                        }
-                                        usersApi.mergeOtherPlugins({db: common.db, app_id: app_id, newAppUser: newAppUserP, oldAppUser: oldAppUser, updateFields: {"cc": true, "u": true, "mc": true}}, function() {});
-                                    });
-                                }
-                            });
-                        }
-                    });
-                }
-            });
+                return;
+            }
+            callback(null, newAppUserP);
+            var iid = app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid;
+            try {
+                await common.db.collection('app_user_merges').updateOne({"_id": iid, "cc": {"$ne": true}}, {'$set': {"u": true}}, {upsert: false});
+            }
+            catch (e) {
+                log.e("Failed metric changes update in app_users merge", e);
+            }
         });
     }
 
-    common.db.collection('app_users' + app_id).findOne({'_id': old_id }, function(err, oldAppUser) {
-        if (err) {
-            //problem getting old user data
-            return callback(err, oldAppUser);
-        }
+    try {
+        var oldAppUser = await common.db.collection('app_users' + app_id).findOne({'_id': old_id });
         if (!oldAppUser) {
-            //there is no old user, process request
             return callback(null, newAppUser);
         }
         if (!newAppUser || !Object.keys(newAppUser).length) {
-            //new user does not exist yet
-            //simply copy user document with old uid
-            //no harm is done
             oldAppUser.did = new_device_id + "";
             oldAppUser._id = new_id;
-            common.db.collection('app_users' + app_id).insert(oldAppUser, function(err2) {
-                if (err) {
-                    callback(err2, oldAppUser);
-                }
-                else {
-                    common.db.collection('app_users' + app_id).remove({_id: old_id}, function(err3) {
-                        callback(err3, oldAppUser);
-                    });
-                }
-            });
+            try {
+                await common.db.collection('app_users' + app_id).insertOne(oldAppUser);
+                await common.db.collection('app_users' + app_id).deleteOne({_id: old_id});
+            }
+            catch (e) {
+                log.e("Failed to update in database. This does not prevent processing.");
+                log.e(e);
+            }
+            callback(null, oldAppUser);
         }
         else {
             //we have to merge user data
@@ -747,19 +825,21 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
                 oldAppUser = newAppUser;
                 newAppUser = tempDoc;
             }
-            common.db.collection('app_user_merges').insert({
+            await common.db.collection("app_user_merges").insertOne({
                 //If we want to ensure order later then for each A->B we should check if there is B->C in progress and wait  for it to finish first. So we could recheck using $regex
                 _id: app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid,
                 merged_to: newAppUser.uid,
                 ts: Math.round(new Date().getTime() / 1000),
                 lu: Math.round(new Date().getTime() / 1000),
                 t: 0 //tries
-            }, {ignore_errors: [11000]}, function() {
-                //If there is any merge inserted New->somethingElse, do not merge data yet. skip till that finishes.
-                mergeUserData(newAppUser, oldAppUser);
-            });
+            }, {ignore_errors: [11000]});
+            mergeUserData(newAppUser, oldAppUser);
         }
-    });
+
+    }
+    catch (e) {
+        callback(e, null);
+    }
 };
 
 var deleteMyExport = function(exportID) { //tries to delete packed file, exported folder and saved export in gridfs
@@ -1084,21 +1164,8 @@ usersApi.export = function(app_id, query, params, callback) {
             // }
 
             //try deleting old export
-            deleteMyExport(export_id).then(function(err) {
-                if (err) {
-                    log.e(err);
-                }
+            deleteMyExport(export_id).then(function() {
                 log.d("old export deleted");
-                return new Promise(function(resolve) {
-                    log.d("collection marked");
-                    //export data from metric_changes
-
-                    export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]}).finally(function() {
-                        resolve();
-                    });
-                });
-            }).then(function() {
-                log.d("metric_changes exported");
                 //export data from app_users
                 return export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "app_users" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/app_users" + app_id + ".json"]});
 

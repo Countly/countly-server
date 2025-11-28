@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: countly
+  labels:
+    name: countly
+    purpose: countly-deployment

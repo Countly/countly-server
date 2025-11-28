@@ -63,6 +63,7 @@ function verifyAddedEvents(addedEvents, initialRequest) {
                 throw ({err: err});
             }
             if (!res || (!res.length && !initialRequest)) {
+                console.log(JSON.stringify(res));
                 throw ({err: "Invalid length"});
             }
             if (initialRequest) {
@@ -108,6 +109,9 @@ function generateRandomEvents(key) {
         if (randomEventType < 0.5) {
             var ee = JSON.parse(JSON.stringify(internalEvents[Math.floor(Math.random() * internalEvents.length)]));
             ee.count = 1;
+            if (ee.key === '[CLY]_nps') {
+                ee.segmentation = {"rating": 5};
+            }
             eventList.push(ee);
         }
         else {
@@ -257,6 +261,7 @@ describe('Testing data points plugin', function() {
             var plugins = pluginManager.getPlugins();
             console.log("List of plugins: " + JSON.stringify(plugins));
             delete statInternalEvents["[CLY]_session"];
+            delete statInternalEvents["[CLY]_session_begin"];
             if (plugins.indexOf("surveys") === -1) {
                 delete statInternalEvents["[CLY]_survey"];
                 delete statInternalEvents["[CLY]_nps"];
@@ -573,13 +578,14 @@ describe('Testing data points plugin', function() {
                 done(err);
             });
         });
-        it(' sending [CLY]_orientation event  and session event', function() {
-            return request
+        it(' sending [CLY]_orientation event  and session event', function(done) {
+            request
                 .get('/i?app_key=' + APP_KEY + '&begin_session=1&device_id=ABC&events=' + JSON.stringify([{key: '[CLY]_orientation', count: 1}]) + '&app_id=' + APP_ID)
                 .expect(200)
                 .then(function(res) {
                     const ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
                 });
         });
         it('make sure nothing is added', function(done) {
@@ -589,13 +595,14 @@ describe('Testing data points plugin', function() {
                 done(err);
             });
         });
-        it(' sending some fake and valid events event  and session event', function() {
-            return request
+        it(' sending some fake and valid events event  and session event', function(done) {
+            request
                 .get('/i?app_key=' + APP_KEY + '&begin_session=1&device_id=ABC&events=' + JSON.stringify([{key: '[CLY]_special', count: 1}, {key: 'customevent', count: 1}]) + '&app_id=' + APP_ID)
                 .expect(200)
                 .then(function(res) {
                     const ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
                 });
         });
         it('make sure only custom one is added', function(done) {

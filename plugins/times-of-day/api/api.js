@@ -3,6 +3,8 @@ var plugin = {},
     plugins = require('../../pluginManager.js'),
     moment = require('moment'),
     { validateRead } = require('../../../api/utils/rights.js');
+var log = common.log('times-of-day:api');
+var calculatedDataManager = require('../../../api/utils/calculatedDataManager.js');
 
 const FEATURE_NAME = 'times_of_day';
 
@@ -129,7 +131,6 @@ const FEATURE_NAME = 'times_of_day';
 
         var collectionName = "times_of_day";
 
-
         if (query) {
             common.readBatcher.getOne("events", {'_id': common.db.ObjectID(appId)}, {list: 1}, (err, eventData) => {
                 if (err) {
@@ -182,7 +183,8 @@ const FEATURE_NAME = 'times_of_day';
             var todType = params.qstring.tod_type;
 
             var criteria = {
-                "s": todType
+                "s": todType,
+                "a": common.db.ObjectID(params.qstring.app_id)
             };
 
             if (params.qstring.date_range) {
@@ -192,16 +194,62 @@ const FEATURE_NAME = 'times_of_day';
             var collectionName = "times_of_day";
 
             validateRead(params, FEATURE_NAME, function() {
-                fetchTodData(collectionName, criteria, function(err, result) {
-                    if (err) {
-                        console.log("Error while fetching times of day data: ", err.message);
-                        common.returnMessage(params, 400, "Something went wrong");
-                        return false;
+                if (params.qstring.fetchFromGranural) {
+                    var qdata = {
+                        "appID": params.qstring.app_id,
+                        "period": params.qstring.period,
+                        "event": "[CLY]_custom",
+                        "name": criteria.s,
+                        "periodOffset": params.qstring.periodOffset || 0,
+                        "queryName": "timesOfDay",
+                    };
+                    if (qdata.name === "[CLY]_session") {
+                        qdata.event = "[CLY]_session";
                     }
 
-                    common.returnOutput(params, result);
-                    return true;
-                });
+                    calculatedDataManager.longtask({
+                        db: common.db,
+                        threshold: plugins.getConfig("api").request_threshold / 2,
+                        app_id: params.qstring.app_id,
+                        query_data: qdata,
+                        outputData: function(err, data2) {
+                            if (err) {
+                                log.e(err);
+                            }
+                            var timesOfDay = [0, 1, 2, 3, 4, 5, 6].map(() => {
+                                return Array(24).fill(0);
+                            });
+                            log.e("got data");
+                            log.e(JSON.stringify(data2));
+                            data2 = data2 || {};
+                            data2 = data2.data || [];
+                            for (var z = 0; z < data2.length; z++) {
+                                if (data2[z]._id && data2[z]._id.h && data2[z]._id.d) {
+                                    var hh = parseInt(data2[z]._id.h, 10);
+
+                                    var dd = parseInt(data2[z]._id.d, 10);
+                                    if (dd === 7) {
+                                        dd = 0;
+                                    }
+                                    timesOfDay[dd][hh] += data2[z].c;
+                                }
+                            }
+                            common.returnOutput(params, timesOfDay);
+                        }
+                    });
+                }
+                else {
+                    fetchTodData(collectionName, criteria, function(err, result) {
+                        if (err) {
+                            console.log("Error while fetching times of day data: ", err.message);
+                            common.returnMessage(params, 400, "Something went wrong");
+                            return false;
+                        }
+
+                        common.returnOutput(params, result);
+                        return true;
+                    });
+                }
             });
             return true;
         }
@@ -233,7 +281,6 @@ const FEATURE_NAME = 'times_of_day';
                     }
                 }
             });
-
             return callback(null, timesOfDay);
         });
     }
@@ -260,6 +307,14 @@ const FEATURE_NAME = 'times_of_day';
             if (data.widget_type === "times-of-day") {
                 var collectionName = "";
                 var criteria = {};
+                if (data && data.apps && data.apps[0]) {
+                    try {
+                        criteria.a = common.db.ObjectID(data.apps[0]);
+                    }
+                    catch (e) {
+                        log.e(e);
+                    }
+                }
 
                 // var appId = data.apps[0];  can be deleted 
                 var dataType = data.data_type;

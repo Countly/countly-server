@@ -1,0 +1,153 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: countly-jobserver
+  namespace: countly
+  labels:
+    app: countly-jobserver
+    branch: newarchitecture
+    component: jobserver
+spec:
+  selector:
+    app: countly-jobserver
+  ports:
+    - name: http
+      port: 3020
+      targetPort: 3020
+      protocol: TCP
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: countly-jobserver
+  namespace: countly
+  labels:
+    app: countly-jobserver
+    branch: newarchitecture
+    component: jobserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: countly-jobserver
+  template:
+    metadata:
+      labels:
+        app: countly-jobserver
+        branch: newarchitecture
+        component: jobserver
+    spec:
+      serviceAccountName: default
+      tolerations:
+      - key: countly
+        operator: Equal
+        value: dedicated
+        effect: NoSchedule
+      containers:
+      - name: countly-jobserver
+        image: countly-unified
+        imagePullPolicy: Always
+        args: ["npm", "run", "start:jobserver"]
+        
+        # This service runs in API mode. It loads API-specific environment variables
+        # (e.g., COUNTLY_CONFIG_API_*) in addition to global ones (COUNTLY_CONFIG__*).
+        # Load all configuration from ConfigMaps and Secrets
+        envFrom:
+        - configMapRef:
+            name: countly-config
+        - configMapRef:
+            name: countly-jobserver-config
+        - configMapRef:
+            name: observability-config-otlp
+        - secretRef:
+            name: common-config
+        - secretRef:
+            name: mongodb-config
+        - secretRef:
+            name: clickhouse-config
+        
+        # OpenTelemetry service-specific configuration
+        env:
+        - name: OTEL_SERVICE_NAME
+          value: "countly-jobserver"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "service.namespace=countly,deployment.environment=production"
+        
+        resources:
+          requests:
+            memory: "2.5Gi"
+            cpu: "1"
+          limits:
+            memory: "2.5Gi"
+            cpu: "1"
+        
+        # Use ping endpoint for healthcheck
+        livenessProbe:
+          httpGet:
+            path: /o/ping
+            port: 3020
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /o/ping
+            port: 3020
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /o/ping
+            port: 3020
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: logs
+          mountPath: /opt/countly/log
+      
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: countly-jobserver-hpa
+  namespace: countly
+  labels:
+    app: countly-jobserver
+    component: hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: countly-jobserver
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 85

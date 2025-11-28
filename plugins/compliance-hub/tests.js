@@ -1,6 +1,7 @@
 var request = require('supertest');
 var should = require('should');
 var testUtils = require("../../test/testUtils");
+const common = require('../../api/utils/common');
 request = request(testUtils.url);
 
 var APP_KEY = "";
@@ -121,6 +122,40 @@ describe('Testing Compliance Hub', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
+        it("validate if app users document is updated", function(done) {
+            testUtils.db.collection('app_users' + APP_ID).findOne({did: DEVICE_ID}, function(err, user) {
+                if (err) {
+                    return done(err);
+                }
+                user = user || {};
+                user.should.have.property('consent');
+
+                user.consent.should.have.property('sessions', true);
+                done();
+
+            });
+        });
+        it('should update timestamp values as milliseconds on the db', function(done) {
+            request
+                .get('/o/consent/search?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.aaData.length.should.be.above(0);
+                    const tsControl = ob.aaData.every(item => {
+                        const tsString = String(item.ts);
+                        if (tsString.length === 13) {
+                            return done();
+                        }
+                        else {
+                            return done(err);
+                        }
+                    });
+                });
+        });
 
         it('should update user consent data', function(done) {
             var updatedConsent = {
@@ -233,7 +268,6 @@ describe('Testing Compliance Hub', function() {
                         record.should.have.property('device_id');
                         record.should.have.property('ts');
                         record.should.have.property('type');
-                        record.should.have.property('after');
                         record.should.have.property('change');
                     }
                     setTimeout(done, 100);
@@ -489,10 +523,9 @@ describe('Testing Compliance Hub', function() {
                     if (ob.aaData && ob.aaData.length > 0) {
                         ob.aaData.forEach(function(item) {
                             item.should.have.property('device_id');
-                            item.should.have.property('app_id');
+                            item.should.have.property('a');
                             item.should.have.property('ts');
                             item.should.have.property('type');
-                            item.should.have.property('after');
                             item.should.have.property('change');
                             item.should.have.property('cd');
                             if (item.uid) {
@@ -584,6 +617,77 @@ describe('Testing Compliance Hub', function() {
                 });
         });
     });
+    describe("Check user merge for app_user properties", function() {
+        it('Add another user with consent', function(done) {
+            request
+                .post('/i?app_key=' + APP_KEY + '&device_id=' + DEVICE_ID + '2' + '&begin_session=1&consent={"events":true}')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.result.should.eql("Success");
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                });
+        });
+        it("validate if app users document is updated", function(done) {
+            testUtils.db.collection('app_users' + APP_ID).findOne({did: DEVICE_ID + "2"}, function(err, user) {
+                if (err) {
+                    return done(err);
+                }
+                user = user || {};
+                user.should.have.property('consent');
+
+                user.consent.should.have.property('events', true);
+                done();
+
+            });
+        });
+        it('Merge users', function(done) {
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + DEVICE_ID + '2&old_device_id=' + DEVICE_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.result.should.eql("Success");
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                });
+        });
+        it('Trigger user merging job to make sure all plugins are merged', function(done) {
+            testUtils.triggerMergeProcessing(function() {
+                setTimeout(done, 100 * testUtils.testScalingFactor);
+            });
+        });
+        it('making sure merge is finished', function(done) {
+            testUtils.check_if_merges_finished(3, APP_ID, done);
+        });
+        it("Trigger dictionary reload", function(done) {
+            testUtils.reloadIdentityDictionary(function(err) {
+                if (err) {
+                    console.log(err);
+                }
+                done();
+            });
+        });
+        it("validate if app users document is updated", function(done) {
+            testUtils.db.collection('app_users' + APP_ID).findOne({did: DEVICE_ID + "2"}, function(err, user) {
+                if (err) {
+                    return done(err);
+                }
+                user = user || {};
+                user.should.have.property('consent');
+
+                user.consent.should.have.property('events', true);
+                user.consent.should.have.property('sessions', true);
+                done();
+
+            });
+        });
+    });
 
     describe('Reset App', function() {
         it('should reset data', function(done) {
@@ -599,6 +703,9 @@ describe('Testing Compliance Hub', function() {
                     ob.should.have.property('result', 'Success');
                     setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
+        });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:mutationManagerJob", done);
         });
     });
 

@@ -1,19 +1,22 @@
+/**
+ * @typedef {import("mongodb").Db} MongoDb
+ * @typedef {import("./new/types/queue.ts").PushEventHandler} PushEventHandler
+ * @typedef {import("./new/types/queue.ts").ScheduleEventHandler} ScheduleEventHandler
+ * @typedef {import("./new/types/queue.ts").ResultEventHandler} ResultEventHandler
+ */
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api'),
-    { Message, State, TriggerKind, fields, platforms, ValidationError, PushError, DBMAP, guess } = require('./send'),
+    { Message, TriggerKind, ValidationError, PushError } = require('./send'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
     { onTokenSession, onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push'),
-    { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
-    { apiPop, apiPush } = require('./api-tx'),
+    { autoOnCohort, /*autoOnCohortDeletion,*/ autoOnEvent } = require('./api-auto'),
+    { apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
-    { estimate, test, create, update, toggle, remove, all, one, mime, user } = require('./api-message'),
+    { estimate, test, create, update, toggle, remove, all, one, mime, user, periodicStats } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
-    { legacyApis } = require('./legacy'),
-    Sender = require('./send/sender'),
     FEATURE_NAME = 'push',
-    PUSH_CACHE_GROUP = 'P',
     PUSH = {
         FEATURE_NAME
     },
@@ -25,6 +28,7 @@ const plugins = require('../../pluginManager'),
                 estimate: [validateRead, estimate],
                 all: [validateRead, all],
                 GET: [validateRead, one, '_id'],
+                stats: [validateRead, periodicStats],
             },
             user: [validateRead, user],
         },
@@ -36,12 +40,18 @@ const plugins = require('../../pluginManager'),
                 toggle: [validateUpdate, toggle],
                 remove: [validateDelete, remove],
                 push: [validateUpdate, apiPush],
-                pop: [validateDelete, apiPop],
-                // PUT: [validateCreate, create],
-                // POST: [validateUpdate, update, '_id'],
             }
         }
     };
+
+const { initPushQueue } = require("./new/lib/kafka.js");
+const { composeAllScheduledPushes } = require('./new/composer.js');
+const { sendAllPushes } = require('./new/sender.js');
+const { saveResults } = require("./new/resultor.js");
+const { scheduleMessageByAutoTriggers } = require("./new/scheduler.js");
+const { guessThePlatformFromUserAgentHeader } = require("./new/lib/utils.js");
+const platforms = require("./new/constants/platform-keymap.js");
+const ALL_PLATFORM_KEYS = Object.keys(platforms);
 
 plugins.setConfigs(FEATURE_NAME, {
     proxyhost: '',
@@ -53,94 +63,37 @@ plugins.setConfigs(FEATURE_NAME, {
         uids: '', // comma separated list of app_users.uid
         cohorts: '', // comma separated list of cohorts._id
     },
-    rate: {
-        rate: '',
-        period: ''
-    },
-    sendahead: 60000, // send pushes scheduled up to 60 sec in the future
-    connection_retries: 3, // retry this many times on recoverable errors
-    connection_factor: 1000, // exponential backoff factor
-    pool_pushes: 400, // object mode streams high water mark
-    pool_bytes: 10000, // bytes mode streams high water mark
-    pool_concurrency: 5, // max number of same type connections
-    pool_pools: 10, // max number of connections in total
-    default_content_available: false, // sets content-available: 1 by default for ios
+    // TODO: rate limiting needs to be implemented on kafka consumer side. also
+    // it needs to be configurable per app not as a global setting.
+    // rate: {
+    //     rate: '',
+    //     period: ''
+    // },
     message_timeout: 3600000, // timeout for a message not sent yet (for TooLateToSend error)
+    default_content_available: false, // sets content-available: 1 by default for ios
+    save_results_by_default: true,
+    message_results_ttl: 90, // 90 days
 });
 
 plugins.internalEvents.push('[CLY]_push_sent');
 plugins.internalEvents.push('[CLY]_push_action');
-plugins.internalDrillEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_sent');
+plugins.internalDrillEvents.push('[CLY]_push_action');
 
-
-plugins.register('/worker', function() {
-    common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
-    fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
-    PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
+plugins.register("/master", async function() {
+    try {
+        await initPushQueue(
+            pushes => sendAllPushes(pushes),
+            schedules => composeAllScheduledPushes(common.db, schedules),
+            results => saveResults(common.db, results),
+            autoTriggerEvents => scheduleMessageByAutoTriggers(common.db, autoTriggerEvents),
+        );
+        log.i("Push queue initialized successfully");
+    }
+    catch (err) {
+        log.e("Error initializing push queue:", err);
+    }
 });
-
-plugins.register('/master', function() {
-    common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
-    fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
-    PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
-    setTimeout(() => {
-        const jobManager = require('../../../api/parts/jobs');
-        jobManager.job("push:clear-stats").replace().schedule("at 3:00 am every 7 days");
-    }, 10000);
-});
-
-plugins.register('/master/runners', runners => {
-    let sender;
-    runners.push(async() => {
-        if (!sender) {
-            try {
-                sender = new Sender();
-                await sender.prepare();
-                let has = await sender.watch();
-                if (has) {
-                    await sender.send();
-                }
-                sender = undefined;
-            }
-            catch (e) {
-                log.e('Sender crached', e);
-                sender = undefined;
-            }
-        }
-    });
-});
-
-plugins.register('/cache/init', function() {
-    common.cache.init(PUSH_CACHE_GROUP, {
-        init: async() => {
-            let msgs = await Message.findMany({
-                state: {$bitsAllClear: State.Deleted | State.Done, $bitsAnySet: State.Streamable | State.Streaming | State.Paused},
-                'triggers.kind': {$in: [TriggerKind.API, TriggerKind.Cohort, TriggerKind.Event]}
-            });
-            log.d('cache: initialized with %d msgs: %j', msgs.length, msgs.map(m => m._id));
-            return msgs.map(m => [m.id, m]);
-        },
-        Cls: ['plugins/push/api/send', 'Message'],
-        read: k => {
-            log.d('cache: read', k);
-            return Message.findOne(k);
-        },
-        write: async(k, data) => {
-            log.d('cache: writing', k, data);
-            if (data && !(data instanceof Message)) {
-                data._id = data._id || k;
-                data = new Message(data);
-            }
-            return data;
-        },
-        remove: async(/*k, data*/) => true,
-        update: async(/*k, data*/) => {
-            throw new Error('We don\'t update cached messages');
-        }
-    });
-});
-
 
 plugins.register('/i', async ob => {
     let params = ob.params,
@@ -166,6 +119,9 @@ plugins.register('/i', async ob => {
                         log.i('Invalid segmentation for [CLY]_push_action from %s: %j (msg %s, count %j)', params.qstring.device_id, event.segmentation, msg ? 'found' : 'not found', event.segmentation.count);
                         continue;
                     }
+                    else {
+                        log.d('Recording push action: [%s] (%s) {%d}, %j', msg.id, params.app_user.uid, count, event);
+                    }
 
                     let p = event.segmentation.p,
                         a = msg.triggers.filter(tr => tr.kind === TriggerKind.Cohort || tr.kind === TriggerKind.Event).length > 0,
@@ -179,13 +135,13 @@ plugins.register('/i', async ob => {
                     }
 
                     if (!p && params.req.headers['user-agent']) {
-                        p = guess(params.req.headers['user-agent']);
+                        p = guessThePlatformFromUserAgentHeader(params.req.headers['user-agent']);
                     }
 
                     event.segmentation.a = a;
                     event.segmentation.t = t;
 
-                    if (p && platforms.indexOf(p) !== -1) {
+                    if (p && ALL_PLATFORM_KEYS.indexOf(p) !== -1) {
                         event.segmentation.p = p;
                         event.segmentation.ap = a + p;
                         event.segmentation.tp = t + p;
@@ -225,9 +181,9 @@ plugins.register('/i', async ob => {
 /**
  * Handy function for handling api calls (see apis obj above)
  *
- * @param {object} apisObj apis.i or apis.o
- * @param {object} ob object from pluginManager ({params, qstring, ...})
- * @returns {boolean} true if the call has been handled
+ * @param {object} apisObj - apis.i or apis.o
+ * @param {object} ob - object from pluginManager ({params, qstring, ...})
+ * @returns {true|undefined} true - if the call has been handled
  */
 function apiCall(apisObj, ob) {
     let {params, paths} = ob,
@@ -297,15 +253,11 @@ plugins.register('/session/user', onSessionUser);
 // API
 plugins.register('/i/push', ob => apiCall(apis.i, ob));
 plugins.register('/o/push', ob => apiCall(apis.o, ob));
-plugins.register('/i/apps/update/plugins/push', onAppPluginsUpdate);
-
-// Legacy API
-plugins.register('/i/pushes', ob => apiCall(legacyApis.i, ob));
 
 // Cohort hooks for cohorted auto push
 plugins.register('/cohort/enter', ({cohort, uids}) => autoOnCohort(true, cohort, uids));
 plugins.register('/cohort/exit', ({cohort, uids}) => autoOnCohort(false, cohort, uids));
-plugins.register('/cohort/delete', ({_id, ack}) => autoOnCohortDeletion(_id, ack));
+// plugins.register('/cohort/delete', ({_id, ack}) => autoOnCohortDeletion(_id, ack));
 
 // Drill hooks for user profiles
 plugins.register('/drill/add_push_events', drillAddPushEvents);
@@ -319,6 +271,7 @@ plugins.register('/i/device_id', onMerge);
 plugins.register('/permissions/features', ob => ob.features.push(FEATURE_NAME));
 
 // Data clears/resets/deletes
+plugins.register('/i/apps/update/plugins/push', onAppPluginsUpdate);
 plugins.register('/i/apps/reset', reset);
 plugins.register('/i/apps/clear_all', clear);
 plugins.register('/i/apps/delete', reset);
@@ -366,7 +319,7 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiDefine PushMessageBody
  *
  * @apiBody {ObjectID} app Application ID
- * @apiBody {Boolean} saveStats Store each individual push records into push_stats for debugging
+ * @apiBody {Boolean} saveResults Store each individual push message result into message_results for debugging
  * @apiBody {String[]} platforms Array of platforms to send to
  * @apiBody {String="draft"} [status] Message status, only set to draft when creating or editing a draft message, don't set otherwise
  * @apiBody {Object} filter={} User profile filter to limit recipients of this message
@@ -380,7 +333,6 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiBody {Number} [triggers.sctz] [only for plain trigger] Send in users' timezones switch, a number representing message creator offset timezone in minutes (GMT+3 is -180)
  * @apiBody {Boolean} [triggers.delayed] [only for plain trigger] Delay audience selection to 5 minutes prior to start date
  * @apiBody {Date} [triggers.end] [only for event, cohort & api triggers] Campaign end date (epoch or ISO date string)
- * @apiBody {Boolean} [triggers.actuals] [only for event, cohort triggers] Use event / cohort date instead of date of event arrival to the server date / cohort recalculation date
  * @apiBody {Number} [triggers.time] [only for event, cohort triggers] Time in ms since 00:00 in case event or cohort message is to be sent in users' timezones
  * @apiBody {Boolean} [triggers.reschedule] [only for event, cohort triggers] Allow rescheduling to next day if it's too late to send on scheduled day
  * @apiBody {Number} [triggers.delay] [only for event, cohort triggers] Milliseconds to delay sending of event or cohort message
@@ -416,7 +368,7 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  *
  * @apiSuccess {ObjectID} _id Message ID
  * @apiSuccess {ObjectID} app Application ID
- * @apiSuccess {Boolean} saveStats Store each individual push records into push_stats for debugging
+ * @apiSuccess {Boolean} saveResults Store each individual push message result into message_results for debugging
  * @apiSuccess {String[]} platforms Array of platforms to send to
  * @apiSuccess {Number} state Message state, for internal use
  * @apiSuccess {String="created", "inactive", "draft", "scheduled", "sending", "sent", "stopped", "failed"} [status] Message status: "created" is for messages yet to be scheduled (put into queue), "inactive" - cannot be scheduled (approval required for push approver plugin), "draft", "scheduled", "sending", "sent", "stopped" - automated message has been stopped, "failed" - failed to send all notifications
@@ -431,7 +383,6 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiSuccess {Number} [triggers.sctz] [only for plain trigger] Send in users' timezones switch, a number representing message creator offset timezone in minutes (GMT+3 is -180)
  * @apiSuccess {Boolean} [triggers.delayed] [only for plain trigger] Delay audience selection to 5 minutes prior to start date
  * @apiSuccess {Date} [triggers.end] [only for event, cohort & api triggers] Campaign end date (epoch or ISO date string)
- * @apiSuccess {Boolean} [triggers.actuals] [only for event, cohort triggers] Use event / cohort date instead of date of event arrival to the server date / cohort recalculation date
  * @apiSuccess {Number} [triggers.time] [only for event, cohort triggers] Time in ms since 00:00 in case event or cohort message is to be sent in users' timezones
  * @apiSuccess {Boolean} [triggers.reschedule] [only for event, cohort triggers] Allow rescheduling to next day if it's too late to send on scheduled day
  * @apiSuccess {Number} [triggers.delay] [only for event, cohort triggers] Milliseconds to delay sending of event or cohort message
@@ -465,7 +416,7 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiSuccess {Object} [result.processed] Number notifications processed so far
  * @apiSuccess {Object} [result.sent] Number notifications sent successfully
  * @apiSuccess {Object} [result.actioned] Number notifications with positive user reactions (notification taps & button clicks)
- * @apiSuccess {Object} [result.errored] Number notifications which weren't sent due to various errors
+ * @apiSuccess {Object} [result.failed] Number notifications which weren't sent due to various errors
  * @apiSuccess {Object[]} [result.lastErrors] Array of last 10 errors
  * @apiSuccess {Object[]} [result.lastRuns] Array of last 10 sending runs
  * @apiSuccess {Date} [result.next] Next sending date
@@ -488,7 +439,7 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiSuccess {Date} [info.approved] Date when the message was approved
  * @apiSuccess {String} [info.approvedBy] ID of user who approved the message
  * @apiSuccess {String} [info.approvedByName] Name of user who approved the message
- * @apiSuccess {Date} [info.rejected] Date when the message was rejected
+ * @apiSuccess {Date} [info.rejectedAt] Date when the message was rejected
  * @apiSuccess {String} [info.rejectedBy] ID of user who rejected the message
  * @apiSuccess {String} [info.rejectedByName] Name of user who rejected the message
  * @apiSuccess {Date} [info.started] Date when the message was started sending

@@ -73,7 +73,7 @@ describe('Testing user merge scenarios', function() {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '2').digest('hex');
                 testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '2');
-                    user.should.have.property("uid", '2');
+                    user.should.have.property("uid", '1');
                     user.should.have.property("d", "Samsung S7");
                     user.should.have.property("pv", "a4:1");
                     user.should.have.property("p", "Android");
@@ -105,7 +105,7 @@ describe('Testing user merge scenarios', function() {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '3').digest('hex');
                 testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '3');
-                    user.should.have.property("uid", '3');
+                    user.should.have.property("uid", '2');
                     user.should.have.property("d", "iPad");
                     user.should.have.property("pv", "i9:1");
                     user.should.have.property("p", "iOS");
@@ -142,7 +142,7 @@ describe('Testing user merge scenarios', function() {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '2').digest('hex');
                 testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '2');
-                    user.should.have.property("uid", '2');
+                    user.should.have.property("uid", '1');
                     user.should.have.property("d", "iPad");
                     user.should.have.property("pv", "i9:1");
                     user.should.have.property("p", "iOS");
@@ -174,7 +174,7 @@ describe('Testing user merge scenarios', function() {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '4').digest('hex');
                 testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '4');
-                    user.should.have.property("uid", '4');
+                    user.should.have.property("uid", '3');
                     user.should.have.property("d", "Sony Xperia");
                     user.should.have.property("pv", "a5:1");
                     user.should.have.property("p", "Android");
@@ -203,7 +203,7 @@ describe('Testing user merge scenarios', function() {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '5').digest('hex');
                 testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '5');
-                    user.should.have.property("uid", '5');
+                    user.should.have.property("uid", '4');
                     user.should.have.property("d", "iPhone");
                     user.should.have.property("pv", "i8:1");
                     user.should.have.property("p", "iOS");
@@ -240,7 +240,7 @@ describe('Testing user merge scenarios', function() {
                 var id = crypto.createHash('sha1').update(APP_KEY + DEVICE_ID + '5').digest('hex');
                 testUtils.db.collection('app_users' + APP_ID).findOne({'_id': id }, function(err, user) {
                     user.should.have.property("did", DEVICE_ID + '5');
-                    user.should.have.property("uid", '5');
+                    user.should.have.property("uid", '4');
                     user.should.have.property("d", "iPhone");
                     user.should.have.property("pv", "i8:1");
                     user.should.have.property("p", "iOS");
@@ -265,6 +265,9 @@ describe('Testing user merge scenarios', function() {
                         ob.should.have.property('result', 'Success');
                         done();
                     });
+            });
+            it('Trigger deletion job to run', function(done) {
+                testUtils.triggerJobToRun("api:mutationManagerJob", done);
             });
         });
     });

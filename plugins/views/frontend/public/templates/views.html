@@ -21,7 +21,21 @@
 				<cly-metric-card :test-id="item.name.toLowerCase().replaceAll(' ', '-')" :number="item.percent"
 					:label="item.name" :tooltip="item.description" :color="item.color"
 					:is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in totalCards">
-					<template v-slot:number>{{item.value}}</template>
+					<template v-slot:number>
+						{{item.value}} 
+						<a  
+							v-if="item.lu_diff>20" 
+							class="bu-is-underlined bu-is-clickable text-medium color-cool-gray-50" 
+							data-test-id="deselect-all-button"
+							@click="refreshTotals">
+							{{i18n('common.refresh')}}
+						</a>
+						<cly-tooltip-icon 
+							data-test-id="analytics-views-label-total-users-tooltip2"
+							:tooltip="item.ago" v-if="item.lu_diff"
+							con="ion ion-help-circled">
+						</cly-tooltip-icon>
+					</template>
 				</cly-metric-card>
 			</cly-metric-cards>
 		</cly-section>
@@ -104,7 +118,7 @@
 							</template>
 						</el-table-column>
 						<el-table-column :min-width="col.width" v-else-if="col.value === 'u'" :key="idx"
-							:formatter="numberFormatter" sortable="custom" :prop="col.value">
+							:formatter="numberFormatter" :sortable="false" :prop="col.value">
 							<template v-slot:header>
 								<span v-if="isSpecialPeriod"
 									data-test-id="analytics-views-label-total-users-tilde">~</span>
@@ -127,8 +141,8 @@
 					</template>
 				</template>
 			</cly-datatable-n>
-			<cly-datatable-n v-else resizable border v-loading="isTableLoading" :force-loading="isTableLoading" test-id="datatable-analytics-views"
-				:default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols"
+			<cly-datatable-n v-else resizable border test-id="datatable-analytics-views"
+				:default-sort="{prop: 't', order: 'descending'}" :available-dynamic-cols="tableDynamicCols"
 				:persist-key="tablePersistKey" :data-source="remoteTableDataSource" :export-query="getExportQuery"
 				ref="viewsTable" @selection-change="handleSelectionChange">
 				<template v-slot:header-left>

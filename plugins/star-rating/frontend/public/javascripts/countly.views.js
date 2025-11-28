@@ -313,7 +313,7 @@
             preparedRows: function() {
                 var self = this;
                 return this.comments.map(function(comment) {
-                    comment.cd = countlyCommon.formatTimeAgoText(comment.cd).tooltip;
+                    comment.ts = countlyCommon.formatTimeAgoText(comment.ts).tooltip;
                     comment.time = moment.unix(comment.ts).format("DD MMMM YYYY HH:MM:SS");
                     comment.comment = self.decode(comment.comment);
                     return comment;
@@ -323,7 +323,7 @@
         data: function() {
             var self = this;
             var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("commentsTable", {
-                columns: ['comment', 'cd', 'email', 'rating'],
+                columns: ['comment', 'ts', 'email', 'rating'],
                 onRequest: function() {
                     const data = {app_id: countlyCommon.ACTIVE_APP_ID, period: countlyCommon.getPeriodForAjax()};
                     var filter = self.filterVal;
@@ -355,7 +355,7 @@
                 },
                 onReady: function(context, rows) {
                     rows.forEach(function(row) {
-                        row.cd = countlyCommon.formatTimeAgoText(row.cd).tooltip;
+                        row.ts = countlyCommon.formatTimeAgoText(row.ts).tooltip;
                         row.time = moment.unix(row.ts).format("DD MMMM YYYY HH:MM:SS");
                         row.comment = replaceEscapes(row.comment);
                     });

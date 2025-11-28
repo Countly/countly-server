@@ -11,6 +11,9 @@ var countlyEvents = {},
     Promise = require("bluebird"),
     plugins = require('../../../plugins/pluginManager.js');
 
+
+
+
 /**
 * Process JSON decoded events data from request
 * @param {params} params - params object
@@ -221,7 +224,6 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
     }
 
     for (let i = 0; i < params.qstring?.events.length; i++) {
-
         var currEvent = params.qstring.events[i];
         tmpEventObj = {};
         tmpEventColl = {};

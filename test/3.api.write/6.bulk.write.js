@@ -8,7 +8,9 @@ var APP_ID = "";
 var APP_KEY = "";
 var DEVICE_ID = "1234567890";
 
-describe('Bulk writing', function() {
+var waitTime = 3000;
+
+describe('Bulk writing. Tests against data provided by aggregator.', function() {
     describe('without args', function() {
         it('should bad request', function(done) {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
@@ -34,7 +36,7 @@ describe('Bulk writing', function() {
                 {"device_id": DEVICE_ID, "app_key": APP_KEY, "begin_session": 1, timestamp: parseInt(new Date().getTime() / 1000 - 60 * 5)},
                 {"device_id": DEVICE_ID, "app_key": APP_KEY, "begin_session": 1, timestamp: parseInt(new Date().getTime() / 1000 - 60 * 4)},
                 {"device_id": DEVICE_ID, "app_key": APP_KEY, "session_duration": 60, timestamp: parseInt(new Date().getTime() / 1000 - 60 * 60 * 3)},
-                {"device_id": DEVICE_ID, "app_key": APP_KEY, "end_session": 1, timestamp: parseInt(new Date().getTime() / 1000 - 60 * 60 * 2)},
+                {"device_id": DEVICE_ID, "app_key": APP_KEY, "end_session": 1, ignore_cooldown: true, timestamp: parseInt(new Date().getTime() / 1000 - 60 * 60 * 2)},
                 {"device_id": DEVICE_ID + "new", "app_key": APP_KEY, "begin_session": 1, timestamp: parseInt(new Date().getTime() / 1000 - 60 * 60 * 1)},
             ];
             request
@@ -46,7 +48,7 @@ describe('Bulk writing', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, testUtils.testWaitTimeForDrillEvents * 3 * testUtils.testScalingFactor);
+                    setTimeout(done, waitTime);
                 });
         });
     });
@@ -57,7 +59,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=sessions')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": ["0", "2"]}, f: { '0': 2, '1': 1 }, ds: {'0': 1, '2': 1}, u: 2, n: 2, t: 3, e: 6, d: 60, Unknown: true});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": ["0", "2"]}, f: { '0': 2, '1': 1 }, ds: {'0': 1, '2': 1}, u: 2, n: 2, t: 3, d: 60, Unknown: true});
                     });
             });
         });
@@ -67,7 +69,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=users')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": ["0", "2"]}, f: { '0': 2, '1': 1 }, ds: {'0': 1, '2': 1}, u: 2, n: 2, t: 3, e: 6, d: 60, Unknown: true});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": ["0", "2"]}, f: { '0': 2, '1': 1 }, ds: {'0': 1, '2': 1}, u: 2, n: 2, t: 3, d: 60, Unknown: true});
                     });
             });
         });
@@ -77,7 +79,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=locations')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": ["0", "2"]}, f: { '0': 2, '1': 1 }, ds: {'0': 1, '2': 1}, u: 2, n: 2, t: 3, e: 6, d: 60, Unknown: true});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": ["0", "2"]}, f: { '0': 2, '1': 1 }, ds: {'0': 1, '2': 1}, u: 2, n: 2, t: 3, d: 60, Unknown: true});
                     });
             });
         });
@@ -87,7 +89,7 @@ describe('Bulk writing', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "1.0 min", avg_time: "0.3 min", avg_requests: "3.0", platforms: [], carriers: [{"name": 'Unknown', "value": 3, "percent": 100}], resolutions: []});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "1.0 min", avg_time: "0.3 min", platforms: [], carriers: [{"name": 'Unknown', "value": 3, "percent": 100}], resolutions: []});
                     });
             });
         });
@@ -116,6 +118,9 @@ describe('Bulk writing', function() {
                         setTimeout(done, 1000 * testUtils.testScalingFactor);
                     });
             });
+            it('trigger job for database cleanup', function(done) {
+                testUtils.triggerJobToRun("api:mutationManagerJob", done);
+            });
         });
     });
     describe('using metric tests', function() {
@@ -140,7 +145,7 @@ describe('Bulk writing', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
                 });
         });
     });
@@ -151,7 +156,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=device_details')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateMetrics(err, res, done, {meta: {"os": ["Android", "IOS"], "os_versions": ["4:4", "a4:4", "i7:1"], "resolutions": ["1200x800", "2048x1536"], "app_versions": ["1:0", "1:2"]}, Android: {"n": 2, "t": 2, "u": 2}, "a4:4": {"n": 1, "t": 1, "u": 1}, "4:4": {"n": 1, "t": 1, "u": 1}, "1200x800": {"n": 1, "t": 1, "u": 1}, "1:0": {"n": 1, "t": 1, "u": 1}, "IOS": {"n": 2, "t": 2, "u": 2}, "i7:1": {"n": 2, "t": 2, "u": 2}, "2048x1536": {"n": 2, "t": 2, "u": 2}, "1:2": {"n": 2, "t": 2, "u": 2}});
+                        testUtils.validateMetrics(err, res, done, {meta: {"os": ["Android", "IOS"], "os_versions": ["a4:4", "i7:1"], "resolutions": ["1200x800", "2048x1536"], "app_versions": ["1:0", "1:2"]}, Android: {"n": 2, "t": 2, "u": 2}, "a4:4": {"n": 1, "t": 1, "u": 1}, "1200x800": {"n": 1, "t": 1, "u": 1}, "1:0": {"n": 1, "t": 1, "u": 1}, "IOS": {"n": 2, "t": 2, "u": 2}, "i7:1": {"n": 2, "t": 2, "u": 2}, "2048x1536": {"n": 2, "t": 2, "u": 2}, "1:2": {"n": 2, "t": 2, "u": 2}});
                     });
             });
         });
@@ -181,7 +186,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=app_versions')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateMetrics(err, res, done, {meta: {"os": ["Android", "IOS"], "os_versions": ["4:4", "a4:4", "i7:1"], "resolutions": ["1200x800", "2048x1536"], "app_versions": ["1:0", "1:2"]}, Android: {"n": 2, "t": 2, "u": 2}, "a4:4": {"n": 1, "t": 1, "u": 1}, "4:4": {"n": 1, "t": 1, "u": 1}, "1200x800": {"n": 1, "t": 1, "u": 1}, "1:0": {"n": 1, "t": 1, "u": 1}, "IOS": {"n": 2, "t": 2, "u": 2}, "i7:1": {"n": 2, "t": 2, "u": 2}, "2048x1536": {"n": 2, "t": 2, "u": 2}, "1:2": {"n": 2, "t": 2, "u": 2}});
+                        testUtils.validateMetrics(err, res, done, {meta: {"os": ["Android", "IOS"], "os_versions": [ "a4:4", "i7:1"], "resolutions": ["1200x800", "2048x1536"], "app_versions": ["1:0", "1:2"]}, Android: {"n": 2, "t": 2, "u": 2}, "a4:4": {"n": 1, "t": 1, "u": 1}, "1200x800": {"n": 1, "t": 1, "u": 1}, "1:0": {"n": 1, "t": 1, "u": 1}, "IOS": {"n": 2, "t": 2, "u": 2}, "i7:1": {"n": 2, "t": 2, "u": 2}, "2048x1536": {"n": 2, "t": 2, "u": 2}, "1:2": {"n": 2, "t": 2, "u": 2}});
                     });
             });
         });
@@ -191,7 +196,7 @@ describe('Bulk writing', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 9, total_users: 9, new_users: 9, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 50}, {"name": "IOS", "value": 2, "percent": 50}], resolutions: [{"name": "2048x1536", "value": 2, "percent": 66.7}, {"name": "1200x800", "value": 1, "percent": 33.3}], carriers: [{"name": 'Unknown', "value": 6, "percent": 66.7}, {"name": "Telecom", "value": 2, "percent": 22.2}, {"name": "Vodafone", "value": 1, "percent": 11.1}]});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 9, total_users: 9, new_users: 9, total_time: "0.0 min", avg_time: "0.0 min", platforms: [{"name": "Android", "value": 2, "percent": 50}, {"name": "IOS", "value": 2, "percent": 50}], resolutions: [{"name": "2048x1536", "value": 2, "percent": 66.7}, {"name": "1200x800", "value": 1, "percent": 33.3}], carriers: [{"name": 'Unknown', "value": 6, "percent": 66.7}, {"name": "Telecom", "value": 2, "percent": 22.2}, {"name": "Vodafone", "value": 1, "percent": 11.1}]});
                     });
             });
         });
@@ -209,6 +214,9 @@ describe('Bulk writing', function() {
                         ob.should.have.property('result', 'Success');
                         setTimeout(done, 1000 * testUtils.testScalingFactor);
                     });
+            });
+            it('trigger job for database cleanup', function(done) {
+                testUtils.triggerJobToRun("api:mutationManagerJob", done);
             });
         });
     });
@@ -236,23 +244,39 @@ describe('Bulk writing', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
                 });
         });
     });
 
     describe('verify bulk events write', function() {
-        describe('verify events without param', function() {
-            it('should display first event data', function(done) {
+        describe('verify events without param(gives total)', function() {
+            it('Calculated from granural', function(done) {
+                request
+                    .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&fetchFromGranural=true')
+                    .expect(200)
+                    .end(function(err, res) {
+                        testUtils.validateEvents(err, res, done, {c: 20});
+                    });
+            });
+            it('should display total events data', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events')
+                    .expect(200)
+                    .end(function(err, res) {
+                        testUtils.validateEvents(err, res, done, {c: 20});
+                    });
+            });
+        });
+        describe('verify test event', function() {
+            it('should match event tests test result(calculated from granural)', function(done) {
+                request
+                    .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test&fetchFromGranural=true')
                     .expect(200)
                     .end(function(err, res) {
                         testUtils.validateEvents(err, res, done, {c: 3});
                     });
             });
-        });
-        describe('verify test event', function() {
             it('should match event tests test result', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test')
@@ -278,7 +302,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, c: 11, s: 5.5});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, c: 11, s: 5.5});
                     });
             });
         });
@@ -288,7 +312,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=country')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "Turkey": {"c": 3}, "Latvia": {"c": 2, "s": 1.5}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "Turkey": {"c": 3}, "Latvia": {"c": 2, "s": 1.5}});
                     });
             });
         });
@@ -298,7 +322,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=version')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "1:0": {"c": 3}, "1:2": {"c": 2, "s": 1.5}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "1:0": {"c": 3}, "1:2": {"c": 2, "s": 1.5}});
                     });
             });
         });
@@ -308,7 +332,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=market')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "amazon": {"c": 2}, "googleplay": {"c": 2, "s": 1.5}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "amazon": {"c": 2}, "googleplay": {"c": 2, "s": 1.5}});
                     });
             });
         });
@@ -318,7 +342,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, c: 11, s: 5.5}, true);
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market", "version"]}, c: 11, s: 5.5}, true);
                     });
             });
         });
@@ -328,7 +352,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=country&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "Turkey": {"c": 3}, "Latvia": {"c": 2, "s": 1.5}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "Turkey": {"c": 3}, "Latvia": {"c": 2, "s": 1.5}}, true);
                     });
             });
         });
@@ -338,7 +362,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=version&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "1:0": {"c": 3}, "1:2": {"c": 2, "s": 1.5}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "1:0": {"c": 3}, "1:2": {"c": 2, "s": 1.5}}, true);
                     });
             });
         });
@@ -348,7 +372,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=market&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "amazon": {"c": 2}, "googleplay": {"c": 2, "s": 1.5}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market", "version"]}, "amazon": {"c": 2}, "googleplay": {"c": 2, "s": 1.5}}, true);
                     });
             });
         });
@@ -358,7 +382,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, c: 6, s: 3});
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market"]}, c: 6, s: 3});
                     });
             });
         });
@@ -368,7 +392,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&segmentation=country')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, "Latvia": {"c": 4, "s": 3}});
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market"]}, "Latvia": {"c": 4, "s": 3}});
                     });
             });
         });
@@ -378,7 +402,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&segmentation=market')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, "googleplay": {"c": 4, "s": 3}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market"]}, "googleplay": {"c": 4, "s": 3}});
                     });
             });
         });
@@ -388,7 +412,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, c: 6, s: 3}, true);
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market"]}, c: 6, s: 3}, true);
                     });
             });
         });
@@ -398,7 +422,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&segmentation=country&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, "Latvia": {"c": 4, "s": 3}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market"]}, "Latvia": {"c": 4, "s": 3}}, true);
                     });
             });
         });
@@ -408,7 +432,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&segmentation=market&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, "googleplay": {"c": 4, "s": 3}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market"]}, "googleplay": {"c": 4, "s": 3}}, true);
                     });
             });
         });
@@ -463,6 +487,9 @@ describe('Bulk writing', function() {
                         ob.should.have.property('result', 'Success');
                         setTimeout(done, 1000 * testUtils.testScalingFactor);
                     });
+            });
+            it('trigger job for database cleanup', function(done) {
+                testUtils.triggerJobToRun("api:mutationManagerJob", done);
             });
         });
     });

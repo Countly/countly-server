@@ -36,7 +36,7 @@ describe("Testing checksum validations", function() {
 
                     const responseObject = JSON.parse(response.text);
                     responseObject.should.have.property("salt", TEST_SALT);
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor + 1000);
                 });
         });
     });
@@ -220,6 +220,9 @@ describe("Testing checksum validations", function() {
                     responseObject.should.have.property("result", "Success");
                     done();
                 });
+        });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:mutationManagerJob", done);
         });
     });
 });

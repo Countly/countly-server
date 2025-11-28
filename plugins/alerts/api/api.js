@@ -2,7 +2,6 @@ const common = require('../../../api/utils/common.js');
 const plugins = require('../../pluginManager.js');
 const log = require('../../../api/utils/log.js')('alert:api');
 var Promise = require("bluebird");
-const JOB = require('../../../api/parts/jobs');
 const utils = require('./parts/utils');
 const _ = require('lodash');
 const { validateCreate, validateRead, validateUpdate } = require('../../../api/utils/rights.js');
@@ -23,67 +22,14 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
     name
 }));
 
-// FIX THIS: workaround for the job.schedule
-const _date = new Date("2024-03-25T23:59:00.000Z");
-const _timeDelta = _date.getTimezoneOffset() / 60;
-const _hours = String((23 + _timeDelta) % 24).padStart(2, "0");
-
-const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
-    "hourly": "every 1 hour on the 59th min",
-    "daily": "at " + _hours + ":59",
-    "monthly": "on the last day of the month at " + _hours + ":59",
-};
-
 (function() {
     /**
-	 * delete alert job
-	 * @param {string} alertID  - alert record id from db
-	 * @param {function} callback - callback after deleting
-	 */
-    function deleteJob(alertID, callback) {
-        if (typeof alertID === 'string') {
-            alertID = common.db.ObjectID(alertID);
-        }
-        common.db.collection("jobs").remove({ 'data.alertID': alertID }, function(err) {
-            if (err) {
-                log.e('delete job failed, alertID:', alertID, err);
-                return;
-            }
-            log.d('delete job, alertID:', alertID);
-            if (callback) {
-                callback();
-            }
-        });
-    }
-    /**
-	 * update alert job
-	 * @param {object} alert  - alert record data
-	 */
-    function updateJobForAlert(alert) {
-        if (alert.enabled) {
-            const textExpression = PERIOD_TO_TEXT_EXPRESSION_MAPPER[alert.period];
-            if (textExpression) {
-                JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule(textExpression);
-                // JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule("every seconds");
-            }
-        }
-        else {
-            deleteJob(alert._id);
-        }
-    }
-    /**
-	 * load job list
-	 */
-    function loadJobs() {
-        common.readBatcher.getMany("alerts", {}, function(err, alertsList) {
-            log.d(alertsList, "get alert configs");
-            alertsList && alertsList.forEach(t => {
-                //period type
-                if (t.period) {
-                    updateJobForAlert(t);
-                }
-            });
-        });
+     * Notify the alert processor about changes in alerts configuration
+     * This will be picked up by the alert processor on its next run
+     */
+    function notifyAlertProcessor() {
+        // Invalidate the alerts cache so processor picks up changes
+        common.readBatcher.invalidate("alerts", {}, {}, true);
     }
 
     plugins.register("/i", async function(ob) {
@@ -123,70 +69,15 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
         ob.features.push(FEATURE_NAME);
     });
 
-    plugins.register("/master", function() {
-        loadJobs();
-    });
-
-    plugins.register("/updateAlert", function(ob) {
-        setTimeout(() => {
-            if (ob && (ob.method === "alertTrigger")) {
-                if (ob.alert) {
-                    deleteJob(ob.alert, function() {
-                        updateJobForAlert(ob.alert);
-                    });
-                }
-                else {
-                    loadJobs();
-                }
-            }
-        }, 2000);
-    });
-
-
     plugins.register("/alerts/addAlertCount", function(ob) {
         log.d("/alerts/addAlertCount", ob);
         utils.addAlertCount(ob);
     });
 
-    setTimeout(function() {
-        plugins.dispatch("/updateAlert", { method: "alertTrigger" });
-    }, 10000);
-
-
-
     /**
-     * @api {get} /i/alert/save save new create or updated alert data. 
-     * @apiName  saveAlert 
-     * @apiGroup alerts 
-     *
-     * @apiDescription  create or update alert. 
-     * @apiQuery {string} alert_config alert Configuration JSON object string. 
-     *  if contains "_id" will update related alert in DB.
-     * @apiQuery {String} app_id target app id of the alert.  
-     *
-     * @apiSuccessExample {json} Success-Response:
-     * HTTP/1.1 200 OK
-     *
-     * {
-          "_id": "626270afbf7392a8bfd8c1f3",
-          "alertName": "test",
-          "alertDataType": "metric",
-          "alertDataSubType": "Total users",
-          "alertDataSubType2": null,
-          "compareType": "increased by at least",
-          "compareValue": "2",
-          "selectedApps": [
-            "60a94dce686d3eea363ac325"
-          ],
-          "period": "every 1 hour on the 59th min",
-          "alertBy": "email",
-          "enabled": true,
-          "compareDescribe": "Total users increased by at least 2%",
-          "alertValues": [
-            "a@abc.com"
-          ],
-          "createdBy": "60afbaa84723f369db477fee"
-        }
+     * @api {get} /i/alert/save save new create or updated alert data.
+     * @apiName  saveAlert
+     * @apiGroup alerts
      */
     plugins.register("/i/alert/save", function(ob) {
         let params = ob.params;
@@ -196,17 +87,16 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
             try {
                 alertConfig = JSON.parse(alertConfig);
                 var checkProps = {
-                    'alertName': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
-                    'alertDataType': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
-                    'alertDataSubType': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
-                    // 'period': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
-                    'selectedApps': { 'required': alertConfig._id ? false : true, 'type': 'Array', 'min-length': 1 }
-
+                    'alertName': { 'required': !alertConfig._id, 'type': 'String', 'min-length': 1 },
+                    'alertDataType': { 'required': !alertConfig._id, 'type': 'String', 'min-length': 1 },
+                    'alertDataSubType': { 'required': !alertConfig._id, 'type': 'String', 'min-length': 1 },
+                    'selectedApps': { 'required': !alertConfig._id, 'type': 'Array', 'min-length': 1 }
                 };
                 if (!(common.validateArgs(alertConfig, checkProps))) {
                     common.returnMessage(params, 200, 'Not enough args');
                     return true;
                 }
+
                 if (alertConfig._id) {
                     const id = alertConfig._id;
                     delete alertConfig._id;
@@ -217,11 +107,7 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                         {$set: alertConfig},
                         function(err, result) {
                             if (!err) {
-                                if (result && result.value) {
-                                    plugins.dispatch("/updateAlert", { method: "alertTrigger", alert: result.value });
-                                }
-                                plugins.dispatch("/updateAlert", { method: "alertTrigger" });
-
+                                notifyAlertProcessor();
                                 common.returnOutput(params, result && result.value);
                             }
                             else {
@@ -229,16 +115,15 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                             }
                         });
                 }
-                if (!alertConfig._id) {
-                    alertConfig.createdAt = new Date().getTime();
-                }
+
+                alertConfig.createdAt = new Date().getTime();
                 alertConfig.createdBy = params.member._id;
                 return common.db.collection("alerts").insert(
                     alertConfig,
                     function(err, result) {
                         log.d("insert new alert:", err, result);
                         if (!err && result && result.insertedIds && result.insertedIds[0]) {
-                            plugins.dispatch("/updateAlert", { method: "alertTrigger", alert: result.ops[0] });
+                            notifyAlertProcessor();
                             common.returnOutput(params, result.insertedIds[0]);
                         }
                         else {
@@ -255,24 +140,11 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
         return true;
     });
 
-
-
-
     /**
-     * @api {get} /i/alert/delete delete alert by alert ID 
-     * @apiName deleteAlert 
-     * @apiGroup alerts 
-     *
-     * @apiDescription delete alert by id.
-     * @apiQuery {string} alertID  target alert id from db.
-     * @apiQuery {String} app_id target app id of the alert.  
-     *
-     * @apiSuccessExample {json} Success-Response:
-     * HTTP/1.1 200 OK
-     *
-     * {"result":"Deleted an alert"}
-     *
-    */
+     * @api {get} /i/alert/delete delete alert by alert ID
+     * @apiName deleteAlert
+     * @apiGroup alerts
+     */
     plugins.register("/i/alert/delete", function(ob) {
         let params = ob.params;
 
@@ -284,7 +156,7 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                     function(err, result) {
                         log.d(err, result, "delete an alert");
                         if (!err) {
-                            deleteJob(alertID);
+                            notifyAlertProcessor();
                             common.returnMessage(params, 200, "Deleted an alert");
                         }
                     }
@@ -300,20 +172,9 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
 
     /**
      * @api {post} /i/alert/status change alert status
-     * @apiName changeAlertStatus 
-     * @apiGroup alerts 
-     *
-     * @apiDescription change alerts status by boolean flag.
-     * @apiQuery {string} JSON string of status object for alerts record want to update.
-     *  for example: {"626270afbf7392a8bfd8c1f3":false, "42dafbf7392a8bfd8c1e1": true}
-     * @apiQuery {String} app_id target app id of the alert.  
-     *
-     * @apiSuccessExample {text} Success-Response:
-     * HTTP/1.1 200 OK
-     *
-     * true
-     *
-    */
+     * @apiName changeAlertStatus
+     * @apiGroup alerts
+     */
     plugins.register("/i/alert/status", function(ob) {
         let params = ob.params;
 
@@ -328,20 +189,19 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                 return;
             }
             const batch = [];
-            for (const appID in statusList) {
+            for (const alertID in statusList) {
                 batch.push(
                     common.db.collection("alerts").findAndModify(
-                        { _id: common.db.ObjectID(appID) },
+                        { _id: common.db.ObjectID(alertID) },
                         {},
-                        { $set: { enabled: statusList[appID] } },
+                        { $set: { enabled: statusList[alertID] } },
                         { new: false, upsert: false }
                     )
                 );
             }
             Promise.all(batch).then(function() {
-                log.d("alert all updated.");
-                common.readBatcher.invalidate("alerts", {}, {}, true);
-                plugins.dispatch("/updateAlert", { method: "alertTrigger" });
+                log.d("alert statuses updated");
+                notifyAlertProcessor();
                 common.returnOutput(params, true);
             });
         });
@@ -349,52 +209,10 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
     });
 
     /**
-     * @api {post} /i/alert/list get alert list 
-     * @apiName getAlertList 
-     * @apiGroup alerts 
-     *
-     * @apiDescription get Alert List user can view. 
-     *
-     * @apiQuery {String} app_id target app id of the alert.  
-     *
-     * @apiSuccessExample {json} Success-Response:
-     * HTTP/1.1 200 OK
-     *
-     * {
-          "alertsList": [
-            {
-              "_id": "626270afbf7392a8bfd8c1f3",
-              "alertName": "test",
-              "alertDataType": "metric",
-              "alertDataSubType": "Total users",
-              "alertDataSubType2": null,
-              "compareType": "increased by at least",
-              "compareValue": "2",
-              "selectedApps": [
-                "60a94dce686d3eea363ac325"
-              ],
-              "period": "every 1 hour on the 59th min",
-              "alertBy": "email",
-              "enabled": false,
-              "compareDescribe": "Total users increased by at least 2%",
-              "alertValues": [
-                "a@abc.com"
-              ],
-              "createdBy": "60afbaa84723f369db477fee",
-              "appNameList": "Mobile Test",
-              "app_id": "60a94dce686d3eea363ac325",
-              "condtionText": "Total users increased by at least 2%",
-              "createdByUser": "abc",
-              "type": "Total users"
-            }
-          ],
-          "count": {
-            "r": 0
-          }
-        }
-     *
-     *
-    */
+     * @api {post} /o/alert/list get alert list
+     * @apiName getAlertList
+     * @apiGroup alerts
+     */
     plugins.register("/o/alert/list", function(ob) {
         const params = ob.params;
         validateRead(params, FEATURE_NAME, function() {
@@ -434,33 +252,28 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
     });
 
     /**
-	 * remove app related alerts record and  alert job records;
-	 * @param {string} appId  - app id
-	 */
+     * remove app related alerts
+     * @param {string} appId - app id
+     */
     function removeAlertsForApp(appId) {
         common.db.collection('alerts').find({selectedApps: {$all: [appId]}}).toArray(function(err, result) {
-            if (!err) {
-                const ids = result.map((record)=>{
-                    return record._id;
-                }) || [];
-                common.db.collection('alerts').remove({selectedApps: {$all: [appId]}}, function() {});
-                common.db.collection('jobs').remove({'data.alertID': {$in: ids}}, function() {});
+            if (!err && result.length > 0) {
+                common.db.collection('alerts').remove({selectedApps: {$all: [appId]}}, function() {
+                    notifyAlertProcessor();
+                });
             }
         });
     }
 
     plugins.register("/i/apps/delete", function(ob) {
-        var appId = ob.appId;
-        removeAlertsForApp(appId);
+        removeAlertsForApp(ob.appId);
     });
 
     plugins.register("/i/apps/clear_all", function(ob) {
-        var appId = ob.appId;
-        removeAlertsForApp(appId);
+        removeAlertsForApp(ob.appId);
     });
 
     plugins.register("/i/apps/reset", function(ob) {
-        var appId = ob.appId;
-        removeAlertsForApp(appId);
+        removeAlertsForApp(ob.appId);
     });
 }());

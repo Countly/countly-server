@@ -10,7 +10,7 @@ const FEATURE_NAME = 'browser';
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
-    plugins.register("/worker", function() {
+    plugins.register("/master", function() {
         common.dbUserMap.browser = 'brw';
     });
     plugins.register("/o/method/total_users", function(ob) {

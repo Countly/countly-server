@@ -6,7 +6,7 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   pull_request:
-    branches: [ master, next, release.*, flex ]
+    branches: [ master, next, release.*, flex, newarchitecture ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -155,15 +155,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Prepare tests
-        shell: bash
-        run: bash bin/scripts/countly.prepare.ce.tests.sh
-
       - name: Copy code
         shell: bash
         run: |
           cp -rf ./* /opt/countly
           cp ./bin/docker/postinstall.sh /etc/my_init.d
+
+      - name: Prepare tests
+        shell: bash
+        run: bash bin/scripts/countly.prepare.ce.tests.sh
 
       - name: Remove plugin tests
         shell: bash
@@ -249,6 +249,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         test_type: [dashboard, onboarding]
 

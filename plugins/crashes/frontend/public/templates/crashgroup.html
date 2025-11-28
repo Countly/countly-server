@@ -257,14 +257,26 @@
                 <template v-slot:header>
                     <span class="bu-mr-2">{{i18n('crashes.crash-occurences-by', crashgroup.nonfatal ?
                         i18n('crashes.nonfatal') : i18n('crashes.fatal'))}}</span>
-                    <el-select v-model="chartBy">
-                        <el-option v-for="item in chartByOptions" :key="item.value" :label="item.label"
+                    <el-select v-model="chartBy" @change="handleChartByChange">
+                        <el-option v-for="item in chartByOptions"  :key="item.value" :label="item.label"
                             :value="item.value"></el-option>
                     </el-select>
+                    <cly-date-picker 
+                    timestampFormat="ms" 
+                    :display-shortcuts="true" 
+                    v-model="pickerDate" 
+                    label-mode-prop="absolute"
+                    :allow-presets="false"
+                    @change="handleDatePickerChange"
+                    class="bu-ml-2"
+                >
+                </cly-date-picker>
                 </template>
-                <cly-chart-bar :option="chartData" :legend="{show: true}" :force-loading="isLoading"></cly-chart-bar>
+                <p class="text-small color-cool-gray-50 bu-pl-3">{{i18n('crashes.crash-occurences-description')}}</p>
+                <cly-chart-bar  v-loading="isLoadingGraph" :force-loading="isLoadingGraph" :option="chartData(chartBy)" :legend="{show: true}" ></cly-chart-bar>
             </cly-section>
-            <cly-section :title="i18n('crashes.crash-occurences')" class="crash-occurences">
+            <cly-section :title="i18n('crashes.crash-occurences')" class="recent-crash-occurences">
+                <p class="text-small color-cool-gray-50 bu-pl-3">{{i18n('crashes.recent-crash-occurances-description',currentLimit)}}</p>
                 <cly-datatable-n :force-loading="isLoading" :rows="crashes" :exportFormat="formatExportFunction" ref="tableData" @row-click="handleRowClick" row-class-name="bu-is-clickable">
                     <template v-slot:header-left="filterScope">
                         <cly-multi-select v-model="userFilter" :fields="userFilterFields"></cly-multi-select>

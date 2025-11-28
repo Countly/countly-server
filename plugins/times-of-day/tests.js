@@ -10,7 +10,6 @@ var DEVICE_ID = "1234567890";
 
 
 describe('Testing Times Of Day', function() {
-
     var checkEmptyData = function(done) {
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         APP_ID = testUtils.get("APP_ID");
@@ -66,16 +65,15 @@ describe('Testing Times Of Day', function() {
 
                 var ob = JSON.parse(res.text);
                 ob.result.should.eql("Success");
-                setTimeout(done, 500 * testUtils.testScalingFactor);
+                setTimeout(done, 500 * testUtils.testScalingFactor + 3000);
             });
     });
 
-    it('Should validate session data', function(done) {
+    it('Should validate session data(calculated from granural)', function(done) {
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         APP_ID = testUtils.get("APP_ID");
-
         request
-            .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=times-of-day&tod_type=[CLY]_session')
+            .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=times-of-day&tod_type=[CLY]_session&no_cache=true')
             .expect(200)
             .end(function(err, res) {
 
@@ -104,10 +102,41 @@ describe('Testing Times Of Day', function() {
             });
     });
 
-    it('Should validate login data', function(done) {
+    it('Should validate session data(aggregated)', function(done) {
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         APP_ID = testUtils.get("APP_ID");
-        APP_KEY = testUtils.get("APP_KEY");
+        request
+            .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=times-of-day&tod_type=[CLY]_session')
+            .expect(200)
+            .end(function(err, res) {
+
+                if (err) {
+                    return done(err);
+                }
+
+                var ob = JSON.parse(res.text);
+                console.log(res.text);
+                ob.length.should.eql(7);
+
+                ob.forEach((element, index) => {
+                    element.length.should.eql(24);
+
+                    if (index === 0) {
+                        element[0].should.eql(1);
+                    }
+                    else {
+                        var allItemZero = element.every(function(i) {
+                            return i === 0;
+                        });
+                        allItemZero.should.eql(true);
+                    }
+                });
+
+                done();
+            });
+    });
+
+    it('Should validate login data', function(done) {
         request
             .get('/o?api_key=' + API_KEY_ADMIN + "&app_key=" + API_KEY_ADMIN + "&app_id=" + APP_ID + "&method=times-of-day&tod_type=Login")
             .expect(200)

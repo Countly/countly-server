@@ -6,7 +6,6 @@ var pluginDependencies = require('./pluginDependencies.js'),
     }),
     pluginsApis = {},
     mongodb = require('mongodb'),
-    cluster = require('cluster'),
     countlyConfig = require('../frontend/express/config', 'dont-enclose'),
     apiCountlyConfig = require('../api/config', 'dont-enclose'),
     utils = require('../api/utils/utils.js'),
@@ -60,7 +59,7 @@ var pluginManager = function pluginManager() {
     /**
      *  Events prefixed with [CLY]_ that should be recorded in drill
      */
-    this.internalDrillEvents = ["[CLY]_session", "[CLY]_llm_interaction", "[CLY]_llm_interaction_feedback", "[CLY]_llm_tool_used", "[CLY]_llm_tool_usage_parameter"];
+    this.internalDrillEvents = ["[CLY]_session_begin", "[CLY]_property_update", "[CLY]_session", "[CLY]_llm_interaction", "[CLY]_llm_interaction_feedback", "[CLY]_llm_tool_used", "[CLY]_llm_tool_usage_parameter"];
     /**
      *  Segments for events prefixed with [CLY]_ that should be omitted
      */
@@ -102,8 +101,11 @@ var pluginManager = function pluginManager() {
 
     /**
     * Initialize api side plugins
+    * @param {object} options - load opetions
+    * options.filename - filename to include (default api)
     **/
-    this.init = function() {
+    this.init = function(options) {
+        options = options || {};
         var pluginNames = [];
         var pluginsList = fs.readdirSync(path.resolve(__dirname, './')); //all plugins in folder
         //filter out just folders
@@ -113,14 +115,23 @@ var pluginManager = function pluginManager() {
                 pluginNames.push(pluginsList[z]);
             }
         }
-        dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
-
-
+        if (!options.skipDependencies) {
+            dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
+        }
+        console.log("Loading plugins", pluginNames);
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             fullPluginsMap[pluginNames[i]] = true;
             try {
-                pluginsApis[pluginNames[i]] = require("./" + pluginNames[i] + "/api/api");
-
+                //If file exists try including
+                var filepath = path.resolve(__dirname, pluginNames[i] + "/api/" + (options.filename || "api") + ".js");
+                if (fs.existsSync(filepath)) {
+                    //Require init_config if it exists
+                    var initConfigPath = path.resolve(__dirname, pluginNames[i] + "/api/init_configs.js");
+                    if (fs.existsSync(initConfigPath)) {
+                        require(initConfigPath);
+                    }
+                    pluginsApis[pluginNames[i]] = require(filepath);
+                }
             }
             catch (ex) {
                 console.log('Skipping plugin ' + pluginNames[i] + ' as we could not load it because of errors.');
@@ -158,7 +169,6 @@ var pluginManager = function pluginManager() {
                 }
                 else {
                     self.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
-                    // process.send({ cmd: "startPlugins" });
                     self.loadConfigs(db, function() {
                         callback();
                     });
@@ -169,9 +179,14 @@ var pluginManager = function pluginManager() {
     };
 
 
-    this.initPlugin = function(pluginName) {
+    this.initPlugin = function(pluginName, filename) {
         try {
-            pluginsApis[pluginName] = require("./" + pluginName + "/api/api");
+            filename = filename || "api";
+            var initConfigPath = path.resolve(__dirname, "./" + pluginName + "/api/init_configs.js");
+            if (fs.existsSync(initConfigPath)) {
+                require(initConfigPath);
+            }
+            pluginsApis[pluginName] = require(path.resolve(__dirname, "./" + pluginName + "/api/" + filename));
             fullPluginsMap[pluginName] = true;
         }
         catch (ex) {
@@ -331,6 +346,32 @@ var pluginManager = function pluginManager() {
             }
         });
 
+    };
+
+    this.loadConfigsIngestor = async function(db, callback/*, api*/) {
+        try {
+            var res = await db.collection("plugins").findOne({_id: "plugins"}, {"api": true, "plugins": true, "drill": true, "aggregator": true});
+            res = res || {};
+            delete res._id;
+            configs = res || {};
+            pluginConfig = res.plugins || {}; //currently enabled plugins
+
+            var diff = getObjectDiff(res, defaultConfigs);
+            if (Object.keys(diff).length > 0) {
+                var res2 = await db.collection("plugins").findOneAndUpdate({_id: "plugins"}, {$set: flattenObject(diff)}, {upsert: true, new: true});
+                if (res2) {
+                    for (var i in diff) {
+                        if (res2[i]) {
+                            configs[i] = res2[i];
+                        }
+                    }
+                }
+            }
+        }
+        catch (err) {
+            console.log(err);
+        }
+        callback();
     };
 
     /**
@@ -1227,53 +1268,45 @@ var pluginManager = function pluginManager() {
     };
 
     /**
-    * We check plugins and sync between processes/servers
+    * We check plugins and sync configuration
     * @param {object} db - connection to countly database
     * @param {function} callback - when finished checking and syncing
     **/
     this.checkPlugins = function(db, callback) {
-        var plugConf;
-        if (cluster.isMaster) {
-            plugConf = this.getConfig("plugins");
-            if (Object.keys(plugConf).length === 0) {
-                //no plugins inserted yet, upgrading by inserting current plugins
-                var list = this.getPlugins();
-                for (let i = 0; i < list.length; i++) {
-                    plugConf[list[i]] = true;
-                }
-                this.updateConfigs(db, "plugins", plugConf, callback);
+        var plugConf = this.getConfig("plugins");
+
+        if (Object.keys(plugConf).length === 0) {
+            // No plugins inserted yet, initialize by inserting current plugins
+            var list = this.getPlugins();
+            for (let i = 0; i < list.length; i++) {
+                plugConf[list[i]] = true;
             }
-            else {
-                this.syncPlugins(plugConf, callback);
-            }
+            this.updateConfigs(db, "plugins", plugConf, callback);
         }
         else {
-            //check if we need to sync plugins
+            // Check if we need to sync plugins
             var pluginList = this.getPlugins();
-            plugConf = this.getConfig("plugins") || {};
-            //let master know we need to include initial plugins
-            if (Object.keys(plugConf).length === 0) {
-                process.send({ cmd: "checkPlugins" });
+            var changes = 0;
+
+            for (let plugin in plugConf) {
+                var state = plugConf[plugin],
+                    index = pluginList.indexOf(plugin);
+                if (index !== -1 && !state) {
+                    changes++;
+                    plugins.splice(plugins.indexOf(plugin), 1);
+                }
+                else if (index === -1 && state) {
+                    changes++;
+                    plugins.push(plugin);
+                }
             }
-            else {
-                //check if we need to sync plugins
-                var changes = 0;
-                for (let plugin in plugConf) {
-                    var state = plugConf[plugin],
-                        index = pluginList.indexOf(plugin);
-                    if (index !== -1 && !state) {
-                        changes++;
-                        plugins.splice(plugins.indexOf(plugin), 1);
-                    }
-                    else if (index === -1 && state) {
-                        changes++;
-                        plugins.push(plugin);
-                    }
-                }
-                if (changes > 0) {
-                    //let master process know we need to sync plugins
-                    process.send({ cmd: "checkPlugins" });
-                }
+
+            if (changes > 0) {
+                // Sync plugins directly since we're in a single process
+                this.syncPlugins(plugConf, callback);
+            }
+            else if (callback) {
+                callback();
             }
         }
     };
@@ -1553,6 +1586,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Procedure to uninstall plugin
+    * Should be used only to hard disabled plugins mainly in dev mode
     * @param {string} plugin - plugin name
     * @param {function} callback - when finished uninstalling plugin
     * @returns {void} void
@@ -1560,28 +1594,45 @@ var pluginManager = function pluginManager() {
     this.uninstallPlugin = function(plugin, callback) {
         console.log('Uninstalling plugin %j...', plugin);
         callback = callback || function() {};
-        var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
-        var errors = false;
-        var args = [scriptPath];
-        if (apiCountlyConfig.symlinked === true) {
-            args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
-        }
-        var m = cp.spawn("nodejs", args);
+        var self = this;
 
-        m.stdout.on('data', (data) => {
-            console.log(data.toString());
-        });
+        // First update database to disable plugin
+        self.singleDefaultConnection().then((db) => {
+            db.collection("plugins").updateOne(
+                {_id: "plugins"},
+                {$set: {[`plugins.${plugin}`]: false}},
+                function(err) {
+                    if (err) {
+                        console.log("Error updating plugin state:", err);
+                    }
 
-        m.stderr.on('data', (data) => {
-            console.log(data.toString());
-        });
+                    // Then run uninstall script
+                    var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
+                    var errors = false;
+                    var args = [scriptPath];
+                    if (apiCountlyConfig.symlinked === true) {
+                        args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+                    }
+                    var m = cp.spawn("nodejs", args);
 
-        m.on('close', (code) => {
-            console.log('Done running uninstall.js with %j', code);
-            if (parseInt(code, 10) !== 0) {
-                errors = true;
-            }
-            callback(errors);
+                    m.stdout.on('data', (data) => {
+                        console.log(data.toString());
+                    });
+
+                    m.stderr.on('data', (data) => {
+                        console.log(data.toString());
+                    });
+
+                    m.on('close', (code) => {
+                        console.log('Done running uninstall.js with %j', code);
+                        if (parseInt(code, 10) !== 0) {
+                            errors = true;
+                        }
+                        db.close();
+                        callback(errors);
+                    });
+                }
+            );
         });
     };
 
@@ -1772,43 +1823,57 @@ var pluginManager = function pluginManager() {
         if (!db) {
             db = "countly";
         }
-        var i = str.lastIndexOf('/countly');
-        var k = str.lastIndexOf('/' + db);
-        if (i !== k && i !== -1 && db) {
-            return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
+
+        // Handle admin database replacement for any target database
+        var hasAdminDb = str.indexOf('/admin') !== -1;
+
+        if (hasAdminDb) {
+            var updatedConnectionString = str.replace('/admin', '/' + db);
+            var hasAuthSource = updatedConnectionString.indexOf('authSource=') !== -1;
+
+            if (!hasAuthSource) {
+                var hasQueryParams = updatedConnectionString.indexOf('?') !== -1;
+                var authSourceParam = hasQueryParams ? '&authSource=admin' : '?authSource=admin';
+                updatedConnectionString += authSourceParam;
+            }
+
+            return updatedConnectionString;
         }
-        else if (i === -1 && k === -1) {
+
+        var countlyIndex = str.lastIndexOf('/countly');
+        var targetDbIndex = str.lastIndexOf('/' + db);
+        if (countlyIndex !== targetDbIndex && countlyIndex !== -1 && db) {
+            return str.substr(0, countlyIndex) + "/" + db + str.substr(countlyIndex + ('/countly').length);
+        }
+        else if (countlyIndex === -1 && targetDbIndex === -1) {
             //no db found in the string, we should insert the needed one
-            var urlparts = str.split("://");
-            if (typeof urlparts[1] === "string") {
-                var parts = urlparts[1].split("/");
-                if (parts.length === 1) {
-                    parts[0] += "/" + db;
+            var urlParts = str.split("://");
+            if (typeof urlParts[1] === "string") {
+                var pathParts = urlParts[1].split("/");
+                if (pathParts.length === 1) {
+                    pathParts[0] += "/" + db;
                 }
                 else {
-                    parts[parts.length - 1] = db + parts[parts.length - 1];
+                    pathParts[pathParts.length - 1] = db + pathParts[pathParts.length - 1];
                 }
-                urlparts[1] = parts.join("/");
+                urlParts[1] = pathParts.join("/");
             }
-            return urlparts.join("://");
+            return urlParts.join("://");
         }
         return str;
     };
 
-    this.connectToAllDatabases = async() => {
-        let dbs = ['countly', 'countly_out', 'countly_fs'];
-        if (fs.existsSync(path.resolve(__dirname, 'drill'))) {
-            dbs.push('countly_drill');
-        }
+    this.connectToAllDatabases = async(return_original) => {
+        let dbs = ['countly', 'countly_out', 'countly_fs', 'countly_drill'];
 
         let databases = [];
         if (apiCountlyConfig && apiCountlyConfig.shared_connection) {
             console.log("using shared connection pool");
-            databases = await this.dbConnection(dbs);
+            databases = await this.dbConnection(dbs, return_original);
         }
         else {
             console.log("using separate connection pool");
-            databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
+            databases = await Promise.all(dbs.map((db) => this.dbConnection(db, return_original)));
         }
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
 
@@ -1817,6 +1882,8 @@ var pluginManager = function pluginManager() {
         common.outDb = dbOut;
         require('../api/utils/countlyFs').setHandler(dbFs);
         common.drillDb = dbDrill;
+
+
         var self = this;
         await new Promise(function(resolve) {
             self.loadConfigs(common.db, function() {
@@ -1829,22 +1896,36 @@ var pluginManager = function pluginManager() {
     /**
     * Get database connection with configured pool size
     * @param {object} config - connection configs
+    * @param {boolean} return_original - return original driver connection object(database is not wrapped)
     * @returns {object} db connection params
     **/
-    this.dbConnection = async function(config) {
-        var db, maxPoolSize = 10;
+    this.dbConnection = async function(config, return_original) {
+        var db, maxPoolSize = 100;
         var mngr = this;
         var dbList = [];
 
-        if (!cluster.isMaster) {
-            //we are in worker
-            maxPoolSize = 100;
-        }
-
         var useConfig = JSON.parse(JSON.stringify(countlyConfig));
-        if (process.argv[1] && process.argv[1].endsWith('api/api.js') && !cluster.isMaster) {
+        if (process.argv[1] && (process.argv[1].endsWith('api/api.js') ||
+                                process.argv[1].endsWith('api/ingestor.js') ||
+                                process.argv[1].endsWith('api/aggregator.js') ||
+                                process.argv[1].includes('/api/') ||
+                                process.argv[1].includes('jobServer/index.js'))) {
             useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
         }
+
+        // TEMPORARY DEBUG LOGGING - MONGODB CONNECTION
+        console.log('=== PLUGIN MANAGER DB CONNECTION DEBUG ===');
+        console.log('Process argv[1]:', process.argv[1]);
+        console.log('Using API config:', process.argv[1] && (process.argv[1].endsWith('api/api.js') ||
+                                process.argv[1].endsWith('api/ingestor.js') ||
+                                process.argv[1].endsWith('api/aggregator.js') ||
+                                process.argv[1].includes('/api/') ||
+                                process.argv[1].includes('jobServer/index.js')));
+        console.log('countlyConfig.mongodb:', JSON.stringify(countlyConfig.mongodb, null, 2));
+        console.log('apiCountlyConfig.mongodb:', JSON.stringify(apiCountlyConfig.mongodb, null, 2));
+        console.log('useConfig.mongodb:', JSON.stringify(useConfig.mongodb, null, 2));
+        console.log('config parameter:', typeof config === 'string' ? config : JSON.stringify(config, null, 2));
+        console.log('=== END PLUGIN MANAGER DB CONNECTION DEBUG ===');
         if (typeof config === "string") {
             db = config;
             if (this.dbConfigFiles[config]) {
@@ -1905,10 +1986,10 @@ var pluginManager = function pluginManager() {
         var dbOptions = {
             maxPoolSize: maxPoolSize,
             noDelay: true,
-            connectTimeoutMS: 999999999,
-            socketTimeoutMS: 999999999,
-            serverSelectionTimeoutMS: 999999999,
-            maxIdleTimeMS: 0,
+            connectTimeoutMS: 30000,
+            socketTimeoutMS: 0,
+            serverSelectionTimeoutMS: 30000,
+            maxIdleTimeMS: 300000,
             waitQueueTimeoutMS: 0
         };
         if (typeof config.mongodb === 'string') {
@@ -1953,6 +2034,14 @@ var pluginManager = function pluginManager() {
                 dbName = dbName + "&retryWrites=false";
             }
         }
+
+        // TEMPORARY DEBUG LOGGING - FINAL MONGODB CONNECTION
+        console.log('=== PLUGIN MANAGER FINAL DB CONNECTION ===');
+        console.log('Database name:', db);
+        console.log('Connection string:', dbName);
+        console.log('Max pool size:', maxPoolSize);
+        console.log('DB options:', JSON.stringify(dbOptions, null, 2));
+        console.log('=== END PLUGIN MANAGER FINAL DB CONNECTION ===');
 
         var db_name = "countly";
         try {
@@ -2045,21 +2134,44 @@ var pluginManager = function pluginManager() {
         logDriver("commandFailed", logDriverDb, "e");
 
 
-        client._db = client.db;
 
-        client.db = function(database, options) {
-            return mngr.wrapDatabase(client._db(database, options), client, db_name, dbName, dbOptions);
-        };
+
+        if (!return_original) {
+            client._db = client.db;
+            client.db = function(database, options) {
+                return mngr.wrapDatabase(client._db(database, options), client, db_name, dbName, dbOptions);
+            };
+        }
+        else {
+            if (!client.db.ObjectID) {
+                client.db.ObjectID = function(id) {
+                    try {
+                        return new mongodb.ObjectId(id);
+                    }
+                    catch (ex) {
+                        logDbRead.i("Incorrect Object ID %j", ex);
+                        return id;
+                    }
+                };
+            }
+        }
 
         if (dbList.length) {
             var ret = [];
             for (let i = 0; i < dbList.length; i++) {
                 ret.push(client.db(dbList[i]));
+                if (return_original) {
+                    ret[i].ObjectID = client.db.ObjectID;
+                }
             }
             return ret;
         }
         else {
-            return client.db(db_name);
+            var db_instance = client.db(db_name);
+            if (return_original && client.db.ObjectID) {
+                db_instance.ObjectID = client.db.ObjectID;
+            }
+            return db_instance;
         }
     };
 
@@ -2420,6 +2532,9 @@ var pluginManager = function pluginManager() {
                 return function(err, res) {
                     if (res) {
                         if (!res.value && data && data.name === "findAndModify" && data.args && data.args[3] && data.args[3].remove) {
+                            res = {"value": res};
+                        }
+                        if (!res.value && data && data.name === "findAOneAndDelete") {
                             res = {"value": res};
                         }
                         if (!res.result) {
@@ -3062,6 +3177,28 @@ var pluginManager = function pluginManager() {
         }
         return toReturn;
     };
+
+    this.register('/database/register', function(params) {
+        if (!params || !params.name || !params.client) {
+            console.error('Invalid database registration: missing name or client');
+            return;
+        }
+
+        try {
+            const common = require('../api/utils/common.js');
+
+            // Attach database client to common object using the provided name
+            common[params.name] = params.client;
+            console.log(`Database '${params.name}' (${params.type || 'unknown'}) registered with common object`);
+
+            if (params.description) {
+                console.log(`  Description: ${params.description}`);
+            }
+        }
+        catch (error) {
+            console.error(`Failed to register database '${params.name}':`, error);
+        }
+    });
 };
 /* ************************************************************************
 SINGLETON CLASS DEFINITION

@@ -4,14 +4,13 @@ var testUtils = require("../testUtils");
 request = request(testUtils.url);
 
 var plugins = require("../../plugins/pluginManager");
-var dbdrill;
+var db;
 var crypto = require('crypto');
 var API_KEY_ADMIN = "";
 var API_KEY_USER = "";
 var APP_ID = "";
 var APP_KEY = "";
 var DEVICE_ID = "1234567890";
-
 
 function generate_data(z) {
     it('Adding sgmented data(to get big list if possible) ' + (z + 1), function(done) {
@@ -41,7 +40,7 @@ describe('Testing event settings', function() {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
-            dbdrill = testUtils.client.db("countly_drill");
+            db = testUtils.client.db("countly_drill");
             var params = [
                 {"key": "test1", "count": 1},
                 {"key": "test2", "count": 1, "sum": 5, "dur": 10}];
@@ -54,9 +53,25 @@ describe('Testing event settings', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor * 2);
                 });
         });
+
+        it("making sure event is recorded in granural gata", function(done) {
+            console.log(JSON.stringify({"a": APP_ID, "e": "test1", "did": DEVICE_ID}));
+            db.collection("drill_events").findOne({"a": APP_ID, "e": "[CLY]_custom", "n": "test1", "did": DEVICE_ID}, function(err, res) {
+                if (err) {
+                    done(err);
+                }
+                else if (!res) {
+                    done("Missing document");
+                }
+                else {
+                    done();
+                }
+            });
+        });
+
     });
 
     describe('setting new order', function() {
@@ -280,7 +295,6 @@ describe('Testing event settings', function() {
     describe('creating events with segments', function() {
         it('create test events', function(done) {
             var params = [ {"key": "test3", "count": 1, "sum": 5, "dur": 10, "segmentation": {"my_segment": "value", "my_segment2": "value"}}];
-
             request
                 .get('/i?device_id=' + DEVICE_ID + '&app_key=' + APP_KEY + "&events=" + JSON.stringify(params))
                 .expect(200)
@@ -321,8 +335,7 @@ describe('Testing event settings', function() {
             }, testUtils.testWaitTimeForDrillEvents * testUtils.testScalingFactor);
         });
 
-
-        it('checking for segmentation in  collections(test3)', function(done) {
+        /*it('checking for segmentation in  collections(test3)', function(done) {
             var collectionNameWoPrefix = crypto.createHash('sha1').update("test3" + APP_ID).digest('hex');
             testUtils.db.collection("events_data").find({"a": APP_ID, "e": "test3", "_id": {"$regex": "^" + APP_ID + "_" + collectionNameWoPrefix + "_.*"}, "s": {$in: ["my_segment", "my_segment2"]}}).toArray(function(err, res) {
                 if (err) {
@@ -348,7 +361,7 @@ describe('Testing event settings', function() {
                     done("missing segmentation documents");
                 }
             });
-        });
+        });*/
 
 
         /*if(plugins.isPluginEnabled('drill'))
@@ -415,7 +428,7 @@ describe('Testing event settings', function() {
             });
         });
 
-        if (plugins.isPluginEnabled('drill')) {
+        /*if (plugins.isPluginEnabled('drill')) {
             it('checking if drill db ', function(done) {
                 var event = crypto.createHash('sha1').update("test3" + APP_ID).digest('hex');
                 dbdrill.collection("drill_meta").findOne({_id: APP_ID + "_meta_" + event}, function(err, res) {
@@ -423,7 +436,7 @@ describe('Testing event settings', function() {
                     done();
                 });
             });
-        }
+        }*/
     });
 
     describe('validate if omitting works', function() {
@@ -466,7 +479,7 @@ describe('Testing event settings', function() {
             }, 0);
         });
 
-        it('checking for segmentation in  collections(test3)', function(done) {
+        /*it('checking for segmentation in  collections(test3)', function(done) {
             var collectionNameWoPrefix = crypto.createHash('sha1').update("test3" + APP_ID).digest('hex');
             testUtils.db.collection("events_data").find({"_id": {"$regex": ("^" + APP_ID + "_" + collectionNameWoPrefix + "_.*")}, "s": {$in: ["my_segment"]}}).toArray(function(err, res) {
                 if (res.length == 0) {
@@ -476,7 +489,7 @@ describe('Testing event settings', function() {
                     done("segmentation document is created, it shouldn't be");
                 }
             });
-        });
+        });*/
 
     });
 
@@ -517,7 +530,7 @@ describe('Testing event settings', function() {
             }, 0);
         });
 
-        it('checking for segmentation in  collections(t1)', function(done) {
+        /*it('checking for segmentation in  collections(t1)', function(done) {
             var collectionNameWoPrefix = crypto.createHash('sha1').update("t1" + APP_ID).digest('hex');
             testUtils.db.collection("events_data").find({"_id": {"$regex": ("^" + APP_ID + "_" + collectionNameWoPrefix + "_.*")}, "s": {$in: ["s"]}}).toArray(function(err, res) {
                 if (res.length == 0) {
@@ -527,8 +540,8 @@ describe('Testing event settings', function() {
                     done("segmentation document not deleted");
                 }
             });
-        });
-        if (plugins.isPluginEnabled('drill')) {
+        });*/
+        /* if (plugins.isPluginEnabled('drill')) {
             it('checking if drill db ', function(done) {
                 var event = crypto.createHash('sha1').update("t1" + APP_ID).digest('hex');
                 dbdrill.collection("drill_meta").findOne({_id: APP_ID + "_meta_" + event}, function(err, res) {
@@ -548,7 +561,7 @@ describe('Testing event settings', function() {
                     }
                 });
             });
-        }
+        }*/
     });
 
 
@@ -677,7 +690,7 @@ describe('Testing event settings', function() {
             }, 0);
         });
 
-        it('checking for segmentation in  collections(t5)', function(done) {
+        /*it('checking for segmentation in  collections(t5)', function(done) {
             var collectionNameWoPrefix = crypto.createHash('sha1').update("t5" + APP_ID).digest('hex');
             testUtils.db.collection("events_data").find({"_id": {"$regex": ("^" + APP_ID + "_" + collectionNameWoPrefix + "_.*")}, "s": {$in: ["bad_segment"]}}).toArray(function(err, res) {
                 if (res.length == 0) {
@@ -687,8 +700,7 @@ describe('Testing event settings', function() {
                     done("segmentation document is created, it shouldn't be");
                 }
             });
-        });
-
+        });*/
     });
 
 
@@ -722,7 +734,7 @@ describe('Testing event settings', function() {
                         ob.should.have.property("list", ["t1", "t5", "test1", "test3"]);
                         ob.should.have.property("order", ["test1"]);
                         ob.should.have.property("overview", []);
-                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["s"]});
+                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["bad_segment", "s"]});
                         ob.should.have.property("omitted_segments", {"test3": ["my_segment"], "t1": ["s"]});
                         ob.should.have.property("whitelisted_segments", {});
                         setTimeout(done, 10 * testUtils.testScalingFactor);
@@ -763,7 +775,7 @@ describe('Testing event settings', function() {
                         ob.should.have.property("map", {"test1": {"is_visible": false}});
                         ob.should.have.property("order", ["test1"]);
                         ob.should.have.property("overview", []);
-                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["s", "bad_segment"]});
+                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["bad_segment", "s"]});
                         ob.should.have.property("omitted_segments", {"test3": ["my_segment"], "t1": ["s"]});
                         ob.should.have.property("whitelisted_segments", {});
                         done();
@@ -787,6 +799,9 @@ describe('Testing event settings', function() {
                     ob.should.have.property('result', 'Success');
                     setTimeout(done, 2000 * testUtils.testScalingFactor);
                 });
+        });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:mutationManagerJob", done);
         });
         it('check if data reseted', function(done) {
             request

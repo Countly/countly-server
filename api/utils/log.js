@@ -1,68 +1,36 @@
-'use strict';
+const pino = require('pino');
 
-/**
- * Log provides a wrapper over debug or console functions with log level filtering, module filtering and ability to store log in database.
- * Uses configuration require('../config.js').logging:
- * {
- *  'info': ['app', 'auth', 'static'],      // log info and higher level for modules 'app*', 'auth*', 'static*'
- *  'debug': ['api.users'],                 // log debug and higher (in fact everything) for modules 'api.users*'
- *  'default': 'warn',                      // log warn and higher for all other modules
- * }
- * Note that log levels supported are ['debug', 'info', 'warn', 'error']
- *
- * Usage is quite simple:
- * var log = require('common.js').log('module[:submodule[:subsubmodule]]');
- * log.i('something happened: %s, %j', 'string', {obj: 'ect'});
- * log.e('something really bad happened: %j', new Error('Oops'));
- *
- * Whenever DEBUG is in process.env, log outputs all filtered messages with debug module instead of console so you could have pretty colors in console.
- * In other cases only log.d is logged using debug module.
- * 
- * To control log level at runtime, call require('common.js').log.setLevel('events', 'debug'). From now on 'events' logger will log everything.
- *
- * There is also a handy method for generating standard node.js callbacks which log error. Only applicable if no actions in case of error needed:
- * collection.find().toArray(log.callback(function(arg1, arg2){ // all good }));
- * - if error didn't happen, function is called
- * - if error happened, it will be logged, but function won't be called
- * - if error happened, arg1 is a first argument AFTER error, it's not an error
- * @module api/utils/log
- */
-
-var prefs = require('../config.js', 'dont-enclose').logging || {};
-prefs.default = prefs.default || "warn";
-var colors = require('colors');
-var deflt = (prefs && prefs.default) ? prefs.default : 'error';
-
-for (let level in prefs) {
-    if (prefs[level].sort) {
-        prefs[level].sort();
-    }
+// Optional OpenTelemetry imports
+let trace;
+let context;
+let metrics;
+let semanticConventions;
+try {
+    trace = require('@opentelemetry/api').trace;
+    context = require('@opentelemetry/api').context;
+    metrics = require('@opentelemetry/api').metrics;
+    semanticConventions = require('@opentelemetry/semantic-conventions');
+    // eslint-disable-next-line no-empty
+}
+catch (e) {
+    // do nothing
 }
 
-var styles = {
-    moduleColors: {
-        //      'push:*api': 0 // green
-        '[last]': -1
-    },
-    colors: ['green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray', 'red'],
-    stylers: {
-        warn: function(args) {
-            for (var i = 0; i < args.length; i++) {
-                if (typeof args[i] === 'string') {
-                    args[i] = colors.bgYellow.black(args[i].black);
-                }
-            }
-        },
-        error: function(args) {
-            for (var i = 0; i < args.length; i++) {
-                if (typeof args[i] === 'string') {
-                    args[i] = colors.bgRed.white(args[i].white);
-                }
-            }
-        }
-    }
+/**
+ * Mapping of short level codes to full level names
+ * @type {Object.<string, string>}
+ */
+const LEVELS = {
+    d: 'debug',
+    i: 'info',
+    w: 'warn',
+    e: 'error'
 };
 
+/**
+ * Mapping of log levels to acceptable log levels
+ * @type {Object.<string, string[]>}
+ */
 const ACCEPTABLE = {
     d: ['debug'],
     i: ['debug', 'info'],
@@ -70,61 +38,101 @@ const ACCEPTABLE = {
     e: ['debug', 'info', 'warn', 'error'],
 };
 
-const NAMES = {
-    d: 'DEBUG',
-    i: 'INFO',
-    w: 'WARN',
-    e: 'ERROR'
-};
+
+// Initialize configuration with defaults
+let prefs = require('../config.js', 'dont-enclose').logging || {};
+prefs.default = prefs.default || "warn";
+let deflt = (prefs && prefs.default) ? prefs.default : 'error';
+let prettyPrint = prefs.prettyPrint || false;
+
+// Singleton transport for pretty-print to avoid memory leaks
+let prettyTransport = null;
 
 /**
- * Returns logger function for given preferences
- * @param {string} level - log level
- * @param {string} prefix - add prefix to message
- * @param {boolean} enabled - whether function should log anything
- * @param {object} outer - this for @out
- * @param {function} out - output function (console or debug)
- * @param {function} styler - function to apply styles
- * @returns {function} logger function
+ * Current levels for all modules
+ * @type {Object.<string, string>}
  */
-var log = function(level, prefix, enabled, outer, out, styler) {
-    return function() {
-        // console.log(level, prefix, enabled(), arguments);
-        if (enabled()) {
-            var args = Array.prototype.slice.call(arguments, 0);
-            var color = styles.moduleColors[prefix];
-            if (color === undefined) {
-                color = (++styles.moduleColors['[last]']) % styles.colors.length;
-                styles.moduleColors[prefix] = color;
-            }
-            color = styles.colors[color];
-            if (styler) {
-                args[0] = new Date().toISOString() + ': ' + level + '\t' + '[' + (prefix || '') + ']\t' + args[0];
-                styler(args);
-            }
-            else {
-                args[0] = (new Date().toISOString() + ': ' + level + '\t').gray + colors[color]('[' + (prefix || '') + ']\t') + args[0];
-            }
-            // args[0] = (new Date().toISOString() + ': ' + (prefix || '')).gray + args[0];
-            // console.log('Logging %j', args);
-            if (typeof out === 'function') {
-                out.apply(outer, args);
-            }
-            else {
-                for (var k in out) {
-                    out[k].apply(outer, args);
-                }
-            }
-        }
+const levels = {};
+
+// Metrics setup if OpenTelemetry is available
+let logCounter;
+let logDurationHistogram;
+
+if (metrics) {
+    const meter = metrics.getMeter('logger');
+    logCounter = meter.createCounter('log_entries_total', {
+        description: 'Number of log entries by level and module',
+    });
+    logDurationHistogram = meter.createHistogram('log_duration_seconds', {
+        description: 'Duration of logging operations',
+    });
+}
+
+/**
+ * Gets the current trace context if OpenTelemetry is available
+ * @returns {Object|null} Trace context object or null if unavailable
+ */
+function getTraceContext() {
+    if (!trace) {
+        return null;
+    }
+
+    const currentSpan = trace.getSpan(context.active());
+    if (!currentSpan) {
+        return null;
+    }
+
+    const spanContext = currentSpan.spanContext();
+    return {
+        'traceId': spanContext.traceId,
+        'spanId': spanContext.spanId,
+        'traceFlags': spanContext.traceFlags.toString(16)
     };
-};
+}
+
+/**
+ * Creates a logging span if OpenTelemetry is available
+ * @param {string} name - The module name
+ * @param {string} level - The log level
+ * @param {string} message - The log message
+ * @returns {Span|null} The created span or null if unavailable
+ */
+function createLoggingSpan(name, level, message) {
+    if (!trace) {
+        return null;
+    }
+
+    const tracer = trace.getTracer('logger');
+    return tracer.startSpan(`log.${level}`, {
+        attributes: {
+            [semanticConventions.SemanticAttributes.CODE_FUNCTION]: name,
+            [semanticConventions.SemanticAttributes.CODE_NAMESPACE]: 'logger',
+            'logging.level': level,
+            'logging.message': message
+        }
+    });
+}
+
+/**
+ * Records metrics for logging operations
+ * @param {string} name - The module name
+ * @param {string} level - The log level
+ */
+function recordMetrics(name, level) {
+    if (logCounter) {
+        logCounter.add(1, {
+            module: name,
+            level: level
+        });
+    }
+}
 
 /**
  * Looks for logging level in config for a particular module
- * @param {string} name - module name
- * @returns {string} log level
+ * @param {string} name - The module name
+ * @returns {string} The configured log level
  */
-var logLevel = function(name) {
+const logLevel = function(name) {
     if (typeof prefs === 'undefined') {
         return 'error';
     }
@@ -132,20 +140,17 @@ var logLevel = function(name) {
         return prefs;
     }
     else {
-        for (var level in prefs) {
+        for (let level in prefs) {
             if (typeof prefs[level] === 'string' && name.indexOf(prefs[level]) === 0) {
                 return level;
             }
             if (typeof prefs[level] === 'object' && prefs[level].length) {
-                for (var i = prefs[level].length - 1; i >= 0; i--) {
-                    var opt = prefs[level][i];
+                for (let i = prefs[level].length - 1; i >= 0; i--) {
+                    let opt = prefs[level][i];
                     if (opt === name || name.indexOf(opt) === 0) {
                         return level;
                     }
                 }
-                // for (var m in prefs[level]) {
-                //  if (name.indexOf(prefs[level][m]) === 0) { return level; }
-                // }
             }
         }
         return deflt;
@@ -153,250 +158,303 @@ var logLevel = function(name) {
 };
 
 /**
- * Current levels for all modules
+ * Creates a Pino logger instance with the appropriate configuration
+ * @param {string} name - The module name
+ * @param {string} [level] - The log level
+ * @returns {Logger} Configured Pino logger instance
  */
-var levels = {
-    // mongo: 'info'
+const createLogger = (name, level) => {
+    const config = {
+        name,
+        level: level || deflt,
+        timestamp: pino.stdTimeFunctions.isoTime,
+        hooks: {
+            logMethod(args, method) {
+                if (args.length > 1) {
+                    // Create an object with all arguments in order
+                    const logObj = {};
+                    let messageArg = null;
+
+                    for (let i = 0; i < args.length; i++) {
+                        const arg = args[i];
+                        const key = `arg${i}`;
+
+                        if (typeof arg === 'object' && arg !== null) {
+                            if (arg instanceof Error) {
+                                // Store error with full stack trace
+                                logObj[key] = {
+                                    name: arg.name,
+                                    message: arg.message,
+                                    stack: arg.stack,
+                                    // Include any custom properties
+                                    ...Object.getOwnPropertyNames(arg).reduce((acc, prop) => {
+                                        if (!['name', 'message', 'stack'].includes(prop)) {
+                                            acc[prop] = arg[prop];
+                                        }
+                                        return acc;
+                                    }, {})
+                                };
+                            }
+                            else {
+                                // Store object natively
+                                logObj[key] = arg;
+                            }
+                        }
+                        else {
+                            // Store primitive values
+                            logObj[key] = arg;
+                        }
+
+                        // Use first string-like argument as message, or first argument if no strings
+                        if (messageArg === null && (typeof arg === 'string' || typeof arg === 'number')) {
+                            messageArg = String(arg);
+                        }
+                    }
+
+                    // If no string found, use the first argument as message
+                    if (messageArg === null && args.length > 0) {
+                        messageArg = String(args[0]);
+                    }
+
+                    method.apply(this, [logObj, messageArg || '']);
+                }
+                else {
+                    method.apply(this, args);
+                }
+            }
+        },
+        formatters: {
+            level: (label) => {
+                return { level: label.toUpperCase() };
+            },
+            log: (object) => {
+                const traceContext = getTraceContext();
+                return traceContext ? { ...object, ...traceContext } : object;
+            }
+        }
+    };
+
+    // Add pretty-print configuration if enabled
+    if (prettyPrint) {
+        // Use singleton transport to avoid memory leaks
+        if (!prettyTransport) {
+            prettyTransport = pino.transport({
+                target: 'pino-pretty',
+                options: {
+                    colorize: true,
+                    translateTime: 'SYS:standard',
+                    ignore: 'pid,hostname'
+                }
+            });
+        }
+        return pino(config, prettyTransport);
+    }
+    else {
+        return pino(config);
+    }
 };
+
 /**
-* Sets current logging level
-* @static
-* @param {string} module - name of the module for logging
-* @param {string} level -  level of logging, possible values are: debug, info, warn, error
-**/
-var setLevel = function(module, level) {
+ * Creates a logging function for a specific level
+ * @param {Logger} logger - The Pino logger instance
+ * @param {string} name - The module name
+ * @param {string} level - The log level code (d, i, w, e)
+ * @returns {Function} The logging function
+ */
+const createLogFunction = (logger, name, level) => {
+    return function(...args) {
+        const currentLevel = levels[name] || deflt;
+        if (ACCEPTABLE[level].indexOf(currentLevel) !== -1) {
+            const startTime = performance.now();
+            const message = args[0];
+
+            // Create span for this logging operation
+            const span = createLoggingSpan(name, LEVELS[level], message);
+
+            try {
+                // Pass all arguments directly to Pino - the logMethod hook will handle them
+                logger[LEVELS[level]](...args);
+
+                // Record metrics
+                recordMetrics(name, LEVELS[level]);
+
+                // Record duration
+                if (logDurationHistogram) {
+                    const duration = (performance.now() - startTime) / 1000; // Convert to seconds
+                    logDurationHistogram.record(duration, {
+                        module: name,
+                        level: LEVELS[level]
+                    });
+                }
+            }
+            finally {
+                if (span) {
+                    span.end();
+                }
+            }
+        }
+    };
+};
+
+/**
+ * Sets current logging level for a module
+ * @param {string} module - The module name
+ * @param {string} level - The log level
+ */
+const setLevel = function(module, level) {
     levels[module] = level;
 };
+
 /**
-* Sets default logging level for all modules, that do not have specific level set
-* @static
-* @param {string} level -  level of logging, possible values are: debug, info, warn, error
-**/
-var setDefault = function(level) {
+ * Sets default logging level
+ * @param {string} level - The log level
+ */
+const setDefault = function(level) {
     deflt = level;
 };
+
 /**
-* Get currently set logging level for module
-* @static
-* @param {string} module - name of the module for logging
-* @returns {string} level of logging, possible values are: debug, info, warn, error
-**/
-var getLevel = function(module) {
+ * Sets pretty-print option
+ * @param {boolean} enabled - Whether to enable pretty-print
+ */
+const setPrettyPrint = function(enabled) {
+    prettyPrint = enabled;
+
+    // Reset transport when changing pretty-print setting
+    if (prettyTransport) {
+        prettyTransport.end();
+        prettyTransport = null;
+    }
+};
+
+/**
+ * Gets current logging level for a module
+ * @param {string} module - The module name
+ * @returns {string} The current log level
+ */
+const getLevel = function(module) {
     return levels[module] || deflt;
 };
 
-var getEnabledWithLevel = function(acceptable, module) {
-    return function() {
-        // if (acceptable.indexOf(levels[module]) === -1) {
-        //  console.log('Won\'t log %j because %j doesn\'t have %j (%j)', module, acceptable, levels[module], levels);
-        // }
-        return acceptable.indexOf(levels[module] || deflt) !== -1;
-    };
-};
 /**
-* Handle messages from ipc
-* @static
-* @param {string} msg - message received from other processes
-**/
-var ipcHandler = function(msg) {
-    var m, l, modules, i;
-
-    if (!msg || msg.cmd !== 'log' || !msg.config) {
-        return;
-    }
-
-    // console.log('%d: Setting logging config to %j (was %j)', process.pid, msg.config, levels);
-
-    if (msg.config.default) {
-        deflt = msg.config.default;
-    }
-
-    for (m in levels) {
-        var found = null;
-        for (l in msg.config) {
-            modules = msg.config[l].split(',').map(function(v) {
-                return v.trim();
-            });
-
-            for (i = 0; i < modules.length; i++) {
-                if (modules[i] === m) {
-                    found = l;
-                }
-            }
-        }
-
-        if (found === null) {
-            for (l in msg.config) {
-                modules = msg.config[l].split(',').map(function(v) {
-                    return v.trim();
-                });
-
-                for (i = 0; i < modules.length; i++) {
-                    if (modules[i].indexOf('*') === -1 && modules[i] === m.split(':')[0]) {
-                        found = l;
-                    }
-                    else if (modules[i].indexOf('*') !== -1 && modules[i].split(':')[1] === '*' && modules[i].split(':')[0] === m.split(':')[0]) {
-                        found = l;
-                    }
-                }
-            }
-        }
-
-        if (found !== null) {
-            levels[m] = found;
-        }
-        else {
-            levels[m] = deflt;
-        }
-    }
-
-    for (l in msg.config) {
-        if (msg.config[l] && l !== 'default') {
-            modules = msg.config[l].split(',').map(function(v) {
-                return v.trim();
-            });
-            prefs[l] = modules;
-
-            for (i in modules) {
-                m = modules[i];
-                if (!(m in levels)) {
-                    levels[m] = l;
-                }
-            }
-        }
-        else {
-            prefs[l] = [];
-        }
-    }
-
-    prefs.default = msg.config.default;
-
-    // console.log('%d: Set logging config to %j (now %j)', process.pid, msg.config, levels);
-};
-
-/**
- * @typedef {Object} Logger
- * @property {function(): string} id - Get the logger id
- * @example
- * const loggerId = logger.id();
- * console.log(`Current logger ID: ${loggerId}`);
- *
- * @property {function(...*): void} d - Log debug level messages
- * @example
- * logger.d('Debug message: %s', 'Some debug info');
- *
- * @property {function(...*): void} i - Log information level messages
- * @example
- * logger.i('Info message: User %s logged in', username);
- *
- * @property {function(...*): void} w - Log warning level messages
- * @example
- * logger.w('Warning: %d attempts failed', attempts);
- *
- * @property {function(...*): void} e - Log error level messages
- * @example
- * logger.e('Error occurred: %o', errorObject);
- *
- * @property {function(string, function, string, ...*): boolean} f - Log variable level messages
- * @example
- * logger.f('d', (log) => {
- *   const expensiveOperation = performExpensiveCalculation();
- *   log('Debug: Expensive operation result: %j', expensiveOperation);
- * }, 'i', 'Skipped expensive debug logging');
- *
- * @property {function(function=): function} callback - Create a callback function for logging
- * @example
- * const logCallback = logger.callback((result) => {
- *   console.log('Operation completed with result:', result);
- * });
- * someAsyncOperation(logCallback);
- *
- * @property {function(string, function=, function=): function} logdb - Create a callback function for logging database operations
- * @example
- * const dbCallback = logger.logdb('insert user',
- *   (result) => { console.log('User inserted:', result); },
- *   (error) => { console.error('Failed to insert user:', error); }
- * );
- * database.insertUser(userData, dbCallback);
- *
- * @property {function(string): Logger} sub - Create a sub-logger
- * @example
- * const subLogger = logger.sub('database');
- * subLogger.i('Connected to database');
- */
-
-/**
- * Creates a new logger object for the provided module
- * @module api/utils/log
- * @param {string} name - Name of the module
- * @returns {Logger} Logger object
- * @example
- * const logger = require('./log.js')('myModule');
- * logger.i('MyModule initialized');
+ * Creates a new logger instance
+ * @param {string} name - The module name
+ * @returns {Object} Logger instance with various methods
  */
 module.exports = function(name) {
     setLevel(name, logLevel(name));
-    // console.log('Got level for ' + name + ': ' + levels[name] + ' ( prefs ', prefs);
+    const logger = createLogger(name, levels[name]);
+
     /**
-      * @type Logger
-      **/
+     * Creates a sub-logger with the parent's name as prefix
+     * @param {string} subname - The sub-logger name
+     * @returns {Object} Sub-logger instance
+     */
+    const createSubLogger = (subname) => {
+        const full = name + ':' + subname;
+        setLevel(full, logLevel(full));
+        const subLogger = createLogger(full, levels[full]);
+
+        return {
+            /**
+             * Returns the full identifier of this sub-logger
+             * @returns {string} Full logger identifier
+             */
+            id: () => full,
+
+            /**
+             * Logs a debug message
+             * @param {...*} args - Message and optional parameters
+             */
+            d: createLogFunction(subLogger, full, 'd'),
+
+            /**
+             * Logs an info message
+             * @param {...*} args - Message and optional parameters
+             */
+            i: createLogFunction(subLogger, full, 'i'),
+
+            /**
+             * Logs a warning message
+             * @param {...*} args - Message and optional parameters
+             */
+            w: createLogFunction(subLogger, full, 'w'),
+
+            /**
+             * Logs an error message
+             * @param {...*} args - Message and optional parameters
+             */
+            e: createLogFunction(subLogger, full, 'e'),
+
+            /**
+             * Conditionally executes a function based on current log level
+             * @param {string} l - Log level code
+             * @param {Function} fn - Function to execute if level is enabled
+             * @param {string} [fl] - Fallback log level
+             * @param {...*} fargs - Arguments for fallback
+             * @returns {boolean} True if the function was executed
+             */
+            f: function(l, fn, fl, ...fargs) {
+                if (ACCEPTABLE[l].indexOf(levels[full] || deflt) !== -1) {
+                    fn(createLogFunction(subLogger, full, l));
+                    return true;
+                }
+                else if (fl) {
+                    this[fl].apply(this, fargs);
+                }
+            },
+
+            /**
+             * Creates a nested sub-logger
+             * @param {string} subname - The nested sub-logger name
+             * @returns {Object} Nested sub-logger instance
+             */
+            sub: createSubLogger
+        };
+    };
+
     return {
         /**
-           * Get logger id
-           * @returns {string} id of this logger
-           * @example
-           * const loggerId = logger.id();
-           * console.log(`Current logger ID: ${loggerId}`);
-           */
+         * Returns the identifier of this logger
+         * @returns {string} Logger identifier
+         */
         id: () => name,
-        /**
-           * Log debug level messages
-           * @param {...*} var_args - string and values to format string with
-           * @example
-           * logger.d('Debug message: %s', 'Some debug info');
-           */
-        d: log(NAMES.d, name, getEnabledWithLevel(ACCEPTABLE.d, name), this, console.log),
 
         /**
-         * Log information level messages
-         * @param {...*} var_args - string and values to format string with
-         * @example
-         * logger.i('Info message: User %s logged in', username);
+         * Logs a debug message
+         * @param {...*} args - Message and optional parameters
          */
-        i: log(NAMES.i, name, getEnabledWithLevel(ACCEPTABLE.i, name), this, console.info),
+        d: createLogFunction(logger, name, 'd'),
 
         /**
-         * Log warning level messages
-         * @param {...*} var_args - string and values to format string with
-         * @example
-         * logger.w('Warning: %d attempts failed', attempts);
+         * Logs an info message
+         * @param {...*} args - Message and optional parameters
          */
-        w: log(NAMES.w, name, getEnabledWithLevel(ACCEPTABLE.w, name), this, console.warn, styles.stylers.warn),
+        i: createLogFunction(logger, name, 'i'),
 
         /**
-         * Log error level messages
-         * @param {...*} var_args - string and values to format string with
-         * @example
-         * logger.e('Error occurred: %o', errorObject);
+         * Logs a warning message
+         * @param {...*} args - Message and optional parameters
          */
-        e: log(NAMES.e, name, getEnabledWithLevel(ACCEPTABLE.e, name), this, console.error, styles.stylers.error),
+        w: createLogFunction(logger, name, 'w'),
 
         /**
-         * Log variable level messages (for cases when logging parameters calculation are expensive enough and shouldn't be done unless the level is enabled)
-         * @param {string} l - log level (d, i, w, e)
-         * @param {function} fn - function to call with single argument - logging function
-         * @param {string} fl - fallback level if l is disabled
-         * @param {...*} fargs - fallback level arguments
-         * @returns {boolean} true if f() has been called
-         * @example
-         * logger.f('d', (log) => {
-         *   const expensiveOperation = performExpensiveCalculation();
-         *   log('Debug: Expensive operation result: %j', expensiveOperation);
-         * }, 'i', 'Skipped expensive debug logging');
+         * Logs an error message
+         * @param {...*} args - Message and optional parameters
+         */
+        e: createLogFunction(logger, name, 'e'),
+
+        /**
+         * Conditionally executes a function based on current log level
+         * @param {string} l - Log level code
+         * @param {Function} fn - Function to execute if level is enabled
+         * @param {string} [fl] - Fallback log level
+         * @param {...*} fargs - Arguments for fallback
+         * @returns {boolean} True if the function was executed
          */
         f: function(l, fn, fl, ...fargs) {
             if (ACCEPTABLE[l].indexOf(levels[name] || deflt) !== -1) {
-                fn(log(NAMES[l], name, getEnabledWithLevel(ACCEPTABLE[l], name), this, l === 'e' ? console.error : l === 'w' ? console.warn : console.log, l === 'w' ? styles.stylers.warn : l === 'e' ? styles.stylers.error : undefined));
+                fn(createLogFunction(logger, name, l));
                 return true;
             }
             else if (fl) {
@@ -405,42 +463,32 @@ module.exports = function(name) {
         },
 
         /**
-         * Logging inside callbacks
-         * @param {function=} next - next function to call, after callback executed
-         * @returns {function} function to pass as callback
-         * @example
-         * const logCallback = logger.callback((result) => {
-         *   console.log('Operation completed with result:', result);
-         * });
-         * someAsyncOperation(logCallback);
+         * Creates a callback function that logs errors
+         * @param {Function} [next] - Function to call on success
+         * @returns {Function} Callback function
          */
         callback: function(next) {
-            var self = this;
+            const self = this;
             return function(err) {
                 if (err) {
                     self.e(err);
                 }
                 else if (next) {
-                    var args = Array.prototype.slice.call(arguments, 1);
+                    const args = Array.prototype.slice.call(arguments, 1);
                     next.apply(this, args);
                 }
             };
         },
+
         /**
-         * Logging database callbacks
-         * @param {string} opname - name of the performed operation
-         * @param {function=} next - next function to call, after callback executed
-         * @param {function=} nextError - function to pass error to
-         * @returns {function} function to pass as callback
-         * @example
-         * const dbCallback = logger.logdb('insert user',
-         *   (result) => { console.log('User inserted:', result); },
-         *   (error) => { console.error('Failed to insert user:', error); }
-         * );
-         * database.insertUser(userData, dbCallback);
+         * Creates a database operation callback that logs results
+         * @param {string} opname - Operation name
+         * @param {Function} [next] - Function to call on success
+         * @param {Function} [nextError] - Function to call on error
+         * @returns {Function} Database callback function
          */
         logdb: function(opname, next, nextError) {
-            var self = this;
+            const self = this;
             return function(err) {
                 if (err) {
                     self.e('Error while %j: %j', opname, err);
@@ -456,99 +504,45 @@ module.exports = function(name) {
                 }
             };
         },
+
         /**
-         * Add one more level to the logging output while leaving loglevel the same
-         * @param {string} subname - sublogger name
-         * @returns {Logger} new logger
-         * @example
-         * const subLogger = logger.sub('database');
-         * subLogger.i('Connected to database');
+         * Creates a sub-logger with the current logger's name as prefix
+         * @param {string} subname - The sub-logger name
+         * @returns {Object} Sub-logger instance
          */
-
-        sub: function(subname) {
-            let full = name + ':' + subname,
-                self = this;
-
-            setLevel(full, logLevel(full));
-
-            return {
-                /**
-                 * Get logger id
-                 * @returns {string} id of this logger
-                 */
-                id: () => full,
-                /**
-                * Log debug level messages
-                * @memberof module:api/utils/log~Logger
-                * @param {...*} var_args - string and values to format string with
-                **/
-                d: log(NAMES.d, full, getEnabledWithLevel(ACCEPTABLE.d, full), this, console.log),
-
-                /**
-                * Log information level messages
-                * @memberof module:api/utils/log~Logger
-                * @param {...*} var_args - string and values to format string with
-                **/
-                i: log(NAMES.i, full, getEnabledWithLevel(ACCEPTABLE.i, full), this, console.info),
-
-                /**
-                * Log warning level messages
-                * @memberof module:api/utils/log~Logger
-                * @param {...*} var_args - string and values to format string with
-                **/
-                w: log(NAMES.w, full, getEnabledWithLevel(ACCEPTABLE.w, full), this, console.warn, styles.stylers.warn),
-
-                /**
-                * Log error level messages
-                * @memberof module:api/utils/log~Logger
-                * @param {...*} var_args - string and values to format string with
-                **/
-                e: log(NAMES.e, full, getEnabledWithLevel(ACCEPTABLE.e, full), this, console.error, styles.stylers.error),
-
-                /**
-                 * Log variable level messages (for cases when logging parameters calculation are expensive enough and shouldn't be done unless the level is enabled)
-                 * @param {String} l log level (d, i, w, e)
-                 * @param {function} fn function to call with single argument - logging function
-                 * @param {String} fl fallback level if l is disabled
-                 * @param {any[]} fargs fallback level arguments
-                 * @returns {boolean} true if f() has been called
-                 */
-                f: function(l, fn, fl, ...fargs) {
-                    if (ACCEPTABLE[l].indexOf(levels[name] || deflt) !== -1) {
-                        fn(log(NAMES[l], full, getEnabledWithLevel(ACCEPTABLE[l], full), this, l === 'e' ? console.error : l === 'w' ? console.warn : console.log, l === 'w' ? styles.stylers.warn : l === 'e' ? styles.stylers.error : undefined));
-                        return true;
-                    }
-                    else if (fl) {
-                        this[fl].apply(this, fargs);
-                    }
-                },
-
-                /**
-                 * Pass sub one level up
-                 */
-                sub: self.sub.bind(self)
-            };
-        }
+        sub: createSubLogger
     };
-    // return {
-    //  d: log('DEBUG\t', getEnabledWithLevel(ACCEPTABLE.d, name), this, debug(name)),
-    //  i: log('INFO\t', getEnabledWithLevel(ACCEPTABLE.i, name), this, debug(name)),
-    //  w: log('WARN\t', getEnabledWithLevel(ACCEPTABLE.w, name), this, debug(name)),
-    //  e: log('ERROR\t', getEnabledWithLevel(ACCEPTABLE.e, name), this, debug(name)),
-    //  callback: function(next){
-    //      var self = this;
-    //      return function(err) {
-    //          if (err) { self.e(err); }
-    //          else if (next) {
-    //              var args = Array.prototype.slice.call(arguments, 1);
-    //              next.apply(this, args);
-    //          }
-    //      };
-    //  },
-    // };
 };
 
+// Export static methods
+/**
+ * Sets logging level for a specific module
+ * @param {string} module - The module name
+ * @param {string} level - The log level
+ */
 module.exports.setLevel = setLevel;
+
+/**
+ * Sets default logging level for all modules without explicit configuration
+ * @param {string} level - The log level
+ */
 module.exports.setDefault = setDefault;
+
+/**
+ * Sets pretty-print option for all loggers
+ * @param {boolean} enabled - Whether to enable pretty-print
+ */
+module.exports.setPrettyPrint = setPrettyPrint;
+
+/**
+ * Gets current logging level for a module
+ * @param {string} module - The module name
+ * @returns {string} The current log level
+ */
 module.exports.getLevel = getLevel;
-module.exports.ipcHandler = ipcHandler;
+
+/**
+ * Indicates if OpenTelemetry integration is available
+ * @type {boolean}
+ */
+module.exports.hasOpenTelemetry = Boolean(trace && metrics);

@@ -1,6 +1,8 @@
 var should = require("should");
 var testUtils = require("../testUtils");
 var common = require("../../api/utils/common");
+var countlyCommon = require("../../api/lib/countly.common.js");
+var moment = require("moment-timezone");
 const mongodb = require('mongodb');
 
 describe("Common API utility functions", function() {
@@ -380,6 +382,238 @@ describe("Common API utility functions", function() {
                 build: ['build'],
                 original: '1.0.0-prerelease+build',
                 success: true,
+            });
+        });
+    });
+
+    describe("getPeriodRange", function() {
+        const stringPeriod = '["01-09-2025 00:00:00","30-09-2025 23:59:59"]';
+        const numericPeriod = [
+            Date.UTC(2025, 8, 1, 0, 0, 0), // 0: January, 8: September
+            Date.UTC(2025, 8, 30, 23, 59, 59) // 0: January, 8: September
+        ];
+        const expectedStart = "2025-09-01 00:00:00.000";
+        const expectedEnd = "2025-09-30 23:59:59.999";
+
+        function formatForUser(ts, tz, offset) {
+            var effectiveOffset = typeof offset === "number" ? offset : -(tz ? moment.tz(tz).utcOffset() : 0);
+            return moment.utc(ts).add(-effectiveOffset, "minutes").format("YYYY-MM-DD HH:mm:ss.SSS");
+        }
+
+        function assertRange(range, tz, offset) {
+            formatForUser(range.$gte, tz, offset).should.equal(expectedStart);
+            formatForUser(range.$lte, tz, offset).should.equal(expectedEnd);
+        }
+
+        var periodVariants = [
+            {label: "string period array", getPeriod: () => stringPeriod},
+            {label: "numeric period array", getPeriod: () => numericPeriod}
+        ];
+
+        periodVariants.forEach(({label, getPeriod}) => {
+            describe(`using ${label}`, function() {
+                it("should align start and end when only Europe/Istanbul timezone is provided", function() {
+                    var timezone = "Europe/Istanbul";
+                    var range = countlyCommon.getPeriodRange(getPeriod(), timezone);
+                    assertRange(range, timezone);
+                });
+
+                it("should align start and end when only America/New_York timezone is provided", function() {
+                    var timezone = "America/New_York";
+                    var range = countlyCommon.getPeriodRange(getPeriod(), timezone);
+                    assertRange(range, timezone);
+                });
+
+                it("should align start and end when only offset is provided", function() {
+                    var offset = -120; // UTC+2
+                    var range = countlyCommon.getPeriodRange(getPeriod(), undefined, offset);
+                    assertRange(range, null, offset);
+                });
+
+                it("should align start and end when only America/New_York offset is provided", function() {
+                    var offset = 300; // UTC-5
+                    var range = countlyCommon.getPeriodRange(getPeriod(), undefined, offset);
+                    assertRange(range, null, offset);
+                });
+
+                it("should align start and end when both timezone and offset are provided", function() {
+                    var timezone = "Europe/Istanbul";
+                    var offset = -180;
+                    var range = countlyCommon.getPeriodRange(getPeriod(), timezone, offset);
+                    assertRange(range, timezone);
+                });
+
+                it("should align start and end when America/New_York timezone and offset are provided", function() {
+                    var timezone = "America/New_York";
+                    var offset = 300;
+                    var range = countlyCommon.getPeriodRange(getPeriod(), timezone, offset);
+                    assertRange(range, timezone);
+                });
+
+                describe("with different server default timezone", function() {
+                    var originalDefault;
+
+                    before(function() {
+                        originalDefault = moment.tz.guess() || "Europe/Istanbul";
+                        moment.tz.setDefault(originalDefault);
+                    });
+
+                    afterEach(function() {
+                        moment.tz.setDefault(originalDefault);
+                    });
+
+                    it("should still work when system timezone is UTC", function() {
+                        moment.tz.setDefault("UTC");
+                        var timezone = "Europe/Istanbul";
+                        var range = countlyCommon.getPeriodRange(getPeriod(), timezone);
+                        assertRange(range, timezone);
+                    });
+
+                    it("should still work when system timezone is Europe/Moscow", function() {
+                        moment.tz.setDefault("Europe/Moscow");
+                        var offset = -120; // UTC+2
+                        var range = countlyCommon.getPeriodRange(getPeriod(), undefined, offset);
+                        assertRange(range, null, offset);
+                    });
+                });
+            });
+        });
+
+        describe("keyword period month", function() {
+            function computeExpectedRange(timezone, offset) {
+                var reference = moment().utc();
+                var startTimestamp = reference.clone().startOf("year");
+                var endTimestamp = reference.clone().endOf("day");
+                var effectiveOffset = typeof offset === "number" ? offset : -(timezone ? moment.tz(timezone).utcOffset() : 0);
+
+                return {
+                    start: startTimestamp.valueOf() + effectiveOffset * 60000,
+                    end: endTimestamp.valueOf() + effectiveOffset * 60000
+                };
+            }
+
+            function assertMonthRange(range, timezone, offset, expected) {
+                range.$gte.should.equal(expected.start);
+                range.$lte.should.equal(expected.end);
+
+                var expectedStartString = formatForUser(expected.start, timezone, offset);
+                var expectedEndString = formatForUser(expected.end, timezone, offset);
+
+                formatForUser(range.$gte, timezone, offset).should.equal(expectedStartString);
+                formatForUser(range.$lte, timezone, offset).should.equal(expectedEndString);
+            }
+
+            it("should align start and end when only timezone is provided", function() {
+                var timezone = "Europe/Istanbul";
+                var range = countlyCommon.getPeriodRange("month", timezone);
+                var expected = computeExpectedRange(timezone);
+                assertMonthRange(range, timezone, undefined, expected);
+            });
+
+            it("should align start and end when only America/New_York timezone is provided", function() {
+                var timezone = "America/New_York";
+                var range = countlyCommon.getPeriodRange("month", timezone);
+                var expected = computeExpectedRange(timezone);
+                assertMonthRange(range, timezone, undefined, expected);
+            });
+
+            it("should align start and end when only offset is provided", function() {
+                var offset = -180;
+                var range = countlyCommon.getPeriodRange("month", undefined, offset);
+                var expected = computeExpectedRange(undefined, offset);
+                assertMonthRange(range, null, offset, expected);
+            });
+
+            it("should align start and end when only America/New_York offset is provided", function() {
+                var offset = 300;
+                var range = countlyCommon.getPeriodRange("month", undefined, offset);
+                var expected = computeExpectedRange(undefined, offset);
+                assertMonthRange(range, null, offset, expected);
+            });
+
+            it("should align start and end when both timezone and offset are provided", function() {
+                var timezone = "Europe/Istanbul";
+                var offset = -180;
+                var range = countlyCommon.getPeriodRange("month", timezone, offset);
+                var expected = computeExpectedRange(timezone, offset);
+                assertMonthRange(range, timezone, offset, expected);
+            });
+
+            it("should align start and end when America/New_York timezone and offset are provided", function() {
+                var timezone = "America/New_York";
+                var offset = 300;
+                var range = countlyCommon.getPeriodRange("month", timezone, offset);
+                var expected = computeExpectedRange(timezone, offset);
+                assertMonthRange(range, timezone, offset, expected);
+            });
+        });
+
+        describe("keyword period hour", function() {
+            function computeExpectedRange(timezone, offset) {
+                var reference = moment().utc();
+                var startTimestamp = reference.clone().startOf("day");
+                var endTimestamp = reference.clone().endOf("day");
+                var effectiveOffset = typeof offset === "number" ? offset : -(timezone ? moment.tz(timezone).utcOffset() : 0);
+
+                return {
+                    start: startTimestamp.valueOf() + effectiveOffset * 60000,
+                    end: endTimestamp.valueOf() + effectiveOffset * 60000
+                };
+            }
+
+            function assertHourRange(range, timezone, offset, expected) {
+                range.$gte.should.equal(expected.start);
+                range.$lte.should.equal(expected.end);
+
+                var expectedStartString = formatForUser(expected.start, timezone, offset);
+                var expectedEndString = formatForUser(expected.end, timezone, offset);
+
+                formatForUser(range.$gte, timezone, offset).should.equal(expectedStartString);
+                formatForUser(range.$lte, timezone, offset).should.equal(expectedEndString);
+            }
+
+            it("should align start and end when only timezone is provided", function() {
+                var timezone = "Europe/Istanbul";
+                var range = countlyCommon.getPeriodRange("hour", timezone);
+                var expected = computeExpectedRange(timezone);
+                assertHourRange(range, timezone, undefined, expected);
+            });
+
+            it("should align start and end when only America/New_York timezone is provided", function() {
+                var timezone = "America/New_York";
+                var range = countlyCommon.getPeriodRange("hour", timezone);
+                var expected = computeExpectedRange(timezone);
+                assertHourRange(range, timezone, undefined, expected);
+            });
+
+            it("should align start and end when only offset is provided", function() {
+                var offset = -180;
+                var range = countlyCommon.getPeriodRange("hour", undefined, offset);
+                var expected = computeExpectedRange(undefined, offset);
+                assertHourRange(range, null, offset, expected);
+            });
+
+            it("should align start and end when only America/New_York offset is provided", function() {
+                var offset = 300;
+                var range = countlyCommon.getPeriodRange("hour", undefined, offset);
+                var expected = computeExpectedRange(undefined, offset);
+                assertHourRange(range, null, offset, expected);
+            });
+
+            it("should align start and end when both timezone and offset are provided", function() {
+                var timezone = "Europe/Istanbul";
+                var offset = -180;
+                var range = countlyCommon.getPeriodRange("hour", timezone, offset);
+                var expected = computeExpectedRange(timezone, offset);
+                assertHourRange(range, timezone, offset, expected);
+            });
+
+            it("should align start and end when America/New_York timezone and offset are provided", function() {
+                var timezone = "America/New_York";
+                var offset = 300;
+                var range = countlyCommon.getPeriodRange("hour", timezone, offset);
+                var expected = computeExpectedRange(timezone, offset);
+                assertHourRange(range, timezone, offset, expected);
             });
         });
     });

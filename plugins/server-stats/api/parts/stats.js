@@ -3,6 +3,7 @@ const moment = require("moment");
 const internalEventsEnum =
 {
     "[CLY]_session": "s",
+    "[CLY]_session_begin": "s", //Using only this one when increasing session count
     "[CLY]_view": "v",
     "[CLY]_nps": "n",
     "[CLY]_crash": "c",
@@ -38,9 +39,10 @@ const internalEventsEnum =
 * @param {Number} sessionCount - Session Count
 * @param {Number} eventCount - Event Count
 * @param {boolean} consolidated - If data is consolidated
+* @param {string} token - token for writeBatcher
 * @returns {undefined} Returns nothing
 **/
-function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consolidated) {
+function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consolidated, token) {
     if (!sessionCount && !eventCount) {
         return;
     }
@@ -77,25 +79,13 @@ function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consoli
             [`d.${utcMoment.format("D")}.${utcMoment.format("H")}.s`]: sessionCount
         };
     }
-
     writeBatcher.add('server_stats_data_points', appId + "_" + utcMoment.format("YYYY:M"), {
         $set: {
             a: appId + "",
             m: utcMoment.format("YYYY:M")
         },
         $inc: incObject
-    });
-
-    if (consolidated) {
-        appId = "[CLY]_consolidated";
-        writeBatcher.add('server_stats_data_points', appId + "_" + utcMoment.format("YYYY:M"), {
-            $set: {
-                a: appId + "",
-                m: utcMoment.format("YYYY:M")
-            },
-            $inc: incObject
-        });
-    }
+    }, "countly", {"token": token});
 }
 
 /**

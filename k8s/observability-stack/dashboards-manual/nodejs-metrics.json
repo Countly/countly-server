@@ -1,0 +1,1260 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "description": "Comprehensive Node.js and V8 performance metrics including event loop, garbage collection, memory, and CPU monitoring.",
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "id": null,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "panels": [],
+            "title": "Event Loop Performance",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Event loop utilization ratio (0-1). Values above 0.8 indicate performance issues.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "max": 1,
+                    "min": 0,
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 0.6
+                            },
+                            {
+                                "color": "red",
+                                "value": 0.8
+                            }
+                        ]
+                    },
+                    "unit": "percentunit"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 1
+            },
+            "id": 2,
+            "options": {
+                "legend": {
+                    "calcs": ["lastNotNull", "mean"],
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "nodejs_eventloop_utilization_ratio{job=~\"$job\"}",
+                    "legendFormat": "{{job}}"
+                }
+            ],
+            "title": "Event Loop Utilization",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Event loop lag p99 percentile - worst case performance.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "unit": "ms",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 50
+                            },
+                            {
+                                "color": "red",
+                                "value": 100
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 1
+            },
+            "id": 3,
+            "options": {
+                "legend": {
+                    "calcs": ["lastNotNull", "max"],
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(nodejs_eventloop_lag_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} p99"
+                }
+            ],
+            "title": "Event Loop Lag p99",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Event loop lag p95 percentile.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms",
+                    "custom": {
+                        "fillOpacity": 8,
+                        "lineWidth": 2
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 20
+                            },
+                            {
+                                "color": "red",
+                                "value": 50
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 1
+            },
+            "id": 4,
+            "options": {
+                "legend": {
+                    "calcs": ["lastNotNull", "mean", "max"],
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(nodejs_eventloop_lag_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} p95"
+                }
+            ],
+            "title": "Event Loop Lag p95",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Event loop lag p50 percentile (median).",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms",
+                    "custom": {
+                        "fillOpacity": 8,
+                        "lineWidth": 2
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 10
+                            },
+                            {
+                                "color": "red",
+                                "value": 25
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 9
+            },
+            "id": 42,
+            "options": {
+                "legend": {
+                    "calcs": ["lastNotNull", "mean"],
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(nodejs_eventloop_lag_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} p50"
+                }
+            ],
+            "title": "Event Loop Lag p50",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Live event loop delay p99 percentile - worst case performance.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 50
+                            },
+                            {
+                                "color": "red",
+                                "value": 100
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 9
+            },
+            "id": 33,
+            "options": {
+                "legend": {
+                    "calcs": ["lastNotNull", "max"],
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "nodejs_eventloop_delay_p99_seconds{job=~\"$job\"} * 1000",
+                    "legendFormat": "{{job}} p99"
+                }
+            ],
+            "title": "Event Loop Delay p99 (Live)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Live event loop delay mean measurements - average performance indicator.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms",
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 9
+            },
+            "id": 39,
+            "options": {
+                "legend": {
+                    "calcs": ["lastNotNull", "mean"],
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "nodejs_eventloop_delay_mean_seconds{job=~\"$job\"} * 1000",
+                    "legendFormat": "{{job}} mean"
+                }
+            ],
+            "title": "Event Loop Delay Mean (Live)",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 17
+            },
+            "id": 5,
+            "panels": [],
+            "title": "Garbage Collection",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Scavenge garbage collection operations (young generation).",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ops",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 10
+                            },
+                            {
+                                "color": "red",
+                                "value": 50
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 18
+            },
+            "id": 6,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(custom_gc_count_total{job=~\"$job\", gc_type=\"scavenge\"}[$__rate_interval])) by (job)",
+                    "legendFormat": "{{job}} Scavenge"
+                }
+            ],
+            "title": "GC Scavenge Operations",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Incremental marking garbage collection operations (concurrent marking).",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ops",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 5
+                            },
+                            {
+                                "color": "red",
+                                "value": 20
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 18
+            },
+            "id": 7,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(custom_gc_count_total{job=~\"$job\", gc_type=\"incremental_marking\"}[$__rate_interval])) by (job)",
+                    "legendFormat": "{{job}} Incremental Marking"
+                }
+            ],
+            "title": "GC Incremental Marking",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Weak callbacks garbage collection operations.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ops",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 5
+                            },
+                            {
+                                "color": "red",
+                                "value": 20
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 18
+            },
+            "id": 34,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(custom_gc_count_total{job=~\"$job\", gc_type=\"weak_callbacks\"}[$__rate_interval])) by (job)",
+                    "legendFormat": "{{job}} Weak Callbacks"
+                }
+            ],
+            "title": "GC Weak Callbacks",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "GC pause duration - Scavenge (p99).",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 10
+                            },
+                            {
+                                "color": "red",
+                                "value": 50
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 26
+            },
+            "id": 35,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(custom_gc_pause_ns_nanoseconds_bucket{job=~\"$job\", gc_type=\"scavenge\"}[$__rate_interval])) by (le, job)) / 1000000",
+                    "legendFormat": "{{job}} Scavenge p99"
+                }
+            ],
+            "title": "GC Scavenge Pause p99",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "GC pause duration - Incremental Marking (p99).",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 5
+                            },
+                            {
+                                "color": "red",
+                                "value": 25
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 26
+            },
+            "id": 36,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(custom_gc_pause_ns_nanoseconds_bucket{job=~\"$job\", gc_type=\"incremental_marking\"}[$__rate_interval])) by (le, job)) / 1000000",
+                    "legendFormat": "{{job}} Incremental Marking p99"
+                }
+            ],
+            "title": "GC Incremental Marking Pause p99",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "V8 garbage collection duration percentiles.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "s"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 26
+            },
+            "id": 8,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(v8js_gc_duration_seconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} p99"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(v8js_gc_duration_seconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} p95"
+                }
+            ],
+            "title": "V8 GC Duration Percentiles",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Total time spent in garbage collection.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "s"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 9
+            },
+            "id": 9,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(v8js_gc_duration_seconds_sum{job=~\"$job\"}[$__rate_interval])) by (job)",
+                    "legendFormat": "{{job}}"
+                }
+            ],
+            "title": "GC Time per Second",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 42
+            },
+            "id": 10,
+            "panels": [],
+            "title": "Memory Usage",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "V8 heap memory actively used by the application.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "bytes",
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 500000000
+                            },
+                            {
+                                "color": "red",
+                                "value": 1000000000
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 43
+            },
+            "id": 11,
+            "options": {
+                "legend": {
+                    "calcs": ["lastNotNull", "mean", "max"],
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(v8js_memory_heap_used_bytes{job=~\"$job\"}) by (job)",
+                    "legendFormat": "{{job}} Total Heap Used"
+                }
+            ],
+            "title": "V8 Heap Memory Used",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "V8 heap memory limits configured for the application across all heap spaces.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "bytes",
+                    "custom": {
+                        "fillOpacity": 0,
+                        "lineWidth": 2,
+                        "pointSize": 5
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 43
+            },
+            "id": 12,
+            "options": {
+                "legend": {
+                    "calcs": ["lastNotNull", "mean"],
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(v8js_memory_heap_limit_bytes{job=~\"$job\"}) by (job)",
+                    "legendFormat": "{{job}} Total Heap Limit"
+                }
+            ],
+            "title": "V8 Heap Memory Limits",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "V8 heap physical memory usage as percentage of available memory. Current usage and total capacity shown in tooltip/legend.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "percent",
+                    "min": 0,
+                    "max": 100,
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 70
+                            },
+                            {
+                                "color": "red",
+                                "value": 90
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 43
+            },
+            "id": 13,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": ["lastNotNull", "mean"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "(sum(v8js_memory_heap_space_physical_size_bytes{job=~\"$job\"}) by (job) / (sum(v8js_memory_heap_space_physical_size_bytes{job=~\"$job\"}) by (job) + sum(v8js_memory_heap_space_available_size_bytes{job=~\"$job\"}) by (job))) * 100",
+                    "legendFormat": "{{job}} Physical Usage %"
+                }
+            ],
+            "title": "V8 Heap Physical Usage Percentage",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "V8 old space - contains long-lived objects and most application data.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "bytes",
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 100000000
+                            },
+                            {
+                                "color": "red",
+                                "value": 500000000
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 51
+            },
+            "id": 14,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": ["lastNotNull", "mean"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "v8js_memory_heap_space_physical_size_bytes{job=~\"$job\", v8js_heap_space_name=\"old_space\"}",
+                    "legendFormat": "{{job}} Old Space"
+                }
+            ],
+            "title": "V8 Old Space Memory",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "V8 new space - contains newly allocated objects (young generation).",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "bytes",
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 10000000
+                            },
+                            {
+                                "color": "red",
+                                "value": 50000000
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 51
+            },
+            "id": 40,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": ["lastNotNull", "mean"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "v8js_memory_heap_space_physical_size_bytes{job=~\"$job\", v8js_heap_space_name=\"new_space\"}",
+                    "legendFormat": "{{job}} New Space"
+                }
+            ],
+            "title": "V8 New Space Memory",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "V8 code space - contains compiled JavaScript code and JIT optimizations.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "bytes",
+                    "custom": {
+                        "fillOpacity": 5,
+                        "lineWidth": 2
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 51
+            },
+            "id": 41,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": ["lastNotNull", "max"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "v8js_memory_heap_space_physical_size_bytes{job=~\"$job\", v8js_heap_space_name=\"code_space\"}",
+                    "legendFormat": "{{job}} Code Space"
+                }
+            ],
+            "title": "V8 Code Space Memory",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 67
+            },
+            "id": 15,
+            "panels": [],
+            "title": "CPU Usage",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Process CPU usage rate.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "percentunit"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 68
+            },
+            "id": 16,
+            "options": {
+                "legend": {
+                    "calcs": ["lastNotNull", "mean"],
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(process_cpu_user_microseconds_total{job=~\"$job\"}[$__rate_interval]) + rate(process_cpu_system_microseconds_total{job=~\"$job\"}[$__rate_interval])) by (job) / 1000000",
+                    "legendFormat": "{{job}} Total CPU"
+                }
+            ],
+            "title": "Process CPU Usage",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "CPU time breakdown between user and system.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "continuous-BlYlRd"
+                    },
+                    "unit": "µs",
+                    "custom": {
+                        "fillOpacity": 12,
+                        "lineWidth": 2
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 68
+            },
+            "id": 17,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(process_cpu_user_microseconds_total{job=~\"$job\"}[$__rate_interval])) by (job)",
+                    "legendFormat": "{{job}} User"
+                },
+                {
+                    "expr": "sum(rate(process_cpu_system_microseconds_total{job=~\"$job\"}[$__rate_interval])) by (job)",
+                    "legendFormat": "{{job}} System"
+                }
+            ],
+            "title": "CPU Time (User vs System)",
+            "type": "timeseries"
+        }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 38,
+    "style": "dark",
+    "tags": [
+        "countly",
+        "nodejs",
+        "v8",
+        "performance",
+        "runtime"
+    ],
+    "templating": {
+        "list": [
+            {
+                "current": {
+                    "selected": false,
+                    "text": "All",
+                    "value": "$__all"
+                },
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus"
+                },
+                "definition": "label_values({__name__=~\"nodejs_.*|v8js_.*|custom_.*\", job=~\".*countly.*\"}, job)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Job",
+                "multi": true,
+                "name": "job",
+                "options": [],
+                "query": {
+                    "query": "label_values({__name__=~\"nodejs_.*|v8js_.*|custom_.*\", job=~\".*countly.*\"}, job)",
+                    "refId": "StandardVariableQuery"
+                },
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            }
+        ]
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "Node.js Runtime & V8 Performance Dashboard",
+    "uid": "nodejs-performance-enhanced",
+    "version": 1
+}

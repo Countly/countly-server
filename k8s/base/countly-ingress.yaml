@@ -1,0 +1,223 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: countly-ingress
+  namespace: countly
+  labels:
+    app: countly-ingress
+    branch: newarchitecture
+  annotations:
+    # === BASIC CONFIGURATION ===
+    nginx.ingress.kubernetes.io/client-max-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+
+    # === BUFFERING CONFIGURATION ===
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/proxy-request-buffering: "on"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "16"
+    nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
+    nginx.ingress.kubernetes.io/proxy-temp-file-write-size: "1m"
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "2m"
+
+    # === TIMEOUT CONFIGURATION (consistent values) ===
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+
+    # === SOCKET KEEPALIVE & CONNECTION REUSE ===
+    nginx.org/keepalive: "256"
+    nginx.ingress.kubernetes.io/upstream-keepalive-connections: "256"
+    nginx.ingress.kubernetes.io/upstream-keepalive-requests: "100000"
+    nginx.ingress.kubernetes.io/upstream-keepalive-timeout: "60"
+
+    # === UPSTREAM OPTIMIZATION ===
+    nginx.ingress.kubernetes.io/proxy-next-upstream: "error timeout http_502 http_503 http_504"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "5"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-tries: "3"
+
+    # === MONITORING ===
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/enable-metrics: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    
+    # === ADDITIONAL PERFORMANCE ===
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/proxy-set-headers: "ingress-nginx/custom-headers"
+    
+    # === BULK ENDPOINT OPTIMIZATION ===
+    nginx.ingress.kubernetes.io/client-body-timeout: "30"
+    nginx.ingress.kubernetes.io/client-header-timeout: "10"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: v2.count.ly
+    http:
+      paths:
+      # Ingestor specific paths (high-volume data ingestion) - MUST come before /i/ prefix
+      - path: /i/bulk
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestor
+            port:
+              number: 3010
+      - path: /i/feedback/input
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestor
+            port:
+              number: 3010
+      - path: /i
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestor
+            port:
+              number: 3010
+      # API endpoints - route to API service (other /i/ paths)
+      - path: /i/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /o
+        pathType: Exact
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /o/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      # API specific paths
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      # Job server endpoints
+      - path: /jobs
+        pathType: Exact
+        backend:
+          service:
+            name: countly-jobserver
+            port:
+              number: 3020
+      - path: /jobs/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-jobserver
+            port:
+              number: 3020
+      # Static assets - directory paths that should be served by frontend
+      - path: /appimages/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /images/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /sdk/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /views/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /stylesheets/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /fonts/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /surveys/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /feedback
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /star-rating/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /javascripts/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /at/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /campaign/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      - path: /dashboards/images/screenshots/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+      # Frontend - all other paths route to frontend
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
