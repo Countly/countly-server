@@ -190,6 +190,10 @@
                     return val === "default" || val === "configurator";
                 }
             },
+            tooltip: {
+                type: String,
+                default: ""
+            },
         },
         data: function() {
             return {
@@ -217,7 +221,8 @@
                             <div class="bu-level-left">\
                                 <slot name="header">\
                                     <div class="bu-level-item" v-if="title">\
-                                        <h4>{{title}}</h4>\
+                                        <h4 class="bu-mr-1">{{title}}</h4>\
+                                        <cly-tooltip-icon v-if="tooltip" :tooltip="tooltip"></cly-tooltip-icon>\
                                     </div>\
                                 </slot>\
                             </div>\

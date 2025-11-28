@@ -1,0 +1,113 @@
+<div v-bind:class="[componentId]" class="mutation-status-view">
+    <cly-header
+        :title="i18n('mutation-status.overview.title')"
+        :tooltip="{description: i18n('mutation-status.overview.tooltip')}"
+    >
+    </cly-header>
+
+    <cly-main>
+        <div class="bu-mb-4">
+            <cly-notification
+                v-if="!clickhouseHealthy && showClickhouseMetrics"
+                :text="i18n('mutation-status.alert.clickhouse-unhealthy')"
+                color="light-warning"
+                :closable="false"
+            >
+            </cly-notification>
+            <cly-notification
+                v-if="(mutationSummary.failed || 0) > 0"
+                :text="i18n('mutation-status.alert.failed-tasks')"
+                color="light-destructive"
+                :closable="false"
+            >
+            </cly-notification>
+        </div>
+        <cly-section v-if="showClickhouseMetrics" :title="i18n('mutation-status.metrics.title')" :tooltip="i18n('mutation-status.metrics.tooltip')">
+            <cly-metric-cards :multiline="true">
+                <cly-metric-card
+                    v-for="card in systemCards"
+                    :key="card.title"
+                    color="#097EFF">
+                    <template v-slot:default>
+                        {{ card.title }}
+                        <cly-tooltip-icon v-if="card.tooltip" class="bu-ml-1" :tooltip="card.tooltip"></cly-tooltip-icon>
+                    </template>
+                    <template v-slot:number>
+                        <span :class="card.numberClass || ''">{{ card.value.toUpperCase() || '—' }}</span>
+                    </template>
+                    <template v-slot:description>
+                        <span class="text-small color-cool-gray-600">{{ card.detail }}</span>
+                    </template>
+                </cly-metric-card>
+            </cly-metric-cards>
+        </cly-section>
+
+        <cly-section :title="i18n('mutation-status.summary.title')" :tooltip="i18n('mutation-status.summary.tooltip')">
+            <cly-chart-bar :option="summaryBarOption" :showToggle="false" :force-loading="isLoading" v-loading="isLoading"></cly-chart-bar>
+        </cly-section>
+
+        <cly-section :title="i18n('mutation-status.table.title')" :tooltip="i18n('mutation-status.table.tooltip')">
+            <cly-datatable-n :rows="mutationStatusData" :force-loading="isLoading">
+                <template v-slot="scope">
+                    <el-table-column fixed="left" width="150" sortable="custom" prop="status" :label="i18n('mutation-status.table.status')">
+                        <template v-slot="rowScope">
+                            <div v-tooltip="rowScope.row.status === 'completed' ? i18n('mutation-status.table.completed-at', formatDate(rowScope.row.mutation_completion_ts)) : null">
+                                <cly-status-tag
+                                    :text="rowScope.row.status.toUpperCase()"
+                                    :color="rowScope.row.status === 'failed' ? 'red' : (rowScope.row.status === 'completed' ? 'green' : 'yellow')">
+                                </cly-status-tag>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="db" :label="i18n('mutation-status.table.database')" min-width="180">
+                        <template v-slot="rowScope">
+                            <div> {{ rowScope.row.db }} </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="collection" :label="i18n('mutation-status.table.collection')" min-width="200">
+                        <template v-slot="rowScope">
+                            <div> {{ rowScope.row.collection }} </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="query" :label="i18n('mutation-status.table.query')" min-width="320">
+                        <template v-slot="rowScope">
+                            <div v-tooltip="{content: JSON.stringify(rowScope.row.query)}">
+                                <code> {{ rowScope.row.query }} </code>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="type" :label="i18n('mutation-status.table.type')" min-width="140">
+                        <template v-slot="rowScope">
+                            <div class="text-medium font-weight-bold"> {{ rowScope.row.type.toUpperCase() }} </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="ts" :label="i18n('mutation-status.table.timestamp')" min-width="200">
+                        <template v-slot="rowScope">
+                            <div> {{ formatDate(rowScope.row.ts) }} </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="running" :label="i18n('mutation-status.table.running')" min-width="140">
+                        <template v-slot="rowScope">
+                            <div> {{ rowScope.row.running }} </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="error" :label="i18n('mutation-status.table.error')" min-width="280">
+                        <template v-slot="rowScope">
+                            <div class="has-ellipsis" v-tooltip="{content: rowScope.row.error}"> {{ rowScope.row.error }} </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="fail_count" :label="i18n('mutation-status.table.attempts')" min-width="140">
+                        <template v-slot="rowScope">
+                            <div> {{ rowScope.row.fail_count }} </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="retryAt" :label="i18n('mutation-status.table.retry-at')" min-width="200">
+                        <template v-slot="rowScope">
+                            <div> {{ formatDate(rowScope.row.retryAt) }} </div>
+                        </template>
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+        </cly-section>
+    </cly-main>
+</div>
