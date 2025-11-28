@@ -87,6 +87,8 @@ const FEATURE_NAME = 'reports';
             }
             catch (SyntaxError) {
                 console.log('Parse ' + paramsInstance.qstring.args + ' JSON failed');
+                common.returnMessage(paramsInstance, 400, 'Invalid JSON in args');
+                return true;
             }
         }
 
@@ -211,6 +213,8 @@ const FEATURE_NAME = 'reports';
             }
             catch (SyntaxError) {
                 console.log('Parse ' + paramsInstance.qstring.args + ' JSON failed');
+                common.returnMessage(paramsInstance, 400, 'Invalid JSON in args');
+                return true;
             }
         }
         const recordUpdateOrDeleteQuery = function(params, recordID) {
@@ -247,18 +251,22 @@ const FEATURE_NAME = 'reports';
 
                 convertToTimezone(props);
 
-                // TODO: handle report type check
-
-                let userApps = getUserApps(params.member);
-                let notPermitted = false;
-                for (var i = 0; i < props.apps.length; i++) {
-                    if (userApps.indexOf(props.apps[i]) === -1) {
-                        notPermitted = true;
+                if (props.report_type === "core") {
+                    if (!props.apps || !Array.isArray(props.apps) || props.apps.length === 0) {
+                        common.returnMessage(params, 400, 'Invalid or missing apps');
+                        return;
                     }
-                }
 
-                if (notPermitted && !params.member.global_admin) {
-                    return common.returnMessage(params, 401, 'User does not have right to access this information');
+                    let userApps = getUserApps(params.member);
+                    let notPermitted = false;
+                    for (var i = 0; i < props.apps.length; i++) {
+                        if (userApps.indexOf(props.apps[i]) === -1) {
+                            notPermitted = true;
+                        }
+                    }
+                    if (notPermitted && !params.member.global_admin) {
+                        return common.returnMessage(params, 401, 'User does not have right to access this information');
+                    }
                 }
 
                 common.db.collection('reports').insert(props, function(err0, result) {
@@ -297,18 +305,22 @@ const FEATURE_NAME = 'reports';
 
                 convertToTimezone(props);
 
-                // TODO: Handle report type check
-                const userApps = getUserApps(params.member);
-                let notPermitted = false;
-
-                for (var i = 0; i < props.apps.length; i++) {
-                    if (userApps.indexOf(props.apps[i]) === -1) {
-                        notPermitted = true;
+                if (props.report_type === "core") {
+                    if (!props.apps || !Array.isArray(props.apps) || props.apps.length === 0) {
+                        common.returnMessage(params, 400, 'Invalid or missing apps');
+                        return;
                     }
-                }
 
-                if (notPermitted && !params.member.global_admin) {
-                    return common.returnMessage(params, 401, 'User does not have right to access this information');
+                    let userApps = getUserApps(params.member);
+                    let notPermitted = false;
+                    for (var i = 0; i < props.apps.length; i++) {
+                        if (userApps.indexOf(props.apps[i]) === -1) {
+                            notPermitted = true;
+                        }
+                    }
+                    if (notPermitted && !params.member.global_admin) {
+                        return common.returnMessage(params, 401, 'User does not have right to access this information');
+                    }
                 }
                 common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err_update, report) {
                     if (err_update) {

@@ -1,5 +1,6 @@
 const { defineConfig } = require("cypress");
 const fs = require("fs");
+const path = require("path");
 const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
 const { PNG } = require("pngjs");
 const sharp = require("sharp");
@@ -125,12 +126,38 @@ module.exports = defineConfig({
             });
 
             on("after:spec", (spec, results) => {
-                if (results?.video) {
-                    const hasFailures = results.tests.some((t) => t.attempts.some((a) => a.state === "failed"));
-                    if (!hasFailures && fs.existsSync(results.video)) {
-                        fs.unlinkSync(results.video);
-                    }
+                const hasFailures = results?.tests?.some((t) =>
+                    t.attempts.some((a) => a.state === "failed")
+                );
+
+                if (!hasFailures && results?.video && fs.existsSync(results.video)) {
+                    fs.unlinkSync(results.video);
                 }
+            });
+
+            on("after:run", () => {
+                const folders = [config.videosFolder, config.screenshotsFolder];
+
+                folders.forEach((folder) => {
+                    if (!fs.existsSync(folder)) {
+                        return; // folder yoksa skip
+                    }
+
+                    fs.readdirSync(folder).forEach((entry) => {
+                        const fullPath = path.join(folder, entry);
+
+                        if (!fs.existsSync(fullPath)) {
+                            return;
+                        }
+
+                        if (fs.statSync(fullPath).isDirectory()) {
+                            const content = fs.readdirSync(fullPath);
+                            if (content.length === 0) {
+                                fs.rmSync(fullPath, { recursive: true, force: true });
+                            }
+                        }
+                    });
+                });
             });
 
             on("before:browser:launch", (browser, launchOptions) => {
