@@ -193,6 +193,10 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
 
         validateCreate(params, FEATURE_NAME, function() {
             let alertConfig = params.qstring.alert_config;
+            if (!alertConfig) {
+                common.returnMessage(params, 400, 'Missing alert_config');
+                return;
+            }
             try {
                 alertConfig = JSON.parse(alertConfig);
                 var checkProps = {
