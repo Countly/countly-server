@@ -119,13 +119,16 @@
                     rows: [],
                     isEmitting: false,
 
-                    // To-do: vue-scroll will be added later and below state will be used for it
-                    // scrollOps: {
-                    //     vuescroll: {},
-                    //     scrollPanel: { initialScrollX: false },
-                    //     rail: { gutterOfSide: '1px', gutterOfEnds: '15px' },
-                    //     bar: { background: '#A7AEB8', size: '6px', specifyBorderRadius: '3px', keepShow: false }
-                    // }
+                    scrollOps: {
+                        vuescroll: {},
+                        scrollPanel: {
+                            initialScrollX: false,
+                            scrollingX: false,
+                            scrollingY: true
+                        },
+                        rail: { gutterOfSide: '1px', gutterOfEnds: '15px' },
+                        bar: { background: '#A7AEB8', size: '6px', specifyBorderRadius: '3px', keepShow: false }
+                    }
                 };
             },
             created() {
@@ -164,6 +167,7 @@
                 addRow() {
                     this.rows.push(this.makeEmptyRow());
                     this.emitModelChange();
+                    this.scrollToBottom();
                 },
                 onDeleteRow(id) {
                     const i = this.rows.findIndex(r => r.id === id);
@@ -205,6 +209,14 @@
                         value: '',
                         conjunction: 'AND'
                     };
+                },
+                scrollToBottom() {
+                    const scroller = this.$refs.filterScroll;
+                    if (scroller && typeof scroller.scrollTo !== 'undefined') {
+                        this.$nextTick(() => {
+                            scroller.scrollTo({ y: '100%' }, 300);
+                        });
+                    }
                 }
             }
         });
