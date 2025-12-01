@@ -26,19 +26,18 @@ RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt \
         libxrandr2 libxrender1 libxss1 libxtst6 fonts-liberation libappindicator1 \
         lsb-release xdg-utils
 
-# 0.2  build & install CPython 3.8.
+# 0.2  build & install CPython 3.12.
 RUN --mount=type=cache,id=python-src,target=/usr/src,sharing=locked \
     set -eux; \
     cd /usr/src && \
-    wget -q https://www.python.org/ftp/python/3.8.20/Python-3.8.20.tar.xz && \
-    tar -xf Python-3.8.20.tar.xz && cd Python-3.8.20 && \
+    wget -q https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz && \
+    tar -xf Python-3.12.12.tar.xz && cd Python-3.12.12 && \
     ./configure --enable-optimizations --enable-shared && \
     make -j"$(nproc)" && make altinstall && \
     ldconfig && \
-    ln -sf /usr/local/bin/python3.8 /usr/bin/python3 && \
-    python3.8 -m pip install --no-cache-dir --no-build-isolation --upgrade pip setuptools wheel && \
+    ln -sf /usr/local/bin/python3.12 /usr/bin/python3 && \
+    python3.12 -m pip install --no-cache-dir --no-build-isolation --upgrade pip setuptools wheel && \
     rm -rf /usr/src/Python*
-
 WORKDIR /opt/countly
 
 ###############################################################################
@@ -61,20 +60,21 @@ RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip set -eux; \
            exit 0; }; \
     cd plugins/ab-testing/api/bayesian; \
     # 1. Stub distutils/msvccompiler.py (numpy pulls it even on Linux)
-    mkdir -p /usr/local/lib/python3.8/distutils && \
+    mkdir -p /usr/local/lib/python3.12/distutils && \
     echo 'def get_build_version(*a,**k): return 0' \
-      > /usr/local/lib/python3.8/distutils/msvccompiler.py; \
+      > /usr/local/lib/python3.12/distutils/msvccompiler.py; \
     # tell setuptools to always use the std‑lib copy we just patched
     export SETUPTOOLS_USE_DISTUTILS=stdlib; \
     # 2. Upgrade build tooling
     python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel; \
-    # 3. Read requirements.txt, split “first two” vs “the rest”
-    HEAD_REQS="$(head -n 2 requirements.txt | grep -v '^#' | xargs echo)"; \
-    REST_REQS="$(tail -n +3 requirements.txt | grep -v '^#' | xargs echo)"; \
+    # 3. Read requirements_docker.txt, split “first two” vs “the rest”
+    HEAD_REQS="$(head -n 2 requirements_docker.txt | grep -v '^#' | xargs echo)"; \
+    REST_REQS="$(tail -n +3 requirements_docker.txt | grep -v '^#' | xargs echo)"; \
+    python3 -m pip install --upgrade pip; \
     # 4. Install Cython & NumPy first (make headers / C‑API available)
     python3 -m pip install --no-cache-dir ${HEAD_REQS}; \
     # 5. Install remaining pins *without* build isolation (sees headers)
-    python3 -m pip install --no-cache-dir --no-build-isolation --no-use-pep517 \
+    python3 -m pip install --no-cache-dir --no-build-isolation \
         --no-deps ${REST_REQS}; \
     # 6. Compile Bayesian models if script present
     [ -f model.py ] && python3 model.py; \
@@ -102,7 +102,7 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
 
 # Install argon2 separately (requires native compilation)
 RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
-    npm install argon2 --omit=dev --build-from-source --unsafe-perm=true
+    npm install argon2 --omit=dev --build-from-source
 
 # Update GeoIP database if license key provided (with error handling for Node.js 24.x compatibility)
 RUN --mount=type=cache,id=geoip-cache,target=/tmp/geoip-cache,sharing=locked \
@@ -118,7 +118,7 @@ RUN --mount=type=cache,id=geonames-cache,target=/opt/countly/bin/offline-geocode
 COPY plugins ./plugins
 RUN --mount=type=cache,id=npm-plugin-cache,target=/root/.npm,sharing=locked \
     find plugins -mindepth 2 -maxdepth 2 -name package.json \
-         -execdir npm install --omit=dev --unsafe-perm=true \;
+         -execdir npm install \;
 
  # NOTE: No COPY . . here! JS source files aren't copied yet to keep cache tight
 
@@ -163,6 +163,9 @@ RUN npm remove -y --no-save mocha nyc should supertest && \
 ###############################################################################
 FROM node:24.5-bookworm-slim AS runtime
 
+# Redeclare ARG to make it available in this stage
+ARG COUNTLY_PLUGINS
+
 # 4.1 runtime libs (no -dev)
 RUN set -eux; apt-get update && apt-get install -y --no-install-recommends \
       zlib1g libncurses6 libgdbm6 libnss3 libreadline8 libffi8 libbz2-1.0 \
@@ -175,9 +178,9 @@ RUN set -eux; apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 4.2 copy only python runtime (no headers)
-COPY --from=base /usr/local/bin/python3.8 /usr/local/bin/python3.8
-COPY --from=base /usr/local/lib/python3.8 /usr/local/lib/python3.8
-RUN ln -s /usr/local/bin/python3.8 /usr/local/bin/python3 && ldconfig
+COPY --from=base /usr/local/bin/python3.12 /usr/local/bin/python3.12
+COPY --from=base /usr/local/lib/python3.12 /usr/local/lib/python3.12
+RUN ln -s /usr/local/bin/python3.12 /usr/local/bin/python3 && ldconfig
 
 # 4.3 create countly user & dirs
 RUN groupadd -r countly && useradd -r -g countly -u 1001 countly && \
@@ -189,11 +192,13 @@ COPY --from=builder --chown=countly:countly /opt/countly .
 ENV COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
     COUNTLY_CONFIG_FRONTEND_HOST="0.0.0.0" \
     PUPPETEER_CACHE_DIR=/opt/countly/.cache/puppeteer \
-    NODE_ENV=production
+    NODE_ENV=production \
+    COUNTLY_CONTAINER="api" \
+    COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}"
 
 RUN mkdir -p log data .cache && chown -R 1001:0 . && chmod -R g=u .
 
-EXPOSE 3001 3010 6001
+EXPOSE 3001 3010 6001 3020
 
 # Create entrypoint script for proper NODE_OPTIONS handling
 RUN echo '#!/bin/sh\n\

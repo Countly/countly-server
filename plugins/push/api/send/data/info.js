@@ -5,7 +5,7 @@ const { toDate, Validatable } = require('./const');
  */
 class Info extends Validatable {
     /**
-     * 
+     *
      * @param {object}      data                message info data
      * @param {string}      data.title          message title if any
      * @param {string}      data.appName        app name
@@ -21,9 +21,6 @@ class Info extends Validatable {
      * @param {Date}        data.removed        date of deletion
      * @param {string}      data.removedBy      user who deleted this mesage
      * @param {string}      data.removedByName  full name of a user who deleted this mesage
-     * @param {Date}        data.submitted       date of submission (push_approver plugin)
-     * @param {string}      data.submittedBy     user who submitted (push_approver plugin)
-     * @param {string}      data.submittedByName name of the user who submitted (push_approver plugin)
      * @param {Date}        data.approved       date of approval (push_approver plugin)
      * @param {string}      data.approvedBy     user who approved (push_approver plugin)
      * @param {string}      data.approvedByName name of the user who approved (push_approver plugin)
@@ -33,7 +30,7 @@ class Info extends Validatable {
      * @param {Date}        data.started        date of first sending start
      * @param {Date}        data.startedLast    date of last sending start
      * @param {Date}        data.finished       date of state being set to Done
-     * @param {Date}        data.demo           true if this is a demo message
+     * @param {Boolean}     data.demo           true if this is a demo message
      */
     constructor(data) {
         super(data);
@@ -58,13 +55,9 @@ class Info extends Validatable {
             removed: {type: 'Date', required: false},
             removedBy: {type: 'ObjectID', required: false},
             removedByName: {type: 'String', required: false},
-            submitted: {type: 'Date', required: false},
-            submittedBy: {type: 'ObjectID', required: false},
-            submittedByName: {type: 'String', required: false},
             approved: {type: 'Date', required: false},
             approvedBy: {type: 'ObjectID', required: false},
             approvedByName: {type: 'String', required: false},
-            rejected: {type: 'Boolean', required: false},
             rejectedAt: {type: 'Date', required: false},
             rejectedBy: {type: 'ObjectID', required: false},
             rejectedByName: {type: 'String', required: false},
@@ -77,7 +70,7 @@ class Info extends Validatable {
 
     /**
      * Getter for title
-     * 
+     *
      * @returns {string|undefined} message title
      */
     get title() {
@@ -86,7 +79,7 @@ class Info extends Validatable {
 
     /**
      * Setter for title
-     * 
+     *
      * @param {string|undefined} title message title
      */
     set title(title) {
@@ -100,7 +93,7 @@ class Info extends Validatable {
 
     /**
      * Getter for appName
-     * 
+     *
      * @returns {string|undefined} message appName
      */
     get appName() {
@@ -109,7 +102,7 @@ class Info extends Validatable {
 
     /**
      * Setter for appName
-     * 
+     *
      * @param {string|undefined} appName message appName
      */
     set appName(appName) {
@@ -123,7 +116,7 @@ class Info extends Validatable {
 
     /**
      * Getter for silent
-     * 
+     *
      * @returns {string|undefined} message silent
      */
     get silent() {
@@ -132,7 +125,7 @@ class Info extends Validatable {
 
     /**
      * Setter for silent
-     * 
+     *
      * @param {string|undefined} silent message silent
      */
     set silent(silent) {
@@ -146,7 +139,7 @@ class Info extends Validatable {
 
     /**
      * Getter for scheduled
-     * 
+     *
      * @returns {string|undefined} message scheduled
      */
     get scheduled() {
@@ -155,7 +148,7 @@ class Info extends Validatable {
 
     /**
      * Setter for scheduled
-     * 
+     *
      * @param {string|undefined} scheduled message scheduled
      */
     set scheduled(scheduled) {
@@ -169,7 +162,7 @@ class Info extends Validatable {
 
     /**
      * Getter for locales
-     * 
+     *
      * @returns {object|undefined} message locales
      */
     get locales() {
@@ -178,7 +171,7 @@ class Info extends Validatable {
 
     /**
      * Setter for locales
-     * 
+     *
      * @param {object|undefined} locales message locales
      */
     set locales(locales) {
@@ -192,7 +185,7 @@ class Info extends Validatable {
 
     /**
      * Getter for created
-     * 
+     *
      * @returns {Date|undefined} date of creation
      */
     get created() {
@@ -201,7 +194,7 @@ class Info extends Validatable {
 
     /**
      * Setter for created
-     * 
+     *
      * @param {Date|number|string|undefined} created date of creation
      */
     set created(created) {
@@ -215,7 +208,7 @@ class Info extends Validatable {
 
     /**
      * Getter for createdBy
-     * 
+     *
      * @returns {string|undefined} user who created the message
      */
     get createdBy() {
@@ -224,7 +217,7 @@ class Info extends Validatable {
 
     /**
      * Setter for createdBy
-     * 
+     *
      * @param {string|undefined} createdBy user who created the message
      */
     set createdBy(createdBy) {
@@ -238,7 +231,7 @@ class Info extends Validatable {
 
     /**
      * Getter for createdBy
-     * 
+     *
      * @returns {string|undefined} user who created the message
      */
     get createdByName() {
@@ -247,7 +240,7 @@ class Info extends Validatable {
 
     /**
      * Setter for createdByName
-     * 
+     *
      * @param {string|undefined} createdByName user who created the message
      */
     set createdByName(createdByName) {
@@ -261,7 +254,7 @@ class Info extends Validatable {
 
     /**
      * Getter for updated
-     * 
+     *
      * @returns {Date|undefined} date of last modification
      */
     get updated() {
@@ -270,7 +263,7 @@ class Info extends Validatable {
 
     /**
      * Setter for updated
-     * 
+     *
      * @param {Date|number|string|undefined} updated date of last modification
      */
     set updated(updated) {
@@ -284,7 +277,7 @@ class Info extends Validatable {
 
     /**
      * Getter for updatedBy
-     * 
+     *
      * @returns {string|undefined} user who modified last
      */
     get updatedBy() {
@@ -293,7 +286,7 @@ class Info extends Validatable {
 
     /**
      * Setter for updatedBy
-     * 
+     *
      * @param {string|undefined} updatedBy user who modified last
      */
     set updatedBy(updatedBy) {
@@ -307,7 +300,7 @@ class Info extends Validatable {
 
     /**
      * Getter for updatedByName
-     * 
+     *
      * @returns {string|undefined} user who modified last
      */
     get updatedByName() {
@@ -316,7 +309,7 @@ class Info extends Validatable {
 
     /**
      * Setter for updatedByName
-     * 
+     *
      * @param {string|undefined} updatedByName user who modified last
      */
     set updatedByName(updatedByName) {
@@ -330,7 +323,7 @@ class Info extends Validatable {
 
     /**
      * Getter for removed
-     * 
+     *
      * @returns {Date|undefined} date of last deletion
      */
     get removed() {
@@ -339,7 +332,7 @@ class Info extends Validatable {
 
     /**
      * Setter for removed
-     * 
+     *
      * @param {Date|number|string|undefined} removed date of last deletion
      */
     set removed(removed) {
@@ -353,7 +346,7 @@ class Info extends Validatable {
 
     /**
      * Getter for removedBy
-     * 
+     *
      * @returns {string|undefined} user who deleted
      */
     get removedBy() {
@@ -362,7 +355,7 @@ class Info extends Validatable {
 
     /**
      * Setter for removedBy
-     * 
+     *
      * @param {string|undefined} removedBy user who deleted
      */
     set removedBy(removedBy) {
@@ -376,7 +369,7 @@ class Info extends Validatable {
 
     /**
      * Getter for removedByName
-     * 
+     *
      * @returns {string|undefined} user who deleted
      */
     get removedByName() {
@@ -385,7 +378,7 @@ class Info extends Validatable {
 
     /**
      * Setter for removedByName
-     * 
+     *
      * @param {string|undefined} removedByName user who deleted
      */
     set removedByName(removedByName) {
@@ -398,77 +391,8 @@ class Info extends Validatable {
     }
 
     /**
-     * Getter for submitted
-     * 
-     * @returns {Date|undefined} date of approval (push_approver plugin)
-     */
-    get submitted() {
-        return this._data.submitted;
-    }
-
-    /**
-     * Setter for submitted
-     * 
-     * @param {Date|number|string|undefined} submitted date of approval (push_approver plugin)
-     */
-    set submitted(submitted) {
-        if (submitted !== null && submitted !== undefined) {
-            this._data.submitted = toDate(submitted);
-        }
-        else {
-            delete this._data.submitted;
-        }
-    }
-
-    /**
-     * Getter for submittedBy
-     * 
-     * @returns {string|undefined} user who submitted (push_approver plugin)
-     */
-    get submittedBy() {
-        return this._data.submittedBy;
-    }
-
-    /**
-     * Setter for submittedBy
-     * 
-     * @param {string|undefined} submittedBy user who submitted (push_approver plugin)
-     */
-    set submittedBy(submittedBy) {
-        if (submittedBy !== null && submittedBy !== undefined) {
-            this._data.submittedBy = submittedBy;
-        }
-        else {
-            delete this._data.submittedBy;
-        }
-    }
-
-    /**
-     * Getter for submittedByName
-     * 
-     * @returns {string|undefined} user who submitted (push_approver plugin)
-     */
-    get submittedByName() {
-        return this._data.submittedByName;
-    }
-
-    /**
-     * Setter for submittedByName
-     * 
-     * @param {string|undefined} submittedByName user who submitted (push_approver plugin)
-     */
-    set submittedByName(submittedByName) {
-        if (submittedByName !== null && submittedByName !== undefined) {
-            this._data.submittedByName = submittedByName;
-        }
-        else {
-            delete this._data.submittedByName;
-        }
-    }
-
-    /**
      * Getter for approved
-     * 
+     *
      * @returns {Date|undefined} date of approval (push_approver plugin)
      */
     get approved() {
@@ -477,7 +401,7 @@ class Info extends Validatable {
 
     /**
      * Setter for approved
-     * 
+     *
      * @param {Date|number|string|undefined} approved date of approval (push_approver plugin)
      */
     set approved(approved) {
@@ -491,7 +415,7 @@ class Info extends Validatable {
 
     /**
      * Getter for approvedBy
-     * 
+     *
      * @returns {string|undefined} user who approved (push_approver plugin)
      */
     get approvedBy() {
@@ -500,7 +424,7 @@ class Info extends Validatable {
 
     /**
      * Setter for approvedBy
-     * 
+     *
      * @param {string|undefined} approvedBy user who approved (push_approver plugin)
      */
     set approvedBy(approvedBy) {
@@ -514,7 +438,7 @@ class Info extends Validatable {
 
     /**
      * Getter for approvedByName
-     * 
+     *
      * @returns {string|undefined} user who approved (push_approver plugin)
      */
     get approvedByName() {
@@ -523,7 +447,7 @@ class Info extends Validatable {
 
     /**
      * Setter for approvedByName
-     * 
+     *
      * @param {string|undefined} approvedByName user who approved (push_approver plugin)
      */
     set approvedByName(approvedByName) {
@@ -537,30 +461,7 @@ class Info extends Validatable {
 
     /**
      * Getter for rejected
-     * 
-     * @returns {boolean|undefined} message rejected
-     */
-    get rejected() {
-        return this._data.rejected;
-    }
-
-    /**
-     * Setter for rejected
-     * 
-     * @param {boolean|undefined} rejected message rejected
-     */
-    set rejected(rejected) {
-        if (typeof rejected === 'boolean') {
-            this._data.rejected = rejected;
-        }
-        else {
-            delete this._data.rejected;
-        }
-    }
-
-    /**
-     * Getter for rejected
-     * 
+     *
      * @returns {Date|undefined} date of approval (push_approver plugin)
      */
     get rejectedAt() {
@@ -569,7 +470,7 @@ class Info extends Validatable {
 
     /**
      * Setter for rejected
-     * 
+     *
      * @param {Date|number|string|undefined} rejectedAt date of approval (push_approver plugin)
      */
     set rejectedAt(rejectedAt) {
@@ -583,7 +484,7 @@ class Info extends Validatable {
 
     /**
      * Getter for rejectedBy
-     * 
+     *
      * @returns {string|undefined} user who rejected (push_approver plugin)
      */
     get rejectedBy() {
@@ -592,7 +493,7 @@ class Info extends Validatable {
 
     /**
      * Setter for rejectedBy
-     * 
+     *
      * @param {string|undefined} rejectedBy user who rejected (push_approver plugin)
      */
     set rejectedBy(rejectedBy) {
@@ -606,7 +507,7 @@ class Info extends Validatable {
 
     /**
      * Getter for rejectedByName
-     * 
+     *
      * @returns {string|undefined} user who rejected (push_approver plugin)
      */
     get rejectedByName() {
@@ -615,7 +516,7 @@ class Info extends Validatable {
 
     /**
      * Setter for rejectedByName
-     * 
+     *
      * @param {string|undefined} rejectedByName user who rejected (push_approver plugin)
      */
     set rejectedByName(rejectedByName) {
@@ -629,7 +530,7 @@ class Info extends Validatable {
 
     /**
      * Getter for started
-     * 
+     *
      * @returns {Date|undefined} date of first sending start
      */
     get started() {
@@ -638,7 +539,7 @@ class Info extends Validatable {
 
     /**
      * Setter for started
-     * 
+     *
      * @param {Date|number|string|undefined} started date of first sending start
      */
     set started(started) {
@@ -652,7 +553,7 @@ class Info extends Validatable {
 
     /**
      * Getter for startedLast
-     * 
+     *
      * @returns {Date|undefined} date of last sending start
      */
     get startedLast() {
@@ -661,7 +562,7 @@ class Info extends Validatable {
 
     /**
      * Setter for startedLast
-     * 
+     *
      * @param {Date|number|string|undefined} startedLast date of last sending start
      */
     set startedLast(startedLast) {
@@ -675,7 +576,7 @@ class Info extends Validatable {
 
     /**
      * Getter for finished
-     * 
+     *
      * @returns {Date|undefined} date of state being set to Done
      */
     get finished() {
@@ -684,7 +585,7 @@ class Info extends Validatable {
 
     /**
      * Setter for finished
-     * 
+     *
      * @param {Date|undefined} finished date of state being set to Done
      */
     set finished(finished) {
@@ -698,7 +599,7 @@ class Info extends Validatable {
 
     /**
      * Getter for demo
-     * 
+     *
      * @returns {boolean|undefined} message demo
      */
     get demo() {
@@ -707,7 +608,7 @@ class Info extends Validatable {
 
     /**
      * Setter for demo
-     * 
+     *
      * @param {boolean|undefined} demo message demo
      */
     set demo(demo) {
@@ -718,22 +619,6 @@ class Info extends Validatable {
             delete this._data.demo;
         }
     }
-
-    /**
-     * Backwards-compatibility conversion of Note to Info
-     * 
-     * @deprecated
-     * @param {object} note Note object
-     * @returns {Info} Info instance
-     */
-    static fromNote(note) {
-        return new Info({
-            created: note.created,
-            createdBy: note.creator,
-            approvedBy: note.approver,
-        });
-    }
-
 }
 
 

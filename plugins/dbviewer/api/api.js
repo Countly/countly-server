@@ -172,10 +172,12 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
         **/
         function getIndexes() {
             dbs[dbNameOnParam].collection(params.qstring.collection).indexes(function(err, indexes) {
-                if (err) {
-                    common.returnOutput(params, 'Somethings went wrong');
+                if (err || !indexes) {
+                    common.returnOutput(params, 'Failed to retrieve indexes for the collection');
                 }
-                common.returnOutput(params, { limit: indexes.length, start: 1, end: indexes.length, total: indexes.length, pages: 1, curPage: 1, collections: indexes });
+                else {
+                    common.returnOutput(params, { limit: indexes.length, start: 1, end: indexes.length, total: indexes.length, pages: 1, curPage: 1, collections: indexes });
+                }
             });
         }
 
