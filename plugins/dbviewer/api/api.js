@@ -455,6 +455,9 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
          * @returns {Object|null} MongoDB expression or null if invalid
          */
         function rowToMongoExpr(r) {
+            if (!r || !r.field || !r.operator) {
+                return null;
+            }
             const f = r.field;
             const op = String(r.operator || '=').toUpperCase();
             const v = r.value;
@@ -598,6 +601,25 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
                 }
                 catch (err) {
                     log.e('Failed to parse filter:', err);
+                }
+            }
+
+            if (!params.member.global_admin) {
+                const baseFilter = getBaseAppFilter(params.member, chDb, table);
+                if (baseFilter && Object.keys(baseFilter).length > 0) {
+                    for (const key in baseFilter) {
+                        if (Object.prototype.hasOwnProperty.call(baseFilter, key)) {
+                            if (filterObj[key]) {
+                                filterObj.$and = filterObj.$and || [];
+                                filterObj.$and.push({ [key]: baseFilter[key] });
+                                filterObj.$and.push({ [key]: filterObj[key] });
+                                delete filterObj[key];
+                            }
+                            else {
+                                filterObj[key] = baseFilter[key];
+                            }
+                        }
+                    }
                 }
             }
 

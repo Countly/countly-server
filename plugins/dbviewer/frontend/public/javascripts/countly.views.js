@@ -294,8 +294,10 @@
                     },
                     onReady: function(context, rows) {
                         if (rows.length) {
-                            self.projectionOptions = Object.keys(rows[0]).sort();
-                            self.projectionOptions = self.projectionOptions.map(function(item) {
+                            var keys = Object.keys(rows[0]).filter(function(k) {
+                                return k !== "_view";
+                            });
+                            self.projectionOptions = keys.sort().map(function(item) {
                                 return {
                                     "label": item,
                                     "value": item
@@ -521,8 +523,12 @@
                     this.projectionEnabled = formData.projectionEnabled;
                     // query
                     if (this.isClickhouseDbSelected) {
-                        this.queryFilterObj = formData.filterObj || { rows: [] };
-                        if (this.queryFilterObj && Array.isArray(this.queryFilterObj.rows) && this.queryFilterObj.rows.length) {
+                        var chRows = (formData.filterObj && Array.isArray(formData.filterObj.rows)) ? formData.filterObj.rows : [];
+                        var sanitizedRows = chRows.filter(function(r) {
+                            return r && r.field && r.operator;
+                        });
+                        this.queryFilterObj = sanitizedRows.length ? { rows: sanitizedRows } : { rows: [] };
+                        if (sanitizedRows.length) {
                             this.queryFilter = JSON.stringify(this.queryFilterObj);
                         }
                         else {
@@ -561,16 +567,23 @@
                     app.navigate("#/manage/db/" + this.localDb + "/" + this.selectedCollection);
                     this.fetch(true);
                 },
+                getActiveFilterFormRef: function() {
+                    return this.isClickhouseDbSelected ? this.$refs.dbviewerChFilterForm : this.$refs.dbviewerFilterForm;
+                },
                 clearFilters: function() {
-                    this.$refs.dbviewerFilterForm.editedObject.projectionEnabled = false;
-                    this.$refs.dbviewerFilterForm.editedObject.sortEnabled = false;
-                    this.$refs.dbviewerFilterForm.editedObject.projection = null;
-                    this.$refs.dbviewerFilterForm.editedObject.sort = null;
-                    this.$refs.dbviewerFilterForm.editedObject.filter = null;
-                    this.$refs.dbviewerFilterForm.editedObject.filterObj = { rows: [] };
+                    var blank = {
+                        filter: null,
+                        filterObj: { rows: [] },
+                        projectionEnabled: false,
+                        projection: [],
+                        sortEnabled: false,
+                        sort: ""
+                    };
                     this.isDescentSort = false;
-                    this.queryFilter = null;
-                    this.queryFilterObj = { rows: [] };
+                    var activeForm = this.getActiveFilterFormRef();
+                    if (activeForm && activeForm.editedObject) {
+                        Object.assign(activeForm.editedObject, blank);
+                    }
                 },
                 fetch: function(force) {
                     this.isRefresh = false;
