@@ -53,7 +53,12 @@ const OVERRIDES = {
             CA: 'ca',
         },
     },
-
+    COOKIE: {
+        SAMESITE: 'sameSite',
+        HTTPONLY: 'httpOnly',
+        MAXAGE: 'maxAge',
+        MAXAGELOGIN: 'maxAgeLogin',
+    },
     MAIL: {
         CONFIG: {
             IGNORETLS: "ignoreTLS"

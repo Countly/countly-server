@@ -73,6 +73,9 @@
                 }, {disableAutoCatch: true});
             },
             get: function(dashboardId, isRefresh) {
+                if (!dashboardId) {
+                    return Promise.resolve(null);
+                }
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/dashboards",

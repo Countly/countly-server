@@ -249,6 +249,13 @@ tracker.collectServerData = async function() {
         edition = "Enterprise";
     }
     props.edition = edition;
+    props.hosting = "self-hosted";
+    if (props.edition === "Flex") {
+        props.hosting = "flex";
+    }
+    else if (props.plugins.includes("tracker")) {
+        props.hosting = "countly-hosted";
+    }
     if (common.db.build && common.db.build.version) {
         props.mongodb = common.db.build.version;
     }
