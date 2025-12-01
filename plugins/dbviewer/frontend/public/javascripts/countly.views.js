@@ -619,6 +619,10 @@
                     return apiQueryData;
                 },
                 refresh: function(force) {
+                    var isAnyFilterOpen = (this.formDialogs && ((this.formDialogs.queryFilter && this.formDialogs.queryFilter.isOpened) || (this.formDialogs.clickhouseQueryFilter && this.formDialogs.clickhouseQueryFilter.isOpened)));
+                    if (isAnyFilterOpen) {
+                        return;
+                    }
                     this.isRefresh = true;
                     this.fetch(force);
                     this.isExpanded = true;
