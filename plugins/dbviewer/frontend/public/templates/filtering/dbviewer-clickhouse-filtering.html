@@ -3,34 +3,36 @@
     <validation-observer v-slot="observer">
       <div class="bu-columns bu-is-gapless bu-is-multiline">
         <div class="bu-column bu-is-12">
-        <label class="text-small">{{ i18n('dbviewer.filter-query') }}</label>
-          <cly-dbviewer-filter-row
-            class="bu-mt-2"
-            v-for="(row, idx) in rows"
-            :key="row.id"
-            :row="row"
-            :is-first-row="idx === 0"
-            :fields="fields"
-            :disabled="disabled"
-            :allow-delete-first-row="allowDeleteFirstRow"
-            @update-row="onUpdateRow"
-            @delete-row="onDeleteRow"
-          />
+          <label class="text-small">{{ i18n('dbviewer.filter-query') }}</label>
+          <vue-scroll ref="filterScroll" :ops="scrollOps" class="dbviewer-filter__scroll">
+            <div class="bu-columns bu-is-gapless bu-is-multiline">
+              <div class="bu-column bu-is-12">
+                <cly-dbviewer-filter-row
+                  class="bu-mt-2"
+                  v-for="(row, idx) in rows"
+                  :key="row.id"
+                  :row="row"
+                  :is-first-row="idx === 0"
+                  :fields="fields"
+                  :disabled="disabled"
+                  :allow-delete-first-row="allowDeleteFirstRow"
+                  @update-row="onUpdateRow"
+                  @delete-row="onDeleteRow"
+                />
+              </div>
+            </div>
+          </vue-scroll>
         </div>
 
-        <div class="bu-column bu-is-12 bu-mt-4">
-          <div class="bu-columns bu-is-gapless bu-is-mobile">
-            <div class="bu-column bu-is-2">
-              <el-button
-                class="is-light-blue"
-                @click="addRow"
-                size="small"
-                :disabled="observer.invalid || disabled"
-              >
-                + Add Filter
-              </el-button>
-            </div>
-          </div>
+        <div class="bu-column bu-is-12 bu-mt-2">
+          <el-button
+            class="is-light-blue"
+            @click="addRow"
+            size="small"
+            :disabled="observer.invalid || disabled"
+          >
+            + Add Filter
+          </el-button>
         </div>
       </div>
     </validation-observer>
@@ -85,7 +87,7 @@
           <validation-provider :rules="'required'" v-slot="validation">
             <el-select
               v-model="local.operator"
-              placeholder="Select Operator"
+              placeholder="Operator"
               size="small"
               :disabled="disabled || !local.field"
               :class="{'is-error': validation.errors.length > 0}"
