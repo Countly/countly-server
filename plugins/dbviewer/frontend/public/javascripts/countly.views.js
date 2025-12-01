@@ -294,19 +294,29 @@
                     },
                     onReady: function(context, rows) {
                         if (rows.length) {
-                            var keys = Object.keys(rows[0]).filter(function(k) {
+                            var isCH = self.isClickhouseDbSelected === true;
+                            var baseKeys = Object.keys(rows[0]).filter(function(k) {
                                 return k !== "_view";
                             });
-                            self.projectionOptions = keys.sort().map(function(item) {
+                            var sortedKeys = baseKeys.slice().sort();
+                            var filterKeys = sortedKeys.filter(function(k) {
+                                if (!isCH) {
+                                    return true;
+                                }
+                                var val = rows[0][k];
+                                var isNestedField = val && typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date);
+                                return !isNestedField;
+                            });
+                            self.projectionOptions = sortedKeys.map(function(item) {
                                 return {
                                     "label": item,
                                     "value": item
                                 };
                             });
-                            self.filterFields = self.projectionOptions.map(function(item) {
+                            self.filterFields = filterKeys.map(function(item) {
                                 return {
-                                    "label": item.label,
-                                    "value": item.value
+                                    "label": item,
+                                    "value": item
                                 };
                             });
                         }
