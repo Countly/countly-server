@@ -560,8 +560,9 @@ describe('Testing Rating plugin', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
-
-
+        it('Wait as this goes to retrigger', function(done) {
+            setTimeout(done, 10000);
+        });
         it('Merge users', function(done) {
             request
                 .get('/i?device_id=NEW&old_device_id=OLD&app_key=' + APP_KEY)
