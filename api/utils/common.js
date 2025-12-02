@@ -1083,7 +1083,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
 
             if (argProperties[arg]['max-length']) {
-                if (args[arg].length > argProperties[arg]['max-length']) {
+                if (args[arg] && args[arg].length > argProperties[arg]['max-length']) {
                     if (returnErrors) {
                         returnObj.errors.push("Length of " + arg + " is greater than max length value");
                         returnObj.result = false;
@@ -1096,7 +1096,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
 
             if (argProperties[arg]['min-length']) {
-                if (args[arg].length < argProperties[arg]['min-length']) {
+                if (args[arg] && args[arg].length < argProperties[arg]['min-length']) {
                     if (returnErrors) {
                         returnObj.errors.push("Length of " + arg + " is lower than min length value");
                         returnObj.result = false;

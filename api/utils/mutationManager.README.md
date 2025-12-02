@@ -9,7 +9,7 @@ Mutation Manager is the service layer that guarantees granular data mutations (d
 - Persists each intent in the `mutation_manager` collection and protects it with retry and backoff semantics.
 - Executes MongoDB deletions/updates and, when available, ClickHouse mutations to keep both stores in sync.
 - Reports queue state and ClickHouse pressure through the observability API so dashboards and probes can react.
-- `mutation_manager` collection ensures an index on `mutation_completion_ts` with a three-day TTL (`expireAfterSeconds: 259200`). This automatically purges completed entries.
+- `mutation_manager` collection ensures an index on `mutation_completion_ts` with a 30-days TTL. This automatically purges completed entries.
 
 ### Components
 
