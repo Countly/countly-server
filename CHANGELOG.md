@@ -1,4 +1,4 @@
-## Version 25.03.XX
+## Version 25.03.29
 Fixes:
 - [core] Do not output password in logs on mongodb connection initialisation error
 - [core] Hide error details on render error from response
@@ -7,7 +7,8 @@ Fixes:
 - [events] Do not throw error in UI on returned group data if there is no segmentation set
 
 Enterprise Fixes:
--[surveys] Do not fetch survey meta data if plugin is disabled
+- [drill] Fixed timeline recalculation
+- [surveys] Do not fetch survey meta data if plugin is disabled
 
 ## Version 25.03.28
 Fixes:
