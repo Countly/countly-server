@@ -2068,10 +2068,19 @@ var pluginManager = function pluginManager() {
             await client.connect();
         }
         catch (ex) {
+            var safeDbName = dbName;
+            var start = dbName.indexOf("://") + 3;
+            var end = dbName.indexOf("@", start);
+            if (end > -1 && start > 3) {
+                var middle = dbName.indexOf(":", start);
+                if (middle > -1 && middle < end) {
+                    safeDbName = dbName.substring(0, middle) + ":*****" + dbName.substring(end);
+                }
+            }
             logDbRead.e("Error connecting to database", ex);
             logDbRead.e("With params %j", {
                 db: db_name,
-                connection: dbName,
+                connection: safeDbName,
                 options: dbOptions
             });
             //exit to retry to reconnect on restart

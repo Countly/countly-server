@@ -388,7 +388,7 @@
         },
         getSegments: function(context, res) {
             var segments = [];
-            if (res.meta && res.meta.segments.length > 0) {
+            if (res.meta && res.meta.segments && Array.isArray(res.meta.segments) && res.meta.segments.length > 0) {
                 segments = res.meta.segments.slice();
                 context.commit('setHasSegments', true);
             }
@@ -920,7 +920,13 @@
                                 res.list = res.list.map(eventName => countlyCommon.unescapeHtml(eventName));
                             }
                             context.commit("setAllEventsData", res);
-                            if ((!context.state.selectedEventName) || (res.map && res.map[context.state.selectedEventName] && !res.map[context.state.selectedEventName].is_visible) || (res.list && res.list.indexOf(context.state.selectedEventName) === -1)) {
+                            var is_group = false;
+                            if (context.state.selectedEventName && context.state.selectedEventName.startsWith('[CLY]_group')) {
+                                is_group = true;
+                            }
+                            if ((!context.state.selectedEventName) ||
+                            (res.map && res.map[context.state.selectedEventName] && !res.map[context.state.selectedEventName].is_visible) ||
+                            (res.list && res.list.indexOf(context.state.selectedEventName) === -1 && context.state && !is_group)) {
                                 var appId = countlyCommon.ACTIVE_APP_ID;
                                 var eventKeyForStorage = {};
                                 var eventKey = res.list[0];

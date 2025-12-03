@@ -84,6 +84,10 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
 
         validateCreate(params, FEATURE_NAME, function() {
             let alertConfig = params.qstring.alert_config;
+            if (!alertConfig) {
+                common.returnMessage(params, 400, 'Missing alert_config');
+                return;
+            }
             try {
                 alertConfig = JSON.parse(alertConfig);
                 var checkProps = {

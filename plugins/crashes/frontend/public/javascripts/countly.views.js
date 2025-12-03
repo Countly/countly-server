@@ -1145,7 +1145,7 @@
                 this.$store.dispatch("countlyCrashes/crashgroup/fetchBarData", {value: value, period: this.pickerDate});
             },
             handleDatePickerChange: function(value) {
-                this.pickerDate = value.effectiveRange;
+                this.pickerDate = value.value;
                 this.$store.dispatch("countlyCrashes/crashgroup/fetchBarData", {value: this.chartBy, period: this.pickerDate});
             },
             handleCrashgroupStacktraceCommand: function(command) {
