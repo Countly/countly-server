@@ -322,7 +322,15 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
         let params = ob.params;
 
         validateUpdate(params, FEATURE_NAME, function() {
-            const statusList = JSON.parse(params.qstring.status);
+            let statusList;
+            try {
+                statusList = JSON.parse(params.qstring.status);
+            }
+            catch (err) {
+                log.e('Parse alert status failed', params.qstring.status, err);
+                common.returnMessage(params, 500, "Failed to change alert status" + err.message);
+                return;
+            }
             const batch = [];
             for (const appID in statusList) {
                 batch.push(

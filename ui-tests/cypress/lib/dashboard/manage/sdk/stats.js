@@ -9,7 +9,7 @@ import {
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         labelElement: sdkStatsPageElements.PAGE_TITLE,
-        labelText: "SDK stats",
+        labelText: "SDK Stats",
     });
 
     cy.checkPaceRunning();
@@ -33,7 +33,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         element: sdkStatsPageElements.TAB_SDK_CONFIGURATION,
-        elementText: "SDK Configuration",
+        elementText: "SDK Behavior Settings",
     });
 
     cy.verifyElement({

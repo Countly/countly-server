@@ -644,6 +644,18 @@
                 "no-unused-vars": "off",
                 "no-redeclare": "off"
             }
+        },
+        {
+            "files": [
+                "frontend/express/public/javascripts/auto-tracker/countly-tracker.min.js"
+            ],
+            "parserOptions": {
+                "ecmaVersion": 2020
+            },
+            "env": {
+                "browser": true,
+                "es2020": true
+            }
         }
     ]
 }

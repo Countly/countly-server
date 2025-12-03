@@ -1,0 +1,310 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Logger API",
+    "description": "API for managing request logs in Countly Server. The logger plugin captures and stores SDK requests for debugging and analysis purposes. Note: Some operations may return error responses for malformed requests or insufficient permissions.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/o": {
+      "get": {
+        "summary": "Retrieve logs or collection information",
+        "description": "Retrieve logged requests or collection statistics. Supports two methods: 'logs' for retrieving log entries and 'collection_info' for collection statistics.",
+        "tags": [
+          "Logger"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_key",
+            "in": "query",
+            "required": false,
+            "description": "Application key (alternative authentication method)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "method",
+            "in": "query",
+            "required": true,
+            "description": "Method to execute",
+            "schema": {
+              "type": "string",
+              "enum": ["logs", "collection_info"]
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "required": false,
+            "description": "JSON string containing MongoDB filter criteria (only for method=logs)",
+            "schema": {
+              "type": "string",
+              "example": "{\"device.id\":\"test-device\"}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "description": "Response for method=logs",
+                      "properties": {
+                        "logs": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/LogEntry"
+                          },
+                          "description": "Array of log entries"
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": ["on", "off", "automatic"],
+                          "description": "Current logging state"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "description": "Response for method=collection_info",
+                      "properties": {
+                        "capped": {
+                          "type": "integer",
+                          "description": "Maximum number of log entries"
+                        },
+                        "count": {
+                          "type": "integer",
+                          "description": "Current number of log entries"
+                        },
+                        "max": {
+                          "type": "integer",
+                          "description": "Maximum limit"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "Status message (present on error)"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid API key or insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LogEntry": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Unique log entry identifier"
+          },
+          "ts": {
+            "type": "integer",
+            "description": "Timestamp of the logged request"
+          },
+          "reqts": {
+            "type": "integer",
+            "description": "Request timestamp when log was created"
+          },
+          "d": {
+            "type": "object",
+            "description": "Device information",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Device ID"
+              },
+              "d": {
+                "type": "string",
+                "description": "Device type"
+              },
+              "p": {
+                "type": "string",
+                "description": "Platform"
+              },
+              "pv": {
+                "type": "string",
+                "description": "Platform version"
+              }
+            }
+          },
+          "l": {
+            "type": "object",
+            "description": "Location information",
+            "properties": {
+              "cc": {
+                "type": "string",
+                "description": "Country code"
+              },
+              "cty": {
+                "type": "string",
+                "description": "City"
+              }
+            }
+          },
+          "s": {
+            "type": "object",
+            "description": "SDK information",
+            "properties": {
+              "version": {
+                "type": "string",
+                "description": "SDK version"
+              },
+              "name": {
+                "type": "string",
+                "description": "SDK name"
+              }
+            }
+          },
+          "v": {
+            "type": "string",
+            "description": "App version"
+          },
+          "q": {
+            "type": "string",
+            "description": "Query string as JSON"
+          },
+          "h": {
+            "type": "object",
+            "description": "Request headers (sanitized, cookies and tokens removed)"
+          },
+          "m": {
+            "type": "string",
+            "description": "HTTP method (GET, POST, etc.)"
+          },
+          "b": {
+            "type": "boolean",
+            "description": "Whether this was a bulk request"
+          },
+          "c": {
+            "type": "boolean",
+            "description": "Whether this request was cancelled"
+          },
+          "t": {
+            "type": "object",
+            "description": "Request types and parameters",
+            "properties": {
+              "session": {
+                "type": "object",
+                "description": "Session information"
+              },
+              "metrics": {
+                "type": "string",
+                "description": "Metrics data as JSON string"
+              },
+              "events": {
+                "type": "string",
+                "description": "Events data as JSON string"
+              },
+              "user_details": {
+                "type": "string",
+                "description": "User details as JSON string"
+              },
+              "consent": {
+                "type": "string",
+                "description": "Consent information as JSON string"
+              },
+              "change_id": {
+                "type": "object",
+                "description": "Device ID change information"
+              },
+              "token": {
+                "type": "object",
+                "description": "Push token information"
+              }
+            }
+          },
+          "res": {
+            "type": "object",
+            "description": "Response information"
+          },
+          "p": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of detected problems with the request (false if no problems)"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}
