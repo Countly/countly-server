@@ -105,8 +105,12 @@ class UnifiedEventSource {
         this.#countlyConfig = dependencies.countlyConfig || require('../config');
         this.#options = options;
 
+        // Get common for database access (used for batch deduplication state)
+        const common = dependencies.common || require('../utils/common.js');
+
         this.#source = EventSourceFactory.create(name, options, {
-            countlyConfig: this.#countlyConfig
+            countlyConfig: this.#countlyConfig,
+            db: common.db // Pass main database for batch deduplication state
         });
 
         this.#log.d(`UnifiedEventSource created: ${name} (${this.#source.constructor.name})`);

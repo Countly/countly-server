@@ -37,6 +37,19 @@ plugins.connectToAllDatabases(true).then(function() {
     common.manualWriteBatcher = new WriteBatcher(common.db, true); //Manually trigerable batcher
     common.readBatcher = new Cacher(common.db); //Used for Apps info
     common.queryRunner = new QueryRunner();
+
+    // Ensure TTL index for Kafka batch deduplication state (if Kafka enabled)
+    if (countlyConfig.kafka?.enabled && countlyConfig.kafka?.batchDeduplication !== false) {
+        common.db.collection('kafka_consumer_state').createIndex(
+            { lastProcessedAt: 1 },
+            { expireAfterSeconds: 604800, background: true } // 7 days TTL
+        ).then(() => {
+            log.i('Kafka batch deduplication TTL index ensured on kafka_consumer_state');
+        }).catch((e) => {
+            // Index may already exist or other non-fatal error
+            log.d('Kafka consumer state index creation:', e.message);
+        });
+    }
     common.readBatcher.transformationFunctions = {
         "event_object": function(data) {
             if (data && data.list) {
