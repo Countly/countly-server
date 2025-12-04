@@ -277,7 +277,7 @@
             </cly-section>
             <cly-section :title="i18n('crashes.crash-occurences')" class="recent-crash-occurences">
                 <p class="text-small color-cool-gray-50 bu-pl-3">{{i18n('crashes.recent-crash-occurances-description',currentLimit)}}</p>
-                <cly-datatable-n :force-loading="isLoading" :rows="crashes" :exportFormat="formatExportFunction" ref="tableData" @row-click="handleRowClick" row-class-name="bu-is-clickable">
+                <cly-datatable-n :force-loading="isLoading" :rows="crashes" :exportFormat="formatExportFunction" ref="tableData" @row-click="handleRowClick" row-class-name="bu-is-clickable" :defaultSort="{}">
                     <template v-slot:header-left="filterScope">
                         <cly-multi-select v-model="userFilter" :fields="userFilterFields"></cly-multi-select>
                     </template>
