@@ -45,12 +45,31 @@
         });
     };
 
+    var fetchKafkaStatus = function() {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r + '/system/kafka',
+            dataType: "json",
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                "preventRequestAbort": true
+            },
+            error: function(/*xhr, status, error*/) {
+                // Kafka stats may not be available if Kafka is not enabled
+            }
+        });
+    };
+
     countlyHealthManager.fetchMutationStatus = function(filters) {
         return fetchMutationStatus(filters);
     };
 
     countlyHealthManager.fetchAggregatorStatus = function() {
         return fetchAggregatorStatus();
+    };
+
+    countlyHealthManager.fetchKafkaStatus = function() {
+        return fetchKafkaStatus();
     };
 
     countlyHealthManager.getAggregatorVuex = function() {

@@ -115,6 +115,8 @@ class KafkaEventSource extends EventSourceInterface {
             );
             if (state && BigInt(state.lastCommittedOffset) >= BigInt(token.lastOffset)) {
                 this.#log.w(`[${this.#name}] Skipping already-processed batch: ${token.key} (lastCommitted=${state.lastCommittedOffset}, batchLast=${token.lastOffset})`);
+                // Record duplicate skip stats
+                await this.#recordDuplicateSkipped(stateKey, token);
                 return true;
             }
         }
@@ -136,26 +138,78 @@ class KafkaEventSource extends EventSourceInterface {
             return;
         }
         const stateKey = `${this.#name}:${token.topic}:${token.partition}`;
+        const hasBatchData = token.batchSize && token.batchSize > 0;
         try {
+            // Build update - always update offset, only update stats if batch had data
+            const update = {
+                $set: {
+                    lastCommittedOffset: token.lastOffset,
+                    lastProcessedAt: new Date(),
+                    topic: token.topic,
+                    partition: token.partition,
+                    consumerGroup: this.#name
+                }
+            };
+
+            // Only track batch stats if batch actually had data
+            if (hasBatchData) {
+                update.$set.lastBatchSize = token.batchSize;
+                update.$inc = { batchCount: 1 };
+                update.$push = {
+                    recentBatchSizes: {
+                        $each: [token.batchSize],
+                        $slice: -10 // Keep last 10 batch sizes
+                    }
+                };
+            }
+
             await this.#batchDedupDb.collection('kafka_consumer_state').updateOne(
                 { _id: stateKey },
-                {
-                    $set: {
-                        lastCommittedOffset: token.lastOffset,
-                        lastProcessedAt: new Date(),
-                        topic: token.topic,
-                        partition: token.partition,
-                        consumerGroup: this.#name
-                    },
-                    $inc: { batchCount: 1 }
-                },
+                update,
                 { upsert: true }
             );
-            this.#log.d(`[${this.#name}] Marked batch as processed: ${token.key}`);
+
+            // Update avgBatchSize only if we pushed new batch sizes
+            if (hasBatchData) {
+                await this.#batchDedupDb.collection('kafka_consumer_state').updateOne(
+                    { _id: stateKey },
+                    [{ $set: { avgBatchSize: { $avg: "$recentBatchSizes" } } }]
+                );
+            }
+            this.#log.d(`[${this.#name}] Marked batch as processed: ${token.key} (batchSize=${token.batchSize})`);
         }
         catch (e) {
             this.#log.e(`[${this.#name}] Error updating batch dedup state: ${e.message}`);
             // Non-fatal - batch will be reprocessed on restart (at-least-once semantics preserved)
+        }
+    }
+
+    /**
+     * Record duplicate skip statistics for monitoring
+     * @param {string} stateKey - Document key (consumerGroup:topic:partition)
+     * @param {Object} token - Batch token with offset info
+     * @returns {Promise<void>} resolves when recorded
+     * @private
+     */
+    async #recordDuplicateSkipped(stateKey, token) {
+        if (!this.#batchDedupDb) {
+            return;
+        }
+        try {
+            await this.#batchDedupDb.collection('kafka_consumer_state').updateOne(
+                { _id: stateKey },
+                {
+                    $inc: { duplicatesSkipped: 1 },
+                    $set: {
+                        lastDuplicateAt: new Date(),
+                        lastDuplicateOffset: token.lastOffset
+                    }
+                }
+            );
+        }
+        catch (e) {
+            this.#log.e(`[${this.#name}] Error recording duplicate skip: ${e.message}`);
+            // Non-fatal - stats are optional
         }
     }
 
@@ -184,6 +238,7 @@ class KafkaEventSource extends EventSourceInterface {
             topics: this.#kafkaOptions.topics || [this.#countlyConfig.kafka?.drillEventsTopic || 'countly-drill-events'],
             ...this.#kafkaOptions,
             partitionsConsumedConcurrently: 1,
+            db: this.#batchDedupDb // Pass db for health stats tracking
         });
 
         // Start the consumer with blocking handler

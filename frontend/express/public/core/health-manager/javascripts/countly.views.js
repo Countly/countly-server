@@ -375,37 +375,283 @@ var MutationStatusView = countlyVue.views.create({
 
 });
 
-// TODO: Remove eslint disable when aggregator tab is re-enabled
-// eslint-disable-next-line no-unused-vars
 var AggregatorStatusView = countlyVue.views.create({
     template: CV.T('/core/health-manager/templates/aggregator-status.html'),
     data: function() {
         return {
-            tableData: []
+            isLoading: false,
+            hasFetched: false,
+            // Aggregator (change stream) data
+            aggregatorData: [],
+            // Kafka stats data
+            kafkaEnabled: false,
+            kafkaSummary: {},
+            kafkaPartitions: [],
+            kafkaConsumers: [],
+            lagHistory: [],
+            // UI state
+            activeSection: 'overview'
         };
     },
     mounted: function() {
-        var self = this;
-        countlyHealthManager.fetchAggregatorStatus().then(function(data) {
-            self.tableData = data;
-        });
+        this.fetchData();
     },
     methods: {
-        getTable: function() {
-            return this.tableData;
-        },
         refresh: function() {
+            this.fetchData();
+        },
+        fetchData: function() {
+            this.isLoading = true;
             var self = this;
-            countlyHealthManager.fetchAggregatorStatus().then(function(data) {
-                self.tableData = data;
+
+            // Fetch aggregator (change stream) status
+            var aggregatorPromise = countlyHealthManager.fetchAggregatorStatus()
+                .then(function(data) {
+                    self.aggregatorData = data || [];
+                })
+                .catch(function() {
+                    self.aggregatorData = [];
+                });
+
+            // Fetch Kafka stats
+            var kafkaPromise = countlyHealthManager.fetchKafkaStatus()
+                .then(function(data) {
+                    if (data && (data.partitions || data.consumers)) {
+                        self.kafkaEnabled = true;
+                        self.kafkaSummary = data.summary || {};
+                        self.kafkaPartitions = data.partitions || [];
+                        self.kafkaConsumers = data.consumers || [];
+                        self.lagHistory = data.lagHistory || [];
+                    }
+                    else {
+                        self.kafkaEnabled = false;
+                        self.lagHistory = [];
+                    }
+                })
+                .catch(function() {
+                    self.kafkaEnabled = false;
+                    self.lagHistory = [];
+                });
+
+            Promise.all([aggregatorPromise, kafkaPromise]).finally(function() {
+                self.hasFetched = true;
+                self.isLoading = false;
             });
+        },
+        formatDate: function(val) {
+            if (!val) {
+                return 'N/A';
+            }
+            var ms = typeof val === 'string' ? Date.parse(val) : Number(val);
+            if (String(ms).length === 10) {
+                ms *= 1000;
+            }
+            if (!ms || isNaN(ms)) {
+                return 'N/A';
+            }
+            return moment(ms).format('DD-MM-YYYY HH:mm:ss');
+        },
+        formatNumber: function(val) {
+            if (val === undefined || val === null) {
+                return '0';
+            }
+            return countlyCommon.formatNumber ? countlyCommon.formatNumber(val) : val.toLocaleString();
+        },
+        formatDuration: function(seconds) {
+            if (!seconds || seconds < 0) {
+                return 'N/A';
+            }
+            if (seconds < 60) {
+                return Math.round(seconds) + 's';
+            }
+            if (seconds < 3600) {
+                return Math.round(seconds / 60) + 'm';
+            }
+            if (seconds < 86400) {
+                return Math.round(seconds / 3600) + 'h';
+            }
+            return Math.round(seconds / 86400) + 'd';
+        },
+        getLagClass: function(lag) {
+            if (!lag || lag === 0) {
+                return 'color-green-100';
+            }
+            if (lag < 1000) {
+                return 'color-green-100';
+            }
+            if (lag < 10000) {
+                return 'color-yellow-100';
+            }
+            return 'color-red-100';
+        },
+        getErrorClass: function(errorCount) {
+            if (!errorCount || errorCount === 0) {
+                return 'color-green-100';
+            }
+            if (errorCount < 5) {
+                return 'color-yellow-100';
+            }
+            return 'color-red-100';
         }
     },
     computed: {
         aggregatorRows: function() {
-            return this.getTable();
-        }
+            return this.aggregatorData;
+        },
+        summaryCards: function() {
+            var summary = this.kafkaSummary || {};
+            return [
+                {
+                    title: 'Total Lag',
+                    value: this.formatNumber(summary.totalLag || 0),
+                    detail: 'Messages behind',
+                    tooltip: 'Total number of messages waiting to be processed across all consumer groups',
+                    numberClass: this.getLagClass(summary.totalLag)
+                },
+                {
+                    title: 'Batches Processed',
+                    value: this.formatNumber(summary.totalBatchesProcessed || 0),
+                    detail: 'Since last TTL cleanup',
+                    tooltip: 'Total batches successfully processed by all consumers',
+                    numberClass: 'color-cool-gray-100'
+                },
+                {
+                    title: 'Duplicates Skipped',
+                    value: this.formatNumber(summary.totalDuplicatesSkipped || 0),
+                    detail: 'Batches deduplicated',
+                    tooltip: 'Number of batches skipped due to rebalance deduplication',
+                    numberClass: summary.totalDuplicatesSkipped > 0 ? 'color-yellow-100' : 'color-green-100'
+                },
+                {
+                    title: 'Avg Batch Size',
+                    value: this.formatNumber(summary.avgBatchSizeOverall || 0),
+                    detail: 'Events per batch',
+                    tooltip: 'Average number of events processed per batch',
+                    numberClass: 'color-cool-gray-100'
+                },
+                {
+                    title: 'Rebalances',
+                    value: this.formatNumber(summary.totalRebalances || 0),
+                    detail: 'In last 7 days',
+                    tooltip: 'Number of consumer group rebalances (should be low)',
+                    numberClass: summary.totalRebalances > 10 ? 'color-yellow-100' : 'color-green-100'
+                },
+                {
+                    title: 'Errors',
+                    value: this.formatNumber(summary.totalErrors || 0),
+                    detail: 'In last 7 days',
+                    tooltip: 'Number of errors recorded by consumers',
+                    numberClass: this.getErrorClass(summary.totalErrors)
+                }
+            ];
+        },
+        hasKafkaData: function() {
+            return this.kafkaEnabled && (this.kafkaPartitions.length > 0 || this.kafkaConsumers.length > 0);
+        },
+        hasAggregatorData: function() {
+            return this.aggregatorData && this.aggregatorData.length > 0;
+        },
+        lagChartOption: function() {
+            if (!this.lagHistory || this.lagHistory.length === 0) {
+                return {};
+            }
 
+            // Extract unique group IDs from all snapshots
+            var groupIds = [];
+            this.lagHistory.forEach(function(snapshot) {
+                (snapshot.groups || []).forEach(function(g) {
+                    if (groupIds.indexOf(g.groupId) === -1) {
+                        groupIds.push(g.groupId);
+                    }
+                });
+            });
+
+            // Build X-axis labels (timestamps)
+            var self = this;
+            var xAxisData = this.lagHistory.map(function(snapshot) {
+                if (!snapshot.ts) {
+                    return '';
+                }
+                var date = new Date(snapshot.ts);
+                return moment(date).format('HH:mm');
+            });
+
+            // Build series for each consumer group with explicit colors
+            var series = groupIds.map(function(groupId, index) {
+                var data = self.lagHistory.map(function(snapshot) {
+                    var group = (snapshot.groups || []).find(function(g) {
+                        return g.groupId === groupId;
+                    });
+                    return group ? group.totalLag : 0;
+                });
+                var color = countlyCommon.GRAPH_COLORS[index % countlyCommon.GRAPH_COLORS.length];
+                return {
+                    name: groupId.replace('cly_', ''),
+                    type: 'line',
+                    data: data,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 2,
+                        color: color
+                    },
+                    itemStyle: {
+                        color: color
+                    }
+                };
+            });
+
+            return {
+                grid: {
+                    top: 40,
+                    bottom: 40,
+                    left: 60,
+                    right: 180,
+                    containLabel: true
+                },
+                legend: {
+                    show: true,
+                    type: 'scroll',
+                    orient: 'vertical',
+                    right: 10,
+                    top: 'middle',
+                    itemGap: 8,
+                    itemWidth: 14,
+                    itemHeight: 8,
+                    textStyle: {
+                        fontSize: 11,
+                        color: '#333C48'
+                    },
+                    icon: 'roundRect',
+                    pageButtonItemGap: 5,
+                    pageButtonGap: 10,
+                    pageIconSize: 12
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: xAxisData,
+                    axisLabel: {
+                        rotate: 45,
+                        fontSize: 10
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Lag (messages)',
+                    axisLabel: {
+                        formatter: function(value) {
+                            return value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value;
+                        }
+                    }
+                },
+                series: series,
+                color: countlyCommon.GRAPH_COLORS
+            };
+        }
     }
 });
 
@@ -448,17 +694,16 @@ countlyVue.container.registerTab("/manage/health", {
     tooltip: CV.i18n('mutation-status.overview.tooltip')
 });
 
-// TODO: Re-enable when aggregator data is ready
-// countlyVue.container.registerTab("/manage/health", {
-//     priority: 2,
-//     name: "aggregator-status",
-//     permission: "core",
-//     title: CV.i18n('health-manager.tabs.aggregator'),
-//     route: "#/manage/health/aggregator-status",
-//     dataTestId: "health-manager-aggregator-status",
-//     component: AggregatorStatusView,
-//     vuex: [{clyModel: countlyHealthManager.getAggregatorVuex()}]
-// });
+countlyVue.container.registerTab("/manage/health", {
+    priority: 2,
+    name: "aggregator-status",
+    permission: "core",
+    title: CV.i18n('health-manager.tabs.aggregator'),
+    route: "#/manage/health/aggregator-status",
+    dataTestId: "health-manager-aggregator-status",
+    component: AggregatorStatusView,
+    tooltip: CV.i18n('aggregator-status.overview.tooltip')
+});
 
 app.route("/manage/health", "health-manager", function() {
     var ViewWrapper = getHealthManagerView();

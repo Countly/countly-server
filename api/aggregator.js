@@ -38,7 +38,7 @@ plugins.connectToAllDatabases(true).then(function() {
     common.readBatcher = new Cacher(common.db); //Used for Apps info
     common.queryRunner = new QueryRunner();
 
-    // Ensure TTL index for Kafka batch deduplication state (if Kafka enabled)
+    // Ensure TTL indexes for Kafka consumer state and health (if Kafka enabled)
     if (countlyConfig.kafka?.enabled && countlyConfig.kafka?.batchDeduplication !== false) {
         common.db.collection('kafka_consumer_state').createIndex(
             { lastProcessedAt: 1 },
@@ -48,6 +48,38 @@ plugins.connectToAllDatabases(true).then(function() {
         }).catch((e) => {
             // Index may already exist or other non-fatal error
             log.d('Kafka consumer state index creation:', e.message);
+        });
+
+        // TTL index for consumer health stats (rebalances, errors, lag)
+        common.db.collection('kafka_consumer_health').createIndex(
+            { updatedAt: 1 },
+            { expireAfterSeconds: 604800, background: true } // 7 days TTL
+        ).then(() => {
+            log.i('Kafka consumer health TTL index ensured on kafka_consumer_health');
+        }).catch((e) => {
+            // Index may already exist or other non-fatal error
+            log.d('Kafka consumer health index creation:', e.message);
+        });
+
+        // Create capped collection for lag history (1000 snapshots, ~5MB)
+        // Capped collections automatically delete oldest documents when full (FIFO)
+        common.db.listCollections({ name: 'kafka_lag_history' }).toArray().then((collections) => {
+            if (collections.length === 0) {
+                common.db.createCollection('kafka_lag_history', {
+                    capped: true,
+                    size: 5 * 1024 * 1024, // 5MB max size
+                    max: 1000 // 1000 documents max
+                }).then(() => {
+                    log.i('Kafka lag history capped collection created (max 1000 docs)');
+                }).catch((e) => {
+                    log.d('Kafka lag history collection creation:', e.message);
+                });
+            }
+            else {
+                log.d('Kafka lag history collection already exists');
+            }
+        }).catch((e) => {
+            log.d('Kafka lag history collection check:', e.message);
         });
     }
     common.readBatcher.transformationFunctions = {
