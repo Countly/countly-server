@@ -126,7 +126,7 @@ var crypto = require('crypto');
                             await usage.processEventTotalsFromStream(token, currEvent, common.manualWriteBatcher);
                         }
                     }
-                    common.manualWriteBatcher.flush("countly", "events_data");
+                    await common.manualWriteBatcher.flush("countly", "events_data");
                 }
             }
         }

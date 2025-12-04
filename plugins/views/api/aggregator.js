@@ -319,7 +319,7 @@ const crypto = require('crypto');
                             }
                         }
                     }
-                    common.manualWriteBatcher.flush("countly", "app_viewdata");
+                    await common.manualWriteBatcher.flush("countly", "app_viewdata");
                 }
             }
         }
