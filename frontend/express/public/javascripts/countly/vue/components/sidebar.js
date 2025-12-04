@@ -756,7 +756,31 @@
                         return this.flexWidget.used / this.flexWidget.available * 100;
                     }
                     return 0;
-                }
+                },
+                flexServerMember: function() {
+                    //We should fetch the user from vuex
+                    //So that updates are reactive
+
+                    var userImage = {};
+                    var member = countlyGlobal.member;
+                    if (member.member_image) {
+                        userImage.url = member.member_image;
+                        userImage.found = true;
+                    }
+                    else {
+                        var defaultAvatarSelector = (member.created_at || Date.now()) % 10 * -60;
+                        var name = member.full_name.split(" ");
+
+                        userImage.found = false;
+                        userImage.url = "images/avatar-sprite.png?v2";
+                        userImage.position = defaultAvatarSelector;
+                        userImage.initials = name[0][0] + name[name.length - 1][0];
+                    }
+
+                    member.image = userImage;
+
+                    return member;
+                },
             },
             methods: {
                 ...Vuex.mapMutations("countlySidebar", ["toggleMainMenu"]),
