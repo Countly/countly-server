@@ -25,4 +25,42 @@ For more key points: `core/api/utils/mutationManager.README.md`
 - Observability: registers `/system/observability/collect` with provider `mutation`, exposing queue summary and ClickHouse pressure so the UI and probes can react.
 
 ## Aggregator Status (UI)
-The tab is currently commented out in the UI; enable once aggregator data is available by re-registering the tab in `countly.views.js`.
+Backed by `GET /o/system/kafka` and `GET /o/system/aggregator`. The screen displays:
+
+### Kafka Consumer Stats
+When Kafka is enabled, displays comprehensive consumer health metrics:
+
+1. **Summary Cards** - Six metric cards showing:
+   - Total Lag: Messages waiting to be processed (color-coded: green <1k, yellow <10k, red >10k)
+   - Batches Processed: Total batches since last TTL cleanup (7 days)
+   - Duplicates Skipped: Batches deduplicated during rebalances
+   - Avg Batch Size: Average events per batch
+   - Rebalances: Consumer group rebalances (should be low)
+   - Errors: Recorded errors (color-coded by severity)
+
+2. **Consumer Groups Table** - Per-consumer-group stats:
+   - Group ID, Total Lag, Rebalance Count, Last Rebalance
+   - Commit Count, Last Commit, Error Count, Last Error
+   - Lag Updated timestamp
+
+3. **Partition Stats Table** - Per-partition deduplication and batch stats:
+   - Consumer Group, Topic, Partition, Last Committed Offset
+   - Batch Count, Duplicates Skipped, Avg/Last Batch Size
+   - Last Processed timestamp
+
+### Change Stream Aggregator Status
+For non-Kafka deployments, shows change stream resume token status:
+- Name, Acknowledged timestamp, Drill timestamp
+- Diff(drill): Lag behind drill events
+- Diff(now): Lag behind current time
+
+### Backend Collections
+- `kafka_consumer_state`: Per-partition deduplication and batch size stats (TTL: 7 days)
+- `kafka_consumer_health`: Per-consumer-group health stats (rebalances, errors, lag) (TTL: 7 days)
+
+### Lag Monitoring Job
+The `kafkaLagMonitor.js` job runs every 2 minutes to:
+1. Connect to Kafka admin API
+2. Fetch high watermarks for all topics
+3. Compare with committed offsets to calculate lag
+4. Update `kafka_consumer_health` collection with lag stats

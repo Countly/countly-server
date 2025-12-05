@@ -1954,6 +1954,109 @@ const processRequest = (params) => {
                         });
                     }, params);
                     break;
+                case 'kafka':
+                    validateUserForMgmtReadAPI(async() => {
+                        try {
+                            // Fetch Kafka consumer state (per-partition stats)
+                            const consumerState = await common.db.collection("kafka_consumer_state")
+                                .find({})
+                                .toArray();
+
+                            // Fetch Kafka consumer health (per-consumer-group stats)
+                            const consumerHealth = await common.db.collection("kafka_consumer_health")
+                                .find({})
+                                .toArray();
+
+                            // Fetch lag history (last 100 snapshots for charts)
+                            const lagHistory = await common.db.collection("kafka_lag_history")
+                                .find({})
+                                .sort({ ts: -1 })
+                                .limit(100)
+                                .toArray();
+
+                            // Aggregate stats
+                            let totalBatchesProcessed = 0;
+                            let totalDuplicatesSkipped = 0;
+                            let avgBatchSizeOverall = 0;
+                            let partitionCount = 0;
+
+                            const partitionStats = consumerState.map(state => {
+                                totalBatchesProcessed += state.batchCount || 0;
+                                totalDuplicatesSkipped += state.duplicatesSkipped || 0;
+                                if (state.avgBatchSize) {
+                                    avgBatchSizeOverall += state.avgBatchSize;
+                                    partitionCount++;
+                                }
+                                return {
+                                    id: state._id,
+                                    consumerGroup: state.consumerGroup,
+                                    topic: state.topic,
+                                    partition: state.partition,
+                                    lastCommittedOffset: state.lastCommittedOffset,
+                                    lastProcessedAt: state.lastProcessedAt,
+                                    batchCount: state.batchCount || 0,
+                                    duplicatesSkipped: state.duplicatesSkipped || 0,
+                                    lastDuplicateAt: state.lastDuplicateAt,
+                                    lastBatchSize: state.lastBatchSize,
+                                    avgBatchSize: state.avgBatchSize,
+                                    recentBatchSizes: state.recentBatchSizes || []
+                                };
+                            });
+
+                            avgBatchSizeOverall = partitionCount > 0 ? avgBatchSizeOverall / partitionCount : 0;
+
+                            // Process consumer health stats
+                            let totalRebalances = 0;
+                            let totalErrors = 0;
+                            let totalLagAll = 0;
+
+                            const consumerStats = consumerHealth.map(health => {
+                                totalRebalances += health.rebalanceCount || 0;
+                                totalErrors += health.errorCount || 0;
+                                totalLagAll += health.totalLag || 0;
+                                return {
+                                    id: health._id,
+                                    groupId: health.groupId,
+                                    rebalanceCount: health.rebalanceCount || 0,
+                                    lastRebalanceAt: health.lastRebalanceAt,
+                                    lastJoinAt: health.lastJoinAt,
+                                    lastMemberId: health.lastMemberId,
+                                    lastGenerationId: health.lastGenerationId,
+                                    commitCount: health.commitCount || 0,
+                                    lastCommitAt: health.lastCommitAt,
+                                    errorCount: health.errorCount || 0,
+                                    lastErrorAt: health.lastErrorAt,
+                                    lastErrorMessage: health.lastErrorMessage,
+                                    recentErrors: health.recentErrors || [],
+                                    totalLag: health.totalLag || 0,
+                                    partitionLag: health.partitionLag || {},
+                                    lagUpdatedAt: health.lagUpdatedAt,
+                                    updatedAt: health.updatedAt
+                                };
+                            });
+
+                            common.returnOutput(params, {
+                                summary: {
+                                    totalBatchesProcessed,
+                                    totalDuplicatesSkipped,
+                                    avgBatchSizeOverall: Math.round(avgBatchSizeOverall * 100) / 100,
+                                    totalRebalances,
+                                    totalErrors,
+                                    totalLag: totalLagAll,
+                                    consumerGroupCount: consumerStats.length,
+                                    partitionCount: partitionStats.length
+                                },
+                                partitions: partitionStats,
+                                consumers: consumerStats,
+                                lagHistory: lagHistory.reverse() // Oldest first for charts
+                            });
+                        }
+                        catch (err) {
+                            log.e('Error fetching Kafka stats:', err);
+                            common.returnMessage(params, 500, 'Error fetching Kafka stats');
+                        }
+                    }, params);
+                    break;
                 default:
                     if (!plugins.dispatch(apiPath, {
                         params: params,
