@@ -1974,36 +1974,41 @@ const processRequest = (params) => {
                                 .limit(100)
                                 .toArray();
 
-                            // Aggregate stats
+                            // Aggregate stats from per-consumer-group documents
+                            // New schema: one document per consumer group with nested partition offsets
                             let totalBatchesProcessed = 0;
                             let totalDuplicatesSkipped = 0;
                             let avgBatchSizeOverall = 0;
-                            let partitionCount = 0;
+                            let groupsWithData = 0;
 
                             const partitionStats = consumerState.map(state => {
                                 totalBatchesProcessed += state.batchCount || 0;
                                 totalDuplicatesSkipped += state.duplicatesSkipped || 0;
                                 if (state.avgBatchSize) {
                                     avgBatchSizeOverall += state.avgBatchSize;
-                                    partitionCount++;
+                                    groupsWithData++;
                                 }
+                                // Count active partitions from nested partitions object
+                                const partitions = state.partitions || {};
+                                const partitionCount = Object.keys(partitions).length;
+                                const activePartitions = Object.values(partitions).filter(p => p.lastProcessedAt).length;
+
                                 return {
                                     id: state._id,
                                     consumerGroup: state.consumerGroup,
                                     topic: state.topic,
-                                    partition: state.partition,
-                                    lastCommittedOffset: state.lastCommittedOffset,
+                                    partitionCount,
+                                    activePartitions,
                                     lastProcessedAt: state.lastProcessedAt,
                                     batchCount: state.batchCount || 0,
                                     duplicatesSkipped: state.duplicatesSkipped || 0,
                                     lastDuplicateAt: state.lastDuplicateAt,
                                     lastBatchSize: state.lastBatchSize,
-                                    avgBatchSize: state.avgBatchSize,
-                                    recentBatchSizes: state.recentBatchSizes || []
+                                    avgBatchSize: state.avgBatchSize ? Math.round(state.avgBatchSize) : null
                                 };
                             });
 
-                            avgBatchSizeOverall = partitionCount > 0 ? avgBatchSizeOverall / partitionCount : 0;
+                            avgBatchSizeOverall = groupsWithData > 0 ? avgBatchSizeOverall / groupsWithData : 0;
 
                             // Process consumer health stats
                             let totalRebalances = 0;

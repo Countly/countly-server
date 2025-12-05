@@ -99,6 +99,7 @@ class KafkaEventSource extends EventSourceInterface {
 
     /**
      * Check if a batch was already processed (for deduplication on rebalance)
+     * Uses per-consumer-group document with nested partition offsets
      * @param {Object} token - Batch token with topic, partition, and offset info
      * @returns {Promise<boolean>} true if batch was already processed
      * @private
@@ -107,14 +108,17 @@ class KafkaEventSource extends EventSourceInterface {
         if (!this.#batchDedupEnabled || !this.#batchDedupDb || !token?.lastOffset) {
             return false;
         }
-        const stateKey = `${this.#name}:${token.topic}:${token.partition}`;
+        // Single document per consumer group (not per partition)
+        const stateKey = `${this.#name}:${token.topic}`;
+        const partitionKey = `partitions.${token.partition}.offset`;
         try {
             const state = await this.#batchDedupDb.collection('kafka_consumer_state').findOne(
                 { _id: stateKey },
-                { projection: { lastCommittedOffset: 1 } }
+                { projection: { [partitionKey]: 1 } }
             );
-            if (state && BigInt(state.lastCommittedOffset) >= BigInt(token.lastOffset)) {
-                this.#log.w(`[${this.#name}] Skipping already-processed batch: ${token.key} (lastCommitted=${state.lastCommittedOffset}, batchLast=${token.lastOffset})`);
+            const partitionOffset = state?.partitions?.[token.partition]?.offset;
+            if (partitionOffset && BigInt(partitionOffset) >= BigInt(token.lastOffset)) {
+                this.#log.w(`[${this.#name}] Skipping already-processed batch: ${token.key} (lastCommitted=${partitionOffset}, batchLast=${token.lastOffset})`);
                 // Record duplicate skip stats
                 await this.#recordDuplicateSkipped(stateKey, token);
                 return true;
@@ -129,6 +133,7 @@ class KafkaEventSource extends EventSourceInterface {
 
     /**
      * Mark a batch as processed after successful acknowledgment
+     * Stores one document per consumer group with nested partition offsets
      * @param {Object} token - Batch token with topic, partition, and offset info
      * @returns {Promise<void>} resolves when marked
      * @private
@@ -137,17 +142,20 @@ class KafkaEventSource extends EventSourceInterface {
         if (!this.#batchDedupEnabled || !this.#batchDedupDb || !token?.lastOffset) {
             return;
         }
-        const stateKey = `${this.#name}:${token.topic}:${token.partition}`;
+        // Single document per consumer group (not per partition)
+        const stateKey = `${this.#name}:${token.topic}`;
         const hasBatchData = token.batchSize && token.batchSize > 0;
+        const now = new Date();
         try {
-            // Build update - always update offset, only update stats if batch had data
+            // Build update - partition offset in nested object, aggregated stats at top level
             const update = {
                 $set: {
-                    lastCommittedOffset: token.lastOffset,
-                    lastProcessedAt: new Date(),
+                    [`partitions.${token.partition}.offset`]: token.lastOffset,
+                    [`partitions.${token.partition}.lastProcessedAt`]: now,
+                    lastProcessedAt: now,
                     topic: token.topic,
-                    partition: token.partition,
-                    consumerGroup: this.#name
+                    consumerGroup: this.#name,
+                    updatedAt: now
                 }
             };
 
@@ -186,7 +194,7 @@ class KafkaEventSource extends EventSourceInterface {
 
     /**
      * Record duplicate skip statistics for monitoring
-     * @param {string} stateKey - Document key (consumerGroup:topic:partition)
+     * @param {string} stateKey - Document key (consumerGroup:topic)
      * @param {Object} token - Batch token with offset info
      * @returns {Promise<void>} resolves when recorded
      * @private
@@ -202,7 +210,7 @@ class KafkaEventSource extends EventSourceInterface {
                     $inc: { duplicatesSkipped: 1 },
                     $set: {
                         lastDuplicateAt: new Date(),
-                        lastDuplicateOffset: token.lastOffset
+                        [`partitions.${token.partition}.lastDuplicateOffset`]: token.lastOffset
                     }
                 }
             );
@@ -366,7 +374,11 @@ class KafkaEventSource extends EventSourceInterface {
     /**
      * Acknowledge successful processing of a batch
      * This unblocks the Kafka handler, allowing offset commit
-     * Also marks the batch as processed in dedup state for rebalance protection
+     *
+     * Note: Dedup state is NOT written here - use markBatchProcessed() or processWithAutoAck()
+     * for deduplication protection. This separation avoids duplicate writes when using
+     * processWithAutoAck() which calls markBatchProcessed() immediately after handler completes.
+     *
      * @param {Object} token - Token from getNext()
      * @returns {Promise<void>} resolves when acknowledged
      * @protected
@@ -377,10 +389,6 @@ class KafkaEventSource extends EventSourceInterface {
             return;
         }
         this.#log.d(`[${this.#name}] Acknowledging batch: ${token.key} (${token.batchSize} events)`);
-
-        // Mark batch as processed BEFORE unblocking Kafka handler
-        // This ensures dedup state is written before offset commit
-        await this.#markAsProcessed(token);
 
         // Unblock the Kafka handler so it can return and allow offset commit
         if (this.#batchProcessed) {
