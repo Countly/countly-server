@@ -186,6 +186,11 @@ plugins.setConfigs("dashboards", {
                                 delete dashboard.shared_user_groups_view;
                             }
 
+                            // Fetch member information for view_users
+                            if (dashboard.view_users && dashboard.view_users.length > 0) {
+                                parallelTasks.push(fetchViewUsersInfo.bind(null, dashboard));
+                            }
+
                             async.parallel(parallelTasks, function(error, result) {
                                 if (error) {
                                     common.returnMessage(params, 401, 'Error while fetching dashboard widget data.');
@@ -276,6 +281,57 @@ plugins.setConfigs("dashboards", {
 
                             dash.shared_with_view_info = totalViewUsers;
                             dash.shared_with_edit_info = totalEditUsers;
+                            return callback(null);
+                        });
+                    }
+
+                    /**
+                     * Function to fetch view users info and enhance with member data
+                     * @param  {Object} dash - dashboard object
+                     * @param  {Function} callback - callback function
+                     * @returns {void}
+                     */
+                    function fetchViewUsersInfo(dash, callback) {
+                        var viewUsers = dash.view_users || [];
+
+                        // Extract unique user IDs
+                        var uniqueUserIds = [];
+                        var userIdSet = {};
+
+                        viewUsers.forEach(function(view) {
+                            if (view.userId && !userIdSet[view.userId]) {
+                                uniqueUserIds.push(view.userId);
+                                userIdSet[view.userId] = true;
+                            }
+                        });
+
+                        if (uniqueUserIds.length === 0) {
+                            return callback(null);
+                        }
+
+                        // Fetch member information for the user IDs
+                        fetchMembersData(uniqueUserIds, [], function(er, members) {
+                            if (er) {
+                                return callback(er);
+                            }
+
+                            // Create a map of userId to member info
+                            var memberMap = {};
+                            members.forEach(function(memberItem) {
+                                memberMap[memberItem._id + ""] = memberItem;
+                            });
+
+                            // Enhance view_users with member information
+                            dash.view_users = viewUsers.map(function(view) {
+                                var memberInfo = memberMap[view.userId];
+                                return {
+                                    userId: view.userId,
+                                    date: view.date,
+                                    userName: memberInfo ? (memberInfo.full_name || memberInfo.username || memberInfo.email) : view.userId,
+                                    userEmail: memberInfo ? memberInfo.email : null
+                                };
+                            });
+
                             return callback(null);
                         });
                     }
@@ -580,6 +636,81 @@ plugins.setConfigs("dashboards", {
                 }
             });
 
+        });
+
+        return true;
+    });
+
+    /**
+     * @api {get} /i/dashboards/track-view Track dashboard view
+     * @apiName TrackDashboardView
+     * @apiGroup Dashboards
+     * @apiPermission user
+     * @apiDescription Track when a user views a dashboard (after 5 second debounce)
+     *
+     * @apiQuery {String} dashboard_id Id of the dashboard being viewed
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * {
+     *     "result": "Success"
+     * }
+     */
+    plugins.register("/i/dashboards/track-view", function(ob) {
+        var params = ob.params;
+        var dashboardId = params.qstring.dashboard_id;
+
+        if (typeof dashboardId === "undefined" || dashboardId.length !== 24) {
+            common.returnMessage(params, 401, 'Invalid parameter: dashboard_id');
+            return true;
+        }
+
+        validateUser(params, function() {
+            var memberId = params.member._id + "";
+            var currentDate = new Date();
+
+            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
+                if (err || !dashboard) {
+                    common.returnMessage(params, 404, "Dashboard not found");
+                    return;
+                }
+
+                // Check if user has view access to this dashboard
+                hasViewAccessToDashboard(params.member, dashboard, function(er, hasAccess) {
+                    if (er || !hasAccess) {
+                        common.returnMessage(params, 403, "Access denied");
+                        return;
+                    }
+
+                    // Initialize view_users array if it doesn't exist
+                    if (!dashboard.view_users) {
+                        dashboard.view_users = [];
+                    }
+
+                    // Add the view record
+                    var viewRecord = {
+                        userId: memberId,
+                        date: currentDate
+                    };
+
+                    // Update the dashboard with the new view record
+                    common.db.collection("dashboards").update(
+                        {_id: common.db.ObjectID(dashboardId)},
+                        {
+                            $push: {
+                                view_users: viewRecord
+                            }
+                        },
+                        function(updateErr) {
+                            if (updateErr) {
+                                common.returnMessage(params, 500, "Error tracking view");
+                                return;
+                            }
+
+                            common.returnOutput(params, {result: "Success"});
+                        }
+                    );
+                });
+            });
         });
 
         return true;

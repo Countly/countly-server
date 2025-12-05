@@ -620,24 +620,29 @@
                  */
                 delete obj.is_owner;
 
-                this.$store.dispatch(action, obj).then(function(id) {
-                    if (id) {
-                        if (__action === "duplicate" ||
-                        __action === "create") {
-                            CountlyHelpers.notify({
-                                message: "Dashboard created successfully!",
-                                type: "success"
-                            });
+                var self = this;
+                this.$store.dispatch(action, obj).then(function(result) {
+                    if (!result) {
+                        return;
+                    }
 
-                            app.navigate('#/custom/' + id, true);
-                        }
+                    self.$store.dispatch("countlyDashboards/getAll", {just_schema: true});
 
-                        if (__action === "edit") {
-                            CountlyHelpers.notify({
-                                message: "Dashboard edited successfully!",
-                                type: "success"
-                            });
-                        }
+                    if (__action === "duplicate" ||
+                    __action === "create") {
+                        CountlyHelpers.notify({
+                            message: "Dashboard created successfully!",
+                            type: "success"
+                        });
+
+                        app.navigate('#/custom/' + result, true);
+                    }
+
+                    if (__action === "edit") {
+                        CountlyHelpers.notify({
+                            message: "Dashboard edited successfully!",
+                            type: "success"
+                        });
                     }
                 });
             },
@@ -1410,7 +1415,8 @@
             return {
                 dashboardId: this.$route.params && this.$route.params.dashboardId,
                 fullscreen: false,
-                preventTimeoutInterval: null
+                preventTimeoutInterval: null,
+                viewTrackingTimeout: null
             };
         },
         computed: {
@@ -1428,8 +1434,10 @@
                 dashboard.creation = {};
 
                 if (dashboard.created_at) {
-                    var formattedTime = this.parseTimeAgo(dashboard.created_at) || {};
-                    dashboard.creation.time = formattedTime.text;
+                    // Use the actual date from database, not recalculated "time ago"
+                    var createdDate = new Date(dashboard.created_at);
+                    dashboard.creation.time = createdDate.toLocaleString();
+                    dashboard.creation.timestamp = dashboard.created_at;
                 }
 
                 if (dashboard.owner && dashboard.owner.full_name) {
@@ -1627,7 +1635,24 @@
                 self.$store.dispatch("countlyDashboards/requests/isInitializing", false);
             });
         },
+        mounted: function() {
+            var self = this;
+
+            // Track dashboard view after 5 seconds (debounce to avoid tracking accidental opens)
+            if (this.dashboardId) {
+                this.viewTrackingTimeout = setTimeout(function() {
+                    countlyDashboards.service.dashboards.trackView(self.dashboardId).catch(function(err) {
+                        // Silently fail - this is just analytics tracking
+                        countlyDashboards.factory.log("Error tracking dashboard view:", err);
+                    });
+                }, 5000);
+            }
+        },
         beforeDestroy: function() {
+            // Clear the tracking timeout if user leaves before 5 seconds
+            if (this.viewTrackingTimeout) {
+                clearTimeout(this.viewTrackingTimeout);
+            }
             this.$store.dispatch("countlyDashboards/requests/reset");
         }
     });

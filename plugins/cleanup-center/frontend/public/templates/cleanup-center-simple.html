@@ -1,0 +1,474 @@
+<div class="cleanup-center-view">
+    <cly-header :title="i18n('cleanup-center.title')">
+    </cly-header>
+    
+    <cly-main>
+        <cly-section>
+            <!-- Table Header (matching cly-datatable-n structure) -->
+            <div class="bu-level cly-vue-eldatatable__header cly-vue-eldatatable__header--white">
+                <div class="bu-level-left">
+                    <!-- Filter Dropdown -->
+                    <cly-dropdown :width="400" ref="filterDropdown" @hide="reloadFilterValues">
+                        <template v-slot:trigger="dropdown">
+                            <cly-input-dropdown-trigger
+                                v-tooltip="filterSummary"
+                                :selected-options="filterSummary"
+                                :focused="dropdown.focused"
+                                :opened="dropdown.visible"
+                                :adaptive-length="true">
+                            </cly-input-dropdown-trigger>
+                        </template>
+                        <template>
+                            <cly-form
+                                :initial-edited-object="currentFilter"
+                                class="cleanup-center-filter-form"
+                                ref="filterForm"
+                                @submit="handleSubmitFilter">
+                                <template v-slot="formScope">
+                                    <cly-form-step id="filter-form-step">
+                                        <div class="bu-m-4">
+                                            <div class="bu-level">
+                                                <div class="bu-level-left">
+                                                    <div class="bu-level-item">
+                                                        <h4>{{ i18n('cleanup-center.title') }}</h4>
+                                                    </div>
+                                                </div>
+                                                <div class="bu-level-right">
+                                                    <div class="bu-level-item">
+                                                        <el-button type="text" class="cly-multi-select__reset" @click="handleResetFilterClick">
+                                                            {{ i18n('cleanup-center.reset-filters') }}
+                                                        </el-button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <cly-form-field :label="i18n('cleanup-center.status')">
+                                                <el-select 
+                                                    placement="bottom-start" 
+                                                    class="select-full-width" 
+                                                    v-model="formScope.editedObject.statuses" 
+                                                    :placeholder="i18n('cleanup-center.all-statuses')"
+                                                    multiple
+                                                    collapse-tags>
+                                                    <el-option 
+                                                        v-for="status in sortedStatusOptions" 
+                                                        :key="status.value" 
+                                                        :label="status.label" 
+                                                        :value="status.value">
+                                                    </el-option>
+                                                </el-select>
+                                            </cly-form-field>
+                                            
+                                            <cly-form-field :label="i18n('cleanup-center.owner')">
+                                                <el-select 
+                                                    placement="bottom-start" 
+                                                    class="select-full-width" 
+                                                    v-model="formScope.editedObject.owner" 
+                                                    :placeholder="i18n('cleanup-center.all-owners')"
+                                                    filterable
+                                                    clearable>
+                                                    <el-option 
+                                                        v-for="owner in uniqueOwners" 
+                                                        :key="owner" 
+                                                        :label="owner" 
+                                                        :value="owner">
+                                                    </el-option>
+                                                </el-select>
+                                            </cly-form-field>
+                                            
+                                            <div class="bu-has-text-right bu-pt-3">
+                                                <el-button type="secondary" @click="handleCancelFilterClick">
+                                                    {{ i18n('common.cancel') }}
+                                                </el-button>
+                                                <el-button type="success" @click="formScope.submit()">
+                                                    {{ i18n('common.apply') }}
+                                                </el-button>
+                                            </div>
+                                        </div>
+                                    </cly-form-step>
+                                </template>
+                            </cly-form>
+                        </template>
+                    </cly-dropdown>
+                </div>
+                <div class="bu-level-right">
+                    <div class="bu-level-item">
+                        <form @keydown.enter.prevent="">
+                            <el-input 
+                                autocomplete="off" 
+                                size="small" 
+                                class="cly-vue-eldatatable__search--grey" 
+                                style="width:200px" 
+                                prefix-icon="ion-ios-search-strong" 
+                                :placeholder="i18n('cleanup-center.search-placeholder')" 
+                                v-model="searchQuery"
+                                @input="handleFilterChange">
+                            </el-input>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="cleanup-center-table">
+                <el-table
+                    ref="dataTable"
+                    :data="paginatedEntities"
+                    v-loading="isLoading"
+                    @row-click="openDetailsDrawer"
+                    @cell-mouse-enter="onCellMouseEnter"
+                    @cell-mouse-leave="onCellMouseLeave"
+                    :row-class-name="getRowClassName"
+                    :row-key="getRowKey"
+                    :default-sort="{prop: 'createdAt', order: 'descending'}">
+                    
+                    <!-- Type -->
+                    <el-table-column
+                        prop="type"
+                        :label="i18n('cleanup-center.type')"
+                        width="100"
+                        sortable>
+                        <template slot-scope="scope">
+                            <el-tooltip :content="getTypeLabel(scope.row.type)" placement="top">
+                                <i :class="getTypeIcon(scope.row.type)"></i>
+                            </el-tooltip>
+                        </template>
+                    </el-table-column>
+
+                    <!-- App -->
+                    <el-table-column
+                        :label="i18n('cleanup-center.app')"
+                        width="180"
+                        show-overflow-tooltip>
+                        <template slot-scope="scope">
+                            <span class="text-medium">{{ getEntityAppName(scope.row) }}</span>
+                        </template>
+                    </el-table-column>
+
+                    <!-- Entity Name/Key -->
+                    <el-table-column
+                        prop="key"
+                        :label="i18n('cleanup-center.entity')"
+                        min-width="200"
+                        sortable
+                        show-overflow-tooltip>
+                        <template slot-scope="scope">
+                            <div class="text-medium">{{ scope.row.key }}</div>
+                            <div v-if="scope.row.displayName && scope.row.displayName !== scope.row.key" 
+                                 class="text-small color-cool-gray-50">
+                                {{ scope.row.displayName }}
+                            </div>
+                        </template>
+                    </el-table-column>
+
+                    <!-- Status -->
+                    <el-table-column
+                        prop="status"
+                        :label="i18n('cleanup-center.status')"
+                        width="100"
+                        sortable>
+                        <template slot-scope="scope">
+                            <el-tag :type="getStatusTagType(scope.row.status)" size="small">
+                                {{ scope.row.status }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+
+                    <!-- Last Viewed -->
+                    <el-table-column
+                        prop="lastSeen"
+                        :label="i18n('cleanup-center.last-seen')"
+                        width="160"
+                        sortable>
+                        <template slot-scope="scope">
+                            <div v-if="scope.row.lastSeen" class="text-small">
+                                <!-- For textual statuses like 'Active' or 'N/A', just show the text -->
+                                <template v-if="typeof scope.row.lastSeen === 'string' && (scope.row.lastSeen === 'Active' || scope.row.lastSeen === 'N/A')">
+                                    <div class="text-medium">{{ scope.row.lastSeen }}</div>
+                                </template>
+                                <!-- Otherwise, show relative + absolute time -->
+                                <template v-else>
+                                    <div class="text-medium">{{ formatRelativeTime(scope.row.lastSeen) }}</div>
+                                    <div class="color-cool-gray-50">{{ formatFullTimestamp(scope.row.lastSeen) }}</div>
+                                </template>
+                            </div>
+                            <el-tag v-else type="warning" size="mini">{{ i18n('common.missing') }}</el-tag>
+                        </template>
+                    </el-table-column>
+
+                    <!-- Created -->
+                    <el-table-column
+                        prop="createdAt"
+                        :label="i18n('cleanup-center.created')"
+                        width="140"
+                        sortable>
+                        <template slot-scope="scope">
+                            <div v-if="scope.row.createdAt" class="text-small">
+                                <div class="text-medium">{{ formatRelativeTime(scope.row.createdAt) }}</div>
+                                <div class="color-cool-gray-50">{{ formatFullTimestamp(scope.row.createdAt) }}</div>
+                            </div>
+                            <el-tag v-else type="warning" size="mini">{{ i18n('common.missing') }}</el-tag>
+                        </template>
+                    </el-table-column>
+
+                    <!-- Updated -->
+                    <el-table-column
+                        prop="updatedAt"
+                        :label="i18n('cleanup-center.updated')"
+                        width="140"
+                        sortable>
+                        <template slot-scope="scope">
+                            <div v-if="scope.row.updatedAt" class="text-small">
+                                <div class="text-medium">{{ formatRelativeTime(scope.row.updatedAt) }}</div>
+                                <div class="color-cool-gray-50">{{ formatFullTimestamp(scope.row.updatedAt) }}</div>
+                            </div>
+                            <el-tag v-else type="warning" size="mini">{{ i18n('common.missing') }}</el-tag>
+                        </template>
+                    </el-table-column>
+
+                    <!-- Actions -->
+                    <el-table-column
+                        type="options"
+                        align="center">
+                        <template slot-scope="scope">
+                            <cly-more-options 
+                                v-if="scope.row.hover" 
+                                size="small" 
+                                @command="handleRowAction">
+                                <el-dropdown-item :command="{action: 'rename', entity: scope.row}">
+                                    {{ i18n('cleanup-center.rename') }}
+                                </el-dropdown-item>
+                                <el-dropdown-item :command="{action: scope.row.hidden ? 'unhide' : 'hide', entity: scope.row}" divided>
+                                    {{ scope.row.hidden ? i18n('cleanup-center.unhide') : i18n('cleanup-center.hide') }}
+                                </el-dropdown-item>
+                                <el-dropdown-item :command="{action: scope.row.blocked ? 'unblock' : 'block', entity: scope.row}">
+                                    {{ scope.row.blocked ? i18n('cleanup-center.unblock') : i18n('cleanup-center.block') }}
+                                </el-dropdown-item>
+                                <el-dropdown-item :command="{action: 'delete', entity: scope.row}" divided>
+                                    {{ i18n('cleanup-center.delete') }}
+                                </el-dropdown-item>
+                            </cly-more-options>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                
+                <!-- Footer (matching cly-datatable-n structure) -->
+                <div class="bu-level cly-vue-eldatatable__footer cly-vue-eldatatable__footer--white">
+                    <div class="bu-level-left">
+                        <div class="bu-level-item text-smallish bu-mr-0">
+                            {{ i18n('common.items-per-page') }}:
+                        </div>
+                        <div class="bu-level-item text-smallish">
+                            <el-select 
+                                :borderless="true" 
+                                style="margin-top: 2px;" 
+                                :adaptiveLength="true" 
+                                v-model="pageSize" 
+                                size="mini"
+                                @change="handlePageSizeChange">
+                                <el-option 
+                                    v-for="size in pageSizes" 
+                                    :key="size" 
+                                    :value="size" 
+                                    :label="size">
+                                </el-option>
+                            </el-select>
+                        </div>
+                        <div class="bu-level-item" style="font-size: 11px">
+                            <span>{{ paginationInfo }}</span>
+                        </div>
+                    </div>
+                    <div class="bu-level-right">
+                        <div class="bu-level-item text-smallish bu-mr-0">
+                            <div class="cly-vue-eldatatable__table-page-selector" style="margin-top: 2px;">
+                                <el-select 
+                                    v-if="totalPages <= 200"
+                                    :borderless="true" 
+                                    :adaptiveLength="true" 
+                                    v-model="currentPage" 
+                                    size="mini"
+                                    @change="handlePageChange">
+                                    <el-option 
+                                        v-for="page in availablePages" 
+                                        :key="page" 
+                                        :value="page" 
+                                        :label="page">
+                                    </el-option>
+                                </el-select>
+                                <el-input 
+                                    v-else 
+                                    type="number" 
+                                    :min="1" 
+                                    style="width: 160px" 
+                                    class="bu-mr-1" 
+                                    :max="totalPages" 
+                                    v-model="currentPage" 
+                                    size="mini"
+                                    @change="handlePageChange">
+                                </el-input>
+                            </div>
+                        </div>
+                        <div class="bu-level-item text-smallish">
+                            <span>of {{ formatNumber(totalPages) }} pages</span>
+                        </div>
+                        <div :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': prevAvailable, 'cool-gray-30': !prevAvailable}">
+                            <span :class="{disabled: !prevAvailable}" @click="goToFirstPage">
+                                <i class="ion-ios-arrow-back"></i><i class="ion-ios-arrow-back"></i>
+                            </span>
+                        </div>
+                        <div :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': prevAvailable, 'cool-gray-30': !prevAvailable}">
+                            <span :class="{disabled: !prevAvailable}" @click="goToPrevPage">
+                                <i class="ion-ios-arrow-back"></i>
+                            </span>
+                        </div>
+                        <div :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': nextAvailable, 'cool-gray-30': !nextAvailable}">
+                            <span :class="{disabled: !nextAvailable}" @click="goToNextPage">
+                                <i class="ion-ios-arrow-forward"></i>
+                            </span>
+                        </div>
+                        <div :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': nextAvailable, 'cool-gray-30': !nextAvailable}">
+                            <span :class="{disabled: !nextAvailable}" @click="goToLastPage">
+                                <i class="ion-ios-arrow-forward"></i><i class="ion-ios-arrow-forward"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </cly-section>
+    </cly-main>
+
+    <!-- Delete Confirmation Modal -->
+    <el-dialog
+        :title="i18n('cleanup-center.confirm-deletion')"
+        :visible.sync="showDeleteModal"
+        width="500px">
+        <div v-if="entityToDelete">
+            <p>{{ i18n('cleanup-center.type-key-to-confirm') }}</p>
+            <p class="bu-p-2" style="font-family: monospace; background: #f5f5f5; border-radius: 4px;">
+                {{ entityToDelete.key }}
+            </p>
+            <el-input
+                v-model="deleteConfirmText"
+                :placeholder="i18n('cleanup-center.type-entity-key')">
+            </el-input>
+        </div>
+        <span slot="footer">
+            <el-button @click="showDeleteModal = false">{{ i18n('common.cancel') }}</el-button>
+            <el-button 
+                type="danger" 
+                @click="confirmDelete"
+                :disabled="deleteConfirmText !== (entityToDelete ? entityToDelete.key : '')">
+                {{ i18n('common.delete') }}
+            </el-button>
+        </span>
+    </el-dialog>
+
+    <!-- Entity Details Drawer -->
+    <cly-drawer
+        @close="closeDetailsDrawer"
+        :title="selectedEntity ? (selectedEntity.displayName || selectedEntity.key) : i18n('cleanup-center.entity-details')"
+        v-bind="drawers.entityDetailsDrawer">
+        <template v-slot:default>
+            <cly-form-step>
+                <div v-if="!selectedEntity" class="bu-p-5">
+                    <p>Loading...</p>
+                </div>
+                <div v-else>
+                    <!-- Warning for Unused Dashboards -->
+                    <el-alert
+                        v-if="selectedEntity.type === 'dashboard' && selectedEntity.isUnused"
+                        :title="i18n('cleanup-center.unused-dashboard-warning')"
+                        type="warning"
+                        :closable="false"
+                        class="bu-mb-4"
+                        show-icon>
+                        <div>{{ i18n('cleanup-center.unused-dashboard-description') }}</div>
+                    </el-alert>
+                    
+                    <!-- Essential Fields - Single Horizontal Row -->
+                    <div class="bu-is-flex bu-is-justify-content-space-between bu-mb-5" style="gap: 20px;">
+                        <div style="flex: 1;">
+                            <div class="text-small color-cool-gray-50 bu-mb-1">{{ i18n('cleanup-center.created') }}</div>
+                            <div class="text-medium font-weight-bold">{{ formatFullTimestamp(selectedEntity.createdAt) }}</div>
+                        </div>
+                        
+                        <div style="flex: 1;">
+                            <div class="text-small color-cool-gray-50 bu-mb-1">{{ i18n('cleanup-center.updated') }}</div>
+                            <div class="text-medium font-weight-bold">{{ formatFullTimestamp(selectedEntity.updatedAt) }}</div>
+                        </div>
+                        
+                        <div style="flex: 1;">
+                            <div class="text-small color-cool-gray-50 bu-mb-1">{{ i18n('cleanup-center.last-seen') }}</div>
+                            <div class="text-medium font-weight-bold">{{ formatFullTimestamp(selectedEntity.lastSeen) }}</div>
+                        </div>
+                        
+                        <div style="flex: 1;">
+                            <div class="text-small color-cool-gray-50 bu-mb-1">{{ i18n('cleanup-center.usage-30d') }}</div>
+                            <div class="text-medium font-weight-bold">{{ selectedEntity.usage30d || 0 }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dashboard-specific: View History Section -->
+                    <div v-if="selectedEntity.type === 'dashboard'" class="bu-mt-5">
+                        <h4 class="bu-mb-4">{{ i18n('cleanup-center.view-history') }}</h4>
+                        
+                        <!-- Timeline Chart - Always show, even with no data -->
+                        <div class="bu-mb-5" style="height: 250px;">
+                            <cly-chart-line
+                                :option="getViewHistoryChartOptions(selectedEntity)"
+                                height="250px"
+                                :show-download="false"
+                                :show-toggle="false"
+                                :show-zoom="false"
+                                :legend="{show: false}"
+                                skin="full">
+                            </cly-chart-line>
+                        </div>
+                        
+                        <!-- Users Table - Only show if there are viewers -->
+                        <div v-if="selectedEntity.viewUsers && selectedEntity.viewUsers.length > 0" class="bu-mt-4">
+                            <h5 class="bu-mb-3 text-small color-cool-gray-50">{{ i18n('cleanup-center.viewers') }}</h5>
+                            <div v-for="user in formatViewUsers(selectedEntity.viewUsers)" :key="user.userId" class="bu-mb-3 bu-p-3" style="background: #f9fafb; border-radius: 4px;">
+                                <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center">
+                                    <div>
+                                        <div class="text-medium font-weight-bold">{{ user.userName || user.userId }}</div>
+                                        <div class="text-small color-cool-gray-50">{{ user.formattedDate }}</div>
+                                    </div>
+                                    <div class="text-medium font-weight-bold" style="color: #0166D6;">
+                                        {{ user.count }} {{ i18n('cleanup-center.views') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </cly-form-step>
+        </template>
+    </cly-drawer>
+
+    <!-- Delete Confirmation Modal -->
+    <el-dialog
+        :title="i18n('cleanup-center.confirm-deletion')"
+        :visible.sync="showDeleteModal"
+        width="500px">
+        <div v-if="entityToDelete">
+            <p>{{ i18n('cleanup-center.type-key-to-confirm') }}</p>
+            <p class="bu-p-2" style="font-family: monospace; background: #f5f5f5; border-radius: 4px;">
+                {{ entityToDelete.key }}
+            </p>
+            <el-input
+                v-model="deleteConfirmText"
+                :placeholder="i18n('cleanup-center.type-entity-key')">
+            </el-input>
+        </div>
+        <span slot="footer">
+            <el-button @click="showDeleteModal = false">{{ i18n('common.cancel') }}</el-button>
+            <el-button 
+                type="danger" 
+                @click="confirmDelete"
+                :disabled="deleteConfirmText !== (entityToDelete ? entityToDelete.key : '')">
+                {{ i18n('common.delete') }}
+            </el-button>
+        </span>
+    </el-dialog>
+</div>

@@ -1,0 +1,29 @@
+{
+  "title": "Cleanup Center",
+  "description": "Data governance and entity management for Countly - manage events, properties, views, errors, and feature flags",
+  "version": "2.0.0",
+  "author": "Countly",
+  "support": "https://support.count.ly",
+  "homepage": "https://count.ly",
+  "code": {
+    "api": "api/api.js",
+    "frontend": "frontend/app.js"
+  },
+  "category": "management",
+  "icon": "ion-android-delete",
+  "prepackaged": true,
+  "web": [
+    "/cleanup-center/javascripts/countly.models.js",
+    "/cleanup-center/javascripts/countly.views.js"
+  ],
+  "stylesheets": [
+    "/cleanup-center/stylesheets/main.css"
+  ],
+  "localization": [
+    {
+      "id": "en",
+      "file": "frontend/public/localization/cleanup-center.properties"
+    }
+  ]
+}
+

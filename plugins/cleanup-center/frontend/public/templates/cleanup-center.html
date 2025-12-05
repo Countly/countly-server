@@ -1,0 +1,1046 @@
+<div class="cleanup-center-governance-v2">
+    <!-- 0) Global Shell -->
+    <div class="cleanup-breadcrumb">
+        <span class="text-small color-cool-gray-50">
+            <a href="#/manage">Data Management</a> › <span class="color-text-primary">Cleanup Center</span>
+        </span>
+    </div>
+
+    <!-- Title Bar (Sticky) -->
+    <div class="cleanup-title-bar" style="position: sticky; top: 0; z-index: 100; background: white; padding: 16px 24px; border-bottom: 1px solid #e5e7eb;">
+        <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-space-between">
+            <div class="bu-is-flex bu-is-align-items-center">
+                <h2 class="bu-mb-0" style="font-size: 24px; font-weight: 600;">Cleanup Center</h2>
+                <el-tag size="mini" type="info" class="bu-ml-2">Beta</el-tag>
+            </div>
+            <div class="bu-is-flex bu-is-align-items-center" style="gap: 16px;">
+                <!-- Help Icon -->
+                <el-tooltip content="View documentation" placement="bottom">
+                    <el-button size="small" circle icon="el-icon-question"></el-button>
+                </el-tooltip>
+            </div>
+        </div>
+    </div>
+
+    <div class="cleanup-content" style="padding: 24px;">
+        <!-- 1) Overview Rail (Collapsible) -->
+        <div class="overview-rail bu-mb-4" v-show="showOverviewRail">
+            <transition name="el-fade-in">
+                <div class="bu-columns bu-is-variable bu-is-2">
+                    <!-- Total Entities Card -->
+                    <div class="bu-column is-3">
+                        <div class="kpi-card">
+                            <div class="kpi-header">
+                                <div class="kpi-label">Total Entities</div>
+                                <i class="ion-cube kpi-icon"></i>
+                            </div>
+                            <div class="kpi-value">{{ formatNumber(totalEntities) }}</div>
+                            <div class="kpi-trend">
+                                <span class="text-small color-cool-gray-50">All tracked data</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Unused Events Card -->
+                    <div class="bu-column is-3">
+                        <div class="kpi-card kpi-card-clickable" @click="filterToUnused">
+                            <div class="kpi-header">
+                                <div class="kpi-label">Unused Events (90d)</div>
+                                <i class="ion-alert-circled kpi-icon"></i>
+                            </div>
+                            <div class="kpi-value">{{ formatNumber(unusedEventsCount) }}</div>
+                            <div class="kpi-cta">
+                                <span class="text-small color-primary">Filter to unused →</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Blocked Items Card -->
+                    <div class="bu-column is-3">
+                        <div class="kpi-card kpi-card-clickable" @click="filterToBlocked">
+                            <div class="kpi-header">
+                                <div class="kpi-label">Blocked Items</div>
+                                <i class="ion-close-circled kpi-icon"></i>
+                            </div>
+                            <div class="kpi-value">{{ formatNumber(blockedCount) }}</div>
+                            <div class="kpi-cta">
+                                <span class="text-small color-primary">View blocked →</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Changes Card -->
+                    <div class="bu-column is-3">
+                        <div class="kpi-card kpi-card-clickable" @click="activeView = 'history'">
+                            <div class="kpi-header">
+                                <div class="kpi-label">Recent Changes (7d)</div>
+                                <i class="ion-clock kpi-icon"></i>
+                            </div>
+                            <div class="kpi-value">{{ formatNumber(recentChangesCount) }}</div>
+                            <div class="kpi-cta">
+                                <span class="text-small color-primary">Open history →</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </div>
+
+        <!-- Overview Rail Toggle -->
+        <div class="bu-has-text-centered bu-mb-4">
+            <el-button 
+                size="mini" 
+                type="text" 
+                @click="showOverviewRail = !showOverviewRail">
+                <i :class="showOverviewRail ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
+                {{ showOverviewRail ? 'Hide Overview' : 'Show Overview' }}
+            </el-button>
+        </div>
+
+        <!-- Main Content Tabs -->
+        <div v-if="activeView === 'data'">
+            <!-- Advanced Filters (Collapsible) -->
+            <el-collapse v-model="showAdvancedFilters" class="bu-mb-3">
+                <el-collapse-item name="filters">
+                    <template slot="title">
+                        <i class="el-icon-s-operation bu-mr-2"></i>
+                        <span class="text-medium">Advanced Filters</span>
+                        <el-badge 
+                            v-if="activeFiltersCount > 0" 
+                            :value="activeFiltersCount" 
+                            class="bu-ml-2">
+                        </el-badge>
+                    </template>
+                    
+                    <div class="bu-columns bu-is-multiline bu-is-variable bu-is-2" style="padding: 16px;">
+                        <div class="bu-column is-3">
+                            <label class="text-small color-cool-gray-50 bu-mb-1" style="display: block;">Project</label>
+                            <el-select 
+                                v-model="selectedApp" 
+                                filterable
+                                placeholder="Select Project" 
+                                size="small"
+                                style="width: 100%;"
+                                @change="onAppChange">
+                                <el-option
+                                    v-for="app in apps"
+                                    :key="app._id"
+                                    :label="app.name"
+                                    :value="app._id">
+                                </el-option>
+                            </el-select>
+                        </div>
+
+                        <div class="bu-column is-3">
+                            <label class="text-small color-cool-gray-50 bu-mb-1" style="display: block;">Type</label>
+                            <el-select 
+                                v-model="selectedTypes" 
+                                multiple 
+                                collapse-tags
+                                placeholder="All Types" 
+                                size="small"
+                                style="width: 100%;"
+                                @change="handleFilterChange">
+                                <el-option
+                                    v-for="type in entityTypes"
+                                    :key="type.value"
+                                    :label="type.label + ' (' + getTypeCount(type.value) + ')'"
+                                    :value="type.value">
+                                    <i :class="type.icon" class="bu-mr-2"></i>
+                                    {{ type.label }} ({{ getTypeCount(type.value) }})
+                                </el-option>
+                            </el-select>
+                        </div>
+                        
+                        <div class="bu-column is-3">
+                            <label class="text-small color-cool-gray-50 bu-mb-1" style="display: block;">Status</label>
+                            <el-select 
+                                v-model="selectedStatuses" 
+                                multiple 
+                                collapse-tags
+                                placeholder="All Statuses" 
+                                size="small"
+                                style="width: 100%;"
+                                @change="handleFilterChange">
+                                <el-option
+                                    v-for="status in statusOptions"
+                                    :key="status.value"
+                                    :label="status.label + ' (' + getStatusCount(status.value) + ')'"
+                                    :value="status.value">
+                                    {{ status.label }} ({{ getStatusCount(status.value) }})
+                                </el-option>
+                            </el-select>
+                        </div>
+                        
+                        <div class="bu-column is-3">
+                            <label class="text-small color-cool-gray-50 bu-mb-1" style="display: block;">Owner</label>
+                            <el-select 
+                                v-model="selectedOwner" 
+                                clearable
+                                filterable
+                                placeholder="All Owners" 
+                                size="small"
+                                style="width: 100%;"
+                                @change="handleFilterChange">
+                                <el-option
+                                    v-for="owner in uniqueOwners"
+                                    :key="owner"
+                                    :label="owner"
+                                    :value="owner">
+                                </el-option>
+                            </el-select>
+                        </div>
+                        
+                        <div class="bu-column is-3 bu-is-flex bu-is-align-items-end">
+                            <el-button 
+                                size="small" 
+                                icon="el-icon-refresh-left" 
+                                @click="resetFilters"
+                                style="width: 100%;">
+                                Reset Filters
+                            </el-button>
+                        </div>
+                    </div>
+                </el-collapse-item>
+            </el-collapse>
+
+            <!-- 3) Data Table with Clean Header -->
+            <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-space-between bu-mb-2 table-pagination-summary" style="gap: 12px; flex-wrap: wrap;">
+                <div class="text-small color-cool-gray-50">
+                    <template v-if="paginationSummary.total > 0">
+                        Showing {{ formatNumber(paginationSummary.start) }}–{{ formatNumber(paginationSummary.end) }}
+                        of {{ formatNumber(paginationSummary.total) }} matching entities
+                        <span v-if="totalEntities !== paginationSummary.total">
+                            ({{ formatNumber(totalEntities) }} total)
+                        </span>
+                    </template>
+                    <template v-else>
+                        No entities match the current filters
+                    </template>
+                </div>
+                <div class="bu-is-flex bu-is-align-items-center" style="gap: 12px;">
+                    <el-pagination
+                        small
+                        background
+                        :hide-on-single-page="false"
+                        :current-page="currentPage"
+                        :page-size="pageSize"
+                        :total="filteredEntities.length"
+                        layout="prev, pager, next"
+                        @current-change="handlePageChange">
+                    </el-pagination>
+                    <div class="bu-is-flex bu-is-align-items-center" style="gap: 8px;">
+                        <span class="text-small color-cool-gray-50">Rows per page</span>
+                        <el-select
+                            size="mini"
+                            v-model="pageSize"
+                            style="width: 90px;"
+                            @change="handlePageSizeChange">
+                            <el-option
+                                v-for="size in pageSizes"
+                                :key="size"
+                                :label="size"
+                                :value="size">
+                            </el-option>
+                        </el-select>
+                    </div>
+                </div>
+            </div>
+
+            <el-table
+                ref="dataTable"
+                :data="paginatedEntities"
+                v-loading="isLoading"
+                @selection-change="handleSelectionChange"
+                @row-click="openDetailsDrawer"
+                :row-class-name="getRowClassName"
+                :row-key="getRowKey"
+                :class="'density-' + density"
+                :default-sort="{prop: 'lastSeen', order: 'descending'}"
+                stripe
+                style="width: 100%;"
+                max-height="calc(100vh - 400px)">
+                
+                <!-- Selection Column -->
+                <el-table-column
+                    type="selection"
+                    width="55"
+                    :reserve-selection="true">
+                </el-table-column>
+
+                <!-- Type Icon -->
+                <el-table-column
+                    prop="type"
+                    label="Type"
+                    width="90"
+                    sortable>
+                    <template slot="header">
+                        <div>
+                            <el-select 
+                                v-model="selectedTypes" 
+                                multiple 
+                                collapse-tags
+                                placeholder="Type" 
+                                size="mini"
+                                style="width: 100%;"
+                                @change="handleFilterChange">
+                                <el-option
+                                    v-for="type in entityTypes"
+                                    :key="type.value"
+                                    :label="type.label"
+                                    :value="type.value">
+                                </el-option>
+                            </el-select>
+                        </div>
+                    </template>
+                    <template slot-scope="scope">
+                        <el-tooltip :content="getTypeLabel(scope.row.type)" placement="top">
+                            <i :class="getTypeIcon(scope.row.type)" style="font-size: 18px; color: #606266;"></i>
+                        </el-tooltip>
+                    </template>
+                </el-table-column>
+
+                <!-- Project -->
+                <el-table-column
+                    label="Project"
+                    width="180"
+                    show-overflow-tooltip>
+                    <template slot-scope="scope">
+                        <span class="text-small">{{ getEntityAppName(scope.row) }}</span>
+                    </template>
+                </el-table-column>
+
+                <!-- Entity Key/Name -->
+                <el-table-column
+                    prop="key"
+                    label="Entity"
+                    min-width="250"
+                    sortable>
+                    <template slot="header">
+                        <el-input
+                            v-model="searchQuery"
+                            placeholder="Search by key or name..."
+                            size="mini"
+                            prefix-icon="el-icon-search"
+                            clearable
+                            @input="handleFilterChange">
+                        </el-input>
+                    </template>
+                    <template slot-scope="scope">
+                        <div>
+                            <div class="entity-key" style="font-weight: 500; color: #303133;">{{ scope.row.key }}</div>
+                            <div class="text-small color-cool-gray-50" v-if="scope.row.displayName && scope.row.displayName !== scope.row.key">
+                                {{ scope.row.displayName }}
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+
+                <!-- Status -->
+                <el-table-column
+                    prop="status"
+                    label="Status"
+                    width="120"
+                    sortable>
+                    <template slot="header">
+                        <el-select 
+                            v-model="selectedStatuses" 
+                            multiple 
+                            collapse-tags
+                            placeholder="Status" 
+                            size="mini"
+                            style="width: 100%;"
+                            @change="handleFilterChange">
+                            <el-option
+                                v-for="status in statusOptions"
+                                :key="status.value"
+                                :label="status.label"
+                                :value="status.value">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <template slot-scope="scope">
+                        <el-tag :type="getStatusTagType(scope.row.status)" size="small">
+                            {{ scope.row.status }}
+                        </el-tag>
+                    </template>
+                </el-table-column>
+
+                <!-- Last Viewed -->
+                <el-table-column
+                    prop="lastSeen"
+                    label="Last Viewed"
+                    width="140"
+                    sortable>
+                    <template slot-scope="scope">
+                        <span class="text-small">{{ formatRelativeTime(scope.row.lastSeen) }}</span>
+                    </template>
+                </el-table-column>
+
+                <!-- Created -->
+                <el-table-column
+                    label="Created"
+                    width="140">
+                    <template slot-scope="scope">
+                        <div v-if="scope.row.createdAt">
+                            <el-tooltip :content="formatFullTimestamp(scope.row.createdAt)" placement="top">
+                                <span class="text-small">{{ formatRelativeTime(scope.row.createdAt) }}</span>
+                            </el-tooltip>
+                        </div>
+                        <el-tag v-else type="warning" size="mini">Missing</el-tag>
+                    </template>
+                </el-table-column>
+
+                <!-- Updated -->
+                <el-table-column
+                    label="Updated"
+                    width="140">
+                    <template slot-scope="scope">
+                        <div v-if="scope.row.updatedAt">
+                            <el-tooltip :content="formatFullTimestamp(scope.row.updatedAt)" placement="top">
+                                <span class="text-small">{{ formatRelativeTime(scope.row.updatedAt) }}</span>
+                            </el-tooltip>
+                        </div>
+                        <el-tag v-else type="warning" size="mini">Missing</el-tag>
+                    </template>
+                </el-table-column>
+
+                <!-- Usage (30d) -->
+                <el-table-column
+                    prop="usage30d"
+                    label="Usage (30d)"
+                    width="120"
+                    align="right"
+                    sortable>
+                    <template slot-scope="scope">
+                        <span class="text-medium">{{ formatNumber(scope.row.usage30d || 0) }}</span>
+                    </template>
+                </el-table-column>
+
+                <!-- Entity-Specific Details -->
+                <el-table-column
+                    label="Details"
+                    width="160"
+                    show-overflow-tooltip>
+                    <template slot-scope="scope">
+                        <!-- Events: Segment count -->
+                        <div v-if="scope.row.type === 'event'" class="text-small">
+                            <i class="ion-ios-pulse"></i> {{ scope.row.segmentCount || 0 }} segments
+                        </div>
+                        
+                        <!-- Event Properties: Distinct values -->
+                        <div v-else-if="scope.row.type === 'event_property'" class="text-small">
+                            <div><i class="ion-ios-list"></i> {{ formatNumber(scope.row.distinctValues || 0) }} values</div>
+                            <div class="color-cool-gray-50">{{ scope.row.dataType }}</div>
+                        </div>
+                        
+                        <!-- User Properties: Data type -->
+                        <div v-else-if="scope.row.type === 'user_property'" class="text-small">
+                            <el-tag size="mini">{{ scope.row.dataType }}</el-tag>
+                        </div>
+                        
+                        <!-- Cohorts: User count -->
+                        <div v-else-if="scope.row.type === 'cohort'" class="text-small">
+                            <i class="ion-person"></i> {{ formatNumber(scope.row.userCount || 0) }} users
+                        </div>
+                        
+                        <!-- Dashboards: Widget count -->
+                        <div v-else-if="scope.row.type === 'dashboard'" class="text-small">
+                            <i class="ion-grid"></i> {{ scope.row.widgetCount || 0 }} widgets
+                            <div v-if="scope.row.isShared" class="color-primary">
+                                <i class="ion-share"></i> Shared
+                            </div>
+                        </div>
+                        
+                        <!-- Funnels: Step count -->
+                        <div v-else-if="scope.row.type === 'funnel'" class="text-small">
+                            <i class="ion-arrow-graph-down-right"></i> {{ scope.row.stepCount || 0 }} steps
+                        </div>
+                        
+                        <!-- Reports: Schedule -->
+                        <div v-else-if="scope.row.type === 'report'" class="text-small">
+                            <span v-if="scope.row.isScheduled">
+                                <i class="ion-clock"></i> {{ scope.row.frequency || 'Scheduled' }}
+                            </span>
+                            <span v-else class="color-cool-gray-50">One-time</span>
+                        </div>
+                        
+                        <!-- Alerts: Type -->
+                        <div v-else-if="scope.row.type === 'alert'" class="text-small">
+                            <el-tag v-if="scope.row.isEnabled" type="success" size="mini">Active</el-tag>
+                            <el-tag v-else type="info" size="mini">Paused</el-tag>
+                            <div class="color-cool-gray-50">{{ scope.row.alertType }}</div>
+                        </div>
+                        
+                        <!-- Campaigns: Platform & sent count -->
+                        <div v-else-if="scope.row.type === 'campaign'" class="text-small">
+                            <div>{{ scope.row.campaignType }}</div>
+                            <div class="color-cool-gray-50">
+                                <i class="ion-checkmark"></i> {{ formatNumber(scope.row.sentCount || 0) }} sent
+                            </div>
+                        </div>
+                        
+                        <!-- A/B Tests: Variants & participants -->
+                        <div v-else-if="scope.row.type === 'ab_test'" class="text-small">
+                            <div>{{ scope.row.variantCount || 0 }} variants</div>
+                            <div class="color-cool-gray-50">
+                                <i class="ion-person"></i> {{ formatNumber(scope.row.participants || 0) }}
+                            </div>
+                        </div>
+                        
+                        <!-- API Keys: Permissions count -->
+                        <div v-else-if="scope.row.type === 'api_key'" class="text-small">
+                            <el-tag v-if="scope.row.isActive" type="success" size="mini">Active</el-tag>
+                            <el-tag v-else type="info" size="mini">Inactive</el-tag>
+                            <div class="color-cool-gray-50">{{ scope.row.permissions || 0 }} perms</div>
+                        </div>
+                        
+                        <!-- Errors: Affected users -->
+                        <div v-else-if="scope.row.type === 'error'" class="text-small">
+                            <i class="ion-person"></i> {{ formatNumber(scope.row.affectedUsers || 0) }} users
+                        </div>
+                        
+                        <!-- Feature Flags: Enabled status -->
+                        <div v-else-if="scope.row.type === 'feature_flag'" class="text-small">
+                            <el-tag v-if="scope.row.enabled" type="success" size="mini">Enabled</el-tag>
+                            <el-tag v-else type="info" size="mini">Disabled</el-tag>
+                        </div>
+                        
+                        <!-- Default -->
+                        <span v-else class="text-small color-cool-gray-50">—</span>
+                    </template>
+                </el-table-column>
+
+                <!-- Owner -->
+                <el-table-column
+                    prop="owner"
+                    label="Owner"
+                    width="180"
+                    sortable>
+                    <template slot="header">
+                        <el-select 
+                            v-model="selectedOwner" 
+                            clearable
+                            filterable
+                            placeholder="Owner" 
+                            size="mini"
+                            style="width: 100%;"
+                            @change="handleFilterChange">
+                            <el-option
+                                v-for="owner in uniqueOwners"
+                                :key="owner"
+                                :label="owner"
+                                :value="owner">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <template slot-scope="scope">
+                        <div class="bu-is-flex bu-is-align-items-center" v-if="scope.row.owner">
+                            <el-avatar :size="24" class="bu-mr-2" style="background-color: #409EFF; color: white;">
+                                {{ getInitials(scope.row.owner) }}
+                            </el-avatar>
+                            <span class="text-small" style="color: #303133;">{{ scope.row.owner }}</span>
+                        </div>
+                        <span class="text-small color-cool-gray-50" v-else>—</span>
+                    </template>
+                </el-table-column>
+
+                <!-- Created -->
+                <el-table-column
+                    prop="createdAt"
+                    label="Created"
+                    width="160"
+                    sortable>
+                    <template slot-scope="scope">
+                        <div v-if="scope.row.createdAt" class="text-small">
+                            <div style="font-weight: 500;">{{ formatRelativeTime(scope.row.createdAt) }}</div>
+                            <div class="color-cool-gray-50" style="font-size: 10px;">{{ formatFullTimestamp(scope.row.createdAt) }}</div>
+                        </div>
+                        <span v-else class="text-small color-cool-gray-50">—</span>
+                    </template>
+                </el-table-column>
+
+                <!-- Last Updated -->
+                <el-table-column
+                    prop="updatedAt"
+                    label="Last Updated"
+                    width="160"
+                    sortable>
+                    <template slot-scope="scope">
+                        <div v-if="scope.row.updatedAt" class="text-small">
+                            <div style="font-weight: 500;">{{ formatRelativeTime(scope.row.updatedAt) }}</div>
+                            <div class="color-cool-gray-50" style="font-size: 10px;">{{ formatFullTimestamp(scope.row.updatedAt) }}</div>
+                        </div>
+                        <span v-else class="text-small color-cool-gray-50">—</span>
+                    </template>
+                </el-table-column>
+
+                <!-- Actions -->
+                <el-table-column
+                    label="Actions"
+                    width="120"
+                    fixed="right"
+                    align="center">
+                    <template slot="header">
+                        <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-center" style="gap: 4px;">
+                            <el-tooltip content="Table density" placement="top">
+                                <el-dropdown @command="density = $event; saveDensity();" trigger="click" size="mini">
+                                    <el-button size="mini" icon="el-icon-more" circle></el-button>
+                                    <el-dropdown-menu slot="dropdown">
+                                        <el-dropdown-item command="compact">Compact</el-dropdown-item>
+                                        <el-dropdown-item command="comfortable">Comfortable</el-dropdown-item>
+                                        <el-dropdown-item command="spacious">Spacious</el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </el-dropdown>
+                            </el-tooltip>
+                            <el-tooltip content="Refresh" placement="top">
+                                <el-button size="mini" icon="el-icon-refresh" circle @click.stop="refresh"></el-button>
+                            </el-tooltip>
+                        </div>
+                    </template>
+                    <template slot-scope="scope">
+                        <div class="bu-is-flex bu-is-align-items-center" style="gap: 4px;">
+                            <el-tooltip :content="scope.row.hidden ? 'Unhide' : 'Hide'" placement="top">
+                                <el-button 
+                                    size="mini" 
+                                    circle
+                                    :icon="scope.row.hidden ? 'el-icon-view' : 'el-icon-view'" 
+                                    @click.stop="toggleHide(scope.row)">
+                                </el-button>
+                            </el-tooltip>
+                            
+                            <el-dropdown @command="(cmd) => handleRowAction({action: cmd, entity: scope.row})" trigger="click" size="mini" @click.native.stop>
+                                <el-button size="mini" icon="el-icon-more" circle></el-button>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item command="view">
+                                        <i class="el-icon-view"></i> View Details
+                                    </el-dropdown-item>
+                                    <el-dropdown-item command="block" :divided="true">
+                                        <i class="ion-close-circled"></i> 
+                                        {{ scope.row.blocked ? 'Unblock' : 'Block' }}
+                                    </el-dropdown-item>
+                                    <el-dropdown-item command="rename">
+                                        <i class="ion-edit"></i> Rename
+                                    </el-dropdown-item>
+                                    <el-dropdown-item command="merge" disabled>
+                                        <i class="ion-merge"></i> Merge
+                                    </el-dropdown-item>
+                                    <el-dropdown-item command="delete" :divided="true">
+                                        <i class="ion-trash-a" style="color: #f56c6c;"></i> 
+                                        <span style="color: #f56c6c;">Delete</span>
+                                    </el-dropdown-item>
+                                </el-dropdown-menu>
+                            </el-dropdown>
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <!-- Batch Actions Bar (shown when items selected) -->
+            <el-alert
+                v-if="selectedEntityIds.length > 0"
+                type="info"
+                :closable="false"
+                class="bu-mt-3"
+                style="padding: 12px 16px;">
+                <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-space-between">
+                    <div>
+                        <span class="text-medium font-weight-bold bu-mr-2">{{ selectedEntityIds.length }} selected</span>
+                        <el-button size="mini" @click="batchHide">
+                            <i class="ion-eye-disabled"></i> Hide
+                        </el-button>
+                        <el-button size="mini" @click="batchBlock">
+                            <i class="ion-close-circled"></i> Block
+                        </el-button>
+                        <el-dropdown @command="handleBatchAction" size="mini">
+                            <el-button size="mini">
+                                More <i class="el-icon-arrow-down el-icon--right"></i>
+                            </el-button>
+                            <el-dropdown-menu slot="dropdown">
+                                <el-dropdown-item command="merge" disabled>
+                                    <i class="ion-merge"></i> Merge
+                                </el-dropdown-item>
+                                <el-dropdown-item command="delete" divided disabled>
+                                    <i class="ion-trash-a" style="color: #f56c6c;"></i> 
+                                    <span style="color: #f56c6c;">Delete</span>
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                    </div>
+                    <el-button size="mini" type="text" @click="clearSelection">Clear Selection</el-button>
+                </div>
+            </el-alert>
+
+            <!-- Pagination -->
+            <div class="bu-has-text-centered bu-mt-4">
+                <el-pagination
+                    @current-change="handlePageChange"
+                    @size-change="handlePageSizeChange"
+                    :current-page="currentPage"
+                    :page-size="pageSize"
+                    :page-sizes="pageSizes"
+                    :total="filteredEntities.length"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :hide-on-single-page="false">
+                </el-pagination>
+            </div>
+        </div>
+
+        <!-- Audit History Tab (kept as-is) -->
+        <div v-else-if="activeView === 'history'">
+            <el-card shadow="never" style="border-radius: 8px;">
+                <!-- Filters -->
+                <div class="bu-columns bu-is-variable bu-is-2 bu-mb-4">
+                    <div class="bu-column is-3">
+                        <label class="text-small color-cool-gray-50 bu-mb-1" style="display: block;">Actor</label>
+                        <el-select 
+                            v-model="historyActorFilter" 
+                            clearable
+                            filterable
+                            placeholder="All Actors" 
+                            size="small"
+                            style="width: 100%;">
+                            <el-option
+                                v-for="actor in uniqueActors"
+                                :key="actor"
+                                :label="actor"
+                                :value="actor">
+                            </el-option>
+                        </el-select>
+                    </div>
+                    
+                    <div class="bu-column is-2">
+                        <label class="text-small color-cool-gray-50 bu-mb-1" style="display: block;">Action</label>
+                        <el-select 
+                            v-model="historyActionFilter" 
+                            clearable
+                            placeholder="All Actions" 
+                            size="small"
+                            style="width: 100%;">
+                            <el-option label="Hide" value="hide"></el-option>
+                            <el-option label="Block" value="block"></el-option>
+                            <el-option label="Rename" value="rename"></el-option>
+                            <el-option label="Delete" value="delete"></el-option>
+                        </el-select>
+                    </div>
+                    
+                    <div class="bu-column is-2">
+                        <label class="text-small color-cool-gray-50 bu-mb-1" style="display: block;">Entity Type</label>
+                        <el-select 
+                            v-model="historyEntityTypeFilter" 
+                            clearable
+                            placeholder="All Types" 
+                            size="small"
+                            style="width: 100%;">
+                            <el-option
+                                v-for="type in entityTypes"
+                                :key="type.value"
+                                :label="type.label"
+                                :value="type.value">
+                            </el-option>
+                        </el-select>
+                    </div>
+                    
+                    <div class="bu-column">
+                        <label class="text-small color-cool-gray-50 bu-mb-1" style="display: block;">Search</label>
+                        <el-input 
+                            v-model="historySearchQuery" 
+                            placeholder="Search audit logs..." 
+                            size="small"
+                            prefix-icon="el-icon-search"
+                            clearable>
+                        </el-input>
+                    </div>
+                    
+                    <div class="bu-column is-narrow bu-is-flex bu-is-align-items-end">
+                        <el-button 
+                            size="small" 
+                            icon="el-icon-refresh" 
+                            @click="loadAuditHistory">
+                            Refresh
+                        </el-button>
+                    </div>
+                </div>
+
+                <!-- Audit Table -->
+                <el-table
+                    :data="auditLogs"
+                    v-loading="isLoadingAudit"
+                    style="width: 100%;">
+                    
+                    <el-table-column
+                        label="Timestamp"
+                        width="180">
+                        <template slot-scope="scope">
+                            <div>
+                                <div class="text-small">{{ formatFullTimestamp(scope.row.timestamp) }}</div>
+                                <div class="text-small color-cool-gray-50">{{ formatRelativeTime(scope.row.timestamp) }}</div>
+                            </div>
+                        </template>
+                    </el-table-column>
+
+                    <el-table-column
+                        label="Actor"
+                        width="180">
+                        <template slot-scope="scope">
+                            <div class="bu-is-flex bu-is-align-items-center">
+                                <el-avatar :size="28" class="bu-mr-2">{{ getInitials(scope.row.actorName) }}</el-avatar>
+                                <span class="text-small">{{ scope.row.actorName }}</span>
+                            </div>
+                        </template>
+                    </el-table-column>
+
+                    <el-table-column
+                        label="Action"
+                        width="120">
+                        <template slot-scope="scope">
+                            <el-tag :type="getActionTagType(scope.row.action)" size="mini">
+                                {{ getActionLabel(scope.row.action) }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+
+                    <el-table-column
+                        label="Entity"
+                        min-width="200">
+                        <template slot-scope="scope">
+                            <div>
+                                <el-tag size="mini" class="bu-mr-1">{{ getTypeLabel(scope.row.entityType) }}</el-tag>
+                                <span class="entity-key">{{ scope.row.entityKey }}</span>
+                            </div>
+                        </template>
+                    </el-table-column>
+
+                    <el-table-column
+                        label="Change"
+                        min-width="200">
+                        <template slot-scope="scope">
+                            <span class="text-small">{{ formatChangeSummary(scope.row) }}</span>
+                        </template>
+                    </el-table-column>
+                </el-table>
+
+                <!-- Pagination -->
+                <div class="bu-has-text-centered bu-mt-4">
+                    <el-pagination
+                        @current-change="handleAuditPageChange"
+                        :current-page="auditCurrentPage"
+                        :page-size="auditPageSize"
+                        :total="auditTotal"
+                        layout="total, prev, pager, next">
+                    </el-pagination>
+                </div>
+            </el-card>
+        </div>
+    </div>
+
+    <!-- Entity Details Drawer (kept as-is from previous version) -->
+    <el-drawer
+        :visible.sync="showDetailsDrawer"
+        :size="drawerSize"
+        direction="rtl"
+        :before-close="closeDetailsDrawer">
+        <template slot="title">
+            <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-space-between" style="width: 100%;">
+                <div class="bu-is-flex bu-is-align-items-center">
+                    <i :class="getTypeIcon(selectedEntity ? selectedEntity.type : '')" class="bu-mr-2" style="font-size: 20px;"></i>
+                    <span class="text-big font-weight-bold">{{ selectedEntity ? selectedEntity.displayName || selectedEntity.key : '' }}</span>
+                </div>
+            </div>
+        </template>
+
+        <div v-if="selectedEntity" style="padding: 0 20px 20px 20px;">
+            <el-tabs v-model="drawerActiveTab">
+                <!-- Overview Tab -->
+                <el-tab-pane label="Overview" name="overview">
+                    <table class="meta-grid" style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td class="meta-label">Key</td>
+                            <td><code>{{ selectedEntity.key }}</code></td>
+                        </tr>
+                        <tr>
+                            <td class="meta-label">Type</td>
+                            <td>{{ getTypeLabel(selectedEntity.type) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="meta-label">Status</td>
+                            <td>
+                                <el-tag :type="getStatusTagType(selectedEntity.status)" size="small">
+                                    {{ selectedEntity.status }}
+                                </el-tag>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="meta-label">Last Viewed</td>
+                            <td>{{ formatFullTimestamp(selectedEntity.lastSeen) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="meta-label">Created</td>
+                            <td>
+                                <span v-if="selectedEntity.createdAt">{{ formatFullTimestamp(selectedEntity.createdAt) }}</span>
+                                <el-tag v-else type="warning" size="mini">Missing from backend</el-tag>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="meta-label">Updated</td>
+                            <td>
+                                <span v-if="selectedEntity.updatedAt">{{ formatFullTimestamp(selectedEntity.updatedAt) }}</span>
+                                <el-tag v-else type="warning" size="mini">Missing from backend</el-tag>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="meta-label">Usage (30d)</td>
+                            <td>{{ formatNumber(selectedEntity.usage30d || 0) }}</td>
+                        </tr>
+                        <tr v-if="selectedEntity.owner">
+                            <td class="meta-label">Owner</td>
+                            <td>
+                                <div class="bu-is-flex bu-is-align-items-center">
+                                    <el-avatar :size="24" class="bu-mr-2">{{ getInitials(selectedEntity.owner) }}</el-avatar>
+                                    {{ selectedEntity.owner }}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="meta-label">Hidden</td>
+                            <td>{{ selectedEntity.hidden ? 'Yes' : 'No' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="meta-label">Blocked</td>
+                            <td>{{ selectedEntity.blocked ? 'Yes' : 'No' }}</td>
+                        </tr>
+                    </table>
+
+                    <div class="bu-mt-4">
+                        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Actions</h4>
+                        <div class="bu-is-flex" style="gap: 8px; flex-wrap: wrap;">
+                            <el-button size="small" @click="toggleHide(selectedEntity)">
+                                <i :class="selectedEntity.hidden ? 'ion-eye' : 'ion-eye-disabled'"></i>
+                                {{ selectedEntity.hidden ? 'Unhide' : 'Hide' }}
+                            </el-button>
+                            <el-button size="small" @click="toggleBlock(selectedEntity)">
+                                <i class="ion-close-circled"></i>
+                                {{ selectedEntity.blocked ? 'Unblock' : 'Block' }}
+                            </el-button>
+                            <el-button size="small" @click="renameEntity(selectedEntity)">
+                                <i class="ion-edit"></i> Rename
+                            </el-button>
+                            <el-button size="small" disabled>
+                                <i class="ion-merge"></i> Merge
+                            </el-button>
+                            <el-button size="small" type="danger" @click="deleteEntity(selectedEntity)">
+                                <i class="ion-trash-a"></i> Delete
+                            </el-button>
+                        </div>
+                    </div>
+                </el-tab-pane>
+
+                <!-- Schema Tab -->
+                <el-tab-pane label="Schema" name="schema">
+                    <el-alert type="info" :closable="false">
+                        <p class="text-small">Schema information coming soon</p>
+                    </el-alert>
+                </el-tab-pane>
+
+                <!-- Lineage & Usage Tab -->
+                <el-tab-pane label="Lineage & Usage" name="lineage">
+                    <el-alert type="info" :closable="false">
+                        <p class="text-small">Lineage and usage tracking coming soon</p>
+                    </el-alert>
+                </el-tab-pane>
+
+                <!-- View History Tab (Only for Dashboards) -->
+                <el-tab-pane v-if="selectedEntity && selectedEntity.type === 'dashboard'" label="View History" name="view-history">
+                    <div v-if="selectedEntity.viewUsers && selectedEntity.viewUsers.length > 0">
+                        <el-table :data="formatViewUsersForTable(selectedEntity.viewUsers)" style="width: 100%">
+                            <el-table-column label="User" width="200">
+                                <template slot-scope="scope">
+                                    {{ scope.row.userName || scope.row.userId }}
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="Last Viewed" width="180">
+                                <template slot-scope="scope">
+                                    {{ formatFullTimestamp(scope.row.lastViewed) }}
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="View Count">
+                                <template slot-scope="scope">
+                                    {{ scope.row.count }}
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                    <div v-else class="text-medium color-cool-gray-50 bu-p-4">
+                        No view history recorded yet
+                    </div>
+                </el-tab-pane>
+
+                <!-- History Tab -->
+                <el-tab-pane label="History" name="history">
+                    <div v-if="entityAuditHistory && entityAuditHistory.length > 0">
+                        <el-timeline>
+                            <el-timeline-item
+                                v-for="audit in entityAuditHistory"
+                                :key="audit._id"
+                                :timestamp="formatFullTimestamp(audit.timestamp)"
+                                placement="top">
+                                <div>
+                                    <el-tag :type="getActionTagType(audit.action)" size="mini" class="bu-mb-2">
+                                        {{ getActionLabel(audit.action) }}
+                                    </el-tag>
+                                    <p class="text-small color-cool-gray-50">by {{ audit.actorName }}</p>
+                                    <p class="text-small bu-mt-2">{{ formatChangeSummary(audit) }}</p>
+                                </div>
+                            </el-timeline-item>
+                        </el-timeline>
+                    </div>
+                    <el-alert v-else type="info" :closable="false">
+                        <p class="text-small">No history available for this entity</p>
+                    </el-alert>
+                </el-tab-pane>
+            </el-tabs>
+        </div>
+    </el-drawer>
+
+    <!-- Delete Confirmation Modal -->
+    <el-dialog
+        :visible.sync="showDeleteModal"
+        title="Confirm Deletion"
+        width="500px">
+        <div v-if="entityToDelete">
+            <el-alert
+                type="warning"
+                :closable="false"
+                class="bu-mb-4">
+                <p class="text-medium font-weight-bold">This action cannot be undone!</p>
+                <p class="text-small bu-mt-2">
+                    Deleting this entity will remove all associated data.
+                </p>
+            </el-alert>
+
+            <p class="text-small bu-mb-2">
+                To confirm deletion, please type the entity key:
+            </p>
+            <p class="text-medium font-weight-bold bu-mb-3">
+                <code>{{ entityToDelete.key }}</code>
+            </p>
+
+            <el-input
+                v-model="deleteConfirmText"
+                placeholder="Type entity key to confirm"
+                @keyup.enter.native="confirmDelete">
+            </el-input>
+        </div>
+
+        <span slot="footer">
+            <el-button @click="showDeleteModal = false">Cancel</el-button>
+            <el-button 
+                type="danger" 
+                @click="confirmDelete"
+                :disabled="!entityToDelete || deleteConfirmText !== entityToDelete.key">
+                Delete Forever
+            </el-button>
+        </span>
+    </el-dialog>
+</div>
+

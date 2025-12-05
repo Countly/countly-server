@@ -137,6 +137,16 @@
                     dataType: "json"
                 }, {disableAutoCatch: true});
             },
+            trackView: function(dashboardId) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/dashboards/track-view",
+                    data: {
+                        "dashboard_id": dashboardId
+                    },
+                    dataType: "json"
+                }, {disableAutoCatch: true});
+            },
 
             getEvents: function(appId) {
                 return CV.$.ajax({

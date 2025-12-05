@@ -1,0 +1,21 @@
+{
+  "name": "cleanup-center",
+  "version": "2.0.0",
+  "description": "Cleanup Center - Data governance and entity management for Countly",
+  "main": "api/api.js",
+  "scripts": {
+    "test": "echo \"No tests yet\""
+  },
+  "keywords": [
+    "countly",
+    "cleanup",
+    "governance",
+    "data-management"
+  ],
+  "author": "Countly",
+  "license": "AGPL-3.0"
+}
+
+
+
+
