@@ -36,7 +36,7 @@ const usage = require('../../../api/aggregator/usage.js');
         });
 
         try {
-            for await (const {token, events} of eventSource) {
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     for (var z = 0; z < events.length; z++) {
                         var next = events[z];
@@ -67,7 +67,7 @@ const usage = require('../../../api/aggregator/usage.js');
                     await common.manualWriteBatcher.flush("countly", "feedback_widgets");
                     await common.manualWriteBatcher.flush("countly", "events_data");
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Event processing error:', err);

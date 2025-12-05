@@ -395,6 +395,17 @@ class KafkaEventSource extends EventSourceInterface {
     }
 
     /**
+     * Mark a batch as processed (for deduplication)
+     * Writes dedup state to MongoDB immediately (does NOT unblock Kafka handler)
+     * Should be called by consumer AFTER data flush, BEFORE requesting next batch
+     * @param {Object} token - Batch token from getNext()
+     * @returns {Promise<void>} resolves when state is written
+     */
+    async markBatchProcessed(token) {
+        await this.#markAsProcessed(token);
+    }
+
+    /**
      * Stop the Kafka consumer
      * @returns {Promise<void>} resolves when stopped
      */

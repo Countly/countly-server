@@ -59,7 +59,7 @@ const internalEventsSkipped = ["[CLY]_orientation", "[CLY]_session", "[CLY]_prop
             }
         });
         try {
-            for await (const {token, events} of eventSource) {
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     for (var k = 0; k < events.length; k++) {
                         if (internalEventsSkipped.includes(events[k].e)) {
@@ -79,7 +79,7 @@ const internalEventsSkipped = ["[CLY]_orientation", "[CLY]_session", "[CLY]_prop
                     }
                     await common.manualWriteBatcher.flush("countly", "server_stats_data_points");
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Event processing error:', err);

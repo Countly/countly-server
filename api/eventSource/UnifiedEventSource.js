@@ -136,6 +136,37 @@ class UnifiedEventSource {
         }
     }
 
+    /**
+     * Mark a batch as processed for deduplication
+     * @param {Object} token - Batch token from the iterator
+     * @returns {Promise<void>} resolves when marked
+     */
+    async markBatchProcessed(token) {
+        if (this.#source && typeof this.#source.markBatchProcessed === 'function') {
+            await this.#source.markBatchProcessed(token);
+        }
+    }
+
+    /**
+     * Process events with automatic acknowledgment and deduplication
+     * Eliminates race condition - dedup state written immediately after handler completes
+     *
+     * @param {Function} handler - Async function(token, events) that processes each batch
+     * @returns {Promise<void>} resolves when all batches are processed
+     *
+     * @example
+     * await eventSource.processWithAutoAck(async (token, events) => {
+     *     for (const event of events) { await processEvent(event); }
+     *     await writeBatcher.flush();
+     * });
+     */
+    async processWithAutoAck(handler) {
+        for await (const {token, events} of this) {
+            await handler(token, events);
+            await this.markBatchProcessed(token);
+        }
+    }
+
 }
 
 module.exports = UnifiedEventSource;

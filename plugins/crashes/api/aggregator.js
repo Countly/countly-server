@@ -211,7 +211,7 @@ const recalculateStats = async function(currEvent) {
 
         const localWriteBatcher = new WriteBatcher(common.db);
 
-        for await (const { token, events } of eventSource) {
+        await eventSource.processWithAutoAck(async(token, events) => {
             // events is an array of event, each event has the same structure as drill documents.
             // They will come this way in kafka, the pipeline above should make sure they are the same if coming from changestreams.
             if (events && Array.isArray(events)) {
@@ -500,7 +500,7 @@ const recalculateStats = async function(currEvent) {
                     await localWriteBatcher.flush('countly', 'app_crashgroups' + appId);
                 }
             }
-        }
+        });
     });
 
     plugins.register('/aggregator', async() => {
@@ -549,7 +549,7 @@ const recalculateStats = async function(currEvent) {
 
         const localWriteBatcher = new WriteBatcher(common.db);
 
-        for await (const { token, events } of eventSource) {
+        await eventSource.processWithAutoAck(async(token, events) => {
             // events is an array of event, each event has the same structure as drill documents.
             // They will come this way in kafka, the pipeline above should make sure they are the same if coming from changestreams.
             if (events && Array.isArray(events)) {
@@ -599,7 +599,7 @@ const recalculateStats = async function(currEvent) {
                 // Flush batchers
                 await localWriteBatcher.flush('countly', 'crashdata');
             }
-        }
+        });
     });
 
     plugins.register('/aggregator', async() => {
@@ -647,7 +647,7 @@ const recalculateStats = async function(currEvent) {
 
         const localWriteBatcher = new WriteBatcher(common.db);
 
-        for await (const { token, events } of eventSource) {
+        await eventSource.processWithAutoAck(async(token, events) => {
             if (events && Array.isArray(events)) {
                 for (let idx = 0; idx < events.length; idx += 1) {
                     const currEvent = events[idx];
@@ -712,6 +712,6 @@ const recalculateStats = async function(currEvent) {
                 // Flush batchers
                 await localWriteBatcher.flush('countly', 'crashdata');
             }
-        }
+        });
     });
 })();
