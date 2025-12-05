@@ -38,6 +38,8 @@ class KafkaEventSource extends EventSourceInterface {
 
     #batchProcessed = null; // Promise resolver for when batch is acknowledged
 
+    #pendingCommitOffset = null; // Override commit offset for dedup recovery
+
     #isRunning = false; // True if consumer is started
 
     #isClosed = false; // True if closed
@@ -98,37 +100,33 @@ class KafkaEventSource extends EventSourceInterface {
     }
 
     /**
-     * Check if a batch was already processed (for deduplication on rebalance)
-     * Uses per-consumer-group document with nested partition offsets
+     * Check for overlap with already-processed offsets
      * @param {Object} token - Batch token with topic, partition, and offset info
-     * @returns {Promise<boolean>} true if batch was already processed
+     * @returns {Promise<string|null>} commitOffset to recover Kafka cursor, or null if no overlap
      * @private
      */
-    async #isAlreadyProcessed(token) {
-        if (!this.#batchDedupEnabled || !this.#batchDedupDb || !token?.lastOffset) {
-            return false;
+    async #checkOverlap(token) {
+        if (!this.#batchDedupEnabled || !this.#batchDedupDb || !token?.firstOffset) {
+            return null;
         }
-        // Single document per consumer group (not per partition)
         const stateKey = `${this.#name}:${token.topic}`;
-        const partitionKey = `partitions.${token.partition}.offset`;
         try {
             const state = await this.#batchDedupDb.collection('kafka_consumer_state').findOne(
                 { _id: stateKey },
-                { projection: { [partitionKey]: 1 } }
+                { projection: { [`partitions.${token.partition}.offset`]: 1 } }
             );
-            const partitionOffset = state?.partitions?.[token.partition]?.offset;
-            if (partitionOffset && BigInt(partitionOffset) >= BigInt(token.lastOffset)) {
-                this.#log.w(`[${this.#name}] Skipping already-processed batch: ${token.key} (lastCommitted=${partitionOffset}, batchLast=${token.lastOffset})`);
-                // Record duplicate skip stats
-                await this.#recordDuplicateSkipped(stateKey, token);
-                return true;
+            const savedOffset = state?.partitions?.[token.partition]?.offset;
+            if (savedOffset && BigInt(savedOffset) >= BigInt(token.firstOffset)) {
+                const commitOffset = (BigInt(savedOffset) + 1n).toString();
+                this.#log.w(`[${this.#name}] Overlap detected: saved=${savedOffset} >= first=${token.firstOffset}, recovering to ${commitOffset}`);
+                this.#recordDuplicateSkipped(stateKey, token);
+                return commitOffset;
             }
         }
         catch (e) {
-            this.#log.e(`[${this.#name}] Error checking batch dedup state: ${e.message}`);
-            // On error, allow processing to continue (fail-open for throughput)
+            this.#log.e(`[${this.#name}] Error checking dedup state: ${e.message}`);
         }
-        return false;
+        return null;
     }
 
     /**
@@ -282,24 +280,26 @@ class KafkaEventSource extends EventSourceInterface {
                 token: batchToken,
                 events: events
             };
+            this.#pendingCommitOffset = null;
 
-            // Create promise for acknowledgment
             const processed = new Promise((resolve) => {
                 this.#batchProcessed = resolve;
             });
 
-            // Notify getNext() that a batch is available
             if (this.#batchAvailable) {
                 const resolver = this.#batchAvailable;
                 this.#batchAvailable = null;
                 resolver();
             }
 
-            // CRITICAL: Block here until acknowledge() is called
-            // This ensures KafkaConsumer only commits offsets after processing
             await processed;
 
-            this.#log.d(`[${this.#name}] Batch processing acknowledged, allowing offset commit for ${batchToken.key}`);
+            // Return override offset for dedup recovery if set
+            if (this.#pendingCommitOffset) {
+                const commitOffset = this.#pendingCommitOffset;
+                this.#pendingCommitOffset = null;
+                return { commitOffset };
+            }
         });
 
         this.#isRunning = true;
@@ -329,15 +329,14 @@ class KafkaEventSource extends EventSourceInterface {
             if (!batch) {
                 return null;
             }
-            // Check if batch was already processed (deduplication on rebalance)
-            if (await this.#isAlreadyProcessed(batch.token)) {
-                // Skip this batch - release the Kafka handler without processing
+            const commitOffset = await this.#checkOverlap(batch.token);
+            if (commitOffset) {
+                // Overlap detected - set commit offset and release handler
+                this.#pendingCommitOffset = commitOffset;
                 if (this.#batchProcessed) {
-                    const resolver = this.#batchProcessed;
+                    this.#batchProcessed();
                     this.#batchProcessed = null;
-                    resolver();
                 }
-                // Recursively get next batch
                 return this.getNext();
             }
             return batch;
