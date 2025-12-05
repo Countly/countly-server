@@ -1,13 +1,174 @@
 <div v-bind:class="[componentId]" class="aggregator-status-view">
     <cly-main>
-        <cly-section>
-            <cly-datatable-n :rows="aggregatorRows" :resizable="true">
+        <!-- Loading state -->
+        <div v-if="isLoading && !hasFetched" class="bu-is-flex bu-is-justify-content-center bu-p-5">
+            <cly-progress-bar-linear :indeterminate="true"></cly-progress-bar-linear>
+        </div>
+
+        <!-- Kafka Stats Section -->
+        <template v-if="hasFetched && hasKafkaData">
+            <!-- Summary Cards -->
+            <cly-section title="Kafka Consumer Stats" tooltip="Kafka consumer health metrics updated every 2 minutes by the lag monitoring job">
+                <cly-metric-cards :multiline="true">
+                    <cly-metric-card
+                        v-for="card in summaryCards"
+                        :key="card.title"
+                        color="#097EFF">
+                        <template v-slot:default>
+                            {{ card.title }}
+                            <cly-tooltip-icon v-if="card.tooltip" class="bu-ml-1" :tooltip="card.tooltip"></cly-tooltip-icon>
+                        </template>
+                        <template v-slot:number>
+                            <span :class="card.numberClass || ''">{{ card.value }}</span>
+                        </template>
+                        <template v-slot:description>
+                            <span class="text-small color-cool-gray-100">{{ card.detail }}</span>
+                        </template>
+                    </cly-metric-card>
+                </cly-metric-cards>
+            </cly-section>
+
+            <!-- Lag History Chart -->
+            <cly-section v-if="lagHistory.length > 0" title="Lag History" tooltip="Consumer lag over time (last 100 snapshots, updated every 2 minutes)">
+                <cly-chart-line
+                    :option="lagChartOption"
+                    :height="300"
+                    :show-zoom="true"
+                    :show-download="true">
+                </cly-chart-line>
+            </cly-section>
+
+            <!-- Consumer Groups Table -->
+            <cly-section v-if="kafkaConsumers.length > 0" title="Consumer Groups" tooltip="Per-consumer-group health statistics including lag, rebalances, and errors">
+                <cly-datatable-n :rows="kafkaConsumers" :resizable="true" :force-loading="isLoading">
+                    <template v-slot="scope">
+                        <el-table-column column-key="groupId" prop="groupId" sortable="custom" label="Group ID" min-width="180">
+                            <template v-slot="rowScope">
+                                <span class="text-medium font-weight-bold">{{ rowScope.row.groupId }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column column-key="totalLag" prop="totalLag" sortable="custom" label="Total Lag" min-width="100">
+                            <template v-slot="rowScope">
+                                <span :class="getLagClass(rowScope.row.totalLag)">{{ formatNumber(rowScope.row.totalLag) }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column column-key="rebalanceCount" prop="rebalanceCount" sortable="custom" label="Rebalances" min-width="100">
+                            <template v-slot="rowScope">
+                                <span>{{ rowScope.row.rebalanceCount || 0 }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column column-key="lastRebalanceAt" prop="lastRebalanceAt" sortable="custom" label="Last Rebalance" min-width="160">
+                            <template v-slot="rowScope">
+                                <span>{{ formatDate(rowScope.row.lastRebalanceAt) }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column column-key="commitCount" prop="commitCount" sortable="custom" label="Commits" min-width="100">
+                            <template v-slot="rowScope">
+                                <span>{{ formatNumber(rowScope.row.commitCount || 0) }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column column-key="lastCommitAt" prop="lastCommitAt" sortable="custom" label="Last Commit" min-width="160">
+                            <template v-slot="rowScope">
+                                <span>{{ formatDate(rowScope.row.lastCommitAt) }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column column-key="errorCount" prop="errorCount" sortable="custom" label="Errors" min-width="80">
+                            <template v-slot="rowScope">
+                                <span :class="getErrorClass(rowScope.row.errorCount)">{{ rowScope.row.errorCount || 0 }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column column-key="lastErrorMessage" prop="lastErrorMessage" label="Last Error" min-width="200">
+                            <template v-slot="rowScope">
+                                <div v-if="rowScope.row.lastErrorMessage" class="has-ellipsis" v-tooltip="{content: rowScope.row.lastErrorMessage}">
+                                    <span class="text-small color-red-100">{{ rowScope.row.lastErrorMessage }}</span>
+                                </div>
+                                <span v-else class="color-cool-gray-50">-</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column column-key="lagUpdatedAt" prop="lagUpdatedAt" sortable="custom" label="Lag Updated" min-width="160">
+                            <template v-slot="rowScope">
+                                <span>{{ formatDate(rowScope.row.lagUpdatedAt) }}</span>
+                            </template>
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+            </cly-section>
+
+            <!-- Partition Stats Table -->
+            <cly-section v-if="kafkaPartitions.length > 0" title="Partition Stats" tooltip="Per-partition batch processing and deduplication statistics">
+                <cly-datatable-n :rows="kafkaPartitions" :resizable="true" :force-loading="isLoading">
+                    <template v-slot="scope">
+                        <el-table-column column-key="consumerGroup" prop="consumerGroup" sortable="custom" label="Consumer Group" min-width="150">
+                        </el-table-column>
+                        <el-table-column column-key="topic" prop="topic" sortable="custom" label="Topic" min-width="180">
+                        </el-table-column>
+                        <el-table-column column-key="partition" prop="partition" sortable="custom" label="Partition" min-width="80">
+                        </el-table-column>
+                        <el-table-column column-key="lastCommittedOffset" prop="lastCommittedOffset" sortable="custom" label="Last Offset" min-width="120">
+                        </el-table-column>
+                        <el-table-column column-key="batchCount" prop="batchCount" sortable="custom" label="Batches" min-width="100">
+                            <template v-slot="rowScope">
+                                <span>{{ formatNumber(rowScope.row.batchCount) }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column column-key="duplicatesSkipped" prop="duplicatesSkipped" sortable="custom" label="Dedup" min-width="80">
+                            <template v-slot="rowScope">
+                                <span :class="rowScope.row.duplicatesSkipped > 0 ? 'color-yellow-100' : ''">{{ rowScope.row.duplicatesSkipped || 0 }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column column-key="avgBatchSize" prop="avgBatchSize" sortable="custom" label="Avg Batch" min-width="100">
+                            <template v-slot="rowScope">
+                                <span>{{ rowScope.row.avgBatchSize ? Math.round(rowScope.row.avgBatchSize) : '-' }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column column-key="lastBatchSize" prop="lastBatchSize" sortable="custom" label="Last Batch" min-width="100">
+                            <template v-slot="rowScope">
+                                <span>{{ rowScope.row.lastBatchSize || '-' }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column column-key="lastProcessedAt" prop="lastProcessedAt" sortable="custom" label="Last Processed" min-width="160">
+                            <template v-slot="rowScope">
+                                <span>{{ formatDate(rowScope.row.lastProcessedAt) }}</span>
+                            </template>
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+            </cly-section>
+        </template>
+
+        <!-- No Kafka data message -->
+        <cly-section v-if="hasFetched && !hasKafkaData" title="Kafka Consumer Stats">
+            <div class="bu-has-text-centered bu-p-5 color-cool-gray-50">
+                <i class="el-icon-info bu-mr-2"></i>
+                <span>Kafka consumer stats not available. Kafka may not be enabled or no data has been collected yet.</span>
+            </div>
+        </cly-section>
+
+        <!-- Change Stream Aggregator Section -->
+        <cly-section v-if="hasFetched && hasAggregatorData" title="Change Stream Aggregator Status" tooltip="Resume token status for MongoDB change stream based event processing">
+            <cly-datatable-n :rows="aggregatorRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column column-key="name" prop="name" sortable="custom" :label="i18n('common.name')"></el-table-column>
-                    <el-table-column column-key="last_cd" prop="last_cd" sortable="custom" label="Acknowledged"></el-table-column>
-                    <el-table-column column-key="drill" prop="drill" sortable="custom" label="Drill"></el-table-column>
-                    <el-table-column column-key="diffDrill" prop="diffDrill" sortable="custom" label="Diff(drill)"></el-table-column>
-                    <el-table-column column-key="diff" prop="diff" sortable="custom" label="Diff(now)"></el-table-column>
+                    <el-table-column column-key="last_cd" prop="last_cd" sortable="custom" label="Acknowledged">
+                        <template v-slot="rowScope">
+                            <span>{{ formatDate(rowScope.row.last_cd) }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column column-key="drill" prop="drill" sortable="custom" label="Drill">
+                        <template v-slot="rowScope">
+                            <span>{{ formatDate(rowScope.row.drill) }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column column-key="diffDrill" prop="diffDrill" sortable="custom" label="Diff(drill)">
+                        <template v-slot="rowScope">
+                            <span>{{ formatDuration(rowScope.row.diffDrill) }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column column-key="diff" prop="diff" sortable="custom" label="Diff(now)">
+                        <template v-slot="rowScope">
+                            <span>{{ formatDuration(rowScope.row.diff) }}</span>
+                        </template>
+                    </el-table-column>
                 </template>
             </cly-datatable-n>
         </cly-section>
