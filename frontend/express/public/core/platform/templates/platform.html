@@ -1,72 +1,151 @@
 <div v-bind:class="[componentId]">
-    <cly-header
-        :title="i18n('platforms.title')"
-        :tooltip="{description}"
+  <cly-header
+    :title="i18n('platforms.title')"
+    :tooltip="{description}"
+  >
+    <template v-slot:header-right>
+      <cly-more-options
+        v-if="topDropdown"
+        size="small"
+      >
+        <el-dropdown-item
+          v-for="(item, idx) in topDropdown"
+          :command="{ url: item.value }"
+          :key="idx"
+        >
+          {{ item.label }}
+        </el-dropdown-item>
+      </cly-more-options>
+    </template>
+  </cly-header>
+  <cly-main>
+    <cly-date-picker-g class="bu-mb-5" />
+    <div class="bu-columns bu-is-gapless bu-mt-2">
+      <h4 data-test-id="platforms-for-label">
+        {{ i18n('platforms.platforms-for') }}
+      </h4>
+      <div class="selector_wrapper">
+        <el-select
+          v-model="selectedProperty"
+          adaptive-length
+          :arrow="false"
+          test-id="platforms-for-combobox"
+        >
+          <el-option
+            v-for="item in chooseProperties"
+            :label="item.name"
+            :key="item.value"
+            :test-id="item.value"
+            :value="item.value"
+          />
+        </el-select>
+      </div>
+    </div>
+    <div
+      v-loading="isLoading"
+      class="technology-analytics-wrapper__items bu-pb-5"
     >
-		<template v-slot:header-right>
-          <cly-more-options v-if="topDropdown" size="small">
-            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown" :command="{url: item.value}">{{item.label}}</el-dropdown-item>
-          </cly-more-options>
-        </template>
-    </cly-header>
-    <cly-main>
-		<cly-date-picker-g class="bu-mb-5"></cly-date-picker-g>
-		<div class="bu-columns bu-is-gapless bu-mt-2">
-			<h4 data-test-id="platforms-for-label">{{i18n('platforms.platforms-for')}}</h4>
-			<div class ="selector_wrapper">
-				<el-select test-id="platforms-for-combobox" v-model="selectedProperty"  :arrow="false" :adaptiveLength="true">
-                    <el-option :test-id="item.value" :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
-                </el-select>
-			</div>
-        </div>
-		<div class="technology-analytics-wrapper__items bu-pb-5" v-loading="isLoading">
-            <vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
-                <cly-metric-cards :multiline="false" :is-synced-scroll="true">
-                    <cly-metric-card
-                        :test-id="'platform-' + idx" 
-                        :is-percentage="true" 
-                        :column-width=3 
-                        :color="item.color" 
-                        :number="item.percent"
-                        :key="idx" 
-                        v-for="(item, idx) in platformItems">
-                        {{item.name}}
-                        <template v-slot:number>{{item.value}}</template>
-                        <template v-slot:description>
-                            <span class="text-medium">{{item.percentText}}</span>
-                        </template>
-                    </cly-metric-card>
-					<div v-if="platformItems.length < 1 && !isLoading" class="technology-analytics-wrapper__empty-card">
-						<div class="text-medium" data-test-id="platforms-for-no-data-label">{{i18n('common.table.no-data')}}</div>
-					</div>
-                </cly-metric-cards>
-            </vue-scroll>
-        </div>
-		<h5 class="bu-pb-4" data-test-id="platforms-version-distribution-label"> {{i18n('platforms.version-distribution')}} </h5>
-		<div v-if="platformVersions.length === 0 && !isLoading" class="technology-analytics-wrapper__versions-empty-card">
-			<div class="text-medium" data-test-id="platforms-version-distribution-no-data-label">{{i18n('common.table.no-data')}}</div>
-		</div>
-        <div v-else-if="platformVersions.length === 0 && isLoading">
-            <div  class="technology-analytics-wrapper__versions-empty-card" v-loading="isLoading"></div>
-        </div>
-        <div v-else class="technology-analytics-wrapper__versions" v-loading="isLoading">
-            <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
-					<cly-metric-cards :multiline="false" :is-synced-scroll="true">
-						<cly-metric-breakdown 
-                            :test-id="'platform-' + idx"
-							:name="item.name" 
-							:values="item.values" 
-							:key="idx"
-							:column-width="3"
-							:scroll-ops="breakdownScrollOps" 
-							v-for="(item, idx) in platformVersions">
-						</cly-metric-breakdown>
-                        <div v-if="platformItems.length < 1 && !isLoading" class="technology-analytics-wrapper__empty-card">
-                            <div class="text-medium">{{i18n('common.table.no-data')}}</div>
-                        </div>
-					</cly-metric-cards>
-            </vue-scroll>
-        </div>
-		<cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs"></cly-dynamic-tabs>
-    </cly-main>
+      <vue-scroll
+        :ops="scrollCards"
+        ref="topSlider"
+        @handle-scroll="handleCardsScroll"
+      >
+        <cly-metric-cards
+          is-synced-scroll
+          :multiline="false"
+        >
+          <cly-metric-card
+            v-for="(item, idx) in platformItems"
+            :color="item.color"
+            :column-width="3"
+            is-percentage
+            :key="idx"
+            :number="item.percent"
+            :test-id="'platform-' + idx"
+          >
+            {{ item.name }}
+            <template v-slot:number>
+                {{ item.value }}
+            </template>
+            <template v-slot:description>
+              <span class="text-medium">{{ item.percentText }}</span>
+            </template>
+          </cly-metric-card>
+          <div
+            v-if="platformItems.length < 1 && !isLoading"
+            class="technology-analytics-wrapper__empty-card"
+          >
+            <div
+              class="text-medium"
+              data-test-id="platforms-for-no-data-label"
+            >
+              {{ i18n('common.table.no-data') }}
+            </div>
+          </div>
+        </cly-metric-cards>
+      </vue-scroll>
+    </div>
+    <h5
+      class="bu-pb-4"
+      data-test-id="platforms-version-distribution-label"
+    >
+      {{ i18n('platforms.version-distribution') }}
+    </h5>
+    <div
+      v-if="platformVersions.length === 0 && !isLoading"
+      class="technology-analytics-wrapper__versions-empty-card"
+    >
+      <div
+        class="text-medium"
+        data-test-id="platforms-version-distribution-no-data-label"
+      >
+        {{ i18n('common.table.no-data') }}
+      </div>
+    </div>
+    <div v-else-if="platformVersions.length === 0 && isLoading">
+      <div
+        v-loading="isLoading"
+        class="technology-analytics-wrapper__versions-empty-card"
+      />
+    </div>
+    <div
+      v-else
+      v-loading="isLoading"
+      class="technology-analytics-wrapper__versions"
+    >
+      <vue-scroll
+        :ops="scrollCards"
+        ref="bottomSlider"
+        @handle-scroll="handleBottomScroll"
+      >
+        <cly-metric-cards
+          is-synced-scroll
+          :multiline="false"
+        >
+          <cly-metric-breakdown
+            v-for="(item, idx) in platformVersions"
+            :column-width="3"
+            :key="idx"
+            :name="item.name"
+            :scroll-ops="breakdownScrollOps"
+            :test-id="'platform-' + idx"
+            :values="item.values"
+          />
+          <div
+            v-if="platformItems.length < 1 && !isLoading"
+            class="technology-analytics-wrapper__empty-card"
+          >
+            <div class="text-medium">
+              {{ i18n('common.table.no-data') }}
+            </div>
+          </div>
+        </cly-metric-cards>
+      </vue-scroll>
+    </div>
+    <cly-dynamic-tabs
+      v-model="dynamicTab"
+      skin="secondary"
+      :tabs="tabs"
+    />
+  </cly-main>
 </div>

@@ -59,13 +59,12 @@
                     value: id
                 };
             });
-            if (countlyGlobal.member.appSortList) {
-                appList = this.sortBy(appList, countlyGlobal.member.appSortList);
+            var sortList = (countlyGlobal.member && countlyGlobal.member.appSortList) || [];
+            if (sortList.length) {
+                appList = this.sortBy(appList, sortList);
             }
             else {
-                appList.sort(function(a, b) {
-                    return a.label > b.label && 1 || -1;
-                });
+                appList.sort(this.sortAppOptionsAlphabetically);
             }
             var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
             return {
@@ -340,6 +339,56 @@
                     }
                 }
             },
+            getAppListItemId: function(option) {
+                if (!option) {
+                    return "";
+                }
+
+                return (option._id || option.value || option.id || option.app_id || "") + "";
+            },
+            sortAppOptionsAlphabetically: function(optionA, optionB) {
+                var labelA = (optionA.label || "").toLowerCase();
+                var labelB = (optionB.label || "").toLowerCase();
+
+                if (labelA < labelB) {
+                    return -1;
+                }
+
+                if (labelA > labelB) {
+                    return 1;
+                }
+
+                var valueA = (optionA.value || "").toLowerCase();
+                var valueB = (optionB.value || "").toLowerCase();
+
+                if (valueA < valueB) {
+                    return -1;
+                }
+
+                if (valueA > valueB) {
+                    return 1;
+                }
+
+                return 0;
+            },
+            applyAppListOrdering: function() {
+                if (!Array.isArray(this.appList)) {
+                    return;
+                }
+
+                var sortList = (countlyGlobal.member && countlyGlobal.member.appSortList) || [];
+                var currentList = this.appList.slice();
+                var orderedList;
+
+                if (sortList.length) {
+                    orderedList = this.sortBy(currentList, sortList);
+                }
+                else {
+                    orderedList = currentList.sort(this.sortAppOptionsAlphabetically);
+                }
+
+                this.appList = orderedList;
+            },
             sortBy: function(arrayToSort, sortList) {
                 if (!sortList.length) {
                     return arrayToSort;
@@ -349,9 +398,10 @@
                     retArr = [];
                 var i;
                 for (i = 0; i < arrayToSort.length; i++) {
-                    var objId = arrayToSort[i]._id + "";
-                    if (sortList.indexOf(objId) !== -1) {
-                        tmpArr[sortList.indexOf(objId)] = arrayToSort[i];
+                    var objId = this.getAppListItemId(arrayToSort[i]);
+                    var desiredIndex = sortList.indexOf(objId);
+                    if (desiredIndex !== -1) {
+                        tmpArr[desiredIndex] = arrayToSort[i];
                     }
                 }
 
@@ -392,6 +442,7 @@
                                     value: data._id + "",
                                     label: data.name
                                 });
+                                self.applyAppListOrdering();
                                 self.$store.dispatch("countlyCommon/addToAllApps", data);
                                 self.$store.dispatch("countlyCommon/updateActiveApp", data._id + "");
                                 countlyCommon.setActiveApp(data._id);
@@ -459,6 +510,7 @@
                                 break;
                             }
                         }
+                        self.applyAppListOrdering();
                         self.discardForm();
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.changed"],
