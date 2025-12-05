@@ -31,20 +31,22 @@ const FEATURE_NAME = 'compliance_hub';
             var update = {};
             var changes = {};
             var finalState = JSON.parse(JSON.stringify(params.app_user.consent));
-            var metrics = {
-                i: {segments: {feature: []}, value: 1, hourlySegments: ["feature"]},
-                o: {segments: {feature: []}, value: 1, hourlySegments: ["feature"]}
-            };
+            var hasIn = false;
+            var hasOut = false;
+            var stateSegmentation = {};
             for (var i in params.qstring.consent) {
                 finalState[i] = params.qstring.consent[i];
                 if (params.app_user.consent[i] !== params.qstring.consent[i]) {
                     update["consent." + i] = params.qstring.consent[i];
                     changes[i] = params.qstring.consent[i];
+                    if (typeof params.app_user.consent[i] !== "undefined") {
+                        stateSegmentation[i + "_bf"] = String(params.app_user.consent[i]);
+                    }
                     if (params.qstring.consent[i]) {
-                        metrics.i.segments.feature.push(i);
+                        hasIn = true;
                     }
                     else {
-                        metrics.o.segments.feature.push(i);
+                        hasOut = true;
                     }
                 }
             }
@@ -53,14 +55,16 @@ const FEATURE_NAME = 'compliance_hub';
                 var type = [];
                 ob.updates.push({$set: update});
 
-                var stateSegmentation = {};
                 Object.keys(finalState).forEach(function(k) {
                     stateSegmentation[k] = String(finalState[k]);
                 });
-                if (metrics.i.segments.feature.length) {
+                if (Object.keys(changes).length) {
+                    stateSegmentation._change = changes;
+                }
+                if (hasIn) {
                     type.push("i");
                 }
-                if (metrics.o.segments.feature.length) {
+                if (hasOut) {
                     type.push("o");
                 }
                 if (type.length === 1) {
@@ -68,22 +72,6 @@ const FEATURE_NAME = 'compliance_hub';
                 }
                 else if (type.length > 1) {
                     stateSegmentation._type = type;
-                }
-                if (Object.keys(changes).length) {
-                    stateSegmentation._change = changes; //JSON.stringify(changes);
-                }
-                if (!metrics.i.segments.feature.length) {
-                    delete metrics.i;
-                }
-                if (!metrics.o.segments.feature.length) {
-                    delete metrics.o;
-                }
-                if (Object.keys(metrics).length) {
-                    common.recordMetric(params, {
-                        collection: "consents",
-                        id: params.app_id,
-                        metrics: metrics
-                    });
                 }
                 params.qstring.events.push({
                     key: "[CLY]_consent",
