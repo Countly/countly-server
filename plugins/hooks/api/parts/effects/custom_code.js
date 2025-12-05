@@ -39,11 +39,17 @@ class CustomCodeEffect {
             // Set up params
             await jail.set('params', new ivm.ExternalCopy(params).copyInto());
 
-            // Set up setResult function
+            // Set up setResult function using JSON serialization for simplicity
             let resultValue = null;
-            await jail.set('setResult', new ivm.Reference(function(result) {
-                resultValue = result;
-            }));
+            const setResultRef = new ivm.Reference(function(jsonString) {
+                // Receive JSON string and parse it
+                resultValue = JSON.parse(jsonString);
+            });
+            await jail.set('$setResult', setResultRef);
+
+            // Create wrapper function in isolate that serializes and calls the reference
+            const wrapperScript = await isolate.compileScript('globalThis.setResult = function(arg) { return $setResult.applySync(undefined, [JSON.stringify(arg)]); }');
+            await wrapperScript.run(context);
 
             // Prepare code
             genCode = `
@@ -56,8 +62,7 @@ class CustomCodeEffect {
             await script.run(context, { timeout: 3000 });
 
             // Get the result
-            await jail.get('setResult');
-            if (resultValue) {
+            if (resultValue && resultValue.value) {
                 options.params = resultValue.value;
                 log.d("Resolved value:", resultValue.value);
             }
