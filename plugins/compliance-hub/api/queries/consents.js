@@ -24,7 +24,7 @@ function mapConsentFieldsForDrillEvents(query) {
     const fieldMap = {
         'device_id': 'did',
         'type': 'sg._type',
-        'change': 'sg'
+        'change': 'sg._change'
     };
 
     /**
@@ -41,11 +41,11 @@ function mapConsentFieldsForDrillEvents(query) {
             for (const [key, value] of Object.entries(obj)) {
                 // Handle nested field mapping (e.g., change.attribution -> sg.attribution)
                 let mappedKey;
-                if (key.startsWith('change.')) {
-                    mappedKey = 'sg.' + key.substring(7);
-                }
-                else if (key.startsWith('type.')) {
+                if (key.startsWith('type.')) {
                     mappedKey = 'sg._type.' + key.substring(5);
+                }
+                else if (key.startsWith('change.')) {
+                    mappedKey = 'sg._change.' + key.substring(7);
                 }
                 else {
                     mappedKey = fieldMap[key] || key;
@@ -84,7 +84,7 @@ function sanitizeClickhouseFilterQuery(q) {
                 out[k] = q[k];
             }
         }
-        return out;
+        q = out;
     }
     return q;
 }
@@ -163,9 +163,12 @@ function transformConsentRows(rows) {
         if (out.sg) {
             try {
                 const seg = JSON.parse(JSON.stringify(out.sg));
-                const type = seg._type;
+                const segType = seg._type;
+                const segChange = seg._change;
                 delete seg._type;
-                out.change = seg;
+                delete seg._change;
+                var type = segType;
+                out.change = segChange;
                 if (type) {
                     out.type = type;
                 }

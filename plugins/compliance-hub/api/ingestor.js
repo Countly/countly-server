@@ -30,43 +30,65 @@ const FEATURE_NAME = 'compliance_hub';
 
             var update = {};
             var changes = {};
-            var after = JSON.parse(JSON.stringify(params.app_user.consent));
-            var metrics = {i: false, o: false};
+            var finalState = JSON.parse(JSON.stringify(params.app_user.consent));
+            var metrics = {
+                i: {segments: {feature: []}, value: 1, hourlySegments: ["feature"]},
+                o: {segments: {feature: []}, value: 1, hourlySegments: ["feature"]}
+            };
             for (var i in params.qstring.consent) {
-                //check if we already dont have that setting
-                after[i] = params.qstring.consent[i];
+                finalState[i] = params.qstring.consent[i];
                 if (params.app_user.consent[i] !== params.qstring.consent[i]) {
-                    //record only changes
                     update["consent." + i] = params.qstring.consent[i];
                     changes[i] = params.qstring.consent[i];
                     if (params.qstring.consent[i]) {
-                        metrics.i = true;
+                        metrics.i.segments.feature.push(i);
                     }
                     else {
-                        metrics.o = true;
+                        metrics.o.segments.feature.push(i);
                     }
                 }
             }
 
             if (Object.keys(update).length) {
                 var type = [];
-                if (metrics.i) {
+                ob.updates.push({$set: update});
+
+                var stateSegmentation = {};
+                Object.keys(finalState).forEach(function(k) {
+                    stateSegmentation[k] = String(finalState[k]);
+                });
+                if (metrics.i.segments.feature.length) {
                     type.push("i");
                 }
-                if (metrics.o) {
+                if (metrics.o.segments.feature.length) {
                     type.push("o");
                 }
                 if (type.length === 1) {
-                    type = type[0];
+                    stateSegmentation._type = type[0];
                 }
-                ob.updates.push({$set: update});
-                changes._type = type;
-
+                else if (type.length > 1) {
+                    stateSegmentation._type = type;
+                }
+                if (Object.keys(changes).length) {
+                    stateSegmentation._change = changes; //JSON.stringify(changes);
+                }
+                if (!metrics.i.segments.feature.length) {
+                    delete metrics.i;
+                }
+                if (!metrics.o.segments.feature.length) {
+                    delete metrics.o;
+                }
+                if (Object.keys(metrics).length) {
+                    common.recordMetric(params, {
+                        collection: "consents",
+                        id: params.app_id,
+                        metrics: metrics
+                    });
+                }
                 params.qstring.events.push({
                     key: "[CLY]_consent",
                     count: 1,
-                    segmentation: changes,
-                    bf: JSON.parse(JSON.stringify(params.app_user.consent))
+                    segmentation: stateSegmentation
                 });
             }
         }

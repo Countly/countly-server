@@ -8,6 +8,7 @@ const { ignorePossibleDevices, checksumSaltVerification, validateRedirect} = req
 const {ObjectId} = require("mongodb");
 const {preset} = require('../lib/countly.preset.js');
 const UnifiedEventSink = require('../eventSink/UnifiedEventSink');
+const {WriteBatcher} = require('../parts/data/batcher.js');
 const countlyApi = {
     mgmt: {
         appUsers: require('../parts/mgmt/app_users.js'),
@@ -1004,6 +1005,9 @@ const processRequest = (params) => {
     params.fullPath = paths.join("/");
 
     reloadConfig().then(function() {
+        if (!common.writeBatcher && common.db) {
+            common.writeBatcher = new WriteBatcher(common.db);
+        }
         switch (apiPath) {
         case '/o/ping': {
             common.db.collection("plugins").findOne({_id: "plugins"}, {_id: 1}).then(() => {
