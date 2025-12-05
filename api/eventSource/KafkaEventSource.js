@@ -32,6 +32,8 @@ class KafkaEventSource extends EventSourceInterface {
 
     #name; // Unique name which will also be groupId in Consumer
 
+    #effectiveGroupId = null; // Actual Kafka consumer group ID (with prefix)
+
     #currentBatch = null; // Batch pointer
 
     #batchAvailable = null; // Promise resolver for when a new batch arrives
@@ -109,7 +111,7 @@ class KafkaEventSource extends EventSourceInterface {
         if (!this.#batchDedupEnabled || !this.#batchDedupDb || !token?.firstOffset) {
             return null;
         }
-        const stateKey = `${this.#name}:${token.topic}`;
+        const stateKey = `${this.#effectiveGroupId}:${token.topic}`;
         try {
             const state = await this.#batchDedupDb.collection('kafka_consumer_state').findOne(
                 { _id: stateKey },
@@ -141,7 +143,7 @@ class KafkaEventSource extends EventSourceInterface {
             return;
         }
         // Single document per consumer group (not per partition)
-        const stateKey = `${this.#name}:${token.topic}`;
+        const stateKey = `${this.#effectiveGroupId}:${token.topic}`;
         const hasBatchData = token.batchSize && token.batchSize > 0;
         const now = new Date();
         try {
@@ -152,7 +154,7 @@ class KafkaEventSource extends EventSourceInterface {
                     [`partitions.${token.partition}.lastProcessedAt`]: now,
                     lastProcessedAt: now,
                     topic: token.topic,
-                    consumerGroup: this.#name,
+                    consumerGroup: this.#effectiveGroupId,
                     updatedAt: now
                 }
             };
@@ -246,6 +248,9 @@ class KafkaEventSource extends EventSourceInterface {
             partitionsConsumedConcurrently: 1,
             db: this.#batchDedupDb // Pass db for health stats tracking
         });
+
+        // Capture the actual groupId for dedup state key (includes prefix from config)
+        this.#effectiveGroupId = this.#kafkaConsumer.groupId;
 
         // Start the consumer with blocking handler
         await this.#kafkaConsumer.start(async({ topic, partition, records }) => {
