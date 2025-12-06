@@ -661,11 +661,8 @@ var IngestionStatusView = countlyVue.views.create({
         return {
             isLoading: false,
             hasFetched: false,
-            // Producer stats
-            // Kafka Connect stats
             connectStatus: {},
             connectors: [],
-            // Throughput history from lag history
             throughputHistory: []
         };
     },
@@ -685,7 +682,6 @@ var IngestionStatusView = countlyVue.views.create({
                     if (data) {
                         self.connectStatus = data.connectStatus || {};
                         self.connectors = (data.connectStatus && data.connectStatus.connectors) || [];
-                        // Extract throughput history from lag history snapshots
                         self.throughputHistory = (data.lagHistory || []).map(function(snapshot) {
                             return {
                                 ts: snapshot.ts,
