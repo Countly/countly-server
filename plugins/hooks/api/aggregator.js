@@ -145,12 +145,13 @@ plugins.setConfigs("hooks", {
         try {
             log.d("hooks Aggregator started");
 
-            for await (const { events } of eventSource) {
+            // eslint-disable-next-line no-unused-vars
+            await eventSource.processWithAutoAck(async(token, events) => {
                 log.d("hooks Aggregator got events:", events.length);
 
                 // Process events through IncomingDataTrigger
                 await incomingDataTrigger.processFromAggregator(events);
-            }
+            });
         }
         catch (err) {
             log.e("Could not start hooks event source", err, err.stack);
