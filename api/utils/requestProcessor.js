@@ -1974,6 +1974,11 @@ const processRequest = (params) => {
                                 .limit(100)
                                 .toArray();
 
+                            // Fetch Kafka Connect status
+                            const connectStatus = await common.db.collection("kafka_connect_status")
+                                .find({})
+                                .toArray();
+
                             // Aggregate stats from per-consumer-group documents
                             // New schema: one document per consumer group with nested partition offsets
                             let totalBatchesProcessed = 0;
@@ -2040,6 +2045,25 @@ const processRequest = (params) => {
                                 };
                             });
 
+                            // Process Kafka Connect status
+                            const connectorStats = connectStatus.map(conn => ({
+                                id: conn._id,
+                                connectorName: conn.connectorName,
+                                connectorState: conn.connectorState,
+                                connectorType: conn.connectorType,
+                                workerId: conn.workerId,
+                                tasks: conn.tasks || [],
+                                tasksRunning: (conn.tasks || []).filter(t => t.state === 'RUNNING').length,
+                                tasksTotal: (conn.tasks || []).length,
+                                updatedAt: conn.updatedAt
+                            }));
+
+                            // Get connect consumer group lag for ClickHouse sink
+                            const connectConsumerGroupId = common.config?.kafka?.connectConsumerGroupId;
+                            const connectGroupHealth = connectConsumerGroupId
+                                ? consumerHealth.find(h => h.groupId === connectConsumerGroupId)
+                                : null;
+
                             common.returnOutput(params, {
                                 summary: {
                                     totalBatchesProcessed,
@@ -2053,7 +2077,15 @@ const processRequest = (params) => {
                                 },
                                 partitions: partitionStats,
                                 consumers: consumerStats,
-                                lagHistory: lagHistory.reverse() // Oldest first for charts
+                                lagHistory: lagHistory.reverse(), // Oldest first for charts
+
+                                // Kafka Connect status
+                                connectStatus: {
+                                    enabled: !!common.config?.kafka?.connectApiUrl,
+                                    connectors: connectorStats,
+                                    sinkLag: connectGroupHealth?.totalLag || 0,
+                                    sinkLagUpdatedAt: connectGroupHealth?.lagUpdatedAt
+                                }
                             });
                         }
                         catch (err) {

@@ -169,6 +169,11 @@ var countlyConfig = {
         enabled: false, // Enable/disable Kafka integration globally (when true, becomes hard dependency)
         drillEventsTopic: "drill-events", // Default topic name for event data
         groupIdPrefix: "cly_", // Prefix added to all consumer group IDs
+
+        // Kafka Connect monitoring (for Health Manager Ingestion Status)
+        connectApiUrl: "http://localhost:8083", // Kafka Connect REST API URL
+        connectConsumerGroupId: "connect-clickhouse-sink", // Kafka Connect consumer group ID for sink lag monitoring
+
         partitions: 10, // Default number of partitions for new topics
         replicationFactor: 1, // Default replication factor for new topics (use 3+ in production)
         retentionMs: 604800000, // Message retention time in milliseconds (default: 7 days)

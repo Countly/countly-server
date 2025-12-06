@@ -655,6 +655,210 @@ var AggregatorStatusView = countlyVue.views.create({
     }
 });
 
+var IngestionStatusView = countlyVue.views.create({
+    template: CV.T('/core/health-manager/templates/ingestion-status.html'),
+    data: function() {
+        return {
+            isLoading: false,
+            hasFetched: false,
+            connectStatus: {},
+            connectors: [],
+            throughputHistory: []
+        };
+    },
+    mounted: function() {
+        this.fetchData();
+    },
+    methods: {
+        refresh: function() {
+            this.fetchData();
+        },
+        fetchData: function() {
+            this.isLoading = true;
+            var self = this;
+
+            Promise.resolve(countlyHealthManager.fetchKafkaStatus())
+                .then(function(data) {
+                    if (data) {
+                        self.connectStatus = data.connectStatus || {};
+                        self.connectors = (data.connectStatus && data.connectStatus.connectors) || [];
+                        self.throughputHistory = (data.lagHistory || []).map(function(snapshot) {
+                            return {
+                                ts: snapshot.ts,
+                                connectLag: snapshot.connectLag || 0
+                            };
+                        });
+                    }
+                })
+                .catch(function() {
+                    self.connectors = [];
+                })
+                .finally(function() {
+                    self.hasFetched = true;
+                    self.isLoading = false;
+                });
+        },
+        formatDate: function(val) {
+            if (!val) {
+                return 'N/A';
+            }
+            var ms = typeof val === 'string' ? Date.parse(val) : Number(val);
+            if (String(ms).length === 10) {
+                ms *= 1000;
+            }
+            if (!ms || isNaN(ms)) {
+                return 'N/A';
+            }
+            return moment(ms).format('DD-MM-YYYY HH:mm:ss');
+        },
+        formatNumber: function(val) {
+            if (val === undefined || val === null) {
+                return '0';
+            }
+            return countlyCommon.formatNumber ? countlyCommon.formatNumber(val) : val.toLocaleString();
+        },
+        getConnectorStateClass: function(state) {
+            if (state === 'RUNNING') {
+                return 'color-green-100';
+            }
+            if (state === 'PAUSED') {
+                return 'color-yellow-100';
+            }
+            return 'color-red-100';
+        },
+        getLagClass: function(lag) {
+            if (!lag || lag === 0) {
+                return 'color-green-100';
+            }
+            if (lag < 1000) {
+                return 'color-yellow-100';
+            }
+            return 'color-red-100';
+        }
+    },
+    computed: {
+        hasConnectorData: function() {
+            return this.connectors.length > 0;
+        },
+        connectEnabled: function() {
+            return this.connectStatus && this.connectStatus.enabled;
+        },
+        connectSummaryCards: function() {
+            var status = this.connectStatus || {};
+            var connectors = this.connectors || [];
+            var runningConnectors = connectors.filter(function(c) {
+                return c.connectorState === 'RUNNING';
+            }).length;
+            var totalTasks = 0;
+            var runningTasks = 0;
+            connectors.forEach(function(c) {
+                totalTasks += c.tasksTotal || 0;
+                runningTasks += c.tasksRunning || 0;
+            });
+
+            return [
+                {
+                    title: 'Sink Lag',
+                    value: this.formatNumber(status.sinkLag || 0),
+                    detail: 'Messages behind',
+                    tooltip: 'Consumer lag for Kafka Connect ClickHouse sink (connect-ch group)',
+                    numberClass: this.getLagClass(status.sinkLag)
+                },
+                {
+                    title: 'Connectors',
+                    value: runningConnectors + ' / ' + connectors.length + ' running',
+                    detail: 'Active connectors',
+                    tooltip: 'Number of connectors in RUNNING state',
+                    numberClass: runningConnectors === connectors.length && connectors.length > 0
+                        ? 'color-green-100'
+                        : 'color-yellow-100'
+                },
+                {
+                    title: 'Tasks',
+                    value: runningTasks + ' / ' + totalTasks + ' running',
+                    detail: 'Active tasks',
+                    tooltip: 'Number of connector tasks in RUNNING state',
+                    numberClass: runningTasks === totalTasks && totalTasks > 0
+                        ? 'color-green-100'
+                        : 'color-yellow-100'
+                },
+                {
+                    title: 'Last Updated',
+                    value: this.formatDate(status.sinkLagUpdatedAt),
+                    detail: 'Lag check time',
+                    tooltip: 'When the sink lag was last updated by the monitoring job',
+                    numberClass: 'color-cool-gray-100'
+                }
+            ];
+        },
+        throughputChartOption: function() {
+            if (!this.throughputHistory || this.throughputHistory.length === 0) {
+                return {};
+            }
+
+            var xAxisData = this.throughputHistory.map(function(snapshot) {
+                if (!snapshot.ts) {
+                    return '';
+                }
+                return moment(new Date(snapshot.ts)).format('HH:mm');
+            });
+
+            var lagData = this.throughputHistory.map(function(snapshot) {
+                return snapshot.connectLag || 0;
+            });
+
+            return {
+                grid: {
+                    top: 40,
+                    bottom: 40,
+                    left: 60,
+                    right: 20,
+                    containLabel: true
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: xAxisData,
+                    axisLabel: {
+                        rotate: 45,
+                        fontSize: 10
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Sink Lag',
+                    axisLabel: {
+                        formatter: function(value) {
+                            return value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value;
+                        }
+                    }
+                },
+                series: [{
+                    name: 'ClickHouse Sink Lag',
+                    type: 'line',
+                    data: lagData,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 2,
+                        color: countlyCommon.GRAPH_COLORS[0]
+                    },
+                    itemStyle: {
+                        color: countlyCommon.GRAPH_COLORS[0]
+                    },
+                    areaStyle: {
+                        color: 'rgba(1, 102, 214, 0.1)'
+                    }
+                }],
+                color: countlyCommon.GRAPH_COLORS
+            };
+        }
+    }
+});
+
 var HealthManagerView = countlyVue.views.create({
     template: CV.T('/core/health-manager/templates/health-manager.html'),
     mixins: [
@@ -703,6 +907,17 @@ countlyVue.container.registerTab("/manage/health", {
     dataTestId: "health-manager-aggregator-status",
     component: AggregatorStatusView,
     tooltip: CV.i18n('aggregator-status.overview.tooltip')
+});
+
+countlyVue.container.registerTab("/manage/health", {
+    priority: 3,
+    name: "ingestion-status",
+    permission: "core",
+    title: 'Ingestion Status',
+    route: "#/manage/health/ingestion-status",
+    dataTestId: "health-manager-ingestion-status",
+    component: IngestionStatusView,
+    tooltip: 'Monitor Kafka producer and ClickHouse sink health'
 });
 
 app.route("/manage/health", "health-manager", function() {

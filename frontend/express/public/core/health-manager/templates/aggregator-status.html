@@ -1,8 +1,7 @@
 <div v-bind:class="[componentId]" class="aggregator-status-view">
     <cly-main>
         <!-- Loading state -->
-        <div v-if="isLoading && !hasFetched" class="bu-is-flex bu-is-justify-content-center bu-p-5">
-            <cly-progress-bar-linear :indeterminate="true"></cly-progress-bar-linear>
+        <div v-if="isLoading && !hasFetched" v-loading="true" class="bu-p-5" style="min-height: 200px;">
         </div>
 
         <!-- Kafka Stats Section -->
