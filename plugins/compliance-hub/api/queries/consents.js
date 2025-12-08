@@ -43,6 +43,7 @@ function mapConsentFieldsForDrillEvents(query) {
                 let mappedKey;
                 if (key.startsWith('type.')) {
                     mappedKey = 'sg._type.' + key.substring(5);
+                    result[mappedKey] = mapFields(value);
                 }
                 else if (key.startsWith('change.')) {
                     const base = key.substring(7);
