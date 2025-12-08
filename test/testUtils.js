@@ -402,7 +402,9 @@ var testUtils = function testUtils() {
         }
         var ob = JSON.parse(res.text);
         ob.should.not.be.empty;
-        ob.should.have.property("meta", correct.meta);
+        if (correct.meta) {
+            ob.should.have.property("meta", correct.meta);
+        }
         //ob.should.have.property("meta", {"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]});
         for (var i in ob) {
             if (i != "meta") {

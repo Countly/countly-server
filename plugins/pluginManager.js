@@ -77,6 +77,7 @@ var pluginManager = function pluginManager() {
      * @type {{collection: string, db: mongodb.Db, property: string, expireAfterSeconds: number}[]}
      */
     this.ttlCollections = [];
+    this.ttlCollections.push({"db": "countly", "collection": "drill_data_cache", "expireAfterSeconds": 600, "property": "lu"});
     /**
      *  Custom configuration files for different databases for docker env
      */
@@ -1883,7 +1884,12 @@ var pluginManager = function pluginManager() {
         require('../api/utils/countlyFs').setHandler(dbFs);
         common.drillDb = dbDrill;
 
-
+        try {
+            common.db.collection("drill_data_cache").ensureIndex({lu: 1});
+        }
+        catch (err) {
+            console.log('Plugin Manager: Failed to create index on drill_data_cache collection for lu field:', err);
+        }
         var self = this;
         await new Promise(function(resolve) {
             self.loadConfigs(common.db, function() {
