@@ -2,6 +2,7 @@ const common = require('../../../../api/utils/common');
 const countlyCommon = require('../../../../api/lib/countly.common.js');
 const log = common.log('compliance-hub:queries');
 const moment = require('moment-timezone');
+const utils = require('../utils/compliance-hub.utils');
 let clickHouseRunner;
 try {
     clickHouseRunner = require('../../../clickhouse/api/queries/clickhouseCoreQueries.js');
@@ -23,8 +24,7 @@ function mapConsentFieldsForDrillEvents(query) {
     // name mapping from consent_history fields to drill_events fields
     const fieldMap = {
         'device_id': 'did',
-        'type': 'sg._type',
-        'change': 'sg._change'
+        'type': 'sg._type'
     };
 
     /**
@@ -45,12 +45,19 @@ function mapConsentFieldsForDrillEvents(query) {
                     mappedKey = 'sg._type.' + key.substring(5);
                 }
                 else if (key.startsWith('change.')) {
-                    mappedKey = 'sg._change.' + key.substring(7);
+                    const base = key.substring(7);
+                    const val = mapFields(value);
+                    const valStr = (val === undefined || val === null) ? val : String(val);
+                    result.$and = result.$and || [];
+                    result.$and.push(
+                        {['sg.' + base]: valStr},
+                        {$expr: {$ne: ['$sg.' + base + '_bf', '$sg.' + base]}}
+                    );
                 }
                 else {
                     mappedKey = fieldMap[key] || key;
+                    result[mappedKey] = mapFields(value);
                 }
-                result[mappedKey] = mapFields(value);
             }
             return result;
         }
@@ -164,13 +171,15 @@ function transformConsentRows(rows) {
             try {
                 const seg = JSON.parse(JSON.stringify(out.sg));
                 const segType = seg._type;
-                const segChange = seg._change;
                 delete seg._type;
-                delete seg._change;
-                var type = segType;
-                out.change = segChange;
-                if (type) {
-                    out.type = type;
+
+                let change = utils.computeChange(seg);
+
+                if (Object.keys(change).length) {
+                    out.change = change;
+                }
+                if (segType) {
+                    out.type = segType;
                 }
             }
             catch (e) {

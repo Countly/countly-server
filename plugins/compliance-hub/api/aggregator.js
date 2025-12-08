@@ -2,6 +2,7 @@ var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js');
 const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.js');
 const log = require('../../../api/utils/log.js')('compliance-hub:aggregator');
+const utils = require('./utils/compliance-hub.utils');
 
 (function() {
     plugins.register("/aggregator", async function() {
@@ -90,24 +91,18 @@ const log = require('../../../api/utils/log.js')('compliance-hub:aggregator');
             return null;
         }
 
+        const change = utils.computeChange(currEvent.sg);
         const inFeatures = [];
         const outFeatures = [];
 
-        if (currEvent.sg._change) {
-            let changeObj = currEvent.sg._change;
-            Object.keys(changeObj).forEach(function(key) {
-                if (key.startsWith("_")) {
-                    return;
-                }
-                const val = normalizeBool(changeObj[key]);
-                if (val === true) {
-                    inFeatures.push(key);
-                }
-                else if (val === false) {
-                    outFeatures.push(key);
-                }
-            });
-        }
+        Object.keys(change).forEach((k) => {
+            if (change[k] === true) {
+                inFeatures.push(k);
+            }
+            else if (change[k] === false) {
+                outFeatures.push(k);
+            }
+        });
 
         const metrics = {};
         if (inFeatures.length) {
@@ -120,21 +115,4 @@ const log = require('../../../api/utils/log.js')('compliance-hub:aggregator');
         return Object.keys(metrics).length ? metrics : null;
     }
 
-    /**
-     * Normalizes various boolean representations to true/false
-     * @param {any} v - value to normalize
-     * @returns {boolean|undefined} normalized boolean.
-     */
-    function normalizeBool(v) {
-        if (v === true || v === false) {
-            return v;
-        }
-        if (v === "true") {
-            return true;
-        }
-        if (v === "false") {
-            return false;
-        }
-        return undefined;
-    }
 }());

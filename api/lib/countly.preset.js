@@ -125,8 +125,7 @@ var preset = {
             i: { name: "i", type: "s" }
         },
         "[CLY]_consent": {
-            _type: { name: "_type", type: "s" },
-            _change: { name: "_change", type: "s" }
+            _type: { name: "_type", type: "s" }
         }
     }
 };

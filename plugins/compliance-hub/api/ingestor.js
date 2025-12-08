@@ -29,38 +29,32 @@ const FEATURE_NAME = 'compliance_hub';
             }
 
             var update = {};
-            var changes = {};
-            var finalState = JSON.parse(JSON.stringify(params.app_user.consent));
             var hasIn = false;
             var hasOut = false;
             var stateSegmentation = {};
-            for (var i in params.qstring.consent) {
-                finalState[i] = params.qstring.consent[i];
-                if (params.app_user.consent[i] !== params.qstring.consent[i]) {
-                    update["consent." + i] = params.qstring.consent[i];
-                    changes[i] = params.qstring.consent[i];
-                    if (typeof params.app_user.consent[i] !== "undefined") {
-                        stateSegmentation[i + "_bf"] = String(params.app_user.consent[i]);
-                    }
-                    if (params.qstring.consent[i]) {
+            Object.keys(params.app_user.consent).forEach(function(k) {
+                stateSegmentation[k + "_bf"] = String(params.app_user.consent[k]);
+            });
+
+            Object.keys(params.qstring.consent).forEach(function(k2) {
+                var prevVal = params.app_user.consent[k2];
+                var currVal = params.qstring.consent[k2];
+                stateSegmentation[k2 + "_bf"] = (prevVal === null || typeof prevVal === "undefined") ? null : String(prevVal);
+                stateSegmentation[k2] = String(currVal);
+                if (prevVal !== currVal) {
+                    update["consent." + k2] = currVal;
+                    if (currVal) {
                         hasIn = true;
                     }
                     else {
                         hasOut = true;
                     }
                 }
-            }
+            });
 
             if (Object.keys(update).length) {
                 var type = [];
                 ob.updates.push({$set: update});
-
-                Object.keys(finalState).forEach(function(k) {
-                    stateSegmentation[k] = String(finalState[k]);
-                });
-                if (Object.keys(changes).length) {
-                    stateSegmentation._change = changes;
-                }
                 if (hasIn) {
                     type.push("i");
                 }
