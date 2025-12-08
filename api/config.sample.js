@@ -169,11 +169,17 @@ var countlyConfig = {
         enabled: false, // Enable/disable Kafka integration globally (when true, becomes hard dependency)
         drillEventsTopic: "drill-events", // Default topic name for event data
         groupIdPrefix: "cly_", // Prefix added to all consumer group IDs
+
+        // Kafka Connect monitoring (for Health Manager Ingestion Status)
+        connectApiUrl: "http://localhost:8083", // Kafka Connect REST API URL
+        connectConsumerGroupId: "connect-clickhouse-sink", // Kafka Connect consumer group ID for sink lag monitoring
+
         partitions: 10, // Default number of partitions for new topics
         replicationFactor: 1, // Default replication factor for new topics (use 3+ in production)
         retentionMs: 604800000, // Message retention time in milliseconds (default: 7 days)
         enableTransactions: false, // Enable transactional producers (set per producer instance)
         transactionTimeout: 60000, // Transaction timeout in milliseconds (default: 60 seconds)
+        batchDeduplication: true, // Enable batch-level deduplication to prevent reprocessing on rebalance (default: true)
 
         // Basic connection and security settings (used by KafkaClient)
         rdkafka: {
@@ -227,9 +233,11 @@ var countlyConfig = {
             // Concurrency and performance settings
             partitionsConsumedConcurrently: 4, // Number of partitions to consume concurrently per process (default: 4)
 
-            // Consumer group settings
-            sessionTimeoutMs: 30000, // Consumer session timeout in milliseconds (default: 30 seconds) - WARNING: Too low causes rebalances, potentially losing in-flight messages
-            maxPollIntervalMs: 300000, // Maximum time between polls in milliseconds (default: 5 minutes) - WARNING: Too low causes consumer to be kicked out, losing uncommitted offsets
+            // Consumer group settings (conservative defaults to reduce rebalancing)
+            sessionTimeoutMs: 60000, // Consumer session timeout in milliseconds (default: 60 seconds) - WARNING: Too low causes rebalances, potentially losing in-flight messages
+            heartbeatInterval: 10000, // Heartbeat interval in milliseconds (default: 10 seconds, should be ~1/6 of sessionTimeout)
+            rebalanceTimeout: 120000, // Rebalance timeout in milliseconds (default: 2 minutes)
+            maxPollIntervalMs: 600000, // Maximum time between polls in milliseconds (default: 10 minutes) - WARNING: Too low causes consumer to be kicked out, losing uncommitted offsets
             autoOffsetReset: 'earliest', // Where to start reading when no offset exists (latest/earliest)
             enableAutoCommit: false, // Disable auto-commit for exactly-once processing (default: false) - WARNING: true can cause data loss on consumer crash before processing
 

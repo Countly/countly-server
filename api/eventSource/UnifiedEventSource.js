@@ -105,8 +105,12 @@ class UnifiedEventSource {
         this.#countlyConfig = dependencies.countlyConfig || require('../config');
         this.#options = options;
 
+        // Get common for database access (used for batch deduplication state)
+        const common = dependencies.common || require('../utils/common.js');
+
         this.#source = EventSourceFactory.create(name, options, {
-            countlyConfig: this.#countlyConfig
+            countlyConfig: this.#countlyConfig,
+            db: common.db // Pass main database for batch deduplication state
         });
 
         this.#log.d(`UnifiedEventSource created: ${name} (${this.#source.constructor.name})`);
@@ -129,6 +133,37 @@ class UnifiedEventSource {
         }
         finally {
             this.#log.d(`[${this.#name}] Unified event source iteration completed`);
+        }
+    }
+
+    /**
+     * Mark a batch as processed for deduplication
+     * @param {Object} token - Batch token from the iterator
+     * @returns {Promise<void>} resolves when marked
+     */
+    async markBatchProcessed(token) {
+        if (this.#source && typeof this.#source.markBatchProcessed === 'function') {
+            await this.#source.markBatchProcessed(token);
+        }
+    }
+
+    /**
+     * Process events with automatic acknowledgment and deduplication
+     * Eliminates race condition - dedup state written immediately after handler completes
+     *
+     * @param {Function} handler - Async function(token, events) that processes each batch
+     * @returns {Promise<void>} resolves when all batches are processed
+     *
+     * @example
+     * await eventSource.processWithAutoAck(async (token, events) => {
+     *     for (const event of events) { await processEvent(event); }
+     *     await writeBatcher.flush();
+     * });
+     */
+    async processWithAutoAck(handler) {
+        for await (const {token, events} of this) {
+            await handler(token, events);
+            await this.markBatchProcessed(token);
         }
     }
 

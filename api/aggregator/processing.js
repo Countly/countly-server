@@ -117,7 +117,7 @@ var crypto = require('crypto');
             }
         });
         try {
-            for await (const {token, events} of eventSource) {
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     // Process each event in the batch
                     for (const currEvent of events) {
@@ -126,9 +126,9 @@ var crypto = require('crypto');
                             await usage.processEventTotalsFromStream(token, currEvent, common.manualWriteBatcher);
                         }
                     }
-                    common.manualWriteBatcher.flush("countly", "events_data");
+                    await common.manualWriteBatcher.flush("countly", "events_data");
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Event processing error:', err);
@@ -153,7 +153,7 @@ var crypto = require('crypto');
             }
         });
         try {
-            for await (const {token, events} of eventSource) {
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     for (var k = 0; k < events.length; k++) {
                         if (events[k].e === "[CLY]_session_begin" && events[k].a) {
@@ -171,7 +171,7 @@ var crypto = require('crypto');
                     }
                     await common.manualWriteBatcher.flush("countly", "users");
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Event processing error:', err);
@@ -196,7 +196,7 @@ var crypto = require('crypto');
             }
         });
         try {
-            for await (const {token, events} of eventSource) {
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     for (var k = 0; k < events.length; k++) {
                         if (events[k].e === "[CLY]_session" && events[k].a) {
@@ -218,7 +218,7 @@ var crypto = require('crypto');
                     }
                     await common.manualWriteBatcher.flush("countly", "users");
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Event processing error:', err);
@@ -332,12 +332,13 @@ var crypto = require('crypto');
             }
         });
         try {
-            for await (const {/*token,*/ events} of eventSource) {
+            // eslint-disable-next-line no-unused-vars
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     await reloadConfig(); //reloads configs if needed.
                     // Process each event in the batch
                     var updates = {};
-                    //Should sort before by event 
+                    //Should sort before by event
                     for (var z = 0; z < events.length; z++) {
                         if (events[z].a && events[z].e) {
                             if (events[z].e === "[CLY]_property_update") {
@@ -443,7 +444,7 @@ var crypto = require('crypto');
                         await common.drillDb.collection("drill_meta").bulkWrite(bulkOps);
                     }
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Event processing error:', err);

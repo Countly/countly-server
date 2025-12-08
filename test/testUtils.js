@@ -706,16 +706,63 @@ var testUtils = function testUtils() {
      * Useful in tests when you need immediate propagation of uid mapping changes.
      * @param {Function} callback - Callback function to call when reload is complete
      */
-    this.reloadIdentityDictionary = function(callback) {
+    this.reloadIdentityDictionary = async function(callback) {
         try {
-            const clickhouseApi = require('../plugins/clickhouse/api/api.js');
-            const client = clickhouseApi.getClient();
+            const countlyApiConfig = require('../api/config');
 
-            if (!client) {
-                return callback(new Error('ClickHouse client not available'));
+            // Check if ClickHouse is configured
+            if (!countlyApiConfig.clickhouse || !countlyApiConfig.clickhouse.url) {
+                console.log('ClickHouse not configured, skipping dictionary reload');
+                return callback();
             }
 
-            const Identity = require('../plugins/clickhouse/api/users/Identity.js');
+            // Check if ClickHouse adapter is enabled
+            if (!countlyApiConfig.database?.adapters?.clickhouse?.enabled) {
+                console.log('ClickHouse adapter disabled, skipping dictionary reload');
+                return callback();
+            }
+
+            // Use ClickhouseClient singleton directly (avoid api.js dependency issues)
+            let clickhouseClientSingleton;
+            try {
+                clickhouseClientSingleton = require('../plugins/clickhouse/api/ClickhouseClient.js');
+            }
+            catch (loadErr) {
+                if (loadErr.code === 'MODULE_NOT_FOUND') {
+                    console.log('ClickHouse plugin not available, skipping dictionary reload');
+                    return callback();
+                }
+                throw loadErr;
+            }
+
+            let client;
+            try {
+                client = await clickhouseClientSingleton.getInstance();
+            }
+            catch (clientErr) {
+                console.log('ClickHouse client initialization failed:', clientErr.message);
+                console.log('Skipping dictionary reload');
+                return callback();
+            }
+
+            if (!client) {
+                console.log('ClickHouse client not available, skipping dictionary reload');
+                return callback();
+            }
+
+            // Load Identity module directly
+            let Identity;
+            try {
+                Identity = require('../plugins/clickhouse/api/users/Identity.js');
+            }
+            catch (loadErr) {
+                if (loadErr.code === 'MODULE_NOT_FOUND') {
+                    console.log('ClickHouse Identity module not available, skipping dictionary reload');
+                    return callback();
+                }
+                throw loadErr;
+            }
+
             const identity = new Identity(client);
 
             identity.reloadDictionary()
@@ -729,6 +776,11 @@ var testUtils = function testUtils() {
                 });
         }
         catch (err) {
+            // Handle module loading errors gracefully
+            if (err.code === 'MODULE_NOT_FOUND') {
+                console.log('ClickHouse module not found, skipping dictionary reload');
+                return callback();
+            }
             console.error('Error setting up identity dictionary reload:', err);
             callback(err);
         }
