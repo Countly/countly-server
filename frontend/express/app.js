@@ -506,18 +506,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         }
     });
     //serve app images
-    app.get(countlyConfig.path + '/appimages/*', function(req, res) {
-
-        if (!req.params || !req.params[0] || req.params[0] === '') {
+    app.get(countlyConfig.path + '/appimages/*splat', function(req, res) {
+        var imagePath = req.params.splat;
+        if (!req.params || !imagePath || imagePath === '') {
             res.sendFile(__dirname + '/public/images/default_app_icon.png');
         }
         else {
-            countlyFs.getStats("appimages", __dirname + '/public/appimages/' + req.params[0], {id: req.params[0]}, function(err, stats) {
+            countlyFs.getStats("appimages", __dirname + '/public/appimages/' + imagePath, {id: imagePath}, function(err, stats) {
                 if (err || !stats || !stats.size) {
                     res.sendFile(__dirname + '/public/images/default_app_icon.png');
                 }
                 else {
-                    countlyFs.getStream("appimages", __dirname + '/public/appimages/' + req.params[0], {id: req.params[0]}, function(err2, stream) {
+                    countlyFs.getStream("appimages", __dirname + '/public/appimages/' + imagePath, {id: imagePath}, function(err2, stream) {
                         if (err2 || !stream) {
                             res.sendFile(__dirname + '/public/images/default_app_icon.png');
                         }
@@ -540,18 +540,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     //serve member images
-    app.get(countlyConfig.path + '/memberimages/*', function(req, res) {
-
-        if (!req.params || !req.params[0] || req.params[0] === '') {
+    app.get(countlyConfig.path + '/memberimages/*splat', function(req, res) {
+        var imagePath = req.params.splat;
+        if (!req.params || !imagePath || imagePath === '') {
             res.sendFile(__dirname + '/public/images/default_member_icon.png');
         }
         else {
-            countlyFs.getStats("memberimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err, stats) {
+            countlyFs.getStats("memberimages", __dirname + '/public/' + req.path, {id: imagePath}, function(err, stats) {
                 if (err || !stats || !stats.size) {
                     res.sendFile(__dirname + '/public/images/default_member_icon.png');
                 }
                 else {
-                    countlyFs.getStream("memberimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err2, stream) {
+                    countlyFs.getStream("memberimages", __dirname + '/public/' + req.path, {id: imagePath}, function(err2, stream) {
                         if (err2 || !stream) {
                             res.sendFile(__dirname + '/public/images/default_member_icon.png');
                         }
@@ -573,7 +573,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         }
     });
 
-    app.get(countlyConfig.path + "*/screenshots/*", function(req, res) {
+    app.get(countlyConfig.path + "*path/screenshots/*splat", function(req, res) {
         countlyFs.getStats("screenshots", __dirname + '/public/' + req.path, {id: "core"}, function(err, stats) {
             if (err || !stats || !stats.size) {
                 return res.send(false);
@@ -874,7 +874,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         }
     });
     app.get(countlyConfig.path + '/dashboard', checkRequestForSession);
-    app.post('*', checkRequestForSession);
+    app.post('*path', checkRequestForSession);
 
     app.get(countlyConfig.path + '/logout', function(req, res) {
         if (req.query.message) {
