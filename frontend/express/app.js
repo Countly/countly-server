@@ -50,7 +50,6 @@ var versionInfo = require('./version.info'),
     formidable = require('formidable'),
     session = require('express-session'),
     methodOverride = require('method-override'),
-    csrf = require('csurf')(),
     errorhandler = require('errorhandler'),
     basicAuth = require('basic-auth'),
     bodyParser = require('body-parser'),
@@ -139,6 +138,99 @@ if (!countlyConfig.cookie) {
         secure: countlyConfig.web.secure_cookies || false,
         maxAgeLogin: 1000 * 60 * 60 * 24 * 365
     };
+}
+
+// Simple CSRF protection using double-submit cookie pattern
+const CSRF_COOKIE_NAME = 'countly.csrf';
+const CSRF_IGNORED_METHODS = ['GET', 'HEAD', 'OPTIONS'];
+/**
+ * Generate a CSRF token and set it in a cookie
+ * @param {object} req - Express request
+ * @param {object} res - Express response
+ * @returns {string} The CSRF token
+ */
+function generateCsrfToken(req, res) {
+    var secret = countlyConfig.web.session_secret || 'countlyss';
+    var token = crypto.randomBytes(32).toString('hex');
+    var hash = crypto.createHmac('sha256', secret).update(token).digest('hex');
+    // Set cookie with token|hash
+    res.cookie(CSRF_COOKIE_NAME, token + '|' + hash, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: countlyConfig.web.secure_cookies || false,
+        maxAge: 1000 * 60 * 60 * 24, // 24 hours
+        path: countlyConfig.path || '/'
+    });
+    return token;
+}
+
+/**
+ * Validate CSRF token from request against cookie
+ * @param {object} req - Express request
+ * @returns {boolean} True if valid
+ */
+function validateCsrfToken(req) {
+    var secret = countlyConfig.web.session_secret || 'countlyss';
+    var cookie = req.cookies[CSRF_COOKIE_NAME];
+
+    if (!cookie) {
+        return false;
+    }
+
+    var parts = cookie.split('|');
+    if (parts.length !== 2) {
+        return false;
+    }
+
+    var cookieToken = parts[0];
+    var cookieHash = parts[1];
+
+    // Verify the hash to ensure cookie wasn't tampered with
+    var expectedHash = crypto.createHmac('sha256', secret).update(cookieToken).digest('hex');
+    if (!crypto.timingSafeEqual(Buffer.from(cookieHash), Buffer.from(expectedHash))) {
+        return false;
+    }
+
+    // Get token from request body, query, or header
+    var requestToken = req.body._csrf || req.query._csrf || req.headers['x-csrf-token'];
+
+    if (!requestToken) {
+        return false;
+    }
+
+    // Compare tokens using timing-safe comparison
+    try {
+        return crypto.timingSafeEqual(Buffer.from(requestToken), Buffer.from(cookieToken));
+    }
+    catch (e) {
+        return false; // Lengths don't match
+    }
+}
+
+/**
+ * CSRF protection middleware
+ * @param {object} req - Express request
+ * @param {object} res - Express response
+ * @param {function} next - Next middleware
+ * @returns {function} Next middleware
+ */
+function csrfProtection(req, res, next) {
+    // Add csrfToken function to request for compatibility
+    req.csrfToken = function() {
+        return generateCsrfToken(req, res);
+    };
+    // Skip validation for safe methods
+    if (CSRF_IGNORED_METHODS.indexOf(req.method) !== -1) {
+        return next();
+    }
+    // Validate token for unsafe methods
+    if (!validateCsrfToken(req)) {
+        var err = new Error('invalid csrf token');
+        err.code = 'EBADCSRFTOKEN';
+        err.status = 403;
+        return next(err);
+    }
+    next();
 }
 
 plugins.setConfigs("frontend", {
@@ -723,13 +815,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         });
     });
     app.use(methodOverride());
+
     app.use(function(req, res, next) {
         if (!plugins.callMethod("skipCSRF", {req: req, res: res, next: next})) {
-        //none of the plugins requested to skip csrf for this request
-            csrf(req, res, next);
+            //none of the plugins requested to skip csrf for this request
+            csrfProtection(req, res, next);
         }
         else {
-        //skipping csrf step, some plugin needs it without csrf
+            //skipping csrf step, some plugin needs it without csrf
+            // Still provide req.csrfToken for compatibility
+            req.csrfToken = function() {
+                return generateCsrfToken(req, res);
+            };
             next();
         }
     });
@@ -746,15 +843,21 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     //for csrf error handling. redirect to login if getting bad token while logging in(not show forbidden page)
-    app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
+    app.use(function(err, req, res, next) {
         var mylink = req.url.split('?');
         mylink = mylink[0];
-        if (err.code === 'EBADCSRFTOKEN' && mylink === countlyConfig.path + "/login") {
+        // csrf-csrf throws ForbiddenError with code EBADCSRFTOKEN
+        var isCsrfError = err.code === 'EBADCSRFTOKEN' ||
+                          (err.message && err.message.toLowerCase().includes('invalid csrf token'));
+        if (isCsrfError && mylink === countlyConfig.path + "/login") {
             res.status(403);
             res.redirect(countlyConfig.path + '/login?message=login.token-expired');
         }
-        else {
+        else if (isCsrfError) {
             res.status(403).send("Forbidden Token");
+        }
+        else {
+            next(err);
         }
     });
 
