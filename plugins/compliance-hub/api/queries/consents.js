@@ -2,6 +2,7 @@ const common = require('../../../../api/utils/common');
 const countlyCommon = require('../../../../api/lib/countly.common.js');
 const log = common.log('compliance-hub:queries');
 const moment = require('moment-timezone');
+const utils = require('../utils/compliance-hub.utils');
 let clickHouseRunner;
 try {
     clickHouseRunner = require('../../../clickhouse/api/queries/clickhouseCoreQueries.js');
@@ -23,8 +24,7 @@ function mapConsentFieldsForDrillEvents(query) {
     // name mapping from consent_history fields to drill_events fields
     const fieldMap = {
         'device_id': 'did',
-        'type': 'sg._type',
-        'change': 'sg'
+        'type': 'sg._type'
     };
 
     /**
@@ -41,16 +41,24 @@ function mapConsentFieldsForDrillEvents(query) {
             for (const [key, value] of Object.entries(obj)) {
                 // Handle nested field mapping (e.g., change.attribution -> sg.attribution)
                 let mappedKey;
-                if (key.startsWith('change.')) {
-                    mappedKey = 'sg.' + key.substring(7);
-                }
-                else if (key.startsWith('type.')) {
+                if (key.startsWith('type.')) {
                     mappedKey = 'sg._type.' + key.substring(5);
+                    result[mappedKey] = mapFields(value);
+                }
+                else if (key.startsWith('change.')) {
+                    const base = key.substring(7);
+                    const val = mapFields(value);
+                    const valStr = (val === undefined || val === null) ? val : String(val);
+                    result.$and = result.$and || [];
+                    result.$and.push(
+                        {['sg.' + base]: valStr},
+                        {$expr: {$ne: ['$sg.' + base + '_bf', '$sg.' + base]}}
+                    );
                 }
                 else {
                     mappedKey = fieldMap[key] || key;
+                    result[mappedKey] = mapFields(value);
                 }
-                result[mappedKey] = mapFields(value);
             }
             return result;
         }
@@ -84,7 +92,7 @@ function sanitizeClickhouseFilterQuery(q) {
                 out[k] = q[k];
             }
         }
-        return out;
+        q = out;
     }
     return q;
 }
@@ -163,11 +171,16 @@ function transformConsentRows(rows) {
         if (out.sg) {
             try {
                 const seg = JSON.parse(JSON.stringify(out.sg));
-                const type = seg._type;
+                const segType = seg._type;
                 delete seg._type;
-                out.change = seg;
-                if (type) {
-                    out.type = type;
+
+                let change = utils.computeChange(seg);
+
+                if (Object.keys(change).length) {
+                    out.change = change;
+                }
+                if (segType) {
+                    out.type = segType;
                 }
             }
             catch (e) {
