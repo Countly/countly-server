@@ -97,7 +97,6 @@ plugins.connectToAllDatabases().then(function() {
         total_users: true,
         export_limit: 10000,
         prevent_duplicate_requests: true,
-        metric_changes: true,
         offline_mode: false,
         reports_regenerate_interval: 3600,
         send_test_email: "",
@@ -325,7 +324,6 @@ plugins.connectToAllDatabases().then(function() {
             log.e(err);
         }
     });
-
 
     plugins.installMissingPlugins(common.db);
     const taskManager = require('./utils/taskmanager.js');
