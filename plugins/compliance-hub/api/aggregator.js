@@ -76,6 +76,7 @@ const utils = require('./utils/compliance-hub.utils');
                         });
                     }
                 }
+                await common.manualWriteBatcher.flush('countly', 'consents');
             });
         }
         catch (err) {
