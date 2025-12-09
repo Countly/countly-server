@@ -31,9 +31,11 @@
             <cly-section v-if="lagHistory.length > 0" title="Lag History" tooltip="Consumer lag over time (last 100 snapshots, updated every 2 minutes)">
                 <cly-chart-line
                     :option="lagChartOption"
-                    :height="300"
+                    :height="400"
                     :show-zoom="true"
-                    :show-download="true">
+                    :show-download="true"
+                    xAxisLabelOverflow="unset"
+                >
                 </cly-chart-line>
             </cly-section>
 

@@ -575,6 +575,29 @@ var AggregatorStatusView = countlyVue.views.create({
                 var date = new Date(snapshot.ts);
                 return moment(date).format('HH:mm');
             });
+            var totalPoints = xAxisData.length;
+            var maxVisibleLabels = 12;
+            var labelStep = totalPoints > maxVisibleLabels ? Math.floor(Math.ceil(totalPoints / maxVisibleLabels)) : 1;
+            var axisLabelOptions = {
+                rotate: 0,
+                fontSize: 10,
+                interval: 0,
+            };
+            if (totalPoints > 16) {
+                axisLabelOptions.rotate = 60;
+            }
+            else if (totalPoints > 8) {
+                axisLabelOptions.rotate = 45;
+            }
+            if (labelStep > 1) {
+                var lastIndex = totalPoints - 1;
+                axisLabelOptions.interval = function(index) {
+                    if (index === lastIndex) {
+                        return true;
+                    }
+                    return index % labelStep === 0;
+                };
+            }
 
             // Build series for each consumer group with explicit colors
             var series = groupIds.map(function(groupId, index) {
@@ -634,10 +657,7 @@ var AggregatorStatusView = countlyVue.views.create({
                 xAxis: {
                     type: 'category',
                     data: xAxisData,
-                    axisLabel: {
-                        rotate: 45,
-                        fontSize: 10
-                    }
+                    axisLabel: axisLabelOptions
                 },
                 yAxis: {
                     type: 'value',
