@@ -188,19 +188,30 @@ class FCM extends Splitter {
                             sentSuccessfully.push({ p: allPushIds[i], r: messageId });
                         }
                         else {
-                            const sdkError = FCM_SDK_ERRORS[error.code];
-                            // check if the sdk error is mapped to an internal error.
-                            // set to default if its not.
-                            let internalErrorCode = sdkError?.mapTo ?? ERROR.DATA_PROVIDER;
-                            let internalErrorMessage = sdkError?.message;
-                            if (!internalErrorMessage) {
-                                if (error.code && error.message) {
-                                    internalErrorMessage = "[" + error.code + "] " + error.message;
+                            let internalErrorCode = ERROR.DATA_PROVIDER;
+                            let internalErrorMessage = "Invalid error message";
+                            let mapped = false;
+
+                            // valid error object (it could be undefined based on its type definition)
+                            if (error && error.code && error.message) {
+                                // check if the sdk error is mapped to an internal error.
+                                if (error.code in FCM_SDK_ERRORS) {
+                                    const sdkError = FCM_SDK_ERRORS[error.code];
+                                    if (sdkError.mapTo) {
+                                        internalErrorCode = sdkError.mapTo;
+                                    }
+                                    internalErrorMessage = sdkError.libraryKey + ": " + sdkError.message;
+                                    mapped = true;
                                 }
                                 else {
-                                    internalErrorMessage = "Invalid error message";
+                                    internalErrorMessage = "[" + error.code + "] " + error.message;
                                 }
                             }
+
+                            if (!mapped) {
+                                this.log.e("Unrecognized FCM error", result.responses[i]);
+                            }
+
                             errorObject(internalErrorCode, internalErrorMessage)
                                 .addAffected(pushes[i]._id, one);
                         }
