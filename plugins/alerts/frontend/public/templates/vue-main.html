@@ -28,7 +28,7 @@
 <script type="text/x-template" id="alerts-table">
     <div>
         <cly-empty-view
-            v-if="(rowTableRows.length === 0 && initialized)"
+            v-show="(rowTableRows.length === 0 && initialized)"
             test-id="alerts-table"
             :title="i18n('alerts.empty-title')"
             :subTitle="i18n('alerts.empty-subtitle')"
@@ -36,7 +36,7 @@
             :hasAction="canUserCreate"
             :actionFunc="createAlert"
         />
-        <cly-section v-else>
+        <cly-section v-show="!(rowTableRows.length === 0 && initialized)">
             <cly-datatable-n
                 :available-dynamic-cols="tableDynamicCols"
                 :force-loading="!initialized"
