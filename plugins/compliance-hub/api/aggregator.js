@@ -47,34 +47,36 @@ const utils = require('./utils/compliance-hub.utils');
         });
 
         try {
-            for await (const {events} of eventSource) {
-                if (events && Array.isArray(events)) {
-                    for (let i = 0; i < events.length; i++) {
-                        const currEvent = events[i];
-                        if (!currEvent || currEvent.e !== "[CLY]_consent" || !currEvent.a) {
-                            continue;
-                        }
+            await eventSource.processWithAutoAck(async(token, events) => {
+                if (!events || !Array.isArray(events)) {
+                    return;
+                }
 
-                        const metrics = buildConsentMetrics(currEvent);
-                        if (metrics) {
-                            const consentParams = {
+                for (let i = 0; i < events.length; i++) {
+                    const currEvent = events[i];
+                    if (!currEvent || currEvent.e !== "[CLY]_consent" || !currEvent.a) {
+                        continue;
+                    }
+
+                    const metrics = buildConsentMetrics(currEvent);
+                    if (metrics) {
+                        const consentParams = {
+                            app_id: currEvent.a,
+                            appTimezone: null,
+                            time: common.initTimeObj(null, currEvent.ts),
+                            qstring: {
                                 app_id: currEvent.a,
-                                appTimezone: null,
-                                time: common.initTimeObj(null, currEvent.ts),
-                                qstring: {
-                                    app_id: currEvent.a,
-                                    device_id: currEvent.did
-                                }
-                            };
-                            common.recordMetric(consentParams, {
-                                collection: "consents",
-                                id: currEvent.a,
-                                metrics: metrics
-                            });
-                        }
+                                device_id: currEvent.did
+                            }
+                        };
+                        common.recordMetric(consentParams, {
+                            collection: "consents",
+                            id: currEvent.a,
+                            metrics: metrics
+                        });
                     }
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Consent aggregation error:', err);
