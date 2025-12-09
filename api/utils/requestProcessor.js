@@ -1974,36 +1974,46 @@ const processRequest = (params) => {
                                 .limit(100)
                                 .toArray();
 
-                            // Aggregate stats
+                            // Fetch Kafka Connect status
+                            const connectStatus = await common.db.collection("kafka_connect_status")
+                                .find({})
+                                .toArray();
+
+                            // Aggregate stats from per-consumer-group documents
+                            // New schema: one document per consumer group with nested partition offsets
                             let totalBatchesProcessed = 0;
                             let totalDuplicatesSkipped = 0;
                             let avgBatchSizeOverall = 0;
-                            let partitionCount = 0;
+                            let groupsWithData = 0;
 
                             const partitionStats = consumerState.map(state => {
                                 totalBatchesProcessed += state.batchCount || 0;
                                 totalDuplicatesSkipped += state.duplicatesSkipped || 0;
                                 if (state.avgBatchSize) {
                                     avgBatchSizeOverall += state.avgBatchSize;
-                                    partitionCount++;
+                                    groupsWithData++;
                                 }
+                                // Count active partitions from nested partitions object
+                                const partitions = state.partitions || {};
+                                const partitionCount = Object.keys(partitions).length;
+                                const activePartitions = Object.values(partitions).filter(p => p.lastProcessedAt).length;
+
                                 return {
                                     id: state._id,
                                     consumerGroup: state.consumerGroup,
                                     topic: state.topic,
-                                    partition: state.partition,
-                                    lastCommittedOffset: state.lastCommittedOffset,
+                                    partitionCount,
+                                    activePartitions,
                                     lastProcessedAt: state.lastProcessedAt,
                                     batchCount: state.batchCount || 0,
                                     duplicatesSkipped: state.duplicatesSkipped || 0,
                                     lastDuplicateAt: state.lastDuplicateAt,
                                     lastBatchSize: state.lastBatchSize,
-                                    avgBatchSize: state.avgBatchSize,
-                                    recentBatchSizes: state.recentBatchSizes || []
+                                    avgBatchSize: state.avgBatchSize ? Math.round(state.avgBatchSize) : null
                                 };
                             });
 
-                            avgBatchSizeOverall = partitionCount > 0 ? avgBatchSizeOverall / partitionCount : 0;
+                            avgBatchSizeOverall = groupsWithData > 0 ? avgBatchSizeOverall / groupsWithData : 0;
 
                             // Process consumer health stats
                             let totalRebalances = 0;
@@ -2035,6 +2045,25 @@ const processRequest = (params) => {
                                 };
                             });
 
+                            // Process Kafka Connect status
+                            const connectorStats = connectStatus.map(conn => ({
+                                id: conn._id,
+                                connectorName: conn.connectorName,
+                                connectorState: conn.connectorState,
+                                connectorType: conn.connectorType,
+                                workerId: conn.workerId,
+                                tasks: conn.tasks || [],
+                                tasksRunning: (conn.tasks || []).filter(t => t.state === 'RUNNING').length,
+                                tasksTotal: (conn.tasks || []).length,
+                                updatedAt: conn.updatedAt
+                            }));
+
+                            // Get connect consumer group lag for ClickHouse sink
+                            const connectConsumerGroupId = common.config?.kafka?.connectConsumerGroupId;
+                            const connectGroupHealth = connectConsumerGroupId
+                                ? consumerHealth.find(h => h.groupId === connectConsumerGroupId)
+                                : null;
+
                             common.returnOutput(params, {
                                 summary: {
                                     totalBatchesProcessed,
@@ -2048,7 +2077,15 @@ const processRequest = (params) => {
                                 },
                                 partitions: partitionStats,
                                 consumers: consumerStats,
-                                lagHistory: lagHistory.reverse() // Oldest first for charts
+                                lagHistory: lagHistory.reverse(), // Oldest first for charts
+
+                                // Kafka Connect status
+                                connectStatus: {
+                                    enabled: !!common.config?.kafka?.connectApiUrl,
+                                    connectors: connectorStats,
+                                    sinkLag: connectGroupHealth?.totalLag || 0,
+                                    sinkLagUpdatedAt: connectGroupHealth?.lagUpdatedAt
+                                }
                             });
                         }
                         catch (err) {

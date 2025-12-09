@@ -1,8 +1,7 @@
 <div v-bind:class="[componentId]" class="aggregator-status-view">
     <cly-main>
         <!-- Loading state -->
-        <div v-if="isLoading && !hasFetched" class="bu-is-flex bu-is-justify-content-center bu-p-5">
-            <cly-progress-bar-linear :indeterminate="true"></cly-progress-bar-linear>
+        <div v-if="isLoading && !hasFetched" v-loading="true" class="bu-p-5" style="min-height: 200px;">
         </div>
 
         <!-- Kafka Stats Section -->
@@ -94,17 +93,18 @@
                 </cly-datatable-n>
             </cly-section>
 
-            <!-- Partition Stats Table -->
-            <cly-section v-if="kafkaPartitions.length > 0" title="Partition Stats" tooltip="Per-partition batch processing and deduplication statistics">
+            <!-- Consumer Group Processing Stats Table -->
+            <cly-section v-if="kafkaPartitions.length > 0" title="Consumer Group Processing Stats" tooltip="Batch processing and deduplication statistics per consumer group">
                 <cly-datatable-n :rows="kafkaPartitions" :resizable="true" :force-loading="isLoading">
                     <template v-slot="scope">
                         <el-table-column column-key="consumerGroup" prop="consumerGroup" sortable="custom" label="Consumer Group" min-width="150">
                         </el-table-column>
                         <el-table-column column-key="topic" prop="topic" sortable="custom" label="Topic" min-width="180">
                         </el-table-column>
-                        <el-table-column column-key="partition" prop="partition" sortable="custom" label="Partition" min-width="80">
-                        </el-table-column>
-                        <el-table-column column-key="lastCommittedOffset" prop="lastCommittedOffset" sortable="custom" label="Last Offset" min-width="120">
+                        <el-table-column column-key="partitionCount" prop="partitionCount" sortable="custom" label="Partitions" min-width="100">
+                            <template v-slot="rowScope">
+                                <span>{{ rowScope.row.activePartitions || 0 }} / {{ rowScope.row.partitionCount || 0 }}</span>
+                            </template>
                         </el-table-column>
                         <el-table-column column-key="batchCount" prop="batchCount" sortable="custom" label="Batches" min-width="100">
                             <template v-slot="rowScope">
@@ -118,7 +118,7 @@
                         </el-table-column>
                         <el-table-column column-key="avgBatchSize" prop="avgBatchSize" sortable="custom" label="Avg Batch" min-width="100">
                             <template v-slot="rowScope">
-                                <span>{{ rowScope.row.avgBatchSize ? Math.round(rowScope.row.avgBatchSize) : '-' }}</span>
+                                <span>{{ rowScope.row.avgBatchSize || '-' }}</span>
                             </template>
                         </el-table-column>
                         <el-table-column column-key="lastBatchSize" prop="lastBatchSize" sortable="custom" label="Last Batch" min-width="100">

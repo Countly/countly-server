@@ -1,0 +1,101 @@
+<div v-bind:class="[componentId]" class="ingestion-status-view">
+    <cly-main>
+        <!-- Loading state -->
+        <div v-if="isLoading && !hasFetched" v-loading="true" class="bu-p-5" style="min-height: 200px;">
+        </div>
+
+        <!-- ClickHouse Consumer Section -->
+        <template v-if="hasFetched">
+            <!-- Connect monitoring not enabled -->
+            <cly-section v-if="!connectEnabled" title="ClickHouse Consumer" tooltip="Kafka Connect sink status and lag for ClickHouse data pipeline">
+                <div class="bu-has-text-centered bu-p-5 color-cool-gray-50">
+                    <i class="el-icon-warning-outline bu-mr-2"></i>
+                    <span>ClickHouse consumer monitoring is not enabled. Set <code>kafka.connectApiUrl</code> in config to enable.</span>
+                </div>
+            </cly-section>
+
+            <!-- Connect Summary Cards (only if enabled) -->
+            <template v-if="connectEnabled">
+                <cly-section title="ClickHouse Consumer" tooltip="Kafka Connect sink status and lag for ClickHouse data pipeline">
+                    <cly-metric-cards :multiline="true">
+                        <cly-metric-card
+                            v-for="card in connectSummaryCards"
+                            :key="card.title"
+                            color="#097EFF">
+                            <template v-slot:default>
+                                {{ card.title }}
+                                <cly-tooltip-icon v-if="card.tooltip" class="bu-ml-1" :tooltip="card.tooltip"></cly-tooltip-icon>
+                            </template>
+                            <template v-slot:number>
+                                <span :class="card.numberClass || ''">{{ card.value }}</span>
+                            </template>
+                            <template v-slot:description>
+                                <span class="text-small color-cool-gray-100">{{ card.detail }}</span>
+                            </template>
+                        </cly-metric-card>
+                    </cly-metric-cards>
+                </cly-section>
+
+                <!-- Sink Lag History Chart -->
+                <cly-section v-if="throughputHistory.length > 0" title="Sink Lag History" tooltip="ClickHouse sink consumer lag over time (last 100 snapshots)">
+                    <cly-chart-line
+                        :option="throughputChartOption"
+                        :height="300"
+                        :show-zoom="true"
+                        :show-download="true">
+                    </cly-chart-line>
+                </cly-section>
+
+                <!-- Connectors Table -->
+                <cly-section v-if="hasConnectorData" title="Connectors" tooltip="Kafka Connect connector status and task health">
+                    <cly-datatable-n :rows="connectors" :resizable="true" :force-loading="isLoading">
+                        <template v-slot="scope">
+                            <el-table-column column-key="connectorName" prop="connectorName" sortable="custom" label="Connector" min-width="200">
+                                <template v-slot="rowScope">
+                                    <span class="text-medium font-weight-bold">{{ rowScope.row.connectorName }}</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column column-key="connectorState" prop="connectorState" sortable="custom" label="State" min-width="100">
+                                <template v-slot="rowScope">
+                                    <span :class="getConnectorStateClass(rowScope.row.connectorState)">
+                                        {{ rowScope.row.connectorState }}
+                                    </span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column column-key="connectorType" prop="connectorType" sortable="custom" label="Type" min-width="100">
+                                <template v-slot="rowScope">
+                                    <span>{{ rowScope.row.connectorType }}</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column column-key="tasks" prop="tasksRunning" sortable="custom" label="Tasks" min-width="100">
+                                <template v-slot="rowScope">
+                                    <span :class="rowScope.row.tasksRunning === rowScope.row.tasksTotal ? 'color-green-100' : 'color-yellow-100'">
+                                        {{ rowScope.row.tasksRunning }} / {{ rowScope.row.tasksTotal }}
+                                    </span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column column-key="workerId" prop="workerId" label="Worker" min-width="200">
+                                <template v-slot="rowScope">
+                                    <span class="text-small">{{ rowScope.row.workerId || '-' }}</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column column-key="updatedAt" prop="updatedAt" sortable="custom" label="Last Update" min-width="160">
+                                <template v-slot="rowScope">
+                                    <span>{{ formatDate(rowScope.row.updatedAt) }}</span>
+                                </template>
+                            </el-table-column>
+                        </template>
+                    </cly-datatable-n>
+                </cly-section>
+
+                <!-- No Connector data message (enabled but no data yet) -->
+                <cly-section v-if="!hasConnectorData" title="Connectors">
+                    <div class="bu-has-text-centered bu-p-5 color-cool-gray-50">
+                        <i class="el-icon-info bu-mr-2"></i>
+                        <span>No connector data available yet. Data will appear after the next lag monitor job runs.</span>
+                    </div>
+                </cly-section>
+            </template>
+        </template>
+    </cly-main>
+</div>
