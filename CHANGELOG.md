@@ -1,3 +1,7 @@
+## Version 24.05.48
+Fixes:
+-[push] Better FCM error handling
+
 ## Version 24.05.47
 Fixes:
 - [alerts] Add alert interval validation in the frontend
