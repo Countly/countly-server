@@ -1,3 +1,6 @@
+## Version 25.03.xx
+- [journeys] Save to profiile block implemented
+
 ## Version 25.03.29
 Fixes:
 - [core] Do not output password in logs on mongodb connection initialisation error
