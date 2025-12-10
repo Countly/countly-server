@@ -333,14 +333,6 @@
                                         </template>
                                         <template v-slot:header-right>
                                             <cly-more-options @command="handleCrashStacktraceCommand($event, props.row)">
-                                                <el-dropdown-item v-if="symbolicationEnabled && !!props.row._symbol_id" command="symbolicate">
-                                                    <span>
-                                                        {{!props.row.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
-                                                    </span>
-                                                </el-dropdown-item>
-                                                <el-dropdown-item v-if="symbolicationEnabled && !props.row._symbol_id" :command="{url: '#/crash/symbols/'}">
-                                                    {{i18n("crash_symbolication.should-upload")}}
-                                                </el-dropdown-item>
                                                 <el-dropdown-item v-if="!!props.row.binary_images" :command="{url: '/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id}">
                                                     {{i18n('crashes.show-binary-images')}}
                                                 </el-dropdown-item>
