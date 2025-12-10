@@ -49,7 +49,6 @@ var errorCn = 0;
 var process = {
     drill_events: true,
     /*app_crashes:true,
-	metric_changes:true,
 	consent_history:true,
 	feedback:true,
 	symbolication_jobs:true,

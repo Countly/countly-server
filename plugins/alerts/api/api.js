@@ -84,6 +84,10 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
 
         validateCreate(params, FEATURE_NAME, function() {
             let alertConfig = params.qstring.alert_config;
+            if (!alertConfig) {
+                common.returnMessage(params, 400, 'Missing alert_config');
+                return;
+            }
             try {
                 alertConfig = JSON.parse(alertConfig);
                 var checkProps = {
@@ -179,7 +183,15 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
         let params = ob.params;
 
         validateUpdate(params, FEATURE_NAME, function() {
-            const statusList = JSON.parse(params.qstring.status);
+            let statusList;
+            try {
+                statusList = JSON.parse(params.qstring.status);
+            }
+            catch (err) {
+                log.e('Parse alert status failed', params.qstring.status, err);
+                common.returnMessage(params, 500, "Failed to change alert status" + err.message);
+                return;
+            }
             const batch = [];
             for (const alertID in statusList) {
                 batch.push(

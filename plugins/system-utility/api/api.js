@@ -1,6 +1,6 @@
 var plugin = {},
     common = require('../../../api/utils/common.js'),
-    tracker = require('../../../api/parts/mgmt/tracker.js'),
+    //tracker = require('../../../api/parts/mgmt/tracker.js'),
     plugins = require('../../pluginManager.js'),
     systemUtility = require('./system.utility'),
     log = common.log('system-utility:api');
@@ -222,7 +222,7 @@ function stopWithTimeout(type, fromTimeout = false) {
 
     });
 
-    plugins.register("/master", function() {
+    /*plugins.register("/master", function() {
         //ping server stats periodically
         if (tracker.isEnabled()) {
             var timeout = 1000 * 60 * 15;
@@ -287,7 +287,7 @@ function stopWithTimeout(type, fromTimeout = false) {
             };
             getServerStats();
         }
-    });
+    });*/
 }(plugin));
 
 module.exports = plugin;

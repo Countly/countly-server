@@ -41,7 +41,7 @@
         </template>
         <template v-slot:header-right>
             <div class="bu-mt-6">
-                <el-button v-if="canUserUpdate" @click="handleEdit" size="small" icon="ion-edit">{{i18n('data-manager.edit-event')}}</el-button>
+                <el-button data-test-id="event-detail-page-edit-button" v-if="canUserUpdate" @click="handleEdit" size="small" icon="ion-edit">{{i18n('data-manager.edit-event')}}</el-button>
                 <cly-more-options v-if="canUserDelete" class="bu-ml-2" size="small" @command="handleCommand($event, event.key)">
                     <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
                 </cly-more-options>
@@ -127,7 +127,7 @@
                         </span>
                     </template>
                 </el-table-column>
-                <el-table-column :label="i18n('data-manager.last-modified')" column-key="auditDate" prop="auditTs" sortable="custom">
+                <el-table-column :label="i18n('data-manager.last-modified')" prop="auditTs" sortable="custom">
                     <template v-slot="rowScope">
                         <div v-if="rowScope.row.audit && rowScope.row.audit.ts && rowScope.row.auditDate">
                             <div>{{rowScope.row.auditDate}}</div>

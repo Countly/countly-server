@@ -5,17 +5,22 @@
   "author": "Countly, Inc.",
   "scripts": {
     "cy:run:dashboard": "node ./cypress/fixtures/generators/generateFixtures.js && cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/dashboard/**/*.cy.js --headless --no-runner-ui --browser chrome",
-    "cy:run:onboarding": "cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/onboarding/**/*.cy.js --headless --no-runner-ui --browser chrome"
+    "cy:run:onboarding": "cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/onboarding/**/*.cy.js --headless --no-runner-ui --browser chrome",
+    "cy:run:sdk": "cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/sdk/**/*.cy.js --headless --no-runner-ui --browser chrome"
   },
   "license": "ISC",
   "dependencies": {
-    "@faker-js/faker": "^9.7.0",
+    "@faker-js/faker": "^10.0.0",
     "base-64": "^1.0.0",
-    "chai": "^5.1.1",
+    "chai": "^6.0.1",
     "cypress-file-upload": "^5.0.8",
     "moment": "^2.29.4"
   },
   "devDependencies": {
-    "cypress": "^13.6.4"
+    "cypress": "^13.4.0",
+    "pdfjs-dist": "^3.11.174",
+    "pixelmatch": "^7.1.0",
+    "pngjs": "^7.0.0",
+    "sharp": "^0.34.4"
   }
 }

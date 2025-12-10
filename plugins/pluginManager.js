@@ -10,7 +10,6 @@ var pluginDependencies = require('./pluginDependencies.js'),
     apiCountlyConfig = require('../api/config', 'dont-enclose'),
     utils = require('../api/utils/utils.js'),
     fs = require('fs'),
-    url = require('url'),
     querystring = require('querystring'),
     cp = require('child_process'),
     async = require("async"),
@@ -60,7 +59,7 @@ var pluginManager = function pluginManager() {
     /**
      *  Events prefixed with [CLY]_ that should be recorded in drill
      */
-    this.internalDrillEvents = ["[CLY]_session"];
+    this.internalDrillEvents = ["[CLY]_session_begin", "[CLY]_property_update", "[CLY]_session", "[CLY]_llm_interaction", "[CLY]_llm_interaction_feedback", "[CLY]_llm_tool_used", "[CLY]_llm_tool_usage_parameter"];
     /**
      *  Segments for events prefixed with [CLY]_ that should be omitted
      */
@@ -78,6 +77,7 @@ var pluginManager = function pluginManager() {
      * @type {{collection: string, db: mongodb.Db, property: string, expireAfterSeconds: number}[]}
      */
     this.ttlCollections = [];
+    this.ttlCollections.push({"db": "countly", "collection": "drill_data_cache", "expireAfterSeconds": 600, "property": "lu"});
     /**
      *  Custom configuration files for different databases for docker env
      */
@@ -126,6 +126,11 @@ var pluginManager = function pluginManager() {
                 //If file exists try including
                 var filepath = path.resolve(__dirname, pluginNames[i] + "/api/" + (options.filename || "api") + ".js");
                 if (fs.existsSync(filepath)) {
+                    //Require init_config if it exists
+                    var initConfigPath = path.resolve(__dirname, pluginNames[i] + "/api/init_configs.js");
+                    if (fs.existsSync(initConfigPath)) {
+                        require(initConfigPath);
+                    }
                     pluginsApis[pluginNames[i]] = require(filepath);
                 }
             }
@@ -178,7 +183,11 @@ var pluginManager = function pluginManager() {
     this.initPlugin = function(pluginName, filename) {
         try {
             filename = filename || "api";
-            pluginsApis[pluginName] = require("./" + pluginName + "/api/" + filename);
+            var initConfigPath = path.resolve(__dirname, "./" + pluginName + "/api/init_configs.js");
+            if (fs.existsSync(initConfigPath)) {
+                require(initConfigPath);
+            }
+            pluginsApis[pluginName] = require(path.resolve(__dirname, "./" + pluginName + "/api/" + filename));
             fullPluginsMap[pluginName] = true;
         }
         catch (ex) {
@@ -342,7 +351,7 @@ var pluginManager = function pluginManager() {
 
     this.loadConfigsIngestor = async function(db, callback/*, api*/) {
         try {
-            var res = await db.collection("plugins").findOne({_id: "plugins"}, {"api": true, "plugins": true, "drill": true});
+            var res = await db.collection("plugins").findOne({_id: "plugins"}, {"api": true, "plugins": true, "drill": true, "aggregator": true});
             res = res || {};
             delete res._id;
             configs = res || {};
@@ -1815,25 +1824,42 @@ var pluginManager = function pluginManager() {
         if (!db) {
             db = "countly";
         }
-        var i = str.lastIndexOf('/countly');
-        var k = str.lastIndexOf('/' + db);
-        if (i !== k && i !== -1 && db) {
-            return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
+
+        // Handle admin database replacement for any target database
+        var hasAdminDb = str.indexOf('/admin') !== -1;
+
+        if (hasAdminDb) {
+            var updatedConnectionString = str.replace('/admin', '/' + db);
+            var hasAuthSource = updatedConnectionString.indexOf('authSource=') !== -1;
+
+            if (!hasAuthSource) {
+                var hasQueryParams = updatedConnectionString.indexOf('?') !== -1;
+                var authSourceParam = hasQueryParams ? '&authSource=admin' : '?authSource=admin';
+                updatedConnectionString += authSourceParam;
+            }
+
+            return updatedConnectionString;
         }
-        else if (i === -1 && k === -1) {
+
+        var countlyIndex = str.lastIndexOf('/countly');
+        var targetDbIndex = str.lastIndexOf('/' + db);
+        if (countlyIndex !== targetDbIndex && countlyIndex !== -1 && db) {
+            return str.substr(0, countlyIndex) + "/" + db + str.substr(countlyIndex + ('/countly').length);
+        }
+        else if (countlyIndex === -1 && targetDbIndex === -1) {
             //no db found in the string, we should insert the needed one
-            var urlparts = str.split("://");
-            if (typeof urlparts[1] === "string") {
-                var parts = urlparts[1].split("/");
-                if (parts.length === 1) {
-                    parts[0] += "/" + db;
+            var urlParts = str.split("://");
+            if (typeof urlParts[1] === "string") {
+                var pathParts = urlParts[1].split("/");
+                if (pathParts.length === 1) {
+                    pathParts[0] += "/" + db;
                 }
                 else {
-                    parts[parts.length - 1] = db + parts[parts.length - 1];
+                    pathParts[pathParts.length - 1] = db + pathParts[pathParts.length - 1];
                 }
-                urlparts[1] = parts.join("/");
+                urlParts[1] = pathParts.join("/");
             }
-            return urlparts.join("://");
+            return urlParts.join("://");
         }
         return str;
     };
@@ -1848,7 +1874,7 @@ var pluginManager = function pluginManager() {
         }
         else {
             console.log("using separate connection pool");
-            databases = await Promise.all(dbs.map(this.dbConnection.bind(this, return_original)));
+            databases = await Promise.all(dbs.map((db) => this.dbConnection(db, return_original)));
         }
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
 
@@ -1857,6 +1883,13 @@ var pluginManager = function pluginManager() {
         common.outDb = dbOut;
         require('../api/utils/countlyFs').setHandler(dbFs);
         common.drillDb = dbDrill;
+
+        try {
+            common.db.collection("drill_data_cache").ensureIndex({lu: 1});
+        }
+        catch (err) {
+            console.log('Plugin Manager: Failed to create index on drill_data_cache collection for lu field:', err);
+        }
         var self = this;
         await new Promise(function(resolve) {
             self.loadConfigs(common.db, function() {
@@ -1878,9 +1911,27 @@ var pluginManager = function pluginManager() {
         var dbList = [];
 
         var useConfig = JSON.parse(JSON.stringify(countlyConfig));
-        if (process.argv[1] && process.argv[1].endsWith('api/api.js')) {
+        if (process.argv[1] && (process.argv[1].endsWith('api/api.js') ||
+                                process.argv[1].endsWith('api/ingestor.js') ||
+                                process.argv[1].endsWith('api/aggregator.js') ||
+                                process.argv[1].includes('/api/') ||
+                                process.argv[1].includes('jobServer/index.js'))) {
             useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
         }
+
+        // TEMPORARY DEBUG LOGGING - MONGODB CONNECTION
+        console.log('=== PLUGIN MANAGER DB CONNECTION DEBUG ===');
+        console.log('Process argv[1]:', process.argv[1]);
+        console.log('Using API config:', process.argv[1] && (process.argv[1].endsWith('api/api.js') ||
+                                process.argv[1].endsWith('api/ingestor.js') ||
+                                process.argv[1].endsWith('api/aggregator.js') ||
+                                process.argv[1].includes('/api/') ||
+                                process.argv[1].includes('jobServer/index.js')));
+        console.log('countlyConfig.mongodb:', JSON.stringify(countlyConfig.mongodb, null, 2));
+        console.log('apiCountlyConfig.mongodb:', JSON.stringify(apiCountlyConfig.mongodb, null, 2));
+        console.log('useConfig.mongodb:', JSON.stringify(useConfig.mongodb, null, 2));
+        console.log('config parameter:', typeof config === 'string' ? config : JSON.stringify(config, null, 2));
+        console.log('=== END PLUGIN MANAGER DB CONNECTION DEBUG ===');
         if (typeof config === "string") {
             db = config;
             if (this.dbConfigFiles[config]) {
@@ -1912,9 +1963,21 @@ var pluginManager = function pluginManager() {
         }
 
         if (config && typeof config.mongodb === "string") {
-            var urlParts = url.parse(config.mongodb, true);
-            if (urlParts && urlParts.query && urlParts.query.maxPoolSize) {
-                maxPoolSize = urlParts.query.maxPoolSize;
+            try {
+                const urlObj = new URL(config.mongodb);
+                // mongo connection string with multiple host like 'mongodb://localhost:30000,localhost:30001' will cause an error
+
+                maxPoolSize = urlObj.searchParams.get('maxPoolSize') !== null ? urlObj.searchParams.get('maxPoolSize') : maxPoolSize;
+            }
+            catch (_err) {
+                // we catch the error here and try to process only the query params part
+                const urlParts = config.mongodb.split('?');
+
+                if (urlParts.length > 1) {
+                    const queryParams = new URLSearchParams(urlParts[1]);
+
+                    maxPoolSize = queryParams.get('maxPoolSize') !== null ? queryParams.get('maxPoolSize') : maxPoolSize;
+                }
             }
         }
         else {
@@ -1929,10 +1992,10 @@ var pluginManager = function pluginManager() {
         var dbOptions = {
             maxPoolSize: maxPoolSize,
             noDelay: true,
-            connectTimeoutMS: 999999999,
-            socketTimeoutMS: 999999999,
-            serverSelectionTimeoutMS: 999999999,
-            maxIdleTimeMS: 0,
+            connectTimeoutMS: 30000,
+            socketTimeoutMS: 0,
+            serverSelectionTimeoutMS: 30000,
+            maxIdleTimeMS: 300000,
             waitQueueTimeoutMS: 0
         };
         if (typeof config.mongodb === 'string') {
@@ -1978,6 +2041,14 @@ var pluginManager = function pluginManager() {
             }
         }
 
+        // TEMPORARY DEBUG LOGGING - FINAL MONGODB CONNECTION
+        console.log('=== PLUGIN MANAGER FINAL DB CONNECTION ===');
+        console.log('Database name:', db);
+        console.log('Connection string:', dbName);
+        console.log('Max pool size:', maxPoolSize);
+        console.log('DB options:', JSON.stringify(dbOptions, null, 2));
+        console.log('=== END PLUGIN MANAGER FINAL DB CONNECTION ===');
+
         var db_name = "countly";
         try {
             db_name = dbName.split("/").pop().split("?")[0];
@@ -2003,10 +2074,19 @@ var pluginManager = function pluginManager() {
             await client.connect();
         }
         catch (ex) {
+            var safeDbName = dbName;
+            var start = dbName.indexOf("://") + 3;
+            var end = dbName.indexOf("@", start);
+            if (end > -1 && start > 3) {
+                var middle = dbName.indexOf(":", start);
+                if (middle > -1 && middle < end) {
+                    safeDbName = dbName.substring(0, middle) + ":*****" + dbName.substring(end);
+                }
+            }
             logDbRead.e("Error connecting to database", ex);
             logDbRead.e("With params %j", {
                 db: db_name,
-                connection: dbName,
+                connection: safeDbName,
                 options: dbOptions
             });
             //exit to retry to reconnect on restart
@@ -2093,7 +2173,11 @@ var pluginManager = function pluginManager() {
             return ret;
         }
         else {
-            return client.db(db_name);
+            var db_instance = client.db(db_name);
+            if (return_original && client.db.ObjectID) {
+                db_instance.ObjectID = client.db.ObjectID;
+            }
+            return db_instance;
         }
     };
 
@@ -3099,6 +3183,28 @@ var pluginManager = function pluginManager() {
         }
         return toReturn;
     };
+
+    this.register('/database/register', function(params) {
+        if (!params || !params.name || !params.client) {
+            console.error('Invalid database registration: missing name or client');
+            return;
+        }
+
+        try {
+            const common = require('../api/utils/common.js');
+
+            // Attach database client to common object using the provided name
+            common[params.name] = params.client;
+            console.log(`Database '${params.name}' (${params.type || 'unknown'}) registered with common object`);
+
+            if (params.description) {
+                console.log(`  Description: ${params.description}`);
+            }
+        }
+        catch (error) {
+            console.error(`Failed to register database '${params.name}':`, error);
+        }
+    });
 };
 /* ************************************************************************
 SINGLETON CLASS DEFINITION

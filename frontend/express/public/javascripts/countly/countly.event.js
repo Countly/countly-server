@@ -17,6 +17,7 @@
         _period = null;
     var _activeLoadedEvent = "";
     var _activeLoadedSegmentation = "";
+    var _refreshEventsPromise = null;
 
     countlyEvent.hasLoadedData = function() {
         if (_activeLoadedEvent && _activeLoadedEvent === _activeEvent && _activeLoadedSegmentation === _activeSegmentation) {
@@ -497,7 +498,11 @@
 
     countlyEvent.refreshEvents = function() {
         if (!countlyCommon.DEBUG) {
-            return $.ajax({
+            if (_refreshEventsPromise) {
+                return _refreshEventsPromise;
+            }
+
+            _refreshEventsPromise = $.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
@@ -510,8 +515,13 @@
                     if (!_activeEvent && countlyEvent.getEvents()[0]) {
                         _activeEvent = countlyEvent.getEvents()[0].key;
                     }
+                },
+                complete: function() {
+                    _refreshEventsPromise = null;
                 }
             });
+
+            return _refreshEventsPromise;
         }
         else {
             _activeEvents = {};

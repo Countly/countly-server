@@ -33,7 +33,7 @@
                         </div>
                     </div>
                     <div class="bu-level-right">
-                        <cly-more-options class="bu-ml-2" @command="dbviewerActions($event)">
+                        <cly-more-options v-if="!isClickhouseDbSelected" class="bu-ml-2" @command="dbviewerActions($event)">
                             <el-dropdown-item command="aggregation">{{ i18n('dbviewer.aggregate') }}</el-dropdown-item>
                             <el-dropdown-item command="indexes">{{ i18n('dbviewer.indexes') }}</el-dropdown-item>
                             <el-dropdown-item command="data">{{ i18n('dbviewer.data') }}</el-dropdown-item>
@@ -76,14 +76,7 @@
             >
             <template v-slot="formDialogScope">
                 <div class="dbviewer-tab__popup-content">
-                    <div class="dbviewer-tab__filter-textarea">
-                        <label class="text-small">{{ i18n('dbviewer.filter-query') }}</label>
-                        <el-input
-                            type="textarea"
-                            v-model="formDialogScope.editedObject.filter"
-                            placeholder="{}">
-                        </el-input>
-                    </div>
+                    <cly-dbviewer-mongodb-filtering v-model="formDialogScope.editedObject.filter" />
                     <div class="dbviewer-tab__projection">
                         <el-checkbox
                             class="bu-mt-2"
@@ -143,6 +136,97 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </template>
+            <template slot="controls-left">
+                <div @click="clearFilters()" class="text-medium color-danger bu-is-clickable">
+                    Remove Filter
+                </div>
+            </template>
+        </cly-form-dialog>
+        <cly-form-dialog title="Filter Query"
+            name="dbviewer-filter-query"
+            @submit="onExecuteFilter"
+            saveButtonLabel="Apply Filter"
+            v-bind="formDialogs.clickhouseQueryFilter"
+            ref="dbviewerChFilterForm"
+            >
+            <template v-slot="formDialogScope">
+                <div class="dbviewer-tab__popup-content dbviewer-tab__popup-content--clickhouse">
+                    <dbviewer-clickhouse-filtering
+                        class="bu-mb-3"
+                        v-model="formDialogScope.editedObject.filterObj"
+                        @change="onFilterChange"
+                        :fields="filterFields"
+                        :disabled="isFetching"
+                        :allow-delete-first-row="true"
+                    />
+                    <div class="dbviewer-tab__projection bu-mr-4">
+                        <el-checkbox
+                            class="bu-mt-2"
+                            v-model="formDialogScope.editedObject.projectionEnabled">
+                                <span class="bu-has-text-weight-normal">{{ i18n('dbviewer.select-fields-to-return') }}</span>
+                        </el-checkbox>
+                        <div v-if="formDialogScope.editedObject.projectionEnabled">
+                            <label
+                                for="dbviewer-tab__projection-selector"
+                                class="text-small bu-mt-2">
+                                {{ i18n('dbviewer.projection') }}
+                            </label>
+                            <cly-select-x
+                                :options="projectionOptions"
+                                :placeholder="i18n('dbviewer.projection')"
+                                :show-search="true"
+                                :searchable="true"
+                                v-model="formDialogScope.editedObject.projection"
+                                class="bu-mt-1"
+                                :hide-all-options-tab="true"
+                                mode="multi-check"
+                                :popper-append-to-body="false"
+                                >
+                                </cly-select-x>
+                        </div>
+                    </div>
+                    <!-- todo: Sorting for CH will be considered later -->
+                    <!-- <div class="dbviewer-tab__sort">
+                        <el-checkbox
+                            class="bu-mt-2"
+                            v-model="formDialogScope.editedObject.sortEnabled">
+                            <span class="bu-has-text-weight-normal"> {{ i18n('dbviewer.select-fields-to-sort') }}</span>
+                        </el-checkbox>
+                        <div v-if="formDialogScope.editedObject.sortEnabled">
+                            <label
+                                for="dbviewer-tab__sort-selector"
+                                class="text-small bu-mt-2">
+                                {{ i18n('dbviewer.sort-options') }}
+                            </label>
+                            <div class="dbviewer-tab__sort-inputs">
+                                <el-select
+                                    :placeholder="i18n('dbviewer.sort-options')"
+                                    :show-search="true"
+                                    :searchable="true"
+                                    v-model="formDialogScope.editedObject.sort"
+                                    @focus="onClickhouseSortFocus"
+                                    class="bu-mt-1"
+                                    :hide-all-options-tab="true"
+                                    :popper-append-to-body="false"
+                                >
+                                <el-option
+                                    v-for="field in chSortOptions"
+                                    :key="field.value"
+                                    :label="field.label"
+                                    :value="field.value"
+                                />
+                            </el-select>
+                                <el-switch
+                                    id="dbviewer-tab__sort-type-selector"
+                                    v-model="isDescentSort"
+                                    :active-text="i18n('dbviewer.descending')"
+                                    :inactive-text="i18n('dbviewer.ascending')">
+                                </el-switch>
+                            </div>
+                        </div>
+                    </div> -->
                 </div>
             </template>
             <template slot="controls-left">

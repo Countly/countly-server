@@ -29,14 +29,7 @@ const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 const request = require('countly-request')(plugins.getConfig("security"));
-
-try {
-    require('../../jobServer/api');
-    log.i('Job api loaded');
-}
-catch (ex) {
-    log.e('Job api not available');
-}
+const render = require('../../api/utils/render.js');
 
 var loaded_configs_time = 0;
 
@@ -182,42 +175,13 @@ const processRequest = (params) => {
 
         if (!params.cancelRequest) {
             switch (apiPath) {
-            case '/i/bulk': {
-                let requests = params.qstring.requests;
-
-                if (requests && typeof requests === "string") {
-                    try {
-                        requests = JSON.parse(requests);
-                    }
-                    catch (SyntaxError) {
-                        console.log('Parse bulk JSON failed', requests, params.req.url, params.req.body);
-                        requests = null;
-                    }
-                }
-                if (!requests) {
-                    common.returnMessage(params, 400, 'Missing parameter "requests"');
-                    return false;
-                }
-                if (!Array.isArray(requests)) {
-                    console.log("Passed invalid param for request. Expected Array, got " + typeof requests);
-                    common.returnMessage(params, 400, 'Invalid parameter "requests"');
-                    return false;
-                }
-                if (!params.qstring.safe_api_response && !plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-                    common.returnMessage(params, 200, 'Success');
-                }
-                common.blockResponses(params);
-
-                processBulkRequest(0, requests, params);
-                break;
-            }
             case '/i/users': {
                 if (params.qstring.args) {
                     try {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
                     catch (SyntaxError) {
-                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
+                        console.log('Parse %s JSON failed. URL: %s, Body: %s', apiPath, params.req.url, JSON.stringify(params.req.body));
                     }
                 }
 
@@ -353,7 +317,7 @@ const processRequest = (params) => {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
                     catch (SyntaxError) {
-                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
+                        console.log('Parse %s JSON failed %s', apiPath, params.req.url, params.req.body);
                     }
                 }
                 switch (paths[3]) {
@@ -368,6 +332,45 @@ const processRequest = (params) => {
                     });
                     break;
                 }
+                break;
+            }
+            case '/o/render': {
+                validateUserForRead(params, function() {
+                    var options = {};
+                    var view = params.qstring.view || "";
+                    var route = params.qstring.route || "";
+                    var id = params.qstring.id || "";
+
+                    options.view = view + "#" + route;
+                    options.id = id ? "#" + id : "";
+
+                    var imageName = "screenshot_" + common.crypto.randomBytes(16).toString("hex") + ".png";
+
+                    options.savePath = path.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + imageName);
+                    options.source = "core";
+
+                    authorize.save({
+                        db: common.db,
+                        multi: false,
+                        owner: params.member._id,
+                        ttl: 300,
+                        purpose: "LoginAuthToken",
+                        callback: function(err2, token) {
+                            if (err2) {
+                                common.returnMessage(params, 400, 'Error creating token: ' + err2);
+                                return false;
+                            }
+                            options.token = token;
+                            render.renderView(options, function(err3) {
+                                if (err3) {
+                                    common.returnMessage(params, 400, 'Error creating screenshot. Please check logs for more information.');
+                                    return false;
+                                }
+                                common.returnOutput(params, {path: common.config.path + "/images/screenshots/" + imageName});
+                            });
+                        }
+                    });
+                });
                 break;
             }
             case '/i/app_users': {
@@ -657,7 +660,7 @@ const processRequest = (params) => {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
                     catch (SyntaxError) {
-                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
+                        console.log('Parse %s JSON failed %s', apiPath, params.req.url, params.req.body);
                     }
                 }
 
@@ -872,7 +875,7 @@ const processRequest = (params) => {
                         return false;
                     }
                     validateUpdate(params, 'events', function() {
-                        common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
+                        common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, async function(err, event) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
                                 return;
@@ -881,6 +884,21 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, "Could not find event");
                                 return;
                             }
+                            //Load available events
+
+                            const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
+
+                            var list = await common.drillDb.collection("drill_meta").aggregate(
+                                [
+                                    {$match: {"app_id": params.qstring.app_id, "type": "e", "biglist": {"$ne": true}}},
+                                    {$match: {"e": {"$not": /^(\[CLY\]_)/}}},
+                                    {"$group": {"_id": "$e"}},
+                                    {"$sort": {"_id": 1}},
+                                    {"$limit": pluginsGetConfig.event_limit || 500},
+                                    {"$group": {"_id": null, "list": {"$addToSet": "$_id"}}}
+                                ]
+                                , {"allowDiskUse": true}).toArray();
+                            event.list = list[0].list;
 
                             var update_array = {};
                             var update_segments = [];
@@ -1450,58 +1468,6 @@ const processRequest = (params) => {
                 }
                 break;
             }
-            case '/i': {
-                if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
-                    params.qstring = common.trimWhitespaceStartEnd(params.qstring);
-                }
-                params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
-                params.user = {};
-
-                if (!params.qstring.app_key || !params.qstring.device_id) {
-                    common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
-                    return false;
-                }
-                else {
-                    //make sure device_id is string
-                    params.qstring.device_id += "";
-                    params.qstring.app_key += "";
-                    // Set app_user_id that is unique for each user of an application.
-                    params.app_user_id = common.crypto.createHash('sha1')
-                        .update(params.qstring.app_key + params.qstring.device_id + "")
-                        .digest('hex');
-                }
-
-                if (params.qstring.events && typeof params.qstring.events === "string") {
-                    try {
-                        params.qstring.events = JSON.parse(params.qstring.events);
-                    }
-                    catch (SyntaxError) {
-                        console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
-                    }
-                }
-
-                log.d('processing request %j', params.qstring);
-
-                params.promises = [];
-
-                validateAppForWriteAPI(params, () => {
-                    /**
-                    * Dispatches /sdk/end event upon finishing processing request
-                    **/
-                    function resolver() {
-                        plugins.dispatch("/sdk/end", {params: params});
-                    }
-
-                    Promise.all(params.promises)
-                        .then(resolver)
-                        .catch((error) => {
-                            console.log(error);
-                            resolver();
-                        });
-                });
-
-                break;
-            }
             case '/o/users': {
                 switch (paths[3]) {
                 case 'all':
@@ -1575,7 +1541,7 @@ const processRequest = (params) => {
                         common.returnMessage(params, 400, 'Missing parameter "app_id"');
                         return false;
                     }
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.appUsers.loyalty, params);
+                    validateUserForRead(params, countlyApi.mgmt.appUsers.loyalty);
                     break;
                 }
                 /**
@@ -1937,6 +1903,20 @@ const processRequest = (params) => {
                         common.returnOutput(params, plugins.getPlugins());
                     }, params);
                     break;
+                case 'observability':
+                    validateUserForMgmtReadAPI(() => {
+                        plugins.dispatch('/system/observability/collect', {params: params}, function(err, results) {
+                            if (err) {
+                                common.returnMessage(params, 500, 'Error collecting observability data');
+                                return;
+                            }
+                            const data = (results || [])
+                                .filter(r => r && r.status === 'fulfilled' && r.value)
+                                .map(r => r.value);
+                            common.returnOutput(params, data);
+                        });
+                    }, params);
+                    break;
                 case 'aggregator':
                     validateUserForMgmtReadAPI(() => {
                         //fetch current aggregator status
@@ -1972,6 +1952,146 @@ const processRequest = (params) => {
                             }
 
                         });
+                    }, params);
+                    break;
+                case 'kafka':
+                    validateUserForMgmtReadAPI(async() => {
+                        try {
+                            // Fetch Kafka consumer state (per-partition stats)
+                            const consumerState = await common.db.collection("kafka_consumer_state")
+                                .find({})
+                                .toArray();
+
+                            // Fetch Kafka consumer health (per-consumer-group stats)
+                            const consumerHealth = await common.db.collection("kafka_consumer_health")
+                                .find({})
+                                .toArray();
+
+                            // Fetch lag history (last 100 snapshots for charts)
+                            const lagHistory = await common.db.collection("kafka_lag_history")
+                                .find({})
+                                .sort({ ts: -1 })
+                                .limit(100)
+                                .toArray();
+
+                            // Fetch Kafka Connect status
+                            const connectStatus = await common.db.collection("kafka_connect_status")
+                                .find({})
+                                .toArray();
+
+                            // Aggregate stats from per-consumer-group documents
+                            // New schema: one document per consumer group with nested partition offsets
+                            let totalBatchesProcessed = 0;
+                            let totalDuplicatesSkipped = 0;
+                            let avgBatchSizeOverall = 0;
+                            let groupsWithData = 0;
+
+                            const partitionStats = consumerState.map(state => {
+                                totalBatchesProcessed += state.batchCount || 0;
+                                totalDuplicatesSkipped += state.duplicatesSkipped || 0;
+                                if (state.avgBatchSize) {
+                                    avgBatchSizeOverall += state.avgBatchSize;
+                                    groupsWithData++;
+                                }
+                                // Count active partitions from nested partitions object
+                                const partitions = state.partitions || {};
+                                const partitionCount = Object.keys(partitions).length;
+                                const activePartitions = Object.values(partitions).filter(p => p.lastProcessedAt).length;
+
+                                return {
+                                    id: state._id,
+                                    consumerGroup: state.consumerGroup,
+                                    topic: state.topic,
+                                    partitionCount,
+                                    activePartitions,
+                                    lastProcessedAt: state.lastProcessedAt,
+                                    batchCount: state.batchCount || 0,
+                                    duplicatesSkipped: state.duplicatesSkipped || 0,
+                                    lastDuplicateAt: state.lastDuplicateAt,
+                                    lastBatchSize: state.lastBatchSize,
+                                    avgBatchSize: state.avgBatchSize ? Math.round(state.avgBatchSize) : null
+                                };
+                            });
+
+                            avgBatchSizeOverall = groupsWithData > 0 ? avgBatchSizeOverall / groupsWithData : 0;
+
+                            // Process consumer health stats
+                            let totalRebalances = 0;
+                            let totalErrors = 0;
+                            let totalLagAll = 0;
+
+                            const consumerStats = consumerHealth.map(health => {
+                                totalRebalances += health.rebalanceCount || 0;
+                                totalErrors += health.errorCount || 0;
+                                totalLagAll += health.totalLag || 0;
+                                return {
+                                    id: health._id,
+                                    groupId: health.groupId,
+                                    rebalanceCount: health.rebalanceCount || 0,
+                                    lastRebalanceAt: health.lastRebalanceAt,
+                                    lastJoinAt: health.lastJoinAt,
+                                    lastMemberId: health.lastMemberId,
+                                    lastGenerationId: health.lastGenerationId,
+                                    commitCount: health.commitCount || 0,
+                                    lastCommitAt: health.lastCommitAt,
+                                    errorCount: health.errorCount || 0,
+                                    lastErrorAt: health.lastErrorAt,
+                                    lastErrorMessage: health.lastErrorMessage,
+                                    recentErrors: health.recentErrors || [],
+                                    totalLag: health.totalLag || 0,
+                                    partitionLag: health.partitionLag || {},
+                                    lagUpdatedAt: health.lagUpdatedAt,
+                                    updatedAt: health.updatedAt
+                                };
+                            });
+
+                            // Process Kafka Connect status
+                            const connectorStats = connectStatus.map(conn => ({
+                                id: conn._id,
+                                connectorName: conn.connectorName,
+                                connectorState: conn.connectorState,
+                                connectorType: conn.connectorType,
+                                workerId: conn.workerId,
+                                tasks: conn.tasks || [],
+                                tasksRunning: (conn.tasks || []).filter(t => t.state === 'RUNNING').length,
+                                tasksTotal: (conn.tasks || []).length,
+                                updatedAt: conn.updatedAt
+                            }));
+
+                            // Get connect consumer group lag for ClickHouse sink
+                            const connectConsumerGroupId = common.config?.kafka?.connectConsumerGroupId;
+                            const connectGroupHealth = connectConsumerGroupId
+                                ? consumerHealth.find(h => h.groupId === connectConsumerGroupId)
+                                : null;
+
+                            common.returnOutput(params, {
+                                summary: {
+                                    totalBatchesProcessed,
+                                    totalDuplicatesSkipped,
+                                    avgBatchSizeOverall: Math.round(avgBatchSizeOverall * 100) / 100,
+                                    totalRebalances,
+                                    totalErrors,
+                                    totalLag: totalLagAll,
+                                    consumerGroupCount: consumerStats.length,
+                                    partitionCount: partitionStats.length
+                                },
+                                partitions: partitionStats,
+                                consumers: consumerStats,
+                                lagHistory: lagHistory.reverse(), // Oldest first for charts
+
+                                // Kafka Connect status
+                                connectStatus: {
+                                    enabled: !!common.config?.kafka?.connectApiUrl,
+                                    connectors: connectorStats,
+                                    sinkLag: connectGroupHealth?.totalLag || 0,
+                                    sinkLagUpdatedAt: connectGroupHealth?.lagUpdatedAt
+                                }
+                            });
+                        }
+                        catch (err) {
+                            log.e('Error fetching Kafka stats:', err);
+                            common.returnMessage(params, 500, 'Error fetching Kafka stats');
+                        }
                     }, params);
                     break;
                 default:
@@ -2211,6 +2331,7 @@ const processRequest = (params) => {
                         });
 
                         countlyApi.data.exports.fromRequestQuery({
+                            db_name: params.qstring.db,
                             db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
                             params: params,
                             path: params.qstring.path,
@@ -2631,6 +2752,9 @@ const processRequest = (params) => {
                     validateRead(params, 'core', countlyApi.data.fetch.fetchEventGroupById);
                     break;
                 case 'events':
+                    if (plugins.getConfig("api").calculate_aggregated_from_granular) {
+                        params.qstring.fetchFromGranular = true;
+                    }
                     if (params.qstring.events) {
                         try {
                             params.qstring.events = JSON.parse(params.qstring.events);
@@ -2656,7 +2780,71 @@ const processRequest = (params) => {
                     }
                     break;
                 case 'get_events':
-                    validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
+                    //validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
+                    validateRead(params, 'core', async function() {
+                        try {
+                            var result = await common.db.collection("events").findOne({ '_id': params.app_id });
+                            if (!result) {
+                                result = {};
+                            }
+                            result.list = [];
+                            result.segments = {};
+                            const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
+                            result.limits = {
+                                event_limit: pluginsGetConfig.event_limit,
+                                event_segmentation_limit: pluginsGetConfig.event_segmentation_limit,
+                                event_segmentation_value_limit: pluginsGetConfig.event_segmentation_value_limit,
+                            };
+
+                            var aggregation = [];
+                            aggregation.push({$match: {"app_id": params.qstring.app_id, "type": "e", "biglist": {"$ne": true}}});
+                            aggregation.push({"$project": {e: 1, _id: 0, "sg": 1}});
+                            //e does not start with [CLY]_
+                            aggregation.push({$match: {"e": {"$not": /^(\[CLY\]_)/}}});
+                            aggregation.push({"$sort": {"e": 1}});
+                            aggregation.push({"$limit": pluginsGetConfig.event_limit || 500});
+
+                            var res = await common.drillDb.collection("drill_meta").aggregate(aggregation).toArray();
+
+                            for (var k = 0; k < res.length; k++) {
+                                result.list.push(res[k].e);
+                                if (res[k].sg && Object.keys(res[k].sg).length > 0) {
+                                    result.segments[res[k].e] = Object.keys(res[k].sg);
+                                }
+                                if (result.omitted_segments && result.omitted_segments[res[k].e]) {
+                                    for (let kz = 0; kz < result.omitted_segments[res[k].e].length; kz++) {
+                                        //remove items that are in omitted list
+                                        result.segments[res[k].e].splice(result.segments[res[k].e].indexOf(result.omitted_segments[res[k].e][kz]), 1);
+                                    }
+                                }
+                                if (result.whitelisted_segments && result.whitelisted_segments[res[k].e] && Array.isArray(result.whitelisted_segments[res[k].e])) {
+                                    //remove all that are not whitelisted
+                                    for (let kz = 0; kz < result.segments[res[k].e].length; kz++) {
+                                        if (result.whitelisted_segments[res[k].e].indexOf(result.segments[res[k].e][kz]) === -1) {
+                                            result.segments[res[k].e].splice(kz, 1);
+                                            kz--;
+                                        }
+                                    }
+                                }
+                                //Sort segments
+                                if (result.segments[res[k].e]) {
+                                    result.segments[res[k].e].sort();
+                                }
+                            }
+                            if (result.list.length === 0) {
+                                delete result.list;
+                            }
+                            if (Object.keys(result.segments).length === 0) {
+                                delete result.segments;
+                            }
+                            common.returnOutput(params, result);
+
+                        }
+                        catch (ex) {
+                            console.error("Error fetching events", ex);
+                            common.returnMessage(params, 500, "Error fetching events");
+                        }
+                    }, 'events');
                     break;
                 case 'top_events':
                     validateRead(params, 'core', countlyApi.data.fetch.fetchDataTopEvents);
@@ -3104,79 +3292,6 @@ const processFetchRequest = (params, app, done) => {
     });
 };
 
-/**
- * Process Bulk Request
- * @param {number} i - request number in bulk
- * @param {Array<object>} requests - array of requests to process
- * @param {Params} params - params object
- * @returns {void} void
- */
-const processBulkRequest = (i, requests, params) => {
-    const appKey = params.qstring.app_key;
-    if (i === requests.length) {
-        common.unblockResponses(params);
-        if ((params.qstring.safe_api_response || plugins.getConfig("api", params.app && params.app.plugins, true).safe) && !params.res.finished) {
-            common.returnMessage(params, 200, 'Success');
-        }
-        return;
-    }
-
-    if (!requests[i] || (!requests[i].app_key && !appKey)) {
-        return processBulkRequest(i + 1, requests, params);
-    }
-    if (params.qstring.safe_api_response) {
-        requests[i].safe_api_response = true;
-    }
-    params.req.body = JSON.stringify(requests[i]);
-    const tmpParams = {
-        'app_id': '',
-        'app_cc': '',
-        'ip_address': requests[i].ip_address || common.getIpAddress(params.req),
-        'user': {
-            'country': requests[i].country_code || 'Unknown',
-            'city': requests[i].city || 'Unknown'
-        },
-        'qstring': requests[i],
-        'href': "/i",
-        'res': params.res,
-        'req': params.req,
-        'promises': [],
-        'bulk': true,
-        'populator': params.qstring.populator,
-        'blockResponses': true
-    };
-
-    tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
-
-    if (!tmpParams.qstring.device_id) {
-        return processBulkRequest(i + 1, requests, params);
-    }
-    else {
-        //make sure device_id is string
-        tmpParams.qstring.device_id += "";
-        tmpParams.app_user_id = common.crypto.createHash('sha1')
-            .update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "")
-            .digest('hex');
-    }
-
-    return validateAppForWriteAPI(tmpParams, () => {
-        /**
-        * Dispatches /sdk/end event upon finishing processing request
-        **/
-        function resolver() {
-            plugins.dispatch("/sdk/end", {params: tmpParams}, () => {
-                processBulkRequest(i + 1, requests, params);
-            });
-        }
-
-        Promise.all(tmpParams.promises)
-            .then(resolver)
-            .catch((error) => {
-                console.log(error);
-                resolver();
-            });
-    });
-};
 
 /**
  * @param  {object} params - params object

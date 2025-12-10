@@ -222,6 +222,9 @@
                 if (window.getSelection().toString().length === 0) {
                     this.$refs.table.$refs.elTable.toggleRowExpansion(row);
                 }
+            },
+            refreshData: function() {
+                this.initializeStoreData();
             }
         }
 

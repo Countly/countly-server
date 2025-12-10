@@ -2,7 +2,6 @@
  * @typedef {import('../parts/common-lib.js').App} App
  */
 
-const crypto = require('crypto');
 const log = require('../../../../api/utils/log.js')('alert:events');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
@@ -21,11 +20,11 @@ const METRIC_TO_PROPERTY_MAP = {
 
 const AVERAGE_METRICS = ["average sum", "average duration"];
 
-module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) => {
+module.exports.check = async({ alertConfigs: alert, scheduledTo: date }) => {
     const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-        return done();
+        return;
     }
 
     let { alertDataSubType, alertDataSubType2, period, compareType, compareValue, filterKey, filterValue } = alert;
@@ -42,7 +41,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
     if (AVERAGE_METRICS.includes(alertDataSubType)) {
         const count = await getEventMetricByDate(app, alertDataSubType2, "c", date, period, segments);
         if (!count) {
-            return done();
+            return;
         }
         metricValue /= count;
     }
@@ -57,14 +56,14 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
         let metricValueBefore = await getEventMetricByDate(app, alertDataSubType2, metricProp, before, period, segments);
 
         if (!metricValueBefore) {
-            return done();
+            return;
         }
 
         // if this is average:
         if (AVERAGE_METRICS.includes(alertDataSubType)) {
             const count = await getEventMetricByDate(app, alertDataSubType2, "c", before, period, segments);
             if (!count) {
-                return done();
+                return;
             }
             metricValueBefore /= count;
         }
@@ -78,7 +77,6 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
-    done();
 };
 
 
@@ -101,14 +99,10 @@ async function getEventMetricByDate(app, event, metric, date, period, segments) 
     if (segments) {
         segmentKeys = Object.keys(segments);
     }
-
-    const collectionName = "events" + crypto
-        .createHash('sha1')
-        .update(event + app._id.toString())
-        .digest('hex');
-
-    const records = await common.db.collection(collectionName)
+    const records = await common.db.collection("events_data")
         .find({
+            a: app._id.toString(),
+            e: event,
             m: monthFilter,
             s: { $in: segmentKeys },
         })
@@ -162,11 +156,13 @@ async function getEventMetricByDate(app, event, metric, date, period, segments) 
 }
 /*
 (async function() {
+    if (!require("cluster").isPrimary) {
+        return;
+    }
     await new Promise(res => setTimeout(res, 2000));
-    const app = { _id: "65c1f875a12e98a328d5eb9e", timezone: "Europe/Istanbul" };
-    const date = new Date("2024-01-02T12:47:19.247Z");
-    const date2 = new Date("2024-01-03T13:47:19.247Z");
-    const event = "Checkout";
+    const app = { _id: "67fff00d901abe2f8cc57646", timezone: "Europe/Istanbul" };
+    const date = new Date("2025-02-02T12:47:19.247Z");
+    const event = "Product Viewed";
     const prop = "c";
 
     const hourly = await getEventMetricByDate(app, event, prop, date, "hourly");

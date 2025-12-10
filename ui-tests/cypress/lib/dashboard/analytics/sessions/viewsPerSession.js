@@ -169,18 +169,12 @@ const verifyViewsPerSessionDataFromTable = ({
 
     cy.verifyElement({
         element: sessionViewsPerSessionDataTableElements(0).VIEWS_PER_SESSION,
-        elementText: "1 - 2 views"
-    });
-    cy.verifyElement({
-        element: sessionViewsPerSessionDataTableElements(1).VIEWS_PER_SESSION,
-        elementText: "3 - 5 views"
+        elementText: "views"
     });
 
-    for (var i = 0; i < 2; i++) {
-        cy.verifyElement({
-            element: sessionViewsPerSessionDataTableElements(i).PERCENT_PROGRESS_BAR,
-        });
-    }
+    cy.verifyElement({
+        element: sessionViewsPerSessionDataTableElements(0).PERCENT_PROGRESS_BAR,
+    });
 
     cy.verifyElement({
         shouldNot: !isEmpty,

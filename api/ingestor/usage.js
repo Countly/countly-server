@@ -1,7 +1,7 @@
 var usage = {},
     common = require('./../utils/common.js'),
     geoip = require('geoip-lite'),
-    geocoder = require('offline-geocoder')(),
+    geocoder = require('./../../bin/offline-geocoder/src/index.js')(),
     log = require('./../utils/log.js')('ingestor:usage'),
     plugins = require('./../../plugins/pluginManager.js'),
     moment = require('moment-timezone');
@@ -248,6 +248,24 @@ usage.processCoreMetrics = function(params) {
         if (params.qstring.metrics._resolution) {
             params.collectedMetrics[common.dbUserMap.resolution] = params.qstring.metrics._resolution;
         }
+        if (params.qstring.metrics._app_version) {
+            const versionComponents = common.parseAppVersion(params.qstring.metrics._app_version);
+            if (versionComponents.success) {
+                params.collectedMetrics.av_major = versionComponents.major;
+                params.collectedMetrics.av_minor = versionComponents.minor;
+                params.collectedMetrics.av_patch = versionComponents.patch;
+                params.collectedMetrics.av_prerel = versionComponents.prerelease;
+                params.collectedMetrics.av_build = versionComponents.build;
+            }
+            else {
+                log.d("App version %s is not a valid semantic version. It cannot be separated into semantic version parts", params.qstring.metrics._app_version);
+                params.collectedMetrics.av_major = null;
+                params.collectedMetrics.av_minor = null;
+                params.collectedMetrics.av_patch = null;
+                params.collectedMetrics.av_prerel = null;
+                params.collectedMetrics.av_build = null;
+            }
+        }
     }
 };
 
@@ -276,10 +294,72 @@ usage.returnRequestMetrics = function(params) {
             params.collectedMetrics[key] = escapedMetricVal;
         }
         else {
-            delete params.collectedMetrics[key];
+            if (!common.isNumber(params.collectedMetrics[key])) {
+                delete params.collectedMetrics[key];
+            }
         }
     }
     return params.collectedMetrics;
+};
+
+usage.updateEndSessionParams = function(params, eventList, session_duration) {
+    var user = params.app_user;
+    if (!user || !eventList || !Array.isArray(eventList)) {
+        return;
+    }
+    const up_extra = { av_prev: params.app_user.av, p_prev: params.app_user.p };
+    if (params.app_user.hadFatalCrash) {
+        up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
+    }
+    if (params.app_user.hadAnyFatalCrash) {
+        up_extra.hadAnyFatalCrash = params.app_user.hadAnyFatalCrash;
+    }
+    if (params.app_user.hadNonfatalCrash) {
+        up_extra.hadNonfatalCrash = params.app_user.hadNonfatalCrash;
+    }
+    if (params.app_user.hadAnyNonfatalCrash) {
+        up_extra.hadAnyNonfatalCrash = params.app_user.hadAnyNonfatalCrash;
+    }
+
+    var drill_doc = {
+        "key": "[CLY]_session",
+        "lsid": user.lsid,
+        "segmentation": user.lsparams || {},
+        "dur": ((user.sd || 0) + (session_duration || 0)),
+        "count": 1,
+        "up_extra": up_extra
+    };
+
+    var lasts = (user.ls || 0) * 1000;
+    let idsplit = user.lsid.split("_");
+    if (idsplit[3] && idsplit[3].length === 13) {
+        lasts = parseInt(idsplit[3], 10);
+    }
+    drill_doc._id = params.app_id + "_" + user.uid + "_" + user.lsid;
+    if (lasts) {
+        drill_doc.timestamp = lasts;
+    }
+    drill_doc.segmentation.ended = "true";
+    eventList.push(drill_doc);
+
+    //Flush last view stored for user
+    if (user.last_view) {
+        user.last_view.segments = user.last_view.segments || {};
+        user.last_view.segments.exit = 1;
+        if (user.vc < 2) {
+            user.last_view.segments.bounce = 1;
+        }
+        var lastViewDoc = {
+            "key": "[CLY]_view", //Will be renamed to [CLY]_view_update before inserting to drill
+            "name": user.last_view.name,
+            "segmentation": user.last_view.segments,
+            "dur": user.last_view.duration || 0,
+            "_id": (user.last_view._idv ? (params.app_id + "_" + user.uid + '_' + user.last_view._idv + '_up') : (user.lvid + '_up')),
+            "timestamp": user.last_view.ts,
+            "_system_auto_added": true
+        };
+        eventList.push(lastViewDoc);
+    }
 };
 
 usage.processSession = function(ob) {
@@ -289,6 +369,9 @@ usage.processSession = function(ob) {
     var update = {};
 
     if (params.qstring.session_duration) {
+        if (!params.app_user[common.dbUserMap.has_ongoing_session]) {
+            params.qstring.begin_session = true;
+        }
         session_duration = parseInt(params.qstring.session_duration);
         var session_duration_limit = parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
         if (session_duration) {
@@ -300,6 +383,12 @@ usage.processSession = function(ob) {
             }
         }
     }
+    if (params.qstring.end_session) {
+        if (!params.qstring.ignore_cooldown && !params.app_user[common.dbUserMap.has_ongoing_session]) {
+            params.qstring.begin_session = true;
+            delete params.qstring.end_session;
+        }
+    }
 
     if (params.qstring.begin_session) {
         var lastEndSession = params.app_user[common.dbUserMap.last_end_session_timestamp];
@@ -308,13 +397,9 @@ usage.processSession = function(ob) {
         }
 
         if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
-            console.log("Skipping because of cooldown");
-            console.log(params.time.timestamp - lastEndSession);
-            console.log(plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown);
             delete params.qstring.begin_session;//do not start a new session.
         }
         else {
-
             if (params.app_user[common.dbUserMap.has_ongoing_session]) {
                 params.qstring.end_session = {"lsid": ob.params.app_user.lsid, "ls": ob.params.app_user.ls, "sd": ob.params.app_user.sd};
             }
@@ -322,18 +407,28 @@ usage.processSession = function(ob) {
             userProps.lsid = params.request_id;
 
             if (params.app_user[common.dbUserMap.has_ongoing_session]) {
-                var drill_updates = {};
                 if (params.app_user.lsid) {
-                    if (params.app_user.sd > 0) {
-                        drill_updates.dur = params.app_user.sd;
+                    try {
+                        params.qstring.events = params.qstring.events || [];
+                        usage.updateEndSessionParams(params, params.qstring.events);
+                        if (!params.app_user.hadFatalCrash) {
+                            userProps.hadAnyFatalCrash = moment(params.time.timestamp).unix();
+                        }
+                        else {
+                            userProps.hadFatalCrash = false;
+                        }
+
+                        if (!params.app_user.hadNonfatalCrash) {
+                            userProps.hadAnyNonfatalCrash = moment(params.time.timestamp).unix();
+                        }
+                        else {
+                            userProps.hadNonfatalCrash = false;
+                        }
+
                     }
-                    if (params.app_user.custom && Object.keys(params.app_user.custom).length > 0) {
-                        drill_updates.custom = JSON.parse(JSON.stringify(params.app_user.custom));
+                    catch (ex) {
+                        log.e("Error adding previous session end event: " + ex);
                     }
-                    drill_updates["sg.ended"] = "true";
-                    drill_updates.lu = new Date();
-                    //if (drill_updates.dur || drill_updates.custom) {
-                    ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates}}});
                     //}
                 }
                 userProps.sd = 0 + session_duration;
@@ -354,36 +449,39 @@ usage.processSession = function(ob) {
             if (!update.$inc) {
                 update.$inc = {};
             }
+            if (!update.$unset) {
+                update.$unset = {};
+            }
+            delete params.app_user.last_view;
+            update.$unset.last_view = "";
             update.$inc.sc = 1;
+
         }
     }
-    else if (params.qstring.end_session) {
-        // check if request is too old, ignore it
+    else if (params.qstring.end_session && params.app_user) {
+        // check if request is too old, ignore it}
         if (!params.qstring.ignore_cooldown) {
             userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
         }
         else {
-            var drill_updates2 = {};
-            if (params.app_user.lsid) {
-                if (params.app_user.sd > 0 || session_duration > 0) {
-                    drill_updates2.dur = params.app_user.sd + (session_duration || 0);
-                }
-                if (params.app_user.custom && Object.keys(params.app_user.custom).length > 0) {
-                    drill_updates2.custom = JSON.parse(JSON.stringify(params.app_user.custom));
-                }
-                drill_updates2["sg.ended"] = "true";
-                drill_updates2.lu = new Date();
-                //if (drill_updates2.dur || drill_updates2.custom) {
-                ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
-                //}
+            if (!params.app_user.lsid || !params.app_user[common.dbUserMap.has_ongoing_session]) {
+                //create new lsid if not present or it is autoclosed
+                params.app_user.lsid = params.request_id;
+                params.qstring.begin_session = true;
             }
-            userProps.data = {};
+            if (params.app_user.lsid) {
+                params.qstring.events = params.qstring.events || [];
+                usage.updateEndSessionParams(params, params.qstring.events, session_duration);
+            }
+        }
+        if (!update.$unset) {
+            update.$unset = {};
         }
         if (params.app_user[common.dbUserMap.has_ongoing_session]) {
-            if (!update.$unset) {
-                update.$unset = {};
-            }
             update.$unset[common.dbUserMap.has_ongoing_session] = "";
+        }
+        if (params.app_user.last_view) {
+            update.$unset.last_view = "";
         }
     }
 
@@ -395,6 +493,16 @@ usage.processSession = function(ob) {
             update.$inc.sd = session_duration;
             update.$inc.tsd = session_duration;
             params.session_duration = (params.app_user.sd || 0) + session_duration;
+        }
+    }
+    else {
+        if (session_duration) {
+            userProps.sd = session_duration;
+            if (!update.$inc) {
+                update.$inc = {};
+            }
+            update.$inc.tsd = session_duration;
+            params.session_duration = session_duration;
         }
     }
 
@@ -411,8 +519,7 @@ usage.processSession = function(ob) {
     if (Object.keys(update).length) {
         ob.updates.push(update);
     }
-    usage.processCoreMetrics(params); //Collexts core metrics
-
+    usage.processCoreMetrics(params); //Collects core metrics
 };
 
 usage.processUserProperties = async function(ob) {

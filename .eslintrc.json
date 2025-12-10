@@ -1,5 +1,10 @@
 {
     "extends": "eslint:recommended",
+    "ignorePatterns": [
+        "**/*.d.ts",
+        "types/**/*.d.ts",
+        "plugins/*/types/**/*.d.ts"
+    ],
     "rules": {
         //        "quotes": ["warn", "single", { "avoidEscape": true }],
         "require-atomic-updates": "off",
@@ -385,8 +390,8 @@
             "rules": {
                 "no-console": ["error"],
                 "no-unused-vars": ["error", {
-                    "argsIgnorePattern": "^_",   // unused function args
-                    "varsIgnorePattern": "^_"    // unused variables
+                    "argsIgnorePattern": "^_",
+                    "varsIgnorePattern": "^_"
                 }]
             },
             "parserOptions": {
@@ -408,6 +413,9 @@
                 "frontend/express/public/javascripts/countly/vue/data/*.js",
                 "frontend/express/public/core/*/javascripts/countly.*.js",
                 "plugins/*/frontend/public/javascripts/countly.*.js"
+            ],
+            "excludedFiles": [
+                "frontend/express/public/javascripts/utils/cronstrue.min.js"
             ],
             "parserOptions": {
                 "ecmaVersion": 2020
@@ -499,13 +507,15 @@
         {
             "files": [
                 "api/**/*.js",
+                "jobServer/**/*.js",
                 "frontend/express/*.js",
                 "frontend/express/libs/*.js",
                 "plugins/pluginManager.js",
                 "plugins/pluginDependencies.js",
                 "plugins/*/api/**/*.js",
                 "plugins/*/frontend/**/*.js",
-                "plugins/*/extend/**/*.js"
+                "plugins/*/extend/**/*.js",
+                "observability/**/*.js"
             ],
             "excludedFiles": [
                 "plugins/*/frontend/public/**/*.js",

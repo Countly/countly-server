@@ -25,6 +25,7 @@ var chromePath = "";
 var countlyFs = require('./countlyFs');
 var log = require('./log.js')('core:render');
 var countlyConfig = require('./../config', 'dont-enclose');
+var fs = require('fs');
 
 
 /**
@@ -67,9 +68,9 @@ exports.renderView = function(options, cb) {
                     XDG_CONFIG_HOME: pathModule.resolve(__dirname, "../../.cache/chrome/tmp/.chromium"),
                     XDG_CACHE_HOME: pathModule.resolve(__dirname, "../../.cache/chrome/tmp/.chromium")
                 },
-                args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'],
+                args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors', '--disable-web-security'],
                 ignoreHTTPSErrors: true,
-                userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
+                userDataDir: pathModule.resolve(__dirname, "../../dump/chrome/" + Date.now())
             };
 
             if (chromePath) {
@@ -81,6 +82,7 @@ exports.renderView = function(options, cb) {
             try {
                 log.d('Started rendering images');
                 var page = await browser.newPage();
+                await page.setBypassCSP(true);
 
                 page.on('console', (msg) => {
                     log.d("Headless chrome page log", msg.text());
@@ -251,6 +253,9 @@ exports.renderView = function(options, cb) {
                 await bodyHandle.dispose();
                 await browser.close();
 
+                // Remove user data directory after use
+                fs.rmSync(settings.userDataDir, { recursive: true, force: true });
+
                 var imageData = {
                     image: image,
                     path: path
@@ -261,6 +266,8 @@ exports.renderView = function(options, cb) {
             catch (e) {
                 log.e("Headless chrome browser error", e);
                 await browser.close();
+                // Remove user data directory after use
+                fs.rmSync(settings.userDataDir, { recursive: true, force: true });
                 return cb(e);
             }
         }

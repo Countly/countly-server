@@ -47,31 +47,31 @@
                 filterProperties.push(
                     new countlyQueryBuilder.Property({
                         id: "nonfatal",
-                        name: "Fatality",
+                        name: jQuery.i18n.prop("crashes.fatality-label") || "Fatality",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
                             return [
-                                {name: "Fatal", value: false},
-                                {name: "Non-fatal", value: true}
+                                {name: jQuery.i18n.prop("crashes.fatal") || "Fatal", value: false},
+                                {name: jQuery.i18n.prop("crashes.non-fatal") || "Non-fatal", value: true}
                             ];
                         }
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_hidden",
-                        name: "Visibility",
+                        name: jQuery.i18n.prop("crashes.visibility") || "Visibility",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
                             return [
-                                {name: "Hidden", value: true},
-                                {name: "Shown", value: false}
+                                {name: jQuery.i18n.prop("crashes.hidden") || "Hidden", value: true},
+                                {name: jQuery.i18n.prop("crashes.shown") || "Shown", value: false}
                             ];
                         }
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_new",
-                        name: "Viewed",
+                        name: jQuery.i18n.prop("crashes.viewed") || "Viewed",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
@@ -83,7 +83,7 @@
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_renewed",
-                        name: "Reoccured",
+                        name: jQuery.i18n.prop("crashes.reoccurred") || "Reoccurred",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
@@ -95,7 +95,7 @@
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_resolved",
-                        name: "Resolved",
+                        name: jQuery.i18n.prop("crashes.resolved") || "Resolved",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
@@ -107,7 +107,7 @@
                     }),
                     new countlyQueryBuilder.Property({
                         id: "is_resolving",
-                        name: "Resolving",
+                        name: jQuery.i18n.prop("crashes.resolving") || "Resolving",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
@@ -778,6 +778,7 @@
                 symbolicationEnabled: countlyGlobal.plugins.includes("crash_symbolication"),
                 crashesBeingSymbolicated: [],
                 beingMarked: false,
+                pickerDate: '7days',
                 userProfilesEnabled: countlyGlobal.plugins.includes("users"),
                 hasUserPermission: countlyAuth.validateRead('users'),
                 showSymbolicated: false,
@@ -789,6 +790,9 @@
             };
         },
         computed: {
+            currentLimit: function() {
+                return countlyGlobal.crashes_report_limit || 100;
+            },
             crashgroup: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/crashgroup"];
             },
@@ -809,9 +813,6 @@
             },
             mobileMetrics: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/mobileMetrics"];
-            },
-            chartData: function() {
-                return this.$store.getters["countlyCrashes/crashgroup/chartData"](this.$data.chartBy);
             },
             chartByOptions: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/chartByOptions"];
@@ -859,10 +860,17 @@
             isLoading: function() {
                 return this.$store.getters['countlyCrashes/crashgroup/isLoading'];
             },
+            isLoadingGraph: function() {
+                var isLoading = this.$store.getters['countlyCrashes/crashgroup/isGraphLoading'];
+                return isLoading;
+            }
         },
         methods: {
             refresh: function() {
                 return this.$store.dispatch("countlyCrashes/crashgroup/refresh");
+            },
+            chartData: function() {
+                return this.$store.getters["countlyCrashes/crashgroup/chartData"](this.$data.chartBy);
             },
             handleCommentCommand: function(command, comment) {
                 if (command === "edit-comment") {
@@ -1133,6 +1141,13 @@
 
                 }
             },
+            handleChartByChange: function(value) {
+                this.$store.dispatch("countlyCrashes/crashgroup/fetchBarData", {value: value, period: this.pickerDate});
+            },
+            handleDatePickerChange: function(value) {
+                this.pickerDate = value.value;
+                this.$store.dispatch("countlyCrashes/crashgroup/fetchBarData", {value: this.chartBy, period: this.pickerDate});
+            },
             handleCrashgroupStacktraceCommand: function(command) {
                 if (command === "symbolicate") {
                     this.symbolicateCrash('group');
@@ -1338,7 +1353,7 @@
                     {"name": CV.i18n('crashes.unique'), "info": CV.i18n('crashes.home.unique'), "prop": "cru", "r": true},
                     {"name": CV.i18n('crashes.total-per-session'), "info": CV.i18n('crashes.home.per-session'), "prop": "cr-session", "r": true},
                     {"name": CV.i18n('crashes.free-users'), "info": CV.i18n('crashes.help-free-users'), "prop": "crau", "p": true},
-                    {"name": CV.i18n('crashes.free-sessions'), "info": CV.i18n('crashes.help-free-sessions'), "prop": "crses", "p": true}
+                    {"name": CV.i18n('crashes.free-sessions'), "info": CV.i18n('crashes.help-free-sessions'), "prop": "crinv", "p": true}
                 ];
 
                 for (var k = 0; k < getUs.length; k++) {

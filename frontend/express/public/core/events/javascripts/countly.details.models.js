@@ -89,8 +89,15 @@
             context.commit('setLineChartData', obj);
         },
         getTableRows: function(context) {
+            var tableRows = [];
             var eventData = context.state.allEventsProcessed;
-            var tableRows = eventData.chartData.slice();
+            if (context.state.selectedEventsData && context.state.selectedEventsData.mode === "granular") {
+                tableRows = context.state.selectedEventsData.data || [];
+            }
+            else {
+
+                tableRows = eventData.chartData.slice();
+            }
             var labels = context.state.labels;
             tableRows.forEach(function(row, i) {
                 row.dateVal = i; //because we get them all always sorted by date
@@ -381,18 +388,19 @@
         },
         getSegments: function(context, res) {
             var segments = [];
-            if (res.meta && res.meta.segments.length > 0) {
+            if (res.meta && res.meta.segments && Array.isArray(res.meta.segments) && res.meta.segments.length > 0) {
                 segments = res.meta.segments.slice();
                 context.commit('setHasSegments', true);
             }
             else {
                 context.commit('setHasSegments', false);
             }
-            var eventData = countlyAllEvents.helpers.getEventsData(context, res);
+
             if (context.state.currentActiveSegmentation !== "segment") {
-                countlyAllEvents.helpers.getBarChartData(context, eventData);
+                countlyAllEvents.helpers.getBarChartData(context, {"chartData": res.data});
             }
             else {
+                var eventData = countlyAllEvents.helpers.getEventsData(context, res);
                 countlyAllEvents.helpers.getLineChartData(context, eventData);
             }
             segments.sort();
@@ -486,6 +494,9 @@
                     }
                 });
             }
+            allEvents.sort(function(a, b) {
+                return a.label.localeCompare(b.label);
+            });
             return allEvents;
         },
         getGroupData: function(groupData, selectedEventName) {
@@ -605,7 +616,17 @@
                 tmpPrevCount = 0,
                 tmpPrevSum = 0,
                 tmpPrevDur = 0;
-            if (periodObj.isSpecialPeriod) {
+            if (currentEventData.mode === "granular") {
+                for (var z = 0; z < currentEventData.data.length; z++) {
+                    currentTotal += currentEventData.data[z].c || 0;
+                    previousTotal += currentEventData.data[z].prev_c || 0;
+                    currentSum += currentEventData.data[z].s || 0;
+                    previousSum += currentEventData.data[z].prev_s || 0;
+                    currentDur += currentEventData.data[z].dur || 0;
+                    previousDur += currentEventData.data[z].prev_dur || 0;
+                }
+            }
+            else if (periodObj.isSpecialPeriod) {
                 for (var i = 0; i < (periodObj.currentPeriodArr.length); i++) {
                     tempX = countlyCommon.getDescendantProp(currentEventData, periodObj.currentPeriodArr[i]);
                     tempY = countlyCommon.getDescendantProp(currentEventData, periodObj.previousPeriodArr[i]);
@@ -899,7 +920,13 @@
                                 res.list = res.list.map(eventName => countlyCommon.unescapeHtml(eventName));
                             }
                             context.commit("setAllEventsData", res);
-                            if ((!context.state.selectedEventName) || (res.map && res.map[context.state.selectedEventName] && !res.map[context.state.selectedEventName].is_visible) || (res.list && res.list.indexOf(context.state.selectedEventName) === -1)) {
+                            var is_group = false;
+                            if (context.state.selectedEventName && context.state.selectedEventName.startsWith('[CLY]_group')) {
+                                is_group = true;
+                            }
+                            if ((!context.state.selectedEventName) ||
+                            (res.map && res.map[context.state.selectedEventName] && !res.map[context.state.selectedEventName].is_visible) ||
+                            (res.list && res.list.indexOf(context.state.selectedEventName) === -1 && context.state && !is_group)) {
                                 var appId = countlyCommon.ACTIVE_APP_ID;
                                 var eventKeyForStorage = {};
                                 var eventKey = res.list[0];
@@ -924,6 +951,9 @@
                                         context.commit("setLabels", countlyAllEvents.helpers.getLabels(res, context.state.groupData, context.state.selectedEventName));
                                         countlyAllEvents.service.fetchSelectedEventsData(context, period)
                                             .then(function(response) {
+                                                if (response?.eventName) {
+                                                    response.eventName = countlyAllEvents.helpers.decode(response.eventName);
+                                                }
                                                 if (response?.eventName === context.state.selectedEventName) {
                                                     context.commit("setSelectedEventsData", response);
                                                     context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, response) || []);

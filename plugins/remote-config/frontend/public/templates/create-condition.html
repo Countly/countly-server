@@ -9,6 +9,7 @@
     <div class="text-medium text-heading bu-mt-4">{{condition.name}}</div>
     <div>
       <el-input
+        :test-id="'add-value-for-selected-condition-' + condition.name"
         v-model ="condition.value"
         placeholder="Enter condition value">
         <el-button type="text" slot="suffix" @click="openJsonEditorForCondition" class="cly-vue-remote-config-parameters-drawer__autocomplete-button">{ }</el-button>

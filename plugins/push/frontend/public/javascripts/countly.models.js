@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/*global countlyVue,CV,countlyCommon,countlySegmentation,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
+/*global countlyVue,CV,countlyPlugins,countlyCommon,countlySegmentation,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
@@ -19,7 +19,36 @@
     var TypeEnum = Object.freeze({
         ONE_TIME: "oneTime",
         AUTOMATIC: "automatic",
-        TRANSACTIONAL: "transactional"
+        TRANSACTIONAL: "transactional",
+        RECURRING: "rec",
+        MULTIPLE: "multi",
+        EVENTS: "event",
+        COHORTS: "cohort",
+    });
+    var KindEnum = Object.freeze({
+        ALL: ["plain", "event", "cohort", "api", "rec", "multi"],
+        Plain: 'plain',
+        Automatic: "auto",
+        // Event: 'event',
+        // Cohort: 'cohort',
+        API: 'api',
+        Recurring: 'rec',
+        Multi: 'multi',
+    });
+    var CampaignTypes = [
+        {label: CV.i18n('push-notification-drawer.one-time'), description: CV.i18n('push-notification-drawer.one-time-description')},
+        {label: CV.i18n('push-notification-drawer.automated'), description: CV.i18n('push-notification-drawer.automated-description')},
+        {label: CV.i18n('push-notification-drawer.recurring'), description: CV.i18n('push-notification-drawer.recurring-description')},
+        {label: CV.i18n('push-notification-drawer.multiple-days'), description: CV.i18n('push-notification-drawer.multiple-days-description')},
+        {label: CV.i18n('push-notification-drawer.api'), description: CV.i18n('push-notification-drawer.api-description')}
+    ];
+    var TriggerTypeEnum = Object.freeze({
+        PLAIN: "One-Time",
+        API: "API",
+        EVENT: "Automated",
+        COHORT: "Automated",
+        REC: "Recurring",
+        MULTI: "Multiple Days"
     });
     var PeriodEnum = Object.freeze({
         WEEKLY: "weekly",
@@ -33,15 +62,16 @@
         HUAWEI: "huawei"
     });
     var StatusEnum = Object.freeze({
-        CREATED: "created",
-        PENDING_APPROVAL: "pending_approval",
+        ACTIVE: "active",
+        PENDING_APPROVAL: "inactive",
         DRAFT: "draft",
         SCHEDULED: "scheduled",
         SENDING: "sending",
         SENT: "sent",
         STOPPED: "stopped",
         FAILED: "failed",
-        REJECT: 'reject',
+        REJECTED: 'rejected',
+        CANCELED: "canceled",
     });
     var UserCommandEnum = Object.freeze({
         RESEND: 'resend',
@@ -89,10 +119,6 @@
         COHORT_EXIT: 'cohortExit',
         EVENT: 'event'
     });
-    var DeliveryDateCalculationEnum = Object.freeze({
-        EVENT_SERVER_DATE: 'eventServerDate',
-        EVENT_DEVICE_DATE: 'eventDeviceDate'
-    });
     var TriggerNotMetEnum = Object.freeze({
         SEND_ANYWAY: 'sendAnyway',
         CANCEL_ON_EXIT: 'cancelOnExit'
@@ -129,6 +155,9 @@
     targetingOptions[TargetingEnum.ALL] = {label: CV.i18n('push-notification.all-push-enabled-users'), value: TargetingEnum.ALL};
     targetingOptions[TargetingEnum.SEGMENTED] = {label: CV.i18n('push-notification.segmented-push-enabled-users'), value: TargetingEnum.SEGMENTED};
 
+    var bucketList = ["daily", "weekly", "monthly"];
+    var weeklyRepetitionOptions = [{label: CV.i18n('common.monday'), value: 1}, {label: CV.i18n('common.tuesday'), value: 2}, {label: CV.i18n('common.wednesday'), value: 3}, {label: CV.i18n('common.thursday'), value: 4}, {label: CV.i18n('common.friday'), value: 5}, {label: CV.i18n('common.saturday'), value: 6}, {label: CV.i18n('common.sunday'), value: 7}];
+
     var triggerOptions = {};
     triggerOptions[TriggerEnum.COHORT_ENTRY] = {label: CV.i18n('push-notification.cohorts-entry'), value: TriggerEnum.COHORT_ENTRY};
     triggerOptions[TriggerEnum.COHORT_EXIT] = {label: CV.i18n('push-notification.cohorts-exit'), value: TriggerEnum.COHORT_EXIT};
@@ -137,10 +166,6 @@
     var triggerNotMetOptions = {};
     triggerNotMetOptions[TriggerNotMetEnum.SEND_ANYWAY] = {label: CV.i18n('push-notification.send-anyway'), value: TriggerNotMetEnum.SEND_ANYWAY};
     triggerNotMetOptions[TriggerNotMetEnum.CANCEL_ON_EXIT] = {label: CV.i18n('push-notification.cancel-when-user-exits-cohort'), value: TriggerNotMetEnum.CANCEL_ON_EXIT};
-
-    var deliveryDateCalculationOptions = {};
-    deliveryDateCalculationOptions[DeliveryDateCalculationEnum.EVENT_SERVER_DATE] = {label: CV.i18n('push-notification.relative-to-the-date-event-server'), value: DeliveryDateCalculationEnum.EVENT_SERVER_DATE};
-    deliveryDateCalculationOptions[DeliveryDateCalculationEnum.EVENT_DEVICE_DATE] = {label: CV.i18n('push-notification.relative-to-the-date-event-device'), value: DeliveryDateCalculationEnum.EVENT_DEVICE_DATE};
 
     var deliveryMethodOptions = {};
     deliveryMethodOptions[DeliveryMethodEnum.IMMEDIATELY] = {label: CV.i18n('push-notification.immediately'), value: DeliveryMethodEnum.IMMEDIATELY};
@@ -151,15 +176,16 @@
     platformOptions[PlatformEnum.IOS] = {label: 'iOS', value: PlatformEnum.IOS};
 
     var statusOptions = {};
-    statusOptions[StatusEnum.CREATED] = {label: CV.i18n('push-notification.created'), value: StatusEnum.CREATED};
-    statusOptions[StatusEnum.PENDING_APPROVAL] = {label: CV.i18n('push-notification.waiting-for-approval'), value: StatusEnum.PENDING_APPROVAL};
-    statusOptions[StatusEnum.REJECT] = {label: CV.i18n('push-notification.rejected'), value: StatusEnum.REJECT};
-    statusOptions[StatusEnum.DRAFT] = {label: CV.i18n('push-notification.draft'), value: StatusEnum.DRAFT};
+    statusOptions[StatusEnum.ACTIVE] = {label: CV.i18n('push-notification.active'), value: StatusEnum.ACTIVE};
     statusOptions[StatusEnum.SCHEDULED] = {label: CV.i18n('push-notification.scheduled'), value: StatusEnum.SCHEDULED};
-    statusOptions[StatusEnum.SENDING] = {label: CV.i18n('push-notification.sending'), value: StatusEnum.SENDING};
     statusOptions[StatusEnum.SENT] = {label: CV.i18n('push-notification.sent'), value: StatusEnum.SENT};
-    statusOptions[StatusEnum.STOPPED] = {label: CV.i18n('push-notification.stopped'), value: StatusEnum.STOPPED};
+    statusOptions[StatusEnum.SENDING] = {label: CV.i18n('push-notification.sending'), value: StatusEnum.SENDING};
+    statusOptions[StatusEnum.CANCELED] = {label: CV.i18n('push-notification.canceled'), value: StatusEnum.CANCELED};
+    statusOptions[StatusEnum.PENDING_APPROVAL] = {label: CV.i18n('push-notification.waiting-for-approval'), value: StatusEnum.PENDING_APPROVAL};
     statusOptions[StatusEnum.FAILED] = {label: CV.i18n('push-notification.failed'), value: StatusEnum.FAILED};
+    statusOptions[StatusEnum.STOPPED] = {label: CV.i18n('push-notification.stopped'), value: StatusEnum.STOPPED};
+    statusOptions[StatusEnum.DRAFT] = {label: CV.i18n('push-notification.draft'), value: StatusEnum.DRAFT};
+    statusOptions[StatusEnum.REJECTED] = {label: CV.i18n('push-notification.rejected'), value: StatusEnum.REJECTED};
 
     var iosAuthConfigTypeOptions = {};
     iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P8] = {label: CV.i18n('push-notification.key-file-p8'), value: IOSAuthConfigTypeEnum.P8};
@@ -204,8 +230,7 @@
             return {
                 sent: 0,
                 actioned: 0,
-                errored: 0,
-                processed: 0,
+                failed: 0,
                 total: 0,
                 locales: {}
             };
@@ -217,15 +242,17 @@
             result[PlatformEnum.ALL] = this.getInitialModelDashboardPlatform();
             return result;
         },
-        getInitialBaseModel: function() {
+        getInitialBaseModel: function(dto) {
+            const settings = countlyPlugins.getConfigsData();
+            const pushSettings = settings?.push || {};
             return {
                 isEe: typeof countlySegmentation !== 'undefined',
                 isGeo: typeof countlyLocationTargetComponent !== 'undefined',
                 isCohorts: typeof countlyCohorts !== 'undefined',
                 _id: null,
                 demo: false,
-                saveStats: false,
-                name: "",
+                saveResults: pushSettings.save_results_by_default ?? false,
+                name: (dto && dto.name ? dto.name : ""),
                 platforms: [],
                 message: {
                     default: {
@@ -282,11 +309,12 @@
                     days: 7,
                     hours: 0
                 },
-                dashboard: {}
+                dashboard: {},
+                campaignType: ''
             };
         },
-        getInitialOneTimeModel: function() {
-            var baseModel = this.getInitialBaseModel();
+        getInitialOneTimeModel: function(dto) {
+            var baseModel = this.getInitialBaseModel(dto);
             baseModel.oneTime = {
                 targeting: TargetingEnum.ALL,
                 pastSchedule: PastScheduleEnum.SKIP,
@@ -294,15 +322,14 @@
             };
             return baseModel;
         },
-        getInitialAutomaticModel: function() {
-            var baseModel = this.getInitialBaseModel();
+        getInitialAutomaticModel: function(dto) {
+            var baseModel = this.getInitialBaseModel(dto);
             baseModel.automatic = {
                 deliveryMethod: DeliveryMethodEnum.IMMEDIATELY,
                 delayed: {
                     days: 0,
                     hours: 0
                 },
-                deliveryDateCalculation: DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
                 trigger: typeof countlyCohorts === 'undefined' ? TriggerEnum.EVENT : TriggerEnum.COHORT_ENTRY,
                 triggerNotMet: TriggerNotMetEnum.SEND_ANYWAY,
                 events: [],
@@ -313,22 +340,55 @@
                     days: 0,
                     hours: 0
                 },
-                usersTimezone: "00"
+                usersTimezone: "00",
+                pastSchedule: PastScheduleEnum.SKIP,
             };
             return baseModel;
         },
-        getInitialTransactionalModel: function() {
-            return this.getInitialBaseModel();
+        getInitialTransactionalModel: function(dto) {
+            return this.getInitialBaseModel(dto);
         },
-        getInitialModel: function(type) {
+        getInitialRecurringModel: function(dto) {
+            var baseModel = this.getInitialBaseModel(dto);
+            baseModel.rec = {
+                targeting: TargetingEnum.ALL,
+                pastSchedule: PastScheduleEnum.SKIP,
+                audienceSelection: AudienceSelectionEnum.NOW,
+            };
+            baseModel.delivery.repetition = {
+                bucket: bucketList[0],
+                every: 7,
+                at: moment().valueOf(),
+                on: []
+            };
+            return baseModel;
+        },
+        getInitialMultipleModel: function(dto) {
+            var baseModel = this.getInitialBaseModel(dto);
+            baseModel.multi = {
+                targeting: TargetingEnum.ALL,
+                pastSchedule: PastScheduleEnum.SKIP,
+                audienceSelection: AudienceSelectionEnum.NOW,
+            };
+            var today = new Date();
+            baseModel.delivery.multipleDates = [today.getTime()];
+            return baseModel;
+        },
+        getInitialModel: function(type, dto) {
             if (type === TypeEnum.ONE_TIME) {
-                return this.getInitialOneTimeModel();
+                return this.getInitialOneTimeModel(dto);
             }
-            if (type === TypeEnum.AUTOMATIC) {
-                return this.getInitialAutomaticModel();
+            else if (type === TypeEnum.AUTOMATIC) {
+                return this.getInitialAutomaticModel(dto);
             }
-            if (type === TypeEnum.TRANSACTIONAL) {
-                return this.getInitialTransactionalModel();
+            else if (type === TypeEnum.TRANSACTIONAL) {
+                return this.getInitialTransactionalModel(dto);
+            }
+            else if (type === TypeEnum.RECURRING) {
+                return this.getInitialRecurringModel(dto);
+            }
+            else if (type === TypeEnum.MULTIPLE) {
+                return this.getInitialMultipleModel(dto);
             }
             throw new Error('Unknown push notification type:' + type);
         },
@@ -562,12 +622,22 @@
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols),
             };
-            var type = context.rootState.countlyPushNotificationMain.selectedPushNotificationType;
+            // var type = context.rootState.countlyPushNotificationMain.selectedPushNotificationType;
             var status = context.rootState.countlyPushNotificationMain.statusFilter;
-            var params = countlyPushNotification.service.getFetchAllParameters(type, status);
-            for (var key in params) {
-                data[key] = params[key];
+            var kind = context.rootState.countlyPushNotificationMain.selectedPushNotificationKind;
+            // var params = countlyPushNotification.service.getFetchAllParameters(type, status);
+            var platform = context.rootState.countlyPushNotificationMain.platformFilter;
+            if (platform && platform.length && platform !== ALL_FILTER_OPTION_VALUE) {
+                data.platform = platform[0];
             }
+            if (status && status.length && status !== ALL_FILTER_OPTION_VALUE) {
+                data.status = status;
+            }
+
+            data.kind = JSON.stringify(kind);
+            // for (var key in params) {
+            //     data[key] = params[key];
+            // }
             return {
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r + "/push/message/all",
@@ -618,6 +688,24 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/push/message/all",
                     data: data,
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
+        },
+        fetchMessageStats: function(_id, period = "30days") {
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + "/push/message/stats",
+                    data: { _id, period },
                     dataType: "json",
                     success: function(response) {
                         resolve(response);
@@ -962,11 +1050,17 @@
                 if (dto.triggers[0].kind === 'plain') {
                     return TypeEnum.ONE_TIME;
                 }
-                if (dto.triggers[0].kind === 'cohort' || dto.triggers[0].kind === 'event') {
+                else if (dto.triggers[0].kind === 'cohort' || dto.triggers[0].kind === 'event') {
                     return TypeEnum.AUTOMATIC;
                 }
-                if (dto.triggers[0].kind === 'api') {
+                else if (dto.triggers[0].kind === 'api') {
                     return TypeEnum.TRANSACTIONAL;
+                }
+                else if (dto.triggers[0].kind === 'rec') {
+                    return TypeEnum.RECURRING;
+                }
+                else if (dto.triggers[0].kind === 'multi') {
+                    return TypeEnum.MULTIPLE;
                 }
                 throw new Error('Unknown push notification type:', dto);
             },
@@ -1052,7 +1146,7 @@
             },
             mapStatus: function(dto) {
                 if (dto.status === 'draft' && dto.info.rejected) {
-                    return StatusEnum.REJECT;
+                    return StatusEnum.REJECTED;
                 }
                 if (dto.status === 'inactive') {
                     return StatusEnum.PENDING_APPROVAL;
@@ -1079,16 +1173,34 @@
                         },
                         sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,
+                        notificationType: self.mapNotificationType(pushNotificationDtoItem),
                         createdBy: pushNotificationDtoItem.info && pushNotificationDtoItem.info.createdByName || '',
                         lastDate: {
                             date: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("MMMM Do YYYY") : null,
-                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("h:mm:ss a") : null,
+                            time: pushNotificationDtoItem.info && pushNotificationDtoItem.info.lastDate ? moment(pushNotificationDtoItem.info.lastDate).format("h:mm:00 a") : null,
                         },
                         platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
                         content: self.findDefaultLocaleItem(pushNotificationDtoItem.contents).message
                     };
                 });
                 return rowsModel;
+            },
+            mapNotificationType: function(dto) {
+                switch (dto.triggers[0].kind) {
+                case "plain":
+                    return TriggerTypeEnum.PLAIN;
+                case "api":
+                    return TriggerTypeEnum.API;
+                case "event":
+                case "cohort":
+                    return TriggerTypeEnum.EVENT;
+                case "rec":
+                    return TriggerTypeEnum.REC;
+                case "multi":
+                    return TriggerTypeEnum.MULTI;
+                default:
+                    return null;
+                }
             },
             mapTargeting: function(dto) {
                 if (dto.filter && (dto.filter.cohorts && dto.filter.cohorts.length || dto.filter.geos && dto.filter.geos.length)) {
@@ -1097,8 +1209,8 @@
                 return TargetingEnum.ALL;
             },
             getExpiredTokenErrorIfFound: function(dto) {
-                if (dto.result && (dto.result.processed > (dto.result.sent + dto.result.errored))) {
-                    var affectedUsers = dto.result.processed - (dto.result.sent + dto.result.errored);
+                if (dto.result && (dto.result.total > (dto.result.sent + dto.result.failed))) {
+                    var affectedUsers = dto.result.total - (dto.result.sent + dto.result.failed);
                     return {'ExpiredToken': affectedUsers};
                 }
                 return null;
@@ -1348,8 +1460,7 @@
                 return {
                     sent: dto.result.subs[PlatformDtoEnum.ANDROID].sent || 0,
                     actioned: dto.result.subs[PlatformDtoEnum.ANDROID].actioned || 0,
-                    errored: dto.result.subs[PlatformDtoEnum.ANDROID].errored || 0,
-                    processed: dto.result.subs[PlatformDtoEnum.ANDROID].processed || 0,
+                    failed: dto.result.subs[PlatformDtoEnum.ANDROID].failed || 0,
                     total: dto.result.subs[PlatformDtoEnum.ANDROID].total || 0,
                     locales: dto.result.subs[PlatformDtoEnum.ANDROID].subs || {},
                 };
@@ -1358,8 +1469,7 @@
                 return {
                     sent: dto.result.subs[PlatformDtoEnum.IOS].sent || 0,
                     actioned: dto.result.subs[PlatformDtoEnum.IOS].actioned || 0,
-                    errored: dto.result.subs[PlatformDtoEnum.IOS].errored || 0,
-                    processed: dto.result.subs[PlatformDtoEnum.IOS].processed || 0,
+                    failed: dto.result.subs[PlatformDtoEnum.IOS].failed || 0,
                     total: dto.result.subs[PlatformDtoEnum.IOS].total || 0,
                     locales: dto.result.subs[PlatformDtoEnum.IOS].subs || {},
                 };
@@ -1375,8 +1485,7 @@
                     }
                     allLocales[key].sent = allLocales[key].sent + dto.result.subs[platformDto].subs[key].sent || 0;
                     allLocales[key].actioned = allLocales[key].actioned + dto.result.subs[platformDto].subs[key].actioned || 0;
-                    allLocales[key].errored = allLocales[key].failed + dto.result.subs[platformDto].subs[key].errored || 0;
-                    allLocales[key].processed = allLocales[key].processed + dto.result.subs[platformDto].subs[key].processed || 0;
+                    allLocales[key].failed = allLocales[key].failed + dto.result.subs[platformDto].subs[key].failed || 0;
                     allLocales[key].total = allLocales[key].total + dto.result.subs[platformDto].subs[key].total || 0;
                 });
                 return allLocales;
@@ -1392,8 +1501,7 @@
                 return {
                     sent: dto.result.sent || 0,
                     actioned: dto.result.actioned || 0,
-                    errored: dto.result.errored || 0,
-                    processed: dto.result.processed || 0,
+                    failed: dto.result.failed || 0,
                     total: dto.result.total || 0,
                     locales: allLocales,
                 };
@@ -1414,10 +1522,10 @@
                 return {
                     _id: dto._id || null,
                     demo: this.mapDemo(dto),
-                    saveStats: dto.saveStats || false,
+                    saveResults: dto.saveResults || false,
                     status: this.mapStatus(dto),
                     createdAt: dto.info && dto.info.created ? moment(dto.info.created).format("dddd, Do MMMM YYYY h:mm") : null,
-                    name: dto.info && dto.info.title,
+                    name: dto.info && countlyCommon.unescapeHtml(dto.info.title),
                     createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
                     localizations: localizations,
@@ -1432,6 +1540,11 @@
                     drill: dto.filter && dto.filter.drill,
                     expiration: countlyPushNotification.helper.convertMSToDaysAndHours(this.findDefaultLocaleItem(dto.contents).expiration),
                     dashboard: this.mapDashboard(dto),
+                    campaignType: "",
+                    isCohorts: typeof countlyCohorts !== 'undefined',
+                    isEe: typeof countlySegmentation !== 'undefined',
+                    isGeo: typeof countlyLocationTargetComponent !== 'undefined',
+                    schedules: dto.schedules || [],
                 };
             },
             mapDtoToOneTimeModel: function(dto) {
@@ -1440,6 +1553,7 @@
                 model[TypeEnum.ONE_TIME].targeting = this.mapTargeting(dto);
                 model[TypeEnum.ONE_TIME].pastSchedule = PastScheduleEnum.SKIP; //NOTE: past schedule is not supported at the moment. Auto trigger reschedule is not used anywhere.
                 model.type = TypeEnum.ONE_TIME;
+                // model.campaignType = "One-Time";
                 var triggerDto = dto.triggers[0];
                 model.delivery = {
                     startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
@@ -1457,6 +1571,7 @@
             mapDtoToAutomaticModel: function(dto) {
                 var model = this.mapDtoToBaseModel(dto);
                 model.type = TypeEnum.AUTOMATIC;
+                // model.campaignType = "Automated";
                 var triggerDto = dto.triggers[0];
                 model.cohorts = triggerDto.cohorts || [];
                 model.delivery = {
@@ -1466,13 +1581,13 @@
                 };
                 model.automatic = {
                     deliveryMethod: triggerDto.delay ? DeliveryMethodEnum.DELAYED : DeliveryMethodEnum.IMMEDIATELY,
-                    deliveryDateCalculation: triggerDto.actuals ? DeliveryDateCalculationEnum.EVENT_DEVICE_DATE : DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
                     trigger: triggerDto.kind === 'event' ? TriggerEnum.EVENT : triggerDto.entry ? TriggerEnum.COHORT_ENTRY : TriggerEnum.COHORT_EXIT,
                     triggerNotMet: triggerDto.cancels ? TriggerNotMetEnum.CANCEL_ON_EXIT : TriggerNotMetEnum.SEND_ANYWAY,
                     cohorts: triggerDto.cohorts || [],
                     events: triggerDto.events || [],
                     capping: Boolean(triggerDto.cap),
                     usersTimezone: null,
+                    pastSchedule: PastScheduleEnum.SKIP
                 };
                 if (triggerDto.time) {
                     var result = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.time);
@@ -1495,16 +1610,71 @@
                 };
                 return model;
             },
+            mapDtoToRecurringModel: function(dto) {
+                var model = this.mapDtoToBaseModel(dto);
+                model.type = TypeEnum.RECURRING;
+                model[TypeEnum.RECURRING] = {};
+                model[TypeEnum.RECURRING].targeting = this.mapTargeting(dto);
+                model[TypeEnum.RECURRING].pastSchedule = PastScheduleEnum.SKIP; //NOTE: past schedule is not supported at the moment. Auto trigger reschedule is not used anywhere.
+                var triggerDto = dto.triggers[0];
+                model.delivery = {
+                    startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
+                    endDate: triggerDto.end ? moment(triggerDto.end).valueOf() : null,
+                    type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
+                    repetition: {bucket: triggerDto.bucket, every: parseInt(triggerDto.every), on: triggerDto.on || []},
+                    prev: moment(triggerDto.prev).valueOf(),
+                    last: moment(triggerDto.last).valueOf(),
+                };
+                if (triggerDto.time) {
+                    var result = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.time);
+                    model.delivery.repetition.at = new Date();
+                    model.delivery.repetition.at.setHours(result.hours, result.minutes);
+                }
+                if (model.status === 'draft' && model.delivery.type === SendEnum.NOW) {
+                    model.delivery.startDate = moment().valueOf();
+                }
+                model[TypeEnum.RECURRING].audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
+                return model;
+            },
+            mapDtoToMultipleModel: function(dto) {
+                var model = this.mapDtoToBaseModel(dto);
+                model[TypeEnum.MULTIPLE] = {};
+                model[TypeEnum.MULTIPLE].targeting = this.mapTargeting(dto);
+                model[TypeEnum.MULTIPLE].pastSchedule = PastScheduleEnum.SKIP; //NOTE: past schedule is not supported at the moment. Auto trigger reschedule is not used anywhere.
+                model.type = TypeEnum.MULTIPLE;
+                var triggerDto = dto.triggers[0];
+                model.delivery = {
+                    startDate: triggerDto.start ? moment(triggerDto.start).valueOf() : null,
+                    endDate: null,
+                    type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
+                    multipleDates: triggerDto.dates || [],
+                    prev: moment(triggerDto.prev).valueOf(),
+                    last: moment(triggerDto.last).valueOf(),
+                };
+
+                if (model.status === 'draft' && model.delivery.type === SendEnum.NOW) {
+                    model.delivery.startDate = moment().valueOf();
+                }
+                model[TypeEnum.MULTIPLE].audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
+                model.timezone = triggerDto.tz ? TimezoneEnum.DEVICE : TimezoneEnum.SAME;
+                return model;
+            },
             mapDtoToModel: function(dto) {
                 var pushNotificationType = this.mapType(dto);
                 if (pushNotificationType === TypeEnum.ONE_TIME) {
                     return this.mapDtoToOneTimeModel(dto);
                 }
-                if (pushNotificationType === TypeEnum.AUTOMATIC) {
+                else if (pushNotificationType === TypeEnum.AUTOMATIC) {
                     return this.mapDtoToAutomaticModel(dto);
                 }
-                if (pushNotificationType === TypeEnum.TRANSACTIONAL) {
+                else if (pushNotificationType === TypeEnum.TRANSACTIONAL) {
                     return this.mapDtoToTransactionalModel(dto);
+                }
+                else if (pushNotificationType === TypeEnum.RECURRING) {
+                    return this.mapDtoToRecurringModel(dto);
+                }
+                else if (pushNotificationType === TypeEnum.MULTIPLE) {
+                    return this.mapDtoToMultipleModel(dto);
                 }
                 throw new Error('Unknown push notification type:' + pushNotificationType);
             },
@@ -1863,12 +2033,19 @@
                 var result = {
                     kind: 'plain',
                     start: model.delivery.startDate,
+                    reschedule: false,
                 };
                 if (model.delivery.type === SendEnum.LATER) {
                     if (model.timezone === TimezoneEnum.DEVICE) {
                         result.tz = true;
                         result.sctz = new Date().getTimezoneOffset();
                     }
+                }
+                else if (model.delivery.type === SendEnum.NOW) {
+                    result.start = Date.now();
+                }
+                if (model.oneTime?.pastSchedule === PastScheduleEnum.NEXT_DAY) {
+                    result.reschedule = true;
                 }
                 result.delayed = model[TypeEnum.ONE_TIME].audienceSelection === AudienceSelectionEnum.BEFORE;
                 return [result];
@@ -1877,11 +2054,12 @@
                 var result = {
                     kind: model.automatic.trigger === TriggerEnum.EVENT ? 'event' : 'cohort',
                     start: model.delivery.startDate,
-                    actuals: model.automatic.deliveryDateCalculation === DeliveryDateCalculationEnum.EVENT_DEVICE_DATE,
+                    reschedule: false,
                 };
                 if (options.isEndDateSet) {
                     result.end = model.delivery.endDate;
                 }
+                window.test = model.automatic;
                 if (options.isUsersTimezoneSet) {
                     var usersTimezone = {
                         hours: model.automatic.usersTimezone.getHours(),
@@ -1912,10 +2090,60 @@
                     result.entry = model.automatic.trigger === TriggerEnum.COHORT_ENTRY,
                     result.cancels = model.automatic.triggerNotMet === TriggerNotMetEnum.CANCEL_ON_EXIT;
                 }
+                if (model.automatic.pastSchedule === PastScheduleEnum.NEXT_DAY) {
+                    result.reschedule = true;
+                }
                 return [result];
             },
             mapTransactionalTrigger: function(model) {
                 return [{kind: 'api', start: model.delivery.startDate}];
+            },
+            mapRecurringTrigger: function(model, options) {
+                var result = {
+                    kind: 'rec',
+                    start: model.delivery.startDate,
+                    bucket: model.delivery.repetition.bucket,
+                    every: parseInt(model.delivery.repetition.every),
+                    on: model.delivery.repetition.on,
+                    reschedule: false,
+                };
+                if (typeof model.delivery.repetition.at === 'number') {
+                    model.delivery.repetition.at = new Date(model.delivery.repetition.at);
+                }
+                var repeatedHour = {
+                    hours: model.delivery.repetition.at.getHours(),
+                    minutes: model.delivery.repetition.at.getMinutes()
+                };
+
+                if (options.isEndDateSet) {
+                    result.end = model.delivery.endDate;
+                }
+                if (model[TypeEnum.RECURRING].pastSchedule === PastScheduleEnum.NEXT_DAY) {
+                    result.reschedule = true;
+                }
+
+                result.time = countlyPushNotification.helper.convertDateTimeToMS(repeatedHour);
+                result.delayed = model[TypeEnum.RECURRING].audienceSelection === AudienceSelectionEnum.BEFORE;
+                result.tz = true;
+                result.sctz = new Date().getTimezoneOffset();
+                return [result];
+            },
+            mapMultipleTrigger: function(model) {
+                var result = {
+                    kind: 'multi',
+                    start: model.delivery.startDate,
+                    dates: model.delivery.multipleDates,
+                    reschedule: false,
+                };
+                if (model.timezone === TimezoneEnum.DEVICE) {
+                    result.tz = true;
+                    result.sctz = new Date().getTimezoneOffset();
+                }
+                if (model[TypeEnum.MULTIPLE].pastSchedule === PastScheduleEnum.NEXT_DAY) {
+                    result.reschedule = true;
+                }
+                result.delayed = model[TypeEnum.MULTIPLE].audienceSelection === AudienceSelectionEnum.BEFORE;
+                return [result];
             },
             mapFilters: function(model, options) {
                 var result = {};
@@ -1947,6 +2175,18 @@
                 if (model.type === TypeEnum.AUTOMATIC && options.isLocationSet && model.locations.length) {
                     result.geos = model.locations;
                 }
+                if (model.type === TypeEnum.RECURRING && model[TypeEnum.RECURRING].targeting === TargetingEnum.SEGMENTED && model.cohorts.length) {
+                    result.cohorts = model.cohorts;
+                }
+                if (model.type === TypeEnum.RECURRING && model[TypeEnum.RECURRING].targeting === TargetingEnum.SEGMENTED && model.locations.length) {
+                    result.geos = model.locations;
+                }
+                if (model.type === TypeEnum.MULTIPLE && model[TypeEnum.MULTIPLE].targeting === TargetingEnum.SEGMENTED && model.cohorts.length) {
+                    result.cohorts = model.cohorts;
+                }
+                if (model.type === TypeEnum.MULTIPLE && model[TypeEnum.MULTIPLE].targeting === TargetingEnum.SEGMENTED && model.locations.length) {
+                    result.geos = model.locations;
+                }
                 return Object.keys(result).length === 0 ? null : result;
             },
             getLocalizationsCount: function(locales) {
@@ -1960,10 +2200,10 @@
                 return count;
             },
             mapStatus: function(options) {
-                if (options.isDraft && options.isCreated) {
-                    return StatusEnum.CREATED;
+                if (options.isDraft && options.isActive) {
+                    return StatusEnum.ACTIVE;
                 }
-                if (options.isDraft && !options.isCreated) {
+                if (options.isDraft && !options.isActive) {
                     return StatusEnum.DRAFT;
                 }
                 return null;
@@ -1997,7 +2237,7 @@
             mapModelToBaseDto: function(pushNotificationModel, options) {
                 var resultDto = {
                     app: countlyCommon.ACTIVE_APP_ID,
-                    saveStats: pushNotificationModel.saveStats || false,
+                    saveResults: pushNotificationModel.saveResults || false,
                     platforms: this.mapPlatforms(pushNotificationModel.platforms),
                 };
                 if (pushNotificationModel._id) {
@@ -2050,15 +2290,31 @@
                 dto.triggers = this.mapTransactionalTrigger(pushNotificationModel);
                 return dto;
             },
+            mapModelToRecurringDto: function(pushNotificationModel, options) {
+                var dto = this.mapModelToBaseDto(pushNotificationModel, options);
+                dto.triggers = this.mapRecurringTrigger(pushNotificationModel, options);
+                return dto;
+            },
+            mapModelToMultipleDto: function(pushNotificationModel, options) {
+                var dto = this.mapModelToBaseDto(pushNotificationModel, options);
+                dto.triggers = this.mapMultipleTrigger(pushNotificationModel, options);
+                return dto;
+            },
             mapModelToDto: function(pushNotificationModel, options) {
                 if (pushNotificationModel.type === TypeEnum.ONE_TIME) {
                     return this.mapModelToOneTimeDto(pushNotificationModel, options);
                 }
-                if (pushNotificationModel.type === TypeEnum.AUTOMATIC) {
+                else if (pushNotificationModel.type === TypeEnum.AUTOMATIC) {
                     return this.mapModelToAutomaticDto(pushNotificationModel, options);
                 }
-                if (pushNotificationModel.type === TypeEnum.TRANSACTIONAL) {
+                else if (pushNotificationModel.type === TypeEnum.TRANSACTIONAL) {
                     return this.mapModelToTransactionalDto(pushNotificationModel, options);
+                }
+                else if (pushNotificationModel.type === TypeEnum.RECURRING) {
+                    return this.mapModelToRecurringDto(pushNotificationModel, options);
+                }
+                else if (pushNotificationModel.type === TypeEnum.MULTIPLE) {
+                    return this.mapModelToMultipleDto(pushNotificationModel, options);
                 }
                 throw Error('Unknown push notification type:', pushNotificationModel.type);
             },
@@ -2165,7 +2421,10 @@
         ALL_FILTER_OPTION_VALUE: ALL_FILTER_OPTION_VALUE,
         ALL_FILTER_OPTION_LABEL: ALL_FILTER_OPTION_LABEL,
         TypeEnum: TypeEnum,
+        KindEnum: KindEnum,
+        CampaignTypes: CampaignTypes,
         PeriodEnum: PeriodEnum,
+        TriggerTypeEnum: TriggerTypeEnum,
         PlatformEnum: PlatformEnum,
         StatusEnum: StatusEnum,
         UserCommandEnum: UserCommandEnum,
@@ -2178,7 +2437,6 @@
         MessageTypeEnum: MessageTypeEnum,
         TriggerEnum: TriggerEnum,
         DeliveryMethodEnum: DeliveryMethodEnum,
-        DeliveryDateCalculationEnum: DeliveryDateCalculationEnum,
         TriggerNotMetEnum: TriggerNotMetEnum,
         IOSAuthConfigTypeEnum: IOSAuthConfigTypeEnum,
         UserPropertyTypeEnum: UserPropertyTypeEnum,
@@ -2187,9 +2445,21 @@
         startDateOptions: startDateOptions,
         audienceSelectionOptions: audienceSelectionOptions,
         targetingOptions: targetingOptions,
+        bucketList: bucketList,
+        weeklyRepetitionOptions: weeklyRepetitionOptions,
+        monthlyRepetitionOptions: function() {
+            const days = [];
+            for (let i = 1; i <= 28; i++) {
+                days.push({ label: CV.i18n('push-notification.day') + " " + i, value: i });
+            }
+            days.push({ label: CV.i18n('push-notification.last-day'), value: 0 });
+            days.push({ label: CV.i18n('push-notification.x-day-before-the-last-day', 1), value: -1 });
+            days.push({ label: CV.i18n('push-notification.x-days-before-the-last-day', 2), value: -2 });
+
+            return days;
+        },
         triggerOptions: triggerOptions,
         triggerNotMetOptions: triggerNotMetOptions,
-        deliveryDateCalculationOptions: deliveryDateCalculationOptions,
         deliveryMethodOptions: deliveryMethodOptions,
         statusOptions: statusOptions,
         iosAuthConfigTypeOptions: iosAuthConfigTypeOptions,
@@ -2535,28 +2805,12 @@
             }
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.sendToTestUsers(dto)
-                    .then(function(testDto) {
-                        if (!testDto.result) {
-                            reject(new Error(CV.i18n('push-notification.unknown-error')));
-                            console.error(testDto);
-                            return;
+                    .then(function(response) {
+                        if (!response.results) {
+                            console.error(response);
+                            return reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
-                        if (testDto.result.errors) {
-                            reject(new Error('Error sending push notificaiton to test users:' + JSON.stringify(testDto.result.errors)));
-                            console.error(testDto);
-                            return;
-                        }
-                        if (testDto.result.errored) {
-                            reject(new Error('Error sending push notification to test users. Number of errors:' + testDto.result.errored));
-                            console.error(testDto);
-                            return;
-                        }
-                        if (testDto.result.sent > 0) {
-                            resolve();
-                            return;
-                        }
-                        reject(new Error(CV.i18n('push-notification.unknown-error')));
-                        console.error(testDto);
+                        resolve(response.results);
                     }).catch(function(error) {
                         console.error(error);
                         reject(error);
@@ -2652,6 +2906,10 @@
         messageSettings[PlatformEnum.ANDROID] = {};
         return {
             pushNotification: countlyPushNotification.helper.getInitialModel(TypeEnum.ONE_TIME),
+            messageStats: {
+                sent: [],
+                action: []
+            },
             platformFilter: null,
             platformFilterOptions: [],
             localeFilter: null,
@@ -2677,6 +2935,19 @@
                     console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
                 });
+        },
+        fetchMessageStats: function(context, { messageId, period }) {
+            context.dispatch('onFetchInit', {useLoader: true});
+            countlyPushNotification.api.fetchMessageStats(messageId, period)
+                .then(function(model) {
+                    context.commit('setMessageStats', model);
+                    context.dispatch('onFetchSuccess', {useLoader: true});
+                })
+                .catch(function(error) {
+                    console.error(error);
+                    context.dispatch('onFetchError', {error: error, useLoader: true});
+                });
+
         },
         onUserCommand: function(context, payload) {
             context.commit('setUserCommand', payload);
@@ -2757,6 +3028,9 @@
         setPushNotification: function(state, value) {
             state.pushNotification = value;
         },
+        setMessageStats: function(state, value) {
+            state.messageStats = value;
+        },
         setUserCommand: function(state, value) {
             state.userCommand = value;
         },
@@ -2810,6 +3084,8 @@
         return {
             rows: [],
             selectedPushNotificationType: countlyPushNotification.service.TypeEnum.ONE_TIME,
+            selectedPushNotificationKind: countlyPushNotification.service.KindEnum.ALL,
+            selectedTriggerKind: countlyPushNotification.service.TriggerTypeEnum.PLAIN,
             statusFilter: ALL_FILTER_OPTION_VALUE,
             platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
             areRowsLoading: false,
@@ -2819,6 +3095,10 @@
             },
             isDrawerOpen: false,
             isLoadingTable: true,
+            activeFilter: {
+                platform: "all",
+                status: "all"
+            },
         };
     };
 
@@ -2884,9 +3164,16 @@
         onSetAreRowsLoading: function(context, value) {
             context.commit('setAreRowsLoading', value);
         },
+        onSetTriggerKind: function(context, value) {
+            context.commit('setTriggerKind', value);
+        },
         onSetPushNotificationType: function(context, value) {
             context.commit('resetPushNotifications');
             context.commit('setPushNotificationType', value);
+        },
+        onSetPushNotificationKind: function(context, value) {
+            context.commit('resetPushNotifications');
+            context.commit('setPushNotificationKind', value);
         },
         onSetPlatformFilter: function(context, value) {
             context.commit('setPlatformFilter', value);
@@ -2894,11 +3181,23 @@
         onSetStatusFilter: function(context, value) {
             context.commit('setStatusFilter', value);
         },
+        onSetActiveFilter: function(context, value) {
+            context.commit('setActiveFilter', value);
+        }
     };
 
     var mainMutations = {
         setPushNotificationType: function(state, value) {
             state.selectedPushNotificationType = value;
+        },
+        setTriggerKind: function(state, value) {
+            state.selectedTriggerKind = value;
+        },
+        setPushNotificationKind: function(state, value) {
+            state.selectedPushNotificationKind = value;
+        },
+        setActiveFilter: function(state, value) {
+            state.activeFilter = value;
         },
         resetPushNotifications: function(state) {
             Object.assign(state, getMainInitialState());
@@ -3047,5 +3346,25 @@
             submodules: [countlyVue.vuex.FetchMixin()],
             destroy: false,
         });
+    };
+
+    var TT = {
+        tkid: 'iOS Development Token',
+        tkia: 'iOS Ad Hoc / TestFlight Token',
+        tkip: 'iOS Production Token',
+        tkap: 'Android Firebase Token',
+        tkhp: 'Android Huawei Token'
+    };
+
+    countlyPushNotification.getTokenTypes = function() {
+        return Object.keys(TT);
+    };
+
+    countlyPushNotification.getTokenNames = function() {
+        return Object.values(TT);
+    };
+
+    countlyPushNotification.getTokenName = function(type) {
+        return TT[type];
     };
 }(window.countlyPushNotification = window.countlyPushNotification || {}));

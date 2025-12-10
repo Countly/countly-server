@@ -104,13 +104,43 @@
         return ref;
     };
 
-    var _internalRequestParams = ["page", "perPage", "sort", "searchQuery"];
+    var _internalRequestParams = ["page", "perPage", "sort", "searchQuery", "cursor", "useCursorPagination"];
 
     var _dataTableAdapters = {
         toLegacyRequest: function(requestParams, cols) {
             var convertedParams = {};
-            convertedParams.iDisplayStart = (requestParams.page - 1) * requestParams.perPage;
-            convertedParams.iDisplayLength = requestParams.perPage;
+
+            // Auto-detect ClickHouse availability and enable cursor pagination
+            var isClickHouseAvailable = _dataTableAdapters.isClickHouseAvailable();
+            var shouldUseCursorPagination = requestParams.useCursorPagination || isClickHouseAvailable;
+
+            // Always set the flag so frontend knows what pagination type to use
+            convertedParams.useCursorPagination = shouldUseCursorPagination;
+
+            if (shouldUseCursorPagination) {
+                // Use cursor pagination for ClickHouse - ONLY send cursor pagination params
+                convertedParams.limit = requestParams.perPage;
+
+                // Add cursor and pagination mode if available
+                if (requestParams.cursor) {
+                    convertedParams.cursor = requestParams.cursor;
+                }
+                if (requestParams.paginationMode) {
+                    convertedParams.paginationMode = requestParams.paginationMode;
+                }
+
+                // IMPORTANT: Do NOT send traditional pagination params
+                // convertedParams.iDisplayStart and convertedParams.iDisplayLength should NOT be set
+            }
+            else {
+                // Use traditional pagination for MongoDB - ONLY send traditional pagination params
+                convertedParams.iDisplayStart = (requestParams.page - 1) * requestParams.perPage;
+                convertedParams.iDisplayLength = requestParams.perPage;
+
+                // IMPORTANT: Do NOT send cursor pagination params
+                // convertedParams.limit, convertedParams.cursor, convertedParams.paginationMode should NOT be set
+            }
+
             if (cols && requestParams.sort && requestParams.sort.length > 0) {
                 var sorter = requestParams.sort[0];
                 var sortFieldIndex = cols.indexOf(sorter.field);
@@ -137,7 +167,10 @@
                 "aaData": true,
                 "iTotalDisplayRecords": true,
                 "iTotalRecords": true,
-                "sEcho": true
+                "sEcho": true,
+                "hasNextPage": true,
+                "nextCursor": true,
+                "paginationMode": true
             };
 
             var fields = {
@@ -147,6 +180,21 @@
             };
             if (Object.prototype.hasOwnProperty.call(response, "sEcho")) {
                 fields.echo = parseInt(response.sEcho, 10);
+            }
+
+            // Store response for database type detection
+            window.lastApiResponse = response;
+
+            // Handle cursor pagination fields
+
+            if (response.hasNextPage) {
+                fields.hasNextPage = response.hasNextPage;
+            }
+            if (response.nextCursor) {
+                fields.nextCursor = response.nextCursor;
+            }
+            if (response.paginationMode) {
+                fields.paginationMode = response.paginationMode;
             }
 
             Object.keys(response).forEach(function(respKey) {
@@ -171,6 +219,22 @@
                 };
             }
             return fields;
+        },
+        isClickHouseAvailable: function() {
+            // Check if we have a recent response with cursor pagination data
+            // This indicates ClickHouse is being used
+            if (window.lastApiResponse) {
+                const hasCursorData = window.lastApiResponse.hasNextPage !== undefined || window.lastApiResponse.nextCursor !== undefined || window.lastApiResponse.paginationMode !== undefined;
+                return hasCursorData;
+            }
+
+            // Fallback: check if we're explicitly using MongoDB
+            if (window.dbOverride === 'mongodb') {
+                return false;
+            }
+
+            // Default to mongoDB if no explicit override
+            return false;
         }
     };
 
@@ -198,7 +262,10 @@
             stateObj[statusField] = "ready";
             stateObj[echoField] = 0;
             stateObj[paramsField] = {
-                ready: false
+                ready: false,
+                useCursorPagination: false,
+                cursor: null,
+                paginationMode: null
             };
             return stateObj;
         };
@@ -274,13 +341,42 @@
                         options.onOverrideResponse(context, res);
                     }
                     var convertedResponse = _dataTableAdapters.toStandardResponse(res, requestOptions);
-                    if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
-                        convertedResponse.echo >= context.state[echoField]) {
-                        if (typeof options.onReady === 'function') {
-                            convertedResponse.rows = options.onReady(context, convertedResponse.rows);
+                    if (res.task_id) {
+                        if (typeof options.onTask === 'function') {
+                            options.onTask(context, res.task_id);
                         }
                         context.commit(_capitalized("set", resourceName), convertedResponse);
                         context.commit(_capitalized("set", lastSuccessfulRequestKey), requestOptions);
+                    }
+                    else {
+                        if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
+                            convertedResponse.echo >= context.state[echoField]) {
+
+                            // Generic cursor pagination response handling
+                            if (convertedResponse.hasNextPage !== undefined || convertedResponse.nextCursor !== undefined) {
+
+                                // Update the params with cursor information
+                                var cursorParams = {};
+                                if (convertedResponse.hasNextPage !== undefined) {
+                                    cursorParams.hasNextPage = convertedResponse.hasNextPage;
+                                }
+                                if (convertedResponse.nextCursor !== undefined) {
+                                    cursorParams.nextCursor = convertedResponse.nextCursor;
+                                }
+                                if (convertedResponse.paginationMode !== undefined) {
+                                    cursorParams.paginationMode = convertedResponse.paginationMode;
+                                }
+
+                                // Update the params in the state
+                                context.commit(_capitalized("set", paramsKey), Object.assign({}, context.state[paramsField], cursorParams));
+                            }
+
+                            if (typeof options.onReady === 'function') {
+                                convertedResponse.rows = options.onReady(context, convertedResponse.rows);
+                            }
+                            context.commit(_capitalized("set", resourceName), convertedResponse);
+                            context.commit(_capitalized("set", lastSuccessfulRequestKey), requestOptions);
+                        }
                     }
                 })
                 .catch(function(err) {

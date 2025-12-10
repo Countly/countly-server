@@ -10,6 +10,13 @@ var common = require('../../../api/utils/common.js'),
 const { MongoInvalidArgumentError } = require('mongodb');
 
 const { EJSON } = require('bson');
+let clickHouseRunner;
+try {
+    clickHouseRunner = require('../../clickhouse/api/queries/clickhouseCoreQueries.js');
+}
+catch (e) {
+    log.d('ClickHouse plugin not found, ClickHouse queries will be unavailable');
+}
 
 const FEATURE_NAME = 'dbviewer';
 const whiteListedAggregationStages = {
@@ -61,6 +68,19 @@ const whiteListedAggregationStages = {
 };
 var spawn = require('child_process').spawn,
     child;
+
+const CLICKHOUSE_PREFIX = 'clickhouse_';
+/**
+ * Checks if the given database name is a ClickHouse database.
+ * @param {*} name - The database name to check.
+ * @returns {boolean} - True if the database is a ClickHouse database, false otherwise.
+ */
+const isClickhouseDBSelected = (name) => typeof name === 'string' && name.startsWith(CLICKHOUSE_PREFIX);
+/**
+ * Checks if the ClickHouse database is enabled.
+ * @returns {boolean} - True if ClickHouse is enabled, false otherwise.
+ */
+const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEnabled('clickhouse');
 
 (function() {
     plugins.register("/permissions/features", function(ob) {
@@ -152,10 +172,12 @@ var spawn = require('child_process').spawn,
         **/
         function getIndexes() {
             dbs[dbNameOnParam].collection(params.qstring.collection).indexes(function(err, indexes) {
-                if (err) {
-                    common.returnOutput(params, 'Somethings went wrong');
+                if (err || !indexes) {
+                    common.returnOutput(params, 'Failed to retrieve indexes for the collection');
                 }
-                common.returnOutput(params, { limit: indexes.length, start: 1, end: indexes.length, total: indexes.length, pages: 1, curPage: 1, collections: indexes });
+                else {
+                    common.returnOutput(params, { limit: indexes.length, start: 1, end: indexes.length, total: indexes.length, pages: 1, curPage: 1, collections: indexes });
+                }
             });
         }
 
@@ -343,6 +365,317 @@ var spawn = require('child_process').spawn,
                 }
             }
         }
+
+        /**
+         * Query identifier for database, table, or column names for clickhouse
+         * @param {String} name - The name to be escaped
+         * @example
+         * const id = qi('my.collection.name');
+         * console.log(id); // '`my.collection.name`'
+         * @returns {String} - The escaped name
+         */
+        function qi(name) {
+            return '`' + String(name).replace(/`/g, '``') + '`';
+        }
+
+        /**
+         * Unwraps the type information from a ClickHouse column
+         * @param {*} t - The type to unwrap
+         * @example
+         * const type = unwrapType('Nullable(Int32)');
+         * console.log(type); // 'Int32'
+         * @returns {String} - The unwrapped base type
+         */
+        function unwrapType(t) {
+            let s = String(t);
+            if (s.startsWith('Nullable(') && s.endsWith(')')) {
+                s = s.slice(9, -1);
+            }
+            if (s.startsWith('LowCardinality(') && s.endsWith(')')) {
+                s = s.slice(15, -1);
+            }
+            if (s.startsWith('SimpleAggregateFunction(') && s.endsWith(')')) {
+                const inner = s.slice('SimpleAggregateFunction('.length, -1);
+                s = inner.split(',').pop().trim();
+            }
+            return s;
+        }
+
+        /**
+         * Get the schema of a ClickHouse table
+         * @param {*} chService - The ClickHouse service instance
+         * @param {*} db - The database name
+         * @param {*} table - The table name
+         * @returns {Promise<Object>} - A promise that resolves to the table schema
+         */
+        async function getSchema(chService, db, table) {
+            const q = `
+                SELECT name, type
+                FROM system.columns
+                WHERE database = {db:String} AND table = {table:String}
+            `;
+            const rows = await chService.aggregate({
+                query: q,
+                params: { db, table }
+            });
+
+            const map = {};
+            for (const r of rows) {
+                const t = unwrapType(r.type);
+                map[r.name] = t;
+            }
+            return map;
+        }
+
+        /**
+         * Get the sort keys of a ClickHouse table
+         * @param {*} chService - The ClickHouse service instance
+         * @param {*} db - The database name
+         * @param {*} table - The table name
+         * @returns {Promise<Array>} - A promise that resolves to the sort keys
+         */
+        async function getSortKeys(chService, db, table) {
+            const q = `
+                SELECT sorting_key
+                FROM system.tables
+                WHERE database = {db:String} AND name = {table:String}
+            `;
+            const rows = await chService.aggregate({
+                query: q,
+                params: { db, table }
+            });
+
+            return rows && rows.length ? rows[0].sorting_key.split(',').map(s => s.trim()) : [];
+        }
+
+        /**
+         * Convert a single filter row to MongoDB expression to be able to use WhereClauseConverter
+         * @param {Object} r - Filter row object
+         * @example
+         * const expr = rowToMongoExpr({ field: 'age', operator: '>', value: 30 });
+         * console.log(expr); // { age: { $gt: 30 } }
+         * @returns {Object|null} MongoDB expression or null if invalid
+         */
+        function rowToMongoExpr(r) {
+            if (!r || !r.field || !r.operator) {
+                return null;
+            }
+            const f = r.field;
+            const op = String(r.operator || '=').toUpperCase();
+            const v = r.value;
+
+            if (op === '=') {
+                return { [f]: v };
+            }
+            if (op === '!=') {
+                return { [f]: { $ne: v } };
+            }
+            if (op === '>') {
+                return { [f]: { $gt: v } };
+            }
+            if (op === '>=') {
+                return { [f]: { $gte: v } };
+            }
+            if (op === '<') {
+                return { [f]: { $lt: v } };
+            }
+            if (op === '<=') {
+                return { [f]: { $lte: v } };
+            }
+            return null;
+        }
+
+        /**
+         * Convert filter rows array to MongoDB query object
+         * @param {Array} rows - Array of filter row objects
+         * @example
+         * const query = rowsToMongoQuery([{ field: 'age', operator: '>', value: 30 }]);
+         * console.log(query); // { $and: [ { age: { $gt: 30 } } ] }
+         * @returns {Object} MongoDB query object
+         */
+        function rowsToMongoQuery(rows) {
+            const a = Array.isArray(rows) ? rows : [];
+            const andParts = [];
+            let orBuf = null;
+            let lastExpr = null;
+
+            for (let i = 0; i < a.length; i++) {
+                const expr = rowToMongoExpr(a[i]);
+                if (!expr) {
+                    continue;
+                }
+                if (i === 0) {
+                    lastExpr = expr;
+                    continue;
+                }
+                const conj = String(a[i].conjunction || 'AND').toUpperCase();
+                if (conj === 'OR') {
+                    if (!orBuf) {
+                        orBuf = [ lastExpr, expr ];
+                    }
+                    else {
+                        orBuf.push(expr);
+                    }
+                    lastExpr = null;
+                }
+                else {
+                    if (orBuf) {
+                        andParts.push({ $or: orBuf });
+                        orBuf = null;
+                        lastExpr = expr;
+                    }
+                    else {
+                        if (lastExpr) {
+                            andParts.push(lastExpr);
+                        }
+                        lastExpr = expr;
+                    }
+                }
+            }
+            if (orBuf) {
+                andParts.push({ $or: orBuf });
+            }
+            else if (lastExpr) {
+                andParts.push(lastExpr);
+            }
+            if (!andParts.length) {
+                return {};
+            }
+            return andParts.length === 1 ? andParts[0] : { $and: andParts };
+        }
+
+        /**
+         * Get collection/table data from ClickHouse
+         * @param {string} chDb - ClickHouse database name
+         * @param {string} table - ClickHouse table name
+         */
+        async function chGetCollection(chDb, table) {
+            if (!clickHouseRunner || !clickHouseRunner.getDbviewerCollection) {
+                return common.returnMessage(params, 400, 'ClickHouse plugin not loaded properly.');
+            }
+            if (!common.clickhouseQueryService) {
+                return common.returnMessage(params, 400, 'ClickHouse is not configured.');
+            }
+            if (!chDb || !table) {
+                return common.returnMessage(params, 400, 'Missing ClickHouse database or table.');
+            }
+
+            let projectionObj = null;
+            let sortObj = null;
+            let filterObj = {};
+
+            const projRaw = params.qstring.project || params.qstring.projection;
+            if (projRaw) {
+                try {
+                    const parsed = EJSON.parse(projRaw);
+                    if (parsed && typeof parsed === 'object') {
+                        projectionObj = parsed;
+                    }
+                }
+                catch (SyntaxError) {
+                    log.e('Failed to parse projection:', SyntaxError);
+                }
+            }
+
+            const sortRaw = params.qstring.sort;
+            if (sortRaw) {
+                try {
+                    const parsed = EJSON.parse(sortRaw);
+                    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                        sortObj = parsed;
+                    }
+                }
+                catch (err) {
+                    log.e('Failed to parse sort:', err);
+                }
+            }
+
+            const filterRaw = params.qstring.filter;
+            if (filterRaw) {
+                try {
+                    const parsed = (typeof filterRaw === 'string') ? EJSON.parse(filterRaw) : filterRaw;
+                    if (parsed && Array.isArray(parsed.rows) && parsed.rows.length) {
+                        filterObj = rowsToMongoQuery(parsed.rows);
+                    }
+                    else if (parsed && typeof parsed === 'object') {
+                        filterObj = parsed;
+                    }
+                }
+                catch (err) {
+                    log.e('Failed to parse filter:', err);
+                }
+            }
+
+            if (!params.member.global_admin) {
+                const baseFilter = getBaseAppFilter(params.member, chDb, table);
+                if (baseFilter && Object.keys(baseFilter).length > 0) {
+                    for (const key in baseFilter) {
+                        if (Object.prototype.hasOwnProperty.call(baseFilter, key)) {
+                            if (filterObj[key]) {
+                                filterObj.$and = filterObj.$and || [];
+                                filterObj.$and.push({ [key]: baseFilter[key] });
+                                filterObj.$and.push({ [key]: filterObj[key] });
+                                delete filterObj[key];
+                            }
+                            else {
+                                filterObj[key] = baseFilter[key];
+                            }
+                        }
+                    }
+                }
+            }
+
+            const useApproximateUniq = plugins.getConfig("drill", params.app && params.app.plugins, true).clickhouse_use_approximate_uniq;
+            const limit = parseInt(params.qstring.limit || 10);
+            const sSearch = params.qstring.sSearch || '';
+            const cursor = params.qstring.cursor || null;
+            const paginationMode = params.qstring.paginationMode || undefined;
+
+            try {
+                const result = await clickHouseRunner.getDbviewerCollection({
+                    chDb,
+                    table,
+                    projection: projectionObj,
+                    sort: sortObj,
+                    filter: filterObj,
+                    sSearch,
+                    limit,
+                    cursor,
+                    paginationMode,
+                    useApproximateUniq,
+                    _dbviewerHelpers: {
+                        qi,
+                        getSchema: (db, tbl) => getSchema(common.clickhouseQueryService, db, tbl),
+                        getSortKeys: (db, tbl) => getSortKeys(common.clickhouseQueryService, db, tbl)
+                    }
+                });
+
+                const paginationResp = (result && result.data) ? result.data : { data: [] };
+
+                const start = (paginationResp.data && paginationResp.data.length) ? 1 : 0;
+                const end = paginationResp.data ? paginationResp.data.length : 0;
+                const pages = limit > 0 ? Math.max(1, Math.ceil((paginationResp.total || 0) / limit)) : 1;
+                const curPage = start ? 1 : 0;
+
+                return common.returnOutput(params, {
+                    limit: limit,
+                    start: start,
+                    end: end,
+                    total: paginationResp.total || 0,
+                    pages: pages,
+                    curPage: curPage,
+                    collections: paginationResp.data || [],
+                    hasNextPage: paginationResp.hasNextPage,
+                    nextCursor: paginationResp.nextCursor,
+                    paginationMode: paginationResp.paginationMode
+                });
+            }
+            catch (e) {
+                log.e('ClickHouse query failed', e);
+                return common.returnMessage(params, 500, e.message || 'ClickHouse query failed.');
+            }
+        }
+
         /**
         * Get databases with collections
         * @param {array} apps - applications array
@@ -353,11 +686,11 @@ var spawn = require('child_process').spawn,
                 lookup[apps[i]._id + ""] = apps[i].name;
             }
 
-            dbLoadEventsData(params, apps, function(err) {
+            dbLoadEventsData(params, apps, async function(err) {
                 if (err) {
                     log.e(err);
                 }
-                async.map(Object.keys(dbs), getCollections, function(error, results) {
+                async.map(Object.keys(dbs), getCollections, async function(error, results) {
                     if (error) {
                         console.error(error);
                     }
@@ -366,41 +699,53 @@ var spawn = require('child_process').spawn,
                             return val !== null;
                         });
                     }
+                    if (isClickhouseEnabled()) {
+                        try {
+                            const chResults = await getClickhouseDbs(lookup);
+                            if (Array.isArray(chResults)) {
+                                results = results.concat(chResults);
+                            }
+                        }
+                        catch (e) {
+                            log.e('ClickHouse integration failed', e);
+                        }
+                    }
+
                     common.returnOutput(params, results || []);
                 });
-                /**
-                * Get collections of database
-                * @param {string} name - database name
-                * @param {function} callback - callback method
-                **/
-                function getCollections(name, callback) {
-                    if (dbs[name]) {
-                        dbs[name].collections(function(error, results) {
-                            var db = { name: name, collections: {} };
-                            async.each(results, function(col, done) {
-                                if (col.collectionName.indexOf("system.indexes") === -1 && col.collectionName.indexOf("sessions_") === -1) {
-                                    userHasAccess(params, col.collectionName, params.qstring.app_id, function(hasAccess) {
-                                        if (hasAccess || col.collectionName === "events_data" || col.collectionName === "drill_events") {
-                                            ob = parseCollectionName(col.collectionName, lookup);
-                                            db.collections[ob.pretty] = ob.name;
-                                        }
-                                        done();
-                                    });
-                                }
-                                else {
-                                    done();
-                                }
-                            }, function(asyncError) {
-                                callback(asyncError, db);
-                            });
-                        });
-                    }
-                    else {
-                        callback(null, null);
-                    }
-                }
             });
 
+            /**
+            * Get collections of database
+            * @param {string} name - database name
+            * @param {function} callback - callback method
+            **/
+            function getCollections(name, callback) {
+                if (dbs[name]) {
+                    dbs[name].collections(function(error, results) {
+                        var db = { name: name, collections: {} };
+                        async.each(results, function(col, done) {
+                            if (col.collectionName.indexOf("system.indexes") === -1 && col.collectionName.indexOf("sessions_") === -1) {
+                                userHasAccess(params, col.collectionName, params.qstring.app_id, function(hasAccess) {
+                                    if (hasAccess || col.collectionName === "events_data" || col.collectionName === "drill_events") {
+                                        ob = parseCollectionName(col.collectionName, lookup);
+                                        db.collections[ob.pretty] = ob.name;
+                                    }
+                                    done();
+                                });
+                            }
+                            else {
+                                done();
+                            }
+                        }, function(asyncError) {
+                            callback(asyncError, db);
+                        });
+                    });
+                }
+                else {
+                    callback(null, null);
+                }
+            }
         }
 
         /**
@@ -528,14 +873,76 @@ var spawn = require('child_process').spawn,
             return callback(false);
         }
 
+        /**
+         * List all ClickHouse databases
+         * @param {Object} lookup - The lookup object for parsing collection names
+         */
+        async function getClickhouseDbs(lookup) {
+            if (!common.clickhouseQueryService) {
+                return [];
+            }
+            try {
+                const chDbs = await common.clickhouseQueryService.listDatabases();
+                const transformed = [];
+                for (const item of chDbs) {
+                    const collections = await getClickhouseCollections(item.name, lookup);
+                    transformed.push({ name: CLICKHOUSE_PREFIX + item.name, collections });
+                }
+                return transformed;
+            }
+            catch (err) {
+                log.e('ClickHouse list_databases failed', err);
+                return [];
+            }
+        }
+
+        /**
+         * List ClickHouse collections (tables)
+         * @param {string} dbName - The name of the database
+         * @param {Object} lookup - The lookup object for parsing collection names
+         * @returns {Promise<Object>} - A promise that resolves to an object mapping pretty names to collection names
+         */
+        async function getClickhouseCollections(dbName, lookup) {
+            try {
+                const rawCollections = await common.clickhouseQueryService.listCollections(dbName || 'countly_drill');
+                const transformedCollections = {};
+
+                for (const collection of rawCollections) {
+                    const collectionName = collection.name;
+                    const hasAccess = await new Promise((resolve) => {
+                        userHasAccess({ member: params.member }, collectionName, null, resolve);
+                    });
+
+                    if (hasAccess || collectionName === "events_data" || collectionName === "drill_events") {
+                        const parsed = parseCollectionName(collectionName, lookup);
+                        transformedCollections[parsed.pretty] = parsed.name;
+                    }
+                }
+
+                return transformedCollections;
+            }
+            catch (err) {
+                log.e('ClickHouse list_collections failed', err);
+                return {};
+            }
+        }
+
         validateUser(params, function() {
             // conditions
             var isContainDb = params.qstring.dbs || params.qstring.db;
             var isContainCollection = params.qstring.collection && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1;
 
-            if (isContainDb && (typeof dbs[params.qstring.db]) === "undefined" && typeof dbs[params.qstring.dbs] === "undefined") {
-                common.returnMessage(params, 404, 'Database not found.');
-                return true;
+            if (isContainDb) {
+                const hasMongo = typeof dbs[params.qstring.db] !== "undefined" || typeof dbs[params.qstring.dbs] !== "undefined";
+
+                if (isClickhouseDBSelected(dbNameOnParam) && !isClickhouseEnabled()) {
+                    common.returnMessage(params, 404, 'ClickHouse plugin is disabled.');
+                    return true;
+                }
+                if (!isClickhouseDBSelected(dbNameOnParam) && !hasMongo) {
+                    common.returnMessage(params, 404, 'Database not found.');
+                    return true;
+                }
             }
 
             // handle index request
@@ -606,19 +1013,28 @@ var spawn = require('child_process').spawn,
             }
             // handle collection request
             else if (isContainDb && isContainCollection) {
+                const chDb = isClickhouseDBSelected(dbNameOnParam) ? dbNameOnParam.slice(CLICKHOUSE_PREFIX.length) : null;
+
+                if (chDb && !isClickhouseEnabled()) {
+                    return common.returnMessage(params, 404, 'ClickHouse plugin is disabled.');
+                }
+
                 if (params.member.global_admin) {
-                    dbGetCollection();
+                    if (chDb && params.qstring.collection) {
+                        return chGetCollection(chDb, params.qstring.collection);
+                    }
+                    return dbGetCollection();
                 }
-                else {
-                    userHasAccess(params, params.qstring.collection, function(hasAccess) {
-                        if (hasAccess || params.qstring.collection === "events_data" || params.qstring.collection === "drill_events") {
-                            dbGetCollection();
+
+                userHasAccess(params, params.qstring.collection, function(hasAccess) {
+                    if (hasAccess || params.qstring.collection === "events_data" || params.qstring.collection === "drill_events") {
+                        if (chDb && params.qstring.collection) {
+                            return chGetCollection(chDb, params.qstring.collection);
                         }
-                        else {
-                            common.returnMessage(params, 401, 'User does not have right to view this collection');
-                        }
-                    });
-                }
+                        return dbGetCollection();
+                    }
+                    common.returnMessage(params, 401, 'User does not have right to view this collection');
+                });
             }
             else {
                 if (params.member.global_admin) {

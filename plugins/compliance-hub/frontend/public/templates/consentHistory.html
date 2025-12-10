@@ -1,16 +1,21 @@
-<cly-main>
+<cly-main class="compliance-hub-consent-history">
     <div class="bu-level bu-my-4">
-        <div class="bu-level-left">
-            <span class="text-big font-weight-bold" data-test-id="consent-history-for-label">Consent History for </span>
-            <cly-select-x test-id="consent-filter" class="bu-ml-3 bu-mr-3" :width="300" :borderless="true" :adaptiveLength="true"
-                :auto-commit="true" :hide-default-tabs="true" :arrow="false" :hide-all-options-tab="true" :options="filter1"
-                v-model="selectedfilterforConsent">
-            </cly-select-x>
-            <span class="text-big font-weight-bold" data-test-id="and-label"> and </span>
-            <cly-select-x test-id="metrics-filter" class="bu-ml-3 bu-mr-3" :width="300" :borderless="true" :auto-commit="true"
-                :adaptiveLength="true" :arrow="false" :hide-default-tabs="true" :hide-all-options-tab="true" :options="filter0"
-                v-model="selectedfilterforMetrics">
-            </cly-select-x>
+        <div class="bu-level-left bu-is-flex bu-is-flex-direction-column">
+            <div>
+                <cly-database-engine-debug-panel @refresh-data="refreshData" class="compliance-hub-consent-history__debug-panel bu-mb-5"/>
+            </div>
+            <div class="compliance-hub-consent-history__metrics">
+                <span class="text-big font-weight-bold" data-test-id="consent-history-for-label">Consent History for </span>
+                <cly-select-x test-id="consent-filter" class="bu-ml-3 bu-mr-3" :width="300" :borderless="true" :adaptiveLength="true"
+                    :auto-commit="true" :hide-default-tabs="true" :arrow="false" :hide-all-options-tab="true" :options="filter1"
+                    v-model="selectedfilterforConsent">
+                </cly-select-x>
+                <span class="text-big font-weight-bold" data-test-id="and-label"> and </span>
+                <cly-select-x test-id="metrics-filter" class="bu-ml-3 bu-mr-3" :width="300" :borderless="true" :auto-commit="true"
+                    :adaptiveLength="true" :arrow="false" :hide-default-tabs="true" :hide-all-options-tab="true" :options="filter0"
+                    v-model="selectedfilterforMetrics">
+                </cly-select-x>
+            </div>
         </div>
         <div class="bu-level-right">
             <cly-date-picker-g type="daterange" range-separator="To" start-placeholder="Start date" end-placeholder="End date">
@@ -18,7 +23,7 @@
         </div>
     </div>
     <cly-section class="cly-vue-compliance__consent_history cly-vue-complaince__hub_style_widthzero">
-        <cly-datatable-n test-id="datatable-compliance-hub-consent-history" :force-loading="consentHistoryLoading" :data-source="consentHistoryTableSource" :default-sort="{prop: 'ts', order: 'descending'}" ref="table" @row-click="tableRowClickHandler" row-class-name="bu-is-clickable">
+        <cly-datatable-n test-id="datatable-compliance-hub-consent-history" :force-loading="consentHistoryLoading" :data-source="consentHistoryTableSource" :default-sort="{prop: 'ts', order: 'ascending'}" ref="table" @row-click="tableRowClickHandler" row-class-name="bu-is-clickable">
             <template v-slot="scope">
                 <el-table-column fixed type="expand">
                     <template slot-scope="props">

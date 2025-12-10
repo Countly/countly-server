@@ -43,6 +43,10 @@ const ACCEPTABLE = {
 let prefs = require('../config.js', 'dont-enclose').logging || {};
 prefs.default = prefs.default || "warn";
 let deflt = (prefs && prefs.default) ? prefs.default : 'error';
+let prettyPrint = prefs.prettyPrint || false;
+
+// Singleton transport for pretty-print to avoid memory leaks
+let prettyTransport = null;
 
 /**
  * Current levels for all modules
@@ -80,9 +84,9 @@ function getTraceContext() {
 
     const spanContext = currentSpan.spanContext();
     return {
-        'trace.id': spanContext.traceId,
-        'span.id': spanContext.spanId,
-        'trace.flags': spanContext.traceFlags.toString(16)
+        'traceId': spanContext.traceId,
+        'spanId': spanContext.spanId,
+        'traceFlags': spanContext.traceFlags.toString(16)
     };
 }
 
@@ -160,10 +164,65 @@ const logLevel = function(name) {
  * @returns {Logger} Configured Pino logger instance
  */
 const createLogger = (name, level) => {
-    return pino({
+    const config = {
         name,
         level: level || deflt,
         timestamp: pino.stdTimeFunctions.isoTime,
+        hooks: {
+            logMethod(args, method) {
+                if (args.length > 1) {
+                    // Create an object with all arguments in order
+                    const logObj = {};
+                    let messageArg = null;
+
+                    for (let i = 0; i < args.length; i++) {
+                        const arg = args[i];
+                        const key = `arg${i}`;
+
+                        if (typeof arg === 'object' && arg !== null) {
+                            if (arg instanceof Error) {
+                                // Store error with full stack trace
+                                logObj[key] = {
+                                    name: arg.name,
+                                    message: arg.message,
+                                    stack: arg.stack,
+                                    // Include any custom properties
+                                    ...Object.getOwnPropertyNames(arg).reduce((acc, prop) => {
+                                        if (!['name', 'message', 'stack'].includes(prop)) {
+                                            acc[prop] = arg[prop];
+                                        }
+                                        return acc;
+                                    }, {})
+                                };
+                            }
+                            else {
+                                // Store object natively
+                                logObj[key] = arg;
+                            }
+                        }
+                        else {
+                            // Store primitive values
+                            logObj[key] = arg;
+                        }
+
+                        // Use first string-like argument as message, or first argument if no strings
+                        if (messageArg === null && (typeof arg === 'string' || typeof arg === 'number')) {
+                            messageArg = String(arg);
+                        }
+                    }
+
+                    // If no string found, use the first argument as message
+                    if (messageArg === null && args.length > 0) {
+                        messageArg = String(args[0]);
+                    }
+
+                    method.apply(this, [logObj, messageArg || '']);
+                }
+                else {
+                    method.apply(this, args);
+                }
+            }
+        },
         formatters: {
             level: (label) => {
                 return { level: label.toUpperCase() };
@@ -173,7 +232,26 @@ const createLogger = (name, level) => {
                 return traceContext ? { ...object, ...traceContext } : object;
             }
         }
-    });
+    };
+
+    // Add pretty-print configuration if enabled
+    if (prettyPrint) {
+        // Use singleton transport to avoid memory leaks
+        if (!prettyTransport) {
+            prettyTransport = pino.transport({
+                target: 'pino-pretty',
+                options: {
+                    colorize: true,
+                    translateTime: 'SYS:standard',
+                    ignore: 'pid,hostname'
+                }
+            });
+        }
+        return pino(config, prettyTransport);
+    }
+    else {
+        return pino(config);
+    }
 };
 
 /**
@@ -194,13 +272,8 @@ const createLogFunction = (logger, name, level) => {
             const span = createLoggingSpan(name, LEVELS[level], message);
 
             try {
-                if (args.length === 1) {
-                    logger[LEVELS[level]](args[0]);
-                }
-                else {
-                    const msg = args.shift();
-                    logger[LEVELS[level]](msg, ...args);
-                }
+                // Pass all arguments directly to Pino - the logMethod hook will handle them
+                logger[LEVELS[level]](...args);
 
                 // Record metrics
                 recordMetrics(name, LEVELS[level]);
@@ -238,6 +311,20 @@ const setLevel = function(module, level) {
  */
 const setDefault = function(level) {
     deflt = level;
+};
+
+/**
+ * Sets pretty-print option
+ * @param {boolean} enabled - Whether to enable pretty-print
+ */
+const setPrettyPrint = function(enabled) {
+    prettyPrint = enabled;
+
+    // Reset transport when changing pretty-print setting
+    if (prettyTransport) {
+        prettyTransport.end();
+        prettyTransport = null;
+    }
 };
 
 /**
@@ -440,6 +527,12 @@ module.exports.setLevel = setLevel;
  * @param {string} level - The log level
  */
 module.exports.setDefault = setDefault;
+
+/**
+ * Sets pretty-print option for all loggers
+ * @param {boolean} enabled - Whether to enable pretty-print
+ */
+module.exports.setPrettyPrint = setPrettyPrint;
 
 /**
  * Gets current logging level for a module

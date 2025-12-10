@@ -12,7 +12,6 @@ var APP_ID = "";
 var APP_KEY = "";
 var DEVICE_ID = "1234567890";
 
-
 function generate_data(z) {
     it('Adding sgmented data(to get big list if possible) ' + (z + 1), function(done) {
         var params = [];
@@ -735,7 +734,7 @@ describe('Testing event settings', function() {
                         ob.should.have.property("list", ["t1", "t5", "test1", "test3"]);
                         ob.should.have.property("order", ["test1"]);
                         ob.should.have.property("overview", []);
-                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["s"]});
+                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["bad_segment", "s"]});
                         ob.should.have.property("omitted_segments", {"test3": ["my_segment"], "t1": ["s"]});
                         ob.should.have.property("whitelisted_segments", {});
                         setTimeout(done, 10 * testUtils.testScalingFactor);
@@ -776,7 +775,7 @@ describe('Testing event settings', function() {
                         ob.should.have.property("map", {"test1": {"is_visible": false}});
                         ob.should.have.property("order", ["test1"]);
                         ob.should.have.property("overview", []);
-                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["s", "bad_segment"]});
+                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["bad_segment", "s"]});
                         ob.should.have.property("omitted_segments", {"test3": ["my_segment"], "t1": ["s"]});
                         ob.should.have.property("whitelisted_segments", {});
                         done();
@@ -800,6 +799,9 @@ describe('Testing event settings', function() {
                     ob.should.have.property('result', 'Success');
                     setTimeout(done, 2000 * testUtils.testScalingFactor);
                 });
+        });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:mutationManagerJob", done);
         });
         it('check if data reseted', function(done) {
             request

@@ -143,6 +143,12 @@
     .alert-drawer-trigger-input {
         width: 48px;
     }
+
+    .is-error {
+        .alert-drawer-trigger-input {
+            background-color: #FBECE5 !important;
+        }
+    }
     
     .no-spinner::-webkit-inner-spin-button,
     .no-spinner::-webkit-outer-spin-button {

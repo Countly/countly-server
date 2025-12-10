@@ -170,11 +170,25 @@
             store.set("countly_date", period);
         };
         /* Returns strings representing dates, not timestamps*/
-        countlyCommon.getPeriodAsDateStrings = function() {
+        countlyCommon.getPeriodAsDateStrings = function(passed_period) {
             var array = [];
-            if (Array.isArray(_period)) {
+            var splitted;
+            if (passed_period) {
+                if (Array.isArray(passed_period)) {
+                    var periodObj = countlyCommon.calcSpecificPeriodObj(passed_period);
+                    splitted = periodObj.currentPeriodArr[0].split(".");
+                    array.push(splitted[2] + "-" + splitted[1] + "-" + splitted[0] + " 00:00:00");
+                    splitted = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
+                    array.push(splitted[2] + "-" + splitted[1] + "-" + splitted[0] + " 23:59:59");
+                    return JSON.stringify(array);
+                }
+                else {
+                    return passed_period;
+                }
+            }
+            else if (Array.isArray(_period)) {
                 if (countlyCommon.periodObj.currentPeriodArr && countlyCommon.periodObj.currentPeriodArr.length > 0) {
-                    var splitted = countlyCommon.periodObj.currentPeriodArr[0].split(".");
+                    splitted = countlyCommon.periodObj.currentPeriodArr[0].split(".");
                     array.push(splitted[2] + "-" + splitted[1] + "-" + splitted[0] + " 00:00:00");
                     splitted = countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1].split(".");
                     array.push(splitted[2] + "-" + splitted[1] + "-" + splitted[0] + " 23:59:59");
@@ -471,11 +485,11 @@
             var days = parseInt(countlyCommon.periodObj.numberOfDays, 10),
                 ticks = [],
                 tickTexts = [],
+                tickKeys = [],
                 skipReduction = false,
                 limitAdjustment = 0;
-
+            var thisDay;
             if (overrideBucket) {
-                var thisDay;
                 if (countlyCommon.periodObj.activePeriod) {
                     thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
                 }
@@ -484,12 +498,21 @@
                 }
                 ticks.push([0, countlyCommon.formatDate(thisDay, "D MMM")]);
                 tickTexts[0] = countlyCommon.formatDate(thisDay, "D MMM, dddd");
+                tickKeys[0] = countlyCommon.formatDate(thisDay, "YYYY:M:D");
             }
             else if ((days === 1 && _period !== "month" && _period !== "day") || (days === 1 && bucket === "hourly")) {
-                //When period is an array or string like Xdays, Xweeks
+                //Single day
+                if (countlyCommon.periodObj.activePeriod) {
+                    thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
+                }
+                else {
+                    thisDay = moment(countlyCommon.periodObj.currentPeriodArr[0], "YYYY.M.D");
+                }
+                var dayValue = countlyCommon.formatDate(thisDay, "YYYY:M:D");
                 for (var z = 0; z < 24; z++) {
                     ticks.push([z, (z + ":00")]);
                     tickTexts.push((z + ":00"));
+                    tickKeys.push(dayValue + ":" + z);
                 }
                 skipReduction = true;
             }
@@ -501,6 +524,7 @@
                 var i = 0;
                 if (bucket === "monthly") {
                     var allMonths = [];
+                    var allKeys = [];
 
                     //so we would not start from previous year
                     start.add(1, 'day');
@@ -509,14 +533,17 @@
 
                     for (i = 0; i < monthCount; i++) {
                         allMonths.push(start.format(countlyCommon.getDateFormat("MMM YYYY")));
+                        allKeys.push(start.format("YYYY:M"));
                         start.add(1, 'months');
                     }
 
                     allMonths = _.uniq(allMonths);
+                    allKeys = _.uniq(allKeys);
 
                     for (i = 0; i < allMonths.length; i++) {
                         ticks.push([i, allMonths[i]]);
                         tickTexts[i] = allMonths[i];
+                        tickKeys[i] = allKeys[i];
                     }
                 }
                 else if (bucket === "weekly") {
@@ -550,7 +577,7 @@
                             //if (j === 0) {
                             ticks.push([((24 * i) + j), countlyCommon.formatDate(start, "D MMM") + " 0:00"]);
                             //}
-
+                            tickKeys.push(countlyCommon.formatDate(start, "YYYY:M:D") + j);
                             tickTexts.push(countlyCommon.formatDate(start, "D MMM, ") + j + ":00");
                         }
                     }
@@ -564,6 +591,7 @@
                         for (i = 0; i < currentMonthCount; i++) {
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            tickKeys.push(countlyCommon.formatDate(start, "YYYY:M:D"));
                             start.add(1, 'days');
                         }
                     }
@@ -575,6 +603,7 @@
                         for (i = 0; i < prevMonthCount; i++) {
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            tickKeys.push(countlyCommon.formatDate(start, "YYYY:M:D"));
                             start.add(1, 'days');
                         }
                     }
@@ -591,6 +620,7 @@
                                 ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                                 tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
                             }
+                            tickKeys.push(countlyCommon.formatDate(start, "YYYY:M:D"));
                         }
                     }
                 }
@@ -646,7 +676,8 @@
                 max: (limitAdjustment) ? tickTexts.length - 3 + limitAdjustment : tickTexts.length - 1,
                 tickTexts: tickTexts,
                 ticks: _.compact(ticks),
-                labelCn: labelCn
+                labelCn: labelCn,
+                tickKeys: tickKeys
             };
         };
 
@@ -2053,6 +2084,68 @@
                 tooltip: tooltip,
                 color: color
             };
+        };
+
+        countlyCommon.formatTimeAgoTextFromDiff = function(diff) {
+            if (Math.round(diff).toString().length === 10) {
+                diff *= 1000;
+            }
+            var target = new Date(Date.now.valueOf() - diff);
+            var tooltip = moment(target).format("ddd, D MMM YYYY HH:mm:ss");
+            var text = tooltip;
+
+            if (diff <= -2592000) {
+                return tooltip;
+            }
+            else if (diff < -86400) {
+                text = jQuery.i18n.prop("common.in.days", Math.abs(Math.round(diff / 86400)));
+            }
+            else if (diff < -3600) {
+                text = jQuery.i18n.prop("common.in.hours", Math.abs(Math.round(diff / 3600)));
+            }
+            else if (diff < -60) {
+                text = jQuery.i18n.prop("common.in.minutes", Math.abs(Math.round(diff / 60)));
+            }
+            else if (diff <= -1) {
+                text = (jQuery.i18n.prop("common.in.seconds", Math.abs(diff)));
+            }
+            else if (diff <= 1) {
+                text = jQuery.i18n.map["common.ago.just-now"];
+            }
+            else if (diff < 20) {
+                text = jQuery.i18n.prop("common.ago.seconds-ago", diff);
+            }
+            else if (diff < 40) {
+                text = jQuery.i18n.map["common.ago.half-minute"];
+            }
+            else if (diff < 60) {
+                text = jQuery.i18n.map["common.ago.less-minute"];
+            }
+            else if (diff <= 90) {
+                text = jQuery.i18n.map["common.ago.one-minute"];
+            }
+            else if (diff <= 3540) {
+                text = jQuery.i18n.prop("common.ago.minutes-ago", Math.round(diff / 60));
+            }
+            else if (diff <= 5400) {
+                text = jQuery.i18n.map["common.ago.one-hour"];
+            }
+            else if (diff <= 86400) {
+                text = jQuery.i18n.prop("common.ago.hours-ago", Math.round(diff / 3600));
+            }
+            else if (diff <= 129600) {
+                text = jQuery.i18n.map["common.ago.one-day"];
+            }
+            else if (diff < 604800) {
+                text = jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400));
+            }
+            else if (diff <= 777600) {
+                text = jQuery.i18n.map["common.ago.one-week"];
+            }
+            else if (diff <= 2592000) {
+                text = jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400));
+            }
+            return text;
         };
 
         /**

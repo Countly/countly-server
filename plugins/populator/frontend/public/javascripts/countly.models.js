@@ -337,9 +337,13 @@
                 d = moment(seed);
             }
         }
-        var year = trimYear ? d.format('YY')[1] : d.format('YY');
+
+        var year = d.format('YY');
+        if (trimYear || year[0] === '0') {
+            year = d.format('YY')[1];
+        }
         var day = parseInt(d.format('DD')[0], 10) === 3 ? 2 : d.format('DD')[0];
-        return year + "." + d.format('MM') + "." + day;
+        return year + '.' + d.format('M') + '.' + day;
     }
     /**
      * 
@@ -873,6 +877,173 @@
                 event.segmentation.start = 1;
                 event.segmentation.bounce = 1;
             }
+            else if (id === "[CLY]_llm_interaction") {
+                var llm_events = [];
+                event.segmentation = {};
+                var api_host_type = ['openai_api', 'azure_openai', 'local_infra'];
+                event.segmentation.prompt_id = chance.guid(); // Unique identifier for the prompt
+                event.segmentation.thread_id = chance.guid(); // Unique identifier for the thread
+                event.segmentation.api_host_type = api_host_type[getRandomInt(0, api_host_type.length - 1)]; // Where the model is hosted (e.g., 'openai_api', 'azure_openai', 'local_infra')
+                var api_base_url = {
+                    openai_api: "https://api.openai.com/v1",
+                    azure_openai: "https://api.openai.azure.com/v1",
+                    local_infra: "https://api.openai.azure.com/v1"
+                };
+                event.segmentation.api_base_url = api_base_url[event.segmentation.api_host_type]; // Base API URL used (for routing, debugging, or billing separation)
+                var model_name = ["gpt-4-turbo", "gpt-3.5-turbo", "gpt-4", "gpt-3.5"];
+                event.segmentation.model_name = model_name[getRandomInt(0, model_name.length)]; // Name of the model used
+                event.segmentation.model_provider = "openai"; // Provider of the model (e.g., openai, anthropic, local)
+                event.segmentation.token_input = getRandomInt(1, 1024), // Number of tokens in the input request
+                event.segmentation.token_reason = getRandomInt(1, 1024), // Number of tokens used for reasoning
+                event.segmentation.token_output = getRandomInt(1, 1024), // Number of tokens in the model's response
+                event.segmentation.token_total = event.segmentation.token_input + event.segmentation.token_reason + event.segmentation.token_output, // Number of total tokens, summed up if not provided
+                event.segmentation.cost_input = getRandomInt(1, 1024) / 10000, // Estimated cost of the input
+                event.segmentation.cost_reason = getRandomInt(1, 1024) / 10000, // Estimated cost of the input
+                event.segmentation.cost_output = getRandomInt(1, 1024) / 10000, // Estimated cost of the input
+                event.segmentation.cost_total = event.segmentation.cost_input + event.segmentation.cost_reason + event.segmentation.cost_output, // This will be attempted to be calculated based on total token count and model if empty
+                event.segmentation.latency_first = getRandomInt(1, 1024), // Latency till first output token
+                event.segmentation.latency_last = getRandomInt(1025, 4098), // Latency till end
+                event.segmentation.config_temperature = getRandomInt(1, 10) / 10, // Optional sampling temperature used in the generation
+                event.segmentation.config_top_p = getRandomInt(1, 10) / 10, // Optional top-p sampling value
+                event.segmentation.config_max_tokens = getRandomInt(1, 1024), // Optional maximum allowed response tokens
+                event.segmentation.config_stop = ["\n\n"]; // Optional stop sequences used to cut off response generation
+                event.segmentation.status = "success"; // Whether the call was successful (false if errored or timed out)
+                event.segmentation.error = null; // Optional error code or message if the request failed
+                event.segmentation.text_input_preview = "..."; // First 200? characters of input
+                event.segmentation.text_reason_preview = "..."; // First 200? characters of reasoning
+                event.segmentation.text_output_preview = "..."; // First 200? characters of output
+                event.segmentation.tools_used = ["get_list_events", "funnel_filter_needed", "fetch_funnel_steps"]; // List of tools used in the request, if any
+                llm_events.push(event);
+
+                var issue_categories = ["general", "technical", "halucination", "other"];
+                llm_events.push({
+                    key: "[CLY]_llm_interaction_feedback",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        rating: Math.random() > 0.5 ? "thumbs_up" : "thumbs_down", // Rating of the interaction, e.g., thumbs up/down, 1-5 stars
+                        comment: chance.sentence({words: 7}), // Optional feedback text on the interaction
+                        category: issue_categories[getRandomInt(0, issue_categories.length - 1)], // Category of the issue, if any (e.g., general, technical, halucination, other)
+                    }
+                });
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_used",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        status: "success", // Whether the tool call was successful (false if errored or timed out)
+                        error: null, // Optional error code or message if the request failed
+                        tool_name: "get_list_events", // Name of the tool used
+                        type: "function_cal", // Type of the tool used (e.g., function_call, tool_call, etc.)
+                    }
+                });
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_used",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        status: "success", // Whether the tool call was successful (false if errored or timed out)
+                        error: null, // Optional error code or message if the request failed
+                        tool_name: "funnel_filter_needed", // Name of the tool used
+                        type: "function_cal", // Type of the tool used (e.g., function_call, tool_call, etc.)
+                    }
+                });
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_used",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        status: "success", // Whether the tool call was successful (false if errored or timed out)
+                        error: null, // Optional error code or message if the request failed
+                        tool_name: "fetch_funnel_steps", // Name of the tool used
+                        type: "function_cal", // Type of the tool used (e.g., function_call, tool_call, etc.)
+                    }
+                });
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_usage_parameter",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        tool_name: event.segmentation.tools_used[getRandomInt(0, event.segmentation.tools_used.length - 1)],
+                        param_name: chance.word(),
+                        param_value: chance.word()
+                    }
+                });
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_usage_parameter",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        tool_name: event.segmentation.tools_used[getRandomInt(0, event.segmentation.tools_used.length - 1)],
+                        param_name: chance.word(),
+                        param_value: chance.word()
+                    }
+                });
+
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_usage_parameter",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        tool_name: event.segmentation.tools_used[getRandomInt(0, event.segmentation.tools_used.length - 1)],
+                        param_name: chance.word(),
+                        param_value: chance.word()
+                    }
+                });
+
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_usage_parameter",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        tool_name: event.segmentation.tools_used[getRandomInt(0, event.segmentation.tools_used.length - 1)],
+                        param_name: chance.word(),
+                        param_value: chance.word()
+                    }
+                });
+
+
+                return llm_events;
+            }
 
             return [event];
         };
@@ -1101,6 +1272,7 @@
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
                     .concat(
                         this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], this.ts + getRandomInt(100, 300)),
+                        this.getEvent("[CLY]_llm_interaction", null, this.ts + getRandomInt(100, 300)),
                         this.getEvents(4, template && template.events).map((arr) => arr.length && arr[0])
                     );
                 if (template && template.events && template.events.length) {
@@ -1118,6 +1290,7 @@
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
                     .concat(
                         this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], this.ts + getRandomInt(100, 300)),
+                        this.getEvent("[CLY]_llm_interaction", null, this.ts + getRandomInt(100, 300)),
                         this.getEvents(4, template && template.events).map((arr) => arr.length && arr[0])
                     );
                 if (template && template.events && template.events.length) {
@@ -1178,7 +1351,7 @@
         this.reportConversion = function(uid, campaingId, deviceId) {
             $.ajax({
                 type: "GET",
-                url: countlyCommon.API_URL + "/i",
+                url: (countlyCommon.INGESTOR_URL || countlyCommon.API_URL) + "/i",
                 data: {
                     campaign_id: uid,
                     campaign_user: campaingId,
@@ -1365,7 +1538,7 @@
             if (generating) {
                 $.ajax({
                     type: "POST",
-                    url: countlyCommon.API_URL + "/i/bulk",
+                    url: (countlyCommon.INGESTOR_URL || countlyCommon.API_URL) + "/i/bulk",
                     data: {
                         app_key: countlyCommon.ACTIVE_APP_KEY,
                         requests: JSON.stringify(req),
@@ -1642,8 +1815,13 @@
             },
             success: function(json, textStatus, xhr) {
                 if (json && json.result) {
-                    var id = json.result.split(" ");
-                    npsWidgetList.push(id[2]);
+                    if (json.result._id) {
+                        npsWidgetList.push(json.result._id);
+                    }
+                    else if (json.result.text) {
+                        var id = json.result.text.split(" ");
+                        npsWidgetList.push(id[2]);
+                    }
                 }
                 callback(json, textStatus, xhr);
             },

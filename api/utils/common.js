@@ -6,14 +6,14 @@
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
  * @typedef {import('mongodb').ObjectId} ObjectId
- * typedef {import('moment-timezone').Moment} MomentTimezone
+ * @typedef {import('moment-timezone').Moment} MomentTimezone
  */
 
 /** @lends module:api/utils/common **/
-/** @type(import('../../types/common').Common) */
+/** @type {import('../../types/common').Common} */
 const common = {};
 
-/** @type(import('moment-timezone')) */
+/** @type {import('moment-timezone')} */
 const moment = require('moment-timezone');
 const crypto = require('crypto');
 const logger = require('./log.js');
@@ -185,6 +185,7 @@ function escape_html_entities(key, value, more) {
 common.getJSON = getJSON;
 
 common.log = logger;
+const log = logger('api:utils:common');
 
 common.dbMap = {
     'events': 'e',
@@ -518,6 +519,9 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
 };
 
 common.getDate = function(timestamp, timezone) {
+    if (timestamp && timestamp.toString().length === 13) {
+        timestamp = Math.floor(timestamp / 1000);
+    }
     var tmpDate = (timestamp) ? moment.unix(timestamp) : moment();
 
     if (timezone) {
@@ -1079,7 +1083,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
 
             if (argProperties[arg]['max-length']) {
-                if (args[arg].length > argProperties[arg]['max-length']) {
+                if (args[arg] && args[arg].length > argProperties[arg]['max-length']) {
                     if (returnErrors) {
                         returnObj.errors.push("Length of " + arg + " is greater than max length value");
                         returnObj.result = false;
@@ -1092,7 +1096,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
 
             if (argProperties[arg]['min-length']) {
-                if (args[arg].length < argProperties[arg]['min-length']) {
+                if (args[arg] && args[arg].length < argProperties[arg]['min-length']) {
                     if (returnErrors) {
                         returnObj.errors.push("Length of " + arg + " is lower than min length value");
                         returnObj.result = false;
@@ -1316,8 +1320,9 @@ common.returnRaw = function(params, returnCode, body, heads) {
         }
         return;
     }
+    const defaultHeaders = {};
     //set provided in configuration headers
-    var headers = {};
+    let headers = {};
     if (heads) {
         for (var i in heads) {
             headers[i] = heads[i];
@@ -1325,7 +1330,13 @@ common.returnRaw = function(params, returnCode, body, heads) {
     }
     if (params && params.res && params.res.writeHead && !params.blockResponses) {
         if (!params.res.finished) {
-            params.res.writeHead(returnCode, headers);
+            try {
+                params.res.writeHead(returnCode, headers);
+            }
+            catch (err) {
+                log.e(`Error writing header in 'returnRaw' ${err}`);
+                params.res.writeHead(returnCode, defaultHeaders);
+            }
             if (body) {
                 params.res.write(body);
             }
@@ -1356,9 +1367,10 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
         return;
     }
     //set provided in configuration headers
-    var headers = {
+    const defaultHeaders = {
         'Content-Type': 'application/json; charset=utf-8'
     };
+    let headers = { ...defaultHeaders };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
     for (let i = 0; i < add_headers.length; i++) {
@@ -1382,7 +1394,13 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
     }
     if (params && params.res && params.res.writeHead && !params.blockResponses) {
         if (!params.res.finished) {
-            params.res.writeHead(returnCode, headers);
+            try {
+                params.res.writeHead(returnCode, headers);
+            }
+            catch (err) {
+                log.e(`Error writing header in 'returnMessage' ${err}`);
+                params.res.writeHead(returnCode, defaultHeaders);
+            }
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
             }
@@ -1424,9 +1442,10 @@ common.returnOutput = function(params, output, noescape, heads) {
         return;
     }
     //set provided in configuration headers
-    var headers = {
+    const defaultHeaders = {
         'Content-Type': 'application/json; charset=utf-8'
     };
+    let headers = { ...defaultHeaders };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
     for (let i = 0; i < add_headers.length; i++) {
@@ -1451,7 +1470,13 @@ common.returnOutput = function(params, output, noescape, heads) {
     }
     if (params && params.res && params.res.writeHead && !params.blockResponses) {
         if (!params.res.finished) {
-            params.res.writeHead(200, headers);
+            try {
+                params.res.writeHead(200, headers);
+            }
+            catch (err) {
+                log.e(`Error writing header in 'returnMessage' ${err}`);
+                params.res.writeHead(200, defaultHeaders);
+            }
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
             }
@@ -2080,19 +2105,16 @@ common.parseAppVersion = function(version) {
             version = String(version);
         }
 
-        // Ensure version has at least one decimal point
-        if (version.indexOf('.') === -1) {
-            version += '.0';
-        }
-
-        const parsedVersion = semver.valid(semver.coerce(version));
-        if (parsedVersion) {
-            const versionObj = semver.parse(parsedVersion);
+        const isValid = semver.valid(semver.coerce(version, {includePrerelease: true}));
+        if (isValid) {
+            const versionObj = semver.parse(semver.coerce(version, {includePrerelease: true}));
             if (versionObj) {
                 return {
                     major: versionObj.major,
                     minor: versionObj.minor,
                     patch: versionObj.patch,
+                    prerelease: versionObj.prerelease,
+                    build: versionObj.build,
                     original: version,
                     success: true
                 };
@@ -2986,7 +3008,15 @@ common.mergeQuery = function(ob1, ob2) {
             if (!ob1[key]) {
                 ob1[key] = ob2[key];
             }
-            else if (key === "$set" || key === "$setOnInsert" || key === "$unset") {
+            else if (key === "$set" || key === "$setOnInsert") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob2[key][val];
+                    if (ob1.$unset && typeof ob1.$unset[val] !== "undefined") {
+                        delete ob1.$unset[val];
+                    }
+                }
+            }
+            else if (key === "$unset") {
                 for (let val in ob2[key]) {
                     ob1[key][val] = ob2[key][val];
                 }
@@ -3410,10 +3440,10 @@ class DataTable {
 
 common.DataTable = DataTable;
 
-common.applyUniqueOnModel = function(model, uniqueData, prop) {
+common.applyUniqueOnModel = function(model, uniqueData, prop, segment) {
     for (var z = 0; z < uniqueData.length; z++) {
         var value = uniqueData[z][prop];
-        var iid = uniqueData[z]._id.split(":");
+        var iid = uniqueData[z]._id.replaceAll(":0", ":").split(":");
         if (iid.length > 1) {
             if (!model[iid[0]]) {
                 model[iid[0]] = {};
@@ -3429,15 +3459,33 @@ common.applyUniqueOnModel = function(model, uniqueData, prop) {
                     if (!model[iid[0]][iid[1]][iid[2]][iid[3]]) {
                         model[iid[0]][iid[1]][iid[2]][iid[3]] = {};
                     }
-                    model[iid[0]][iid[1]][iid[2]][iid[3]][prop] = value;
+                    if (segment) {
+                        model[iid[0]][iid[1]][iid[2]][iid[3]][segment] = model[iid[0]][iid[1]][iid[2]][iid[3]][segment] || {};
+                        model[iid[0]][iid[1]][iid[2]][iid[3]][segment][prop] = value;
+                    }
+                    else {
+                        model[iid[0]][iid[1]][iid[2]][iid[3]][prop] = value;
+                    }
                 }
                 else {
-                    model[iid[0]][iid[1]][iid[2]][prop] = value;
+                    if (segment) {
+                        model[iid[0]][iid[1]][iid[2]][segment] = model[iid[0]][iid[1]][iid[2]][segment] || {};
+                        model[iid[0]][iid[1]][iid[2]][segment][prop] = value;
+                    }
+                    else {
+                        model[iid[0]][iid[1]][iid[2]][prop] = value;
+                    }
                 }
 
             }
             else {
-                model[iid[0]][iid[1]][prop] = value;
+                if (segment) {
+                    model[iid[0]][iid[1]][segment] = model[iid[0]][iid[1]][segment] || {};
+                    model[iid[0]][iid[1]][segment][prop] = value;
+                }
+                else {
+                    model[iid[0]][iid[1]][prop] = value;
+                }
 
             }
         }
@@ -3446,17 +3494,28 @@ common.applyUniqueOnModel = function(model, uniqueData, prop) {
 /**
  * Shifts hourly data (To be in different timezone)
  * @param {*} data  array of data
- * @param {*} offset (integer)
+ * @param {*} offset (integer) - full hours
+ * @param {string} field - field to shift. Default is "_id"
  * @returns {Array} shifted data
  */
-common.shiftHourlyData = function(data, offset) {
+common.shiftHourlyData = function(data, offset, field = "_id") {
+    var dd, iid;
     if (typeof offset === "number") {
-        for (var z = 0; z < data.length; z++) {
-            var iid = data[z]._id.replace("h", "").split(":");
-            var dd = Date.UTC(parseInt(iid[0], 10), parseInt(iid[1]), parseInt(iid[2]), parseInt(iid[3]), 0, 0);
+        if (Array.isArray(data)) {
+            for (var z = 0; z < data.length; z++) {
+                iid = data[z][field].replace("h", "").split(":");
+                dd = Date.UTC(parseInt(iid[0], 10), parseInt(iid[1]), parseInt(iid[2]), parseInt(iid[3]), 0, 0);
+                dd = new Date(dd.valueOf() + offset * 60 * 60 * 1000);
+                iid = dd.getFullYear() + ":" + dd.getMonth() + ":" + dd.getDate() + ":" + dd.getHours();
+                data[z][field] = iid;
+            }
+        }
+        else {
+            iid = data[field].replace("h", "").split(":");
+            dd = Date.UTC(parseInt(iid[0], 10), parseInt(iid[1]), parseInt(iid[2]), parseInt(iid[3]), 0, 0);
             dd = new Date(dd.valueOf() + offset * 60 * 60 * 1000);
             iid = dd.getFullYear() + ":" + dd.getMonth() + ":" + dd.getDate() + ":" + dd.getHours();
-            data[z]._id = iid;
+            data[field] = iid;
         }
     }
     return data;
@@ -3583,6 +3642,19 @@ common.convertArrayToModel = function(arr, segmented, props) {
                         for (var p2 in props) {
                             if (arr[z][p2]) {
                                 model[iid[0]][iid[1]][iid[2]][arr[z].sg][p2] += arr[z][p2];
+                            }
+                        }
+                        if (iid.length > 3) {
+                            if (!model[iid[0]][iid[1]][iid[2]][iid[3]]) {
+                                model[iid[0]][iid[1]][iid[2]][iid[3]] = {};
+                            }
+                            if (!model[iid[0]][iid[1]][iid[2]][iid[3]][arr[z].sg]) {
+                                model[iid[0]][iid[1]][iid[2]][iid[3]][arr[z].sg] = createEmptyObj(props);
+                            }
+                            for (var p33 in props) {
+                                if (arr[z][p33]) {
+                                    model[iid[0]][iid[1]][iid[2]][iid[3]][arr[z].sg][p33] += arr[z][p33];
+                                }
                             }
                         }
                     }
@@ -3737,5 +3809,5 @@ common.trimWhitespaceStartEnd = function(value) {
     return value;
 };
 
-/** @type(import('../../types/common').Common) */
+/** @type {import('../../types/common').Common} */
 module.exports = common;

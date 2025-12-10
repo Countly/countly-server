@@ -2,7 +2,6 @@
  * @typedef {import('../parts/common-lib.js').App} App
  */
 
-const crypto = require('crypto');
 const log = require('../../../../api/utils/log.js')('alert:rating');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
@@ -51,11 +50,11 @@ async function triggerByEvent(payload) {
     }
 }
 
-module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
+module.exports.check = async function({ alertConfigs: alert, scheduledTo: date }) {
     const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-        return done();
+        return;
     }
 
     let { period, alertDataSubType2, compareType, compareValue, filterValue } = alert;
@@ -82,7 +81,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
         const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
         const metricValueBefore = await getRatingResponsesByDate(app, alertDataSubType2, before, period, ratingsFilter);
         if (!metricValueBefore) {
-            return done();
+            return;
         }
 
         const change = (metricValue / metricValueBefore - 1) * 100;
@@ -94,8 +93,6 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
-
-    done();
 };
 
 /**
@@ -111,14 +108,13 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
 async function getRatingResponsesByDate(app, widgetId, date, period, ratings) {
     const { years } = commonLib.getDateComponents(date, app.timezone);
     const eventName = "[CLY]_star_rating";
-    const collectionName = "events" + crypto
-        .createHash('sha1')
-        .update(eventName + app._id.toString())
-        .digest('hex');
-
     // find all segment values:
-    const records = await common.db.collection(collectionName)
-        .find({ m: String(years) + ":0" })
+    const records = await common.db.collection("events_data")
+        .find({
+            a: app._id.toString(),
+            e: eventName,
+            m: String(years) + ":0",
+        })
         .toArray();
     const segmentValueSet = new Set;
     for (const record of records) {
@@ -154,10 +150,13 @@ async function getRatingResponsesByDate(app, widgetId, date, period, ratings) {
 
 /*
 (async function() {
+    if (!require("cluster").isPrimary) {
+        return;
+    }
     await new Promise(res => setTimeout(res, 2000));
-    const app = { _id: ObjectId("65c1f875a12e98a328d5eb9e"), timezone: "Europe/Istanbul" };
-    const date = new Date("2024-02-07T12:00:00.000Z");
-    const widgetId = "65c383fbb46a4d172d7c58e1";
+    const app = { _id: new ObjectId("68ca8d133bded4a5d888bb45"), timezone: "Europe/Istanbul" };
+    const date = new Date("2025-09-29T12:47:19.247Z");
+    const widgetId = "68ca8d133bded4a5d888bb4a";
     let monthlyData = await getRatingResponsesByDate(app, widgetId, date, "monthly", [1, 2, 3, 4, 5]);
     let dailyData = await getRatingResponsesByDate(app, widgetId, date, "daily");
     console.log(monthlyData, dailyData);

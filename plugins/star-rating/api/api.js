@@ -13,6 +13,7 @@ var ejs = require("ejs"),
     path = require('path'),
     reportUtils = require('../../reports/api/utils.js');
 var calculatedDataManager = require('../../../api/utils/calculatedDataManager.js');
+var {fetchCommentsTable} = require('./queries/star.js');
 
 var cohortsEnabled = plugins.getPlugins().indexOf('cohorts') > -1;
 var surveysEnabled = plugins.getPlugins().indexOf('surveys') > -1;
@@ -475,7 +476,7 @@ function uploadFile(myfile, id, callback) {
             params.app_user = params.app_user || {};
 
             var user = JSON.parse(JSON.stringify(params.app_user));
-            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating"}, {_id: 1, popup_header_text: 1, cohortID: 1, type: 1, appearance: 1, showPolicy: 1, trigger_position: 1, hide_sticker: 1, trigger_bg_color: 1, trigger_font_color: 1, trigger_button_text: 1, trigger_size: 1, target_pages: 1}).toArray(function(err, widgets) {
+            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating"}, {_id: 1, popup_header_text: 1, cohortID: 1, type: 1, appearance: 1, showPolicy: 1, trigger_position: 1, hide_sticker: 1, trigger_bg_color: 1, trigger_font_color: 1, trigger_button_text: 1, trigger_size: 1, target_pages: 1, wv: 1}).toArray(function(err, widgets) {
                 if (err) {
                     log.e(err);
                     reject(err);
@@ -493,6 +494,7 @@ function uploadFile(myfile, id, callback) {
                     }
                     widget.tg = widget.target_pages;
                     widget.name = widget.popup_header_text;
+                    widget.wv = widget.wv?.toString() || null;
                     // remove this props from response
                     delete widget.hide_sticker;
                     delete widget.trigger_position;
@@ -566,6 +568,11 @@ function uploadFile(myfile, id, callback) {
             phone: true,
             tablet: true
         };
+        /**
+         * NOTE: This property is used to help SDK identify if the widget has the new handling for close button and
+         * allows widget to be fullscreen. Since the server will support this from here on, it can be hardcoded.
+         */
+        widget.wv = 1;
 
         //widget.created_by = common.db.ObjectID(obParams.member._id);
         validateCreate(obParams, FEATURE_NAME, function(params) {
@@ -762,17 +769,12 @@ function uploadFile(myfile, id, callback) {
         return true;
     };
     var removeWidgetData = function(widgetId, app, callback) {
-        var collectionName = "feedback" + app;
-        common.db.collection(collectionName).remove({
-            "widget_id": widgetId
-        }, function(err) {
-            if (!err) {
-                callback(null);
-            }
-            else {
-                callback(err);
-            }
+        plugins.dispatch("/core/delete_granular_data", {
+            db: "countly_drill",
+            collection: "drill_events",
+            query: { a: app + "", e: "[CLY]_star_rating", n: widgetId }
         });
+        callback(null);
     };
     var increaseWidgetShowCount = function(ob) {
         var obParams = ob.params;
@@ -869,58 +871,6 @@ function uploadFile(myfile, id, callback) {
     });
 
     plugins.register("/i/feedback/input", nonChecksumHandler);
-    plugins.register("/i", function(ob) {
-        var params = ob.params;
-        if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
-            params.qstring.events = params.qstring.events.filter(function(currEvent) {
-                if (currEvent.key === "[CLY]_star_rating") {
-                    /**
-                    *  register for process new  rating event data.
-                    *  the original event format like:
-                    *  { key: '[CLY]_star_rating', count:1, sum:1, segmentation:{ platform:"iOS", version:"3.2", rating:2}
-                    *  this function will add a field call "platform_version_rate" in segmentation.
-                    */
-                    currEvent.segmentation.platform = currEvent.segmentation.platform || "undefined"; //because we have a lot of old data with undefined
-                    currEvent.segmentation.rating = currEvent.segmentation.rating || "undefined";
-                    currEvent.segmentation.ratingSum = Number(currEvent.segmentation.rating) || 0;
-                    currEvent.segmentation.widget_id = currEvent.segmentation.widget_id || "undefined";
-                    currEvent.segmentation.app_version = currEvent.segmentation.app_version || "undefined";
-                    currEvent.segmentation.platform_version_rate = currEvent.segmentation.platform + "**" + currEvent.segmentation.app_version + "**" + currEvent.segmentation.rating + "**" + currEvent.segmentation.widget_id + "**";
-                    // is provided email & comment fields
-
-                    var collectionName = 'feedback' + ob.params.app._id;
-                    common.db.collection(collectionName).insert({
-                        "email": currEvent.segmentation.email || "No email provided",
-                        "comment": currEvent.segmentation.comment || "No comment provided",
-                        "ts": (currEvent.timestamp) ? common.initTimeObj(params.appTimezone, currEvent.timestamp).timestamp : params.time.timestamp,
-                        "device_id": params.qstring.device_id,
-                        "cd": new Date(),
-                        "uid": params.app_user.uid,
-                        "contact_me": currEvent.segmentation.contactMe,
-                        "rating": currEvent.segmentation.rating,
-                        "platform": currEvent.segmentation.platform,
-                        "app_version": currEvent.segmentation.app_version,
-                        "widget_id": currEvent.segmentation.widget_id
-                    }, function(err) {
-                        if (err) {
-                            return false;
-                        }
-                    });
-                    // increment ratings count for widget
-                    common.db.collection('feedback_widgets').update({
-                        _id: common.db.ObjectID(currEvent.segmentation.widget_id)
-                    }, {
-                        $inc: { ratingsSum: currEvent.segmentation.ratingSum, ratingsCount: 1 }
-                    }, function(err) {
-                        if (err) {
-                            return false;
-                        }
-                    });
-                }
-                return true;
-            });
-        }
-    });
 
     /**
      * @api {post} /i/feedback/widgets/status Bulk update feedback widgets
@@ -1119,100 +1069,27 @@ function uploadFile(myfile, id, callback) {
      * }
      */
     plugins.register('/o/feedback/data', function(ob) {
-        /*var params = ob.params;
-        var app = params.qstring.app_id;
-        var collectionName = 'feedback' + app;
-        var query = {};
-        var skip = parseInt(params.qstring.iDisplayStart || 0);
-        var limit = parseInt(params.qstring.iDisplayLength || 0);
-        var colNames = ['rating', 'comment', 'email', 'ts'];
-
-        if (params.qstring.widget_id) {
-            query.widget_id = params.qstring.widget_id;
-        }
-        if (params.qstring.rating) {
-            query.rating = parseInt(params.qstring.rating);
-        }
-        if (params.qstring.version) {
-            query.app_version = params.qstring.version;
-        }
-        if (params.qstring.platform) {
-            query.platform = params.qstring.platform;
-        }
-        if (params.qstring.device_id) {
-            query.device_id = params.qstring.device_id;
-        }
-        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-            query.$text = { $search: params.qstring.sSearch };
-        }
-        if (params.qstring.iSortCol_0) {
-            try {
-                var colIndex = parseInt(params.qstring.iSortCol_0);
-                var colName = colNames[colIndex];
-                var sortType = params.qstring.sSortDir_0 === 'asc' ? 1 : -1;
-                var sort = {};
-                sort[colName] = sortType;
-            }
-            catch (e) {
-                common.returnMessage(params, 400, 'Invalid column index for sorting');
-                return true;
-            }
-        }
-        if (params.qstring.uid) {
-            query.uid = params.qstring.uid;
-        }
-
-        validateRead(params, FEATURE_NAME, function() {
-            query.ts = countlyCommon.getTimestampRangeQuery(params, true);
-            var cursor = common.db.collection(collectionName).find(query);
-            cursor.count(function(err, total) {
-                if (!err) {
-                    if (sort) {
-                        cursor.sort(sort);
-                    }
-                    cursor.skip(skip);
-                    cursor.limit(limit);
-                    cursor.toArray(function(cursorErr, res) {
-                        if (!cursorErr) {
-                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, "aaData": res});
-                        }
-                        else {
-                            common.returnMessage(params, 500, cursorErr);
-                        }
-                    });
-                }
-                else {
-                    common.returnMessage(params, 500, err);
-                }
-            });
-        });
-        return true;*/
-
         var params = ob.params;
         var app = params.qstring.app_id;
-        var collectionName = "drill_events";
-        var query = {"a": app, "e": "[CLY]_star_rating"};
+        var query = {"a": (app + ""), "e": "[CLY]_star_rating"};
         var skip = parseInt(params.qstring.iDisplayStart || 0);
         var limit = parseInt(params.qstring.iDisplayLength || 0);
-        var colNames = ['sg.rating', 'sg.comment', 'sg.email', 'ts'];
+        var colNames = ['comment', 'ts', 'email', 'rating'];
 
         if (params.qstring.widget_id) {
             query.n = params.qstring.widget_id;
         }
         if (params.qstring.rating) {
-            query.sg.rating = parseInt(params.qstring.rating, 10);
+            query["sg.rating"] = parseInt(params.qstring.rating, 10);
         }
         if (params.qstring.version) {
-            query.sg.app_version = params.qstring.version;
+            query["sg.app_version"] = params.qstring.version;
         }
         if (params.qstring.platform) {
-            query.sg.platform = params.qstring.platform;
+            query["sg.platform"] = params.qstring.platform;
         }
         if (params.qstring.device_id) {
             query.did = params.qstring.device_id;
-        }
-        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-            query.$text = { $search: params.qstring.sSearch };
         }
 
         if (params.qstring.iSortCol_0) {
@@ -1232,29 +1109,23 @@ function uploadFile(myfile, id, callback) {
             query.uid = params.qstring.uid;
         }
 
-        validateRead(params, FEATURE_NAME, function() {
+        validateRead(params, FEATURE_NAME, async function() {
+            //{query:query, appID:app}
             query.ts = countlyCommon.getTimestampRangeQuery(params, false);
-            var cursor = common.drillDb.collection(collectionName).find(query, {_id: 1, comment: "$sg.comment", email: "$sg.email", rating: "$sg.rating", cd: 1, uid: 1});
-            cursor.count(function(err, total) {
-                if (!err) {
-                    if (sort) {
-                        cursor.sort(sort);
-                    }
-                    cursor.skip(skip);
-                    cursor.limit(limit);
-                    cursor.toArray(function(cursorErr, res) {
-                        if (!cursorErr) {
-                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, "aaData": res});
-                        }
-                        else {
-                            common.returnMessage(params, 500, cursorErr);
-                        }
-                    });
-                }
-                else {
-                    common.returnMessage(params, 500, err);
-                }
-            });
+            try {
+                var data = await fetchCommentsTable({
+                    query: query,
+                    sSearch: params.qstring.sSearch || "",
+                    appID: app,
+                    limit: limit,
+                    skip: skip,
+                    sort: sort
+                }, {});
+                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: data.total, iTotalDisplayRecords: data.display, "aaData": data.data});
+            }
+            catch (e) {
+                common.returnMessage(params, 500, e.message);
+            }
         });
         return true;
     });
@@ -1546,7 +1417,6 @@ function uploadFile(myfile, id, callback) {
             }
             countlyCommon.setPeriod(params.qstring.period, true);
             var periodObj = countlyCommon.periodObj;
-
             if (params.qstring.fetchFromGranural && common.drillDb) {
                 calculatedDataManager.longtask({
                     db: common.db,
@@ -1630,67 +1500,22 @@ function uploadFile(myfile, id, callback) {
         }
         return false;
     });
-    plugins.register("/i/apps/create", function(ob) {
-        var appId = ob.appId;
-        common.db.collection('feedback' + appId).ensureIndex({
-            "uid": 1
-        }, function() {});
-        common.db.collection('feedback' + appId).ensureIndex({
-            "ts": 1
-        }, function() {});
-        common.db.collection('feedback' + appId).ensureIndex({
-            comment: 'text', email: 'text'
-        }, () => {});
-    });
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
         common.db.collection('feedback_widgets').remove({
             type: "rating",
             "app_id": appId
         });
-        common.db.collection('feedback' + appId).drop(function() {});
-        common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        }
     });
-    plugins.register("/i/apps/clear", function(ob) {
-        var appId = ob.appId;
-        common.db.collection('feedback' + appId).remove({
-            ts: {
-                $lt: ob.moment.unix()
-            }
-        }, function() {});
-        common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).remove({
-            ts: {
-                $lt: ob.moment.unix()
-            }
-        }, function() {});
-        if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).remove({
-                ts: {
-                    $lt: ob.moment.unix()
-                }
-            }, function() {});
-        }
+    plugins.register("/i/apps/clear", function(/*ob*/) {
+        /**
+         * Granular and aggregated data is deleted with other event data in core plugin
+         */
     });
-    plugins.register("/i/apps/clear_all", function(ob) {
-        var appId = ob.appId;
-        common.db.collection('feedback' + appId).drop(function() {
-            common.db.collection('feedback' + appId).ensureIndex({
-                "uid": 1
-            }, function() {});
-            common.db.collection('feedback' + appId).ensureIndex({
-                "ts": 1
-            }, function() {});
-            common.db.collection('feedback' + appId).ensureIndex({
-                comment: 'text', email: 'text'
-            }, () => {});
-        });
-        common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        }
+    plugins.register("/i/apps/clear_all", function(/*ob*/) {
+        /**
+         * Granular and aggregated data is deleted with other event data in core plugin
+         */
     });
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
@@ -1698,21 +1523,6 @@ function uploadFile(myfile, id, callback) {
             type: "rating",
             "app_id": appId
         });
-        common.db.collection('feedback' + appId).drop(function() {
-            common.db.collection('feedback' + appId).ensureIndex({
-                "uid": 1
-            }, function() {});
-            common.db.collection('feedback' + appId).ensureIndex({
-                "ts": 1
-            }, function() {});
-            common.db.collection('feedback' + appId).ensureIndex({
-                comment: 'text', email: 'text'
-            }, () => {});
-        });
-        common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        }
     });
     plugins.register("/i/device_id", function(ob) {
         var appId = ob.app_id;
@@ -1731,15 +1541,15 @@ function uploadFile(myfile, id, callback) {
             });
         }
     });
-    plugins.register("/i/app_users/delete", async function(ob) {
+    /*plugins.register("/i/app_users/delete", function(ob) {
         var appId = ob.app_id;
         var uids = ob.uids;
         if (uids && uids.length) {
             // By using await and no callback, error in db operation will be thrown
             // This error will then be caught by app users api dispatch so that it can cancel app user deletion
-            await common.db.collection("feedback" + appId).remove({ uid: { $in: uids } });
+            //await common.db.collection("feedback" + appId).remove({ uid: { $in: uids } });
         }
-    });
+    });*/
     plugins.register("/i/app_users/export", function(ob) {
         return new Promise(function(resolve) {
             var uids = ob.uids;

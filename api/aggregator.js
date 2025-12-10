@@ -4,8 +4,9 @@ const log = require('./utils/log.js')('aggregator-core:api');
 const common = require('./utils/common.js');
 const {WriteBatcher} = require('./parts/data/batcher.js');
 const {Cacher} = require('./parts/data/cacher.js');
-const {changeStreamReader} = require('./parts/data/changeStreamReader.js');
-const usage = require('./aggregator/usage.js');
+const QueryRunner = require('./parts/data/QueryRunner.js');
+//Core aggregators
+require('./aggregator/processing.js');
 var t = ["countly:", "aggregator"];
 t.push("node");
 
@@ -13,6 +14,16 @@ t.push("node");
 process.title = t.join(' ');
 
 console.log("Connecting to databases");
+
+// TEMPORARY DEBUG LOGGING - AGGREGATOR
+console.log('=== AGGREGATOR CONFIG DEBUG ===');
+console.log('countlyConfig:', JSON.stringify(countlyConfig, null, 2));
+console.log('Process ENV:', {
+    NODE_ENV: process.env.NODE_ENV,
+    SERVICE_TYPE: process.env.SERVICE_TYPE,
+    COUNTLY_CONFIG_PATH: process.env.COUNTLY_CONFIG_PATH
+});
+console.log('=== END AGGREGATOR CONFIG DEBUG ===');
 
 //Overriding function
 plugins.loadConfigs = plugins.loadConfigsIngestor;
@@ -22,9 +33,55 @@ plugins.connectToAllDatabases(true).then(function() {
     // common.writeBatcher = new WriteBatcher(common.db);
 
     common.writeBatcher = new WriteBatcher(common.db);
-    common.secondaryWriteBatcher = new WriteBatcher(common.db);
+    common.secondaryWriteBatcher = new WriteBatcher(common.db);//Remove once all plugins are updated
+    common.manualWriteBatcher = new WriteBatcher(common.db, true); //Manually trigerable batcher
     common.readBatcher = new Cacher(common.db); //Used for Apps info
+    common.queryRunner = new QueryRunner();
 
+    // Ensure TTL indexes for Kafka consumer state and health (if Kafka enabled)
+    if (countlyConfig.kafka?.enabled && countlyConfig.kafka?.batchDeduplication !== false) {
+        common.db.collection('kafka_consumer_state').createIndex(
+            { lastProcessedAt: 1 },
+            { expireAfterSeconds: 604800, background: true } // 7 days TTL
+        ).then(() => {
+            log.i('Kafka batch deduplication TTL index ensured on kafka_consumer_state');
+        }).catch((e) => {
+            // Index may already exist or other non-fatal error
+            log.d('Kafka consumer state index creation:', e.message);
+        });
+
+        // TTL index for consumer health stats (rebalances, errors, lag)
+        common.db.collection('kafka_consumer_health').createIndex(
+            { updatedAt: 1 },
+            { expireAfterSeconds: 604800, background: true } // 7 days TTL
+        ).then(() => {
+            log.i('Kafka consumer health TTL index ensured on kafka_consumer_health');
+        }).catch((e) => {
+            // Index may already exist or other non-fatal error
+            log.d('Kafka consumer health index creation:', e.message);
+        });
+
+        // Create capped collection for lag history (1000 snapshots, ~5MB)
+        // Capped collections automatically delete oldest documents when full (FIFO)
+        common.db.listCollections({ name: 'kafka_lag_history' }).toArray().then((collections) => {
+            if (collections.length === 0) {
+                common.db.createCollection('kafka_lag_history', {
+                    capped: true,
+                    size: 5 * 1024 * 1024, // 5MB max size
+                    max: 1000 // 1000 documents max
+                }).then(() => {
+                    log.i('Kafka lag history capped collection created (max 1000 docs)');
+                }).catch((e) => {
+                    log.d('Kafka lag history collection creation:', e.message);
+                });
+            }
+            else {
+                log.d('Kafka lag history collection already exists');
+            }
+        }).catch((e) => {
+            log.d('Kafka lag history collection check:', e.message);
+        });
+    }
     common.readBatcher.transformationFunctions = {
         "event_object": function(data) {
             if (data && data.list) {
@@ -71,123 +128,7 @@ plugins.connectToAllDatabases(true).then(function() {
     };
 
 
-    //Events processing
-    plugins.register("/aggregator", function() {
-        var changeStream = new changeStreamReader(common.drillDb, {
-            pipeline: [
-                {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_custom"}},
-                {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "ts": "$fullDocument.ts", "sg": "$fullDocument.sg", "c": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
-            ],
-            fallback: {
-                pipeline: [{
-                    "$match": {"e": {"$in": ["[CLY]_custom"]}}
-                }, {"$project": {"__id": "$_id", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "ts": "$ts", "sg": "$sg", "c": "$c", "s": "$s", "dur": "$dur"}}],
-            },
-            "name": "event-ingestion"
-        }, (token, currEvent) => {
-            if (currEvent && currEvent.a && currEvent.e) {
-                usage.processEventFromStream(token, currEvent);
-            }
-            // process next document
-        });
-        common.writeBatcher.addFlushCallback("events_data", function(token) {
-            changeStream.acknowledgeToken(token);
-        });
-    });
-
-
-    //Sessions processing
-    plugins.register("/aggregator", function() {
-        var changeStream = new changeStreamReader(common.drillDb, {
-            pipeline: [
-                {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session"}},
-                {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}},
-            ],
-            fallback: {
-                pipeline: [{
-                    "$match": {"e": {"$in": ["[CLY]_session"]}}
-                }]
-            },
-            "name": "session-ingestion"
-        }, (token, next) => {
-            if (next.fullDocument) {
-                next = next.fullDocument;
-            }
-            var currEvent = next;
-            if (currEvent && currEvent.a) {
-                //Record in session data
-                common.readBatcher.getOne("apps", common.db.ObjectID(currEvent.a), function(err, app) {
-                    //record event totals in aggregated data
-                    if (err) {
-                        log.e("Error getting app data for session", err);
-                        return;
-                    }
-                    if (app) {
-                        usage.processSessionFromStream(token, currEvent, {"app_id": currEvent.a, "app": app, "time": common.initTimeObj(app.timezone, currEvent.ts), "appTimezone": (app.timezone || "UTC")});
-                    }
-                });
-            }
-        });
-        common.writeBatcher.addFlushCallback("users", function(token) {
-            changeStream.acknowledgeToken(token);
-        });
-    });
-
-    plugins.register("/aggregator", function() {
-        var writeBatcher = new WriteBatcher(common.db);
-        var changeStream = new changeStreamReader(common.drillDb, {
-            pipeline: [
-                {"$match": {"operationType": "update"}},
-                {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}}
-            ],
-            fallback: {
-                pipeline: [{"$match": {"e": {"$in": ["[CLY]_session"]}}}],
-                "timefield": "lu"
-            },
-            "options": {fullDocument: "updateLookup"},
-            "name": "session-updates",
-            "collection": "drill_events",
-            "onClose": async function(callback) {
-                await common.writeBatcher.flush("countly", "users");
-                if (callback) {
-                    callback();
-                }
-            }
-        }, (token, fullDoc) => {
-            var fallback_processing = true;
-            var next = fullDoc;
-            if (next.fullDocument) {
-                fallback_processing = false;
-                next = fullDoc.fullDocument;
-            }
-            if (next && next.a && next.e && next.e === "[CLY]_session" && next.n && next.ts) {
-                common.readBatcher.getOne("apps", common.db.ObjectID(next.a), function(err, app) {
-                    //record event totals in aggregated data
-                    if (err) {
-                        log.e("Error getting app data for session", err);
-                        return;
-                    }
-                    if (app) {
-                        var dur = 0;
-                        if (fallback_processing) {
-                            dur = next.dur || 0;
-                        }
-                        else {
-                            dur = (fullDoc && fullDoc.updateDescription && fullDoc.updateDescription.updatedFields && fullDoc.updateDescription.updatedFields.dur) || 0;
-                        }//if(dur){
-                        usage.processSessionDurationRange(writeBatcher, token, dur, next.did, {"app_id": next.a, "app": app, "time": common.initTimeObj(app.timezone, next.ts), "appTimezone": (app.timezone || "UTC")});
-                        //}
-                    }
-                });
-            }
-        });
-        writeBatcher.addFlushCallback("users", function(token) {
-            changeStream.acknowledgeToken(token);
-        });
-    });
-
-
-    /** 
+    /**
     * Set Plugins APIs Config
     */
     //Put in single file outside(all set configs)
@@ -208,7 +149,6 @@ plugins.connectToAllDatabases(true).then(function() {
         total_users: true,
         export_limit: 10000,
         prevent_duplicate_requests: true,
-        metric_changes: true,
         offline_mode: false,
         reports_regenerate_interval: 3600,
         send_test_email: "",
@@ -291,7 +231,6 @@ plugins.connectToAllDatabases(true).then(function() {
     async function storeBatchedData(code) {
         try {
             await common.writeBatcher.flushAll();
-            await common.secondaryWriteBatcher.flushAll();
             // await common.insertBatcher.flushAll();
             console.log("Successfully stored batch state");
         }
@@ -350,7 +289,7 @@ plugins.connectToAllDatabases(true).then(function() {
 
 
     plugins.init({"skipDependencies": true, "filename": "aggregator"});
-    plugins.loadConfigs(common.db, function() {
+    plugins.loadConfigs(common.db, async function() {
         plugins.dispatch("/aggregator", {common: common});
     });
 });

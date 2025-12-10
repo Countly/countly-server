@@ -196,7 +196,6 @@ describe('Writing app metrics', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=device_details')
                     .expect(200)
                     .end(function(err, res) {
-                        console.log(JSON.stringify(res));
                         testUtils.validateMetrics(err, res, done, {meta: {"os": ["Android"], "os_versions": ["a4:4"]}, Android: {"n": 2, "t": 2, "u": 2}, "a4:4": {"n": 1, "t": 1, "u": 1}});
                     });
             });
@@ -568,6 +567,9 @@ describe('Writing app metrics', function() {
                         ob.should.have.property('result', 'Success');
                         setTimeout(done, 1000 * testUtils.testScalingFactor);
                     });
+            });
+            it('Trigger deletion job to run', function(done) {
+                testUtils.triggerJobToRun("api:mutationManagerJob", done);
             });
         });
     });

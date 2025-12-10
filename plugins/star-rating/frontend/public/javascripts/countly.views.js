@@ -78,14 +78,22 @@
                 consent: false,
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
-                // TODO: will be localized
-                    trigger_sizes: [{label: 'Small', value: 's'}, {label: 'Medium', value: 'm'}, {label: 'Large', value: 'l'}],
+                    trigger_sizes: [
+                        {label: this.i18n("star-rating.trigger-size.small") || 'Small', value: 's'},
+                        {label: this.i18n("star-rating.trigger-size.medium") || 'Medium', value: 'm'},
+                        {label: this.i18n("star-rating.trigger-size.large") || 'Large', value: 'l'}
+                    ],
                     logoOptions: [
                         { label: this.i18n("surveys.appearance.logo.option.default"), value: "default" },
                         { label: this.i18n("surveys.appearance.logo.option.custom"), value: "custom" },
                         { label: this.i18n("surveys.appearance.logo.option.no.logo"), value: "none" }
                     ],
-                    trigger_positions: [{value: 'mleft', label: 'Center left', key: 'middle-left'}, { value: 'mright', label: 'Center right', key: 'middle-right' }, { value: 'bleft', label: 'Bottom left', key: 'bottom-left'}, { value: 'bright', label: 'Bottom right', key: 'bottom-right' }]
+                    trigger_positions: [
+                        {value: 'mleft', label: this.i18n("star-rating.trigger-position.center-left") || 'Center left', key: 'middle-left'},
+                        {value: 'mright', label: this.i18n("star-rating.trigger-position.center-right") || 'Center right', key: 'middle-right'},
+                        {value: 'bleft', label: this.i18n("star-rating.trigger-position.bottom-left") || 'Bottom left', key: 'bottom-left'},
+                        {value: 'bright', label: this.i18n("star-rating.trigger-position.bottom-right") || 'Bottom right', key: 'bottom-right'}
+                    ]
                 },
                 ratingSymbols: ['emojis', 'thumbs', 'stars'],
                 logoDropzoneOptions: {
@@ -305,7 +313,7 @@
             preparedRows: function() {
                 var self = this;
                 return this.comments.map(function(comment) {
-                    comment.cd = countlyCommon.formatTimeAgoText(comment.cd).tooltip;
+                    comment.ts = countlyCommon.formatTimeAgoText(comment.ts).tooltip;
                     comment.time = moment.unix(comment.ts).format("DD MMMM YYYY HH:MM:SS");
                     comment.comment = self.decode(comment.comment);
                     return comment;
@@ -315,7 +323,7 @@
         data: function() {
             var self = this;
             var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("commentsTable", {
-                columns: ['comment', 'cd', 'email', 'rating'],
+                columns: ['comment', 'ts', 'email', 'rating'],
                 onRequest: function() {
                     const data = {app_id: countlyCommon.ACTIVE_APP_ID, period: countlyCommon.getPeriodForAjax()};
                     var filter = self.filterVal;
@@ -347,7 +355,7 @@
                 },
                 onReady: function(context, rows) {
                     rows.forEach(function(row) {
-                        row.cd = countlyCommon.formatTimeAgoText(row.cd).tooltip;
+                        row.ts = countlyCommon.formatTimeAgoText(row.ts).tooltip;
                         row.time = moment.unix(row.ts).format("DD MMMM YYYY HH:MM:SS");
                         row.comment = replaceEscapes(row.comment);
                     });
@@ -385,19 +393,21 @@
     });
 
     var WidgetsTable = countlyVue.views.create({
-        props: {
-            rows: {
-                type: Array,
-                default: []
-            }
-        },
-
         mixins: [
             countlyVue.mixins.auth(FEATURE_NAME),
             countlyVue.mixins.commonFormatters
         ],
 
-        data: function() {
+        props: {
+            rows: {
+                default: [],
+                type: Array
+            }
+        },
+
+        emits: ['widgets-updated'],
+
+        data() {
             return {
                 cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
 
@@ -409,58 +419,67 @@
             };
         },
 
-        emits: [
-            'widgets-updated'
-        ],
-
         computed: {
             tableDynamicCols() {
                 const columns = [
                     {
-                        value: 'rating_score',
+                        default: true,
                         label: CV.i18n('feedback.rating-score'),
-                        default: true,
-                        required: true
+                        required: true,
+                        value: 'rating_score'
                     },
                     {
-                        value: 'responses',
+                        default: true,
                         label: CV.i18n('feedback.responses'),
-                        default: true,
-                        required: true
+                        required: true,
+                        value: 'responses'
                     },
                     {
-                        value: "target_pages",
-                        label: CV.i18n("feedback.pages"),
                         default: true,
-                        required: true
+                        label: CV.i18n("feedback.pages"),
+                        required: true,
+                        value: 'target_pages'
                     }
                 ];
 
                 if (this.cohortsEnabled) {
                     columns.unshift({
-                        value: 'targeting',
-                        label: CV.i18n('feedback.targeting'),
                         default: true,
-                        required: true
+                        label: CV.i18n('feedback.targeting'),
+                        required: true,
+                        value: 'targeting'
                     });
                 }
 
                 return columns;
             },
-            widgets: function() {
-                for (var i = 0; i < this.rows.length; i++) {
-                    var ratingScore = 0;
-                    if (this.rows[i].ratingsCount > 0) {
-                        ratingScore = (this.rows[i].ratingsSum / this.rows[i].ratingsCount).toFixed(1);
-                    }
-                    this.rows[i].ratingScore = ratingScore;
-                    this.rows[i].popup_header_text = replaceEscapes(this.rows[i].popup_header_text);
-                    if (this.cohortsEnabled) {
-                        this.rows[i] = this.parseTargeting(this.rows[i]);
-                    }
-                    this.rows[i].target_pages = this.rows[i].target_pages && this.rows[i].target_pages.length > 0 ? this.rows[i].target_pages.join(", ") : "-";
-                }
-                return this.rows;
+
+            widgets() {
+                return JSON.parse(JSON.stringify(this.rows))
+                    .map((widget) => {
+                        const {
+                            popup_header_text: popupHeaderText,
+                            ratingsCount,
+                            ratingsSum,
+                            target_pages: targetPages,
+                            targeting
+                        } = widget || {};
+                        let ratingScore = 0;
+
+                        if (ratingsCount > 0) {
+                            ratingScore = (ratingsSum / ratingsCount).toFixed(1);
+                        }
+
+                        return {
+                            ...widget,
+                            popup_header_text: replaceEscapes(popupHeaderText),
+                            ratingScore,
+                            target_pages: Array.isArray(targetPages) && !!targetPages.length ?
+                                targetPages.join(', ') :
+                                '-',
+                            ...this.cohortsEnabled && { targeting: this.parseTargeting(targeting) }
+                        };
+                    });
             }
         },
 
@@ -498,61 +517,73 @@
                 }
             },
 
-            formatExportFunction: function() {
-                var tableData = this.widgets;
-                var table = [];
-                for (var i = 0; i < tableData.length; i++) {
-                    var item = {};
+            formatExportFunction() {
+                const table = [];
 
-                    item[CV.i18n('feedback.status').toUpperCase()] = tableData[i].status ? "Active" : "Inactive";
-                    item[CV.i18n('feedback.ratings-widget-name').toUpperCase()] = tableData[i].popup_header_text;
-                    item[CV.i18n('feedback.widget-id').toUpperCase()] = tableData[i]._id;
-                    item[CV.i18n('feedback.targeting').toUpperCase()] = this.parseTargetingForExport(tableData[i].targeting).trim();
-                    item[CV.i18n('feedback.rating-score').toUpperCase()] = tableData[i].ratingScore;
-                    item[CV.i18n('feedback.responses').toUpperCase()] = tableData[i].ratingsCount;
-                    item[CV.i18n('feedback.pages').toUpperCase()] = tableData[i].target_pages;
+                for (let i = 0; i < this.widgets.length; i++) {
+                    const item = {};
+                    const {
+                        _id,
+                        popup_header_text: popupHeaderText,
+                        ratingScore,
+                        ratingsCount,
+                        status,
+                        target_pages: targetPages,
+                        targeting
+                    } = this.widgets[i] || {};
+
+                    item[CV.i18n('feedback.status').toUpperCase()] = status ? "Active" : "Inactive";
+                    item[CV.i18n('feedback.ratings-widget-name').toUpperCase()] = popupHeaderText;
+                    item[CV.i18n('feedback.widget-id').toUpperCase()] = _id;
+                    item[CV.i18n('feedback.targeting').toUpperCase()] = this.parseTargetingForExport(targeting).trim();
+                    item[CV.i18n('feedback.rating-score').toUpperCase()] = ratingScore;
+                    item[CV.i18n('feedback.responses').toUpperCase()] = ratingsCount;
+                    item[CV.i18n('feedback.pages').toUpperCase()] = targetPages;
 
                     table.push(item);
                 }
+
                 return table;
-
             },
 
-            goWidgetDetail: function(row) {
-                window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + row._id;
+            goWidgetDetail(row) {
+                window.location.hash = `#/${countlyCommon.ACTIVE_APP_ID}/feedback/ratings/widgets/${row._id}`;
             },
 
-            parseTargeting: function(widget) {
-                if (widget.targeting) {
+            parseTargeting(unparsedTargeting) {
+                let targeting = JSON.parse(JSON.stringify(unparsedTargeting || null));
+
+                if (targeting) {
+                    const { steps = null, user_segmentation: userSegmentation = null } = targeting || {};
                     try {
-                        if (typeof widget.targeting.user_segmentation === "string") {
-                            widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+                        if (typeof userSegmentation === 'string') {
+                            targeting.user_segmentation = JSON.parse(userSegmentation);
                         }
                     }
                     catch (e) {
-                        widget.targeting.user_segmentation = {};
+                        targeting.user_segmentation = {};
                     }
 
                     try {
-                        if (typeof widget.targeting.steps === "string") {
-                            widget.targeting.steps = JSON.parse(widget.targeting.steps);
+                        if (typeof steps === 'string') {
+                            targeting.steps = JSON.parse(steps);
                         }
                     }
                     catch (e) {
-                        widget.targeting.steps = [];
+                        targeting.steps = [];
                     }
-
-                    widget.targeting.user_segmentation = widget.targeting.user_segmentation || {};
-                    widget.targeting.steps = widget.targeting.steps || [];
                 }
-                return widget;
+
+                return targeting;
             },
 
-            parseTargetingForExport: function(widget) {
-                var targeting = countlyCohorts.getSegmentationDescription(widget);
-                var html = targeting.behavior;
-                var div = document.createElement('div');
+            parseTargetingForExport(targeting) {
+                const segmentationDescription = countlyCohorts.getSegmentationDescription(targeting);
+                const html = segmentationDescription.behavior;
+                const div = document.createElement('div');
+
                 div.innerHTML = html;
+
                 return div.textContent || div.innerText || "";
             }
         },
@@ -622,7 +653,7 @@
                     regexString += this.activeFilter.platform.toString().toUpperCase() + '(\\*\\*)';
                 }
                 if (this.activeFilter.version === '') {
-                    regexString += '(\\w+)(\\S*)(\\w*)(\\*\\*)[1-5]';
+                    regexString += '(.*)(\\*\\*)[1-5]';
                 }
                 else {
                     regexString += this.activeFilter.version.toString() + '(\\*\\*)[1-5]';
@@ -1281,7 +1312,7 @@
                     regexString += this.activeFilter.platform.toString().toUpperCase() + '(\\*\\*)';
                 }
                 if (this.activeFilter.version === '') {
-                    regexString += '(\\w+)(\\S*)(\\w*)(\\*\\*)[1-5]';
+                    regexString += '(.*)(\\*\\*)[1-5]';
                 }
                 else {
                     regexString += this.activeFilter.version.toString() + '(\\*\\*)[1-5]';

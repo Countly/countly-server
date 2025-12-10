@@ -154,8 +154,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/home/javascripts/countly.views.js',
                     'frontend/express/public/core/notes/javascripts/countly.views.js',
                     'frontend/express/public/core/version-history/javascripts/countly.views.js',
-                    'frontend/express/public/core/aggregator-status/javascripts/countly.views.js',
-                    'frontend/express/public/core/aggregator-status/javascripts/countly.model.js',
+                    'frontend/express/public/core/health-manager/javascripts/countly.models.js',
+                    'frontend/express/public/core/health-manager/javascripts/countly.views.js',
                     'frontend/express/public/core/onboarding/javascripts/countly.models.js',
                     'frontend/express/public/core/onboarding/javascripts/countly.views.js'
                 ],
@@ -202,7 +202,11 @@ module.exports = function(grunt) {
                     reporter: 'spec',
                     timeout: 50000
                 },
-                src: ['test/*/*.js']
+                src: ['test/*/*.js'],
+                filter: function(filepath) {
+                    // Exclude unit test files
+                    return !filepath.includes('.unit.js');
+                }
             }
         },
         mocha_nyc: {

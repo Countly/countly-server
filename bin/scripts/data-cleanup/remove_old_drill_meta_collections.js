@@ -9,7 +9,7 @@ Promise.all(
         pluginManager.dbConnection("countly"),
         pluginManager.dbConnection("countly_drill")
     ])
-    .spread(async function(countlyDB, countlyDrillDB) {
+    .then(async function([countlyDB, countlyDrillDB]) {
 
         countlyDrillDB.collections(function(err, colls) {
             if (err) {

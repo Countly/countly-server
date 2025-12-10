@@ -866,6 +866,7 @@
                 }
             },
             onOpen: function() {
+                this.patchUserPermission();
                 this.changePasswordFlag = false;
                 // types
                 var types = ['c', 'r', 'u', 'd'];
@@ -879,7 +880,7 @@
                 // if it's in edit mode
                 if (this.settings.editMode) {
                     // is user member of a group?
-                    if (this.user.group_id && countlyGlobal.plugins.indexOf('groups') > -1) {
+                    if (this.user.group_id && this.user.group_id.length && countlyGlobal.plugins.indexOf('groups') > -1) {
                         // set groups state
                         if (Array.isArray(this.user.group_id)) {
                             this.groups = this.user.group_id;
@@ -982,7 +983,31 @@
             },
             onRoleChange: function(role) {
                 this.roles[role.name] = role;
-            }
+            },
+            patchUserPermission: function() {
+                if (this.user && this.user.permission && this.user.permission._ && this.user.permission._.u) {
+                    var appIdReducer = function(acc, curr) {
+                        if (curr.length > 0) {
+                            acc.push(curr);
+                        }
+                        return acc;
+                    };
+
+                    var _u = this.user.permission._.u.reduce(function(acc, curr) {
+                        if (curr.length > 0) {
+                            var appIds = curr.reduce(appIdReducer, []);
+
+                            if (appIds.length > 0) {
+                                acc.push(appIds);
+                            }
+                        }
+                        return acc;
+                    }, []);
+
+                    this.user.permission._.u = _u;
+                    this.$refs.userDrawer.editedObject.permission._.u = _u;
+                }
+            },
         },
         watch: {
             'groups': function() {
@@ -1013,6 +1038,27 @@
             for (var app in countlyGlobal.apps) {
                 this.apps.push({value: countlyGlobal.apps[app]._id, label: countlyGlobal.apps[app].name });
             }
+
+            this.apps.sort(function(a, b) {
+                const aLabel = a?.label || '';
+                const bLabel = b?.label || '';
+                const locale = countlyCommon.BROWSER_LANG || 'en';
+
+                if (aLabel && bLabel) {
+                    return aLabel.localeCompare(bLabel, locale, { numeric: true }) || 0;
+                }
+
+                // Move items with no label to the end
+                if (!aLabel && bLabel) {
+                    return 1;
+                }
+
+                if (aLabel && !bLabel) {
+                    return -1;
+                }
+
+                return 0;
+            });
         }
     });
 

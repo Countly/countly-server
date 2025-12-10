@@ -15,6 +15,16 @@ process.title = t.join(' ');
 
 console.log("Connecting to databases");
 
+// TEMPORARY DEBUG LOGGING - INGESTOR
+console.log('=== INGESTOR CONFIG DEBUG ===');
+console.log('countlyConfig:', JSON.stringify(countlyConfig, null, 2));
+console.log('Process ENV:', {
+    NODE_ENV: process.env.NODE_ENV,
+    SERVICE_TYPE: process.env.SERVICE_TYPE,
+    COUNTLY_CONFIG_PATH: process.env.COUNTLY_CONFIG_PATH
+});
+console.log('=== END INGESTOR CONFIG DEBUG ===');
+
 //Overriding function
 plugins.loadConfigs = plugins.loadConfigsIngestor;
 
@@ -51,7 +61,6 @@ plugins.connectToAllDatabases(true).then(function() {
         total_users: true,
         export_limit: 10000,
         prevent_duplicate_requests: true,
-        metric_changes: true,
         offline_mode: false,
         reports_regenerate_interval: 3600,
         send_test_email: "",
@@ -200,7 +209,6 @@ plugins.connectToAllDatabases(true).then(function() {
                 req: req
             };
 
-            console.log("recieved some data");
             params.tt = Date.now().valueOf();
             if (req.method.toLowerCase() === 'post') {
                 const formidableOptions = {};
@@ -275,7 +283,7 @@ plugins.connectToAllDatabases(true).then(function() {
             else {
                 common.returnMessage(params, 405, "Method not allowed");
             }
-        }).listen(common.config.ingestor.port, common.config.ingestor.host || '').timeout = common.config.ingestor.timeout || 120000;
+        }).listen(common.config?.ingestor?.port || 3010, common.config?.ingestor?.host || '').timeout = common.config?.ingestor?.timeout || 120000;
     });
 });
 

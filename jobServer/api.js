@@ -1,4 +1,5 @@
 /* api.js */
+// TODO: first version this needs more checks and refactoring and fixes
 
 const Logger = require('../api/utils/log.js');
 const log = new Logger('jobs:api');
@@ -7,6 +8,7 @@ const plugins = require("../plugins/pluginManager");
 const {validateGlobalAdmin} = require("../api/utils/rights");
 const common = require("../api/utils/common");
 const cronstrue = require('cronstrue');
+const {isValidCron} = require('cron-validator');
 
 // ----------------------------------
 // Helper Functions
@@ -27,7 +29,7 @@ function getJobStatus(job) {
         const failedDate = new Date(job.failedAt);
         const finishedDate = new Date(job.lastFinishedAt);
 
-        if (failedDate > finishedDate) {
+        if (failedDate >= finishedDate) {
             return "FAILED";
         }
         else {
@@ -57,7 +59,7 @@ function getRunStatus(job) {
         const failedDate = new Date(job.failedAt);
         const finishedDate = new Date(job.lastFinishedAt);
 
-        if (failedDate > finishedDate) {
+        if (failedDate >= finishedDate) {
             return "failed";
         }
         else {
@@ -181,6 +183,7 @@ function buildJobDetails(scheduledDoc, jobConfig, latestRunData = null) {
             nextRun: scheduledDoc?.nextRunAt,
             lastRun: statusDoc.lastFinishedAt,
             lastRunStatus: getRunStatus(statusDoc),
+            failedAt: statusDoc.failedAt,
             failReason: statusDoc.failReason,
             lastRunDuration: formatJobDuration(statusDoc.lastRunAt, statusDoc.lastFinishedAt),
             // Additional fields if needed
@@ -228,7 +231,7 @@ function getLatestStatusInfo(scheduledJob, manualRuns) {
         lockedAt: scheduledJob?.lockedAt || null,
         failedAt: scheduledJob?.failedAt || null,
         lastFinishedAt: scheduledJob?.lastFinishedAt || null,
-        lastRunAt: scheduledJob?.lastRunAt || null,
+        lastRunAt: scheduledJob?.lastRunAt || scheduledJob?.lastRunAtCpy || null,
         failReason: scheduledJob?.failReason || null,
         // Count manual runs
         manualRunCount: manualRuns.length,
@@ -382,9 +385,9 @@ function buildListViewJob(mainDoc, jobConfig, statusInfo) {
 }
 
 // ----------------------------------
-// /i/jobs endpoint
+// /jobs/i endpoint
 // ----------------------------------
-plugins.register('/i/jobs', async function(ob) {
+plugins.register('/jobs/i', async function(ob) {
     validateGlobalAdmin(ob.params, async function() {
         const { jobName, schedule, retry } = ob.params.qstring || {};
         const action = ob.params.qstring?.action;
@@ -413,6 +416,15 @@ plugins.register('/i/jobs', async function(ob) {
                     common.returnMessage(ob.params, 400, 'Schedule configuration is required');
                     return;
                 }
+
+                // Validate cron expression if provided
+                if (schedule && typeof schedule === 'string') {
+                    if (!isValidCron(schedule)) {
+                        common.returnMessage(ob.params, 400, 'Invalid cron expression provided');
+                        return;
+                    }
+                }
+
                 updateData.schedule = schedule;
                 break;
             case 'updateRetry':
@@ -433,10 +445,21 @@ plugins.register('/i/jobs', async function(ob) {
                 { $set: updateData },
                 { upsert: true }
             );
+            if (common.jobServer) {
+                // Apply update to job runner
+                common.jobServer.applyConfig({ jobName, ...updateData });
+            }
+
+            log.d(`Job ${jobName} ${action} success`);
+            plugins.dispatch('/systemlogs', {
+                params: ob.params,
+                action: `jobs_${action}`,
+                data: { name: jobName, ...updateData },
+            });
             common.returnMessage(ob.params, 200, 'Success');
         }
         catch (error) {
-            log.e('Error in /i/jobs:', { error: error.message, stack: error.stack });
+            log.e('Error in /jobs/i:', { error: error.message, stack: error.stack });
             common.returnMessage(ob.params, 500, 'Internal server error');
         }
     });
@@ -444,13 +467,14 @@ plugins.register('/i/jobs', async function(ob) {
 });
 
 // ----------------------------------
-// /o/jobs endpoint
+// /jobs/o endpoint
 // ----------------------------------
-plugins.register('/o/jobs', async function(ob) {
+plugins.register('/jobs/o', async function(ob) {
     validateGlobalAdmin(ob.params, async function() {
         const db = common.db;
         const jobsCollection = db.collection('pulseJobs');
         const jobConfigsCollection = db.collection('jobConfigs');
+        const jobHistoriesCollection = db.collection('jobHistories');
         const columns = ["name", "status", "scheduleLabel", "nextRunAt", "lastFinishedAt", "lastRunStatus", "total" ];
         try {
             const {
@@ -475,6 +499,10 @@ plugins.register('/o/jobs', async function(ob) {
                     name: jobName,
                     type: 'single'
                 });
+
+                const jobHistoryDocs = await jobHistoriesCollection.find({
+                    name: jobName,
+                }).toArray();
 
                 // The "normal" docs (type: 'normal')
                 const query = { name: jobName, type: 'normal' };
@@ -564,7 +592,8 @@ plugins.register('/o/jobs', async function(ob) {
                     iTotalRecords: total,
                     iTotalDisplayRecords: total,
                     aaData: processedRuns,
-                    jobDetails: jobDetails
+                    jobDetails: jobDetails,
+                    jobHistories: jobHistoryDocs,
                 });
                 return;
             }
@@ -765,7 +794,7 @@ plugins.register('/o/jobs', async function(ob) {
             }
         }
         catch (error) {
-            log.e('Error in /o/jobs:', { error: error.message, stack: error.stack });
+            log.e('Error in /jobs/o:', { error: error.message, stack: error.stack });
             common.returnMessage(ob.params, 500, 'Internal server error');
         }
     });

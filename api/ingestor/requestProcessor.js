@@ -5,6 +5,9 @@ const plugins = require("../../plugins/pluginManager.js");
 const log = require('../utils/log.js')('core:ingestor');
 const crypto = require('crypto');
 const { ignorePossibleDevices, checksumSaltVerification, validateRedirect} = require('../utils/requestProcessorCommon.js');
+const {ObjectId} = require("mongodb");
+const {preset} = require('../lib/countly.preset.js');
+const UnifiedEventSink = require('../eventSink/UnifiedEventSink');
 const countlyApi = {
     mgmt: {
         appUsers: require('../parts/mgmt/app_users.js'),
@@ -12,6 +15,36 @@ const countlyApi = {
 };
 
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
+// Initialize unified event sink
+let eventSink = null;
+try {
+    eventSink = new UnifiedEventSink();
+    log.i('UnifiedEventSink initialized for ingestor');
+}
+catch (error) {
+    log.e('Failed to initialize UnifiedEventSink for ingestor:', error);
+    // This is a critical error since we need at least MongoDB for event storage
+    throw error;
+}
+var loaded_configs_time = 0;
+
+const reloadConfig = function() {
+    return new Promise(function(resolve) {
+        var my_time = Date.now();
+        var reload_configs_after = common.config.reloadConfigAfter || 10000;
+        //once in minute
+        if (loaded_configs_time === 0 || (my_time - loaded_configs_time) >= reload_configs_after) {
+            plugins.loadConfigs(common.db, () => {
+                loaded_configs_time = my_time;
+                resolve();
+            }, true);
+        }
+        else {
+            resolve();
+        }
+    });
+};
+
 
 
 //Do not restart. If fails to creating, ail request.
@@ -78,124 +111,6 @@ function processUser(params, done) {
     }
 }
 
-var preset = {
-    up: {
-        fs: { name: "first_seen", type: "d" },
-        ls: { name: "last_seen", type: "d" },
-        tsd: { name: "total_session_duration", type: "n" },
-        sc: { name: "session_count", type: "n" },
-        d: { name: "device", type: "l" },
-        dt: { name: "device_type", type: "l" },
-        mnf: { name: "manufacturer", type: "l" },
-        ornt: { name: "ornt", type: "l" },
-        cty: { name: "city", type: "l" },
-        rgn: { name: "region", type: "l" },
-        cc: { name: "country_code", type: "l" },
-        p: { name: "platform", type: "l" },
-        pv: { name: "platform_version", type: "l" },
-        av: { name: "app_version", type: "l" },
-        c: { name: "carrier", type: "l" },
-        r: { name: "resolution", type: "l" },
-        dnst: { name: "dnst", type: "l" },
-        brw: { name: "brw", type: "l" },
-        brwv: { name: "brwv", type: "l" },
-        la: { name: "la", type: "l" },
-        lo: { name: "lo", type: "l" },
-        src: { name: "src", type: "l" },
-        src_ch: { name: "src_ch", type: "l" },
-        name: { name: "name", type: "s" },
-        username: { name: "username", type: "s" },
-        email: { name: "email", type: "s" },
-        organization: { name: "organization", type: "s" },
-        phone: { name: "phone", type: "s" },
-        gender: { name: "gender", type: "l" },
-        byear: { name: "byear", type: "n" },
-        age: { name: "age", type: "n" },
-        engagement_score: { name: "engagement_score", type: "n" },
-        lp: { name: "lp", type: "d" },
-        lpa: { name: "lpa", type: "n" },
-        tp: { name: "tp", type: "n" },
-        tpc: { name: "tpc", type: "n" },
-        lv: { name: "lv", type: "l" },
-        cadfs: { name: "cadfs", type: "n" },
-        cawfs: { name: "cawfs", type: "n" },
-        camfs: { name: "camfs", type: "n" },
-        hour: { name: "hour", type: "l" },
-        dow: { name: "dow", type: "l" },
-        hh: { name: "hh", type: "l" },
-    },
-    sg: {
-        "[CLY]_view": {
-            start: { name: "start", type: "l" },
-            exit: { name: "exit", type: "l" },
-            bounce: { name: "bounce", type: "l" }
-        },
-        "[CLY]_session": {
-            request_id: { name: "request_id", type: "s" },
-            prev_session: { name: "prev_session", type: "s" },
-            prev_start: { name: "prev_start", type: "d" },
-            postfix: { name: "postfix", type: "s" },
-            ended: {name: "ended", type: "l"}
-        },
-        "[CLY]_action": {
-            x: { name: "x", type: "n" },
-            y: { name: "y", type: "n" },
-            width: { name: "width", type: "n" },
-            height: { name: "height", type: "n" }
-        },
-        "[CLY]_crash": {
-            name: { name: "name", type: "s" },
-            manufacture: { name: "manufacture", type: "l" },
-            cpu: { name: "cpu", type: "l" },
-            opengl: { name: "opengl", type: "l" },
-            view: { name: "view", type: "l" },
-            browser: { name: "browser", type: "l" },
-            os: { name: "os", type: "l" },
-            orientation: { name: "orientation", type: "l" },
-            nonfatal: { name: "nonfatal", type: "l" },
-            root: { name: "root", type: "l" },
-            online: { name: "online", type: "l" },
-            signal: { name: "signal", type: "l" },
-            muted: { name: "muted", type: "l" },
-            background: { name: "background", type: "l" },
-            app_version: { name: "app_version", type: "l" },
-            ram_current: { name: "ram_current", type: "n" },
-            ram_total: { name: "ram_total", type: "n" },
-            disk_current: { name: "disk_current", type: "n" },
-            disk_total: { name: "disk_total", type: "n" },
-            bat_current: { name: "bat_current", type: "n" },
-            bat_total: { name: "bat_total", type: "n" },
-            bat: { name: "bat", type: "n" },
-            run: { name: "run", type: "n" }
-        },
-        "[CLY]_star_rating": {
-            email: { name: "email", type: "s" },
-            comment: { name: "comment", type: "s" },
-            widget_id: { name: "widget_id", type: "l" },
-            contactMe: { name: "contactMe", type: "s" },
-            rating: { name: "rating", type: "n" },
-            platform_version_rate: { name: "platform_version_rate", type: "s" }
-        },
-        "[CLY]_nps": {
-            comment: { name: "comment", type: "s" },
-            widget_id: { name: "widget_id", type: "l" },
-            rating: { name: "rating", type: "n" },
-            shown: { name: "shown", type: "s" },
-            answered: { name: "answered", type: "s" }
-        },
-        "[CLY]_survey": {
-            widget_id: { name: "widget_id", type: "l" },
-            shown: { name: "shown", type: "s" },
-            answered: { name: "answered", type: "s" }
-        },
-        "[CLY]_push_action": {
-            i: { name: "i", type: "s" }
-        },
-        "[CLY]_push_sent": {
-            i: { name: "i", type: "s" }
-        }
-    }
-};
 
 /**
  * Fills user properties from dbAppUser object
@@ -223,7 +138,7 @@ function fillUserProperties(dbAppUser, meta_doc) {
             dbAppUser.ls = (dbAppUser.lac) ? dbAppUser.lac : dbAppUser.ls;
         }
 
-        if (dbAppUser[shortRep]) {
+        if (typeof dbAppUser[shortRep] !== "undefined") {
             setType = countlyUP[i].type || "";
             if (meta_doc && meta_doc.up && meta_doc.up[i]) {
                 setType = meta_doc.up[i];
@@ -359,9 +274,8 @@ var processToDrill = async function(params, drill_updates, callback) {
             if (currEvent.key === "[CLY]_view" && !plugins.getConfig("drill", params.app && params.app.plugins, true).record_views) {
                 continue;
             }*/
-
             if (currEvent.key === "[CLY]_view" && !(currEvent.segmentation && currEvent.segmentation.visit)) {
-                continue;
+                currEvent.key = "[CLY]_view_update";
             }
 
             /*
@@ -420,7 +334,7 @@ var processToDrill = async function(params, drill_updates, callback) {
             }
             var upWithMeta = fillUserProperties(dbAppUser, params.app?.ovveridden_types?.prop);
             dbEventObject[common.dbUserMap.device_id] = params.qstring.device_id;
-            dbEventObject.lsid = dbAppUser.lsid;
+            dbEventObject.lsid = events[i].lsid || dbAppUser.lsid;
             dbEventObject[common.dbEventMap.user_properties] = upWithMeta.up;
             dbEventObject.custom = upWithMeta.upCustom;
             dbEventObject.cmp = upWithMeta.upCampaign;
@@ -434,6 +348,10 @@ var processToDrill = async function(params, drill_updates, callback) {
                 dbEventObject._id = params.request_hash + "_" + params.app_user.uid + "_" + Date.now().valueOf() + "_" + i;
             }
             eventKey = currEvent.key;
+
+            if ('up_extra' in currEvent) {
+                dbEventObject.up_extra = currEvent.up_extra;
+            }
 
             var time = params.time;
             if (events[i].timestamp) {
@@ -537,7 +455,12 @@ var processToDrill = async function(params, drill_updates, callback) {
                         }
                     }
                     else {
-                        tmpSegVal = currEvent.segmentation[segKey];
+                        if (typeof currEvent.segmentation[segKey] === "string") {
+                            tmpSegVal = common.encodeCharacters(currEvent.segmentation[segKey] + "");
+                        }
+                        else {
+                            tmpSegVal = currEvent.segmentation[segKey];
+                        }
                     }
                     dbEventObject[common.dbEventMap.segmentations] = dbEventObject[common.dbEventMap.segmentations] || {};
                     dbEventObject[common.dbEventMap.segmentations][segKeyAsFieldName] = tmpSegVal;
@@ -589,7 +512,34 @@ var processToDrill = async function(params, drill_updates, callback) {
     }
     if (eventsToInsert.length > 0) {
         try {
-            await common.drillDb.collection("drill_events").bulkWrite(eventsToInsert, {ordered: false});
+            /**
+             * NEW INGESTOR START
+              */
+            try {
+                // Use UnifiedEventSink to write to all configured sinks (MongoDB, Kafka, etc.)
+                const result = await eventSink.write(eventsToInsert);
+
+                if (result.overall.success) {
+                    log.d(`Successfully wrote ${result.overall.written} events using EventSink`);
+                    callback(null);
+                }
+                else {
+                    // EventSink failed - this is typically a MongoDB failure
+                    log.e('EventSink failed to write events:', result.overall.error);
+                    callback(new Error(result.overall.error));
+                    return;
+                }
+
+            }
+            catch (error) {
+                log.e('Error writing events via EventSink:', error);
+                callback(error);
+            }
+            /**
+             * NEW INGESTOR END
+             */
+            /*await common.drillDb.collection("drill_events").bulkWrite(eventsToInsert, {ordered: false});
+
             callback(null);
             if (Object.keys(viewUpdate).length) {
                 //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
@@ -599,40 +549,12 @@ var processToDrill = async function(params, drill_updates, callback) {
                 catch (err) {
                     log.e(err);
                 }
-            }
+            }*/
 
         }
         catch (errors) {
-            var realError;
-            if (errors && Array.isArray(errors)) {
-                log.e(JSON.stringify(errors));
-                for (let i = 0; i < errors.length; i++) {
-                    if ([11000, 10334, 17419].indexOf(errors[i].code) === -1) {
-                        realError = true;
-                    }
-                }
-
-                if (realError) {
-                    callback(realError);
-                }
-                else {
-                    callback(null);
-                    if (Object.keys(viewUpdate).length) {
-                        //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
-                        try {
-                            await common.db.collection("app_userviews").updateOne({_id: params.app_id + "_" + params.app_user.uid}, {$set: viewUpdate}, {upsert: true});
-                        }
-                        catch (err) {
-                            log.e(err);
-                        }
-                    }
-
-                }
-            }
-            else {
-                console.log(errors);
-                callback(errors);
-            }
+            console.log(errors);
+            callback(errors);
         }
     }
     else {
@@ -707,6 +629,11 @@ const processRequestData = (ob, done) => {
     if (ob.params.app_user.last_req !== ob.params.request_hash && ob.updates.length) {
         for (let i = 0; i < ob.updates.length; i++) {
             update = common.mergeQuery(update, ob.updates[i]);
+        }
+        //Adding fake event to notify property update.
+        ob.params.qstring.events = ob.params.qstring.events || [];
+        if (ob.params.qstring.events.length === 0) {
+            ob.params.qstring.events.push({"key": "[CLY]_property_update"});
         }
     }
     //var SaveAppUser = Date.now().valueOf();
@@ -804,7 +731,7 @@ const validateAppForWriteAPI = (params, done) => {
             common.readBatcher.updateCacheOne("apps", {'key': params.qstring.app_key + ""}, {"last_data": time});
             //set new value in database
             try {
-                common.db.collection("apps").findOneAndUpdate({"_id": common.db.ObjectID(params.app._id)}, {"$set": {"last_data": time}});
+                common.db.collection("apps").findOneAndUpdate({"_id": new ObjectId(params.app._id)}, {"$set": {"last_data": time}});
                 params.app.last_data = time;
             }
             catch (err3) {
@@ -842,6 +769,9 @@ const validateAppForWriteAPI = (params, done) => {
 
             let payload = params.href.substr(3) || "";
             if (params.req && params.req.method && params.req.method.toLowerCase() === 'post') {
+                payload += "&" + params.req.body;
+            }
+            else if (params.bulk) {
                 payload += "&" + params.req.body;
             }
             //remove dynamic parameters
@@ -890,10 +820,33 @@ const validateAppForWriteAPI = (params, done) => {
                                     ob.params.previous_session_start = ob.params.app_user.ls;
 
                                     if (ob.params.qstring.begin_session) {
+                                        ob.params.app_user.lsparams = {
+                                            request_id: params.request_id,
+                                            prev_session: params.previous_session,
+                                            prev_start: params.previous_session_start,
+                                            postfix: crypto.createHash('md5').update(params.app_user.did + "").digest('base64')[0],
+                                            ended: "false"
+                                        };
+
                                         params.qstring.events = params.qstring.events || [];
+
+                                        ob.updates.push({"$set": {"lsparams": ob.params.app_user.lsparams}});
+                                        const up_extra = { av_prev: params.app_user.av, p_prev: params.app_user.p };
+                                        if (params.app_user.hadFatalCrash) {
+                                            up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
+                                        }
+                                        if (params.app_user.hadAnyFatalCrash) {
+                                            up_extra.hadAnyFatalCrash = params.app_user.hadAnyFatalCrash;
+                                        }
+                                        if (params.app_user.hadNonfatalCrash) {
+                                            up_extra.hadNonfatalCrash = params.app_user.hadNonfatalCrash;
+                                        }
+                                        if (params.app_user.hadAnyNonfatalCrash) {
+                                            up_extra.hadAnyNonfatalCrash = params.app_user.hadAnyNonfatalCrash;
+                                        }
                                         params.qstring.events.unshift({
-                                            key: "[CLY]_session",
-                                            dur: params.qstring.session_duration || 0,
+                                            key: "[CLY]_session_begin",
+                                            dur: 0,
                                             count: 1,
                                             timestamp: params.time.mstimestamp,
                                             segmentation: {
@@ -902,7 +855,8 @@ const validateAppForWriteAPI = (params, done) => {
                                                 prev_start: params.previous_session_start,
                                                 postfix: crypto.createHash('md5').update(params.app_user.did + "").digest('base64')[0],
                                                 ended: "false"
-                                            }
+                                            },
+                                            up_extra
                                         });
                                     }
                                     plugins.dispatch("/sdk/process_user", ob, function() { //
@@ -940,6 +894,7 @@ const processBulkRequest = async function(requests, params) {
         }
         else {
             requests[i].app_key = requests[i].app_key || appKey;
+            params.req.body = JSON.stringify(requests[i]);
             const tmpParams = {
                 'app_id': '',
                 'app_cc': '',
@@ -1048,87 +1003,100 @@ const processRequest = (params) => {
     params.apiPath = apiPath;
     params.fullPath = paths.join("/");
 
-    switch (apiPath) {
-    case '/i': {
-        if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
-            params.qstring = common.trimWhitespaceStartEnd(params.qstring);
+    reloadConfig().then(function() {
+        switch (apiPath) {
+        case '/o/ping': {
+            common.db.collection("plugins").findOne({_id: "plugins"}, {_id: 1}).then(() => {
+                common.returnMessage(params, 200, 'Success');
+            }).catch(() => {
+                common.returnMessage(params, 404, 'DB Error');
+            });
+            return;
         }
-        params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
-        params.user = {};
+        case '/i': {
+            if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
+                params.qstring = common.trimWhitespaceStartEnd(params.qstring);
+            }
+            params.ip_address = params.qstring.ip_address || common.getIpAddress(params.req);
+            params.user = {};
 
-        if (!params.qstring.app_key || !params.qstring.device_id) {
-            common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
-            return false;
-        }
-        else {
+            if (!params.qstring.app_key || !params.qstring.device_id) {
+                common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
+                return false;
+            }
+            else {
             //make sure device_id is string
-            params.qstring.device_id += "";
-            params.qstring.app_key += "";
-            // Set app_user_id that is unique for each user of an application.
-            params.app_user_id = common.crypto.createHash('sha1')
-                .update(params.qstring.app_key + params.qstring.device_id + "")
-                .digest('hex');
-        }
-
-        if (params.qstring.events && typeof params.qstring.events === "string") {
-            try {
-                params.qstring.events = JSON.parse(params.qstring.events);
+                params.qstring.device_id += "";
+                params.qstring.app_key += "";
+                // Set app_user_id that is unique for each user of an application.
+                params.app_user_id = common.crypto.createHash('sha1')
+                    .update(params.qstring.app_key + params.qstring.device_id + "")
+                    .digest('hex');
             }
-            catch (SyntaxError) {
-                console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
+
+            if (params.qstring.events && typeof params.qstring.events === "string") {
+                try {
+                    params.qstring.events = JSON.parse(params.qstring.events);
+                }
+                catch (SyntaxError) {
+                    console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
+                    params.qstring.events = [];
+
+                }
+            }
+
+            if (!params.qstring.events && !Array.isArray(params.qstring.events)) {
                 params.qstring.events = [];
-
             }
-        }
-
-        if (!params.qstring.events && !Array.isArray(params.qstring.events)) {
-            params.qstring.events = [];
-        }
-        validateAppForWriteAPI(params, () => {
+            validateAppForWriteAPI(params, () => {
             //log request
-            plugins.dispatch("/sdk/log", {params: params});
-        });
-        break;
-    }
-    case '/i/bulk': {
-        let requests = params.qstring.requests;
-        if (requests && typeof requests === "string") {
-            try {
-                requests = JSON.parse(requests);
+                plugins.dispatch("/sdk/log", {params: params});
+            });
+            break;
+        }
+        case '/i/bulk': {
+            let requests = params.qstring.requests;
+            if (requests && typeof requests === "string") {
+                try {
+                    requests = JSON.parse(requests);
+                }
+                catch (SyntaxError) {
+                    console.log('Parse bulk JSON failed', requests, params.req.url, params.req.body);
+                    requests = null;
+                }
             }
-            catch (SyntaxError) {
-                console.log('Parse bulk JSON failed', requests, params.req.url, params.req.body);
-                requests = null;
+            if (!requests) {
+                common.returnMessage(params, 400, 'Missing parameter "requests"');
+                return false;
             }
-        }
-        if (!requests) {
-            common.returnMessage(params, 400, 'Missing parameter "requests"');
-            return false;
-        }
-        if (!Array.isArray(requests)) {
-            console.log("Passed invalid param for request. Expected Array, got " + typeof requests);
-            common.returnMessage(params, 400, 'Invalid parameter "requests"');
-            return false;
-        }
-        common.blockResponses(params);//no response till finished processing
+            if (!Array.isArray(requests)) {
+                console.log("Passed invalid param for request. Expected Array, got " + typeof requests);
+                common.returnMessage(params, 400, 'Invalid parameter "requests"');
+                return false;
+            }
+            common.blockResponses(params);//no response till finished processing
 
-        processBulkRequest(requests, params);
-        break;
-    }
-    default:
-        if (!plugins.dispatch(apiPath, {
-            params: params,
-            paths: paths
-        })) {
-            if (!plugins.dispatch(params.fullPath, {
+            processBulkRequest(requests, params);
+            break;
+        }
+        default:
+            if (!plugins.dispatch(apiPath, {
                 params: params,
                 paths: paths
             })) {
-                common.returnMessage(params, 400, 'Invalid path');
+                if (!plugins.dispatch(params.fullPath, {
+                    params: params,
+                    paths: paths
+                })) {
+                    common.returnMessage(params, 400, 'Invalid path');
+                }
             }
         }
-    }
+    }).catch((err) => {
+        log.e('Error reloading config:', err);
+        common.returnMessage(params, 500, 'Server error');
+    });
 
 };
 
-module.exports = {processRequest: processRequest};
+module.exports = {processRequest: processRequest, processToDrill: processToDrill};

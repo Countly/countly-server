@@ -1,12 +1,7 @@
 'use strict';
 
-// const job = require('../parts/jobs/job.js');
-const log = require('../utils/log.js')('job:ping');
-const countlyConfig = require("../../frontend/express/config.js");
-const versionInfo = require('../../frontend/express/version.info');
 const plugins = require('../../plugins/pluginManager.js');
-
-
+const tracker = require('../parts/mgmt/tracker.js');
 const Job = require("../../jobServer/Job");
 
 
@@ -30,89 +25,114 @@ class PingJob extends Job {
      * @param {done} done callback
      */
     run(db, done) {
-
-        plugins.loadConfigs(db, function() {
-            const request = require('countly-request')(plugins.getConfig("security"));
-            request({strictSSL: false, uri: (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "") + "/configs"}, function() {});
-            var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
-            var url = "https://count.ly/configurations/ce/tracking";
-            if (versionInfo.type !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
-                url = "https://count.ly/configurations/ee/tracking";
-            }
-
+        plugins.loadConfigs(db, async function() {
             const offlineMode = plugins.getConfig("api").offline_mode;
-            const { countly_tracking } = plugins.getConfig('frontend');
             if (!offlineMode) {
-                request(url, function(err, response, body) {
-                    if (typeof body === "string") {
-                        try {
-                            body = JSON.parse(body);
-                        }
-                        catch (ex) {
-                            body = null;
-                        }
-                    }
-                    if (body) {
-                        if (countlyConfigOrig.web.use_intercom && typeof body.intercom !== "undefined") {
-                            countlyConfig.web.use_intercom = body.intercom;
-                        }
-                        if (typeof countlyConfigOrig.web.track === "undefined" && typeof body.stats !== "undefined") {
-                            if (body.stats) {
-                                countlyConfig.web.track = null;
-                            }
-                            else {
-                                countlyConfig.web.track = "none";
-                            }
-                        }
-                    }
-                    log.d(err, body, countlyConfigOrig, countlyConfig);
-                    if (countly_tracking) {
-                        db.collection("members").findOne({global_admin: true}, function(err2, member) {
-                            if (!err2 && member) {
-                                var date = new Date();
-                                let domain = plugins.getConfig('api').domain;
+                var server = tracker.getBulkServer();
+                var user = tracker.getBulkUser(server);
+                if (!user) {
+                    return done();
+                }
 
-                                try {
-                                // try to extract hostname from full domain url
-                                    const urlObj = new URL(domain);
-                                    domain = urlObj.hostname;
-                                }
-                                catch (_) {
-                                // do nothing, domain from config will be used as is
-                                }
+                try {
+                    var custom = await tracker.getAllData();
+                    if (Object.keys(custom).length) {
+                        user.user_details({"custom": custom });
+                    }
+                }
+                catch (ex) {
+                    console.log("Error collecting server data:", ex);
+                }
+                var days = 90;
+                var current_sync = Date.now();
 
-                                request({
-                                    uri: "https://stats.count.ly/i",
-                                    method: "GET",
-                                    timeout: 4E3,
-                                    qs: {
-                                        device_id: domain,
-                                        app_key: "e70ec21cbe19e799472dfaee0adb9223516d238f",
-                                        timestamp: Math.floor(date.getTime() / 1000),
-                                        hour: date.getHours(),
-                                        dow: date.getDay(),
-                                        no_meta: true,
-                                        events: JSON.stringify([
-                                            {
-                                                key: "PING",
-                                                count: 1
-                                            }
-                                        ])
+                // Atomically retrieve old last_sync value and set new one
+                var syncResult = await db.collection("plugins").findOneAndUpdate(
+                    {_id: "version"},
+                    {$set: {last_sync: current_sync}},
+                    {
+                        upsert: true,
+                        returnDocument: 'before',
+                        projection: {last_sync: 1}
+                    }
+                );
+
+                var last_sync = syncResult.value ? syncResult.value.last_sync : null;
+                if (last_sync) {
+                    days = Math.floor((new Date().getTime() - last_sync) / (1000 * 60 * 60 * 24));
+                }
+
+                if (days > 0) {
+                    //calculate seconds timestamp of days before today
+                    var startTs = Math.round((new Date().getTime() - (days * 24 * 60 * 60 * 1000)) / 1000);
+
+                    //sync server events - use aggregation pipeline to group by day and action on MongoDB side
+                    var aggregationPipeline = [
+                        // Match documents with timestamp greater than startTs and valid action
+                        {
+                            $match: {
+                                ts: { $gt: startTs }
+                            }
+                        },
+                        // Add calculated fields for day grouping
+                        {
+                            $addFields: {
+                                // Convert timestamp to date and set to noon (12:00:00)
+                                dayDate: {
+                                    $dateFromParts: {
+                                        year: { $year: { $toDate: { $multiply: ["$ts", 1000] } } },
+                                        month: { $month: { $toDate: { $multiply: ["$ts", 1000] } } },
+                                        day: { $dayOfMonth: { $toDate: { $multiply: ["$ts", 1000] } } },
+                                        hour: 12,
+                                        minute: 0,
+                                        second: 0
                                     }
-                                }, function(a/*, c, b*/) {
-                                    log.d('Done running ping job: %j', a);
-                                    done();
-                                });
+                                }
                             }
-                            else {
-                                done();
+                        },
+                        // Convert back to timestamp in seconds
+                        {
+                            $addFields: {
+                                noonTimestamp: {
+                                    $divide: [{ $toLong: "$dayDate" }, 1000]
+                                }
                             }
-                        });
+                        },
+                        // Group by day and action
+                        {
+                            $group: {
+                                _id: {
+                                    day: "$noonTimestamp",
+                                    action: "$a"
+                                },
+                                count: { $sum: 1 }
+                            }
+                        },
+                        // Project to final format
+                        {
+                            $project: {
+                                _id: 0,
+                                action: "$_id.action",
+                                timestamp: "$_id.day",
+                                count: 1
+                            }
+                        }
+                    ];
+
+                    var cursor = db.collection("systemlogs").aggregate(aggregationPipeline);
+
+                    while (cursor && await cursor.hasNext()) {
+                        let eventData = await cursor.next();
+                        user.add_event({key: eventData.action, count: eventData.count, timestamp: eventData.timestamp});
                     }
-                    else {
+                    server.start(function() {
+                        server.stop();
                         done();
-                    }
-                });
+                    });
+                }
+                else {
+                    done();
+                }
             }
             else {
                 done();

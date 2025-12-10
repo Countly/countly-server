@@ -266,6 +266,9 @@ describe('Testing user merge scenarios', function() {
                         done();
                     });
             });
+            it('Trigger deletion job to run', function(done) {
+                testUtils.triggerJobToRun("api:mutationManagerJob", done);
+            });
         });
     });
 });

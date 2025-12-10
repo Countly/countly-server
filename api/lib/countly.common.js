@@ -832,7 +832,153 @@ countlyCommon.isValidPeriodParam = function(period) {
 */
 countlyCommon.periodObj = getPeriodObject();
 
+
+countlyCommon.getTimezone = function(params) {
+    var timezone = "";
+    if (params.qstring.userTimezone) {
+        timezone = params.qstring.userTimezone;
+    }
+    else if (params.qstring.periodOffset) {
+        var offset = parseInt(params.qstring.periodOffset, 10);
+        offset = Math.round(offset / 60);//convert to hours
+        //GMT+/- is opposite. Fot +2 timezone it is GMT-2
+        timezone = offset >= 0 ? "Etc/GMT+" + offset : "Etc/GMT-" + Math.abs(offset);
+    }
+    else {
+        timezone = params.appTimezone || "UTC";
+    }
+    return timezone;
+};
 // Public Methods
+
+/**
+     * Returns query range for querying in drill data with data shifted based on timezone OR offset. If using offset, set timezone as UTC.
+     * @param {object} period  - common period in Countly
+     * @param {string} timezone  - app timezone (optional. Pass if not using offset)
+     * @param {number} offset  - offset in minutes
+     * @returns {object} - describes period range
+     */
+countlyCommon.getPeriodRange = function(period, timezone, offset) {
+    //Gets start and end points of period for querying in drill
+    var startTimestamp = 0;
+    var endTimestamp = 0;
+    var __currMoment = moment().utc();
+
+    period = period || "30days";
+    if (typeof period === 'string' && period.indexOf(",") !== -1) {
+        try {
+            period = JSON.parse(period);
+        }
+        catch (SyntaxError) {
+            console.log("period JSON parse failed");
+            period = "30days";
+        }
+    }
+
+    var excludeCurrentDay = period.exclude_current_day || false;
+    if (period.period) {
+        period = period.period;
+    }
+
+    if (period.since) {
+        period = [period.since, endTimestamp.clone().valueOf()];
+    }
+
+
+    endTimestamp = excludeCurrentDay ? __currMoment.clone().subtract(1, 'days').endOf('day') : __currMoment.clone().endOf('day');
+
+    if (Array.isArray(period)) {
+        if ((period[0] + "").length === 10) {
+            period[0] *= 1000;
+        }
+        if ((period[1] + "").length === 10) {
+            period[1] *= 1000;
+        }
+        var fromDate, toDate;
+
+        if (Number.isInteger(period[0]) && Number.isInteger(period[1])) {
+            period[0] = fixTimestampToMilliseconds(period[0]);
+            period[1] = fixTimestampToMilliseconds(period[1]);
+            fromDate = moment.tz(period[0], "UTC");
+            toDate = moment.tz(period[1], "UTC");
+        }
+        else {
+            fromDate = moment.tz(period[0], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"], "UTC");
+            toDate = moment.tz(period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"], "UTC");
+        }
+
+        startTimestamp = fromDate.clone().startOf("day");
+        endTimestamp = toDate.clone().endOf("day");
+
+        // fromDate.tz(timezone);
+        // toDate.tz(timezone);
+
+        if (fromDate.valueOf() > toDate.valueOf()) {
+            //incorrect range - reset to 30 days
+            let nDays = 30;
+
+            startTimestamp = __currMoment.clone().startOf("day").subtract(nDays - 1, "days");
+            endTimestamp = __currMoment.clone().endOf("day");
+        }
+    }
+    else if (period === "month") {
+        startTimestamp = __currMoment.clone().startOf("year");
+    }
+    else if (period === "day") {
+        startTimestamp = __currMoment.clone().startOf("month");
+    }
+    else if (period === "prevMonth") {
+        startTimestamp = __currMoment.clone().subtract(1, "month").startOf("month");
+        endTimestamp = __currMoment.clone().subtract(1, "month").endOf("month");
+    }
+    else if (period === "hour") {
+        startTimestamp = __currMoment.clone().startOf("day");
+    }
+    else if (period === "yesterday") {
+        let yesterday = __currMoment.clone().subtract(1, "day");
+        startTimestamp = yesterday.clone().startOf("day");
+        endTimestamp = yesterday.clone().endOf("day");
+    }
+    else if (/([1-9][0-9]*)minutes/.test(period)) {
+        let nMinutes = parseInt(/([1-9][0-9]*)minutes/.exec(period)[1]);
+        startTimestamp = __currMoment.clone().startOf("minute").subtract(nMinutes - 1, "minutes");
+    }
+    else if (/([1-9][0-9]*)hours/.test(period)) {
+        let nHours = parseInt(/([1-9][0-9]*)hours/.exec(period)[1]);
+        startTimestamp = __currMoment.clone().startOf("hour").subtract(nHours - 1, "hours");
+    }
+    else if (/([1-9][0-9]*)days/.test(period)) {
+        let nDays = parseInt(/([1-9][0-9]*)days/.exec(period)[1]);
+        startTimestamp = __currMoment.clone().startOf("day").subtract(nDays - 1, "days");
+    }
+    else if (/([1-9][0-9]*)weeks/.test(period)) {
+        const nWeeks = parseInt(/([1-9][0-9]*)weeks/.exec(period)[1]);
+        startTimestamp = __currMoment.clone().startOf("week").subtract((nWeeks - 1), "weeks");
+    }
+    else if (/([1-9][0-9]*)months/.test(period)) {
+        const nMonths = parseInt(/([1-9][0-9]*)months/.exec(period)[1]);
+        startTimestamp = __currMoment.clone().startOf("month").subtract((nMonths - 1), "months");
+    }
+    else if (/([1-9][0-9]*)years/.test(period)) {
+        const nYears = parseInt(/([1-9][0-9]*)years/.exec(period)[1]);
+        startTimestamp = __currMoment.clone().startOf("year").subtract((nYears - 1), "years");
+    }
+    //incorrect period, defaulting to 30 days
+    else {
+        let nDays = 30;
+        startTimestamp = __currMoment.clone().startOf("day").subtract(nDays - 1, "days");
+    }
+    if (!offset) {
+        offset = moment.tz(timezone).utcOffset();
+        offset = offset * -1;
+    }
+    return {
+        "$gt": startTimestamp.valueOf() + offset * 60000 - 1,
+        "$lt": endTimestamp.valueOf() + offset * 60000 + 1,
+        "$gte": startTimestamp.valueOf() + offset * 60000,
+        "$lte": endTimestamp.valueOf() + offset * 60000,
+    };
+};
 
 /**
 * Change timezone of internal Date object

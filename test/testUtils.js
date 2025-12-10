@@ -1,6 +1,7 @@
 var should = require('should');
 var countlyConfig = require("../frontend/express/config.js");
 var common = require('../api/utils/common.js');
+const reqq = require('supertest');
 should.Assertion.add('haveSameItems', function(other) {
     this.params = { operator: 'to be have same items' };
 
@@ -170,20 +171,86 @@ var testUtils = function testUtils() {
         props[key] = val;
     };
 
-    this.triggerJobToRun = function(jobName, callback) {
-        this.db.collection("jobs").updateOne({status: 0, name: jobName}, {$set: {next: 0}}, function(err, res) {
+    function recheckDeletion(retry, db, callback) {
+        db.collection("mutation_manager").countDocuments({ type: 'delete', status: { $ne: "completed" }}, function(err, count) {
             if (err) {
                 callback(err);
             }
+            else if (count === 0) {
+                callback();
+            }
             else {
-                if (res.result.nModified === 0) {
-                    callback("Job not found");
+                console.log("Records existing:" + count);
+                if (retry > 0) {
+                    console.log("Waiting for deletions to finish... retries left: " + retry);
+                    setTimeout(function() {
+                        recheckDeletion(retry - 1, db, callback);
+                    }, 5000);
                 }
                 else {
                     callback();
                 }
             }
         });
+    }
+    this.triggerJobToRun = function(jobName, callback) {
+        if (jobName === "api:deletionManagerJob") {
+            jobName = "api:mutationManagerJob";
+        }
+        var request = reqq(this.url);
+        var self = this;
+        request.get("/jobs/i?jobName=" + encodeURIComponent(jobName) + "&action=runNow&api_key=" + props.API_KEY_ADMIN)
+            .expect(200)
+            .end(function(err, res) {
+                if (res && res.text) {
+                    console.log(res.text);
+                }
+                else {
+                    console.log("No response text");
+                    console.log(JSON.stringify(res));
+                }
+                if (jobName === "api:mutationManagerJob") {
+                    recheckDeletion(5, self.db, callback);
+                }
+                else {
+                    callback(err);
+                }
+            });
+    };
+
+    this.triggerMergeProcessing = function(callback) {
+        //Update lu in all app_user_merge documents to allow processing
+        var date = Math.round(new Date().getTime() / 1000) - 100;
+        var self = this;
+        this.db.collection("app_user_merges").updateMany({}, {$set: {lu: date}}, function(err, res) {
+            if (err) {
+                callback(err);
+            }
+            else {
+                self.triggerJobToRun("api:userMerge", callback);
+            }
+        });
+    };
+
+    this.check_if_merges_finished = function(tries, APP_ID, done) {
+        if (tries <= 0) {
+            done();
+        }
+        else {
+            var self = this;
+            this.db.collection("app_user_merges").find({"_id": {"$regex": "^" + APP_ID}}).toArray(function(err, res) {
+                if (res && res.length > 0) {
+                    console.log(JSON.stringify(res));
+                    setTimeout(function() {
+                        tries--;
+                        self.check_if_merges_finished(tries, APP_ID, done);
+                    }, 10000);
+                }
+                else {
+                    done();
+                }
+            });
+        }
     };
     this.validateBreakdownTotalsInDrillData = function(db, options, callback) {
         var match = options.query || {};
@@ -220,6 +287,12 @@ var testUtils = function testUtils() {
         pipeline.push({"$group": {"_id": iid, "t": {"$sum": 1}, "ls": {"$min": "$up.ls"}, n: {"$max": "$n"}, "fs": {"$min": "$up.fs"}}});
 
         pipeline.push({"$group": {"_id": iid2, "n": {"$sum": 1}, "u": {"$sum": 1}, "t": {"$sum": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        if (options.event === "[CLY]_session") {
+            var pipeline2 = JSON.parse(JSON.stringify(pipeline));
+            pipeline2[0]["$match"]["e"] = "[CLY]_session_begin";
+            pipeline.push({"$unionWith": {coll: "drill_events", pipeline: pipeline2}});
+            pipeline.push({"$group": {"_id": "$_id", "n": {"$max": "$n"}, "u": {"$max": "$u"}, "t": {"$max": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        }
         db.collection("drill_events").aggregate(pipeline, function(err, res) {
             console.log(res);
             if (err) {
@@ -289,6 +362,12 @@ var testUtils = function testUtils() {
         options.values = options.values || {};
         pipeline.push({"$group": {"_id": "$uid", "t": {"$sum": "$c"}, "ls": {"$min": "$up.ls"}, "fs": {"$min": "$up.fs"}}});
         pipeline.push({"$group": {"_id": null, "u": {"$sum": 1}, "t": {"$sum": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        if (options.event === "[CLY]_session") {
+            var pipeline2 = JSON.parse(JSON.stringify(pipeline));
+            pipeline2[0]["$match"]["e"] = "[CLY]_session_begin";
+            pipeline.push({"$unionWith": {coll: "drill_events", pipeline: pipeline2}});
+            pipeline.push({"$group": {"_id": null, "u": {"$max": "$u"}, "t": {"$max": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        }
         console.log(JSON.stringify(pipeline));
         db.collection("drill_events").aggregate(pipeline, function(err, res) {
             console.log(res);
@@ -323,7 +402,9 @@ var testUtils = function testUtils() {
         }
         var ob = JSON.parse(res.text);
         ob.should.not.be.empty;
-        ob.should.have.property("meta", correct.meta);
+        if (correct.meta) {
+            ob.should.have.property("meta", correct.meta);
+        }
         //ob.should.have.property("meta", {"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]});
         for (var i in ob) {
             if (i != "meta") {
@@ -617,6 +698,92 @@ var testUtils = function testUtils() {
         return new Promise(function(resolve) {
             setTimeout(resolve, timeToSleepInMs);
         });
+    };
+
+    /**
+     * Reloads the ClickHouse identity dictionary (uid_map_dict).
+     * This forces immediate reload of the dictionary instead of waiting for automatic refresh.
+     * Useful in tests when you need immediate propagation of uid mapping changes.
+     * @param {Function} callback - Callback function to call when reload is complete
+     */
+    this.reloadIdentityDictionary = async function(callback) {
+        try {
+            const countlyApiConfig = require('../api/config');
+
+            // Check if ClickHouse is configured
+            if (!countlyApiConfig.clickhouse || !countlyApiConfig.clickhouse.url) {
+                console.log('ClickHouse not configured, skipping dictionary reload');
+                return callback();
+            }
+
+            // Check if ClickHouse adapter is enabled
+            if (!countlyApiConfig.database?.adapters?.clickhouse?.enabled) {
+                console.log('ClickHouse adapter disabled, skipping dictionary reload');
+                return callback();
+            }
+
+            // Use ClickhouseClient singleton directly (avoid api.js dependency issues)
+            let clickhouseClientSingleton;
+            try {
+                clickhouseClientSingleton = require('../plugins/clickhouse/api/ClickhouseClient.js');
+            }
+            catch (loadErr) {
+                if (loadErr.code === 'MODULE_NOT_FOUND') {
+                    console.log('ClickHouse plugin not available, skipping dictionary reload');
+                    return callback();
+                }
+                throw loadErr;
+            }
+
+            let client;
+            try {
+                client = await clickhouseClientSingleton.getInstance();
+            }
+            catch (clientErr) {
+                console.log('ClickHouse client initialization failed:', clientErr.message);
+                console.log('Skipping dictionary reload');
+                return callback();
+            }
+
+            if (!client) {
+                console.log('ClickHouse client not available, skipping dictionary reload');
+                return callback();
+            }
+
+            // Load Identity module directly
+            let Identity;
+            try {
+                Identity = require('../plugins/clickhouse/api/users/Identity.js');
+            }
+            catch (loadErr) {
+                if (loadErr.code === 'MODULE_NOT_FOUND') {
+                    console.log('ClickHouse Identity module not available, skipping dictionary reload');
+                    return callback();
+                }
+                throw loadErr;
+            }
+
+            const identity = new Identity(client);
+
+            identity.reloadDictionary()
+                .then(() => {
+                    console.log('Identity dictionary reloaded successfully');
+                    callback();
+                })
+                .catch((err) => {
+                    console.error('Failed to reload identity dictionary:', err);
+                    callback(err);
+                });
+        }
+        catch (err) {
+            // Handle module loading errors gracefully
+            if (err.code === 'MODULE_NOT_FOUND') {
+                console.log('ClickHouse module not found, skipping dictionary reload');
+                return callback();
+            }
+            console.error('Error setting up identity dictionary reload:', err);
+            callback(err);
+        }
     };
 };
 

@@ -5,7 +5,12 @@ ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,vi
 #ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps,sdk,guides,journey_engine,content
 
 EXPOSE 6001
-HEALTHCHECK --start-period=400s CMD curl --fail http://localhost:6001/ping || exit 1
+HEALTHCHECK --start-period=400s CMD bash -c '\
+  if [ "$COUNTLY_CONFIG_FRONTEND_WEB_SSL_ENABLED" = "true" ] || [ "$COUNTLY_CONFIG_FRONTEND_WEB_SSL_ENABLED" = "\"true\"" ]; then \
+    curl -k --fail https://localhost:6001/ping || exit 1; \
+  else \
+    curl --fail http://localhost:6001/ping || exit 1; \
+  fi'
 
 USER root
 
@@ -44,7 +49,7 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
         yum install -y epel-release && \
         yum install -y pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc && \
 	      yum install -y https://pkgs.sysadmins.ws/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm && \
-        yum install -y wget openssl-devel make git sqlite libsqlite* unzip bzip2 && \
+        yum install -y wget openssl-devel make git unzip bzip2 && \
         # modify standard distribution
         ./bin/docker/modify.sh && \
         \

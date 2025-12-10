@@ -8,6 +8,7 @@ var API_KEY_ADMIN = "";
 var APP_ID = "";
 var DEVICE_ID = "1234567890";
 var drill_db = "";
+var session_event = "[CLY]_session_begin";
 
 describe('Testing Store metrics', function() {
     describe('Empty sources', function() {
@@ -48,7 +49,7 @@ describe('Testing Store metrics', function() {
 
     describe('Verify sources', function() {
         it('should have sources', function(done) {
-            testUtils.validateTotalsInDrillData(drill_db, {app_id: APP_ID, event: "[CLY]_session", query: {"up.src": "com&#46;android&#46;vending"}, values: {u: 1, t: 1, n: 1}}, done);
+            testUtils.validateTotalsInDrillData(drill_db, {app_id: APP_ID, event: session_event, query: {"up.src": "com&#46;android&#46;vending"}, values: {u: 1, t: 1, n: 1}}, done);
         });
     });
     describe('write bulk sources', function() {
@@ -77,7 +78,7 @@ describe('Testing Store metrics', function() {
         it('should match provided sources', function(done) {
             testUtils.validateBreakdownTotalsInDrillData(drill_db, {
                 app_id: APP_ID,
-                event: "[CLY]_session",
+                event: session_event,
                 breakdownKeys: ["up.src"],
                 values: {
                     "com&#46;android&#46;vending": {u: 2, t: 2, n: 2},
@@ -103,6 +104,9 @@ describe('Testing Store metrics', function() {
                     ob.should.have.property('result', 'Success');
                     setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
+        });
+        it('trigger job for database cleanup', function(done) {
+            testUtils.triggerJobToRun("api:mutationManagerJob", done);
         });
     });
     describe('verify empty sources', function() {

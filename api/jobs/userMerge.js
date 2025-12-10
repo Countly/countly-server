@@ -30,7 +30,7 @@ var handleMerges = function(db, callback) {
     }
     paralel_cn = Math.max(1, paralel_cn);
 
-    var date = Math.round(new Date().getTime() / 1000) - 60;
+    var date = Math.round(new Date().getTime() / 1000) - 1;//ar least one second old merges
     var limit = 100;
     if (paralel_cn && paralel_cn > limit) {
         limit = paralel_cn;

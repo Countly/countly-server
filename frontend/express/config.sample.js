@@ -77,7 +77,13 @@ var countlyConfig = {
         track: "all",
         theme: "",
         session_secret: "countlyss",
-        session_name: "connect.sid"
+        session_name: "connect.sid",
+        ssl: {
+            enabled: false,
+            key: "/path/to/ssl/private.key",
+            cert: "/path/to/ssl/certificate.crt",
+            // ca: "/path/to/ssl/ca_bundle.crt" // Optional: for client certificate verification, uncomment to activate
+        }
     },
     /**
      * Cookie configuration
@@ -112,7 +118,8 @@ var countlyConfig = {
     * Additional password secret for safer autentification. This secret will be added on changing and creating password. Changing value in configs will result in invalid passwords for existing users. 
     * Default value is "".
     */
-    passwordSecret: ""
+    passwordSecret: "",
+
 };
 
 module.exports = require('../../api/configextender')('FRONTEND', countlyConfig, process.env);

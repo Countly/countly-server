@@ -8,11 +8,11 @@ const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
 const { ObjectId } = require('mongodb');
 
-module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
+module.exports.check = async function({ alertConfigs: alert, scheduledTo: date }) {
     const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-        return done();
+        return;
     }
 
     let { period, alertDataSubType2, compareType, compareValue } = alert;
@@ -29,7 +29,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
         const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
         const metricValueBefore = await getCohortMetricByDate(app, alertDataSubType2, before, period);
         if (!metricValueBefore) {
-            return done();
+            return;
         }
 
         const change = (metricValue / metricValueBefore - 1) * 100;
@@ -41,8 +41,6 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
-
-    done();
 };
 
 /**

@@ -103,6 +103,9 @@ describe('Testing Browser metrics', function() {
                     setTimeout(done, 10 * testUtils.testScalingFactor);
                 });
         });
+        it('trigger job for database cleanup', function(done) {
+            testUtils.triggerJobToRun("api:mutationManagerJob", done);
+        });
     });
     describe('verify empty browser', function() {
         it('should have no browsers', function(done) {

@@ -1,4 +1,4 @@
-/*global countlyAuth, countlyCommon, app, countlyVue, CV, countlyGlobal, CountlyHelpers, $, moment */
+/*global VeeValidate, cronstrue, countlyAuth, countlyCommon, app, countlyVue, CV, countlyGlobal, CountlyHelpers, $, moment */
 
 (function() {
     /**
@@ -28,7 +28,7 @@
         // Backend uses "COMPLETED", "FAILED", "RUNNING", "SCHEDULED" (see getJobStatus in api.js)
         // But also "success", "failed", "pending" (see getRunStatus in api.js)
         switch (status) {
-        case "RUNNING": return "green";
+        case "RUNNING": return "blue";
         case "COMPLETED": return "green";
         case "SUCCESS": return "green";
         case "SCHEDULED":
@@ -109,6 +109,23 @@
         }
     };
 
+    VeeValidate.extend('validCron', {
+        validate: function(inpValue) {
+            var valid = true;
+
+            try {
+                cronstrue.toString(inpValue);
+            }
+            catch (_) {
+                valid = false;
+            }
+
+            return {
+                valid: valid,
+            };
+        },
+    });
+
     /**
      * Main view for listing jobs
      */
@@ -128,7 +145,8 @@
                         self.loaded = false;
                         return {
                             type: "GET",
-                            url: countlyCommon.API_URL + "/o/jobs", // no ?name= param => list mode
+                            url: countlyCommon.API_URL + "/jobs/o", // no ?name= param => list mode
+                            headers: { 'Countly-Token': countlyGlobal.auth_token },
                             data: {
                                 app_id: countlyCommon.ACTIVE_APP_ID,
                                 iDisplayStart: 0,
@@ -176,6 +194,9 @@
                 jobsTablePersistKey: "cly-jobs-table"
             };
         },
+        mixins: [
+            countlyVue.mixins.hasFormDialogs("jobSchedule")
+        ],
         computed: {
             /**
              * Whether the current user can enable/disable jobs
@@ -184,8 +205,19 @@
             canSuspendJob: function() {
                 return countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID];
             },
+            scheduleDialogTitle: function() {
+                return '“' + this.selectedJobConfig.name + '” ' + CV.i18n('jobs.schedule-configuration');
+            },
         },
         methods: {
+            parseCron: function(inpStr) {
+                try {
+                    return cronstrue.toString(inpStr);
+                }
+                catch (_) {
+                    return inpStr;
+                }
+            },
             formatDateTime: function(date) {
                 return date ? moment(date).format('D MMM, YYYY HH:mm:ss') : '-';
             },
@@ -195,7 +227,7 @@
                     return 'gray';
                 }
                 if (details.currentState.status === 'RUNNING') {
-                    return 'green';
+                    return 'blue';
                 }
                 if (details.currentState.status === 'FAILED') {
                     return 'red';
@@ -223,7 +255,7 @@
                 switch (statusValue) {
                 case "SUCCESS":
                 case "COMPLETED": return 'green';
-                case "RUNNING": return 'green';
+                case "RUNNING": return 'blue';
                 case "FAILED": return 'red';
                 case "PENDING":
                 case "SCHEDULED": return 'yellow';
@@ -262,11 +294,11 @@
                             defaultSchedule: row.schedule,
                             enabled: row.enabled
                         };
-                        this.scheduleDialogVisible = true;
+                        this.openFormDialog('jobSchedule', this.selectedJobConfig);
                         return;
                     }
 
-                    // For enable, disable, runNow, etc. => /i/jobs
+                    // For enable, disable, runNow, etc. => /jobs/i
                     var data = {
                         app_id: countlyCommon.ACTIVE_APP_ID,
                         jobName: row.name,
@@ -275,14 +307,15 @@
 
                     $.ajax({
                         type: "GET", // or POST if your server expects that
-                        url: countlyCommon.API_URL + "/i/jobs",
+                        url: countlyCommon.API_URL + "/jobs/i",
                         data: data,
+                        headers: { 'Countly-Token': countlyGlobal.auth_token },
                         success: function(res) {
                             if (res.result === "Success") {
                                 self.refresh(true);
                                 CountlyHelpers.notify({
                                     type: "ok",
-                                    message: CV.i18n("jobs." + command + "-success")
+                                    message: CV.i18n("jobs.command." + command + "-success", row.name)
                                 });
                             }
                             else {
@@ -310,24 +343,26 @@
 
                 $.ajax({
                     type: "GET",
-                    url: countlyCommon.API_URL + "/i/jobs",
+                    url: countlyCommon.API_URL + "/jobs/i",
+                    headers: { 'Countly-Token': countlyGlobal.auth_token },
                     data: {
                         app_id: countlyCommon.ACTIVE_APP_ID,
-                        jobName: this.selectedJobConfig.name,
+                        jobName: self.selectedJobConfig.name,
                         action: 'updateSchedule',
                         schedule: this.selectedJobConfig.schedule
                     },
                     success: function() {
                         self.saving = false;
-                        self.scheduleDialogVisible = false;
+                        self.closeFormDialog('jobSchedule');
                         self.refresh(true);
                         CountlyHelpers.notify({
                             type: "ok",
-                            message: CV.i18n("jobs.schedule-updated")
+                            message: CV.i18n("jobs.command.schedule-success", self.selectedJobConfig.name),
                         });
                     },
                     error: function(err) {
                         self.saving = false;
+                        self.closeFormDialog('jobSchedule');
                         CountlyHelpers.notify({
                             type: "error",
                             message: err.responseJSON?.result || "Error"
@@ -347,14 +382,22 @@
             return {
                 job_name: this.$route.params.jobName,
                 jobDetails: null,
-                jobRuns: [],
+                manualJobRuns: [],
+                jobHistories: [],
                 isLoading: false,
-                // columns for the run history table
+                // columns for the manual run history table
                 jobRunColumns: [
                     { prop: "lastRunAt", label: CV.i18n('jobs.run-time'), sortable: true },
                     { prop: "status", label: CV.i18n('jobs.status'), sortable: true },
                     { prop: "duration", label: CV.i18n('jobs.duration'), sortable: true },
                     { prop: "result", label: CV.i18n('jobs.result') }
+                ],
+                // columns for the failed run history table
+                jobHistoryColumns: [
+                    { prop: "lastRunAt", label: CV.i18n('jobs.run-time'), sortable: true },
+                    { prop: "type", label: CV.i18n('jobs.type'), sortable: true },
+                    { prop: "duration", label: CV.i18n('jobs.duration'), sortable: true },
+                    { prop: "failReason", label: CV.i18n('jobs.fail-reason'), sortable: true },
                 ]
             };
         },
@@ -371,7 +414,7 @@
         },
         methods: {
             /**
-             * Fetches jobDetails + normal docs from /o/jobs?name=<jobName>
+             * Fetches jobDetails + normal docs from /jobs/o?name=<jobName>
              */
             fetchJobDetails: function() {
                 var self = this;
@@ -379,7 +422,8 @@
 
                 CV.$.ajax({
                     type: "GET",
-                    url: countlyCommon.API_PARTS.data.r + "/jobs",
+                    url: countlyCommon.API_URL + "/jobs/o",
+                    headers: { 'Countly-Token': countlyGlobal.auth_token },
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "name": self.job_name,
@@ -392,7 +436,7 @@
                         self.jobDetails = response.jobDetails;
 
                         // aaData => the array of normal run docs
-                        self.jobRuns = (response.aaData || []).map(function(run) {
+                        self.manualJobRuns = (response.aaData || []).map(function(run) {
                             return {
                                 lastRunAt: run.lastRunAt,
                                 status: run.status,
@@ -402,6 +446,8 @@
                                 dataAsString: run.dataAsString
                             };
                         });
+
+                        self.jobHistories = response.jobHistories;
 
                         self.isLoading = false;
                     },
@@ -435,7 +481,7 @@
                     return "gray";
                 }
                 switch (jobDetails.currentState.status) {
-                case "RUNNING": return "green";
+                case "RUNNING": return "blue";
                 case "FAILED": return "red";
                 case "COMPLETED": return "green";
                 case "PENDING": return "yellow";
@@ -462,13 +508,21 @@
                 switch (status) {
                 case "SUCCESS":
                 case "COMPLETED": return "green";
-                case "RUNNING": return "green";
+                case "RUNNING": return "blue";
                 case "FAILED": return "red";
                 case "PENDING":
                 case "SCHEDULED": return "yellow";
                 default: return "gray";
                 }
-            }
+            },
+            getJobTypeLabel: function(inpJobType) {
+                var jobTypeMap = {
+                    single: CV.i18n("jobs.type-scheduled"),
+                    normal: CV.i18n("jobs.type-manual"),
+                };
+
+                return jobTypeMap[inpJobType];
+            },
         },
         mounted: function() {
             // On load, fetch data

@@ -289,8 +289,6 @@ appsApi.createApp = async function(params) {
                 common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"lac": -1}, { background: true }, function() {});
                 common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
                 common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
-                common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
-                common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
                 plugins.dispatch("/i/apps/create", {
                     params: params,
                     appId: app.ops[0]._id,
@@ -837,28 +835,22 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     common.db.collection('top_events').remove({'app_id': common.db.ObjectID(appId)}, function() {});
     common.db.collection('app_user_merges').remove({'_id': {$regex: "^" + appId + "_.*"}}, function() {});
 
-    common.drillDb.collection("drill_events").remove({"a": appId}, function() {});
+    //common.drillDb.collection("drill_events").remove({"a": appId}, function() {});
+    plugins.dispatch("/core/delete_granular_data", {query: {"a": appId + ""}, "db": "countly_drill", "collection": "drill_events"}, function() {});
     deleteAppLongTasks(appId);
     /**
     * Deletes all app's events
     **/
     function deleteEvents() {
-        common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
-            if (!err && events && events.list) {
-                common.db.collection("events_data").remove({'_id': {"$regex": "^" + appId + "_.*"}}, function() {
-                    if (fromAppDelete || params.qstring.args.period === "reset") {
-                        common.db.collection('events').remove({'_id': common.db.ObjectID(appId)}, function() {});
-                    }
-                });
+        common.db.collection("events_data").remove({'_id': {"$regex": "^" + appId + "_.*"}}, function() {
+            if (fromAppDelete || params.qstring.args.period === "reset") {
+                common.db.collection('events').remove({'_id': common.db.ObjectID(appId)}, function() {});
             }
         });
+        common.drillDb.collection("drill_meta").remove({"_id": {"$regex": "^" + appId} }, function() {});
     }
     common.db.collection('app_users' + appId).drop(function() {
         if (!fromAppDelete) {
-            common.db.collection('metric_changes' + appId).drop(function() {
-                common.db.collection('metric_changes' + appId).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
-                common.db.collection('metric_changes' + appId).ensureIndex({uid: 1}, { background: true }, function() {});
-            });
             //Removes old app_user_merges collection
             common.db.collection('app_user_merges' + appId).drop(function() {});
             if (params.qstring.args.period === "reset") {
@@ -877,7 +869,6 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
             }
         }
         else {
-            common.db.collection('metric_changes' + appId).drop(function() {});
             common.db.collection('app_user_merges' + appId).drop(function() {});
             plugins.dispatch("/i/apps/delete", {
                 params: params,
@@ -947,7 +938,13 @@ function deletePeriodAppData(appId, fromAppDelete, params, app) {
     common.db.collection('device_details').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: skip}}]}, function() {});
     common.db.collection('cities').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: skip}}]}, function() {});
 
-    common.drillDb.collection("drill_events").remove({"a": appId, "ts": {$lt: (oldestTimestampWanted * 1000)}}, function() {});
+    //common.drillDb.collection("drill_events").remove({"a": appId, "ts": {$lt: (oldestTimestampWanted * 1000)}}, function() {});
+
+    plugins.dispatch("/core/delete_granular_data", {
+        query: {"a": appId, "ts": {$lt: (oldestTimestampWanted * 1000)}},
+        db: "countly_drill",
+        collection: "drill_events"
+    }, function() {});
     common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
         if (!err && events && events.list) {
             common.arrayAddUniq(events.list, plugins.internalEvents);
@@ -977,12 +974,6 @@ function deletePeriodAppData(appId, fromAppDelete, params, app) {
     This prevents these users to be included as "total users" in the reports
     */
     common.db.collection('app_users' + appId).update({ls: {$lte: oldestTimestampWanted}}, {$set: {ls: 1}}, function() {});
-
-    /*
-    Remove all metric changes that happened before oldestTimestampWanted since we no longer need
-    old metric changes
-    */
-    common.db.collection('metric_changes' + appId).remove({ts: {$lte: oldestTimestampWanted}}, function() {});
 
     plugins.dispatch("/i/apps/clear", {
         params: params,

@@ -11,7 +11,6 @@ var drill_db = "";
 
 var totalEventCounts = {};
 
-
 function updateTotalEventCounts(event, count, sum, dur) {
     if (!totalEventCounts[event]) {
         totalEventCounts[event] = {c: 0, s: 0, dur: 0};
@@ -707,7 +706,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "segments": ["country", "version"]}, c: 7, s: 4});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "version"]}, c: 7, s: 4});
                     });
             });
         });
@@ -717,7 +716,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=country')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "segments": ["country", "version"]}, "Turkey": {"c": 1}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "version"]}, "Turkey": {"c": 1}});
                     });
             });
         });
@@ -727,7 +726,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=version')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "segments": ["country", "version"]}, "1:0": {"c": 1}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "version"]}, "1:0": {"c": 1}});
                     });
             });
         });
@@ -737,7 +736,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "segments": ["country", "version"]}, c: 7, s: 4}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "version"]}, c: 7, s: 4}, true);
                     });
             });
         });
@@ -747,7 +746,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=country&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "segments": ["country", "version"]}, "Turkey": {"c": 1}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "version"]}, "Turkey": {"c": 1}}, true);
                     });
             });
         });
@@ -757,7 +756,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=version&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "segments": ["country", "version"]}, "1:0": {"c": 1}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "version"]}, "1:0": {"c": 1}}, true);
                     });
             });
         });
@@ -829,7 +828,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "market": ["amazon"], "segments": ["country", "market", "version"]}, c: 9, s: 4});
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market", "version"]}, c: 9, s: 4});
                     });
             });
         });
@@ -839,7 +838,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=country')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "market": ["amazon"], "segments": ["country", "market", "version"]}, "Turkey": {"c": 3}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "Turkey": {"c": 3}});
                     });
             });
         });
@@ -849,7 +848,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=version')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "market": ["amazon"], "segments": ["country", "market", "version"]}, "1:0": {"c": 3}});
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market", "version"]}, "1:0": {"c": 3}});
                     });
             });
         });
@@ -859,7 +858,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=market')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "market": ["amazon"], "segments": ["country", "market", "version"]}, "amazon": {"c": 2}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "amazon": {"c": 2}});
                     });
             });
         });
@@ -869,7 +868,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "market": ["amazon"], "segments": ["country", "market", "version"]}, c: 9, s: 4}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, c: 9, s: 4}, true);
                     });
             });
         });
@@ -879,7 +878,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=country&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "market": ["amazon"], "segments": ["country", "market", "version"]}, "Turkey": {"c": 3}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "Turkey": {"c": 3}}, true);
                     });
             });
         });
@@ -889,7 +888,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=version&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "market": ["amazon"], "segments": ["country", "market", "version"]}, "1:0": {"c": 3}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "1:0": {"c": 3}}, true);
                     });
             });
         });
@@ -899,7 +898,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=market&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0"], "country": ["Turkey"], "market": ["amazon"], "segments": ["country", "market", "version"]}, "amazon": {"c": 2}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "amazon": {"c": 2}}, true);
                     });
             });
         });
@@ -972,7 +971,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, c: 11, s: 5.5});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, c: 11, s: 5.5});
                     });
             });
         });
@@ -982,7 +981,8 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=country')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "Turkey": {"c": 3}, "Latvia": {"c": 2, "s": 1.5}});
+
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market", "version"]}, "Turkey": {"c": 3}, "Latvia": {"c": 2, "s": 1.5}});
                     });
             });
         });
@@ -992,7 +992,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=version')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "1:0": {"c": 3}, "1:2": {"c": 2, "s": 1.5}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "1:0": {"c": 3}, "1:2": {"c": 2, "s": 1.5}});
                     });
             });
         });
@@ -1002,7 +1002,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=market')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "amazon": {"c": 2}, "googleplay": {"c": 2, "s": 1.5}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "amazon": {"c": 2}, "googleplay": {"c": 2, "s": 1.5}});
                     });
             });
         });
@@ -1012,7 +1012,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, c: 11, s: 5.5}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, c: 11, s: 5.5}, true);
                     });
             });
         });
@@ -1022,7 +1022,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=country&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "Turkey": {"c": 3}, "Latvia": {"c": 2, "s": 1.5}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "Turkey": {"c": 3}, "Latvia": {"c": 2, "s": 1.5}}, true);
                     });
             });
         });
@@ -1032,7 +1032,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=version&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "1:0": {"c": 3}, "1:2": {"c": 2, "s": 1.5}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market", "version"]}, "1:0": {"c": 3}, "1:2": {"c": 2, "s": 1.5}}, true);
                     });
             });
         });
@@ -1042,7 +1042,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=market&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "amazon": {"c": 2}, "googleplay": {"c": 2, "s": 1.5}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "amazon": {"c": 2}, "googleplay": {"c": 2, "s": 1.5}}, true);
                     });
             });
         });
@@ -1114,7 +1114,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, c: 4, s: 1.5});
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market"]}, c: 4, s: 1.5});
                     });
             });
         });
@@ -1124,7 +1124,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&segmentation=country')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, "Latvia": {"c": 2, "s": 1.5}});
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market"]}, "Latvia": {"c": 2, "s": 1.5}});
                     });
             });
         });
@@ -1134,7 +1134,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&segmentation=market')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, "googleplay": {"c": 2, "s": 1.5}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market"]}, "googleplay": {"c": 2, "s": 1.5}});
                     });
             });
         });
@@ -1144,7 +1144,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, c: 4, s: 1.5}, true);
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market"]}, c: 4, s: 1.5}, true);
                     });
             });
         });
@@ -1154,7 +1154,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&segmentation=country&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, "Latvia": {"c": 2, "s": 1.5}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market"]}, "Latvia": {"c": 2, "s": 1.5}}, true);
                     });
             });
         });
@@ -1164,7 +1164,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&segmentation=market&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, "googleplay": {"c": 2, "s": 1.5}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market"]}, "googleplay": {"c": 2, "s": 1.5}}, true);
                     });
             });
         });
@@ -1236,7 +1236,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, c: 6, s: 3});
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market"]}, c: 6, s: 3});
                     });
             });
         });
@@ -1246,7 +1246,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&segmentation=country')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, "Latvia": {"c": 4, "s": 3}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market"]}, "Latvia": {"c": 4, "s": 3}});
                     });
             });
         });
@@ -1256,7 +1256,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&segmentation=market')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, "googleplay": {"c": 4, "s": 3}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market"]}, "googleplay": {"c": 4, "s": 3}});
                     });
             });
         });
@@ -1266,7 +1266,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, c: 6, s: 3}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market"]}, c: 6, s: 3}, true);
                     });
             });
         });
@@ -1276,7 +1276,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&segmentation=country&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, "Latvia": {"c": 4, "s": 3}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market"]}, "Latvia": {"c": 4, "s": 3}}, true);
                     });
             });
         });
@@ -1286,7 +1286,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test2&segmentation=market&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"country": ["Latvia"], "market": ["googleplay"], "segments": ["country", "market"]}, "googleplay": {"c": 4, "s": 3}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market"]}, "googleplay": {"c": 4, "s": 3}}, true);
                     });
             });
         });
@@ -1334,7 +1334,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, c: 11, s: 5.5});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, c: 11, s: 5.5});
                     });
             });
         });
@@ -1344,7 +1344,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=country')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "Turkey": {"c": 3}, "Latvia": {"c": 2, "s": 1.5}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "Turkey": {"c": 3}, "Latvia": {"c": 2, "s": 1.5}});
                     });
             });
         });
@@ -1354,7 +1354,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=version')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "1:0": {"c": 3}, "1:2": {"c": 2, "s": 1.5}});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "1:0": {"c": 3}, "1:2": {"c": 2, "s": 1.5}});
                     });
             });
         });
@@ -1364,7 +1364,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=market')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "amazon": {"c": 2}, "googleplay": {"c": 2, "s": 1.5}});
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market", "version"]}, "amazon": {"c": 2}, "googleplay": {"c": 2, "s": 1.5}});
                     });
             });
         });
@@ -1374,7 +1374,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, c: 11, s: 5.5}, true);
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market", "version"]}, c: 11, s: 5.5}, true);
                     });
             });
         });
@@ -1384,7 +1384,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=country&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "Turkey": {"c": 3}, "Latvia": {"c": 2, "s": 1.5}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["country", "market", "version"]}, "Turkey": {"c": 3}, "Latvia": {"c": 2, "s": 1.5}}, true);
                     });
             });
         });
@@ -1394,7 +1394,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=version&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "1:0": {"c": 3}, "1:2": {"c": 2, "s": 1.5}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market", "version"]}, "1:0": {"c": 3}, "1:2": {"c": 2, "s": 1.5}}, true);
                     });
             });
         });
@@ -1404,7 +1404,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=test1&segmentation=market&action=refresh')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"version": ["1:0", "1:2"], "country": ["Latvia", "Turkey"], "market": ["amazon", "googleplay"], "segments": ["country", "market", "version"]}, "amazon": {"c": 2}, "googleplay": {"c": 2, "s": 1.5}}, true);
+                        testUtils.validateEvents(err, res, done, {meta: { "segments": ["country", "market", "version"]}, "amazon": {"c": 2}, "googleplay": {"c": 2, "s": 1.5}}, true);
                     });
             });
         });
@@ -1440,7 +1440,7 @@ describe('Writing app events', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=testArray')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"test": ["bat"], "segments": ["test"]}, c: 1, s: 5});
+                        testUtils.validateEvents(err, res, done, {meta: {"segments": ["test"]}, c: 1, s: 5});
                     });
             });
         });
@@ -1475,7 +1475,7 @@ describe('Writing app events', function() {
                         .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=testUnicodeSegment')
                         .expect(200)
                         .end(function(err, res) {
-                            testUtils.validateEvents(err, res, done, {meta: {"unicodeSegment": ["\u00E7&amp;#9647\u0067A"], "segments": ["unicodeSegment"]}, c: 1, s: 5});
+                            testUtils.validateEvents(err, res, done, {meta: {"segments": ["unicodeSegment"]}, c: 1, s: 5});
                         });
                 });
             });
@@ -1496,6 +1496,11 @@ describe('Writing app events', function() {
                         ob.should.have.property('result', 'Success');
                         setTimeout(done, 100 * testUtils.testScalingFactor);
                     });
+            });
+            it('Trigger deletion job to run', function(done) {
+                testUtils.triggerJobToRun("api:mutationManagerJob", function() {
+                    setTimeout(done, 5000);
+                });
             });
         });
     });

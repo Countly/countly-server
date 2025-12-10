@@ -44,9 +44,9 @@ calculatedDataManager.longtask = async function(options) {
      * @param {object} options5  - options
      */
     function notifyClient(options5) {
-        if (!options5.retuned) {
+        if (!options5.returned) {
             options5.returned = true;
-            options5.outputData(null, {"_id": options5.id, "running": true});
+            options5.outputData(null, {"_id": options5.id, "running": true, "data": options5.current_data || {}});
         }
     }
     /** switching to long task
@@ -57,20 +57,34 @@ calculatedDataManager.longtask = async function(options) {
      * @param {number} my_options.threshold - threshold in seconds
      */
     async function switchToLongTask(my_options) {
-        timeout = setTimeout(notifyClient, my_options.threshold * 1000);
+        timeout = setTimeout(function() {
+            notifyClient(my_options);
+        }, my_options.threshold * 1000);
         try {
             await common.db.collection(collection).insertOne({_id: my_options.id, status: "calculating", "lu": new Date()});
         }
         catch (e) {
-            my_options.outputData(e, {"_id": my_options.id, "running": false, "error": true});
+            //As could not insert try then getting result
+            var data = await common.db.collection(collection).findOne({_id: options.id});
+            if (data) {
+                my_options.outputData(null, {"data": data.data, "lu": data.lu, "_id": options.id});
+                return;
+            }
+            else {
+                my_options.outputData(e, {"_id": my_options.id, "running": false, "error": true});
+            }
             clearTimeout(timeout);
             return;
         }
-        fetch.fetchFromGranuralData(my_options.query_data, function(err, res) {
+        var start = Date.now().valueOf();
+        var my_function = my_options.query_function || fetch.fetchFromGranularData;
+        my_function(my_options.query_data, function(err, res) {
             if (err) {
                 my_options.errored = true;
                 my_options.errormsg = err;
             }
+            var end = Date.now().valueOf();
+            my_options.duration = end - start;
             calculatedDataManager.saveResult(my_options, res);
             clearTimeout(timeout);
             if (!my_options.returned) {
@@ -81,10 +95,21 @@ calculatedDataManager.longtask = async function(options) {
     var data = await common.db.collection(collection).findOne({_id: options.id});
 
     if (data) {
+        options.current_data = data.data;
         if (data.status === "done") {
             //check if it is not too old
-            if (data.lu && (new Date().getTime() - data.lu.getTime()) < keep) {
+            var recalculate = false;
+            /*calculate again if 
+            no_cache
+            takes less than 5 seconds and data is 10 seconds old.
+            */
+
+            if (options.no_cache || ((!data.duration || data.duration < 5000) && (new Date().getTime() - data.lu.getTime()) > 10000)) {
+                recalculate = true;
+            }
+            if (!recalculate && data.lu && (new Date().getTime() - data.lu.getTime()) < keep && data.data) {
                 options.outputData(null, {"data": data.data, "lu": data.lu, "_id": options.id});
+                clearTimeout(timeout);
                 return;
             }
             else {
@@ -98,7 +123,9 @@ calculatedDataManager.longtask = async function(options) {
         }
         else if (data.status === "calculating") {
             if (data.start && (new Date().getTime() - data.start) > 1000 * 60 * 60) {
-                options.outputData(null, {"_id": options.id, "running": true});
+                //Return current data if there is any and let it know it is calculating
+                clearTimeout(timeout);
+                options.outputData(null, {"_id": options.id, "running": true, data: data.data || {}});
                 return;
             }
             else {
@@ -119,7 +146,7 @@ calculatedDataManager.longtask = async function(options) {
 };
 
 calculatedDataManager.saveResult = function(options, data) {
-    options.db.collection(collection).updateOne({_id: options.id}, {$set: {status: "done", data: data, lu: new Date()}}, {upsert: true}, function(err) {
+    options.db.collection(collection).updateOne({_id: options.id}, {$set: {status: "done", data: data, lu: new Date(), duration: options.duration}}, {upsert: true}, function(err) {
         if (err) {
             log.e("Error while saving calculated data", err);
         }
@@ -131,11 +158,9 @@ calculatedDataManager.getId = function(data) {
     var dataString = "";
     for (var i = 0; i < keys.length; i++) {
         if (data[keys[i]]) {
-            dataString += data[keys[i]];
+            dataString += JSON.stringify(data[keys[i]]);
         }
     }
-    console.log(dataString);
-    console.log(crypto.createHash('sha1').update(dataString).digest('hex'));
     return crypto.createHash('sha1').update(dataString).digest('hex');
 };
 

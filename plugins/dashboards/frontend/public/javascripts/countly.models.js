@@ -2,6 +2,13 @@
 
 (function(countlyDashboards) {
 
+    var isRequestCancelled = function(e) {
+        var isCancelled = false;
+        if (e && e.statusText === "abort") {
+            isCancelled = true;
+        }
+        return isCancelled;
+    };
     countlyDashboards.factory = {
         dashboards: {
             getEmpty: function() {
@@ -66,6 +73,9 @@
                 }, {disableAutoCatch: true});
             },
             get: function(dashboardId, isRefresh) {
+                if (!dashboardId) {
+                    return Promise.resolve(null);
+                }
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/dashboards",
@@ -454,7 +464,7 @@
                             if (events && events.list) {
                                 for (var k = 0; k < events.list.length; k++) {
                                     var isGroupEvent = false;
-                                    var eventName = events.list[k];
+                                    var eventName = decode(events.list[k]);
 
                                     var eventNamePostfix = (appIds.length > 1) ? " (" + ((appsObj[events._id] && appsObj[events._id].name) || "Unknown") + ")" : "";
 
@@ -643,11 +653,16 @@
 
                     return dashbaord;
                 }).catch(function(e) {
-                    log(e);
-                    CountlyHelpers.notify({
-                        message: "Something went wrong while fetching the dashbaord!",
-                        type: "error"
-                    });
+                    if (!isRequestCancelled(e)) {
+                        log(e);
+                        CountlyHelpers.notify({
+                            message: "Something went wrong while fetching the dashbaord!",
+                            type: "error"
+                        });
+                    }
+                    else {
+                        log("Request cancelled: " + e);
+                    }
 
                     return false;
                 });
@@ -898,6 +913,24 @@
      */
     function log(e) {
         countlyDashboards.factory.log(e);
+    }
+
+    /**
+     *   Decode HTML entities
+     *  @param {string} str - string to decode
+     *  @returns {string} decoded string
+    */
+    function decode(str) {
+        if (typeof str === 'string') {
+            return str.replace(/^&#36;/g, "$")
+                .replace(/&#46;/g, '.')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&le;/g, '<=')
+                .replace(/&ge;/g, '>=')
+                .replace(/&amp;/g, '&');
+        }
+        return str;
     }
 
 })(window.countlyDashboards = window.countlyDashboards || {});

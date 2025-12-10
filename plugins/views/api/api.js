@@ -8,39 +8,14 @@ var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     log = common.log('views:api'),
-    {checkViewQuery} = require('./common.js'),
-    { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+    { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
+    {getTotals, getUniqueCount, getGraphValues} = require('./queries/views.js');
 var calculatedDataManager = require('../../../api/utils/calculatedDataManager.js');
-
 
 const viewsUtils = require("./parts/viewsUtils.js");
 const FEATURE_NAME = 'views';
-const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 //keys to not use as segmentation
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
-    plugins.setConfigs("views", {
-        view_limit: 50000,
-        view_name_limit: 128,
-        segment_value_limit: 10,
-        segment_limit: 100
-    });
-
-    plugins.internalDrillEvents.push("[CLY]_view");
-    plugins.internalDrillEvents.push("[CLY]_action");
-
-    plugins.register("/master", function() {
-        common.dbUniqueMap.users.push("vc");
-        //Ensure nesesarry indexes
-        common.db.collection("app_userviews").createIndex({a: 1});
-        common.db.collection("app_viewsmeta").createIndex({a: 1});
-        common.db.collection("app_viewsmeta").createIndex({url: 1});
-        common.db.collection("app_viewdata").createIndex({vw: 1});
-    });
-
     plugins.register("/i/user_merge", function(ob) {
         var newAppUser = ob.newAppUser;
         var oldAppUser = ob.oldAppUser;
@@ -60,9 +35,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.register("/i/views", function(ob) {
         var appId = ob.params.qstring.app_id;
-
         return new Promise(function(resolve) {
-
             if (ob.params.qstring.method === "rename_views") {
                 validateUpdate(ob.params, FEATURE_NAME, function(params) {
                     if (ob.params.qstring.data) {
@@ -77,7 +50,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             resolve();
                             return;
                         }
-                        const bulk = common.db.collection("app_viewsmeta" + appId).initializeUnorderedBulkOp();
+                        const bulk = common.db.collection("app_viewsmeta").initializeUnorderedBulkOp();
                         for (var k = 0; k < data.length; k++) {
                             if (data[k].value !== "") {
                                 bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$set: {"display": data[k].value}});
@@ -139,26 +112,24 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             }
 
                                             common.db.collection("app_viewdata").remove({"vw": viewid});
-                                            //remove from userviews
+                                            //remove from userviews OLD collection
                                             common.db.collection("app_userviews" + appId).update({}, {$unset: {viewid: 1}}, {multi: true});
+                                            //remove from userviews MAIN collection
                                             common.db.collection("app_userviews").update({"_id": {"$regex": "^" + appId + "_.*"}}, {$unset: {viewid: 1}}, {multi: true});
                                             //remove from meta
                                             common.db.collection("app_viewsmeta").remove({'_id': viewid});
-                                            if (common.drillDb) {
-                                                deleteDocs.push(common.drillDb.collection(
-                                                    "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + params.qstring.app_id).digest('hex')
-                                                ).remove({"sg.name": viewName}));
-                                                deleteDocs.push(common.drillDb.collection(
-                                                    "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
-                                                ).remove({"sg.view": viewUrl}));
-                                                //Before new ingestion
-                                                deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_view", "sg.name": viewName}));
-                                                deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_action", "sg.view": viewUrl}));
 
-                                                //After new ingestion
-                                                deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_view", "n": viewName}));
-                                                deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_action", "n": viewUrl}));
-                                            }
+                                            plugins.dispatch("/core/delete_granular_data", {
+                                                db: "countly_drill",
+                                                collection: "drill_events",
+                                                query: { a: appId + "", e: "[CLY]_view", n: viewName }
+                                            });
+                                            plugins.dispatch("/core/delete_granular_data", {
+                                                db: "countly_drill",
+                                                collection: "drill_events",
+                                                query: { a: appId + "", e: "[CLY]_action", n: viewUrl }
+                                            });
+
                                             plugins.dispatch("/view/delete", {appId: appId, view: viewid + ""});
                                             /** */
                                             Promise.all(deleteDocs).then(function() {
@@ -250,57 +221,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
     });
 
-    plugins.register("/i/device_id", function(ob) {
-        var appId = ob.app_id;
-        var oldUid = ob.oldUser.uid;
-        var newUid = ob.newUser.uid;
-        if (oldUid !== newUid) {
-            return new Promise(function(resolve, reject) {
-                common.db.collection("app_userviews" + appId).find({_id: oldUid}).toArray(function(err, data) {
-                    if (err) {
-                        log.e(err);
-                        reject(err);
-                        return;
-                    }
-                    const bulk = common.db.collection("app_userviews" + appId).initializeUnorderedBulkOp();
-                    var haveUpdate = false;
-                    for (var k in data) {
-                        for (var view in data[k]) {
-                            if (view !== '_id') {
-                                if (data[k][view].ts) {
-                                    let orRule = {};
-                                    orRule[view + ".ts"] = {$lt: data[k][view].ts};
-                                    let orRule2 = {};
-                                    orRule2[view] = {$exists: false};
-                                    let setRule = {};
-                                    setRule[view + ".ts"] = data[k][view].ts;
-                                    if (data[k][view].lvid) {
-                                        setRule[view + ".lvid"] = data[k][view].lvid;
-                                    }
-                                    if (data[k][view].sg) {
-                                        setRule[view + ".sg"] = data[k][view].sg;
-                                    }
-                                    bulk.find({$and: [{_id: newUid}, {$or: [orRule, orRule2]}]}).upsert().updateOne({$set: setRule});
-                                    haveUpdate = true;
-                                }
-                            }
-                        }
-                    }
-                    if (haveUpdate) {
-                        bulk.execute().catch(function(err1) {
-                            if (parseInt(err1.code) !== 11000) {
-                                log.e(err1);
-                            }
-                        });
-                    }
-                    common.db.collection("app_userviews" + appId).remove({_id: oldUid}, function(/*err, res*/) {
-                        resolve();
-                    });
-                });
-            });
-        }
-    });
-
     plugins.register("/i/app_users/delete", async function(ob) {
         var appId = ob.app_id;
         var uids = ob.uids;
@@ -380,6 +300,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
             var appOffset = dd.utcOffset();
             settings.offset = (appOffset + settings.offset) / 60;
+            settings.offset = settings.offset * -1;
         }
         var pipeline = [];
         var period = params.qstring.period || '30days';
@@ -390,7 +311,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         if (segment !== "") {
             segment = segment + ".";
         }
-
         var periodObj = countlyCommon.getPeriodObj(params);
         if (settings.offset) {
             period = JSON.stringify([periodObj.start - settings.offset * 60 * 60 * 1000, periodObj.end - settings.offset * 60 * 60 * 1000]);
@@ -462,7 +382,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 e2 = 24 - settings.offset;
                             }
                             else {
-                                e2 = -1 * settings.offset;
+                                e2 = -1 * settings.offset - 1;
                             }
                             for (; s2 <= e2; s2++) {
                                 selectMap[kk[0] + ":" + kk[1]].push("$d." + kk[2] + "." + s2);
@@ -579,9 +499,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     function getAggregatedData(collectionName, params, settings, callback) {
         settings = settings || {};
         collectionName = "app_viewdata";
-        var app_id = settings.app_id;
+        //var app_id = settings.app_id;
         var pipeline = createAggregatePipeline(params, settings);
-
         if (settings.depends) {
             pipeline.push({"$match": settings.depends}); //filter only those which has some value in choosen column
         }
@@ -715,7 +634,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
         else {
             var qq = settings.count_query || {};
-            common.db.collection("app_viewsmeta" + app_id).count(qq, function(err, total) {
+            common.db.collection("app_viewsmeta").count(qq, function(err, total) {
                 common.db.collection(collectionName).aggregate(pipeline, {allowDiskUse: true}, function(err1, res) {
                     if (err1) {
                         log.e(err1);
@@ -742,36 +661,77 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     **/
     function getUniqueValuesForTable(params, data, callback) {
         var promises = [];
+        var ret = {};
+
+        var tz = countlyCommon.getTimezone(params) || "UTC";
+        var currentRange = countlyCommon.getPeriodRange(params.qstring.period, tz);
+        var query = {
+            "a": params.qstring.app_id,
+            "e": "[CLY]_view",
+            "ts": currentRange,
+            "n": {"$in": []}
+        };
+        if (params.qstring.segment && params.qstring.segmentVal) {
+            query["sg." + params.qstring.segment] = params.qstring.segmentVal;
+        }
+        var mapper = {};
         for (var z = 0; z < data.length; z++) {
-            promises.push(new Promise(function(resolve) {
-                var index = z;
-                calculatedDataManager.longtask({
-                    db: common.db,
-                    threshold: plugins.getConfig("api").request_threshold / 2,
-                    app_id: params.qstring.app_id,
-                    query_data: {
-                        "appID": params.qstring.app_id,
-                        "period": params.qstring.period,
-                        "event": "[CLY]_view",
-                        "name": data[index].view,
-                        "periodOffset": params.qstring.periodOffset || 0,
-                        "queryName": "uniqueCount",
-                    },
-                    outputData: function(err, data2) {
-                        if (err) {
-                            log.e(err);
-                        }
-                        if (data2 && data2.data) {
-                            data[index].u = data2.data;
-                        }
-                        resolve();
-                    }
-                });
-            }));
+            query.n.$in.push(data[z].view);
+            mapper[data[z].view] = z;
         }
 
+        var queryParams = {};
+        queryParams.adapter = params.qstring.db_override &&
+                                            params.qstring.db_override !== 'compare' &&
+                                            params.qstring.db_override !== 'config'
+            ? params.qstring.db_override
+            : undefined;
+
+        queryParams.comparison = params.qstring.comparison === 'true' || params.qstring.comparison === true;
+
+
+        promises.push(new Promise(function(resolve) {
+            calculatedDataManager.longtask({
+                db: common.db,
+                threshold: plugins.getConfig("api").request_threshold / 2,
+                app_id: params.qstring.app_id,
+                no_cache: params.qstring.no_cache,
+                query_data: {
+                    "query": query
+                },
+                query_function: async function(query_data, callback2) {
+                    try {
+                        var my_data = await getUniqueCount(query_data, queryParams);
+                        callback2(null, my_data);
+                    }
+                    catch (error) {
+                        callback2(error);
+                    }
+                },
+                outputData: function(err, data2) {
+                    if (err) {
+                        log.e(err);
+                    }
+                    if (data2 && data2.data) {
+                        for (var k = 0; k < data2.data.length; k++) {
+                            if (data[mapper[data2.data[k]._id]]) {
+                                data[mapper[data2.data[k]._id]].u = data2.data[k].u;
+                            }
+                        }
+                    }
+                    ret.lu = data2?.lu;
+                    ret.running = data2.running;
+                    if (ret.lu) {
+                        //get difference in seconds
+                        ret.lu_diff = Math.floor((Date.now() - new Date(ret.lu).getTime()) / 1000);
+                    }
+                    resolve();
+                }
+            });
+        }));
         Promise.all(promises).then(function() {
-            callback();
+            ret.data = data;
+            callback(ret);
         });
 
     }
@@ -779,8 +739,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.register("/o", function(ob) {
         var params = ob.params;
-
-
         var segment = params.qstring.segment || "";
         var segmentVal = params.qstring.segmentVal || "";
         if (params.qstring.method === "views") {
@@ -988,7 +946,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                     selOptions.dataNamingMap[res[z]._id] = z;
                                 }
 
-
                                 getAggregatedData(colName, params, selOptions, function(data, total) {
                                     var values = ["u", "t", "s", "b", "e", "d", "scr", "br"];
                                     data = data || [];
@@ -1014,8 +971,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             }
                                         }
                                     }
-                                    getUniqueValuesForTable(params, data, function() {
-                                        common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total || data.length, iTotalDisplayRecords: total || data.length, aaData: data});
+                                    getUniqueValuesForTable(params, data, function(ret) {
+                                        ret.sEcho = params.qstring.sEcho;
+                                        ret.iTotalRecords = total || ret.data.length;
+                                        ret.iTotalDisplayRecords = total || ret.data.length;
+                                        common.returnOutput(params, ret);
                                     });
                                 });
                             }
@@ -1028,7 +988,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         getAggregatedData(colName, params, selOptions, function(data, total) {
                             var values = ["u", "t", "s", "b", "e", "d", "scr", "br"];
                             data = data || [];
-
                             // log.e(params.qstring.period+"("+sortcol+") "+(Date.now()-rightNow)/1000);
                             for (var z = 0; z < data.length; z++) {
                                 for (var p = 0; p < values.length; p++) {
@@ -1134,24 +1093,56 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
                     var promises = [];
                     promises.push(new Promise(function(resolve) {
+                        var tz = countlyCommon.getTimezone(params) || "UTC";
+                        var currentRange = countlyCommon.getPeriodRange(params.qstring.period, tz);
+                        var my_query = {
+                            "a": params.qstring.app_id,
+                            "e": "[CLY]_view",
+                            "ts": currentRange
+                        };
+
+                        var queryParams = {};
+                        queryParams.adapter = params.qstring.db_override &&
+                                            params.qstring.db_override !== 'compare' &&
+                                            params.qstring.db_override !== 'config'
+                            ? params.qstring.db_override
+                            : undefined;
+
+                        queryParams.comparison = params.qstring.comparison === 'true' || params.qstring.comparison === true;
+
                         calculatedDataManager.longtask({
                             db: common.db,
-                            threshold: plugins.getConfig("api").request_threshold,
+                            no_cache: params.qstring.no_cache,
+                            threshold: plugins.getConfig("api").request_threshold / 2,
                             app_id: params.qstring.app_id,
                             query_data: {
-                                "appID": params.qstring.app_id,
-                                "period": params.qstring.period,
-                                "event": "[CLY]_view",
-                                "periodOffset": params.qstring.periodOffset || 0,
-                                "queryName": "uniqueCount",
+                                "query": my_query
+                            },
+                            async query_function(query_data, callback) {
+                                try {
+                                    var totals = await getTotals(query_data, queryParams);
+                                    callback(null, totals);
+                                }
+                                catch (error) {
+                                    log.e("Error occurred while fetching totals: " + error);
+                                    callback("Error occurred while fetching totals" + error);
+                                }
                             },
                             outputData: function(err, data) {
                                 if (err) {
                                     log.e(err);
                                 }
-                                if (data && data.data) {
-                                    ret_data.u = data.data;
-                                    ret_data.lu = data.lu;
+                                data = data || {};
+                                if (data.data && data.data.u) {
+                                    ret_data.u = data.data.u;
+                                }
+                                ret_data.lu = data.lu;
+                                if (ret_data.lu) {
+                                    //get difference in seconds
+                                    ret_data.lu_diff = Math.floor((Date.now() - new Date(ret_data.lu).getTime()) / 1000);
+                                }
+                                if (data.running) {
+                                    ret_data.running = true;
                                 }
                                 resolve();
                             }
@@ -1163,7 +1154,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 log.e(err);
                             }
                             res = res || [];
-
                             res = res[0];
                             for (var key in res) {
                                 ret_data[key] = res[key];
@@ -1225,10 +1215,25 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                     }
                                 }
                             }
+
+                            var tz = countlyCommon.getTimezone(params) || "UTC";
+                            var currentRange = countlyCommon.getPeriodRange(params.qstring.period, tz);
+
+
+                            var queryParams = {};
+                            queryParams.adapter = params.qstring.db_override &&
+                                            params.qstring.db_override !== 'compare' &&
+                                            params.qstring.db_override !== 'config'
+                                ? params.qstring.db_override
+                                : undefined;
+
+                            queryParams.comparison = params.qstring.comparison === 'true' || params.qstring.comparison === true;
+
                             Promise.each(graphKeys, function(viewid) {
                                 return new Promise(function(resolve /*, reject*/) {
                                     var paramsObj = {};
                                     paramsObj.time = params.time;
+                                    paramsObj.app_id = params.qstring.app_id;
                                     paramsObj.qstring = {};
                                     for (let prop in params.qstring) {
                                         paramsObj.qstring[prop] = params.qstring[prop];
@@ -1240,19 +1245,27 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         segment = "no-segment";
                                     }
 
-                                    fetch.getTimeObj(colName, paramsObj, {dontBreak: true, id_prefix: (params.qstring.app_id + "_"), "id": segment, id_postfix: "_" + (viewid.view.replace(params.qstring.app_id + "_", "")), unique: "u", levels: {daily: levels, monthly: ["u", "t", "s", "b", "e", "d", "scr"]}}, function(data2) {
+                                    fetch.getTimeObj(colName, paramsObj, {dontBreak: true, id_prefix: (params.qstring.app_id + "_"), "id": segment, id_postfix: "_" + (viewid.view.replace(params.qstring.app_id + "_", "")), levels: {daily: levels, monthly: [ "t", "s", "b", "e", "d", "scr"]}}, function(data2) {
                                         if (offset) {
                                             var props = {"b": true, "t": true, "s": true, "d": true, "u": true, "scr": true, "e": true};
-                                            //log.e("Current model:" + JSON.stringify(data2));
                                             //Trasform model to array, 
                                             var arrayData = common.convertModelToArray(data2, (segment !== "no-segment"));
-                                            // console.log("arrayData: " + JSON.stringify(arrayData));
+                                            //log.e("arrayData: " + JSON.stringify(arrayData));
                                             // shift data, 
                                             arrayData = common.shiftHourlyData(arrayData, offset * -1);
-                                            //console.log("arrayData(shifted): " + JSON.stringify(arrayData));
+                                            //log.e("arrayData(shifted): " + JSON.stringify(arrayData));
                                             // transform back to model.
-                                            data2 = common.convertArrayToModel(arrayData, (segment !== "no-segment"), props);
-                                            //console.log("rebuilded model" + JSON.stringify(data2));
+                                            data2 = common.convertArrayToModel(arrayData, (segment !== "no-segment") ? segment : null, props);
+                                            //log.e("rebuilded model" + JSON.stringify(data2));
+                                        }
+                                        var my_query = {
+                                            "a": params.qstring.app_id,
+                                            "e": "[CLY]_view",
+                                            "ts": currentRange,
+                                            "n": viewid.name
+                                        };
+                                        if (params.qstring.segment && params.qstring.segmentVal) {
+                                            my_query["sg." + params.qstring.segment] = params.qstring.segmentVal;
                                         }
 
                                         calculatedDataManager.longtask({
@@ -1260,21 +1273,29 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             threshold: plugins.getConfig("api").request_threshold / 2,
                                             app_id: params.qstring.app_id,
                                             query_data: {
-                                                "appID": params.qstring.app_id,
-                                                "period": params.qstring.period,
-                                                "event": "[CLY]_view",
-                                                "name": viewid.name,
+                                                "timezone": tz,
                                                 "bucket": params.qstring.bucket,
-                                                "periodOffset": params.qstring.periodOffset || 0,
-                                                "queryName": "uniqueGraph"
+                                                "query": my_query
+                                            },
+                                            query_function: async function(query_data, callback) {
+                                                try {
+                                                    var totals = await getGraphValues(query_data);
+                                                    callback(null, totals);
+                                                }
+                                                catch (error) {
+                                                    log.e("Error occurred while fetching totals: " + error);
+                                                    callback("Error occurred while fetching totals" + error);
+                                                }
                                             },
                                             outputData: function(err5, data3) {
                                                 if (err5) {
                                                     log.e(err5);
                                                 }
+                                                // log.e("Current data2: " + JSON.stringify(data2));
                                                 if (data3 && data3.data) {
-                                                    common.applyUniqueOnModel(data2, data3.data, "u");
+                                                    common.applyUniqueOnModel(data2, data3.data, "u", params.qstring.segmentVal);
                                                 }
+                                                //log.e("after applying model" + JSON.stringify(data2));
                                                 retData[viewid.view] = {};
                                                 retData[viewid.view][segment] = data2;
                                                 resolve();
@@ -1486,63 +1507,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             { $match: matchQuery },
         ];
 
-        const use_union_with = plugins.getConfig('drill', params.app_id && params.app && params.app.plugins, true).use_union_with;
-
-        if (use_union_with) {
-            const oldCollectionName = 'drill_events' + crypto.createHash('sha1').update('[CLY]_action' + params.qstring.app_id).digest('hex');
-            const eventHash = crypto.createHash('sha1').update('[CLY]_action' + params.qstring.app_id).digest('hex');
-
-            const metaQuery = [
-                {
-                    $facet: {
-                        meta: [
-                            { $match: { _id: 'meta' } },
-                            { $project: { _id: 0, 'sg.type': 1, 'sg.domain': 1 } },
-                            { $limit: 1 },
-                        ],
-                        meta_v2: [
-                            { $match: { _id: 'meta_v2' } },
-                            { $project: { _id: 0, 'sg.type': 1, 'sg.domain': 1 } },
-                            { $limit: 1 },
-                        ],
-                    },
-                },
-            ];
-
-            const metaKeys = ['meta', 'meta_v2'];
-            const metas = await common.drillDb.collection(oldCollectionName).aggregate(metaQuery).toArray();
-            metaKeys.forEach((key) => {
-                if (key in metas[0]) {
-                    const meta = metas[0][key][0];
-
-                    if (meta && meta.sg && meta.sg.type && meta.sg.type.values) {
-                        common.arrayAddUniq(result.types, meta.sg.type.values);
-                    }
-
-                    if (meta && meta.sg && meta.sg.domain && meta.sg.domain.values) {
-                        common.arrayAddUniq(result.domains, meta.sg.domain.values);
-                    }
-                }
-            });
-
-            const moreMeta = await common.drillDb.collection(`drill_meta${params.qstring.app_id}`).findOne(
-                { _id: `meta_${eventHash}` },
-                { _id: 0, 'sg.domain': 1 },
-            );
-
-            if (moreMeta && moreMeta.sg && moreMeta.sg.domain) {
-                common.arrayAddUniq(result.domains, Object.keys(moreMeta.sg.domain.values));
-            }
-
-            const matchQueryOld = Object.assign({}, matchQuery);
-            delete matchQueryOld.a;
-            delete matchQueryOld.e;
-
-            aggregateQuery.push({
-                $unionWith: { coll: oldCollectionName, pipeline: [{ $match: matchQueryOld }] },
-            });
-        }
-
         aggregateQuery.push({ $project: projectionQuery });
 
         try {
@@ -1558,7 +1522,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.register("/o/actions", function(ob) {
         var params = ob.params;
-
         if (common.drillDb && params.qstring && params.qstring.view) {
             if (params.req.headers["countly-token"]) {
                 common.readBatcher.getOne("apps", {'key': params.qstring.app_key}, (err1, app) => {
@@ -1618,679 +1581,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         return false;
     });
 
-    /**
-	* @param   {object} params - params object
-     * @param  {string} collection - collection name
-	 * @param  {object} query - query object
-	 * @param  {object} update - update object(for find and modify)
-	 * @param  {object} options - db options object
-	 * @param  {function} callback - callback function
-     */
-    function getViewNameObject(params, collection, query, update, options, callback) {
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).batch_read_processing === true) {
-            common.readBatcher.getOne(collection, query, {}, (err, view) => {
-                if (view) {
-                    var good_value = true;
-                    if (update && update.$set) {
-                        for (var k in update.$set) {
-                            if (common.getDescendantProp(view, k) !== update.$set[k]) {
-                                good_value = false;
-                            }
-                        }
-                    }
-                    if (good_value) { //current record have same values - so keep them
-                        callback(err, view);
-                    }
-                    else { //current record has different values - find and modify;
-                        common.db.collection(collection).findAndModify(query, {}, update, options, function(err2, view2) {
-                            callback(err2, view2);
-                            common.readBatcher.invalidate(collection, query, {}, false);
-                        });
-                    }
-                }
-                else {
-                    if (err) {
-                        callback(err, view);
-                    }
-                    if (update) {
-                        //we have no error and have no data - so we don't have record. Run find and modify
-                        common.db.collection("app_viewsmeta" + params.app_id).estimatedDocumentCount(function(err1, total) {
-                            if (total >= plugins.getConfig("views").view_limit) {
-                                options.upsert = false;
-                            }
-                            common.db.collection(collection).findAndModify(query, {}, update, options, function(err2, view2) {
-                                if (err2) {
-                                    log.e(err);
-                                }
-                                if (view2 && view2.value) {
-                                    callback(err, view2.value);
-                                    common.readBatcher.invalidate(collection, query, {}, false);
-                                }
-                                else {
-                                    callback(err, null);
-                                }
-                            });
-                        });
-                    }
-                    else {
-                        callback(err, view);
-                    }
-                }
-            });
-        }
-        else { //no batch processing. run as before.
-            if (update) {
-                common.db.collection("app_viewsmeta" + params.app_id).estimatedDocumentCount(function(err1, total) {
-                    if (total >= plugins.getConfig("views").view_limit) {
-                        options.upsert = false;
-                    }
-                    common.db.collection(collection).findAndModify(query, {}, update, options, function(err, view) {
-                        if (err) {
-                            log.e(err);
-                        }
-                        if (view && view.value) {
-                            callback(err, view.value);
-                        }
-                        else {
-                            callback(err, null);
-                        }
-                    });
-                });
-            }
-            else {
-                common.db.collection(collection).findOne(query, function(err, view) {
-                    callback(err, view);
-                });
-            }
-        }
-    }
-    plugins.register("/session/post", async function(ob) {
-        var params = ob.params;
-        var user = params.app_user;
-        if (user && user.vc) {
-            var ranges = [
-                    [0, 2],
-                    [3, 5],
-                    [6, 10],
-                    [11, 15],
-                    [16, 30],
-                    [31, 50],
-                    [51, 100]
-                ],
-                rangesMax = 101,
-                calculatedRange,
-                updateUsers = {},
-                updateUsersZero = {},
-                dbDateIds = common.getDateIds(params),
-                monthObjUpdate = [];
 
-            if (user.vc >= rangesMax) {
-                calculatedRange = (ranges.length) + '';
-            }
-            else {
-                for (var i = 0; i < ranges.length; i++) {
-                    if (user.vc <= ranges[i][1] && user.vc >= ranges[i][0]) {
-                        calculatedRange = i + '';
-                        break;
-                    }
-                }
-            }
-
-            monthObjUpdate.push('vc.' + calculatedRange);
-            common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
-            common.fillTimeObjectZero(params, updateUsersZero, 'vc.' + calculatedRange);
-            var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
-            common.writeBatcher.add('users', params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
-            var update = {'$inc': updateUsersZero, '$set': {}};
-            update.$set['meta_v2.v-ranges.' + calculatedRange] = true;
-            common.writeBatcher.add('users', params.app_id + "_" + dbDateIds.zero + "_" + postfix, update);
-            await new Promise(function(resolve) {
-                common.db.collection("app_userviews" + params.app_id).find({_id: user.uid}).toArray(function(err, data) {
-                    if (err) {
-                        log.e(err);
-                    }
-                    data = data || [];
-                    data = data[0] || {};
-                    for (var vw in data) {
-                        if (vw !== "_id") {
-                            if (data[vw].ts >= user.ls) {
-                                var sg = {'uvc': 1};
-                                for (var key0 in (data[vw].sg || {})) {
-                                    if (key0 === 'platform' || !escapedViewSegments[key0]) {
-                                        sg[key0] = data[vw].sg[key0];
-                                    }
-                                }
-                                recordMetrics(params, {"viewAlias": vw, key: "[CLY]_view", segmentation: sg}, user);
-                            }
-                        }
-                    }
-                    if (user.lv) {
-                        var segmentation = {name: user.lv, exit: 1};
-
-                        getViewNameObject(params, 'app_viewsmeta' + params.app_id, {'view': segmentation.name}, {$set: {'view': segmentation.name}}, {upsert: true, new: true}, function(err5, view) {
-                            if (err5) {
-                                log.e(err5);
-                            }
-                            if (view) {
-                                if (data[(view._id + "")] && data[(view._id + "")].sg) {
-                                    for (var key in data[(view._id + "")].sg) {
-                                        if (key === 'platform' || !escapedViewSegments[key]) {
-                                            segmentation[key] = data[(view._id + "")].sg[key];
-                                        }
-                                    }
-
-                                }
-                                if (parseInt(user.vc) === 1) {
-                                    segmentation.bounce = 1;
-                                }
-                                params.viewsNamingMap = params.viewsNamingMap || {};
-                                params.viewsNamingMap[segmentation.name] = view._id;
-                                recordMetrics(params, {"viewAlias": view._id, key: "[CLY]_view", segmentation: segmentation}, user);
-
-                                if (segmentation.exit || segmentation.bounce) {
-                                    plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: {exit: segmentation.exit, bounce: segmentation.bounce}, viewName: view._id});
-                                }
-                            }
-                            checkViewQuery(ob.updates, 0, 0);
-                            resolve();
-                        });
-
-                    }
-                    else {
-                        checkViewQuery(ob.updates, 0, 0);
-                        resolve();
-                    }
-
-                    //update unique view vount for session
-
-                });
-            });
-        }
-    });
-
-    plugins.register("/sdk/user_properties", function(ob) {
-        return new Promise(function(resolve) {
-            var params = ob.params;
-            if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
-                if (!params.views) {
-                    params.views = [];
-                }
-                params.viewsNamingMap = {};
-
-                //do this before to make sure they are not processed before duration is added
-                var current_views = {};
-                var haveViews = false;
-                var update;
-                for (let p = 0; p < params.qstring.events.length; p++) {
-                    var currE = params.qstring.events[p];
-                    if (currE.key === "[CLY]_view") {
-                        haveViews = true;
-                        if (currE.segmentation && currE.segmentation.name) {
-                            currE.dur = Math.round(currE.dur || currE.segmentation.dur || 0);
-                            if (currE.dur && (currE.dur + "").length >= 10) {
-                                currE.dur = 0;
-                            }
-
-                            if (currE.segmentation.visit) {
-                                current_views[currE.segmentation.name] = current_views[currE.segmentation.name] || [];
-                                var doc = {"index": p};
-                                if (currE.segmentation._idv) {
-                                    doc._idv = currE.segmentation._idv;
-                                }
-                                current_views[currE.segmentation.name].push(doc);
-                            }
-                            else {
-                                if (current_views[currE.segmentation.name]) {
-                                    var index = current_views[currE.segmentation.name][current_views[currE.segmentation.name].length - 1].index;
-                                    if (currE.segmentation._idv) {
-                                        for (var z = current_views[currE.segmentation.name].length - 2; z >= 0; z--) {
-                                            if (current_views[currE.segmentation.name][z]._idv === currE.segmentation._idv) {
-                                                index = current_views[currE.segmentation.name][z].index;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    if (currE.dur) {
-                                        params.qstring.events[index].dur += currE.dur; //add duration to this request
-                                    }
-                                    for (var seg in currE.segmentation) {
-                                        if (seg !== 'dur' && seg !== "_idv") {
-                                            params.qstring.events[index].segmentation = params.qstring.events[index].segmentation || {};
-                                            params.qstring.events[index].segmentation[seg] = currE.segmentation[seg];
-                                        }
-                                    }
-                                    params.qstring.events[p].dur = 0; //not use duration from this one anymore;
-                                    params.qstring.events[p].skip = true;//as we have 
-                                }
-                            }
-                            //App Users update
-                            update = {$set: {lv: currE.segmentation.name}};
-                            var inc = 0;
-                            if (currE.segmentation.visit) {
-                                inc++;
-                                update.$max = {lvt: params.time.timestamp};
-                            }
-                            if (inc > 0) {
-                                checkViewQuery(ob.updates, inc);
-                                if (!update.$inc) {
-                                    update.$inc = {};
-                                }
-                                update.$inc["data.views"] = inc;
-                            }
-                            ob.updates.push(update);
-                        }
-                    }
-                    else if (currE.key === "[CLY]_action") {
-                        haveViews = true;
-                    }
-                }
-                //filter events and call functions to get view names
-                var promises = [];
-                params.qstring.events = params.qstring.events.filter(function(currEvent) {
-                    if (currEvent.timestamp) {
-                        params.time = common.initTimeObj(params.appTimezone, currEvent.timestamp);
-                    }
-                    if ((currEvent.key === "[CLY]_view" || currEvent.key === "[CLY]_action") && currEvent.skip) {
-                        return false;
-                    }
-
-                    if (currEvent.key === "[CLY]_view") {
-                        if (currEvent.segmentation && currEvent.segmentation.name) {
-                            currEvent.dur = Math.round(currEvent.dur || currEvent.segmentation.dur || 0);
-                            //bug from SDK possibly reporting timestamp instead of duration	
-                            if (currEvent.dur && (currEvent.dur + "").length >= 10) {
-                                currEvent.dur = 0;
-                            }
-                            promises.push(processView(params, currEvent));
-                        }
-                        return false;
-                    }
-                    else if (currEvent.key === "[CLY]_action") {
-                        if (currEvent.segmentation && (currEvent.segmentation.name || currEvent.segmentation.view) && currEvent.segmentation.type && currEvent.segmentation.type === 'scroll') {
-                            currEvent.scroll = 0;
-                            if (currEvent.segmentation.y && currEvent.segmentation.height) {
-                                var height = parseInt(currEvent.segmentation.height, 10);
-                                if (height !== 0) {
-                                    currEvent.scroll = parseInt(currEvent.segmentation.y, 10) * 100 / height;
-                                }
-                            }
-                            promises.push(processView(params, currEvent));
-                        }
-                    }
-                    return true;
-                });
-                if (haveViews) {
-                    common.readBatcher.getOne("views", {'_id': common.db.ObjectID(params.app_id)}, (err3, viewInfo) => {
-                        //Matches correct view naming
-                        Promise.all(promises).then(function(results) {
-                            var runDrill = [];
-                            var haveVisit = {};
-                            var lastView = {};
-                            var segmentation = {};
-                            var projection = {};
-                            for (let p = 0; p < results.length; p++) {
-                                if (results[p] !== false) {
-                                    if (results[p].key === '[CLY]_view') {
-                                        if (results[p].segmentation.visit) {
-                                            params.views.push(results[p]);
-                                            runDrill.push(results[p]);
-                                        }
-                                        else {
-                                            var updateMultiViewParams = {};
-                                            for (var k in results[p].segmentation) {
-                                                updateMultiViewParams[k] = results[p].segmentation[k];
-                                            }
-                                            if (Object.keys(updateMultiViewParams).length > 0 || results[p].dur) {
-                                                plugins.dispatch("/view/duration", {params: params, updateMultiViewParams: updateMultiViewParams, duration: results[p].dur, viewName: results[p].viewAlias, _idv: results[p].segmentation._idv});
-                                            }
-                                        }
-                                        //geting all segment info
-                                        if (results[p].segmentation.visit) {
-                                            haveVisit[p] = true;
-                                            lastView[results[p].viewAlias + '.ts'] = params.time.timestamp;
-                                            try {
-                                                segmentation[results[p].viewAlias + '.sg'] = JSON.parse(JSON.stringify(results[p].segmentation || {}));
-                                            }
-                                            catch (ee) {
-                                                log.e(ee);
-                                            }
-                                            projection[results[p].viewAlias] = 1;
-                                        }
-                                        else {
-                                            recordMetrics(params, results[p], params.app_user, null, viewInfo);
-                                        }
-                                    }
-                                    else { //cly action
-                                        recordMetrics(params, results[p], params.app_user, null, viewInfo);
-                                    }
-                                }
-                            }
-
-                            if (Object.keys(haveVisit).length > 0) {
-                                common.db.collection('app_userviews' + params.app_id).findOneAndUpdate({'_id': params.app_user.uid}, {$max: lastView, "$set": segmentation}, {upsert: true, new: false, projection: projection}, function(err2, view2) {
-                                    for (let p in haveVisit) {
-                                        if (results[p] && results[p] !== false) {
-                                            var currEvent = results[p];
-                                            recordMetrics(params, currEvent, params.app_user, view2 && view2.ok ? view2.value : null, viewInfo);
-                                        }
-                                    }
-                                });
-                            }
-                            if (runDrill.length > 0) {
-                                plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: runDrill});
-                            }
-
-                        }, function(onfail) {
-                            log.e(JSON.stringify(onfail || ""));
-                        }).catch(function(rejection) {
-                            log.e(rejection);
-                        });
-                        resolve();
-                    });
-                }
-                else {
-                    resolve();
-                }
-            }
-            else {
-                resolve();
-            }
-        });
-    });
-
-    /**
-     * Function to process view
-     * @param  {Object} params - Default parameters object
-     * @param  {Object} currEvent - Current event object
-	 * @returns {Object} Promise - Promise
-     */
-    function processView(params, currEvent) {
-        return new Promise(function(resolve) {
-            var updateData = {};
-
-            if (currEvent.segmentation.view) {
-                updateData.url = currEvent.segmentation.view;
-            }
-            if (currEvent.segmentation.domain) {
-                updateData['domain.' + common.db.encode(currEvent.segmentation.domain)] = true;
-            }
-
-            var query = {};
-            if (currEvent.segmentation.name) {
-                if (currEvent.segmentation.name.length > plugins.getConfig("views").view_name_limit) {
-                    currEvent.segmentation.name = currEvent.segmentation.name.slice(0, plugins.getConfig("views").view_name_limit);
-                }
-                query = {'view': currEvent.segmentation.name};
-                updateData.view = currEvent.segmentation.name;
-                var options = {upsert: true, new: true};
-
-                getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, {$set: updateData}, options, function(err, view) {
-                    if (view && view._id) {
-                        params.viewsNamingMap[currEvent.segmentation.name] = view._id;
-                        var escapedMetricVal = common.db.encode(view._id + "");
-                        currEvent.viewAlias = escapedMetricVal;
-                        resolve(currEvent);
-                    }
-                    else {
-                        resolve(false);
-                    }
-                });
-            }
-            else if (currEvent.segmentation.view) {
-                query = {$or: [{'view': currEvent.segmentation.view}, {'url': currEvent.segmentation.view}]};
-                getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, null, null, function(err, view) {
-                    if (view) {
-                        currEvent.viewAlias = common.db.encode(view._id + "");
-                        resolve(currEvent);
-                    }
-                    else {
-                        resolve(false);
-                    }
-                });
-            }
-            else {
-                resolve(false);
-            }
-        });
-    }
-
-    /**
-     * Function to record metrics
-     * @param  {Object} params - Default parameters object
-     * @param  {Object} currEvent - Current event object
-     * @param  {Object} user - User
-     * @param  {Object} view - View object
-     * @param {Object} viewInfo - view info object
-     */
-    function recordMetrics(params, currEvent, user, view, viewInfo) {
-        viewInfo = viewInfo || {};
-        viewInfo.segments = viewInfo.segments || {};
-        viewInfo.omit = viewInfo.omit || [];
-
-        //making sure metrics are strings
-        // tmpSet["meta_v2." + tmpMetric.set + "." + escapedMetricVal] = true;
-        var save_structure = false; //if we need to update views record
-        var forbiddenSegValues = [];
-
-        for (let i = 1; i < 32; i++) {
-            forbiddenSegValues.push(i + "");
-        }
-        for (let i = 1; i < 53; i++) {
-            forbiddenSegValues.push("w" + i);
-        }
-        var segmentList = [""];
-        var addToSetRules = {};
-        if (currEvent.segmentation) {
-            for (let segKey in currEvent.segmentation) {
-                let tmpSegKey = "";
-                if (segKey.indexOf('.') !== -1 || segKey.substr(0, 1) === '$') {
-                    tmpSegKey = segKey.replace(/^\$|\./g, "");
-                    currEvent.segmentation[tmpSegKey] = currEvent.segmentation[segKey];
-                    delete currEvent.segmentation[segKey];
-                    segKey = tmpSegKey;
-                }
-                if (segKey === "segment") {
-                    //backwards compability
-                    currEvent.segmentation.platform = currEvent.segmentation[segKey];
-                    segKey = "platform";
-                }
-                let tmpSegVal = currEvent.segmentation[segKey] + "";
-                if (!(escapedViewSegments[segKey] === true) && !(Array.isArray(viewInfo.omit) && viewInfo.omit.indexOf(segKey) !== -1)) {
-                    if (!viewInfo.segments[segKey] && (segKey === 'platform' || Object.keys(viewInfo.segments).length < plugins.getConfig("views").segment_limit)) {
-                        viewInfo.segments[segKey] = {};
-                    }
-                    tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
-                    if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
-                        tmpSegVal = "[CLY]" + tmpSegVal;
-                    }
-
-                    if (tmpSegVal) {
-                        currEvent.segmentation[segKey] = tmpSegVal;
-                        if (viewInfo.segments[segKey]) {
-                            if (viewInfo.segments[segKey][tmpSegVal]) {
-                                segmentList.push(segKey);
-                            }
-                            else {
-                                if (Object.keys(viewInfo.segments[segKey]).length >= plugins.getConfig("views").segment_value_limit) {
-                                    delete currEvent.segmentation[segKey];
-                                }
-                                else {
-                                    viewInfo.segments[segKey][segKey] = true;
-                                    segmentList.push(segKey);
-                                    addToSetRules["segments." + segKey + "." + tmpSegVal] = true;
-                                    save_structure = true;
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        delete currEvent.segmentation[segKey];
-                    }
-                }
-            }
-        }
-        if (save_structure) {
-            common.writeBatcher.add('views', common.db.ObjectID(params.app_id), {'$set': addToSetRules});
-        }
-        var dateIds = common.getDateIds(params);
-        for (let i = 0; i < segmentList.length; i++) {
-            var segment = segmentList[i]; //segment key or "" if without segment
-
-            var colName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');//collection segment/app
-            var tmpMetric = { name: "_segment", set: "sv", short_code: "sv" },
-                tmpTimeObjZero = {},
-                tmpTimeObjMonth = {},
-                zeroObjUpdate = [],
-                monthObjUpdate = [];
-
-            var tmpZeroId = currEvent.viewAlias + "_" + dateIds.zero; //view_year
-            var tmpMonthId = currEvent.viewAlias + "_" + dateIds.month; //view_month_doc
-
-            var escapedMetricVal = "";
-            var viewName = currEvent.viewAlias;
-            var updateTimestamp = 0;
-            if (segment !== "") {
-                escapedMetricVal = common.db.encode(currEvent.segmentation[segment] + "");
-            }
-
-            var tmpSet = {};
-            if (segment !== "") { //if we have segment
-                tmpSet["meta_v2." + tmpMetric.set + "." + escapedMetricVal] = true;
-                escapedMetricVal = escapedMetricVal + ".";//adding dot to work also when there is no segment
-            }
-
-            if (currEvent.segmentation.visit && currEvent.key === '[CLY]_view') {
-                monthObjUpdate.push(escapedMetricVal + common.dbMap.total);
-                tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + common.dbMap.total] = 1;
-                if (view && view[viewName] && typeof view[viewName] === 'object') {
-                    if (view[viewName].ts) {
-                        view[viewName] = view[viewName].ts;
-                    }
-                    else {
-                        delete view[viewName];
-                    }
-                }
-                //old if (view && !view[viewName]) {
-                if (!view || !view[viewName]) {
-                    monthObjUpdate.push(escapedMetricVal + common.dbMap.new);
-                    tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + common.dbMap.new] = 1;
-                    if (!view) {
-                        view = {};
-                    }
-                }
-                if (view && view[viewName]) {
-                    var lastViewTimestamp = view[viewName];
-                    var currDate = common.getDate(params.time.timestamp, params.appTimezone),
-                        lastViewDate = common.getDate(lastViewTimestamp, params.appTimezone),
-                        secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
-                        secInHour = (60 * 60 * (currDate.hours())) + secInMin,
-                        secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
-                        secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
-
-
-                    var lastMoment = new moment(lastViewTimestamp);
-                    lastMoment.tz(params.appTimezone);
-
-                    if (lastViewTimestamp < (params.time.timestamp - secInMin)) {
-                        tmpTimeObjMonth['d.' + params.time.day + '.' + params.time.hour + '.' + escapedMetricVal + common.dbMap.unique] = 1;
-                    }
-
-                    if (lastViewTimestamp < (params.time.timestamp - secInHour)) {
-                        tmpTimeObjMonth['d.' + params.time.day + '.' + escapedMetricVal + common.dbMap.unique] = 1;
-                    }
-                    if ((lastViewDate.year() + "") === (params.time.yearly + "") && lastMoment.isoWeek() < params.time.weeklyISO) {
-                        tmpTimeObjZero["d.w" + params.time.weeklyISO + '.' + escapedMetricVal + common.dbMap.unique] = 1;
-                    }
-
-                    if (lastViewTimestamp < (params.time.timestamp - secInMonth)) {
-                        tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + common.dbMap.unique] = 1;
-                    }
-
-                    if (lastViewTimestamp < (params.time.timestamp - secInYear)) {
-                        tmpTimeObjZero['d.' + escapedMetricVal + common.dbMap.unique] = 1;
-                    }
-                    if (params.time.timestamp > lastViewTimestamp) {
-                        updateTimestamp = params.time.timestamp;
-                    }
-                }
-                else {
-                    updateTimestamp = params.time.timestamp;
-                    common.fillTimeObjectZero({"time": {"weekly": params.time.weeklyISO || params.time.weekly, "yearly": params.time.yearly, "month": params.time.month }}, tmpTimeObjZero, escapedMetricVal + common.dbMap.unique);
-                    common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + common.dbMap.unique, 1, true);
-                }
-            }
-
-            if (currEvent.segmentation.start) {
-                monthObjUpdate.push(escapedMetricVal + 's');
-                tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + 's'] = 1;
-            }
-
-            if (currEvent.segmentation.exit) {
-                monthObjUpdate.push(escapedMetricVal + 'e');
-                tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + 'e'] = 1;
-            }
-
-
-            if (currEvent.segmentation.bounce) {
-                monthObjUpdate.push(escapedMetricVal + 'b');
-                tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + 'b'] = 1;
-            }
-
-
-            if (currEvent.segmentation.uvc) {
-                monthObjUpdate.push(escapedMetricVal + 'uvc');
-                tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + 'uvc'] = 1;
-            }
-
-            common.fillTimeObjectZero(params, tmpTimeObjZero, zeroObjUpdate);
-            common.fillTimeObjectMonth(params, tmpTimeObjMonth, monthObjUpdate, 1, true);
-
-            if (currEvent.dur) {
-                let dur = parseInt(currEvent.dur);
-                common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + common.dbMap.duration, dur, true);
-                tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + common.dbMap.duration] = dur;
-            }
-
-            if (currEvent.scroll) {
-                let dur = parseInt(currEvent.scroll);
-                common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + 'scr', dur, true);
-                tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + 'scr'] = dur;
-            }
-            var update;
-            if (segment === "") {
-                segment = 'no-segment';
-            }
-            //year document
-            if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
-                tmpSet.m = dateIds.zero;
-                tmpSet.a = params.app_id + "";
-                tmpSet.vw = common.db.ObjectID(viewName);
-                tmpSet.s = segment;
-                update = {$set: tmpSet};
-                if (Object.keys(tmpTimeObjZero).length) {
-                    update.$inc = tmpTimeObjZero;
-                }
-                common.writeBatcher.add(colName, tmpZeroId, update);
-            }
-
-            //month document
-            if (Object.keys(tmpTimeObjMonth).length) {
-                update = {$set: {m: dateIds.month, a: params.app_id + "", vw: common.db.ObjectID(viewName), s: segment}};
-                if (Object.keys(tmpTimeObjMonth).length) {
-                    update.$inc = tmpTimeObjMonth;
-                }
-                common.writeBatcher.add(colName, tmpMonthId, update);
-                // common.writeBatcher.add(colName, tmpMonthId + "_m", update2);
-            }
-        }
-        if (updateTimestamp) {
-            view[viewName] = updateTimestamp;
-        }
-    }
-
-    plugins.register("/i/apps/create", function(ob) {
-        var appId = ob.appId;
-        common.db.collection('app_viewsmeta' + appId).ensureIndex({"view": 1}, {'unique': 1}, function() {});
+    plugins.register("/i/apps/create", function() {
+        common.db.collection('app_viewsmeta').ensureIndex({"view": 1}, {'unique': 1}, function() {});
     });
 
     plugins.register("/i/apps/delete", function(ob) {
@@ -2301,7 +1594,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         /* old end */
 
         common.db.collection("views").findOne({'_id': common.db.ObjectID(appId)}, {}, function(err, viewInfo) {
-            //deleing user last view data
+            //deleing user last view data(old_collections)
             common.db.collection('app_userviews' + appId).drop(function() {});
             common.db.collection('app_viewsmeta' + appId).drop(function() {});
 
@@ -2320,10 +1613,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             common.db.collection(colName).drop(function() {});
             common.db.collection("views").remove({'_id': common.db.ObjectID(appId)}, {}, function() {}); //remove views record
         });
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
-        }
+        }*/
     });
 
     plugins.register("/i/apps/clear_all", function(ob) {
@@ -2354,10 +1647,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 //common.db.collection('app_views' + appId).ensureIndex({"uid": 1}, function() {});
             });
             /** old end */
-            if (common.drillDb) {
+            /*if (common.drillDb) {
                 common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
                 common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
-            }
+            }*/
         });
     });
 
@@ -2391,10 +1684,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
         });
         //old format end
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).remove({ts: {$lt: ob.moment.valueOf()}}, function() {});
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).remove({ts: {$lt: ob.moment.valueOf()}}, function() {});
-        }
+        }*/
     });
 
     plugins.register("/i/apps/reset", function(ob) {
@@ -2409,9 +1702,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         //old done
         common.db.collection('app_userviews' + appId).drop(function() {});
         common.db.collection("views").findOne({'_id': common.db.ObjectID(appId)}, {}, function(err, viewInfo) {
-            common.db.collection('app_viewsmeta' + appId).drop(function() {
-                common.db.collection('app_viewsmeta' + appId).ensureIndex({"view": 1}, {'unique': 1}, function() {});
-            });
+            common.db.collection('app_viewsmeta' + appId).drop(function() {});
             var colName = "app_viewdata" + crypto.createHash('sha1').update(appId).digest('hex');
             common.db.collection(colName).drop(function() {});
             if (viewInfo) {
@@ -2428,10 +1719,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         });
 
 
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
-        }
+        }*/
     });
 
     plugins.register("/dashboard/data", function(ob) {
@@ -2450,11 +1741,15 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     app: allApps[appId],
                     appTimezone: allApps[appId] && allApps[appId].timezone,
                     qstring: {
-                        period: customPeriod || params.qstring.period
+                        period: customPeriod || params.qstring.period,
+                        app_id: appId,
+                        periodOffset: params.qstring.periodOffset || 0,
+                        userTimezone: params.qstring.timezone || (allApps[appId] && allApps[appId].timezone)
                     },
                     time: common.initTimeObj(allApps[appId] && allApps[appId].timezone),
                     member: params.member
                 };
+
 
                 var sort_arr = {};
                 if (data.views) {
@@ -2471,8 +1766,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 else {
                     sort_arr = {"t": -1};
                 }
-                var colName = "app_viewdata" + crypto.createHash('sha1').update("" + paramsObj.app_id).digest('hex');//collection segment/app
-                getAggregatedData(colName, paramsObj, {app_id: paramsObj.app_id, startPos: 0, segment: "", segmentVal: "", dataLength: 10, sortby: {$sort: sort_arr}, sortcol: "t", unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "scr", "br"], monthly: ["u", "t", "s", "b", "e", "d", "scr", "br"]}}, function(dati/*, total*/) {
+                getAggregatedData("app_viewdata", paramsObj, {app_id: paramsObj.app_id, startPos: 0, segment: "", segmentVal: "", dataLength: 10, sortby: {$sort: sort_arr}, sortcol: "t", unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "scr", "br"], monthly: ["u", "t", "s", "b", "e", "d", "scr", "br"]}}, function(dati/*, total*/) {
                     var values = ["u", "t", "s", "b", "e", "d", "scr", "br"];
                     dati = dati || [];
                     for (var z = 0; z < dati.length; z++) {

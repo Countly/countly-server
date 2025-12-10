@@ -1,23 +1,14 @@
+const moment = require('moment-timezone');
+
 var plugin = {},
     common = require('../../../api/utils/common.js'),
     //log = common.log('crashes:ingestor'),
     fs = require("fs"),
     path = require("path"),
     trace = require("./parts/stacktrace.js"),
-    { DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('./parts/custom_field.js'),
     plugins = require('../../pluginManager.js');
 
 const FEATURE_NAME = 'crashes';
-
-plugins.setConfigs("crashes", {
-    report_limit: 100,
-    grouping_strategy: "error_and_file",
-    smart_preprocessing: true,
-    smart_regexes: "{.*?}\n/.*?/",
-    same_app_version_crash_update: false,
-    max_custom_field_keys: DEFAULT_MAX_CUSTOM_FIELD_KEYS,
-    activate_custom_field_cleanup_job: false,
-});
 
 fs.chmod(path.resolve(__dirname + "/../bin/minidump_stackwalk"), 0o744, function(err) {
     if (err && !process.env.COUNTLY_CONTAINER) {
@@ -156,20 +147,66 @@ plugins.internalDrillEvents.push("[CLY]_crash");
 
                             report.binary_images = JSON.stringify(report.binary_images);
                         }
-                        report.nonfatal = (report.nonfatal && report.nonfatal !== "false") ? "true" : "false";
-                        report.not_os_specific = (params.qstring.crash._not_os_specific) ? "true" : "false";
+                        report.nonfatal = (report.nonfatal && report.nonfatal !== "false") ? true : false;
+                        report.not_os_specific = (params.qstring.crash._not_os_specific) ? true : false;
                         var seed = error + params.app_id + report.nonfatal + "";
                         if (!params.qstring.crash._not_os_specific) {
                             seed = report.os + seed;
                         }
                         var hash = common.crypto.createHash('sha1').update(seed).digest('hex');
                         report.group = hash;
+                        report.session = (params.app_user && params.app_user.sc) ? params.app_user.sc : null;
                         if (!report.name) {
                             report.name = (report.error.split('\n')[0] + "").trim();
                         }
+
+                        const dbAppUser = params.app_user;
+                        let updateUser = {};
+                        if (!report.nonfatal) {
+                            if (!dbAppUser.hadFatalCrash) {
+                                updateUser.hadFatalCrash = "true";
+                            }
+                            updateUser.hadAnyFatalCrash = moment().unix();
+                        }
+                        else if (report.nonfatal) {
+                            if (!dbAppUser.hadNonfatalCrash) {
+                                updateUser.hadNonfatalCrash = "true";
+                            }
+                            updateUser.hadAnyNonfatalCrash = moment().unix();
+                        }
+
+                        if ('app_version' in report && typeof report.app_version !== 'string') {
+                            report.app_version += '';
+                        }
+
+                        // Parse app_version into separate major, minor, patch version fields
+                        if ('app_version' in report) {
+                            const versionComponents = common.parseAppVersion(report.app_version);
+
+                            // Only store the components as separate fields if parsing was successful
+                            if (versionComponents.success) {
+                                report.app_version_major = versionComponents.major;
+                                report.app_version_minor = versionComponents.minor;
+                                report.app_version_patch = versionComponents.patch;
+                            }
+                        }
+
+                        let updateData = {};
+
+                        updateData.$inc = { 'data.crashes': 1 };
+
+                        if (Object.keys(updateUser).length) {
+                            updateData.$set = updateUser;
+                        }
+
+                        if ('updates' in ob) {
+                            ob.updates.push(updateData);
+                        }
+
                         params.qstring.events.push({
                             key: "[CLY]_crash",
                             count: 1,
+                            name: report.group,
                             segmentation: report
                         });
                     }

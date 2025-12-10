@@ -443,6 +443,10 @@
             placement: {
                 type: String,
                 default: 'auto'
+            },
+            tooltipClass: {
+                type: String,
+                default: ''
             }
         },
         computed: {
@@ -453,7 +457,7 @@
                 };
             }
         },
-        template: '<i v-if="tooltip" :class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltipConf"></i>'
+        template: '<i v-if="tooltip" :class="\'cly-vue-tooltip-icon \' + icon + \' \' + tooltipClass" v-tooltip="tooltipConf"></i>'
     }));
 
     Vue.component("cly-remover", countlyBaseComponent.extend({
@@ -583,12 +587,13 @@
             },
             apps: function() {
                 var apps = countlyGlobal.apps || {};
+                let formattedApps = [];
 
                 if (this.auth && this.auth.feature && this.auth.permission) {
                     var expectedPermission = this.auth.permission,
                         targetFeature = this.auth.feature;
 
-                    return Object.keys(apps).reduce(function(acc, key) {
+                    formattedApps = Object.keys(apps).reduce(function(acc, key) {
                         var currentApp = apps[key];
 
                         if (countlyAuth.validate(expectedPermission, targetFeature, null, currentApp._id)) {
@@ -600,12 +605,34 @@
                         return acc;
                     }, []);
                 }
+                else {
+                    formattedApps = Object.keys(apps).map(function(key) {
+                        return {
+                            label: countlyCommon.unescapeHtml(apps[key].name),
+                            value: apps[key]._id
+                        };
+                    });
+                }
 
-                return Object.keys(apps).map(function(key) {
-                    return {
-                        label: countlyCommon.unescapeHtml(apps[key].name),
-                        value: apps[key]._id
-                    };
+                return formattedApps.sort(function(a, b) {
+                    const aLabel = a?.label || '';
+                    const bLabel = b?.label || '';
+                    const locale = countlyCommon.BROWSER_LANG || 'en';
+
+                    if (aLabel && bLabel) {
+                        return aLabel.localeCompare(bLabel, locale, { numeric: true }) || 0;
+                    }
+
+                    // Move items with no label to the end
+                    if (!aLabel && bLabel) {
+                        return 1;
+                    }
+
+                    if (aLabel && !bLabel) {
+                        return -1;
+                    }
+
+                    return 0;
                 });
             }
         },
@@ -718,6 +745,33 @@
                     });
                 }
 
+                var llmEvents = [];
+                llmEvents.push(
+                    {
+                        "label": this.i18n('internal-events.[CLY]_llm_interaction'),
+                        "value": "[CLY]_llm_interaction"
+                    },
+                    {
+                        "label": this.i18n('internal-events.[CLY]_llm_interaction_feedback'),
+                        "value": "[CLY]_llm_interaction_feedback"
+                    },
+                    {
+                        "label": this.i18n('internal-events.[CLY]_llm_tool_used'),
+                        "value": "[CLY]_llm_tool_used"
+                    },
+                    {
+                        "label": this.i18n('internal-events.[CLY]_llm_tool_usage_parameter'),
+                        "value": "[CLY]_llm_tool_usage_parameter"
+                    }
+                );
+                if (llmEvents.length > 0) {
+                    preparedEventList.push({
+                        "label": this.i18n("llm.events"),
+                        "name": "llm",
+                        "options": llmEvents
+                    });
+                }
+
 
                 if (countlyGlobal.plugins.indexOf('compliance-hub') !== -1) {
                     preparedEventList.push({
@@ -748,6 +802,19 @@
                         "name": "[CLY]_push_action",
                         "options": [
                             { label: this.i18n('internal-events.[CLY]_push_action'), value: '[CLY]_push_action' }
+                        ]
+                    });
+                }
+
+                if (countlyGlobal.plugins.indexOf('journey_engine') !== -1) {
+                    preparedEventList.push({
+                        "label": this.i18n('internal-events.[CLY]_journey_engine'),
+                        "name": "Journey",
+                        "options": [
+                            { label: this.i18n('internal-events.[CLY]_journey_engine_start'), value: '[CLY]_journey_engine_start' },
+                            { label: this.i18n('internal-events.[CLY]_journey_engine_end'), value: '[CLY]_journey_engine_end' },
+                            { label: this.i18n('internal-events.[CLY]_content_shown'), value: '[CLY]_content_shown' },
+                            { label: this.i18n('internal-events.[CLY]_content_interacted'), value: '[CLY]_content_interacted' }
                         ]
                     });
                 }
@@ -938,10 +1005,10 @@
         },
         template: '<div class="bu-is-flex bu-is-flex-wrap-wrap bu-is-align-items-center">\
                                 <div class="cly-vue-color-tag__color-tag-wrapper"  v-for="(tag,idx) in tags">\
-                                <div v-if="tag.value == selectedTag.value" @click="click(tag)" class="cly-vue-color-tag__color-tag cly-vue-color-tag__color-tag__selected bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}">\
+                                <div v-if="tag.value == selectedTag.value" @click="click(tag)" :data-test-id="`color-tag-${idx}`" class="cly-vue-color-tag__color-tag cly-vue-color-tag__color-tag__selected bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}">\
                                     <i class="ion-checkmark cly-vue-color-tag__checkmark"></i>\
                                 </div>\
-                                <div v-else @click="click(tag)" class="cly-vue-color-tag__color-tag bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}"></div>\
+                                <div v-else @click="click(tag)" :data-test-id="`color-tag-${idx}`" class="cly-vue-color-tag__color-tag bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}"></div>\
                                 </div>\
                     </div>'
     }));
@@ -1429,7 +1496,7 @@
                             <el-button @click='stopAutoRefresh()'><i class='bu-ml-2 fa fa-stop-circle' :data-test-id='testId + \"-auto-refresh-toggle-button\"'></i> {{i18n('auto-refresh.stop')}}\
                             </el-button>\
                         </div>\
-                        <div v-else-if='!autoRefresh' class='bu-level-item'>\
+                        <div class='bu-level-item' :class=\"{ 'bu-is-hidden': autoRefresh }\">\
                             <el-switch v-model='autoRefresh' :test-id='testId + \"-auto-refresh-toggle\"'>\
                             </el-switch>\
                             <span class='cly-vue-auto-refresh-toggle__refresh--disabled' :data-test-id='testId + \"-auto-refresh-toggle-disabled-label\"'>{{i18n('auto-refresh.enable')}}</span>\
@@ -1472,4 +1539,108 @@
         }
     }));
 
+
+    Vue.component("cly-database-engine-debug-panel", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        props: {
+            options: {
+                type: Array,
+                default: function() {
+                    return [
+                        { value: "config", label: CV.i18n("drill.db-use-config") },
+                        { value: "mongodb", label: "MongoDB" },
+                        { value: "clickhouse", label: "ClickHouse" }
+                    ];
+                }
+            },
+            width: {
+                type: String,
+                default: '240px'
+            },
+            disabled: {
+                type: Boolean,
+                default: false
+            },
+            testId: {
+                type: String,
+                default: 'database-engine-debug-panel'
+            }
+        },
+        data: function() {
+            return {
+                dbOverride: this.getStoredValue('db_override', 'config'),
+                comparisonMode: this.getStoredValue('comparison_mode', false)
+            };
+        },
+        computed: {
+            isDatabaseDebugEnabled: function() {
+                return window.countlyGlobal && window.countlyGlobal.database_debug === true;
+            }
+        },
+        methods: {
+            getStoredValue: function(key, defaultValue) {
+                const storageKey = `database_debug_${key}_${countlyCommon.ACTIVE_APP_ID}`;
+                const storedValue = localStorage.getItem(storageKey);
+
+                if (storedValue !== null) {
+                    if (key === 'comparison_mode') {
+                        return storedValue === 'true';
+                    }
+                    return storedValue;
+                }
+
+                return defaultValue;
+            },
+            setStoredValue: function(key, value) {
+                const storageKey = `database_debug_${key}_${countlyCommon.ACTIVE_APP_ID}`;
+                localStorage.setItem(storageKey, value);
+            },
+            onSelectionChange: function(dbOverride) {
+                this.dbOverride = dbOverride;
+                this.setStoredValue('db_override', dbOverride);
+                this.$emit('refresh-data', true);
+            },
+            onComparisonModeChange: function(comparisonMode) {
+                this.comparisonMode = comparisonMode;
+                this.setStoredValue('comparison_mode', comparisonMode);
+            }
+        },
+        template: '<div v-if="isDatabaseDebugEnabled">\
+                        <cly-sub-section class="bu-is-flex bu-is-align-items-center bu-mb-3" :data-test-id="testId + \'-wrapper\'">\
+                            <span class="text-medium font-weight-bold bu-mr-2 text-uppercase" :data-test-id="testId + \'-label\'">\
+                                {{i18n(\'drill.database-engine\')}}\
+                            </span>\
+                            <el-select \
+                                :value="dbOverride" \
+                                @input="onSelectionChange" \
+                                :disabled="disabled"\
+                                size="small" \
+                                :style="{width: width}" \
+                                :test-id="testId + \'-select\'">\
+                                    <el-option\
+                                        v-for="option in options"\
+                                        :key="option.value"\
+                                        :label="option.label"\
+                                        :value="option.value"\
+                                        :test-id="testId + \'-option-\' + option.value">\
+                                    </el-option>\
+                            </el-select>\
+                        </cly-sub-section>\
+                    <cly-sub-section class="bu-is-flex bu-is-align-items-center bu-mb-5" :data-test-id="testId + \'-comparison-wrapper\'">\
+                        <span class="text-medium font-weight-bold bu-pr-4 text-uppercase" :data-test-id="testId + \'-comparison-label\'">\
+                            {{i18n(\'drill.comparison-mode\')}}\
+                        </span>\
+                        <el-checkbox \
+                            :value="comparisonMode"\
+                            @input="onComparisonModeChange"\
+                            :disabled="disabled"\
+                            v-tooltip="\'Run queries on all available adapters and log comparison data for analysis\'"\
+                            :test-id="testId + \'-comparison-checkbox\'">\
+                                {{i18n(\'drill.enable-comparison\')}}\
+                        </el-checkbox>\
+                    </cly-sub-section>\
+                </div>'
+    }));
 }(window.countlyVue = window.countlyVue || {}));

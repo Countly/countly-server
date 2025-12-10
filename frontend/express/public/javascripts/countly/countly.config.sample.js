@@ -11,6 +11,13 @@
     * @type {string} 
     */
     countlyCommon.API_URL = countlyGlobal.path || "";
+
+    /**
+     * Ingestor service URL. This is used for the ingestion of data for /i and /i/bulk endpoints.
+     * @type {string}
+     */
+    countlyCommon.INGESTOR_URL = countlyGlobal.path || "";
+
     /**
     * Main api path to make all ajax requests to. This value is configured in countly.config.js or over written through theme.
     * @property {object} data - contains default read and write endpoints 

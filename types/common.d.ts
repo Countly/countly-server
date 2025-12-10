@@ -1,6 +1,28 @@
 import { Moment } from "moment-timezone";
 import { Collection, Db, ObjectId } from "mongodb";
 import { Params } from "./requestProcessor";
+import { PluginManager, Database } from "./pluginManager";
+import { Logger } from "./log";
+import { CountlyAPIConfig } from "./config";
+import { ClickHouseQueryService } from "../plugins/clickhouse/types/clickhouseQueryService";
+
+/** Node.js Request object */
+export interface req {
+    headers: { [key: string]: string | string[] };
+    connection: {
+        remoteAddress?: string;
+    };
+    socket?: {
+        remoteAddress?: string;
+    };
+    ip?: string;
+    ips?: string[];
+}
+
+/** Generic output object for responses */
+export interface output {
+    [key: string]: any;
+}
 
 export interface TimeObject {   
     /** Momentjs instance for request's time in app's timezone */
@@ -46,6 +68,7 @@ export interface DbMap {
     sum: string;
     dur: string;
     count: string;
+    paying: string;
 }
 
 /** Mapping of common user database properties */
@@ -68,6 +91,9 @@ export interface DbUserMap {
     platform: string;
     platform_version: string;
     app_version: string;
+    app_version_major: string;
+    app_version_minor: string;
+    app_version_patch: string;
     last_begin_session_timestamp: string;
     last_end_session_timestamp: string;
     has_ongoing_session: string;
@@ -101,34 +127,43 @@ export interface OsMapping {
 export interface ValidationArgProperties {
     [key: string]: {
         /** should property be present in args */
-        required: boolean;
+        required?: boolean;
         /** what type should property be, possible values: String, Array, Number, URL, Boolean, Object, Email */
-        type: string;// | string[] | object;
-        //array: boolean;
-        //discriminator: (value: any) => any;
+        type?: 'String' | 'Array' | 'Number' | 'URL' | 'Boolean' | 'Object' | 'Email' | string;
         /** property should not be longer than provided value */
-        'max-length': string;//number;
+        'max-length'?: number;
         /** property should not be shorter than provided value */
-        'min-length': string;//number;
-        max: string;// number;
-        min: string;// number;
+        'min-length'?: number;
+        max?: number;
+        min?: number;
         /** should string property has any number in it */
-        'has-number': string;//boolean;
+        'has-number'?: boolean;
         /** should string property has any latin character in it */
-        'has-char': string;//boolean;
+        'has-char'?: boolean;
         /** should string property has any upper cased latin character in it */
-        'has-upchar': string;//boolean;
+        'has-upchar'?: boolean;
         /** should string property has any none latin character in it */
-        'has-special': string;//boolean;
-        //in?: string[] | (() => string[]);
-        //nonempty: boolean;
-        //custom: (value: any) => string | undefined;
-        //regex: string;
+        'has-special'?: boolean;
+        /** allowed values for validation */
+        in?: string[] | (() => string[]);
         /** should property be present in returned validated args object */
-        'exclude-from-ret-obj': string;//boolean;
-        //trim: boolean;
-        //mods: string;
-        //multiple: boolean;
+        'exclude-from-ret-obj'?: boolean;
+        /** custom validation function */
+        custom?: (value: any) => string | undefined;
+        /** regex pattern for validation */
+        regex?: string;
+        /** should value be non-empty */
+        nonempty?: boolean;
+        /** should trim whitespace */
+        trim?: boolean;
+        /** additional modifiers */
+        mods?: string;
+        /** allow multiple values */
+        multiple?: boolean;
+        /** array-specific validation options */
+        array?: any;
+        /** discriminator for validation */
+        discriminator?: any;
     };
 }
 
@@ -136,13 +171,14 @@ export interface ValidationArgProperties {
 export interface ValidationResult {
     result: boolean;
     errors?: string[];
-    obj?: any;
+    obj?: Record<string, any>;
 }
 
 /** Date IDs */
 export interface DateIds {
     zero: string;
     month: string;
+    [key: string]: string;
 }
 
 /** Custom metric properties */
@@ -157,9 +193,7 @@ export interface CustomMetricProps {
             /** value to increment current metric for, default 1 */
             value?: number;
             /** object with segments to record data, key segment name and value segment value or array of segment values */
-            segments?: {
-                [key: string]: string | string[];
-            };
+            segments?: Record<string, string | string[] | number | boolean>;
             /** if metric should be treated as unique, and stored in 0 docs and be estimated on output */
             unique?: boolean;
             /** timestamp in seconds to be used to determine if unique metrics it unique for specific period */
@@ -205,7 +239,7 @@ export interface HTMLWhitelist {
  */
 export interface Common {
     /** Reference to plugins */
-    plugins: any;
+    plugins: PluginManager;
     
     /**
      * Escape special characters in the given string of html.
@@ -213,7 +247,7 @@ export interface Common {
      * @param  {boolean} more - if false, escapes only tags, if true escapes also quotes and ampersands
      * @returns {string} escaped string
      **/
-    escape_html: (string: string, more: boolean) => string;
+    escape_html: (string: string, more?: boolean) => string;
 
     /**
      * Function to escape unicode characters
@@ -234,7 +268,7 @@ export interface Common {
      * @param {string} val - string that might be json encoded
      * @returns {object} with property data for parsed data and property valid to check if it was valid json encoded string or not
      **/
-    getJSON: (val: string) => object;
+    getJSON: (val: string) => { valid: boolean; data?: any };
 
     /**
      * Logger object for creating module-specific logging
@@ -243,7 +277,7 @@ export interface Common {
      * const log = common.log('myplugin:api');
      * log.i('myPlugin got a request: %j', params.qstring);
      */
-    log: (module: string) => any;
+    log: (module: string) => Logger;
 
     /**
      * Mapping some common property names from longer understandable to shorter representation stored in database
@@ -266,15 +300,15 @@ export interface Common {
     /**
      * Default {@link countlyConfig} object for API server
      */
-    config: object;
+    config: CountlyAPIConfig;
 
     /** Reference to moment-timezone which combines moment.js with timezone support */
-    moment: Moment;
+    moment: typeof import('moment-timezone');
 
     /**
      * Reference to crypto module
      */
-    crypto: object;
+    crypto: typeof import('crypto');
 
     /**
      * Operating syste/platform mappings from what can be passed in metrics to shorter representations 
@@ -292,7 +326,7 @@ export interface Common {
     dbPromise: (collection: string, method: string, ...args: any[]) => Promise<any>;
 
     /** Database reference */
-    db: Db;
+    db: Database;
 
     /**
      * Fetches nested property values from an obj.
@@ -329,7 +363,7 @@ export interface Common {
      * common.convertToType("test") //outputs "test"
      * common.convertToType("12345678901234567890") //outputs "12345678901234567890"
      */
-    convertToType: (value: any, preventParsingToNumber: boolean) => any;
+    convertToType: (value: any, preventParsingToNumber?: boolean) => any;
 
     /**
      * Safe division between numbers providing 0 as result in cases when dividing by 0
@@ -417,7 +451,7 @@ export interface Common {
      * @param {string} reqTimestamp - timestamp in the request
      * @returns {TimeObject} Time object for current request
      */
-    initTimeObj: (appTimezone: string, reqTimestamp: string) => TimeObject;
+    initTimeObj: (appTimezone: string, reqTimestamp: string | number) => TimeObject;
 
     /**
      * Creates a Date object from provided seconds timestamp in provided timezone
@@ -675,6 +709,8 @@ export interface Common {
         major?: number;
         minor?: number;
         patch?: number;
+        prerelease?: string|number[];
+        build?: string|number[];
         original: string;
         success: boolean;
     };
@@ -904,8 +940,6 @@ export interface Common {
      */
     dbext: DbExt;
 
-    DataTable: any;
-
     /**
      * Sync license check results to request (and session if present)
      * 
@@ -939,8 +973,63 @@ export interface Common {
      */
     trimWhitespaceStartEnd: (value: any) => any;
 
+
+
+    /** DataTable class for server-side processing */
+    DataTable: any;
+
     /** Write batcher */
     writeBatcher: {
         add: (collection: string, id: string, update: any) => void;
     };
+
+    /** Database connection for output */
+    outDb?: Database; 
+
+    /** Database connection for drill queries */
+    drillDb?: Database;
+
+    /** Request processor function */
+    processRequest?: any;
+
+    /** Read batcher */
+    readBatcher?: import('./batcher').ReadBatcher;
+
+    /** Insert batcher */
+    insertBatcher?: any;
+
+    /** Drill read batcher */
+    drillReadBatcher?: any;
+
+    /** Job runners */
+    runners?: any;
+
+    /** Cache instance */
+    cache?: any;
+
+    /** Cached schema */
+    cachedSchema?: {
+        [appId: string]: {
+            loading: boolean;
+            ts: number;
+        };
+    };
+
+    /** Collection mapping */
+    collectionMap?: {
+        [hash: string]: {
+            a: string;           // app id
+            e?: string;          // event name (for events)
+            vs?: string;         // view segment (for views)  
+            name: string;        // display name
+        };
+    };
+
+    /** ClickHouse query service instance */
+    clickhouseQueryService?: ClickHouseQueryService;
+
 }
+
+/** Default export of common module */
+declare const common: Common;
+export default common;

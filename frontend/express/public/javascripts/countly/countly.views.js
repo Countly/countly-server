@@ -66,12 +66,103 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         //if url is valid+auth_token and api_key not given
         if (testurl.indexOf(countlyCommon.API_PARTS.data.w) === 0 || testurl.indexOf(countlyCommon.API_PARTS.data.r) === 0) {
             //add token in header
+            var pack_data_after = false;
+            try {
+                if (typeof options.data === "string") {
+                    var unpackedData = JSON.parse(options.data);
+                    options.data = unpackedData;
+                    pack_data_after = true;
+                }
+            }
+            catch (e) {
+                //ignore
+            }
             jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
-        }
+            try {
+                var offset = new Date().getTimezoneOffset();
+                var tzone = Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+                if (typeof options.data === "string") {
+                    if (options.data.indexOf('&periodOffset=') === -1) {
+                        options.data += '&periodOffset=' + offset;
+                    }
+                    if (tzone) {
+                        if (options.data.indexOf('&userTimezone=') === -1) {
+                            options.data += '&userTimezone=' + tzone;
+                        }
+                    }
+                }
+                else if (typeof options.data === "object") {
+                    options.data.periodOffset = offset;
+                    if (tzone) {
+                        options.data.userTimezone = tzone;
+                    }
+                }
+                else {
+                    var params0 = {};
+                    params0.periodOffset = offset;
+                    if (tzone) {
+                        params0.userTimezone = tzone;
+                    }
+                    options.data = params0;
+                }
+            }
+            catch (e) {
+                //ignore
+            }
 
+            if (countlyGlobal.database_debug) {
+                const databaseDebugComparisonValue = localStorage.getItem(`database_debug_comparison_mode_${countlyCommon.ACTIVE_APP_ID}`);
+                const databaseDebugDbOverrideValue = localStorage.getItem(`database_debug_db_override_${countlyCommon.ACTIVE_APP_ID}`);
+                if (options.data) {
+                    if (typeof options.data === 'string') {
+                        if (databaseDebugComparisonValue) {
+                            options.data += '&comparison=' + databaseDebugComparisonValue;
+                        }
+                        if (databaseDebugDbOverrideValue && options.data.indexOf('db_override=') === -1) {
+                            options.data += '&db_override=' + databaseDebugDbOverrideValue;
+                        }
+                    }
+                    else if (typeof options.data === 'object') {
+                        if (databaseDebugComparisonValue) {
+                            options.data.comparison = databaseDebugComparisonValue;
+                        }
+                        if (databaseDebugDbOverrideValue) {
+                            options.data.db_override = databaseDebugDbOverrideValue;
+                        }
+                    }
+                    else {
+                        var params = {};
+                        if (databaseDebugComparisonValue) {
+                            params.comparison = databaseDebugComparisonValue;
+                        }
+                        if (databaseDebugDbOverrideValue) {
+                            params.db_override = databaseDebugDbOverrideValue;
+                        }
+                        options.data = params;
+                    }
+                }
+                else {
+                    var paramString = '';
+                    if (databaseDebugComparisonValue) {
+                        paramString += 'comparison=' + databaseDebugComparisonValue;
+                    }
+                    if (databaseDebugDbOverrideValue) {
+                        if (paramString) {
+                            paramString += '&';
+                        }
+                        paramString += 'db_override=' + databaseDebugDbOverrideValue;
+                    }
+                    if (paramString) {
+                        options.data = paramString;
+                    }
+                }
+            }
+            if (pack_data_after) {
+                options.data = JSON.stringify(options.data);
+            }
+        }
     }
 });
-
 //register views
 app.DownloadView = new DownloadView();
 
