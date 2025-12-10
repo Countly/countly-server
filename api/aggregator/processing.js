@@ -206,9 +206,7 @@ var crypto = require('crypto');
                                 if (app) {
                                     var dur = 0;
                                     dur = events[k].dur || 0;
-
                                     await usage.processSessionDurationRange(writeBatcher, token, dur, events[k].did, {"app_id": events[k].a, "app": app, "time": common.initTimeObj(app.timezone, events[k].ts), "appTimezone": (app.timezone || "UTC")});
-
                                 }
                             }
                             catch (ex) {
@@ -216,7 +214,7 @@ var crypto = require('crypto');
                             }
                         }
                     }
-                    await common.manualWriteBatcher.flush("countly", "users");
+                    await writeBatcher.flush("countly", "users");
                 }
             });
         }
