@@ -1,5 +1,7 @@
 ## Version 25.03.xx
+Fixes:
 - [journeys] Save to profiile block implemented
+- [push] Better FCM error handling
 
 ## Version 25.03.29
 Fixes:
