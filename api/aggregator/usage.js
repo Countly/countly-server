@@ -6,6 +6,48 @@ var crypto = require('crypto');
 var moment = require('moment-timezone');
 
 
+usage.processViewCount = async function(writeBatcher, token, vc, did, params) {
+    if (plugins.isPluginEnabled("views")) {
+        vc = vc || 0;
+        var ranges = [
+                [0, 2],
+                [3, 5],
+                [6, 10],
+                [11, 15],
+                [16, 30],
+                [31, 50],
+                [51, 100]
+            ],
+            rangesMax = 101,
+            calculatedRange,
+            updateUsers = {},
+            updateUsersZero = {},
+            dbDateIds = common.getDateIds(params),
+            monthObjUpdate = [];
+
+        if (vc >= rangesMax) {
+            calculatedRange = (ranges.length) + '';
+        }
+        else {
+            for (var i = 0; i < ranges.length; i++) {
+                if (vc <= ranges[i][1] && vc >= ranges[i][0]) {
+                    calculatedRange = i + '';
+                    break;
+                }
+            }
+        }
+
+        monthObjUpdate.push('vc.' + calculatedRange);
+        common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
+        common.fillTimeObjectZero(params, updateUsersZero, 'vc.' + calculatedRange);
+        var postfix = common.crypto.createHash("md5").update(did).digest('base64')[0];
+        writeBatcher.add('users', params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers}, "countly", {token: token});
+        var update = {'$inc': updateUsersZero, '$set': {}};
+        update.$set['meta_v2.v-ranges.' + calculatedRange] = true;
+        writeBatcher.add('users', params.app_id + "_" + dbDateIds.zero + "_" + postfix, update, "countly", {token: token});
+    }
+
+};
 usage.processSessionDurationRange = async function(writeBatcher, token, totalSessionDuration, did, params) {
     var durationRanges = [
             [0, 10],
