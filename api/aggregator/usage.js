@@ -5,7 +5,6 @@ var async = require('async');
 var crypto = require('crypto');
 var moment = require('moment-timezone');
 
-
 usage.processViewCount = async function(writeBatcher, token, vc, did, params) {
     if (plugins.isPluginEnabled("views")) {
         vc = vc || 0;
@@ -649,7 +648,6 @@ usage.processEventFromStream = function(token, currEvent, writeBatcher) {
     });
 };
 
-
 usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params) {
     /**
          * 
@@ -671,6 +669,15 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
         //Not a new user
 
     }
+
+    function getMetricValue(metricRules, doc) {
+        if (metricRules.getMetricValue) {
+            return metricRules.getMetricValue(doc);
+        }
+        else {
+            return doc.up[metricRules.short_code];
+        }
+    }
     //We can't do metric changes unless we fetch previous session doc.
     var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
 
@@ -682,7 +689,7 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
         for (let i = 0; i < predefinedMetrics.length; i++) {
             for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {
                 let tmpMetric = predefinedMetrics[i].metrics[j],
-                    recvMetricValue = currEvent.up[tmpMetric.short_code];
+                    recvMetricValue = getMetricValue(tmpMetric, currEvent);
                 postfix = null;
 
                 // We check if country data logging is on and user's country is the configured country of the app
@@ -727,7 +734,7 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
 
                     postfix = "";
 
-                    recvMetricValue = currEvent.up[tmpMetric.short_code];
+                    recvMetricValue = getMetricValue(tmpMetric, currEvent);
 
                     // We check if country data logging is on and user's country is the configured country of the app
                     if (tmpMetric.name === "country" && (plugins.getConfig("api", params.app && params.app.plugins, true).country_data === false)) {

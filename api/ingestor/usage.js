@@ -321,7 +321,6 @@ usage.updateEndSessionParams = function(params, eventList, session_duration) {
         up_extra.hadAnyNonfatalCrash = params.app_user.hadAnyNonfatalCrash;
     }
     up_extra.vc = user.vc;
-
     var drill_doc = {
         "key": "[CLY]_session",
         "lsid": user.lsid,
