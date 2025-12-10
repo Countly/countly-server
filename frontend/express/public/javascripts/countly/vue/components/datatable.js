@@ -75,7 +75,8 @@
             return {
                 controlParams: controlParams,
                 lastSearchQuery: '',
-                firstPage: 1
+                firstPage: 1,
+                lastControlParamsSnapshot: null
             };
         },
 
@@ -328,14 +329,35 @@
             controlParams: {
                 deep: true,
 
-                handler: _.debounce(function() {
-                    // Clear cursor history when search or filters change
-                    if (this.controlParams.searchQuery !== this.lastSearchQuery) {
-                        this.controlParams.cursorHistory = [];
-                        this.lastSearchQuery = this.controlParams.searchQuery;
+                handler: _.debounce(function(newVal) {
+                    // Skip if this is the first run (no snapshot yet)
+                    if (!this.lastControlParamsSnapshot) {
+                        this.lastControlParamsSnapshot = this.getControlParamsSnapshot();
+                        return;
                     }
-                    this.triggerExternalSource();
-                    this.setControlParams();
+
+                    // Check if only internal/derived fields changed (like useCursorPagination)
+                    // These shouldn't trigger a fetch
+                    const meaningfulFields = ['page', 'perPage', 'searchQuery', 'sort', 'cursor', 'cursorHistory', 'selectedDynamicCols'];
+                    const hasMeaningfulChange = meaningfulFields.some(field => {
+                        const newFieldVal = JSON.stringify(newVal[field]);
+                        const oldFieldVal = JSON.stringify(this.lastControlParamsSnapshot[field]);
+                        return newFieldVal !== oldFieldVal;
+                    });
+
+                    // Only trigger fetch if meaningful user-initiated changes occurred
+                    if (hasMeaningfulChange) {
+                        // Clear cursor history when search or filters change
+                        if (this.controlParams.searchQuery !== this.lastSearchQuery) {
+                            this.controlParams.cursorHistory = [];
+                            this.lastSearchQuery = this.controlParams.searchQuery;
+                        }
+                        this.triggerExternalSource();
+                        this.setControlParams();
+                    }
+
+                    // Update snapshot after processing
+                    this.lastControlParamsSnapshot = this.getControlParamsSnapshot();
                 }, 500)
             },
 
@@ -370,6 +392,8 @@
         },
 
         mounted() {
+            // Initialize snapshot on mount to prevent false positives
+            this.lastControlParamsSnapshot = this.getControlParamsSnapshot();
             this.triggerExternalSource();
         },
 
@@ -631,6 +655,20 @@
 
             updateControlParams(newParams) {
                 _.extend(this.controlParams, newParams);
+            },
+
+            getControlParamsSnapshot() {
+                // Create a snapshot of meaningful controlParams fields for comparison
+                return {
+                    page: this.controlParams.page,
+                    perPage: this.controlParams.perPage,
+                    searchQuery: this.controlParams.searchQuery,
+                    sort: JSON.parse(JSON.stringify(this.controlParams.sort || [])),
+                    cursor: this.controlParams.cursor,
+                    cursorHistory: JSON.parse(JSON.stringify(this.controlParams.cursorHistory || [])),
+                    selectedDynamicCols: JSON.parse(JSON.stringify(this.controlParams.selectedDynamicCols || [])),
+                    useCursorPagination: this.controlParams.useCursorPagination
+                };
             }
         }
     };
