@@ -338,7 +338,7 @@
 
                     // Check if only internal/derived fields changed (like useCursorPagination)
                     // These shouldn't trigger a fetch
-                    const meaningfulFields = ['page', 'perPage', 'searchQuery', 'sort', 'cursor', 'cursorHistory', 'selectedDynamicCols'];
+                    const meaningfulFields = ['page', 'perPage', 'searchQuery', 'sort', 'cursor', 'selectedDynamicCols'];
                     const hasMeaningfulChange = meaningfulFields.some(field => {
                         const newFieldVal = JSON.stringify(newVal[field]);
                         const oldFieldVal = JSON.stringify(this.lastControlParamsSnapshot[field]);
@@ -659,15 +659,14 @@
 
             getControlParamsSnapshot() {
                 // Create a snapshot of meaningful controlParams fields for comparison
+                // Excludes internal state fields (cursorHistory, useCursorPagination) that get mutated during pagination
                 return {
                     page: this.controlParams.page,
                     perPage: this.controlParams.perPage,
                     searchQuery: this.controlParams.searchQuery,
                     sort: JSON.parse(JSON.stringify(this.controlParams.sort || [])),
                     cursor: this.controlParams.cursor,
-                    cursorHistory: JSON.parse(JSON.stringify(this.controlParams.cursorHistory || [])),
-                    selectedDynamicCols: JSON.parse(JSON.stringify(this.controlParams.selectedDynamicCols || [])),
-                    useCursorPagination: this.controlParams.useCursorPagination
+                    selectedDynamicCols: JSON.parse(JSON.stringify(this.controlParams.selectedDynamicCols || []))
                 };
             }
         }
