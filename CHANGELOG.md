@@ -1,6 +1,6 @@
 ## Version 24.05.48
 Fixes:
--[push] Better FCM error handling
+- [push] Better FCM error handling
 
 ## Version 24.05.47
 Fixes:
