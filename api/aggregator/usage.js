@@ -6,8 +6,15 @@ var crypto = require('crypto');
 var moment = require('moment-timezone');
 
 usage.processViewCount = async function(writeBatcher, token, vc, did, params) {
-    if (plugins.isPluginEnabled("views")) {
-        vc = vc || 0;
+    if (plugins.isPluginEnabled("views") && vc) {
+        if (!common.isNumber(vc)) {
+            try {
+                vc = parseInt(vc, 10);
+            }
+            catch (ex) {
+                return;
+            }
+        }
         var ranges = [
                 [0, 2],
                 [3, 5],
