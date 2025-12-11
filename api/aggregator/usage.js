@@ -5,7 +5,55 @@ var async = require('async');
 var crypto = require('crypto');
 var moment = require('moment-timezone');
 
+usage.processViewCount = async function(writeBatcher, token, vc, did, params) {
+    if (plugins.isPluginEnabled("views") && vc) {
+        if (!common.isNumber(vc)) {
+            try {
+                vc = parseInt(vc, 10);
+            }
+            catch (ex) {
+                return;
+            }
+        }
+        var ranges = [
+                [0, 2],
+                [3, 5],
+                [6, 10],
+                [11, 15],
+                [16, 30],
+                [31, 50],
+                [51, 100]
+            ],
+            rangesMax = 101,
+            calculatedRange,
+            updateUsers = {},
+            updateUsersZero = {},
+            dbDateIds = common.getDateIds(params),
+            monthObjUpdate = [];
 
+        if (vc >= rangesMax) {
+            calculatedRange = (ranges.length) + '';
+        }
+        else {
+            for (var i = 0; i < ranges.length; i++) {
+                if (vc <= ranges[i][1] && vc >= ranges[i][0]) {
+                    calculatedRange = i + '';
+                    break;
+                }
+            }
+        }
+
+        monthObjUpdate.push('vc.' + calculatedRange);
+        common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
+        common.fillTimeObjectZero(params, updateUsersZero, 'vc.' + calculatedRange);
+        var postfix = common.crypto.createHash("md5").update(did).digest('base64')[0];
+        writeBatcher.add('users', params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers}, "countly", {token: token});
+        var update = {'$inc': updateUsersZero, '$set': {}};
+        update.$set['meta_v2.v-ranges.' + calculatedRange] = true;
+        writeBatcher.add('users', params.app_id + "_" + dbDateIds.zero + "_" + postfix, update, "countly", {token: token});
+    }
+
+};
 usage.processSessionDurationRange = async function(writeBatcher, token, totalSessionDuration, did, params) {
     var durationRanges = [
             [0, 10],
@@ -607,7 +655,6 @@ usage.processEventFromStream = function(token, currEvent, writeBatcher) {
     });
 };
 
-
 usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params) {
     /**
          * 
@@ -629,6 +676,20 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
         //Not a new user
 
     }
+    /**
+ * Gets metric value from drill document based on metric rules
+ * @param {object} metricRules  - object drscribing metric rules
+ * @param {object} doc  - drill docment
+ * @returns {string|number} - metric value
+ */
+    function getMetricValue(metricRules, doc) {
+        if (metricRules.getMetricValue) {
+            return metricRules.getMetricValue(doc);
+        }
+        else {
+            return doc.up[metricRules.short_code];
+        }
+    }
     //We can't do metric changes unless we fetch previous session doc.
     var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
 
@@ -640,7 +701,7 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
         for (let i = 0; i < predefinedMetrics.length; i++) {
             for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {
                 let tmpMetric = predefinedMetrics[i].metrics[j],
-                    recvMetricValue = currEvent.up[tmpMetric.short_code];
+                    recvMetricValue = getMetricValue(tmpMetric, currEvent);
                 postfix = null;
 
                 // We check if country data logging is on and user's country is the configured country of the app
@@ -685,7 +746,7 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
 
                     postfix = "";
 
-                    recvMetricValue = currEvent.up[tmpMetric.short_code];
+                    recvMetricValue = getMetricValue(tmpMetric, currEvent);
 
                     // We check if country data logging is on and user's country is the configured country of the app
                     if (tmpMetric.name === "country" && (plugins.getConfig("api", params.app && params.app.plugins, true).country_data === false)) {
