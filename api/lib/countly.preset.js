@@ -48,6 +48,8 @@ var preset = {
         hour: { name: "hour", type: "l" },
         dow: { name: "dow", type: "l" },
         hh: { name: "hh", type: "l" },
+        sdk_name: { name: "sdk_name", type: "s" },
+        sdk_version: { name: "sdk_version", type: "s" }
     },
     sg: {
         "[CLY]_view": {
@@ -123,6 +125,9 @@ var preset = {
         },
         "[CLY]_push_sent": {
             i: { name: "i", type: "s" }
+        },
+        "[CLY]_consent": {
+            _type: { name: "_type", type: "s" }
         }
     }
 };

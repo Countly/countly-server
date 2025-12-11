@@ -137,6 +137,12 @@ function fillUserProperties(dbAppUser, meta_doc) {
         else if (shortRep === "ls") {
             dbAppUser.ls = (dbAppUser.lac) ? dbAppUser.lac : dbAppUser.ls;
         }
+        else if (shortRep === "sdk_name") {
+            dbAppUser.sdk_name = dbAppUser?.sdk?.name;
+        }
+        else if (shortRep === "sdk_version") {
+            dbAppUser.sdk_version = dbAppUser?.sdk?.version;
+        }
 
         if (typeof dbAppUser[shortRep] !== "undefined") {
             setType = countlyUP[i].type || "";
