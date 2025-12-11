@@ -97,7 +97,6 @@ plugins.connectToAllDatabases().then(function() {
         total_users: true,
         export_limit: 10000,
         prevent_duplicate_requests: true,
-        metric_changes: true,
         offline_mode: false,
         reports_regenerate_interval: 3600,
         send_test_email: "",
@@ -110,8 +109,7 @@ plugins.connectToAllDatabases().then(function() {
         batch_read_ttl: 600,
         batch_read_period: 60,
         user_merge_paralel: 1,
-        trim_trailing_ending_spaces: false,
-        calculate_aggregated_from_granular: false
+        trim_trailing_ending_spaces: false
     });
 
     /**
@@ -325,7 +323,6 @@ plugins.connectToAllDatabases().then(function() {
             log.e(err);
         }
     });
-
 
     plugins.installMissingPlugins(common.db);
     const taskManager = require('./utils/taskmanager.js');

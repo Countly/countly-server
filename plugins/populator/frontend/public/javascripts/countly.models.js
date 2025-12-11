@@ -1345,6 +1345,16 @@
                 params.sdk_name = (Math.random() > 0.5) ? "objc-native-ios" : "java-native-android";
             }
             params.sdk_version = getVersion(params.timestamp);
+            if (Math.random() > 0.9) {
+                //Add hc
+                params.hc = JSON.stringify({
+                    "hc": Math.random() * 10,
+                    "el": Math.random() * 10,
+                    "sc": Math.random() * 10,
+                    "wl": Math.random() * 10,
+                    "em": Math.random() * 10
+                });
+            }
             bulk.push(params);
         };
 
