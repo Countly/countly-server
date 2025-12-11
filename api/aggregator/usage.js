@@ -669,7 +669,12 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
         //Not a new user
 
     }
-
+    /**
+ * Gets metric value from drill document based on metric rules
+ * @param {object} metricRules  - object drscribing metric rules
+ * @param {object} doc  - drill docment
+ * @returns {string|number} - metric value
+ */
     function getMetricValue(metricRules, doc) {
         if (metricRules.getMetricValue) {
             return metricRules.getMetricValue(doc);
