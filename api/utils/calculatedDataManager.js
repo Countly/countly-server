@@ -95,7 +95,7 @@ calculatedDataManager.longtask = async function(options) {
         }
         catch (e) {
             //As could not insert, it might be calculating already
-            waitForData(options, timeout, 10);
+            waitForData(my_options, timeout, 10);
             return;
         }
         var start = Date.now().valueOf();
