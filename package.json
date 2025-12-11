@@ -58,7 +58,7 @@
     "csvtojson": "2.0.14",
     "ejs": "3.1.10",
     "errorhandler": "1.5.1",
-    "express": "4.21.2",
+    "express": "4.22.1",
     "express-rate-limit": "8.2.1",
     "express-session": "1.18.2",
     "form-data": "^4.0.0",
