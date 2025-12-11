@@ -49,6 +49,36 @@ calculatedDataManager.longtask = async function(options) {
             options5.outputData(null, {"_id": options5.id, "running": true, "data": options5.current_data || {}});
         }
     }
+    /**
+     * Called if there is indication that calculations are in progress
+     * @param {*} options6  - options
+     * @param {*} timeoutObj  - timeout object for returning data       
+     * @param {*} retry  - number of retries left
+     */
+    async function waitForData(options6, timeoutObj, retry) {
+        retry = retry - 1;
+        if (retry <= 0) {
+            return;
+        }
+        else {
+            try {
+                var data = await common.db.collection(collection).findOne({_id: options6.id});
+                if (data && data.data) {
+                    clearTimeout(timeoutObj);
+                    options6.outputData(null, {"_id": options6.id, "lu": data.lu, "data": data.data || {}});
+                    return;
+                }
+                else {
+                    setTimeout(function() {
+                        waitForData(options6, timeoutObj, retry);
+                    }, 2000);
+                }
+            }
+            catch (e) {
+                log.e("Error while getting calculated data", e);
+            }
+        }
+    }
     /** switching to long task
      * @param {object} my_options - options
      * @param {object} my_options.query_data - query data
@@ -64,16 +94,8 @@ calculatedDataManager.longtask = async function(options) {
             await common.db.collection(collection).insertOne({_id: my_options.id, status: "calculating", "lu": new Date()});
         }
         catch (e) {
-            //As could not insert try then getting result
-            var data = await common.db.collection(collection).findOne({_id: options.id});
-            if (data) {
-                my_options.outputData(null, {"data": data.data, "lu": data.lu, "_id": options.id});
-                return;
-            }
-            else {
-                my_options.outputData(e, {"_id": my_options.id, "running": false, "error": true});
-            }
-            clearTimeout(timeout);
+            //As could not insert, it might be calculating already
+            waitForData(my_options, timeout, 10);
             return;
         }
         var start = Date.now().valueOf();
@@ -122,11 +144,17 @@ calculatedDataManager.longtask = async function(options) {
             }
         }
         else if (data.status === "calculating") {
-            if (data.start && (new Date().getTime() - data.start) > 1000 * 60 * 60) {
+            if (data.lu && (new Date().getTime() - new Date(data.lu).getTime()) < 1000 * 60 * 60) {
                 //Return current data if there is any and let it know it is calculating
-                clearTimeout(timeout);
-                options.outputData(null, {"_id": options.id, "running": true, data: data.data || {}});
-                return;
+                if (data.data) {
+                    clearTimeout(timeout);
+                    options.outputData(null, {"_id": options.id, "running": true, data: data.data || {}});
+                    return;
+                }
+                else {
+                    //Do retry each few seconds to check if result is created
+                    waitForData(options, timeout, 10);
+                }
             }
             else {
                 common.db.collection(collection).deleteOne({_id: options.id}, function(ee) {
