@@ -152,7 +152,7 @@
             ref="dbviewerChFilterForm"
             >
             <template v-slot="formDialogScope">
-                <div class="dbviewer-tab__popup-content">
+                <div class="dbviewer-tab__popup-content dbviewer-tab__popup-content--clickhouse">
                     <dbviewer-clickhouse-filtering
                         class="bu-mb-3"
                         v-model="formDialogScope.editedObject.filterObj"
@@ -161,7 +161,7 @@
                         :disabled="isFetching"
                         :allow-delete-first-row="true"
                     />
-                    <div class="dbviewer-tab__projection">
+                    <div class="dbviewer-tab__projection bu-mr-4">
                         <el-checkbox
                             class="bu-mt-2"
                             v-model="formDialogScope.editedObject.projectionEnabled">

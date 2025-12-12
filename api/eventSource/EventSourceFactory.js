@@ -75,9 +75,10 @@ class EventSourceFactory {
 
         const log = dependencies.log || Log('eventSource:factory');
         const config = dependencies.countlyConfig || require('../config');
+        const db = dependencies.db || null; // Database reference for batch deduplication
 
         if (this.#shouldUseKafka(config, { name }, log)) {
-            return this.#createKafkaSource(name, options, config, log);
+            return this.#createKafkaSource(name, options, config, db, log);
         }
         else {
             return this.#createChangeStreamSource(name, options, config, log);
@@ -117,17 +118,19 @@ class EventSourceFactory {
      * @param {string} name - Event source name for logging/identification
      * @param {Object} options - Configuration object with kafka section
      * @param {Object} countlyConfig - Countly configuration
+     * @param {Object} db - Database reference for batch deduplication state
      * @param {Logger} log - Logger instance
      * @returns {KafkaEventSource} The Kafka event source instance
      * @throws {Error} If Kafka modules are not available
      * @throws {Error} If Kafka configuration is invalid
      * @private
      */
-    static #createKafkaSource(name, options, countlyConfig, log) {
+    static #createKafkaSource(name, options, countlyConfig, db, log) {
         log.i(`[${name}] Creating Kafka event source with consistent dependency injection`);
         const kafkaOptions = options.kafka || {};
         return new KafkaEventSource(name, kafkaOptions, {
-            countlyConfig: countlyConfig
+            countlyConfig: countlyConfig,
+            db: db // Pass database for batch deduplication state
         });
     }
 

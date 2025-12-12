@@ -1,20 +1,51 @@
-## 25.xx
-Dependencies:
-- Remove SQLite
+## Version 25.03.29
+Fixes:
+- [core] Do not output password in logs on mongodb connection initialisation error
+- [core] Hide error details on render error from response
+- [dashboards] Do not show error if request is cancelled.
+- [dbviewer] Hide api_key from requests
+- [events] Do not throw error in UI on returned group data if there is no segmentation set
 
-## Version 25.03.xx
+Enterprise Fixes:
+- [drill] Fixed timeline recalculation
+- [surveys] Do not fetch survey meta data if plugin is disabled
+
+## Version 25.03.28
+Fixes:
+- [alerts] Add alert interval validation in the frontend
+- [events] Correctly navigate to event groupmin events menu
+
+Enterprise Fixes:
+- [applications] Ensure application management list reorders after create/update
+- [concurrent_users] Fix email check for alert
+- [dashboards] Keep dashboard sidebar sorted alphabetically after additions
+- [data-manager] Correctly show last triggered for events if data masking is enabled
+
+## Version 25.03.27
+Fixes:
+- [core-vis] Fix chart legend click event
+- [push] Fixed the options of the request being made during mime detection
+- [views] Fix view name that is displayed in view table
+- [data-manager] Fix last modified data for event and segment
+
+Enterprise Fixes:
+- [concurrent_users] Fix alert threshold comparison
+- [dashboards] Add setting to disable public dashboards
+- [surveys] Handle multiple survey submission from same user based on survey visibility
+- [users] Display user property limits in user profiles when exceeded
+- [users] Set correct users widget table rows amount according to selected setting
+
+## Version 25.03.26
 Fixes:
 - [push] Fixed timeout setting
 - [security] Fixed injection possibility on res.expose
 
 Enterprise Fixes:
+- [data-manager] Fixed bug when merging events with ampersand symbol in the name
 - [groups] Add logs for user updates
 - [nps] Sort widgets by internal name and search by name or internal name
 - [surveys] Change question map log to debug log
 - [surveys] Sort widgets by internal name and search by name or internal name
-
-Enterprise Fixes:
-- [data-manager] Fixed bug when merging events with ampersand symbol in the name
 
 Dependencies:
 - Bump axios from 1.12.2 to 1.13.1 in /plugins/cognito
@@ -36,6 +67,8 @@ Fixes:
 Enterprise Fixes:
 - [ab-testing] Add script for fixing variant cohort
 - [groups] Fix user permission update after updating user group permission
+- [funnels] Fixed delete confirmation using correct button copy
+
 ## Version 25.03.24
 Fixes:
 - [jobs] Fix condition for scheduling alert job
@@ -66,6 +99,7 @@ Enterprise Fixes:
 - [revenue] Card in revenue page are now correctly indentified
 - [users] Add survey section to user feedback page
 - [users] Fixed uploading user profile pictures
+
 
 ## Version 25.03.22
 Fixes:
@@ -144,6 +178,7 @@ Enterprise Fixes:
 Dependencies:
 - Bump puppeteer from 24.16.2 to 24.17.0
 
+
 ## Version 25.03.16
 Enterprise Fixes:
 - [journeys] Fix for skip threshold check in concurrent requests
@@ -152,6 +187,7 @@ Enterprise Fixes:
 Dependencies:
 - Bump get-random-values from 3.0.0 to 4.0.0
 - Bump puppeteer from 24.16.1 to 24.16.2
+
 
 ## Version 25.03.15
 Enterprise Fixes:
@@ -186,6 +222,7 @@ Enterprise Fixes:
 - [flows] Showing correct state for disabled flows
 - [surveys] Move "not likely" label next to 0 on mobile screens
 
+
 ## Version 25.03.12
 Features:
 - [plugins] Add configuration warning tags to settings UI
@@ -207,6 +244,7 @@ Dependencies:
 - Bump mongodb from 6.17.0 to 6.18.0
 - Bump puppeteer from 24.14.0 to 24.15.0
 - Bump supertest from 7.1.3 to 7.1.4
+
 
 ## Version 25.03.11
 Fixes:
@@ -303,6 +341,7 @@ Fixes:
 - [hooks] Added null check for incoming data
 - [push] Fix external drawer initialization
 - [times-of-day] Fix chart component
+
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
 - [ab-testing] Updates

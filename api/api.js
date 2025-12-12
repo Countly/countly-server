@@ -97,7 +97,6 @@ plugins.connectToAllDatabases().then(function() {
         total_users: true,
         export_limit: 10000,
         prevent_duplicate_requests: true,
-        metric_changes: true,
         offline_mode: false,
         reports_regenerate_interval: 3600,
         send_test_email: "",
@@ -110,8 +109,7 @@ plugins.connectToAllDatabases().then(function() {
         batch_read_ttl: 600,
         batch_read_period: 60,
         user_merge_paralel: 1,
-        trim_trailing_ending_spaces: false,
-        calculate_aggregated_from_granular: false
+        trim_trailing_ending_spaces: false
     });
 
     /**
@@ -160,6 +158,26 @@ plugins.connectToAllDatabases().then(function() {
             default: (countlyConfig.logging && countlyConfig.logging.default) ? countlyConfig.logging.default : 'warn',
         }
     );
+
+    // mutation manager default settings
+    [
+        { key: 'max_retries', value: 3 },
+        { key: 'retry_delay_ms', value: 30 * 60 * 1000 },
+        { key: 'validation_interval_ms', value: 3 * 60 * 1000 },
+        { key: 'stale_ms', value: 24 * 60 * 60 * 1000 },
+        { key: 'batch_limit', value: 10 }
+    ].forEach(item => {
+        const path = `mutation_manager.${item.key}`;
+        const update = {};
+        update[path] = item.value;
+        common.db.collection('plugins').updateOne(
+            { _id: 'plugins', [path]: { $exists: false } },
+            { $set: update }
+        ).catch(e => {
+            const message = `Failed to add mutation_manager default for ${item.key}: ${e}`;
+            log && log.e ? log.e(message) : console.log(message);
+        });
+    });
 
     if (common.queryRunner && typeof common.queryRunner.isAdapterAvailable === 'function' && common.queryRunner.isAdapterAvailable('clickhouse')) {
         common.db.collection('plugins').updateOne(
@@ -305,7 +323,6 @@ plugins.connectToAllDatabases().then(function() {
             log.e(err);
         }
     });
-
 
     plugins.installMissingPlugins(common.db);
     const taskManager = require('./utils/taskmanager.js');

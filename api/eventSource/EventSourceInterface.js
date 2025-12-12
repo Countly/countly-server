@@ -54,6 +54,32 @@ class EventSourceInterface {
     }
 
     /**
+     * Mark a batch as processed (for deduplication purposes)
+     * Override in subclasses that need deduplication (e.g., KafkaEventSource)
+     * @param {Object} token - Token received from getNext()
+     * @returns {Promise<void>} resolves when marked
+     * @protected
+     */
+    async markBatchProcessed(token) { // eslint-disable-line no-unused-vars
+        // Default no-op for sources that don't need deduplication
+    }
+
+    /**
+     * Process events with automatic acknowledgment and deduplication
+     * This method eliminates the race condition by calling markBatchProcessed
+     * immediately after the handler completes, before the next batch is fetched.
+     *
+     * @param {Function} handler - Async function(token, events) that processes each batch
+     * @returns {Promise<void>} resolves when all batches are processed
+     */
+    async processWithAutoAck(handler) {
+        for await (const {token, events} of this) {
+            await handler(token, events);
+            await this.markBatchProcessed(token);
+        }
+    }
+
+    /**
      * Stop the event source
      * @returns {Promise<void>} resolves when the source is stopped
      */

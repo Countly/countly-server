@@ -70,6 +70,10 @@
         }
     }
 
+    &__popup-content--clickhouse {
+        margin-right: -16px;
+    }
+
     &__sort-inputs {
         display: flex;
 
@@ -123,6 +127,7 @@
     &__delete {
         color: #81868d;
         margin-left: -12px;
+        margin-right: 12px;
         font-size: smaller;
 
         &:hover {
@@ -141,8 +146,23 @@
     }
 
     &__container {
-        height: 150px;
-        overflow-y: auto;
-        overflow-x: hidden;
+        position: relative;
+    }
+
+    &__scroll {
+        height: auto;
+        max-height: 150px;
+        width: 100%;
+
+        .__panel {
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            height: 100% !important;
+            max-height: 100% !important;
+        }
+
+        .__view {
+            max-height: 100% !important;
+        }
     }
 }

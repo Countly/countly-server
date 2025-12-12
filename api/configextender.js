@@ -53,7 +53,12 @@ const OVERRIDES = {
             CA: 'ca',
         },
     },
-
+    COOKIE: {
+        SAMESITE: 'sameSite',
+        HTTPONLY: 'httpOnly',
+        MAXAGE: 'maxAge',
+        MAXAGELOGIN: 'maxAgeLogin',
+    },
     MAIL: {
         CONFIG: {
             IGNORETLS: "ignoreTLS"
@@ -108,6 +113,8 @@ const OVERRIDES = {
         ENABLETRANSACTIONS: 'enableTransactions',
         TRANSACTIONALID: 'transactionalId',
         TRANSACTIONTIMEOUT: 'transactionTimeout',
+        CONNECTAPIURL: 'connectApiUrl',
+        CONNECTCONSUMERGROUPID: 'connectConsumerGroupId',
         RDKAFKA: {
             BROKERS: 'brokers',
             CLIENTID: 'clientId',

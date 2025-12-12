@@ -1,205 +1,223 @@
-<div v-bind:class="[componentId]" class="configurations">
-    <cly-header
-        title="SDK Behavior Settings"
-        :tooltip="{description}">
-        <template v-slot:header-right>
-            <div class="bu-level-item">
-                <el-button @click="enforce" type="default" size="small" icon="cly-icon-btn fas fa-lock">
-                    Enforce All
-                </el-button>
-            </div>
-            <div class="bu-level-item">
-                <el-button @click="resetSDKConfiguration" type="default" size="small" icon="cly-icon-btn fas fa-sync">
-                    Reset Configuration
-                </el-button>
-            </div>
-            <div class="bu-level-item">
-                <el-button @click="downloadConfig" type="default" size="small" icon="cly-icon-btn cly-icon-download">
-                    Download Config
-                </el-button>
-            </div>
-        </template>
-    </cly-header>
-    <cly-main>
-        <div v-if="!isTableLoading" class="bu-columns bu-is-gapless">
-            <div class="bu-column bu-is-12 selected-config">
-                <form>
-                    <div :id="group.label" :key="index" v-for="(group, index) in groups" v-if="group.label !== 'Experimental' || showExperimental">
-                        <h3 v-if="group.label" class="bu-mb-4" data-test-id="sdk-control-label"> 
-                            {{group.label}}
-                            <cly-tooltip-icon class="ion ion-help-circled" placement="bottom"></cly-tooltip-icon>
-                        </h3>
-                        <cly-section class="bu-mr-5 bu-mb-4">
-                            <template slot-scope="scope">
-                                <div 
-                                    v-for="key in group.list" :key="key"
-                                        v-if="shouldShowKey(key)"
-                                    class="bu-columns bu-is-vcentered bu-p-5 config-section">
-                                    <div class="bu-column bu-is-7">
-                                        <p class="bu-has-text-weight-medium" :data-test-id="slugFor(key) + '-title-label'">
-                                            {{ getData[key].name }}
-                                            <span v-if="getData[key].experimental" style="display:inline-block;width:5px;"></span>
-                                            <cly-tooltip-icon v-if="getData[key].type !== 'preset' && getData[key].tooltipMessage && !getData[key].experimental && ['ew','upw','sw','esw'].indexOf(key) === -1"
-                                                :tooltip="getData[key].tooltipMessage" 
-                                                placement="right" 
-                                                :tooltip-class="getData[key].tooltipClass">
-                                            </cly-tooltip-icon>
-                                            <template v-if="key !== 'bom_preset'">
-                                                <el-button v-if="getData[key].enforced === true" @click="reverseEnforce(key)" type="success" size="small" icon="fas fa-lock">
-                                                    Enforced
-                                                </el-button>
-                                                <el-button v-else @click="enforce(key)" type="default" size="small" icon="fas fa-unlock">
-                                                    Not Enforced
-                                                </el-button>
-                                            </template>
-                                        </p>
-                                        <p class="bu-has-text-weight-normal bu-mt-2" :data-test-id="slugFor(key) + '-description-label'" v-html="getData[key].description" v-if="getData[key].description"></p>
-                                    </div>
-                                    <div class="bu-column bu-is-2"></div>
-                                    <div class="bu-column bu-is-3 bu-is-flex bu-is-justify-content-end">
-                                        <div v-if="getData[key].type === 'preset'">
-                                            <div class="button-group bu-is-flex bu-is-justify-content-start bu-is-vcentered bu-p-5 config-section"
-                                                style="padding-left: 20px; padding-right: 20px; gap: 10px;">
-                                                <template v-for="preset in getData[key].presets">
-                                                    <el-button v-if="preset.name !== 'Custom'"
-                                                        :key="preset.name"
-                                                        @click="onPresetChange(key, preset)"
-                                                        :class="['preset-button', { active: valueFor(key) === preset.name }]">
-                                                        {{ preset.name }}
-                                                    </el-button>
-                                                </template>
-                                            </div>
-                                        </div>
-                                        <div 
-                                            v-else-if="getData[key].type === 'function'" 
-                                            v-html="getData[key].render(getData[key])">
-                                        </div>
-                                        <template v-else-if="getData[key].type === 'text'">
-                                            <div class="validation-wrapper">
-                                                    <el-input
-                                                    @input="onChange(key, $event)"
-                                                    :value="valueFor(key)"
-                                                    v-bind="getData[key].attrs"
-                                                    :class="{ 'config-invalid': (key === 'esb' || key === 'esw') && validationErrors && validationErrors[key] }">
-                                                </el-input>
-                                                <div class="config-validation-box" v-if="(key === 'esb' || key === 'esw')">
-                                                    <div v-if="validationErrors && validationErrors[key]" class="status-box invalid">
-                                                        <span class="dot red"></span>
-                                                        <span class="status-text">{{ validationErrors[key] }}</span>
-                                                    </div>
-                                                    <div v-else class="status-box valid">
-                                                        <span class="dot green"></span>
-                                                        <span class="status-text">Valid JSON</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </template>
-                                        <el-select 
-                                            v-else-if="getData[key].type === 'select'" 
-                                            @change="onChange(key, $event)"
-                                            :value="valueFor(key)"
-                                            v-bind="getData[key].attrs">
-                                            <el-option :key="option.value" :value="option.value" :label="option.label" v-for="option in getData[key].list"></el-option>
-                                        </el-select>
-                                        <el-slider 
-                                            v-else-if="getData[key].type === 'slider'" 
-                                            @change="onChange(key, $event)"
-                                            :value="valueFor(key)"
-                                            v-bind="getData[key].attrs">
-                                        </el-slider>
-                                        <el-button
-                                            v-else-if="getData[key].type === 'button'" 
-                                            @click="getData[key].click()"
-                                            v-bind="getData[key].attrs">
-                                            {{ getData[key].name }}
-                                        </el-button>
-                                        <el-switch 
-                                            v-else-if="getData[key].type === 'switch'"
-                                            :test-id="slugFor(key)"
-                                            @change="onChange(key, $event)"
-                                            v-model="getData[key].value"
-                                            v-bind="getData[key].attrs">
-                                        </el-switch>
-                                        <el-input-number 
-                                            v-else-if="getData[key].type === 'number'" 
-                                            @change="onChange(key, $event)"
-                                            :max='2147483647' 
-                                            :min='0' 
-                                            :value="valueFor(key)"
-                                            v-bind="getData[key].attrs">
-                                        </el-input-number>
-                                        <cly-colorpicker 
-                                            v-else-if="getData[key].type === 'colorpicker'" 
-                                            :value="valueFor(key)"
-                                            @change="onChange(key, getData[key])"
-                                            v-bind="getData[key].attrs"
-                                            style="display:inline">
-                                        </cly-colorpicker>
-                                        <el-upload
-                                            v-else-if="getData[key].type === 'image'" 
-                                            :show-file-list="false"
-                                            :before-upload="getData[key].before"
-                                            :on-success="getData[key].success"
-                                            :on-error="getData[key].error"
-                                            v-bind="getData[key].attrs">
-                                            <div :class="getData[key].image_size">
-                                                <div v-if="getData[key].value" class="image-delete bu-is-flex">
-                                                    <el-button 
-                                                    size="small" 
-                                                    type="text" 
-                                                    @click.stop="onChange(key, '')"
-                                                    class="bu-p-0">{{i18n('management-users.delete-logo')}}</el-button>
-                                                    <img :src="getData[key].value + '?' + Date.now()">
-                                                </div>
-                                                <div v-else class="bu-is-flex">
-                                                    <el-button type="default" style="display:flex;margin:auto;">{{i18n('white-labeling.choose-file')}}</el-button>
-                                                    <el-button type="default" disabled style="width: 165px;height: 50px;cursor: default;">{{i18n('white-labeling.logo-preview')}}</el-button>
-                                                </div>
-                                            </div>
-                                            <span class="config-error">{{getData[key].errorMessage || ""}}</span>
-                                        </el-upload>
-                                        <el-input 
-                                            v-else
-                                            @input="onChange(key, $event)"
-                                            :value="getData[key].value || getData[key].default">
-                                        </el-input>
-                                    </div>
-                                </div>
-
-                            </template>
-                                </cly-section>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-    <cly-diff-helper :diff="diff" :is-modal="true" :disabled="isSaving" :emit-save-when-disabled="false" @discard="unpatch"
-        @save="save">
-            <template v-slot:main>
-                <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected"
-                    style="height: 100%;">
-                    <span class="selected-count-blue bu-pl-1 text-medium">
-                        <span
-                            style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{diff.length}}</span>
-                        <span v-if="diff.length>1" class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{
-                            i18n("common.diff-helper.changes-made") }}</span>
-                        <span v-else class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{
-                            i18n("common.diff-helper.changes-made-single") }}</span>
-                        <span v-if="diff.length>1" class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep")
-                            }}</span>
-                        <span v-else class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep-single") }}</span>
-                    </span>
-                    <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
-                    <el-button skin="red" class="bu-mr-2" size="small" type="default" @click="save()">
-                        <i class="cly-io-16 cly-io cly-io-save-disc" style="font-size: larger;"></i>
-                        <span class="bu-ml-1">
-                            {{ i18n('dashboards.save-changes') }}
-                        </span>
+<div class="sdk-behavior-settings-wrapper">
+    <div v-bind:class="[componentId]" class="configurations">
+        <cly-header
+            title="SDK Behavior Settings"
+            :tooltip="{description}">
+            <template v-slot:header-right>
+                <div class="bu-level-item">
+                    <el-button @click="enforce" type="default" size="small" icon="cly-icon-btn far fa-check-circle">
+                        Apply all to SDKs
                     </el-button>
-                    <el-button class="x-button" @click="unpatch()">
-                        <i class="cly-io-16 cly-io cly-io-x color-cool-gray-50"></i>
+                </div>
+                <div class="bu-level-item">
+                    <el-button @click="resetSDKConfiguration" type="default" size="small" icon="cly-icon-btn fas fa-undo">
+                        Reset all settings
+                    </el-button>
+                </div>
+                <div class="bu-level-item">
+                    <el-button @click="downloadConfig" type="default" size="small" icon="cly-icon-btn cly-icon-download">
+                        Download Config
                     </el-button>
                 </div>
             </template>
-    </cly-diff-helper>
-    </cly-main>
+        </cly-header>
+        <cly-main>
+            <div v-if="!isTableLoading" class="bu-columns bu-is-gapless">
+                <div class="bu-column bu-is-12 selected-config">
+                    <form>
+                        <div :id="group.label" :key="index" v-for="(group, index) in groups" v-if="group.label !== 'Experimental' || showExperimental">
+                            <h3 v-if="group.label" class="bu-mb-4" data-test-id="sdk-control-label"> 
+                                {{group.label}}
+                                <cly-tooltip-icon class="ion ion-help-circled" placement="bottom"></cly-tooltip-icon>
+                            </h3>
+                            <cly-section class="bu-mr-5 bu-mb-4">
+                                <template slot-scope="scope">
+                                    <div 
+                                        v-for="key in group.list" :key="key"
+                                            v-if="shouldShowKey(key)"
+                                        class="bu-columns bu-is-vcentered bu-p-5 config-section">
+                                        <div class="bu-column bu-is-7">
+                                            <p class="bu-has-text-weight-medium" :data-test-id="slugFor(key) + '-title-label'">
+                                                {{ getData[key].name }}
+                                                <span v-if="getData[key].experimental" style="display:inline-block;width:5px;"></span>
+                                                <span v-if="getData[key].enforced === true" class="configuration-warning-container--applied">
+                                                    <i class="far fa-check-circle"></i>Applied to SDKs
+                                                </span>
+                                            </p>
+                                            <p class="bu-has-text-weight-normal bu-mt-2" :data-test-id="slugFor(key) + '-description-label'" v-html="getData[key].description" v-if="getData[key].description"></p>
+                                            <div v-if="getData[key].tooltipMessage" :class="['sdk-support-text', getData[key].tooltipClass]">
+                                                <i class="fas fa-exclamation-circle"></i>
+                                                <span v-html="getData[key].tooltipMessage"></span>
+                                            </div>
+                                        </div>
+                                        <div class="bu-column bu-is-2"></div>
+                                        <div class="bu-column bu-is-3 bu-is-flex bu-is-justify-content-flex-start">
+                                            <div v-if="getData[key].type === 'preset'" class="sdk-preset-select-wrapper">
+                                                <el-select
+                                                    :value="valueFor(key)"
+                                                    placeholder="Select preset"
+                                                    @change="onPresetChange(key, getData[key].presets.find(p=>p.name === $event))">
+                                                    <el-option 
+                                                        v-for="preset in getData[key].presets"
+                                                        v-if="preset.name !== 'Custom'"
+                                                        :key="preset.name"
+                                                        :value="preset.name"
+                                                        :label="preset.name">
+                                                        <span>{{ preset.name }}<span v-if="preset.isDefault" class="sdk-default-flag"> (Default)</span></span>
+                                                    </el-option>
+                                                </el-select>
+                                            </div>
+                                            <div 
+                                                v-else-if="getData[key].type === 'function'" 
+                                                v-html="getData[key].render(getData[key])">
+                                            </div>
+                                            <template v-else-if="getData[key].type === 'text'">
+                                                <div class="validation-wrapper">
+                                                        <el-input
+                                                        @input="onChange(key, $event)"
+                                                        :value="valueFor(key)"
+                                                        v-bind="getData[key].attrs"
+                                                        :class="{ 'config-invalid': (key === 'esb' || key === 'esw') && validationErrors && validationErrors[key] }">
+                                                    </el-input>
+                                                    <div class="config-validation-box" v-if="(key === 'esb' || key === 'esw')">
+                                                        <div v-if="validationErrors && validationErrors[key]" class="status-box invalid">
+                                                            <span class="dot red"></span>
+                                                            <span class="status-text">{{ validationErrors[key] }}</span>
+                                                        </div>
+                                                        <div v-else class="status-box valid">
+                                                            <span class="dot green"></span>
+                                                            <span class="status-text">Valid JSON</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <el-select 
+                                                v-else-if="getData[key].type === 'select'" 
+                                                @change="onChange(key, $event)"
+                                                :value="valueFor(key)"
+                                                v-bind="getData[key].attrs">
+                                                <el-option :key="option.value" :value="option.value" :label="option.label" v-for="option in getData[key].list"></el-option>
+                                            </el-select>
+                                            <el-slider 
+                                                v-else-if="getData[key].type === 'slider'" 
+                                                @change="onChange(key, $event)"
+                                                :value="valueFor(key)"
+                                                v-bind="getData[key].attrs">
+                                            </el-slider>
+                                            <el-button
+                                                v-else-if="getData[key].type === 'button'" 
+                                                @click="getData[key].click()"
+                                                v-bind="getData[key].attrs">
+                                                {{ getData[key].name }}
+                                            </el-button>
+                                            <el-select 
+                                                v-else-if="getData[key].type === 'switch'"
+                                                :test-id="slugFor(key)"
+                                                :data-test-id="slugFor(key) + '-el-switch-wrapper'"
+                                                @change="onChange(key, $event === 'enabled')"
+                                                :value="getData[key].value ? 'enabled' : 'disabled'"
+                                                :class="'sdk-switch-select'"
+                                                placeholder="Select">
+                                                <el-option key="enabled" label="Enabled" value="enabled">
+                                                    <span>Enabled<span v-if="getData[key].default === true" class="sdk-default-flag"> (Default)</span></span>
+                                                </el-option>
+                                                <el-option key="disabled" label="Disabled" value="disabled">
+                                                    <span>Disabled<span v-if="getData[key].default === false" class="sdk-default-flag"> (Default)</span></span>
+                                                </el-option>
+                                            </el-select>
+                                            <div v-else-if="getData[key].type === 'number'" class="sdk-number-wrapper">
+                                                <el-input-number 
+                                                    @change="onChange(key, $event)"
+                                                    :max='2147483647' 
+                                                    :min='0' 
+                                                    :value="valueFor(key)"
+                                                    v-bind="getData[key].attrs">
+                                                </el-input-number>
+                                                <div v-if="getData[key].default !== undefined" class="sdk-default-hint">
+                                                    Default: {{ getData[key].default }}
+                                                </div>
+                                            </div>
+                                            <cly-colorpicker 
+                                                v-else-if="getData[key].type === 'colorpicker'" 
+                                                :value="valueFor(key)"
+                                                @change="onChange(key, getData[key])"
+                                                v-bind="getData[key].attrs"
+                                                style="display:inline">
+                                            </cly-colorpicker>
+                                            <el-upload
+                                                v-else-if="getData[key].type === 'image'" 
+                                                :show-file-list="false"
+                                                :before-upload="getData[key].before"
+                                                :on-success="getData[key].success"
+                                                :on-error="getData[key].error"
+                                                v-bind="getData[key].attrs">
+                                                <div :class="getData[key].image_size">
+                                                    <div v-if="getData[key].value" class="image-delete bu-is-flex">
+                                                        <el-button 
+                                                        size="small" 
+                                                        type="text" 
+                                                        @click.stop="onChange(key, '')"
+                                                        class="bu-p-0">{{i18n('management-users.delete-logo')}}</el-button>
+                                                        <img :src="getData[key].value + '?' + Date.now()">
+                                                    </div>
+                                                    <div v-else class="bu-is-flex">
+                                                        <el-button type="default" style="display:flex;margin:auto;">{{i18n('white-labeling.choose-file')}}</el-button>
+                                                        <el-button type="default" disabled style="width: 165px;height: 50px;cursor: default;">{{i18n('white-labeling.logo-preview')}}</el-button>
+                                                    </div>
+                                                </div>
+                                                <span class="config-error">{{getData[key].errorMessage || ""}}</span>
+                                            </el-upload>
+                                            <el-input 
+                                                v-else
+                                                @input="onChange(key, $event)"
+                                                :value="getData[key].value || getData[key].default">
+                                            </el-input>
+                                            <template v-if="key !== 'bom_preset' && key !== 'filter_preset'">
+                                                <el-button v-if="getData[key].enforced === true" @click="reverseEnforce(key)" type="default" size="small" icon="fas fa-minus-circle" class="sdk-enforce-btn enforced sdk-enforce-fixed">
+                                                    Remove from SDKs
+                                                </el-button>
+                                                <el-button v-else @click="enforce(key)" type="default" size="small" icon="far fa-check-circle" class="sdk-enforce-btn not-enforced sdk-enforce-fixed">
+                                                    Apply to SDKs
+                                                </el-button>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                </template>
+                                    </cly-section>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+        <cly-diff-helper :diff="diff" :is-modal="true" :disabled="isSaving" :emit-save-when-disabled="false" @discard="unpatch"
+            @save="save">
+                <template v-slot:main>
+                    <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected"
+                        style="height: 100%;">
+                        <span class="selected-count-blue bu-pl-1 text-medium">
+                            <span
+                                style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{diff.length}}</span>
+                            <span v-if="diff.length>1" class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{
+                                i18n("common.diff-helper.changes-made") }}</span>
+                            <span v-else class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{
+                                i18n("common.diff-helper.changes-made-single") }}</span>
+                            <span v-if="diff.length>1" class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep")
+                                }}</span>
+                            <span v-else class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep-single") }}</span>
+                        </span>
+                        <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
+                        <el-button skin="red" class="bu-mr-2" size="small" type="default" @click="save()">
+                            <i class="cly-io-16 cly-io cly-io-save-disc" style="font-size: larger;"></i>
+                            <span class="bu-ml-1">
+                                {{ i18n('dashboards.save-changes') }}
+                            </span>
+                        </el-button>
+                        <el-button class="x-button" @click="unpatch()">
+                            <i class="cly-io-16 cly-io cly-io-x color-cool-gray-50"></i>
+                        </el-button>
+                    </div>
+                </template>
+        </cly-diff-helper>
+        </cly-main>
+    </div>
 </div>

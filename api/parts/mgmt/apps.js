@@ -842,16 +842,12 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     * Deletes all app's events
     **/
     function deleteEvents() {
-        common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
-            if (!err && events && events.list) {
-                common.db.collection("events_data").remove({'_id': {"$regex": "^" + appId + "_.*"}}, function() {
-                    if (fromAppDelete || params.qstring.args.period === "reset") {
-                        common.db.collection('events').remove({'_id': common.db.ObjectID(appId)}, function() {});
-                    }
-                });
+        common.db.collection("events_data").remove({'_id': {"$regex": "^" + appId + "_.*"}}, function() {
+            if (fromAppDelete || params.qstring.args.period === "reset") {
+                common.db.collection('events').remove({'_id': common.db.ObjectID(appId)}, function() {});
             }
-            common.drillDb.collection("drill_meta").remove({"_id": {"$regex": "^" + appId} }, function() {});
         });
+        common.drillDb.collection("drill_meta").remove({"_id": {"$regex": "^" + appId} }, function() {});
     }
     common.db.collection('app_users' + appId).drop(function() {
         if (!fromAppDelete) {

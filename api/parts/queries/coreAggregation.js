@@ -219,6 +219,28 @@ catch (error) {
     };
 
 
+    agg.getUniqueUserModel = async function(params, options) {
+        if (!common.queryRunner) {
+            throw new Error('QueryRunner not initialized. Ensure API server is fully started.');
+        }
+
+        const queryDef = {
+            name: 'GET_UNIQUE_USER_MODEL',
+            adapters: {
+                mongodb: {
+                    handler: mongodbRunner.getUniqueUserModel
+                }
+            }
+        };
+        if (clickHouseRunner && clickHouseRunner.getUniqueUserModel) {
+            queryDef.adapters.clickhouse = {
+                handler: clickHouseRunner.getUniqueUserModel
+            };
+        }
+        return common.queryRunner.executeQuery(queryDef, params, options);
+    };
+
+
     /**
    * Gets aggregated data chosen timezone.If not set - returns in UTC timezone.
    * @param {object} params - options

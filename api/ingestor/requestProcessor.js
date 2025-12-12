@@ -137,6 +137,12 @@ function fillUserProperties(dbAppUser, meta_doc) {
         else if (shortRep === "ls") {
             dbAppUser.ls = (dbAppUser.lac) ? dbAppUser.lac : dbAppUser.ls;
         }
+        else if (shortRep === "sdk_name") {
+            dbAppUser.sdk_name = dbAppUser?.sdk?.name;
+        }
+        else if (shortRep === "sdk_version") {
+            dbAppUser.sdk_version = dbAppUser?.sdk?.version;
+        }
 
         if (typeof dbAppUser[shortRep] !== "undefined") {
             setType = countlyUP[i].type || "";
@@ -771,6 +777,9 @@ const validateAppForWriteAPI = (params, done) => {
             if (params.req && params.req.method && params.req.method.toLowerCase() === 'post') {
                 payload += "&" + params.req.body;
             }
+            else if (params.bulk) {
+                payload += "&" + params.req.body;
+            }
             //remove dynamic parameters
             payload = payload.replace(new RegExp("[?&]?(rr=[^&\n]+)", "gm"), "");
             payload = payload.replace(new RegExp("[?&]?(checksum=[^&\n]+)", "gm"), "");
@@ -891,6 +900,7 @@ const processBulkRequest = async function(requests, params) {
         }
         else {
             requests[i].app_key = requests[i].app_key || appKey;
+            params.req.body = JSON.stringify(requests[i]);
             const tmpParams = {
                 'app_id': '',
                 'app_cc': '',

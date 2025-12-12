@@ -103,7 +103,7 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
             }
         });
         try {
-            for await (const {token, events} of eventSource) {
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     for (var k = 0; k < events.length; k++) {
                         if ((events[k].e === '[CLY]_session_begin' || events[k].e === '[CLY]_custom')) {
@@ -149,7 +149,7 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
                     }
                     await common.manualWriteBatcher.flush("countly", "times_of_day");
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Event processing error:', err);
