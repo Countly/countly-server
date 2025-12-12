@@ -15,28 +15,30 @@ const Promise = require('bluebird');
 
 pluginManager.dbConnection("countly").then((db) => {
     common.db = db;
+    const NEW_ID_STR = NEW_ID;
+    const OLD_ID_STR = OLD_ID;
     const NEW_OID = common.db.ObjectID(NEW_ID);
     const OLD_OID = common.db.ObjectID(OLD_ID);
 
     function changeOwner(NEW_ID, OLD_ID, done) {
-        changeOwnerDashboard(NEW_ID, OLD_ID, function() {
-            common.db.collection("alerts").update({createdBy: OLD_OID}, {$set: {createdBy: NEW_OID}}, function(err, res) {
+        changeOwnerDashboard(NEW_ID_STR, OLD_ID_STR, function() {
+            common.db.collection("alerts").updateMany({createdBy: OLD_OID}, {$set: {createdBy: NEW_OID}}, function(err, res) {
                 console.log("alerts", err, res && res.result);
-                common.db.collection("auth_tokens").update({owner: OLD_ID}, {$set: {owner: NEW_ID}}, function(err, res) {
+                common.db.collection("auth_tokens").updateMany({owner: OLD_ID_STR}, {$set: {owner: NEW_ID_STR}}, function(err, res) {
                     console.log("auth_tokens", err, res && res.result);
-                    common.db.collection("calculated_metrics").update({owner_id: OLD_ID}, {$set: {owner_id: NEW_ID}}, function(err, res) {
+                    common.db.collection("calculated_metrics").updateMany({owner_id: OLD_ID_STR}, {$set: {owner_id: NEW_ID_STR}}, function(err, res) {
                         console.log("calculated_metrics", err, res && res.result);
-                        common.db.collection("concurrent_users_alerts").update({created_by: OLD_OID}, {$set: {created_by: NEW_OID}}, function(err, res) {
+                        common.db.collection("concurrent_users_alerts").updateMany({created_by: OLD_OID}, {$set: {created_by: NEW_OID}}, function(err, res) {
                             console.log("concurrent_users_alerts", err, res && res.result);
-                            common.db.collection("data_migrations").update({userid: OLD_OID}, {$set: {userid: NEW_OID}}, function(err, res) {
+                            common.db.collection("data_migrations").updateMany({userid: OLD_OID}, {$set: {userid: NEW_OID}}, function(err, res) {
                                 console.log("data_migrations", err, res && res.result);
-                                changeOwnerLongTasks(NEW_ID, OLD_ID, function(err, res) {
+                                changeOwnerLongTasks(NEW_ID_STR, OLD_ID_STR, function(err, res) {
                                     console.log("messages", err, res && res.result); // "createdBy": { "$oid": "63442fa1ec94a1edb60f2453"}
-                                    common.db.collection("messages").update({"info.createdBy": OLD_ID}, {$set: {"info.createdBy": NEW_ID}}, function(err, res) {
+                                    common.db.collection("messages").updateMany({"info.createdBy": OLD_ID}, {$set: {"info.createdBy": NEW_ID}}, function(err, res) {
                                         console.log("messages", err, res && res.result);
-                                        common.db.collection("notes").update({owner: OLD_ID}, {$set: {owner: NEW_ID}}, function(err, res) {
+                                        common.db.collection("notes").updateMany({owner: OLD_ID_STR}, {$set: {owner: NEW_ID_STR}}, function(err, res) {
                                             console.log("notes", err, res && res.result);
-                                            common.db.collection("reports").update({user: OLD_OID}, {$set: {user: NEW_OID}}, function(err, res) {
+                                            common.db.collection("reports").updateMany({user: OLD_OID}, {$set: {user: NEW_OID}}, function(err, res) {
                                                 console.log("reports", err, res && res.result);
                                                 done();
                                             });
@@ -81,11 +83,14 @@ pluginManager.dbConnection("countly").then((db) => {
                     }
                 };
 
-                common.db.collection("dashboards").update({_id: dash._id}, update, function(err) {
+                common.db.collection("dashboards").update({_id: dash._id}, update, function(err, res) {
                     if (err) {
                         console.log("Error while updating dashboard ", JSON.stringify(dash));
                         console.log("Error message ", err.message);
                         return done(true);
+                    }
+                    else {
+                        console.log("   " + dash._id + " " + JSON.stringify((res && res.result) || {}));
                     }
 
                     return done(null);
@@ -136,7 +141,7 @@ pluginManager.dbConnection("countly").then((db) => {
                             });
                         });
                     }).then(function() {
-                        console.log(cn + " records updated");
+                        console.log(cn + " records updated for long_tasks");
                         done();
                     });
                 }
