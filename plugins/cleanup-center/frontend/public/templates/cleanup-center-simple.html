@@ -8,7 +8,7 @@
             <div class="bu-level cly-vue-eldatatable__header cly-vue-eldatatable__header--white">
                 <div class="bu-level-left">
                     <!-- Filter Dropdown -->
-                    <cly-dropdown :width="400" ref="filterDropdown" @hide="reloadFilterValues">
+                    <cly-dropdown :width="420" ref="filterDropdown" @hide="reloadFilterValues">
                         <template v-slot:trigger="dropdown">
                             <cly-input-dropdown-trigger
                                 v-tooltip="filterSummary"
@@ -42,39 +42,47 @@
                                                 </div>
                                             </div>
                                             
-                                            <cly-form-field :label="i18n('cleanup-center.status')">
-                                                <el-select 
-                                                    placement="bottom-start" 
-                                                    class="select-full-width" 
-                                                    v-model="formScope.editedObject.statuses" 
-                                                    :placeholder="i18n('cleanup-center.all-statuses')"
+                                            <cly-form-field :label="i18n('cleanup-center.app-filter')">
+                                                <el-select
+                                                    placement="bottom-start"
+                                                    class="select-full-width"
+                                                    v-model="formScope.editedObject.app"
+                                                    :placeholder="i18n('cleanup-center.all-apps')"
+                                                    clearable
+                                                    filterable>
+                                                    <el-option
+                                                        v-for="app in apps"
+                                                        :key="app._id"
+                                                        :label="app.name"
+                                                        :value="app._id">
+                                                    </el-option>
+                                                </el-select>
+                                            </cly-form-field>
+
+                                            <cly-form-field :label="i18n('cleanup-center.entity-filter')">
+                                                <el-input
+                                                    v-model="formScope.editedObject.entity"
+                                                    :placeholder="i18n('cleanup-center.entity-filter-placeholder')">
+                                                </el-input>
+                                            </cly-form-field>
+
+                                            <cly-form-field :label="i18n('cleanup-center.type-filter')">
+                                                <el-select
+                                                    placement="bottom-start"
+                                                    class="select-full-width"
+                                                    v-model="formScope.editedObject.types"
+                                                    :placeholder="i18n('cleanup-center.all-types')"
                                                     multiple
                                                     collapse-tags>
-                                                    <el-option 
-                                                        v-for="status in sortedStatusOptions" 
-                                                        :key="status.value" 
-                                                        :label="status.label" 
-                                                        :value="status.value">
+                                                    <el-option
+                                                        v-for="type in allowedTypeOptions"
+                                                        :key="type.value"
+                                                        :label="type.label"
+                                                        :value="type.value">
                                                     </el-option>
                                                 </el-select>
                                             </cly-form-field>
-                                            
-                                            <cly-form-field :label="i18n('cleanup-center.owner')">
-                                                <el-select 
-                                                    placement="bottom-start" 
-                                                    class="select-full-width" 
-                                                    v-model="formScope.editedObject.owner" 
-                                                    :placeholder="i18n('cleanup-center.all-owners')"
-                                                    filterable
-                                                    clearable>
-                                                    <el-option 
-                                                        v-for="owner in uniqueOwners" 
-                                                        :key="owner" 
-                                                        :label="owner" 
-                                                        :value="owner">
-                                                    </el-option>
-                                                </el-select>
-                                            </cly-form-field>
+
                                             
                                             <div class="bu-has-text-right bu-pt-3">
                                                 <el-button type="secondary" @click="handleCancelFilterClick">
@@ -118,9 +126,17 @@
                     @row-click="openDetailsDrawer"
                     @cell-mouse-enter="onCellMouseEnter"
                     @cell-mouse-leave="onCellMouseLeave"
+                    @selection-change="handleSelectionChange"
                     :row-class-name="getRowClassName"
                     :row-key="getRowKey"
-                    :default-sort="{prop: 'createdAt', order: 'descending'}">
+                    :default-sort="{prop: 'lastSeen', order: 'descending'}">
+
+                    <!-- Selection -->
+                    <el-table-column
+                        type="selection"
+                        width="50"
+                        align="center">
+                    </el-table-column>
                     
                     <!-- Type -->
                     <el-table-column
@@ -161,19 +177,6 @@
                         </template>
                     </el-table-column>
 
-                    <!-- Status -->
-                    <el-table-column
-                        prop="status"
-                        :label="i18n('cleanup-center.status')"
-                        width="100"
-                        sortable>
-                        <template slot-scope="scope">
-                            <el-tag :type="getStatusTagType(scope.row.status)" size="small">
-                                {{ scope.row.status }}
-                            </el-tag>
-                        </template>
-                    </el-table-column>
-
                     <!-- Last Viewed -->
                     <el-table-column
                         prop="lastSeen"
@@ -191,21 +194,6 @@
                                     <div class="text-medium">{{ formatRelativeTime(scope.row.lastSeen) }}</div>
                                     <div class="color-cool-gray-50">{{ formatFullTimestamp(scope.row.lastSeen) }}</div>
                                 </template>
-                            </div>
-                            <el-tag v-else type="warning" size="mini">{{ i18n('common.missing') }}</el-tag>
-                        </template>
-                    </el-table-column>
-
-                    <!-- Created -->
-                    <el-table-column
-                        prop="createdAt"
-                        :label="i18n('cleanup-center.created')"
-                        width="140"
-                        sortable>
-                        <template slot-scope="scope">
-                            <div v-if="scope.row.createdAt" class="text-small">
-                                <div class="text-medium">{{ formatRelativeTime(scope.row.createdAt) }}</div>
-                                <div class="color-cool-gray-50">{{ formatFullTimestamp(scope.row.createdAt) }}</div>
                             </div>
                             <el-tag v-else type="warning" size="mini">{{ i18n('common.missing') }}</el-tag>
                         </template>
@@ -229,25 +217,17 @@
                     <!-- Actions -->
                     <el-table-column
                         type="options"
-                        align="center">
+                        align="center"
+                        width="64">
                         <template slot-scope="scope">
-                            <cly-more-options 
-                                v-if="scope.row.hover" 
-                                size="small" 
-                                @command="handleRowAction">
-                                <el-dropdown-item :command="{action: 'rename', entity: scope.row}">
-                                    {{ i18n('cleanup-center.rename') }}
-                                </el-dropdown-item>
-                                <el-dropdown-item :command="{action: scope.row.hidden ? 'unhide' : 'hide', entity: scope.row}" divided>
-                                    {{ scope.row.hidden ? i18n('cleanup-center.unhide') : i18n('cleanup-center.hide') }}
-                                </el-dropdown-item>
-                                <el-dropdown-item :command="{action: scope.row.blocked ? 'unblock' : 'block', entity: scope.row}">
-                                    {{ scope.row.blocked ? i18n('cleanup-center.unblock') : i18n('cleanup-center.block') }}
-                                </el-dropdown-item>
-                                <el-dropdown-item :command="{action: 'delete', entity: scope.row}" divided>
-                                    {{ i18n('cleanup-center.delete') }}
-                                </el-dropdown-item>
-                            </cly-more-options>
+                            <el-tooltip content="Preview (no tracking)" placement="top">
+                                <el-button
+                                    type="text"
+                                    size="mini"
+                                    icon="ion-eye"
+                                    @click.stop="openPreview(scope.row)">
+                                </el-button>
+                            </el-tooltip>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -410,7 +390,12 @@
                     
                     <!-- Dashboard-specific: View History Section -->
                     <div v-if="selectedEntity.type === 'dashboard'" class="bu-mt-5">
-                        <h4 class="bu-mb-4">{{ i18n('cleanup-center.view-history') }}</h4>
+                        <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-between bu-mb-3">
+                            <h4 class="bu-mb-0">
+                                {{ i18n('cleanup-center.view-history') }}
+                                <span class="text-small color-cool-gray-50">({{ getViewHistoryRangeLabel() }})</span>
+                            </h4>
+                        </div>
                         
                         <!-- Timeline Chart - Always show, even with no data -->
                         <div class="bu-mb-5" style="height: 250px;">
@@ -434,7 +419,7 @@
                                         <div class="text-medium font-weight-bold">{{ user.userName || user.userId }}</div>
                                         <div class="text-small color-cool-gray-50">{{ user.formattedDate }}</div>
                                     </div>
-                                    <div class="text-medium font-weight-bold" style="color: #0166D6;">
+                                    <div class="text-medium font-weight-bold color-cool-gray-100">
                                         {{ user.count }} {{ i18n('cleanup-center.views') }}
                                     </div>
                                 </div>

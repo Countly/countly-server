@@ -1639,7 +1639,11 @@
             var self = this;
 
             // Track dashboard view after 5 seconds (debounce to avoid tracking accidental opens)
-            if (this.dashboardId) {
+            // Skip tracking in preview mode (e.g., when opened from Cleanup Center with preview params)
+            var searchParams = new URLSearchParams(window.location.search || "");
+            var isPreview = searchParams.get("preview") === "true" || searchParams.has("cleanupPreview");
+
+            if (this.dashboardId && !isPreview) {
                 this.viewTrackingTimeout = setTimeout(function() {
                     countlyDashboards.service.dashboards.trackView(self.dashboardId).catch(function(err) {
                         // Silently fail - this is just analytics tracking

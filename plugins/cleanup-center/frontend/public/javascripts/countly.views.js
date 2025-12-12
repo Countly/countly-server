@@ -1,7 +1,8 @@
-/* global countlyVue, CV, countlyCommon, CountlyHelpers, app, countlyCleanupCenter */
+/* global countlyVue, CV, countlyCommon, CountlyHelpers, app, countlyCleanupCenter, $ */
 
 (function() {
     const FEATURE_NAME = 'cleanup_center';
+    const ALLOWED_DASHBOARD_TYPES = ['dashboard', 'cohort', 'funnel', 'formula'];
 
     // Main Cleanup Center View - V2 Production Design
     const CleanupCenterView = countlyVue.views.create({
@@ -25,14 +26,10 @@
                 allEntities: [],
                 selectedEntityIds: [],
                 searchQuery: '',
-                selectedTypes: ['dashboard'],
-                selectedStatuses: [],
-                selectedOwner: '',
                 currentFilter: {
                     app: null,
-                    types: ['dashboard'],
-                    statuses: [],
-                    owner: null
+                    types: ALLOWED_DASHBOARD_TYPES.slice(),
+                    entity: ''
                 },
                 sortBy: 'lastSeen',
                 density: 'comfortable',
@@ -100,12 +97,6 @@
                     { value: 'long_task', label: 'Long Task', icon: 'ion-load-a' },
                     { value: 'populator_template', label: 'Pop. Template', icon: 'ion-ios-paper-outline' },
                     { value: 'populator_environment', label: 'Pop. Environment', icon: 'ion-ios-world-outline' }
-                ],
-                statusOptions: [
-                    { value: 'live', label: 'Live' },
-                    { value: 'deprecated', label: 'Deprecated' },
-                    { value: 'blocked', label: 'Blocked' },
-                    { value: 'hidden', label: 'Hidden' }
                 ]
             };
         },
@@ -115,9 +106,9 @@
                     return a.label.localeCompare(b.label);
                 });
             },
-            sortedStatusOptions: function() {
-                return this.statusOptions.slice().sort(function(a, b) {
-                    return a.label.localeCompare(b.label);
+            allowedTypeOptions: function() {
+                return this.sortedEntityTypes.filter(function(t) {
+                    return ALLOWED_DASHBOARD_TYPES.includes(t.value);
                 });
             },
             totalEntities: function() {
@@ -138,12 +129,20 @@
             },
             activeFiltersCount: function() {
                 let count = 0;
-                // Don't count dashboard type filter since it's always applied
-                if (this.selectedStatuses.length > 0) {
+                if (this.currentFilter.app) {
                     count++;
                 }
-                if (this.selectedOwner) {
+                if (this.currentFilter.entity) {
                     count++;
+                }
+                if (this.currentFilter.types && this.currentFilter.types.length > 0) {
+                    const isDefaultTypes = this.currentFilter.types.length === ALLOWED_DASHBOARD_TYPES.length &&
+                        this.currentFilter.types.every(function(t) {
+                            return ALLOWED_DASHBOARD_TYPES.includes(t);
+                        });
+                    if (!isDefaultTypes) {
+                        count++;
+                    }
                 }
                 return count;
             },
@@ -165,12 +164,12 @@
                     entities = entities.filter(e => e.type && this.currentFilter.types.includes(e.type));
                 }
 
-                if (this.currentFilter.statuses && Array.isArray(this.currentFilter.statuses) && this.currentFilter.statuses.length > 0) {
-                    entities = entities.filter(e => e.status && this.currentFilter.statuses.includes(e.status));
-                }
-
-                if (this.currentFilter.owner) {
-                    entities = entities.filter(e => e.owner === this.currentFilter.owner);
+                if (this.currentFilter.entity) {
+                    const entityQuery = this.currentFilter.entity.toLowerCase();
+                    entities = entities.filter(e =>
+                        (e.key && e.key.toLowerCase().includes(entityQuery)) ||
+                        (e.displayName && e.displayName.toLowerCase().includes(entityQuery))
+                    );
                 }
 
                 // Apply search query
@@ -189,24 +188,30 @@
             filterSummary: function() {
                 const summary = [];
 
-                // Type filter is always Dashboard, so we don't show it in summary
+                if (this.currentFilter.app) {
+                    const app = this.apps.find(a => a._id === this.currentFilter.app);
+                    summary.push(app ? app.name : this.i18n('cleanup-center.app'));
+                }
+                else {
+                    summary.push(this.i18n('cleanup-center.all-apps'));
+                }
 
-                if (this.currentFilter.statuses && this.currentFilter.statuses.length > 0) {
-                    const statusLabels = this.currentFilter.statuses.map(s => {
-                        const status = this.statusOptions.find(so => so.value === s);
-                        return status ? status.label : s;
+                if (this.currentFilter.types && this.currentFilter.types.length > 0) {
+                    const labels = this.currentFilter.types.map(t => {
+                        const match = this.entityTypes.find(et => et.value === t);
+                        return match ? match.label : t;
                     });
-                    summary.push(statusLabels.join(', '));
+                    summary.push(labels.join(', '));
                 }
                 else {
-                    summary.push(this.i18n('cleanup-center.all-statuses'));
+                    summary.push(this.i18n('cleanup-center.all-types'));
                 }
 
-                if (this.currentFilter.owner) {
-                    summary.push(this.currentFilter.owner);
+                if (this.currentFilter.entity) {
+                    summary.push(this.currentFilter.entity);
                 }
                 else {
-                    summary.push(this.i18n('cleanup-center.all-owners'));
+                    summary.push(this.i18n('cleanup-center.all-entities'));
                 }
 
                 return summary.join(', ');
@@ -265,15 +270,6 @@
                 }
                 return '';
             },
-            uniqueOwners: function() {
-                const owners = new Set();
-                this.allEntities.forEach(e => {
-                    if (e.owner) {
-                        owners.add(e.owner);
-                    }
-                });
-                return Array.from(owners).sort();
-            },
             uniqueActors: function() {
                 const actors = new Set();
                 this.auditLogs.forEach(log => {
@@ -287,9 +283,8 @@
         mounted: function() {
             this.loadPreferences();
 
-            // Always filter by dashboard type - set and apply immediately
-            this.currentFilter.types = ['dashboard'];
-            this.selectedTypes = ['dashboard'];
+            // Limit to allowed dashboard-related types by default
+            this.currentFilter.types = ALLOWED_DASHBOARD_TYPES.slice();
             // Ensure app filter is null to show all apps
             this.currentFilter.app = null;
             this.selectedApp = null;
@@ -455,11 +450,8 @@
                 }
             },
             refresh: function() {
-                this.loadEntities();
-                this.loadRecentChangesCount();
-                if (this.activeView === 'history') {
-                    this.loadAuditHistory();
-                }
+                // Disable periodic auto-refresh to avoid unnecessary reloads; data is fetched on page load and user actions.
+                return $.Deferred().resolve();
             },
             handleTabClick: function(tab) {
                 if (tab.name === 'audit' && this.auditLogs.length === 0) {
@@ -471,19 +463,14 @@
                 this.savePreferences();
             },
             handleSubmitFilter: function(newFilter) {
-                // Ensure types and statuses are arrays (handle undefined/null cases)
-                // Always keep dashboard type filter
                 const filter = {
                     app: newFilter.app || null,
-                    types: ['dashboard'], // Always filter by dashboard
-                    statuses: Array.isArray(newFilter.statuses) ? newFilter.statuses : (newFilter.statuses ? [newFilter.statuses] : []),
-                    owner: newFilter.owner || null
+                    types: Array.isArray(newFilter.types) && newFilter.types.length > 0 ? newFilter.types : ALLOWED_DASHBOARD_TYPES.slice(),
+                    entity: (newFilter.entity || '').trim()
                 };
                 this.currentFilter = filter;
-                // If app is explicitly set to null, keep selectedApp as null to load entities for all apps
                 this.selectedApp = (typeof filter.app === 'undefined') ? countlyCommon.ACTIVE_APP_ID : filter.app;
                 this.currentPage = 1;
-                // Apply filter immediately
                 this.loadEntities();
                 if (this.$refs.filterDropdown) {
                     this.$refs.filterDropdown.doClose();
@@ -499,13 +486,11 @@
             handleResetFilterClick: function() {
                 this.currentFilter = {
                     app: null,
-                    types: ['dashboard'], // Always keep dashboard filter
-                    statuses: [],
-                    owner: null
+                    types: ALLOWED_DASHBOARD_TYPES.slice(),
+                    entity: ''
                 };
                 this.selectedApp = null;
                 this.currentPage = 1;
-                // Apply filter immediately
                 this.loadEntities();
                 if (this.$refs.filterForm) {
                     this.$refs.filterForm.reset();
@@ -568,25 +553,30 @@
                 const entity = command.entity;
 
                 switch (action) {
-                case 'view':
-                    this.openDetailsDrawer(entity);
-                    break;
-                case 'hide':
-                    this.toggleHide(entity);
-                    break;
-                case 'block':
-                    this.toggleBlock(entity);
-                    break;
-                case 'rename':
-                    this.renameEntity(entity);
-                    break;
-                case 'merge':
-                    this.mergeEntity(entity);
-                    break;
-                case 'delete':
-                    this.deleteEntity(entity);
+                case 'preview':
+                    this.openPreview(entity);
                     break;
                 }
+            },
+            openPreview: function(entity) {
+                if (!entity || !entity.id) {
+                    return;
+                }
+                // Expected id format from cleanup-center backend: dashboard_<appId>_<dashboardId>
+                const parts = (entity.id || '').split('_');
+                if (parts.length < 3) {
+                    return;
+                }
+                const appId = parts[1];
+                // Dashboard id may contain underscores; rejoin remainder
+                const dashboardId = parts.slice(2).join('_');
+
+                // Build hash-based dashboard URL with preview flags that are ignored by tracking
+                const base = window.location.origin;
+                const hashPath = '#/' + encodeURIComponent(appId) + '/custom/' + encodeURIComponent(dashboardId);
+                const query = '?preview=true&cleanupPreview=1';
+                const previewUrl = base + '/dashboard?' + hashPath + query;
+                window.open(previewUrl, '_blank', 'noopener');
             },
             handleBatchAction: function(command) {
                 switch (command) {
@@ -599,13 +589,18 @@
                 }
             },
             filterToUnused: function() {
-                this.selectedTypes = ['event'];
+                this.currentFilter.types = ['event'];
+                this.currentFilter.entity = '';
+                this.currentFilter.lastSeenRange = null;
                 this.sortBy = 'lastSeen';
                 this.currentPage = 1;
                 this.activeView = 'data';
             },
             filterToBlocked: function() {
-                this.selectedStatuses = ['blocked'];
+                this.searchQuery = '';
+                this.currentFilter.types = ['dashboard'];
+                this.currentFilter.entity = '';
+                this.currentFilter.lastSeenRange = null;
                 this.currentPage = 1;
                 this.activeView = 'data';
             },
@@ -1237,6 +1232,14 @@
 
                 return displayData;
             },
+            getViewHistoryRangeLabel: function() {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const start = new Date(today);
+                start.setDate(start.getDate() - 29);
+                const opts = {month: 'short', day: 'numeric'};
+                return start.toLocaleDateString(undefined, opts) + ' - ' + today.toLocaleDateString(undefined, opts);
+            },
             getViewHistoryChartOptions: function(entity) {
                 var viewUsers = entity.viewUsers || [];
 
@@ -1266,21 +1269,48 @@
                 // Prepare chart data - format dates nicely
                 var xAxisData = last30Days.map(function(dateStr) {
                     var d = new Date(dateStr);
-                    var month = d.toLocaleDateString('en-US', {month: 'short'});
+                    var month = d.toLocaleDateString(undefined, {month: 'short'});
                     var day = d.getDate();
                     return month + ' ' + day;
                 });
-
+                var xAxisStartLabel = xAxisData[0] || '';
+                var xAxisEndLabel = xAxisData[xAxisData.length - 1] || '';
                 var yAxisData = last30Days.map(function(d) {
                     return dateMap[d];
                 });
+                // Ensure we always have data points (zeros) to avoid "No data" state
+                if (!yAxisData.length) {
+                    yAxisData = new Array(last30Days.length || 30).fill(0);
+                }
+
+                const hasNonZero = yAxisData.some(function(v) {
+                    return v > 0;
+                });
+                let seriesData;
+                if (hasNonZero) {
+                    seriesData = yAxisData;
+                }
+                else {
+                    // Keep zeros visually on the baseline; add tiny epsilon to pass "no data" guards in chart component.
+                    seriesData = yAxisData.map(function() {
+                        return 0;
+                    });
+                    if (seriesData.length > 0) {
+                        seriesData[0] = 0.0001;
+                        seriesData[seriesData.length - 1] = 0.0001;
+                    }
+                }
+
+                var maxY = Math.max.apply(null, yAxisData);
+                // Ensure chart shows a baseline when all values are zero
+                var yAxisMax = maxY === 0 ? 1 : maxY + 1;
 
                 return {
                     grid: {
                         left: '10px',
                         right: '10px',
-                        top: '20px',
-                        bottom: '30px',
+                        top: '24px',
+                        bottom: '48px',
                         containLabel: true
                     },
                     xAxis: {
@@ -1288,17 +1318,24 @@
                         data: xAxisData,
                         boundaryGap: false,
                         axisLabel: {
-                            interval: function(index) {
-                                // Show labels every 5 days (0, 5, 10, 15, 20, 25, 29)
-                                return index % 5 === 0 || index === 29;
+                            interval: 0, // evaluate every tick
+                            formatter: function(value, index) {
+                                if (index === 0) {
+                                    return xAxisStartLabel;
+                                }
+                                if (index === xAxisData.length - 1) {
+                                    return xAxisEndLabel;
+                                }
+                                return '';
                             },
-                            formatter: function(value) {
-                                // Format as "Month Day"
-                                return value;
-                            },
+                            showMinLabel: true,
+                            showMaxLabel: true,
                             fontSize: 11,
                             color: '#666',
-                            rotate: 0
+                            rotate: 0,
+                            align: 'center',
+                            margin: 12,
+                            overflow: 'break'
                         },
                         axisLine: {
                             show: false
@@ -1310,6 +1347,8 @@
                     yAxis: {
                         type: 'value',
                         minInterval: 1,
+                        min: 0,
+                        max: yAxisMax,
                         axisLabel: {
                             fontSize: 11,
                             color: '#666'
@@ -1324,7 +1363,7 @@
                     series: [{
                         name: 'Views',
                         type: 'line',
-                        data: yAxisData,
+                        data: seriesData,
                         smooth: true,
                         lineStyle: {
                             color: '#0166D6',
@@ -1360,8 +1399,9 @@
                         formatter: function(params) {
                             if (params && params[0]) {
                                 var value = params[0].value;
+                                var displayValue = value < 0.5 ? 0 : value;
                                 var label = value === 1 ? 'view' : 'views';
-                                return '<strong>' + params[0].name + '</strong><br/>' + value + ' ' + label;
+                                return '<strong>' + params[0].name + '</strong><br/>' + displayValue + ' ' + label;
                             }
                             return '';
                         }
