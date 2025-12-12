@@ -455,6 +455,91 @@ async function extractCohorts(appId) {
         for (const cohort of cohorts) {
             const metadata = await getEntityMetadata(appId, 'cohort', cohort._id.toString());
 
+            // Helper to convert date to timestamp
+            const toTimestamp = (dateValue) => {
+                if (!dateValue) {
+                    return null;
+                }
+                if (typeof dateValue === 'number') {
+                    return dateValue;
+                }
+                if (dateValue instanceof Date) {
+                    return dateValue.getTime();
+                }
+                const momentDate = moment(dateValue);
+                return momentDate.isValid() ? momentDate.valueOf() : null;
+            };
+
+            // Calculate lastSeen from view_users array and detect unused cohorts
+            let lastSeenDate = null;
+            let viewCount = 0;
+            let isUnused = false;
+            let recentViewCount = 0; // Views in last 30 days
+
+            try {
+                // Use usage_30d_count if available (more accurate than counting view_users)
+                if (typeof cohort.usage_30d_count === 'number') {
+                    recentViewCount = cohort.usage_30d_count;
+                }
+                else if (cohort.view_users && Array.isArray(cohort.view_users) && cohort.view_users.length > 0) {
+                    // Fallback: count from view_users array if counter doesn't exist
+                    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+                    cohort.view_users.forEach(function(v) {
+                        if (v && v.date) {
+                            const timestamp = new Date(v.date).getTime();
+                            if (!isNaN(timestamp) && timestamp >= thirtyDaysAgo) {
+                                recentViewCount++;
+                            }
+                        }
+                    });
+                }
+
+                // Calculate total views and last seen date from view_users
+                if (cohort.view_users && Array.isArray(cohort.view_users) && cohort.view_users.length > 0) {
+                    viewCount = cohort.view_users.length;
+                    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+
+                    // Find the most recent view date
+                    const dates = cohort.view_users.map(v => {
+                        if (!v || !v.date) {
+                            return null;
+                        }
+                        const timestamp = new Date(v.date).getTime();
+                        if (isNaN(timestamp)) {
+                            return null;
+                        }
+                        return timestamp;
+                    }).filter(d => d !== null);
+
+                    if (dates.length > 0) {
+                        const maxDate = Math.max(...dates);
+                        lastSeenDate = new Date(maxDate).toISOString();
+
+                        // Cohort is unused if last view was more than 30 days ago
+                        if (maxDate < thirtyDaysAgo) {
+                            isUnused = true;
+                        }
+                    }
+                }
+                else if (cohort.lts) {
+                    // Fallback to old lts field
+                    lastSeenDate = moment(cohort.lts).toDate().toISOString();
+                    const lastSeenTime = new Date(cohort.lts).getTime();
+                    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+                    if (lastSeenTime < thirtyDaysAgo) {
+                        isUnused = true;
+                    }
+                }
+                else {
+                    // No view data at all
+                    isUnused = true;
+                }
+            }
+            catch (error) {
+                log.e('Error calculating lastSeen for cohort:', cohort._id, error);
+                lastSeenDate = null;
+            }
+
             entities.push({
                 id: `cohort_${appId}_${cohort._id}`,
                 type: 'cohort',
@@ -464,13 +549,17 @@ async function extractCohorts(appId) {
                 hidden: metadata ? metadata.hidden : false,
                 blocked: metadata ? metadata.blocked : false,
                 owner: metadata ? metadata.owner : (cohort.creator ? (typeof cohort.creator === 'object' ? cohort.creator.toString() : String(cohort.creator)) : null),
-                lastSeen: cohort.lts ? moment(cohort.lts).toDate().toISOString() : null,
-                usage30d: cohort.count || 0,
-                createdAt: cohort.created_at || null,
-                updatedAt: cohort.stateChanged || null,
+                lastSeen: lastSeenDate,
+                usage30d: recentViewCount, // Views in last 30 days only
+                totalViews: viewCount, // Total all-time views
+                createdAt: metadata ? metadata.createdAt : toTimestamp(cohort.created_at),
+                updatedAt: metadata ? metadata.updatedAt : toTimestamp(cohort.stateChanged),
                 tags: metadata ? metadata.tags : [],
                 userCount: cohort.count || 0,
-                description: cohort.description || null
+                description: cohort.description || null,
+                appId: appId,
+                viewUsers: cohort.view_users || [], // Include view_users for detailed tracking
+                isUnused: isUnused // Flag for cohorts not viewed in 30 days
             });
         }
     }

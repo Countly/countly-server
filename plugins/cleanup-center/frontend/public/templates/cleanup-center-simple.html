@@ -129,7 +129,7 @@
                     @selection-change="handleSelectionChange"
                     :row-class-name="getRowClassName"
                     :row-key="getRowKey"
-                    :default-sort="{prop: 'lastSeen', order: 'descending'}">
+                    :default-sort="{prop: 'lastSeen', order: 'ascending'}">
 
                     <!-- Selection -->
                     <el-table-column
@@ -189,10 +189,9 @@
                                 <template v-if="typeof scope.row.lastSeen === 'string' && (scope.row.lastSeen === 'Active' || scope.row.lastSeen === 'N/A')">
                                     <div class="text-medium">{{ scope.row.lastSeen }}</div>
                                 </template>
-                                <!-- Otherwise, show relative + absolute time -->
+                                <!-- Otherwise, show clean formatted date -->
                                 <template v-else>
-                                    <div class="text-medium">{{ formatRelativeTime(scope.row.lastSeen) }}</div>
-                                    <div class="color-cool-gray-50">{{ formatFullTimestamp(scope.row.lastSeen) }}</div>
+                                    <div class="text-medium">{{ formatLastViewedDate(scope.row.lastSeen) }}</div>
                                 </template>
                             </div>
                             <el-tag v-else type="warning" size="mini">{{ i18n('common.missing') }}</el-tag>
@@ -379,7 +378,7 @@
                         
                         <div style="flex: 1;">
                             <div class="text-small color-cool-gray-50 bu-mb-1">{{ i18n('cleanup-center.last-seen') }}</div>
-                            <div class="text-medium font-weight-bold">{{ formatFullTimestamp(selectedEntity.lastSeen) }}</div>
+                            <div class="text-medium font-weight-bold">{{ formatLastViewedDate(selectedEntity.lastSeen) }}</div>
                         </div>
                         
                         <div style="flex: 1;">
@@ -388,8 +387,8 @@
                         </div>
                     </div>
                     
-                    <!-- Dashboard-specific: View History Section -->
-                    <div v-if="selectedEntity.type === 'dashboard'" class="bu-mt-5">
+                    <!-- Dashboard and Cohort-specific: View History Section -->
+                    <div v-if="selectedEntity.type === 'dashboard' || selectedEntity.type === 'cohort'" class="bu-mt-5">
                         <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-between bu-mb-3">
                             <h4 class="bu-mb-0">
                                 {{ i18n('cleanup-center.view-history') }}

@@ -562,20 +562,38 @@
                 if (!entity || !entity.id) {
                     return;
                 }
-                // Expected id format from cleanup-center backend: dashboard_<appId>_<dashboardId>
+
+                const base = window.location.origin;
+                const pathPrefix = (window.countlyGlobal && window.countlyGlobal.path) || '';
+                const query = '?preview=true&cleanupPreview=1';
+                let previewUrl;
+
+                // Expected id format from cleanup-center backend: <type>_<appId>_<entityId>
                 const parts = (entity.id || '').split('_');
                 if (parts.length < 3) {
                     return;
                 }
-                const appId = parts[1];
-                // Dashboard id may contain underscores; rejoin remainder
-                const dashboardId = parts.slice(2).join('_');
 
-                // Build hash-based dashboard URL with preview flags that are ignored by tracking
-                const base = window.location.origin;
-                const hashPath = '#/' + encodeURIComponent(appId) + '/custom/' + encodeURIComponent(dashboardId);
-                const query = '?preview=true&cleanupPreview=1';
-                const previewUrl = base + '/dashboard?' + hashPath + query;
+                const entityType = parts[0];
+                const appId = parts[1];
+                // Entity id may contain underscores; rejoin remainder
+                const entityId = parts.slice(2).join('_');
+
+                if (entityType === 'dashboard') {
+                    // Build hash-based dashboard URL with preview flags that are ignored by tracking
+                    const hashPath = '#/' + encodeURIComponent(appId) + '/custom/' + encodeURIComponent(entityId);
+                    previewUrl = base + pathPrefix + '/dashboard' + query + hashPath;
+                }
+                else if (entityType === 'cohort') {
+                    // Build cohort detail URL with preview flags
+                    const hashPath = '#/' + encodeURIComponent(appId) + '/cohorts/detail/' + encodeURIComponent(entityId);
+                    previewUrl = base + pathPrefix + '/dashboard' + query + hashPath;
+                }
+                else {
+                    // Unknown entity type, don't redirect
+                    return;
+                }
+
                 window.open(previewUrl, '_blank', 'noopener');
             },
             handleBatchAction: function(command) {
@@ -864,7 +882,18 @@
                 sorted.sort(function(a, b) {
                     switch (self.sortBy) {
                     case 'lastSeen':
-                        return new Date(b.lastSeen) - new Date(a.lastSeen);
+                        // Sort ascending (oldest first) to show most outdated items first
+                        // Handle null/undefined - put them at the end
+                        if (!a.lastSeen && !b.lastSeen) {
+                            return 0;
+                        }
+                        if (!a.lastSeen) {
+                            return 1;
+                        }
+                        if (!b.lastSeen) {
+                            return -1;
+                        }
+                        return new Date(a.lastSeen) - new Date(b.lastSeen);
                     case 'usage':
                         return (b.usage30d || 0) - (a.usage30d || 0);
                     case 'created':
@@ -1099,6 +1128,52 @@
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');
                 return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
+            },
+            formatLastViewedDate: function(timestamp) {
+                if (!timestamp) {
+                    return this.i18n('cleanup-center.never-viewed') || 'Never viewed';
+                }
+
+                // Handle both ISO strings and timestamps
+                let date;
+                if (typeof timestamp === 'string') {
+                    date = new Date(timestamp);
+                }
+                else if (typeof timestamp === 'number') {
+                    // Handle both seconds (10 digits) and milliseconds (13 digits)
+                    let ts = timestamp;
+                    const tsStr = Math.round(ts).toString();
+                    if (tsStr.length === 10) {
+                        ts = ts * 1000;
+                    }
+                    if (ts < 10000000000 && ts > 0) {
+                        ts = ts * 1000;
+                    }
+                    date = new Date(ts);
+                }
+                else {
+                    date = new Date(timestamp);
+                }
+
+                if (isNaN(date.getTime()) || date.getTime() < 0) {
+                    return this.i18n('cleanup-center.never-viewed') || 'Never viewed';
+                }
+
+                // Format as: "25 Oct 2025, 12:13" (clean, single format)
+                // eslint-disable-next-line no-undef
+                if (typeof moment !== 'undefined') {
+                    // eslint-disable-next-line no-undef
+                    return moment(date).format('D MMM YYYY, HH:mm');
+                }
+
+                // Fallback formatting
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const day = date.getDate();
+                const month = months[date.getMonth()];
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                return day + ' ' + month + ' ' + year + ', ' + hours + ':' + minutes;
             },
             formatViewUsersForTable: function(viewUsers) {
                 if (!viewUsers || !Array.isArray(viewUsers)) {
