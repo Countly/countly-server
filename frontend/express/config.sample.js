@@ -24,6 +24,10 @@ var countlyConfig = {
         db: "countly",
         port: 27017,
         max_pool_size: 10,
+        replicaName: "rs0",
+        serverOptions: {
+            directConnection: true
+        }
         //username: test,
         //password: test,
         /*
