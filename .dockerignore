@@ -7,8 +7,6 @@
 node_modules
 **/node_modules
 plugins/*/node_modules
-# Include vendored dependencies that are checked into git
-!plugins/locale/api/node_modules
 
 # Package files (will be handled by npm install in Dockerfile)
 # package-lock.json  # REQUIRED for npm ci in Docker builds
