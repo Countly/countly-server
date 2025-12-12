@@ -167,6 +167,14 @@ const recalculateStats = async function(currEvent) {
     }
 };
 
+const setFieldsIfExist = function(fieldList, source, target) {
+    fieldList.forEach((item) => {
+        if (item in source) {
+            target[item] = source[item];
+        }
+    });
+};
+
 (() => {
     plugins.register('/aggregator', async() => {
         const eventSource = new UnifiedEventSource(
@@ -321,11 +329,7 @@ const recalculateStats = async function(currEvent) {
                                 groupInsert.lrid = `${currEvent._id}`;
                                 groupInsert.error = currEvent.sg.error || '';
 
-                                buildSpecific.forEach((item) => {
-                                    if (item in currEvent.sg) {
-                                        groupInsert[item] = currEvent.sg[item];
-                                    }
-                                });
+                                setFieldsIfExist(buildSpecific, currEvent.sg, groupInsert);
 
                                 const metrics = [];
 
@@ -464,11 +468,7 @@ const recalculateStats = async function(currEvent) {
                                                 group.error = currEvent.sg.error;
                                                 group.lrid = `${currEvent._id}`;
 
-                                                buildSpecific.forEach((item) => {
-                                                    if (item in currEvent.sg) {
-                                                        group[item] = currEvent.sg[item];
-                                                    }
-                                                });
+                                                setFieldsIfExist(buildSpecific, currEvent.sg, group);
                                             }
                                         }
                                         else {
@@ -476,11 +476,7 @@ const recalculateStats = async function(currEvent) {
                                                 group.error = currEvent.sg.error;
                                                 group.lrid = `${currEvent._id}`;
 
-                                                buildSpecific.forEach((item) => {
-                                                    if (item in currEvent.sg) {
-                                                        group[item] = currEvent.sg[item];
-                                                    }
-                                                });
+                                                setFieldsIfExist(buildSpecific, currEvent.sg, group);
                                             }
                                         }
                                         if (crashGroup.resolved_version && crashGroup.is_resolved && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.resolved_version.replace(/\./g, ':')) > 0) {
