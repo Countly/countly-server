@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>parts/data/events.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Classes</h3><ul><li><a href="AppExpireJob.html">AppExpireJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AppExpireJob.html#getEnabled">getEnabled</a></li><li data-type='method' style='display: none;'><a href="AppExpireJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="AppExpireJob.html#run">run</a></li></ul></li><li><a href="Cache.html">Cache</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Cache.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="Cache.html#has">has</a></li><li data-type='method' style='display: none;'><a href="Cache.html#init">init</a></li><li data-type='method' style='display: none;'><a href="Cache.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="Cache.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="Cache.html#read">read</a></li><li data-type='method' style='display: none;'><a href="Cache.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="Cache.html#update">update</a></li><li data-type='method' style='display: none;'><a href="Cache.html#write">write</a></li></ul></li><li><a href="Cacher.html">Cacher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Cacher.html#cache">cache</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#checkAll">checkAll</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#getMany">getMany</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#getOne">getOne</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#invalidate">invalidate</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#keysFromProjectionObject">keysFromProjectionObject</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#updateCacheOne">updateCacheOne</a></li></ul></li><li><a href="ChangeStreamEventSource.html">ChangeStreamEventSource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ChangeStreamEventSource.html#acknowledge">acknowledge</a></li><li data-type='method' style='display: none;'><a href="ChangeStreamEventSource.html#getNext">getNext</a></li><li data-type='method' style='display: none;'><a href="ChangeStreamEventSource.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="ChangeStreamEventSource.html#stop">stop</a></li></ul></li><li><a href="CleanTokensJob.html">CleanTokensJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CleanTokensJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="CleanTokensJob.html#run">run</a></li></ul></li><li><a href="ClearAutoTasks.html">ClearAutoTasks</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearAutoTasks.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="ClearAutoTasks.html#run">run</a></li></ul></li><li><a href="DataBatchReader.html">DataBatchReader</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DataBatchReader.html#acknowledgeToken">acknowledgeToken</a></li><li data-type='method' style='display: none;'><a href="DataBatchReader.html#checkState">checkState</a></li><li data-type='method' style='display: none;'><a href="DataBatchReader.html#close">close</a></li><li data-type='method' style='display: none;'><a href="DataBatchReader.html#processNextDateRange">processNextDateRange</a></li><li data-type='method' style='display: none;'><a href="DataBatchReader.html#setUp">setUp</a></li></ul></li><li><a href="DataStore.html">DataStore</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DataStore.html#iterate">iterate</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#read">read</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#update">update</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#write">write</a></li></ul></li><li><a href="EventSinkFactory.html">EventSinkFactory</a><ul class='methods'><li data-type='method' style='display: none;'><a href="EventSinkFactory.html#.create">create</a></li></ul></li><li><a href="EventSinkInterface.html">EventSinkInterface</a><ul class='methods'><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#_createResult">_createResult</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#_setClosed">_setClosed</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#_setInitialized">_setInitialized</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#_validateEvents">_validateEvents</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#close">close</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#getType">getType</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#isClosed">isClosed</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#isInitialized">isInitialized</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#write">write</a></li></ul></li><li><a href="EventSourceFactory.html">EventSourceFactory</a><ul class='methods'><li data-type='method' style='display: none;'><a href="EventSourceFactory.html#.create">create</a></li></ul></li><li><a href="EventSourceInterface.html">EventSourceInterface</a><ul class='methods'><li data-type='method' style='display: none;'><a href="EventSourceInterface.html#acknowledge">acknowledge</a></li><li data-type='method' style='display: none;'><a href="EventSourceInterface.html#getNext">getNext</a></li><li data-type='method' style='display: none;'><a href="EventSourceInterface.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="EventSourceInterface.html#markBatchProcessed">markBatchProcessed</a></li><li data-type='method' style='display: none;'><a href="EventSourceInterface.html#processWithAutoAck">processWithAutoAck</a></li><li data-type='method' style='display: none;'><a href="EventSourceInterface.html#stop">stop</a></li></ul></li><li><a href="InsertBatcher.html">InsertBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="InsertBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#insert">insert</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Jsonable.html">Jsonable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Jsonable.html#setData">setData</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#toJSON">toJSON</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#updateData">updateData</a></li></ul></li><li><a href="KafkaEventSink.html">KafkaEventSink</a><ul class='methods'><li data-type='method' style='display: none;'><a href="KafkaEventSink.html#close">close</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSink.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSink.html#isConnected">isConnected</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSink.html#write">write</a></li></ul></li><li><a href="KafkaEventSource.html">KafkaEventSource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="KafkaEventSource.html#acknowledge">acknowledge</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSource.html#getNext">getNext</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSource.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSource.html#markBatchProcessed">markBatchProcessed</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSource.html#stop">stop</a></li></ul></li><li><a href="MongoDbQueryRunner.html">MongoDbQueryRunner</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#aggregatedSessionData">aggregatedSessionData</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#calculateTimezoneFromOffset">calculateTimezoneFromOffset</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#fixTimestampToMilliseconds">fixTimestampToMilliseconds</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#getAggregatedData">getAggregatedData</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#getDateStringProjection">getDateStringProjection</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#getPeriodRange">getPeriodRange</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#getUniqueCount">getUniqueCount</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#getUniqueGraph">getUniqueGraph</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#getViewsTableData">getViewsTableData</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#segmentValuesForPeriod">segmentValuesForPeriod</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#timesOfDay">timesOfDay</a></li></ul></li><li><a href="MongoEventSink.html">MongoEventSink</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MongoEventSink.html#close">close</a></li><li data-type='method' style='display: none;'><a href="MongoEventSink.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="MongoEventSink.html#write">write</a></li></ul></li><li><a href="Mongoable.html">Mongoable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#id">id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#.collection">collection</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Mongoable.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#save">save</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#update">update</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.batchInsert">batchInsert</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.deleteOne">deleteOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOne">findOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOneAndUpdate">findOneAndUpdate</a></li></ul></li><li><a href="MonitorJob.html">MonitorJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MonitorJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="MonitorJob.html#run">run</a></li></ul></li><li><a href="MutationManagerJob.html">MutationManagerJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#deleteClickhouse">deleteClickhouse</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#deleteMongo">deleteMongo</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#ensureTracker">ensureTracker</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#getClickhouseLoadMetrics">getClickhouseLoadMetrics</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#markFailedOrRetry">markFailedOrRetry</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#processAwaitingValidation">processAwaitingValidation</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#processTask">processTask</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#reportFailureToStats">reportFailureToStats</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#resetStaleTasks">resetStaleTasks</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#run">run</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#shouldDeferDueToClickhousePressure">shouldDeferDueToClickhousePressure</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#updateClickhouse">updateClickhouse</a></li><li data-type='method' style='display: none;'><a href="MutationManagerJob.html#updateMongo">updateMongo</a></li></ul></li><li><a href="PingJob.html">PingJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PingJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="PingJob.html#run">run</a></li></ul></li><li><a href="ReadBatcher.html">ReadBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ReadBatcher.html#cache">cache</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#checkAll">checkAll</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getMany">getMany</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getOne">getOne</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#invalidate">invalidate</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#keysFromProjectionObject">keysFromProjectionObject</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#schedule">schedule</a></li></ul></li><li><a href="TTLCleanup.html">TTLCleanup</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TTLCleanup.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="TTLCleanup.html#run">run</a></li></ul></li><li><a href="TestDataClass.html">TestDataClass</a></li><li><a href="TopEventsJob.html">TopEventsJob</a><ul class='members'><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.COLLECTION_NAME">COLLECTION_NAME</a></li><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.PERIODS">PERIODS</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="TopEventsJob.html#encodeEvents">encodeEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsCollentions">eventsCollentions</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsFilter">eventsFilter</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#fetchEventTotalCounts">fetchEventTotalCounts</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAppEvents">getAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getSessionCount">getSessionCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#init">init</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#mutatePeriod">mutatePeriod</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#run">run</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#saveAppEvents">saveAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#timeSecond">timeSecond</a></li></ul></li><li><a href="UnifiedEventSink.html">UnifiedEventSink</a><ul class='methods'><li data-type='method' style='display: none;'><a href="UnifiedEventSink.html#close">close</a></li><li data-type='method' style='display: none;'><a href="UnifiedEventSink.html#getSinkTypes">getSinkTypes</a></li><li data-type='method' style='display: none;'><a href="UnifiedEventSink.html#isClosed">isClosed</a></li><li data-type='method' style='display: none;'><a href="UnifiedEventSink.html#isInitialized">isInitialized</a></li><li data-type='method' style='display: none;'><a href="UnifiedEventSink.html#write">write</a></li></ul></li><li><a href="UnifiedEventSource.html">UnifiedEventSource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="UnifiedEventSource.html#markBatchProcessed">markBatchProcessed</a></li><li data-type='method' style='display: none;'><a href="UnifiedEventSource.html#processWithAutoAck">processWithAutoAck</a></li></ul></li><li><a href="UserMergeJob.html">UserMergeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="UserMergeJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="UserMergeJob.html#run">run</a></li></ul></li><li><a href="Validatable.html">Validatable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Validatable.html#json">json</a></li><li data-type='member' style='display: none;'><a href="Validatable.html#.scheme">scheme</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Validatable.html#validate">validate</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.discriminator">discriminator</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.validate">validate</a></li></ul></li><li><a href="WriteBatcher.html">WriteBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="WriteBatcher.html#add">add</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#addFlushCallback">addFlushCallback</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#schedule">schedule</a></li></ul></li><li><a href="changeStreamReader.html">changeStreamReader</a><ul class='methods'><li data-type='method' style='display: none;'><a href="changeStreamReader.html#acknowledgeToken">acknowledgeToken</a></li><li data-type='method' style='display: none;'><a href="changeStreamReader.html#checkState">checkState</a></li><li data-type='method' style='display: none;'><a href="changeStreamReader.html#close">close</a></li><li data-type='method' style='display: none;'><a href="changeStreamReader.html#processBadRange">processBadRange</a></li><li data-type='method' style='display: none;'><a href="changeStreamReader.html#processNextDateRange">processNextDateRange</a></li><li data-type='method' style='display: none;'><a href="changeStreamReader.html#setUp">setUp</a></li></ul></li><li><a href="module-api_lib_countly.model-countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.fetchValue">countlyMetric.fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.clearObject">countlyMetric.clearObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.extendDb">countlyMetric.extendDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getBars">countlyMetric.getBars</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getData">countlyMetric.getData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getDb">countlyMetric.getDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMeta">countlyMetric.getMeta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMetrics">countlyMetric.getMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getNumber">countlyMetric.getNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getPeriod">countlyMetric.getPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getRangeData">countlyMetric.getRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getStackedBarData">countlyMetric.getStackedBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTableData">countlyMetric.getTableData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTimelineData">countlyMetric.getTimelineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTotalUsersObj">countlyMetric.getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getUniqueMetrics">countlyMetric.getUniqueMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.reset">countlyMetric.reset</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setDb">countlyMetric.setDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setMetrics">countlyMetric.setMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setPeriod">countlyMetric.setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setTotalUsersObj">countlyMetric.setTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setUniqueMetrics">countlyMetric.setUniqueMetrics</a></li></ul></li><li><a href="module-api_parts_data_QueryRunner-QueryRunner.html">QueryRunner</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_QueryRunner-QueryRunner.html#executeQuery">executeQuery</a></li></ul></li><li><a href="module-api_utils_common-DataTable.html">DataTable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#_getSearchField">_getSearchField</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getAggregationPipeline">getAggregationPipeline</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getProcessedResult">getProcessedResult</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-api_lib_countly.common.html">api/lib/countly.common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.common.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.calculatePeriodObject">calculatePeriodObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.calculateUniqueFromMap">calculateUniqueFromMap</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractData">extractData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractMetric">extractMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.fixPercentageDelta">fixPercentageDelta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPeriodRange">getPeriodRange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getTimestampRangeQuery">getTimestampRangeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.isValidPeriodParam">isValidPeriodParam</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setTimezone">setTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.stringIncrement">stringIncrement</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.union">union</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.validateEmail">validateEmail</a></li></ul></li><li><a href="module-api_lib_countly.countries.html">api/lib/countly.countries</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.countries.html#.getLocationData">getLocationData</a></li></ul></li><li><a href="module-api_lib_countly.device_details.html">api/lib/countly.device_details</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.device_details.html#.fixBarSegmentData">fixBarSegmentData</a></li></ul></li><li><a href="module-api_lib_countly.devices.html">api/lib/countly.devices</a></li><li><a href="module-api_lib_countly.event.html">api/lib/countly.event</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSegmentedData">getSegmentedData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_lib_countly.model.html">api/lib/countly.model</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.load">load</a></li></ul></li><li><a href="module-api_lib_countly.users.html">api/lib/countly.users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSessionData">getSessionData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_parts_data_events.html">api/parts/data/events</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_events.html#.processEvents">processEvents</a></li></ul></li><li><a href="module-api_parts_data_stats.html">api/parts/data/stats</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getOverall">getOverall</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getServer">getServer</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getUser">getUser</a></li></ul></li><li><a href="module-api_parts_data_usage.html">api/parts/data/usage</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.getPredefinedMetrics">getPredefinedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDuration">processSessionDuration</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDurationRange">processSessionDurationRange</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.returnAllProcessedMetrics">returnAllProcessedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setLocation">setLocation</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setUserLocation">setUserLocation</a></li></ul></li><li><a href="module-api_config.html">api/config</a></li><li><a href="module-api_parts_data_QueryRunner.html">api/parts/data/QueryRunner</a></li><li><a href="module-api_parts_data_exports.html">api/parts/data/exports</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.convertData">convertData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromData">fromData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromDatabase">fromDatabase</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromRequest">fromRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.output">output</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.stream">stream</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenArray">flattenArray</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenObject">flattenObject</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~getCursorForExport">getCursorForExport</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~getValues">getValues</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~isObjectId">isObjectId</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~preventCSVInjection">preventCSVInjection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~processCSVvalue">processCSVvalue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValue">transformValue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValuesInObject">transformValuesInObject</a></li></ul></li><li><a href="module-api_parts_data_fetch.html">api/parts/data/fetch</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchAllApps">fetchAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCollection">fetchCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCountries">fetchCountries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDashboard">fetchDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataEventsOverview">fetchDataEventsOverview</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataTopEvents">fetchDataTopEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDurations">fetchDurations</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventData">fetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroupById">fetchEventGroupById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroups">fetchEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventMetaData">fetchEventMetaData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEvents">fetchEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchFrequency">fetchFrequency</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchLoyalty">fetchLoyalty</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventData">fetchMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventGroups">fetchMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMetric">fetchMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchSessions">fetchSessions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeData">fetchTimeData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTop">fetchTop</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTops">fetchTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTotalUsersObj">fetchTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.formatTotalUsersObj">formatTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventData">getMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventGroups">getMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetric">getMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetricWithOptions">getMetricWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObj">getTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObjForEvents">getTimeObjForEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObj">getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObjWithOptions">getTotalUsersObjWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.metricToCollection">metricToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.prefetchEventData">prefetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchData">fetchData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchFromGranular">fetchFromGranular</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~getDataforTops">getDataforTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~union">union</a></li></ul></li><li><a href="module-api_parts_mgmt_app_users.html">api/parts/mgmt/app_users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.delete">delete</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.getUid">getUid</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.merge">merge</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.search">search</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#~dataIsRecordedInMongo">dataIsRecordedInMongo</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#~getAggregatedAppUsers">getAggregatedAppUsers</a></li></ul></li><li><a href="module-api_parts_mgmt_apps.html">api/parts/mgmt/apps</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.createApp">createApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.deleteApp">deleteApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppPlugins">getAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppsDetails">getAppsDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getCurrentUserApps">getCurrentUserApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.resetApp">resetApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateApp">updateApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateAppPlugins">updateAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~checkUniqueKey">checkUniqueKey</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAllAppData">deleteAllAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppData">deleteAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppLongTasks">deleteAppLongTasks</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deletePeriodAppData">deletePeriodAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~iconUpload">iconUpload</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCategory">isValidCategory</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCountry">isValidCountry</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidTimezone">isValidTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidType">isValidType</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~packApps">packApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~processAppProps">processAppProps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~validateAppUpdateProps">validateAppUpdateProps</a></li></ul></li><li><a href="module-api_parts_mgmt_cms.html">api/parts/mgmt/cms</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.clearCache">clearCache</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntries">getEntries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntriesWithUpdate">getEntriesWithUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~fetchFromCMS">fetchFromCMS</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~syncCMSDataToDB">syncCMSDataToDB</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~transformAndStoreData">transformAndStoreData</a></li></ul></li><li><a href="module-api_parts_mgmt_date_presets.html">api/parts/mgmt/date_presets</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_date_presets.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_date_presets.html#.delete">delete</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_date_presets.html#.getAll">getAll</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_date_presets.html#.update">update</a></li></ul></li><li><a href="module-api_parts_mgmt_ip.html">api/parts/mgmt/ip</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#.getHost">getHost</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~getNetworkIP">getNetworkIP</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_mail.html">api/parts/mgmt/mail</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.escapedHTMLString">escapedHTMLString</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.getUserFirstName">getUserFirstName</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.lookup">lookup</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendAutomatedMessageError">sendAutomatedMessageError</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendLocalizedMessage">sendLocalizedMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMail">sendMail</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMessage">sendMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendPasswordResetInfo">sendPasswordResetInfo</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMember">sendToNewMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMemberLink">sendToNewMemberLink</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToUpdatedMember">sendToUpdatedMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#~getPluginConfig">getPluginConfig</a></li></ul></li><li><a href="module-api_parts_mgmt_tracker.html">api/parts/mgmt/tracker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.collectServerData">collectServerData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.collectServerStats">collectServerStats</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enable">enable</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getAllData">getAllData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getBulkServer">getBulkServer</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getBulkUser">getBulkUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getSDK">getSDK</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getSDKData">getSDKData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.isEnabled">isEnabled</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportEvent">reportEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportEventBulk">reportEventBulk</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportUserEvent">reportUserEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.uploadBase64FileFromGridFS">uploadBase64FileFromGridFS</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~hasDockerCGroup">hasDockerCGroup</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~hasDockerEnv">hasDockerEnv</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~hasDockerMountInfo">hasDockerMountInfo</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_users.html">api/parts/mgmt/users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.checkNoteEditPermission">checkNoteEditPermission</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.createUser">createUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteNote">deleteNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUser">deleteUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUserNotes">deleteUserNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchNotes">fetchNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchUserAppIds">fetchUserAppIds</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getAllUsers">getAllUsers</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getCurrentUser">getCurrentUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getUserById">getUserById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.resetTimeBan">resetTimeBan</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.saveNote">saveNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.updateUser">updateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~deleteUserPresets">deleteUserPresets</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~depCheck">depCheck</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~isArgon2Hash">isArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~killAllSessionForUser">killAllSessionForUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~updateUserPasswordToArgon2">updateUserPasswordToArgon2</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyArgon2Hash">verifyArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyMemberArgon2Hash">verifyMemberArgon2Hash</a></li></ul></li><li><a href="module-api_utils_authorizer.html">api/utils/authorizer</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.check_if_expired">check_if_expired</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.clean">clean</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.extend_token">extend_token</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.getToken">getToken</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.read">read</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify">verify</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify_return">verify_return</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#~verify_token">verify_token</a></li></ul></li><li><a href="module-api_utils_common.html">api/utils/common</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~escape_html_entities">escape_html_entities</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~getJSON">getJSON</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordSegmentMetric">recordSegmentMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~stripPort">stripPort</a></li></ul></li><li><a href="module-api_utils_countlyFs.html">api/utils/countlyFs</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.fs">fs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.gridfs">gridfs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.type">type</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.deleteFile">deleteFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.exists">exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getHandler">getHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getSize">getSize</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStats">getStats</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStream">getStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.rename">rename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveData">saveData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveFile">saveFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveStream">saveStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.setHandler">setHandler</a></li></ul></li><li><a href="module-api_utils_localization.html">api/utils/localization</a></li><li><a href="module-api_utils_pdf.html">api/utils/pdf</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_pdf.html#.renderPDF">renderPDF</a></li></ul></li><li><a href="module-api_utils_random-sfc32.html">api/utils/random-sfc32</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_random-sfc32.html#~random">random</a></li></ul></li><li><a href="module-api_utils_render.html">api/utils/render</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#.renderView">renderView</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~fetchChromeExecutablePath">fetchChromeExecutablePath</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~saveScreenshot">saveScreenshot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~timeout">timeout</a></li></ul></li><li><a href="module-api_utils_requestProcessor.html">api/utils/requestProcessor</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#.processRequest">processRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~checksumSaltVerification">checksumSaltVerification</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~fetchAppUser">fetchAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~ignorePossibleDevices">ignorePossibleDevices</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadDbVersionMarks">loadDbVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadFsVersionMarks">loadFsVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processFetchRequest">processFetchRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processRequestData">processRequestData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processUser">processUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~restartRequest">restartRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForFetchAPI">validateAppForFetchAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForWriteAPI">validateAppForWriteAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateRedirect">validateRedirect</a></li></ul></li><li><a href="module-api_utils_rights.html">api/utils/rights</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.dbUserHasAccessToCollection">dbUserHasAccessToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.getBaseAppFilter">getBaseAppFilter</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.hasAdminAccess">hasAdminAccess</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateAppAdmin">validateAppAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateCreate">validateCreate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateDelete">validateDelete</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateGlobalAdmin">validateGlobalAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateRead">validateRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUpdate">validateUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUser">validateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForRead">validateUserForRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForWrite">validateUserForWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~dbLoadEventsData">dbLoadEventsData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~loadAndCacheEventsData">loadAndCacheEventsData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validateWrite">validateWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validate_token_if_exists">validate_token_if_exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~wrapCallback">wrapCallback</a></li></ul></li><li><a href="module-api_utils_taskmanager.html">api/utils/taskmanager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkIfRunning">checkIfRunning</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkResult">checkResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.createTask">createTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.deleteAdditionalResults">deleteAdditionalResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.deleteResult">deleteResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.editTask">editTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.errorResults">errorResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getCounts">getCounts</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getId">getId</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResult">getResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResultByQuery">getResultByQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResults">getResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getTableQueryResult">getTableQueryResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.longtask">longtask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.longtask">longtask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.nameResult">nameResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.rerunTask">rerunTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.saveResult">saveResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#~getResult">getResult</a></li></ul></li><li></li><li><a href="module-api_utils_utils.html">api/utils/utils</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt">decrypt</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt_old">decrypt_old</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.encrypt">encrypt</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#ACCEPTABLE">ACCEPTABLE</a></li><li><a href="global.html#LEVELS">LEVELS</a></li><li><a href="global.html#buildJobConfig">buildJobConfig</a></li><li><a href="global.html#callback">callback</a></li><li><a href="global.html#checksumSaltVerification">checksumSaltVerification</a></li><li><a href="global.html#clearTaskRecord">clearTaskRecord</a></li><li><a href="global.html#common">common</a></li><li><a href="global.html#create">create</a></li><li><a href="global.html#createLogFunction">createLogFunction</a></li><li><a href="global.html#createLogger">createLogger</a></li><li><a href="global.html#createLoggingSpan">createLoggingSpan</a></li><li><a href="global.html#d">d</a></li><li><a href="global.html#dig">dig</a></li><li><a href="global.html#dot">dot</a></li><li><a href="global.html#e">e</a></li><li><a href="global.html#f">f</a></li><li><a href="global.html#fetchDataForAggregator">fetchDataForAggregator</a></li><li><a href="global.html#fillUserProperties">fillUserProperties</a></li><li><a href="global.html#flush">flush</a></li><li><a href="global.html#fromCountlyRoot">fromCountlyRoot</a></li><li><a href="global.html#getCountryName">getCountryName</a></li><li><a href="global.html#getId">getId</a></li><li><a href="global.html#getLevel">getLevel</a></li><li><a href="global.html#getTraceContext">getTraceContext</a></li><li><a href="global.html#handleRequest">handleRequest</a></li><li><a href="global.html#hasOpenTelemetry">hasOpenTelemetry</a></li><li><a href="global.html#i">i</a></li><li><a href="global.html#id">id</a></li><li><a href="global.html#ignorePossibleDevices">ignorePossibleDevices</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#levels">levels</a></li><li><a href="global.html#loadMutationManagerJobConfig">loadMutationManagerJobConfig</a></li><li><a href="global.html#locFromGeocoder">locFromGeocoder</a></li><li><a href="global.html#locFromGeoip">locFromGeoip</a></li><li><a href="global.html#logLevel">logLevel</a></li><li><a href="global.html#logdb">logdb</a></li><li><a href="global.html#mongodbHandler">mongodbHandler</a></li><li><a href="global.html#processBulkRequest">processBulkRequest</a></li><li><a href="global.html#processRequest">processRequest</a></li><li><a href="global.html#processRequestData">processRequestData</a></li><li><a href="global.html#processUser">processUser</a></li><li><a href="global.html#promiseOrCallback">promiseOrCallback</a></li><li><a href="global.html#pushAsync">pushAsync</a></li><li><a href="global.html#pushSync">pushSync</a></li><li><a href="global.html#recordMetrics">recordMetrics</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#setDefault">setDefault</a></li><li><a href="global.html#setLevel">setLevel</a></li><li><a href="global.html#setPrettyPrint">setPrettyPrint</a></li><li><a href="global.html#sub">sub</a></li><li><a href="global.html#total">total</a></li><li><a href="global.html#transformToKafkaEventFormat">transformToKafkaEventFormat</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#uploadFormFile">uploadFormFile</a></li><li><a href="global.html#validateAppForWriteAPI">validateAppForWriteAPI</a></li><li><a href="global.html#w">w</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">parts/data/events.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* This module processes events for aggregated data
+* @module "api/parts/data/events"
+*/
+
+/** @lends module:api/parts/data/events */
+var countlyEvents = {},
+    common = require('./../../utils/common.js'),
+    async = require('async'),
+    crypto = require('crypto'),
+    Promise = require("bluebird"),
+    plugins = require('../../../plugins/pluginManager.js');
+
+
+
+
+/**
+* Process JSON decoded events data from request
+* @param {params} params - params object
+* @returns {Promise} resolved when procesing finished
+**/
+countlyEvents.processEvents = function(params) {
+    return new Promise(function(resolve) {
+        var forbiddenSegValues = [];
+        for (let i = 1; i &lt; 32; i++) {
+            forbiddenSegValues.push(i + "");
+        }
+        common.readBatcher.getOne("events", {'_id': params.app_id}, {
+            list: 1,
+            segments: 1,
+            omitted_segments: 1,
+            whitelisted_segments: 1
+        }, (err, eventColl) => {
+            var appEvents = [],
+                appSegments = {},
+                metaToFetch = {},
+                omitted_segments = {},
+                whitelisted_segments = {},
+                pluginsGetConfig = plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true);
+
+            if (!err &amp;&amp; eventColl) {
+                if (eventColl.list) {
+                    appEvents = eventColl.list;
+                }
+
+                if (eventColl.segments) {
+                    appSegments = eventColl.segments;
+                }
+
+                if (eventColl.omitted_segments) {
+                    omitted_segments = eventColl.omitted_segments;
+                }
+
+                if (eventColl.whitelisted_segments) {
+                    whitelisted_segments = eventColl.whitelisted_segments;
+                }
+            }
+
+            for (let i = 0; i &lt; params.qstring.events.length; i++) {
+
+                if (typeof params.qstring.events[i].key !== 'string') {
+                    try {
+                        params.qstring.events[i].key = JSON.stringify(params.qstring.events[i].key);
+                    }
+                    catch (error) {
+                        params.qstring.events[i].key += "";
+                    }
+                }
+
+                var currEvent = params.qstring.events[i],
+                    shortEventName = "",
+                    eventCollectionName = "";
+
+                if (!currEvent.segmentation) {
+                    continue;
+                }
+
+                // Key fields is required
+                if (!currEvent.key || (currEvent.key.indexOf('[CLY]_') === 0 &amp;&amp; plugins.internalEvents.indexOf(currEvent.key) === -1)) {
+                    continue;
+                }
+                if (currEvent.count &amp;&amp; common.isNumber(currEvent.count)) {
+                    currEvent.count = parseInt(currEvent.count, 10);
+                }
+                else {
+                    currEvent.count = 1;
+                }
+
+                if (pluginsGetConfig.event_limit &amp;&amp;
+                        appEvents.length >= pluginsGetConfig.event_limit &amp;&amp;
+                        appEvents.indexOf(currEvent.key) === -1) {
+                    continue;
+                }
+                shortEventName = common.fixEventKey(currEvent.key);
+
+                if (!shortEventName) {
+                    continue;
+                }
+                eventCollectionName = crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
+                if (currEvent.segmentation) {
+
+                    for (var segKey in currEvent.segmentation) {
+                        //check if segment should be ommited
+                        if (plugins.internalOmitSegments[currEvent.key] &amp;&amp; Array.isArray(plugins.internalOmitSegments[currEvent.key]) &amp;&amp; plugins.internalOmitSegments[currEvent.key].indexOf(segKey) !== -1) {
+                            continue;
+                        }
+                        //check if segment should be ommited
+                        if (omitted_segments[currEvent.key] &amp;&amp; Array.isArray(omitted_segments[currEvent.key]) &amp;&amp; omitted_segments[currEvent.key].indexOf(segKey) !== -1) {
+                            continue;
+                        }
+
+                        //check if whitelisted is set and this one not in whitelist
+                        if (whitelisted_segments[currEvent.key] &amp;&amp; Array.isArray(whitelisted_segments[currEvent.key]) &amp;&amp; whitelisted_segments[currEvent.key].indexOf(segKey) === -1) {
+                            continue;
+                        }
+
+                        if (pluginsGetConfig.event_segmentation_limit &amp;&amp;
+                                appSegments[currEvent.key] &amp;&amp;
+                                appSegments[currEvent.key].indexOf(segKey) === -1 &amp;&amp;
+                                appSegments[currEvent.key].length >= pluginsGetConfig.event_segmentation_limit) {
+                            continue;
+                        }
+
+                        var tmpSegVal;
+                        var myValues = [];
+                        if (Array.isArray(currEvent.segmentation[segKey])) {
+                            currEvent.segmentation[segKey] = currEvent.segmentation[segKey].splice(0, (pluginsGetConfig.array_list_limit || 10));
+                            //myValues = currEvent.segmentation[segKey];
+                            myValues = []; //ignore array values.
+                        }
+                        else {
+                            myValues = [currEvent.segmentation[segKey]];
+                        }
+                        for (var z = 0; z &lt; myValues.length; z++) {
+                            try {
+                                tmpSegVal = myValues[z] + "";
+                                tmpSegVal = tmpSegVal.replace(/^\$+/, "").replace(/\./g, ":");
+                                tmpSegVal = common.encodeCharacters(tmpSegVal);
+
+                                if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                                    tmpSegVal = "[CLY]" + tmpSegVal;
+                                }
+
+                                var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
+                                metaToFetch[eventCollectionName + "no-segment_" + common.getDateIds(params).zero + "_" + postfix] = {
+                                    coll: eventCollectionName,
+                                    id: "no-segment_" + common.getDateIds(params).zero + "_" + postfix,
+                                    app_id: params.app_id
+                                };
+                            }
+                            catch (ex) {
+                                console.log("Incorrect segment value", params.app_id, currEvent.key, "segment", segKey, ex);
+                                delete currEvent.segmentation[segKey];
+                                tmpSegVal = "";
+                            }
+                        }
+
+                    }
+                }
+            }
+            async.map(Object.keys(metaToFetch), fetchEventMeta, function(err2, eventMetaDocs) {
+                var appSgValues = {};
+
+                for (let i = 0; i &lt; eventMetaDocs.length; i++) {
+                    if (eventMetaDocs[i].coll) {
+                        if (eventMetaDocs[i].meta_v2) {
+                            if (!appSgValues[eventMetaDocs[i].coll]) {
+                                appSgValues[eventMetaDocs[i].coll] = {};
+                            }
+                            if (!appSgValues[eventMetaDocs[i].coll][eventMetaDocs[i]._id]) {
+                                appSgValues[eventMetaDocs[i].coll][eventMetaDocs[i]._id] = {};
+                            }
+                            for (var segment in eventMetaDocs[i].meta_v2) {
+                                appSgValues[eventMetaDocs[i].coll][eventMetaDocs[i]._id][segment] = Object.keys(eventMetaDocs[i].meta_v2[segment]);
+                            }
+                        }
+                    }
+                }
+                processEvents(appEvents, appSegments, appSgValues, params, omitted_segments, whitelisted_segments, resolve);
+            });
+
+            /**
+            * Fetch event meta
+            * @param {string} id - id to of event to fetchEventMeta
+            * @param {function} callback - for result
+            **/
+            function fetchEventMeta(id, callback) {
+                common.readBatcher.getOne("events_data", {'_id': metaToFetch[id].app_id + "_" + metaToFetch[id].coll + "_" + metaToFetch[id].id}, {meta_v2: 1}, (err2, eventMetaDoc) => {
+                    var retObj = eventMetaDoc || {};
+                    retObj.coll = metaToFetch[id].coll;
+
+                    callback(null, retObj);
+                });
+            }
+        });
+    });
+};
+
+/**
+* Process events from params
+* @param {array} appEvents - aray with existing event keys
+* @param {object} appSegments - object with event key as key, and segments as array value
+* @param {object} appSgValues - object in format [collection][document_id][segment] and array of values as value for inserting in database
+* @param {params} params - params object
+* @param {array} omitted_segments - array of segments to omit
+* @param {array} whitelisted_segments - array of segments to keep
+* @param {function} done - callback function to call when done processing
+**/
+function processEvents(appEvents, appSegments, appSgValues, params, omitted_segments, whitelisted_segments, done) {
+    var events = [],
+        eventCollections = {},
+        eventSegments = {},
+        eventSegmentsZeroes = {},
+        tmpEventObj = {},
+        tmpEventColl = {},
+        shortEventName = "",
+        eventCollectionName = "",
+        eventHashMap = {},
+        forbiddenSegValues = [],
+        pluginsGetConfig = plugins.getConfig("api", params.app &amp;&amp; params.app.plugins, true);
+
+    for (let i = 1; i &lt; 32; i++) {
+        forbiddenSegValues.push(i + "");
+    }
+
+    for (let i = 0; i &lt; params.qstring?.events.length; i++) {
+        var currEvent = params.qstring.events[i];
+        tmpEventObj = {};
+        tmpEventColl = {};
+        var tmpTotalObj = {};
+
+        // Key fields is required
+        if (!currEvent.key || (currEvent.key.indexOf('[CLY]_') === 0 &amp;&amp; plugins.internalEvents.indexOf(currEvent.key) === -1)) {
+            continue;
+        }
+
+        if (currEvent.count &amp;&amp; common.isNumber(currEvent.count)) {
+            currEvent.count = parseInt(currEvent.count, 10);
+        }
+        else {
+            currEvent.count = 1;
+        }
+
+        if (pluginsGetConfig.event_limit &amp;&amp;
+                appEvents.length >= pluginsGetConfig.event_limit &amp;&amp;
+                appEvents.indexOf(currEvent.key) === -1) {
+            continue;
+        }
+
+        plugins.dispatch("/i/events", {
+            params: params,
+            currEvent: currEvent
+        });
+
+        shortEventName = common.fixEventKey(currEvent.key);
+
+        if (!shortEventName) {
+            continue;
+        }
+
+        // Create new collection name for the event
+        eventCollectionName = crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
+
+        eventHashMap[eventCollectionName] = shortEventName;
+
+        // If present use timestamp inside each event while recording
+        var time = params.time;
+        if (params.qstring.events[i].timestamp) {
+            params.time = common.initTimeObj(params.appTimezone, params.qstring.events[i].timestamp);
+        }
+
+        common.arrayAddUniq(events, shortEventName);
+
+        if (currEvent.sum &amp;&amp; common.isNumber(currEvent.sum)) {
+            currEvent.sum = parseFloat(parseFloat(currEvent.sum).toFixed(5));
+            common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.sum, currEvent.sum);
+            common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.sum, currEvent.sum);
+        }
+
+        if (currEvent.dur &amp;&amp; common.isNumber(currEvent.dur)) {
+            currEvent.dur = parseFloat(currEvent.dur);
+            common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.dur, currEvent.dur);
+            common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.dur, currEvent.dur);
+        }
+
+        if (currEvent.count &amp;&amp; common.isNumber(currEvent.count)) {
+            currEvent.count = parseInt(currEvent.count, 10);
+        }
+
+        common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.count, currEvent.count);
+        common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.count, currEvent.count);
+
+        var dateIds = common.getDateIds(params);
+        var postfix2 = common.crypto.createHash("md5").update(shortEventName).digest('base64')[0];
+
+        tmpEventColl["no-segment" + "." + dateIds.month] = tmpEventObj;
+
+        if (!eventCollections.all) {
+            eventCollections.all = {};
+        }
+        var ee = {};
+        ee["key." + dateIds.month + "." + postfix2] = tmpTotalObj;
+
+        mergeEvents(eventCollections.all, ee);
+        //fill time object for total event count
+
+        if (currEvent.segmentation) {
+            for (let segKey in currEvent.segmentation) {
+                var tmpSegKey = "";
+                if (segKey.indexOf('.') !== -1 || segKey.substr(0, 1) === '$') {
+                    tmpSegKey = segKey.replace(/^\$+|\./g, "");
+                    currEvent.segmentation[tmpSegKey] = currEvent.segmentation[segKey];
+                    delete currEvent.segmentation[segKey];
+                }
+            }
+
+            for (let segKey in currEvent.segmentation) {
+                //check if segment should be ommited
+                if (plugins.internalOmitSegments[currEvent.key] &amp;&amp; Array.isArray(plugins.internalOmitSegments[currEvent.key]) &amp;&amp; plugins.internalOmitSegments[currEvent.key].indexOf(segKey) !== -1) {
+                    continue;
+                }
+                //check if segment should be ommited
+                if (omitted_segments[currEvent.key] &amp;&amp; Array.isArray(omitted_segments[currEvent.key]) &amp;&amp; omitted_segments[currEvent.key].indexOf(segKey) !== -1) {
+                    continue;
+                }
+
+                if (whitelisted_segments[currEvent.key] &amp;&amp; Array.isArray(whitelisted_segments[currEvent.key]) &amp;&amp; whitelisted_segments[currEvent.key].indexOf(segKey) === -1) {
+                    continue;
+                }
+                //if segKey is empty
+                if (segKey === "") {
+                    continue;
+                }
+
+                if (pluginsGetConfig.event_segmentation_limit &amp;&amp;
+                        appSegments[currEvent.key] &amp;&amp;
+                        appSegments[currEvent.key].indexOf(segKey) === -1 &amp;&amp;
+                        appSegments[currEvent.key].length >= pluginsGetConfig.event_segmentation_limit) {
+                    continue;
+                }
+
+                var myValues = [];
+                var tmpSegVal;
+                if (Array.isArray(currEvent.segmentation[segKey])) {
+                    //myValues = currEvent.segmentation[segKey];
+                    myValues = [];//ignore array values
+                }
+                else {
+                    myValues = [currEvent.segmentation[segKey]];
+                }
+                for (var z = 0; z &lt; myValues.length; z++) {
+                    tmpEventObj = {};
+                    tmpSegVal = myValues[z];
+                    try {
+                        tmpSegVal = tmpSegVal + "";
+                    }
+                    catch (ex) {
+                        tmpSegVal = "";
+                    }
+
+                    if (tmpSegVal === "") {
+                        continue;
+                    }
+
+                    // Mongodb field names can't start with $ or contain .
+                    tmpSegVal = tmpSegVal.replace(/^\$+/, "").replace(/\./g, ":");
+
+                    if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                        tmpSegVal = "[CLY]" + tmpSegVal;
+                    }
+
+                    tmpSegVal = common.encodeCharacters(tmpSegVal);
+
+                    var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
+
+                    if (pluginsGetConfig.event_segmentation_value_limit &amp;&amp;
+							appSgValues[eventCollectionName] &amp;&amp;
+							appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix] &amp;&amp;
+							appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey] &amp;&amp;
+							appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].indexOf(tmpSegVal) === -1 &amp;&amp;
+							appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].length >= pluginsGetConfig.event_segmentation_value_limit) {
+                        continue;
+                    }
+
+                    if (currEvent.sum &amp;&amp; common.isNumber(currEvent.sum)) {
+                        common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap.sum, currEvent.sum);
+                    }
+
+                    if (currEvent.dur &amp;&amp; common.isNumber(currEvent.dur)) {
+                        common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap.dur, currEvent.dur);
+                    }
+
+                    common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap.count, currEvent.count);
+
+                    if (!eventSegmentsZeroes[eventCollectionName]) {
+                        eventSegmentsZeroes[eventCollectionName] = [];
+                        common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero + "." + postfix);
+                    }
+                    else {
+                        common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero + "." + postfix);
+                    }
+
+                    if (!eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]) {
+                        eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix] = {};
+                    }
+
+                    eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]['meta_v2.' + segKey + '.' + tmpSegVal] = true;
+                    eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]["meta_v2.segments." + segKey] = true;
+
+                    tmpEventColl[segKey + "." + dateIds.month + "." + postfix] = tmpEventObj;
+                }
+            }
+        }
+        if (!eventCollections[eventCollectionName]) {
+            eventCollections[eventCollectionName] = {};
+        }
+
+        if (!eventSegmentsZeroes.all) {
+            eventSegmentsZeroes.all = [];
+            common.arrayAddUniq(eventSegmentsZeroes.all, dateIds.zero + "." + postfix2);
+        }
+        else {
+            common.arrayAddUniq(eventSegmentsZeroes.all, dateIds.zero + "." + postfix2);
+        }
+
+        if (!eventSegments["all." + dateIds.zero + "." + postfix2]) {
+            eventSegments["all." + dateIds.zero + "." + postfix2] = {};
+        }
+
+        eventSegments["all." + dateIds.zero + "." + postfix2]['meta_v2.key.' + shortEventName] = true;
+        eventSegments["all." + dateIds.zero + "." + postfix2]["meta_v2.segments.key"] = true;
+
+        mergeEvents(eventCollections[eventCollectionName], tmpEventColl);
+        //switch back to request time
+        params.time = time;
+    }
+
+    if (!pluginsGetConfig.safe &amp;&amp; !(params.qstring?.safe_api_response)) {
+        for (let collection in eventCollections) {
+            if (eventSegmentsZeroes[collection] &amp;&amp; eventSegmentsZeroes[collection].length) {
+                for (let i = 0; i &lt; eventSegmentsZeroes[collection].length; i++) {
+                    let zeroId = "";
+
+                    if (!eventSegmentsZeroes[collection] || !eventSegmentsZeroes[collection][i]) {
+                        continue;
+                    }
+                    else {
+                        zeroId = eventSegmentsZeroes[collection][i];
+                    }
+                    eventSegments[collection + "." + zeroId].m = zeroId.split(".")[0];
+                    eventSegments[collection + "." + zeroId].s = "no-segment";
+                    eventSegments[collection + "." + zeroId].a = params.app_id + "";
+                    eventSegments[collection + "." + zeroId].e = eventHashMap[collection] || collection;
+                    eventSegments[collection + "." + zeroId]._id = params.app_id + "_" + collection + "_" + "no-segment_" + zeroId.replace(".", "_");
+                    common.writeBatcher.add("events_data", params.app_id + "_" + collection + "_" + "no-segment_" + zeroId.replace(".", "_"), {$set: eventSegments[collection + "." + zeroId]});
+                }
+            }
+
+            for (let segment in eventCollections[collection]) {
+                let collIdSplits = segment.split("."),
+                    collId = params.app_id + "_" + collection + "_" + segment.replace(/\./g, "_");
+
+                common.writeBatcher.add("events_data", collId, {
+                    $set: {
+                        "m": collIdSplits[1],
+                        "s": collIdSplits[0],
+                        "a": params.app_id + "",
+                        "e": eventHashMap[collection] || collection
+                    },
+                    "$inc": eventCollections[collection][segment]
+                });
+            }
+        }
+    }
+    else {
+        var eventDocs = [];
+        for (let collection in eventCollections) {
+            if (eventSegmentsZeroes[collection] &amp;&amp; eventSegmentsZeroes[collection].length) {
+                for (let i = 0; i &lt; eventSegmentsZeroes[collection].length; i++) {
+                    let zeroId = "";
+
+                    if (!eventSegmentsZeroes[collection] || !eventSegmentsZeroes[collection][i]) {
+                        continue;
+                    }
+                    else {
+                        zeroId = eventSegmentsZeroes[collection][i];
+                    }
+
+                    eventSegments[collection + "." + zeroId].m = zeroId.split(".")[0];
+                    eventSegments[collection + "." + zeroId].s = "no-segment";
+                    eventSegments[collection + "." + zeroId].a = params.app_id + "";
+                    eventSegments[collection + "." + zeroId].e = eventHashMap[collection] || collection;
+
+
+                    eventDocs.push({
+                        "collection": "events_data",
+                        "_id": params.app_id + "_" + collection + "_" + "no-segment_" + zeroId.replace(".", "_"),
+                        "updateObj": {$set: eventSegments[collection + "." + zeroId]}
+                    });
+                }
+            }
+
+            for (let segment in eventCollections[collection]) {
+                let collIdSplits = segment.split("."),
+                    collId = params.app_id + "_" + collection + "_" + segment.replace(/\./g, "_");
+
+                eventDocs.push({
+                    "collection": "events_data",
+                    "_id": collId,
+                    "updateObj": {
+                        $set: {
+                            "m": collIdSplits[1],
+                            "s": collIdSplits[0],
+                            "a": params.app_id + "",
+                            "e": eventHashMap[collection] || collection
+                        },
+                        "$inc": eventCollections[collection][segment]
+                    },
+                    "rollbackObj": eventCollections[collection][segment]
+                });
+            }
+        }
+        for (var k = 0; k &lt; eventDocs.length; k++) {
+            common.writeBatcher.add(eventDocs[k].collection, eventDocs[k]._id, eventDocs[k].updateObj);
+        }
+
+        /*async.map(eventDocs, updateEventDb, function(err, eventUpdateResults) {
+            var needRollback = false;
+
+            for (let i = 0; i &lt; eventUpdateResults.length; i++) {
+                if (eventUpdateResults[i].status === "failed") {
+                    needRollback = true;
+                    break;
+                }
+            }
+
+            if (needRollback) {
+                async.map(eventUpdateResults, rollbackEventDb, function() {
+                    if (!params.bulk) {
+                        common.returnMessage(params, 500, 'Failure');
+                    }
+                });
+            }
+            else if (!params.bulk) {
+                common.returnMessage(params, 200, 'Success');
+            }
+        });*/
+    }
+
+    if (events.length) {
+        var eventSegmentList = {'$addToSet': {'list': {'$each': events}}};
+
+        for (let event in eventSegments) {
+            var eventSplits = event.split("."),
+                eventKey = eventSplits[0];
+
+            var realEventKey = ((eventHashMap[eventKey] || "") + "").replace(/\./g, ':');
+            //for segment describing all events there is no event key.
+            if (realEventKey &amp;&amp; !eventSegmentList.$addToSet["segments." + realEventKey]) {
+                eventSegmentList.$addToSet["segments." + realEventKey] = {};
+            }
+
+            if (eventSegments[event] &amp;&amp; realEventKey) {
+                for (let segment in eventSegments[event]) {
+                    if (segment.indexOf("meta_v2.segments.") === 0) {
+                        var name = segment.replace("meta_v2.segments.", "");
+                        if (eventSegmentList.$addToSet["segments." + realEventKey] &amp;&amp; eventSegmentList.$addToSet["segments." + realEventKey].$each) {
+                            common.arrayAddUniq(eventSegmentList.$addToSet["segments." + realEventKey].$each, name);
+                        }
+                        else {
+                            eventSegmentList.$addToSet["segments." + realEventKey] = {$each: [name]};
+                        }
+                    }
+                }
+            }
+        }
+        common.writeBatcher.add('events', common.db.ObjectID(params.app_id), eventSegmentList);
+    }
+    done();
+}
+
+/**
+* Merge multiple event document objects
+* @param {object} firstObj - first object to merge
+* @param {object} secondObj - second object to merge
+**/
+function mergeEvents(firstObj, secondObj) {
+    for (let firstLevel in secondObj) {
+
+        if (!Object.prototype.hasOwnProperty.call(secondObj, firstLevel)) {
+            continue;
+        }
+
+        if (!firstObj[firstLevel]) {
+            firstObj[firstLevel] = secondObj[firstLevel];
+            continue;
+        }
+
+        for (var secondLevel in secondObj[firstLevel]) {
+
+            if (!Object.prototype.hasOwnProperty.call(secondObj[firstLevel], secondLevel)) {
+                continue;
+            }
+
+            if (firstObj[firstLevel][secondLevel]) {
+                firstObj[firstLevel][secondLevel] += secondObj[firstLevel][secondLevel];
+            }
+            else {
+                firstObj[firstLevel][secondLevel] = secondObj[firstLevel][secondLevel];
+            }
+        }
+    }
+}
+
+/**
+* Merge multiple event document objects
+* @param {object} eventDoc - document with information about event
+* @param {function} callback - to call when update done
+**/
+/*function updateEventDb(eventDoc, callback) {
+    common.db.collection(eventDoc.collection).update({'_id': eventDoc._id}, eventDoc.updateObj, {
+        'upsert': true,
+        'safe': true
+    }, function(err, result) {
+        if (!err &amp;&amp; result &amp;&amp; result.result &amp;&amp; result.result.ok === 1) {
+            callback(null, {
+                status: "ok",
+                obj: eventDoc
+            });
+        }
+        else {
+            callback(null, {
+                status: "failed",
+                obj: eventDoc
+            });
+        }
+    });
+}*/
+
+/**
+* Rollback already updated events in case error happened and we have safe api enabled
+* @param {object} eventUpdateResult - db result object of updating event document
+* @param {function} callback - to call when rollback done
+**/
+/*function rollbackEventDb(eventUpdateResult, callback) {
+    if (eventUpdateResult.status === "failed") {
+        callback(null, {});
+    }
+    else {
+        var eventDoc = eventUpdateResult.obj;
+
+        if (eventDoc.rollbackObj) {
+            common.db.collection(eventDoc.collection).update({'_id': eventDoc._id}, {'$inc': getInvertedValues(eventDoc.rollbackObj)}, {'upsert': false}, function() {});
+            callback(true, {});
+        }
+        else {
+            callback(true, {});
+        }
+    }
+}*/
+
+/**
+* Invert updated object to deduct updated values
+* @param {object} obj - object with properties and values to deduct
+* @returns {object} inverted update object, to deduct inserted values
+**/
+/*function getInvertedValues(obj) {
+    var invObj = {};
+
+    for (var objProp in obj) {
+        invObj[objProp] = -obj[objProp];
+    }
+
+    return invObj;
+}*/
+
+module.exports = countlyEvents;</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> on Sat Dec 13 2025 19:31:24 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
