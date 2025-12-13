@@ -1,3 +1,11 @@
+## Version 25.03.XX
+Fixes:
+- [core] fixes for changeOwner script
+
+Enterprise Fixes:
+- [data-masking] Correctly dealing with unexpected filter on event_data collection while masking
+- [profile-groups] Error handling on missing list on failed profile group report download
+
 ## Version 25.03.30
 Fixes:
 - [journeys] Save to profiile block implemented
