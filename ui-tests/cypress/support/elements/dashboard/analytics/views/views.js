@@ -75,8 +75,6 @@ const viewsDataTableElements = (index = 0) => ({
     COLUMN_NAME_TOTAL_USERS_LABEL: 'analytics-views-label-total-users',
     COLUMN_NAME_TOTAL_USERS_TOOLTIP: 'analytics-views-label-total-users-tooltip',
     COLUMN_NAME_TOTAL_USERS_SORTABLE_ICON: 'datatable-analytics-total-users-sortable-icon-view',
-    COLUMN_NAME_NEW_USERS_LABEL: 'datatable-analytics-views-label-new-users',
-    COLUMN_NAME_NEW_USERS_SORTABLE_ICON: 'datatable-analytics-new-users-sortable-icon-view',
     COLUMN_NAME_TOTAL_VISITS_LABEL: 'datatable-analytics-views-label-total-visits',
     COLUMN_NAME_TOTAL_VISITS_SORTABLE_ICON: 'datatable-analytics-total-visits-sortable-icon-view',
     COLUMN_NAME_LANDINGS_LABEL: 'datatable-analytics-views-label-landings',
