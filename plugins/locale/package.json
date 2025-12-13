@@ -19,6 +19,8 @@
     "language",
     "locale"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "langmap": "^0.0.16"
+  },
   "private": true
 }
