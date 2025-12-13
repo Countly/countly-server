@@ -63,7 +63,7 @@ calculatedDataManager.longtask = async function(options) {
         else {
             try {
                 var data = await common.db.collection(collection).findOne({_id: options6.id});
-                if (data.data) {
+                if (data && data.data) {
                     clearTimeout(timeoutObj);
                     options6.outputData(null, {"_id": options6.id, "lu": data.lu, "data": data.data || {}});
                     return;
@@ -95,7 +95,7 @@ calculatedDataManager.longtask = async function(options) {
         }
         catch (e) {
             //As could not insert, it might be calculating already
-            waitForData(options, timeout, 10);
+            waitForData(my_options, timeout, 10);
             return;
         }
         var start = Date.now().valueOf();
