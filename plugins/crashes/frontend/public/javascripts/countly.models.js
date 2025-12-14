@@ -697,14 +697,8 @@ function transformAppVersion(inpVersion) {
         };
 
         _crashgroupSubmodule.getters.crashgroupUnsymbolicatedStacktrace = function(state) {
-            var crashId = state.crashgroup.lrid;
-
-            var crash = state.crashgroup.data.find(function(item) {
-                return item._id === crashId;
-            });
-
-            if (crash && crash.symbolicated) {
-                return crash.olderror;
+            if (state.crashgroup && state.crashgroup.symbolicated) {
+                return state.crashgroup.olderror;
             }
 
             return "";
