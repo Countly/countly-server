@@ -571,6 +571,10 @@
             },
             data: function() {
                 return {
+                    refsCheckInterval: null,
+                    refsCheckTimeout: null,
+                    onMainMenuMouseLeaveTimeout: null,
+                    onOptionsMenuMouseLeaveTimeout: null,
                     selectedMenuOptionLocal: null,
                     versionInfo: countlyGlobal.countlyTypeName,
                     countlySidebarVersionPath: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/versions',
@@ -838,17 +842,22 @@
                      */
                     this.$nextTick(function() {
                         this.$nextTick(function() {
-                            setTimeout(function() {
-                                if (selectedOption && selectedOption.menu === "dashboards") {
-                                    if (!self.onMainMenu && self.$refs.dashboards && self.$refs.dashboards[0] && !self.$refs.dashboards[0].hasOpenDrawer()) {
-                                        0;
-                                        /**
-                                         * If not on the main menu, hide the main menu.
-                                         */
-                                        self.showMainMenu = false;
+                            if (!self.onOptionsMenuMouseLeaveTimeout) {
+                                self.onOptionsMenuMouseLeaveTimeout = setTimeout(function() {
+                                    if (selectedOption && selectedOption.menu === "dashboards") {
+                                        if (!self.onMainMenu && self.$refs.dashboards && self.$refs.dashboards[0] && !self.$refs.dashboards[0].hasOpenDrawer()) {
+                                            0;
+                                            /**
+                                             * If not on the main menu, hide the main menu.
+                                             */
+                                            self.showMainMenu = false;
+                                        }
                                     }
-                                }
-                            }, 0);
+
+                                    clearTimeout(self.onOptionsMenuMouseLeaveTimeout);
+                                    self.onOptionsMenuMouseLeaveTimeout = null;
+                                }, 0);
+                            }
                         });
                     });
                 },
@@ -871,16 +880,21 @@
                      */
                     this.$nextTick(function() {
                         this.$nextTick(function() {
-                            setTimeout(function() {
-                                if (selectedOption && selectedOption.menu === "dashboards") {
-                                    if (!self.onOptionsMenu && self.$refs.dashboards && self.$refs.dashboards[0] && !self.$refs.dashboards[0].hasOpenDrawer()) {
-                                        /**
-                                         * If not on the options menu, hide the main menu.
-                                         */
-                                        self.showMainMenu = false;
+                            if (!self.onMainMenuMouseLeaveTimeout) {
+                                self.onMainMenuMouseLeaveTimeout = setTimeout(function() {
+                                    if (selectedOption && selectedOption.menu === "dashboards") {
+                                        if (!self.onOptionsMenu && self.$refs.dashboards && self.$refs.dashboards[0] && !self.$refs.dashboards[0].hasOpenDrawer()) {
+                                            /**
+                                             * If not on the options menu, hide the main menu.
+                                             */
+                                            self.showMainMenu = false;
+                                        }
                                     }
-                                }
-                            }, 0);
+
+                                    clearTimeout(self.onMainMenuMouseLeaveTimeout);
+                                    self.onMainMenuMouseLeaveTimeout = null;
+                                }, 0);
+                            }
                         });
                     });
                 },
@@ -962,7 +976,7 @@
                  *
                  * Following technique of checking refs is just a fullproof way of doing it.
                  */
-                setTimeout(function() {
+                this.refsCheckTimeout = setTimeout(function() {
                     self.$nextTick(function() {
                         self.$nextTick(function() {
                             /**
@@ -978,7 +992,7 @@
                                  * Clear the interval when the refs are found.
                                  */
                                 var counter = 0;
-                                var interval = setInterval(function() {
+                                self.refsCheckInterval = setInterval(function() {
                                     if (counter > 10) {
                                         /**
                                          * Lets only check for the refs 10 times.
@@ -990,13 +1004,19 @@
 
                                         // eslint-disable-next-line no-console
                                         console.log("Refs not found in sidebar yet. Returning...");
-                                        clearInterval(interval);
+                                        clearTimeout(self.refsCheckTimeout);
+                                        clearInterval(self.refsCheckInterval);
+                                        self.refsCheckTimeout = null;
+                                        self.refsCheckInterval = null;
                                         return;
                                     }
 
                                     if (Object.keys(self.$refs).length) {
                                         self.identifySelected();
-                                        clearInterval(interval);
+                                        clearInterval(self.refsCheckInterval);
+                                        clearTimeout(self.refsCheckTimeout);
+                                        self.refsCheckTimeout = null;
+                                        self.refsCheckInterval = null;
                                     }
 
                                     counter++;
@@ -1005,6 +1025,27 @@
                         });
                     });
                 }, 0);
+            },
+            beforeDestroy() {
+                if (this.refsCheckInterval) {
+                    clearInterval(this.refsCheckInterval);
+                    this.refsCheckInterval = null;
+                }
+
+                if (this.onMainMenuMouseLeaveTimeout) {
+                    clearTimeout(this.onMainMenuMouseLeaveTimeout);
+                    this.onMainMenuMouseLeaveTimeout = null;
+                }
+
+                if (this.onOptionsMenuMouseLeaveTimeout) {
+                    clearTimeout(this.onOptionsMenuMouseLeaveTimeout);
+                    this.onOptionsMenuMouseLeaveTimeout = null;
+                }
+
+                if (this.refsCheckTimeout) {
+                    clearTimeout(this.refsCheckTimeout);
+                    this.refsCheckTimeout = null;
+                }
             },
             created: function() {
                 var self = this;
