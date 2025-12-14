@@ -15,7 +15,7 @@ var trace = require('../api/parts/stacktrace.js');
         ob.data.countlyGlobal.crashes_report_limit = plugins.getConfig("crashes").report_limit;
     };
     plugin.init = function(app, countlyDb) {
-        app.get(countlyConfig.path + '/crashes/*', function(req, res) {
+        app.get(countlyConfig.path + '/crashes/*splat', function(req, res) {
             var parts = req.url.split("/");
             var code = parts[parts.length - 1];
             countlyDb.collection('crash_share').findOne({_id: code}, function(err, crash) {

@@ -18,12 +18,13 @@ var path = require('path');
         app.get(countlyConfig.path + '/feedback/rating', renderPopup);
         // keep this for backward compatability
         app.get(countlyConfig.path + '/feedback', renderPopup);
-        app.get(countlyConfig.path + '/feedback/preview/*', function(req, res/*, next*/) {
-            if (!req.params || !req.params[0] || req.params[0] === '') {
+        app.get(countlyConfig.path + '/feedback/preview/*splat', function(req, res/*, next*/) {
+            var previewId = req.params.splat;
+            if (!req.params || !previewId || previewId === '') {
                 res.sendFile(__dirname + '/public/images/default_app_icon.png');
             }
             else {
-                countlyFs.gridfs.getDataById("feedback", req.params[0], function(err, data) {
+                countlyFs.gridfs.getDataById("feedback", previewId, function(err, data) {
                     if (err || !data) {
                         res.sendFile(__dirname + '/public/images/default_app_icon.png');
                     }
@@ -39,13 +40,14 @@ var path = require('path');
                 });
             }
         });
-        app.get(countlyConfig.path + '/star-rating/images/*', function(req, res) {
-            countlyFs.getStats("star-rating", path.resolve(__dirname, './../images/' + req.params[0]), {id: "" + req.params[0]}, function(statsErr, stats) {
+        app.get(countlyConfig.path + '/star-rating/images/*splat', function(req, res) {
+            var imagePath = req.params.splat;
+            countlyFs.getStats("star-rating", path.resolve(__dirname, './../images/' + imagePath), {id: "" + imagePath}, function(statsErr, stats) {
                 if (statsErr || !stats || !stats.size) {
                     res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
                 }
                 else {
-                    countlyFs.getStream("star-rating", path.resolve(__dirname, './../images/' + req.params[0]), {id: "" + req.params[0]}, function(streamErr, stream) {
+                    countlyFs.getStream("star-rating", path.resolve(__dirname, './../images/' + imagePath), {id: "" + imagePath}, function(streamErr, stream) {
                         if (streamErr || !stream) {
                             res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
                         }
