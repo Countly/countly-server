@@ -9,6 +9,7 @@ const log = common.log('hooks:api');
 const _ = require('lodash');
 const utils = require('./utils');
 const rights = require('../../../api/utils/rights');
+const metadata = require('../../../api/utils/metadata.js');
 
 const FEATURE_NAME = 'hooks';
 
@@ -298,10 +299,11 @@ plugins.register("/i/hook/save", function(ob) {
                 if (hookConfig._id) {
                     const id = hookConfig._id;
                     delete hookConfig._id;
+                    const updateSpec = metadata.addUpdateMetadata(params, {$set: hookConfig});
                     return common.db.collection("hooks").findAndModify(
                         { _id: common.db.ObjectID(id) },
                         {},
-                        {$set: hookConfig},
+                        updateSpec,
                         {new: true},
                         function(err, result) {
                             if (!err) {
@@ -331,8 +333,7 @@ plugins.register("/i/hook/save", function(ob) {
 
             }
             if (hookConfig) {
-                hookConfig.createdBy = params.member._id; // Accessing property now with proper check
-                hookConfig.created_at = new Date().getTime();
+                metadata.addCreationMetadata(params, hookConfig);
             }
             return common.db.collection("hooks").insert(
                 hookConfig,
@@ -534,11 +535,12 @@ plugins.register("/i/hook/status", function(ob) {
         const statusList = JSON.parse(params.qstring.status);
         const batch = [];
         for (const appID in statusList) {
+            const updateSpec = metadata.addUpdateMetadata(params, { $set: { enabled: statusList[appID] } });
             batch.push(
                 common.db.collection("hooks").findAndModify(
                     { _id: common.db.ObjectID(appID) },
                     {},
-                    { $set: { enabled: statusList[appID] } },
+                    updateSpec,
                     { new: false, upsert: false }
                 )
             );
