@@ -18,10 +18,6 @@ catch (e) {
 const FEATURE_NAME = 'sources';
 
 (function() {
-    plugins.setConfigs("sources", {
-        sources_length_limit: 100
-    });
-
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });

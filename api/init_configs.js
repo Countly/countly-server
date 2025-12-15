@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js');
+var plugins = require('../plugins/pluginManager.js');
 const countlyConfig = require('./config');
 /**
  * Set Plugins APIs Config
