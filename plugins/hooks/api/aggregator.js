@@ -7,14 +7,6 @@ const IncomingDataTrigger = require('./parts/triggers/incoming_data.js');
 const utils = require('./utils.js');
 const {HTTPEffect, EmailEffect, CustomCodeEffect} = require('./parts/effects/index.js');
 
-plugins.setConfigs("hooks", {
-    batchActionSize: 0,
-    refreshRulesPeriod: 3000,
-    pipelineInterval: 1000,
-    requestLimit: 0,
-    timeWindowForRequestLimit: 60000,
-});
-
 (function() {
 
     plugins.register("/aggregator", async function() {

@@ -16,11 +16,6 @@ var pluginOb = {},
 
 var ejs = require("ejs");
 
-plugins.setConfigs("dashboards", {
-    sharing_status: true,
-    allow_public_dashboards: true
-});
-
 (function() {
 
     /*plugins.register("/master", function() {
