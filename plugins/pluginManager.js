@@ -386,7 +386,7 @@ var pluginManager = function pluginManager() {
         // Apply environment variable overrides before setting defaults
         var processedConf = {};
         for (let key in conf) {
-            // Check for environment variable: COUNTLY_CONFIG__NAMESPACE__KEY
+            // Check for environment variable: COUNTLY_SETTINGS__NAMESPACE__KEY
             var envVarName = 'COUNTLY_SETTINGS__' + namespace.toUpperCase() + '__' + key.toUpperCase();
             if (process.env[envVarName] !== undefined) {
                 var envValue = process.env[envVarName];
