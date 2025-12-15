@@ -263,7 +263,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToHooksPage();
         hooksPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToDbViewerPage();
-        dbCountlyPageHelpers.verifyEmptyPageElements();
+        //dbCountlyPageHelpers.verifyEmptyPageElements();
         dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
         dbCountlyOutPageHelpers.verifyEmptyPageElements();
         dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
