@@ -940,7 +940,7 @@
 
                 if (crash === "group") {
                     crash = {
-                        _id: this.crashgroup.lrid,
+                        _id: this.crashgroup._id,
                         os: this.crashgroup.os,
                         native_cpp: this.crashgroup.native_cpp,
                         app_version: this.crashgroup.latest_version,
