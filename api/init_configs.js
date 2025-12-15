@@ -1,5 +1,6 @@
 var plugins = require('../plugins/pluginManager.js');
 const countlyConfig = require('./config');
+const countlyConfigApp = require('../frontend/express/config');
 /**
  * Set Plugins APIs Config
  */
@@ -114,7 +115,7 @@ plugins.setConfigs("tracking", {
 
 plugins.setConfigs("frontend", {
     production: true,
-    theme: "",
+    theme: (countlyConfigApp.web && countlyConfigApp.web.theme) ? countlyConfigApp.web.theme : "",
     session_timeout: 30,
     use_google: true,
     code: true,

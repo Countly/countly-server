@@ -926,11 +926,18 @@ var pluginManager = function pluginManager() {
                 if (fs.existsSync(initConfigPath)) {
                     require(initConfigPath);
                 }
-                var plugin = require("./" + pluginNames[i] + "/frontend/app");
-                plugs.push({'name': pluginNames[i], "plugin": plugin});
-                app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
-                if (plugin.staticPaths) {
-                    plugin.staticPaths(app, countlyDb, express);
+                var appPath = path.resolve(__dirname, pluginNames[i] + "/frontend/app.js");
+                let plugin;
+                if (fs.existsSync(appPath)) {
+                    plugin = require(appPath);
+                    plugs.push({'name': pluginNames[i], "plugin": plugin});
+                    app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
+                    if (plugin.staticPaths) {
+                        plugin.staticPaths(app, countlyDb, express);
+                    }
+                }
+                else {
+                    app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
                 }
             }
             catch (ex) {
