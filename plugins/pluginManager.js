@@ -1897,7 +1897,7 @@ var pluginManager = function pluginManager() {
         common.drillDb = dbDrill;
 
         try {
-            common.db.collection("drill_data_cache").ensureIndex({lu: 1});
+            common.db.collection("drill_data_cache").createIndex({lu: 1});
         }
         catch (err) {
             console.log('Plugin Manager: Failed to create index on drill_data_cache collection for lu field:', err);
