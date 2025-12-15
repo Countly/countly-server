@@ -570,62 +570,79 @@ const FEATURE_NAME = 'crashes';
 
         switch (paths[3]) {
         case 'download_stacktrace':
-            validateRead(obParams, FEATURE_NAME, function(params) {
+            validateRead(obParams, FEATURE_NAME, async function(params) {
                 if (!params.qstring.crash_id) {
                     common.returnMessage(params, 400, 'Please provide crash_id parameter');
                     return;
                 }
                 var id = params.qstring.crash_id + "";
-                common.drillDb.collection("drill_events").findOne({'_id': id}, {fields: {error: 1}}, function(err, crash) {
-                    if (err || !crash) {
-                        common.returnMessage(params, 400, 'Crash not found');
-                        return;
-                    }
-                    if (!crash.error) {
-                        common.returnMessage(params, 400, 'Crash does not have stacktrace');
-                        return;
-                    }
-                    if (params.res.writeHead) {
-                        params.res.writeHead(200, {
-                            'Content-Type': 'application/octet-stream',
-                            'Content-Length': crash.error.length,
-                            'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_stacktrace.txt"
-                        });
-                        params.res.write(crash.error);
-                        params.res.end();
-                    }
-                });
+                let crash = null;
+                try {
+                    [crash] = await getCrashesTable({
+                        query: { _id: id },
+                        fields: { error: 1 },
+                        limit: 1,
+                    });
+                }
+                catch (err) {
+                    log.e('Downloading stacktrace, crash not found', err);
+                    common.returnMessage(params, 400, 'Crash not found');
+                    return;
+                }
+
+                if (!crash.error) {
+                    common.returnMessage(params, 400, 'Crash does not have stacktrace');
+                    return;
+                }
+                if (params.res.writeHead) {
+                    params.res.writeHead(200, {
+                        'Content-Type': 'application/octet-stream',
+                        'Content-Length': crash.error.length,
+                        'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_stacktrace.txt"
+                    });
+                    params.res.write(crash.error);
+                    params.res.end();
+                }
             });
             break;
         case 'download_binary':
-            validateRead(obParams, FEATURE_NAME, function(params) {
+            validateRead(obParams, FEATURE_NAME, async function(params) {
                 if (!params.qstring.crash_id) {
                     common.returnMessage(params, 400, 'Please provide crash_id parameter');
                     return;
                 }
                 var id = params.qstring.crash_id + "";
-                common.drillDb.collection("drill_events").findOne({'_id': id}, {fields: {binary_crash_dump: 1}}, function(err, crash) {
-                    if (err || !crash) {
-                        common.returnMessage(params, 400, 'Crash not found');
-                        return;
-                    }
-                    if (!crash.binary_crash_dump) {
-                        common.returnMessage(params, 400, 'Crash does not have binary_dump');
-                        return;
-                    }
-                    if (params.res.writeHead) {
-                        var buf = Buffer.from(crash.binary_crash_dump, 'base64');
-                        params.res.writeHead(200, {
-                            'Content-Type': 'application/octet-stream',
-                            'Content-Length': buf.byteLength,
-                            'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_bin.dmp"
-                        });
-                        let stream = new Duplex();
-                        stream.push(buf);
-                        stream.push(null);
-                        stream.pipe(params.res);
-                    }
-                });
+                let crash = null;
+                try {
+                    [crash] = await getCrashesTable({
+                        query: { _id: id },
+                        fields: { error: 1 },
+                        limit: 1,
+                    });
+                }
+                catch (err) {
+                    log.e('Downloading stacktrace, crash not found', err);
+                    common.returnMessage(params, 400, 'Crash not found');
+                    return;
+                }
+
+                if (!crash.binary_crash_dump) {
+                    common.returnMessage(params, 400, 'Crash does not have binary_dump');
+                    return;
+                }
+
+                if (params.res.writeHead) {
+                    var buf = Buffer.from(crash.binary_crash_dump, 'base64');
+                    params.res.writeHead(200, {
+                        'Content-Type': 'application/octet-stream',
+                        'Content-Length': buf.byteLength,
+                        'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_bin.dmp"
+                    });
+                    let stream = new Duplex();
+                    stream.push(buf);
+                    stream.push(null);
+                    stream.pipe(params.res);
+                }
             });
             break;
         default:
