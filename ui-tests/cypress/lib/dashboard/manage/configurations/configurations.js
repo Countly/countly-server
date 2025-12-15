@@ -1311,7 +1311,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.DEFAULT_CONTENT_AVAILABLE }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Set content-available to 1 by default for IOS",
+        labelText: "Set content-available by default for IOS messages",
     });
 
     cy.verifyElement({
