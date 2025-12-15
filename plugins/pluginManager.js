@@ -292,10 +292,6 @@ var pluginManager = function pluginManager() {
             for (let i = 0, l = pluginNames.length; i < l; i++) {
                 fullPluginsMap[pluginNames[i]] = true;
             }
-
-            if (err) {
-                console.log(err);
-            }
             if (!err) {
                 res = res || {};
                 for (let ns in configsOnchanges) {
