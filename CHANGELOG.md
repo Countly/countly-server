@@ -3,6 +3,10 @@ Fixes:
 - [core] fixes for changeOwner script
 
 Enterprise Fixes:
+- [retention_segments] Adding null check for breakdown filtering
+
+
+Enterprise Fixes:
 - [data-masking] Correctly dealing with unexpected filter on event_data collection while masking
 - [profile-groups] Error handling on missing list on failed profile group report download
 
