@@ -921,6 +921,11 @@ var pluginManager = function pluginManager() {
 
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             try {
+                //Require init_config if it exists
+                var initConfigPath = path.resolve(__dirname, pluginNames[i] + "/api/init_configs.js");
+                if (fs.existsSync(initConfigPath)) {
+                    require(initConfigPath);
+                }
                 var plugin = require("./" + pluginNames[i] + "/frontend/app");
                 plugs.push({'name': pluginNames[i], "plugin": plugin});
                 app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
