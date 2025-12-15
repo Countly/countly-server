@@ -5,9 +5,6 @@ var pluginOb = {},
     { validateGlobalAdmin, validateUser } = require('../../../api/utils/rights.js');
 
 //const FEATURE_NAME = 'systemlogs';
-plugins.setConfigs("systemlogs", {
-    preventIPTracking: false
-});
 
 /**
  * @api {get} /o?method=systemlogs/query Get system logs
@@ -86,9 +83,6 @@ plugins.setConfigs("systemlogs", {
 */
 
 (function() {
-    /*plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });*/
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
