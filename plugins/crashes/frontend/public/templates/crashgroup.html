@@ -101,7 +101,7 @@
                                     <el-dropdown-item v-if="symbolicationEnabled && !crashgroup._symbol_id" :command="{url: '#/crash/symbols/'}">
                                         {{i18n("crash_symbolication.should-upload")}}
                                     </el-dropdown-item>
-                                    <el-dropdown-item v-if="!!crashgroup.binary_images" :command="{url: '/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + crashgroup.lrid}">
+                                    <el-dropdown-item v-if="!!crashgroup.binary_images" :command="{url: '#/crashes/' + crashgroup._id + '/binary-images/' + crashgroup.lrid}">
                                         {{i18n("crashes.show-binary-images")}}
                                     </el-dropdown-item>
                                     <el-dropdown-item :command="{url: '/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + crashgroup.lrid, download: true}">
@@ -333,7 +333,7 @@
                                         </template>
                                         <template v-slot:header-right>
                                             <cly-more-options @command="handleCrashStacktraceCommand($event, props.row)">
-                                                <el-dropdown-item v-if="!!props.row.binary_images" :command="{url: '/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id}">
+                                                <el-dropdown-item v-if="!!props.row.binary_images" :command="{url: '#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id}">
                                                     {{i18n('crashes.show-binary-images')}}
                                                 </el-dropdown-item>
                                                 <el-dropdown-item :command="{url: '/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + props.row._id, download: true}">

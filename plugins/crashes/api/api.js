@@ -142,8 +142,8 @@ const FEATURE_NAME = 'crashes';
         var obParams = ob.params;
 
         if (obParams.qstring.method === 'reports') {
-            validateRead(obParams, FEATURE_NAME, function(params) {
-                var report_ids = [];
+            validateRead(obParams, FEATURE_NAME, async function(params) {
+                let report_ids = [];
 
                 if (params.qstring.report_ids) {
                     try {
@@ -157,18 +157,25 @@ const FEATURE_NAME = 'crashes';
                     report_ids = [params.qstring.report_id];
                 }
 
-                report_ids = report_ids.map(function(rid) {
-                    return common.db.ObjectID(rid);
-                });
-                common.drillDb.collection("drill_events").find({"a": (params.app_id + ""), "e": "[CLY]_crash", "n": {$in: report_ids}}).toArray(function(err, reports) {
-                    var reportMap = {};
-
-                    reports.forEach(function(rep) {
-                        reportMap[rep._id] = rep;
+                let crashes = null;
+                try {
+                    crashes = await getCrashesTable({
+                        query: { _id: { $in: report_ids } },
                     });
+                }
+                catch (err) {
+                    log.e('Error fetching crashes', err);
+                    common.returnMessage(params, 400, 'Error fetching crashes');
+                    return;
+                }
 
-                    common.returnOutput(params, reportMap);
+                const reportMap = {};
+
+                crashes.forEach(function(crash) {
+                    reportMap[crash._id] = crash;
                 });
+
+                common.returnOutput(params, reportMap);
             });
             return true;
         }
