@@ -6,16 +6,6 @@ var plugin = {},
     plugins = require('../../pluginManager.js'),
     { validateUser } = require('../../../api/utils/rights.js');
 
-const FEATURE_NAME = 'two_factor_auth';
-
-plugins.setConfigs("two-factor-auth", {
-    globally_enabled: false
-});
-
-plugins.register("/permissions/features", function(ob) {
-    ob.features.push(FEATURE_NAME);
-});
-
 plugins.register("/i/two-factor-auth", function(ob) {
     var config = plugins.getConfig("two-factor-auth");
 

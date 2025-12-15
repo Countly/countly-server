@@ -12,9 +12,6 @@ var common = require('../../../api/utils/common.js'),
 const FEATURE_NAME = 'reports';
 
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
 
     /**
      * @api {get} /o/reports/all Get reports data 
