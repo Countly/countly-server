@@ -547,6 +547,17 @@ module.exports.getLevel = getLevel;
  */
 module.exports.hasOpenTelemetry = Boolean(trace && metrics);
 
+/**
+ * Updates the logging configuration for all modules.
+ * 
+ * @param {Object} msg - The message containing the new logging configuration.
+ * @param {string} msg.cmd - The command type, should be 'log' to trigger update.
+ * @param {Object} msg.config - The configuration object mapping log levels to module lists.
+ * @param {string} [msg.config.default] - The default log level for modules not explicitly listed.
+ * 
+ * This function updates the internal logging levels and preferences based on the provided configuration.
+ * It is typically used to dynamically adjust logging settings at runtime.
+ */
 module.exports.updateConfig = function(msg) {
     var m, l, modules, i;
 
