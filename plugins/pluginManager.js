@@ -386,6 +386,9 @@ var pluginManager = function pluginManager() {
         // Apply environment variable overrides before setting defaults
         var processedConf = {};
         for (let key in conf) {
+            if (!Object.prototype.hasOwnProperty.call(conf, key)) {
+                continue;
+            }
             // Check for environment variable: COUNTLY_SETTINGS__NAMESPACE__KEY
             var envVarName = 'COUNTLY_SETTINGS__' + namespace.toUpperCase() + '__' + key.toUpperCase();
             if (process.env[envVarName] !== undefined) {
@@ -409,6 +412,9 @@ var pluginManager = function pluginManager() {
         }
         else {
             for (let i in processedConf) {
+                if (!Object.prototype.hasOwnProperty.call(processedConf, i)) {
+                    continue;
+                }
                 defaultConfigs[namespace][i] = processedConf[i];
             }
         }
