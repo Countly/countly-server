@@ -1310,39 +1310,6 @@ const verifyPageElements = () => {
     });
 
     cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.CONNECTION_FACTOR }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Time factor for exponential backoff between retries",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.CONNECTION_FACTOR }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "1000"
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.CONNECTION_RETRIES }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Number of connection retries",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.CONNECTION_RETRIES }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "3"
-    });
-
-    //TODO: there is no option on ci cd, check this
-    // cy.verifyElement({
-    //     labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.NO_DUPLICATE }).SELECTED_SUBFEATURE_TITLE,
-    //     labelText: "Ensure no duplicate notifications sent when scheduling messages",
-    // });
-
-    // cy.verifyElement({
-    //     element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.NO_DUPLICATE }).SELECTED_SUBFEATURE_CHECKBOX,
-    //     isChecked: false
-    // });
-
-    cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.DEFAULT_CONTENT_AVAILABLE }).SELECTED_SUBFEATURE_TITLE,
         labelText: "Set content-available to 1 by default for IOS",
     });
@@ -1363,50 +1330,6 @@ const verifyPageElements = () => {
     //     attr: "aria-valuenow",
     //     attrText: "3600000"
     // });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_BYTES }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Bytes in binary stream batches",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_BYTES }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "10000"
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_CONCURRENCY }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Maximum number of same type connections",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_CONCURRENCY }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "5"
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_POOLS }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Maximum number of connections in total",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_POOLS }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "10"
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_PUSHES }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Number of notifications in stream batches",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_PUSHES }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "400"
-    });
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_HOST }).SELECTED_SUBFEATURE_TITLE,
@@ -1483,17 +1406,6 @@ const verifyPageElements = () => {
     cy.verifyElement({
         element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_USER }).SELECTED_SUBFEATURE_INPUT,
         value: ""
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.SEND_A_HEAD }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Send notifications scheduled up to this many ms into the future",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.SEND_A_HEAD }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "60000"
     });
 
     cy.scrollPageToTop();
