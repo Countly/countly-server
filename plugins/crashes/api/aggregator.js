@@ -9,6 +9,7 @@ const log = require('../../../api/utils/log.js')('crashes:aggregator');
 const ranges = ['ram', 'bat', 'disk', 'run', 'session'];
 const segments = ['os_version', 'os_name', 'manufacture', 'device', 'resolution', 'app_version', 'cpu', 'opengl', 'orientation', 'view', 'browser'];
 const bools = { root: true, online: true, muted: true, signal: true, background: true };
+const buildSpecific = ['architecture', 'app_build', 'binary_images', 'build_uuid', 'executable_name', 'load_address', 'binary_crash_dump', 'unprocessed'];
 
 const props = [
     //device metrics
@@ -166,6 +167,14 @@ const recalculateStats = async function(currEvent) {
     }
 };
 
+const setFieldsIfExist = function(fieldList, source, target) {
+    fieldList.forEach((item) => {
+        if (item in source) {
+            target[item] = source[item];
+        }
+    });
+};
+
 (() => {
     plugins.register('/aggregator', async() => {
         const eventSource = new UnifiedEventSource(
@@ -319,6 +328,9 @@ const recalculateStats = async function(currEvent) {
                                 groupInsert.latest_version_for_sort = common.transformAppVersion(currEvent.sg.app_version);
                                 groupInsert.lrid = `${currEvent._id}`;
                                 groupInsert.error = currEvent.sg.error || '';
+
+                                setFieldsIfExist(buildSpecific, currEvent.sg, groupInsert);
+
                                 const metrics = [];
 
                                 metaInc.reports = 1;
@@ -386,7 +398,6 @@ const recalculateStats = async function(currEvent) {
                                         }
                                         else {
                                             groupSet[props[i]] = {};
-
                                         }
                                     }
                                 }
@@ -456,12 +467,16 @@ const recalculateStats = async function(currEvent) {
                                             if (crashGroup.latest_version && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.latest_version.replace(/\./g, ':')) >= 0) {
                                                 group.error = currEvent.sg.error;
                                                 group.lrid = `${currEvent._id}`;
+
+                                                setFieldsIfExist(buildSpecific, currEvent.sg, group);
                                             }
                                         }
                                         else {
                                             if (crashGroup.latest_version && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.latest_version.replace(/\./g, ':')) > 0) {
                                                 group.error = currEvent.sg.error;
                                                 group.lrid = `${currEvent._id}`;
+
+                                                setFieldsIfExist(buildSpecific, currEvent.sg, group);
                                             }
                                         }
                                         if (crashGroup.resolved_version && crashGroup.is_resolved && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.resolved_version.replace(/\./g, ':')) > 0) {
