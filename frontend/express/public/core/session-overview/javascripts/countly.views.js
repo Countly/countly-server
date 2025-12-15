@@ -193,16 +193,6 @@ var SessionHomeWidget = countlyVue.views.create({
                 });
             }
 
-            if (sessionData.usage['avg-duration-per-session']) {
-                properties.push({
-                    "value": "e-avg",
-                    "label": CV.i18n('dashboard.avg-reqs-received'),
-                    "trend": sessionData.usage['avg-events'].trend,
-                    "number": countlyCommon.getShortNumber(sessionData.usage['avg-events'].total || 0),
-                    "trendValue": sessionData.usage['avg-events'].change,
-                    "description": CV.i18n('dashboard.avg-reqs-received-desc')
-                });
-            }
             return properties;
         },
         calculateSeries: function(value) {
@@ -232,9 +222,6 @@ var SessionHomeWidget = countlyVue.views.create({
                     sessionDP.chartDP[1].label = CV.i18n('dashboard.avg-time-spent');
                     sessionDP.chartDP[0].label = CV.i18n('dashboard.avg-time-spent');
                 }
-                break;
-            case "e-avg":
-                sessionDP = countlySession.getEventsDPAvg();
                 break;
             }
             var series = [];

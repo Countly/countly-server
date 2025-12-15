@@ -398,8 +398,7 @@ describe('Complete Onboarding', () => {
         sdkManagersPageHelpers.clickRequestStatsTab();
         requestStatsPageHelpers.verifyFullDataPageElements();
         requestStatsPageHelpers.clickHealthCheckTab();
-        //healthCheckPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
-        healthCheckPageHelpers.verifyEmptyPageElements();
+        healthCheckPageHelpers.verifyFullDataPageElements();
         healthCheckPageHelpers.clickSdkConfigurationTab();
         // sdkConfigurationsPageHelpers.verifyPageElements({}); // Moved to SDK tests
         navigationHelpers.goToComplianceHubMetricsPage();

@@ -57,7 +57,7 @@ const statusCodesEChartElements = {
     EMPTY_TABLE_SUBTITLE: 'status-codes-empty-subtitle',
 
     CHART_STATUS_CODES: 'status-codes-chart',
-    CHART_MORE_BUTTON: 'status-codes-header-cly-chart-more-dropdown-more-option-button',
+    CHART_MORE_BUTTON: 'status-codes-cly-chart-more-dropdown-more-option-button',
 
     STATUS_CODE_MIN_1_ICON: 'line-options-status-codes--1-legend-icon',
     STATUS_CODE_MIN_1_LABEL: 'line-options-status-codes--1-legend-label'
@@ -69,7 +69,7 @@ const errorMessagesEChartElements = {
     EMPTY_TABLE_SUBTITLE: 'error-messages-empty-subtitle',
 
     CHART_ERROR_MESSAGES: 'error-messages-chart',
-    CHART_MORE_BUTTON: 'error-messages-header-cly-chart-more-dropdown-more-option-button',
+    CHART_MORE_BUTTON: 'error-messages-cly-chart-more-dropdown-more-option-button',
 
     APP_DOES_NOT_EXIST_ICON: 'line-options-error-messages-app-does-not-exist-legend-icon',
     APP_DOES_NOT_EXIST_LABEL: 'line-options-error-messages-app-does-not-exist-legend-label'
