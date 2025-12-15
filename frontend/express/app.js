@@ -75,6 +75,7 @@ var versionInfo = require('./version.info'),
     { validateCreate } = require('../../api/utils/rights.js'),
     tracker = require('../../api/parts/mgmt/tracker.js');
 
+require("../../api/init_configs.js");
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
 // TEMPORARY DEBUG LOGGING - FRONTEND
@@ -140,40 +141,6 @@ if (!countlyConfig.cookie) {
         maxAgeLogin: 1000 * 60 * 60 * 24 * 365
     };
 }
-
-plugins.setConfigs("frontend", {
-    production: true,
-    theme: countlyConfig.web.theme || "",
-    session_timeout: 30,
-    use_google: true,
-    code: true,
-    offline_mode: false
-});
-
-plugins.setUserConfigs("frontend", {
-    production: false,
-    theme: false,
-    session_timeout: false,
-    use_google: false,
-    code: false,
-});
-
-plugins.setConfigs("security", {
-    login_tries: 3,
-    login_wait: 5 * 60,
-    password_min: 8,
-    password_char: true,
-    password_number: true,
-    password_symbol: true,
-    password_expiration: 0,
-    password_rotation: 3,
-    password_autocomplete: true,
-    robotstxt: "User-agent: *\nDisallow: /",
-    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
-    dashboard_rate_limit_window: 60,
-    dashboard_rate_limit_requests: 500
-});
 
 process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
