@@ -10,12 +10,15 @@ describe('PluginManager setConfigs with environment variables', function() {
     });
 
     beforeEach(function() {
-        // Clear any test environment variables
+        // Clear all test environment variables to prevent pollution between tests
         for (var key in process.env) {
-            if (key.startsWith('COUNTLY_SETTINGS__TEST')) {
+            if (key.startsWith('COUNTLY_SETTINGS__')) {
                 delete process.env[key];
             }
         }
+
+        // Clear require cache to get fresh pluginManager instance with no state
+        delete require.cache[require.resolve('../../plugins/pluginManager.js')];
 
         // Get pluginManager singleton instance
         pluginManager = require('../../plugins/pluginManager.js');
@@ -24,9 +27,7 @@ describe('PluginManager setConfigs with environment variables', function() {
     after(function() {
         // Restore original environment
         Object.keys(process.env).forEach(function(key) {
-            if (key.startsWith('COUNTLY_SETTINGS__')) {
-                delete process.env[key];
-            }
+            delete process.env[key];
         });
         Object.assign(process.env, originalEnv);
     });

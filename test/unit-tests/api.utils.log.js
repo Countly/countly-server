@@ -9,12 +9,11 @@ describe('Log utility tests', function() {
     });
 
     afterEach(function() {
-        // Clean up test environment variables
+        // Clear all environment variables and restore original
         Object.keys(process.env).forEach(function(key) {
-            if (key.startsWith('COUNTLY_SETTINGS__LOGS__')) {
-                delete process.env[key];
-            }
+            delete process.env[key];
         });
+        Object.assign(process.env, originalEnv);
 
         // Clear require cache for log module and config to get fresh instances
         delete require.cache[require.resolve('../../api/utils/log.js')];
@@ -22,8 +21,11 @@ describe('Log utility tests', function() {
     });
 
     after(function() {
-        // Restore original environment
-        process.env = originalEnv;
+        // Final cleanup - restore original environment
+        Object.keys(process.env).forEach(function(key) {
+            delete process.env[key];
+        });
+        Object.assign(process.env, originalEnv);
     });
 
     describe('Default log levels', function() {
