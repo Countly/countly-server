@@ -1,3 +1,7 @@
+## Version 24.05.XX
+Enterprise Fixes:
+- [retention_segments] Adding null check for breakdown filtering
+
 ## Version 24.05.48
 Fixes:
 - [push] Better FCM error handling
