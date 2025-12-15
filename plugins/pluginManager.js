@@ -921,11 +921,23 @@ var pluginManager = function pluginManager() {
 
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             try {
-                var plugin = require("./" + pluginNames[i] + "/frontend/app");
-                plugs.push({'name': pluginNames[i], "plugin": plugin});
-                app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
-                if (plugin.staticPaths) {
-                    plugin.staticPaths(app, countlyDb, express);
+                //Require init_config if it exists
+                var initConfigPath = path.resolve(__dirname, pluginNames[i] + "/api/init_configs.js");
+                if (fs.existsSync(initConfigPath)) {
+                    require(initConfigPath);
+                }
+                var appPath = path.resolve(__dirname, pluginNames[i] + "/frontend/app.js");
+                let plugin;
+                if (fs.existsSync(appPath)) {
+                    plugin = require(appPath);
+                    plugs.push({'name': pluginNames[i], "plugin": plugin});
+                    app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
+                    if (plugin.staticPaths) {
+                        plugin.staticPaths(app, countlyDb, express);
+                    }
+                }
+                else {
+                    app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
                 }
             }
             catch (ex) {
@@ -1885,7 +1897,7 @@ var pluginManager = function pluginManager() {
         common.drillDb = dbDrill;
 
         try {
-            common.db.collection("drill_data_cache").ensureIndex({lu: 1});
+            common.db.collection("drill_data_cache").createIndex({lu: 1});
         }
         catch (err) {
             console.log('Plugin Manager: Failed to create index on drill_data_cache collection for lu field:', err);

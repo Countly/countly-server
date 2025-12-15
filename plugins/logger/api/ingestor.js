@@ -3,7 +3,6 @@ var exported = {},
     plugins = require('../../pluginManager.js'),
     automaticStateManager = require('./helpers/automaticStateManager'),
     log = require('../../../api/utils/log.js')('logger:ingestor');
-const FEATURE_NAME = 'logger';
 
 var RequestLoggerStateEnum = {
     ON: "on",
@@ -12,16 +11,7 @@ var RequestLoggerStateEnum = {
 };
 Object.freeze(RequestLoggerStateEnum);
 
-plugins.setConfigs("logger", {
-    state: RequestLoggerStateEnum.AUTOMATIC,
-    limit: 1000,
-});
-
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
     var shouldLogRequest = function(requestLoggerConfiguration) {
         if (requestLoggerConfiguration.state === RequestLoggerStateEnum.ON) {
             return true;

@@ -3,12 +3,6 @@ var exportedPlugin = {},
     recaptcha = require('express-recaptcha');
 var plugins = require("../../pluginManager.js");
 
-plugins.setConfigs("recaptcha", {
-    enable: true,
-    site_key: "",
-    secret_key: ""
-});
-
 (function(plugin) {
     plugin.init = function(app, countlyDb) {
         plugins.loadConfigs(countlyDb, function() {

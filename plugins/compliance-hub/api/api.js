@@ -11,12 +11,6 @@ var plugin = {},
 const FEATURE_NAME = 'compliance_hub';
 
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
-    plugins.internalDrillEvents.push("[CLY]_consent");
-
     plugins.register("/o", function(ob) {
         var params = ob.params;
 

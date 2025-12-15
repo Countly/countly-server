@@ -81,14 +81,6 @@ export default {
         AVG_SESSION_DURATION_TREND_VALUE: 'tab-box-center-item-trend-value-avg-session-duration',
         AVG_SESSION_DURATION_CHART: 'tab-box-chart-avg-session-duration',
 
-        AVG_REQUESTS_RECEIVED_TAB_BOX: 'tab-box-avg-requests-received',
-        AVG_REQUESTS_RECEIVED_LABEL: 'tab-box-label-avg-requests-received',
-        AVG_REQUESTS_RECEIVED_TOOLTIP: 'tab-box-tooltip-avg-requests-received',
-        AVG_REQUESTS_RECEIVED_NUMBER: 'tab-box-center-item-number-avg-requests-received',
-        AVG_REQUESTS_RECEIVED_TREND_ICON: 'tab-box-center-item-trend-icon-avg-requests-received',
-        AVG_REQUESTS_RECEIVED_TREND_VALUE: 'tab-box-center-item-trend-value-avg-requests-received',
-        AVG_REQUESTS_RECEIVED_CHART: 'tab-box-chart-avg-requests-received',
-
         CHART_TYPE_SELECT_COMBOBOX: 'total-sessions-header-select-input',
         CHART_TYPE_SELECT_ICON: 'total-sessions-select-icon',
         CHART_TYPE_SELECT_LABEL: 'total-sessions-chart-type-label',

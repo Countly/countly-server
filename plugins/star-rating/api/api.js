@@ -22,15 +22,6 @@ if (cohortsEnabled) {
     var cohorts = require('../../cohorts/api/parts/cohorts');
 }
 
-if (!surveysEnabled) {
-    plugins.setConfigs("feedback", {
-        main_color: "#0166D6",
-        font_color: "#0166D6",
-        feedback_logo: ""
-
-    });
-}
-
 const FEATURE_NAME = 'star_rating';
 
 const widgetProperties = {
@@ -306,10 +297,6 @@ function uploadFile(myfile, id, callback) {
 }
 
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
     /**
      * @api {get} /o/sdk Get ratings widgets
      * @apiName GetWidgets
@@ -534,12 +521,6 @@ function uploadFile(myfile, id, callback) {
         });
     });
 
-    /**
-     *    register internalEvent
-     */
-    plugins.internalEvents.push('[CLY]_star_rating');
-    plugins.internalDrillEvents.push("[CLY]_star_rating");
-    plugins.internalOmitSegments["[CLY]_star_rating"] = ["email", "comment", "widget_id", "contactMe"];
     var createFeedbackWidget = function(ob) {
         var obParams = ob.params;
 
