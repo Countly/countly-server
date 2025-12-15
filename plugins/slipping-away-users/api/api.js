@@ -17,17 +17,6 @@ catch (ex) {
 }
 
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
-    plugins.setConfigs("slipping-away-users", {
-        p1: 7,
-        p2: 14,
-        p3: 30,
-        p4: 60,
-        p5: 90,
-    });
 
     /**
      * @api {get} /o/slipping Get slipping away data 

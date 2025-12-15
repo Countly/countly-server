@@ -15,17 +15,7 @@ var RequestLoggerStateEnum = {
 };
 Object.freeze(RequestLoggerStateEnum);
 
-plugins.setConfigs("logger", {
-    state: RequestLoggerStateEnum.AUTOMATIC,
-    limit: 1000,
-});
-
 (function() {
-
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
     var shouldLogRequest = function(requestLoggerConfiguration) {
         if (requestLoggerConfiguration.state === RequestLoggerStateEnum.ON) {
             return true;

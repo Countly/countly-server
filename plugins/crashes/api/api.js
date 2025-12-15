@@ -40,9 +40,6 @@ const FEATURE_NAME = 'crashes';
 */
 
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
     plugins.register("/master", function() {
         fs.chmod(path.resolve(__dirname + "/../bin/minidump_stackwalk"), 0o744, function(err) {
             if (err && !process.env.COUNTLY_CONTAINER) {
@@ -50,7 +47,6 @@ const FEATURE_NAME = 'crashes';
             }
         });
     });
-    plugins.internalDrillEvents.push("[CLY]_crash");
 
     plugins.register("/i/device_id", function(ob) {
         var appId = ob.app_id;
