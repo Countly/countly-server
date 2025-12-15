@@ -81,13 +81,6 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.verifyElement({
-        labelElement: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_LABEL,
-        labelText: "Avg. Requests Received",
-        tooltipElement: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TOOLTIP,
-        tooltipText: "The number of write API requests the Countly Server receives for each session (includes sessions, session extensions, events, etc.)."
-    });
-
-    cy.verifyElement({
         element: homePageElements.AUDIENCE.CHART_TYPE_SELECT_COMBOBOX,
         elementPlaceHolder: "Select"
     });
@@ -392,20 +385,6 @@ const verifyEmptyPageElements = () => {
         elementText: "NA",
     });
 
-    cy.verifyElement({
-        element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_NUMBER,
-        elementText: "0.0",
-    });
-
-    cy.verifyElement({
-        element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TREND_ICON,
-    });
-
-    cy.verifyElement({
-        element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TREND_VALUE,
-        elementText: "NA",
-    });
-
     cy.scrollPageToCenter('.main-view');
 
     cy.verifyElement({
@@ -605,22 +584,6 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.AUDIENCE.AVG_SESSION_DURATION_TREND_VALUE,
-        elementText: null,
-    });
-
-    cy.verifyElement({
-        shouldNot: true,
-        element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_NUMBER,
-        elementText: "0.0",
-    });
-
-    cy.verifyElement({
-        element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TREND_ICON,
-    });
-
-    cy.verifyElement({
-        shouldNot: true,
-        element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TREND_VALUE,
         elementText: null,
     });
 
