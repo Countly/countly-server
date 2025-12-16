@@ -96,21 +96,10 @@ const verifyFullDataPageElements = () => {
 
     cy.checkPaceActive();
 
-    cy
-        .elementExists(logsDataTableElements().EMPTY_TABLE_ICON) //Data comes sometimes
-        .then((isExists) => {
-            if (isExists) {
-                verifyLogsDataTable({
-                    isEmpty: true
-                });
-            }
-            else {
-                verifyLogsDataTable({
-                    isEmpty: false,
-                    shouldNotEqual: true,
-                });
-            }
-        });
+    verifyLogsDataTable({
+        isEmpty: false,
+        shouldNotEqual: true,
+    });
 };
 
 const verifyLogsDataTable = ({
