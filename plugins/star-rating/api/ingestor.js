@@ -3,7 +3,6 @@ var requestProcessor = require('../../../api/ingestor/requestProcessor');
 var common = require('../../../api/utils/common.js');
 
 plugins.register("/sdk/process_user", function(ob) {
-    plugins.internalDrillEvents.push("[CLY]_star_rating");
     var params = ob.params;
     if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
         for (var z = 0; z < params.qstring.events.length; z++) {

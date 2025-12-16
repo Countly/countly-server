@@ -8,8 +8,6 @@ var plugin = {},
     trace = require("./parts/stacktrace.js"),
     plugins = require('../../pluginManager.js');
 
-const FEATURE_NAME = 'crashes';
-
 fs.chmod(path.resolve(__dirname + "/../bin/minidump_stackwalk"), 0o744, function(err) {
     if (err && !process.env.COUNTLY_CONTAINER) {
         console.log(err);
@@ -18,15 +16,8 @@ fs.chmod(path.resolve(__dirname + "/../bin/minidump_stackwalk"), 0o744, function
 
 var segments = ["os_version", "os_name", "manufacture", "device", "resolution", "app_version", "cpu", "opengl", "orientation", "view", "browser"];
 var bools = {"root": true, "online": true, "muted": true, "signal": true, "background": true};
-plugins.internalDrillEvents.push("[CLY]_crash");
 
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
-    plugins.internalDrillEvents.push("[CLY]_crash");
-
     //write api call
     plugins.register("/sdk/process_user", function(ob) {
         return new Promise(function(resolve) {

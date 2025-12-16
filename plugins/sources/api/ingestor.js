@@ -15,10 +15,6 @@ var stripPath = ["r.search.yahoo.com", "m.baidu.com"];
 var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
 
 (function(plugin) {
-    plugins.setConfigs("sources", {
-        sources_length_limit: 100
-    });
-
     plugin.urlParser = function(url) {
         var qIndex = url.indexOf("?");
         var path = qIndex > 0 ? url.substring(0, qIndex) : url;

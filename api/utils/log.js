@@ -39,8 +39,91 @@ const ACCEPTABLE = {
 };
 
 
+/**
+ * Load logging configuration from environment variables or config file
+ * Environment variables take precedence over config.js values
+ * Format: COUNTLY_SETTINGS__LOGS__<KEY> where KEY is DEBUG, INFO, WARN, ERROR, DEFAULT, or PRETTYPRINT
+ * @returns {Object} Logging configuration object with debug, info, warn, error, default, and prettyPrint properties
+ */
+function loadLoggingConfig() {
+    // Start with config.js values
+    let prefs = require('../config.js', 'dont-enclose').logging || {};
+
+    // Check for environment variable overrides
+    const envDebug = process.env.COUNTLY_SETTINGS__LOGS__DEBUG;
+    const envInfo = process.env.COUNTLY_SETTINGS__LOGS__INFO;
+    const envWarn = process.env.COUNTLY_SETTINGS__LOGS__WARN;
+    const envError = process.env.COUNTLY_SETTINGS__LOGS__ERROR;
+    const envDefault = process.env.COUNTLY_SETTINGS__LOGS__DEFAULT;
+    const envPrettyPrint = process.env.COUNTLY_SETTINGS__LOGS__PRETTYPRINT;
+
+    /**
+     * Helper to parse environment variable as array
+     * @param {string} envValue - Environment variable value
+     * @returns {Array} Parsed array of module names
+     */
+    const parseEnvArray = (envValue) => {
+        try {
+            return JSON.parse(envValue);
+        }
+        catch (e) {
+            return envValue.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        }
+    };
+
+    /**
+     * Helper to remove modules from other log levels to avoid conflicts
+     * @param {Array} modules - Array of module names
+     * @param {string} currentLevel - The level being set
+     */
+    const removeFromOtherLevels = (modules, currentLevel) => {
+        const levels = ['debug', 'info', 'warn', 'error'];
+        for (let level of levels) {
+            if (level !== currentLevel && Array.isArray(prefs[level])) {
+                prefs[level] = prefs[level].filter(m => !modules.includes(m));
+            }
+        }
+    };
+
+    // Override with environment variables if present
+    if (envDebug !== undefined) {
+        prefs.debug = parseEnvArray(envDebug);
+        removeFromOtherLevels(prefs.debug, 'debug');
+    }
+
+    if (envInfo !== undefined) {
+        prefs.info = parseEnvArray(envInfo);
+        removeFromOtherLevels(prefs.info, 'info');
+    }
+
+    if (envWarn !== undefined) {
+        prefs.warn = parseEnvArray(envWarn);
+        removeFromOtherLevels(prefs.warn, 'warn');
+    }
+
+    if (envError !== undefined) {
+        prefs.error = parseEnvArray(envError);
+        removeFromOtherLevels(prefs.error, 'error');
+    }
+
+    if (envDefault !== undefined) {
+        prefs.default = envDefault;
+    }
+
+    if (envPrettyPrint !== undefined) {
+        try {
+            prefs.prettyPrint = JSON.parse(envPrettyPrint);
+        }
+        catch (e) {
+            prefs.prettyPrint = envPrettyPrint === 'true';
+        }
+    }
+
+    return prefs;
+}
+
 // Initialize configuration with defaults
-let prefs = require('../config.js', 'dont-enclose').logging || {};
+let prefs = loadLoggingConfig();
 prefs.default = prefs.default || "warn";
 let deflt = (prefs && prefs.default) ? prefs.default : 'error';
 let prettyPrint = prefs.prettyPrint || false;
@@ -140,11 +223,18 @@ const logLevel = function(name) {
         return prefs;
     }
     else {
-        for (let level in prefs) {
+        // Check log levels in priority order (most verbose first)
+        const validLevels = ['debug', 'info', 'warn', 'error'];
+
+        for (let level of validLevels) {
+            if (!prefs[level]) {
+                continue;
+            }
+
             if (typeof prefs[level] === 'string' && name.indexOf(prefs[level]) === 0) {
                 return level;
             }
-            if (typeof prefs[level] === 'object' && prefs[level].length) {
+            if (typeof prefs[level] === 'object' && Array.isArray(prefs[level]) && prefs[level].length) {
                 for (let i = prefs[level].length - 1; i >= 0; i--) {
                     let opt = prefs[level][i];
                     if (opt === name || name.indexOf(opt) === 0) {
@@ -333,7 +423,14 @@ const setPrettyPrint = function(enabled) {
  * @returns {string} The current log level
  */
 const getLevel = function(module) {
-    return levels[module] || deflt;
+    if (module) {
+        // If not in cache, compute it from config
+        if (!(module in levels)) {
+            return logLevel(module);
+        }
+        return levels[module];
+    }
+    return deflt;
 };
 
 /**
@@ -546,3 +643,90 @@ module.exports.getLevel = getLevel;
  * @type {boolean}
  */
 module.exports.hasOpenTelemetry = Boolean(trace && metrics);
+
+/**
+ * Updates the logging configuration for all modules.
+ * 
+ * @param {Object} msg - The message containing the new logging configuration.
+ * @param {string} msg.cmd - The command type, should be 'log' to trigger update.
+ * @param {Object} msg.config - The configuration object mapping log levels to module lists.
+ * @param {string} [msg.config.default] - The default log level for modules not explicitly listed.
+ * 
+ * This function updates the internal logging levels and preferences based on the provided configuration.
+ * It is typically used to dynamically adjust logging settings at runtime.
+ */
+module.exports.updateConfig = function(msg) {
+    var m, l, modules, i;
+
+    if (!msg || msg.cmd !== 'log' || !msg.config) {
+        return;
+    }
+
+    // console.log('%d: Setting logging config to %j (was %j)', process.pid, msg.config, levels);
+
+    if (msg.config.default) {
+        deflt = msg.config.default;
+    }
+
+    for (m in levels) {
+        var found = null;
+        for (l in msg.config) {
+            modules = msg.config[l].split(',').map(function(v) {
+                return v.trim();
+            });
+
+            for (i = 0; i < modules.length; i++) {
+                if (modules[i] === m) {
+                    found = l;
+                }
+            }
+        }
+
+        if (found === null) {
+            for (l in msg.config) {
+                modules = msg.config[l].split(',').map(function(v) {
+                    return v.trim();
+                });
+
+                for (i = 0; i < modules.length; i++) {
+                    if (modules[i].indexOf('*') === -1 && modules[i] === m.split(':')[0]) {
+                        found = l;
+                    }
+                    else if (modules[i].indexOf('*') !== -1 && modules[i].split(':')[1] === '*' && modules[i].split(':')[0] === m.split(':')[0]) {
+                        found = l;
+                    }
+                }
+            }
+        }
+
+        if (found !== null) {
+            levels[m] = found;
+        }
+        else {
+            levels[m] = deflt;
+        }
+    }
+
+    for (l in msg.config) {
+        if (msg.config[l] && l !== 'default') {
+            modules = msg.config[l].split(',').map(function(v) {
+                return v.trim();
+            });
+            prefs[l] = modules;
+
+            for (i in modules) {
+                m = modules[i];
+                if (!(m in levels)) {
+                    levels[m] = l;
+                }
+            }
+        }
+        else {
+            prefs[l] = [];
+        }
+    }
+
+    prefs.default = msg.config.default;
+
+    // console.log('%d: Set logging config to %j (now %j)', process.pid, msg.config, levels);
+};
