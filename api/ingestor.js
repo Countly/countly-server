@@ -37,7 +37,7 @@ plugins.connectToAllDatabases(true).then(function() {
     common.readBatcher = new Cacher(common.db);
     //common.insertBatcher = new InsertBatcher(common.db);
     if (common.drillDb) {
-        common.drillReadBatcher = new Cacher(common.drillDb);
+        common.drillReadBatcher = new Cacher(common.drillDb, {configs_db: common.db});
     }
     /**
     * Set Max Sockets

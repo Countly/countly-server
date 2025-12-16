@@ -11,6 +11,15 @@ pluginManager.dbConnection().then(async(db) => {
                     'api.metric_changes': '',
                     'flows.maxSamplingSize': '',
                     'flows.samplingThreshold': '',
+                    'push.rate': '',
+                    'push.deduplicate': '',
+                    'push.sendahead': '',
+                    'push.connection_retries': '',
+                    'push.connection_factor': '',
+                    'push.pool_pushes': '',
+                    'push.pool_bytes': '',
+                    'push.pool_concurrency': '',
+                    'push.pool_pools': '',
                 }
             });
         console.log('Unused configs removed');
