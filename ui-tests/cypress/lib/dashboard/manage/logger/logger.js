@@ -96,6 +96,7 @@ const verifyFullDataPageElements = () => {
 
     cy.checkPaceActive();
 
+    cy.wait(15000); //TODO: Replace with better wait
     verifyLogsDataTable({
         isEmpty: false,
         shouldNotEqual: true,
