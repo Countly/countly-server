@@ -96,7 +96,7 @@ const verifyFullDataPageElements = () => {
 
     cy.checkPaceActive();
 
-    cy.wait(15000); //TODO: Replace with better wait
+    cy.wait(15000); //TODO: SER-2733 need to fix for removing static wait
     verifyLogsDataTable({
         isEmpty: false,
         shouldNotEqual: true,
