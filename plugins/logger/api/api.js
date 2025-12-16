@@ -343,7 +343,7 @@ Object.freeze(RequestLoggerStateEnum);
                 }
                 catch (ex) {
                     console.log("Failed fetching logs collection info: ", ex);
-                    common.returnOutput(parameters, {capped: MAX_NUMBER_OF_LOG_ENTRIES, count: MAX_NUMBER_OF_LOG_ENTRIES, max: MAX_NUMBER_OF_LOG_ENTRIES, status: "error"});
+                    common.returnOutput(parameters, {capped: MAX_NUMBER_OF_LOG_ENTRIES || 1000, count: MAX_NUMBER_OF_LOG_ENTRIES || 1000, max: MAX_NUMBER_OF_LOG_ENTRIES || 1000, status: "error"});
                 }
             });
             return true;
