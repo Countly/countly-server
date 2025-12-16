@@ -234,13 +234,21 @@ module.exports.SETTINGS = {
     },
 
     PUSH_NOTIFICATIONS: {
+        CONNECTION_FACTOR: 'Connection Factor',
+        CONNECTION_RETRIES: 'Connection Retries',
+        NO_DUPLICATE: 'Deduplicate',
         DEFAULT_CONTENT_AVAILABLE: 'Default Content Available',
         MESSAGE_TIMEOUT: 'Message Timeout',
+        POOL_BYTES: 'Pool Bytes',
+        POOL_CONCURRENCY: 'Pool Concurrency',
+        POOL_POOLS: 'Pool Pools',
+        POOL_PUSHES: 'Pool Pushes',
         PROXY_HOST: 'Proxyhost',
         PROXY_PASS: 'Proxypass',
         PROXY_PORT: 'Proxyport',
         PROXY_UNAUTHORIZED: 'Proxyunauthorized',
-        PROXY_USER: 'Proxyuser'
+        PROXY_USER: 'Proxyuser',
+        SEND_A_HEAD: 'Sendahead',
     },
 
     REMOTE_CONFIG: {
