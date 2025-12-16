@@ -292,10 +292,6 @@ var pluginManager = function pluginManager() {
             for (let i = 0, l = pluginNames.length; i < l; i++) {
                 fullPluginsMap[pluginNames[i]] = true;
             }
-
-            if (err) {
-                console.log(err);
-            }
             if (!err) {
                 res = res || {};
                 for (let ns in configsOnchanges) {
@@ -383,12 +379,39 @@ var pluginManager = function pluginManager() {
     * @param {function} onchange - function to call when configurations change
     **/
     this.setConfigs = function(namespace, conf, exclude, onchange) {
+        // Apply environment variable overrides before setting defaults
+        var processedConf = {};
+        for (let key in conf) {
+            if (!Object.prototype.hasOwnProperty.call(conf, key)) {
+                continue;
+            }
+            // Check for environment variable: COUNTLY_SETTINGS__NAMESPACE__KEY
+            var envVarName = 'COUNTLY_SETTINGS__' + namespace.toUpperCase() + '__' + key.toUpperCase();
+            if (process.env[envVarName] !== undefined) {
+                var envValue = process.env[envVarName];
+                // Try to parse as JSON first (for objects, arrays, booleans, numbers)
+                try {
+                    processedConf[key] = JSON.parse(envValue);
+                }
+                catch (e) {
+                    // If parsing fails, use as string
+                    processedConf[key] = envValue;
+                }
+            }
+            else {
+                processedConf[key] = conf[key];
+            }
+        }
+
         if (!defaultConfigs[namespace]) {
-            defaultConfigs[namespace] = conf;
+            defaultConfigs[namespace] = processedConf;
         }
         else {
-            for (let i in conf) {
-                defaultConfigs[namespace][i] = conf[i];
+            for (let i in processedConf) {
+                if (!Object.prototype.hasOwnProperty.call(processedConf, i)) {
+                    continue;
+                }
+                defaultConfigs[namespace][i] = processedConf[i];
             }
         }
         if (exclude) {

@@ -588,16 +588,21 @@ const FEATURE_NAME = 'crashes';
                     });
                 }
                 catch (err) {
-                    log.e('Downloading stacktrace, crash not found', err);
-                    common.returnMessage(params, 400, 'Crash not found');
+                    log.e('Downloading stacktrace, error fetching crash document', err);
+                    common.returnMessage(params, 400, 'Crash fetching error');
                     return;
                 }
 
-                if (!crash.error) {
+                if (!crash) {
+                    common.returnMessage(params, 400, 'Crash not found');
+                    return;
+                }
+                if (crash && !crash.error) {
                     common.returnMessage(params, 400, 'Crash does not have stacktrace');
                     return;
                 }
-                if (params.res.writeHead) {
+
+                if (crash && crash.error && params.res.writeHead) {
                     params.res.writeHead(200, {
                         'Content-Type': 'application/octet-stream',
                         'Content-Length': crash.error.length,
@@ -624,17 +629,21 @@ const FEATURE_NAME = 'crashes';
                     });
                 }
                 catch (err) {
-                    log.e('Downloading stacktrace, crash not found', err);
-                    common.returnMessage(params, 400, 'Crash not found');
+                    log.e('Downloading binary, error fetching crash document', err);
+                    common.returnMessage(params, 400, 'Crash fetching error');
                     return;
                 }
 
-                if (!crash.binary_crash_dump) {
+                if (!crash) {
+                    common.returnMessage(params, 400, 'Crash not found');
+                    return;
+                }
+                if (crash && !crash.binary_crash_dump) {
                     common.returnMessage(params, 400, 'Crash does not have binary_dump');
                     return;
                 }
 
-                if (params.res.writeHead) {
+                if (crash && crash.binary_crash_dump && params.res.writeHead) {
                     var buf = Buffer.from(crash.binary_crash_dump, 'base64');
                     params.res.writeHead(200, {
                         'Content-Type': 'application/octet-stream',
