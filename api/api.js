@@ -66,7 +66,7 @@ plugins.connectToAllDatabases().then(function() {
 
     common.drillQueryRunner = granuralQueries;
     if (common.drillDb) {
-        common.drillReadBatcher = new ReadBatcher(common.drillDb);
+        common.drillReadBatcher = new ReadBatcher(common.drillDb, {configs_db: common.db});
         console.log('✓ Drill database components initialized');
     }
 

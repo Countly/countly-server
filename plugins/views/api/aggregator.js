@@ -218,7 +218,7 @@ const crypto = require('crypto');
                             }
                         }
                     }
-                    await common.manualWriteBatcher.flush("countly", "app_viewsdata");
+                    await common.manualWriteBatcher.flush("countly", "app_viewdata");
                     await common.manualWriteBatcher.flush("countly", "app_viewsmeta");
 
                 }

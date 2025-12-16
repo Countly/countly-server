@@ -17,7 +17,8 @@ class Cacher {
         this.options = options || {};
 
         this.transformationFunctions = {};
-        plugins.loadConfigs(db, () => {
+        var configs_db = (this.options.configs_db || this.db);
+        plugins.loadConfigs(configs_db, () => {
             this.loadConfig(options);
             this.schedule();
         });

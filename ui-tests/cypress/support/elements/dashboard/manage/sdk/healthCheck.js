@@ -59,8 +59,8 @@ const statusCodesEChartElements = {
     CHART_STATUS_CODES: 'status-codes-chart',
     CHART_MORE_BUTTON: 'status-codes-cly-chart-more-dropdown-more-option-button',
 
-    STATUS_CODE_MIN_1_ICON: 'line-options-status-codes--1-legend-icon',
-    STATUS_CODE_MIN_1_LABEL: 'line-options-status-codes--1-legend-label'
+    STATUS_CODE_MIN_1_ICON: 'status-codes--1-legend-icon',
+    STATUS_CODE_MIN_1_LABEL: 'status-codes--1-legend-label'
 };
 
 const errorMessagesEChartElements = {
