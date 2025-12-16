@@ -65,6 +65,11 @@ const OVERRIDES = {
         }
     },
 
+    // ClickHouse configuration overrides.
+    // Explicitly mapped keys are listed below. Additional nested keys (like cluster.*,
+    // parallelReplicas.*, replication.*, distributed.*, dictionary.*) work via the
+    // recursive dig() fallback mechanism, which creates nested objects from underscore-
+    // separated env var names (e.g., COUNTLY_CONFIG__CLICKHOUSE_CLUSTER_ENABLED -> clickhouse.cluster.enabled).
     CLICKHOUSE: {
         URL: 'url',
         USERNAME: 'username',

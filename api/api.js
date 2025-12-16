@@ -15,18 +15,6 @@ const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
 const tracker = require('./parts/mgmt/tracker.js');
 
-// EXTENSIVE DEBUGGING - Print configuration
-console.log('=== COUNTLY API STARTUP DEBUG ===');
-console.log('Process ENV SERVICE_TYPE:', process.env.SERVICE_TYPE);
-console.log('Config loaded:', !!countlyConfig);
-console.log('Config keys:', Object.keys(countlyConfig));
-console.log('Full config:', JSON.stringify(countlyConfig, null, 2));
-console.log('API config:', JSON.stringify(countlyConfig.api, null, 2));
-console.log('MongoDB config:', JSON.stringify(countlyConfig.mongodb, null, 2));
-console.log('ClickHouse config:', JSON.stringify(countlyConfig.clickhouse, null, 2));
-console.log('Logging config:', JSON.stringify(countlyConfig.logging, null, 2));
-console.log('=== END CONFIG DEBUG ===');
-
 var granuralQueries = require('./parts/queries/coreAggregation.js');
 
 //Add deletion manager endpoint
@@ -35,24 +23,16 @@ require('./utils/mutationManager.js');
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
 
-console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
-console.log('=== DATABASE CONFIG CHECK ===');
-console.log('countlyConfig.mongodb:', JSON.stringify(countlyConfig.mongodb, null, 2));
-console.log('frontendConfig.mongodb:', JSON.stringify(frontendConfig.mongodb, null, 2));
+log.i("Starting Countly", "version", versionInfo.version, "package", pack.version);
 if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
     log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
-    console.log('WARNING: Database configs do not match!');
 }
-console.log('=== END DATABASE CONFIG CHECK ===');
 
 // Finaly set the visible title
 process.title = t.join(' ');
 
-console.log('=== CONNECTING TO DATABASES ===');
 plugins.connectToAllDatabases().then(function() {
-    console.log('✓ Database connection successful');
-    console.log('common.db available:', !!common.db);
-    console.log('common.drillDb available:', !!common.drillDb);
+    log.d('Database connection successful');
 
     plugins.loadConfigs(common.db, function() {
         tracker.enable();
@@ -61,21 +41,16 @@ plugins.connectToAllDatabases().then(function() {
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);
     common.queryRunner = new QueryRunner();
-    console.log('✓ Batchers and QueryRunner initialized');
 
     common.drillQueryRunner = granuralQueries;
     if (common.drillDb) {
         common.drillReadBatcher = new ReadBatcher(common.drillDb);
-        console.log('✓ Drill database components initialized');
     }
 
     /**
      * Set Max Sockets
      */
-    console.log('=== SETTING MAX SOCKETS ===');
-    console.log('countlyConfig.api.max_sockets:', countlyConfig.api.max_sockets);
     http.globalAgent.maxSockets = countlyConfig.api.max_sockets || 1024;
-    console.log('✓ Max sockets set to:', http.globalAgent.maxSockets);
 
     /**
      * Set Plugins APIs Config
@@ -198,10 +173,6 @@ plugins.connectToAllDatabases().then(function() {
     }
 
     /**
-     * Initialize Plugins
-     */
-    console.log('=== INITIALIZING PLUGINS ===');
-    /**
     * Set tracking config
     */
     plugins.setConfigs("tracking", {
@@ -240,7 +211,6 @@ plugins.connectToAllDatabases().then(function() {
     * Initialize Plugins
     */
     plugins.init();
-    console.log('✓ Plugins initialized');
 
     /**
      *  Trying to gracefully handle the batch state
@@ -331,17 +301,13 @@ plugins.connectToAllDatabases().then(function() {
 
     plugins.dispatch("/master", {}); // init hook
 
-    console.log('=== CREATING SERVER ===');
-    console.log('common.config.api:', JSON.stringify(common.config.api, null, 2));
     const serverOptions = {
         port: common.config.api.port,
         host: common.config.api.host || ''
     };
-    console.log('Server options:', serverOptions);
 
     let server;
     if (common.config.api.ssl && common.config.api.ssl.enabled) {
-        console.log('Creating HTTPS server with SSL');
         const sslOptions = {
             key: fs.readFileSync(common.config.api.ssl.key),
             cert: fs.readFileSync(common.config.api.ssl.cert)
@@ -352,32 +318,20 @@ plugins.connectToAllDatabases().then(function() {
         server = https.createServer(sslOptions, handleRequest);
     }
     else {
-        console.log('Creating HTTP server');
         server = http.createServer(handleRequest);
     }
 
-    console.log('Starting server on', serverOptions.host + ':' + serverOptions.port);
     server.listen(serverOptions.port, serverOptions.host, () => {
-        console.log('✓ Server listening on', serverOptions.host + ':' + serverOptions.port);
+        log.i('Server listening on', serverOptions.host + ':' + serverOptions.port);
     });
 
     server.timeout = common.config.api.timeout || 120000;
     server.keepAliveTimeout = common.config.api.timeout || 120000;
-    server.headersTimeout = (common.config.api.timeout || 120000) + 1000; // Slightly higher
-    console.log('✓ Server timeouts configured:', {
-        timeout: server.timeout,
-        keepAliveTimeout: server.keepAliveTimeout,
-        headersTimeout: server.headersTimeout
-    });
+    server.headersTimeout = (common.config.api.timeout || 120000) + 1000;
 
-
-    console.log('=== LOADING PLUGIN CONFIGS ===');
     plugins.loadConfigs(common.db);
-    console.log('✓ Plugin configs loaded');
-    console.log('=== API STARTUP COMPLETE ===');
 }).catch(function(error) {
-    console.error('❌ DATABASE CONNECTION FAILED:', error);
-    console.error('Error details:', error.stack);
+    log.e('Database connection failed:', error);
     process.exit(1);
 });
 
