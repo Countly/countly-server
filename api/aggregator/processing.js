@@ -306,7 +306,7 @@ var crypto = require('crypto');
 
     //Processing event meta
     plugins.register("/aggregator", async function() {
-        var drillMetaCache = new Cacher(common.drillDb);
+        var drillMetaCache = new Cacher(common.drillDb, {configs_db: common.db}); //Used for Apps info
         const eventSource = new UnifiedEventSource('drill-meta', {
             mongo: {
                 db: common.drillDb,

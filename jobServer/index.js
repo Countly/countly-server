@@ -176,7 +176,7 @@ if (require.main === module) {
 
                 // Initialize drill-specific batchers if drillDb is available
                 if (drillDb) {
-                    common.drillReadBatcher = new ReadBatcher(drillDb);
+                    common.drillReadBatcher = new ReadBatcher(drillDb, {configs_db: countlyDb});
                     common.drillQueryRunner = new MongoDbQueryRunner(common.drillDb);
                     console.log('✓ Drill database components initialized');
                 }
