@@ -2,6 +2,14 @@
   "name": "countly-server",
   "version": "25.03.0",
   "description": "innovative, real-time, open source mobile analytics application",
+  "workspaces": {
+    "packages": [
+      "api/**/*",
+      "plugins/*",
+      "ui-test/*",
+      "bin/**/*"
+    ]
+  },
   "keywords": [
     "analytics",
     "mobile",
