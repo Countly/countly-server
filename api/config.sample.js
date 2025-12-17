@@ -61,6 +61,9 @@ var countlyConfig = {
         port: 27017,
         max_pool_size: 500,
         replicaName: "rs0",
+        serverOptions: {
+            directConnection: true
+        }
         //username: test,
         //password: test,
         //mongos: false,

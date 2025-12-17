@@ -338,12 +338,13 @@ Object.freeze(RequestLoggerStateEnum);
         if (params.qstring.method === 'collection_info') {
             validateRead(params, FEATURE_NAME, async function(parameters) {
                 try {
-                    var stats = await common.db.collection('logs' + parameters.app_id).aggregate([ { $collStats: { storageStats: { } } } ]).toArray();
-                    common.returnOutput(parameters, {capped: MAX_NUMBER_OF_LOG_ENTRIES, count: stats?.[0]?.storageStats?.count, max: MAX_NUMBER_OF_LOG_ENTRIES});
+                    var count = await common.db.collection('logs' + parameters.app_id).countDocuments();
+                    common.returnOutput(parameters, {capped: MAX_NUMBER_OF_LOG_ENTRIES, count: count, max: MAX_NUMBER_OF_LOG_ENTRIES});
+
                 }
                 catch (ex) {
                     console.log("Failed fetching logs collection info: ", ex);
-                    common.returnOutput(parameters, {capped: MAX_NUMBER_OF_LOG_ENTRIES, count: MAX_NUMBER_OF_LOG_ENTRIES, max: MAX_NUMBER_OF_LOG_ENTRIES, status: "error"});
+                    common.returnOutput(parameters, {capped: MAX_NUMBER_OF_LOG_ENTRIES || 1000, count: MAX_NUMBER_OF_LOG_ENTRIES || 1000, max: MAX_NUMBER_OF_LOG_ENTRIES || 1000, status: "error"});
                 }
             });
             return true;

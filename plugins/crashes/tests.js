@@ -3924,6 +3924,9 @@ describe('Testing Crashes', function() {
     });
 
     describe('Reset app', function() {
+        it('wait before reset', function(done) {
+            setTimeout(done, 2000);
+        });
         it('should reset data', function(done) {
             var params = {app_id: APP_ID, period: "reset"};
             request

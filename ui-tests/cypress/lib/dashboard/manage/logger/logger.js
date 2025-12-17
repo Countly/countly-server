@@ -96,21 +96,11 @@ const verifyFullDataPageElements = () => {
 
     cy.checkPaceActive();
 
-    cy
-        .elementExists(logsDataTableElements().EMPTY_TABLE_ICON) //Data comes sometimes
-        .then((isExists) => {
-            if (isExists) {
-                verifyLogsDataTable({
-                    isEmpty: true
-                });
-            }
-            else {
-                verifyLogsDataTable({
-                    isEmpty: false,
-                    shouldNotEqual: true,
-                });
-            }
-        });
+    cy.wait(15000); //TODO: SER-2733 need to fix for removing static wait
+    verifyLogsDataTable({
+        isEmpty: false,
+        shouldNotEqual: true,
+    });
 };
 
 const verifyLogsDataTable = ({

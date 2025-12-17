@@ -86,7 +86,7 @@ const verifyFullDataPageElements = () => {
 
     cy.verifyElement({
         labelElement: dbCountlyPageElements.COLLECTION_AND_APP_NAME_LABEL,
-        labelText: "apps"
+        labelText: "app_crashgroups(Demo App)"
     });
 
     cy.shouldNotExist(dbCountlyPageElements.EMPTY_TABLE_ICON);

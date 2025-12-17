@@ -265,7 +265,7 @@
         },
         mounted: function() {
             var self = this;
-            this.fetchRequestLogs();
+
 
             countlyLogger.getCollectionInfo()
                 .then(function(info) {
@@ -273,6 +273,8 @@
                         ? self.i18n('logger.collection-description', info.max)
                         : self.i18n('logger.capped-remind');
                 });
+            this.fetchRequestLogs();
+
         }
     });
 
