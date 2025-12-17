@@ -140,11 +140,12 @@ presetsApi.getAll = async function(params) {
             }
         }
     ]).toArray(function(err, presets) {
-        if (err || !presets || !presets.length) {
+        if (err) {
             console.log("Error getting presets", err, presets);
             common.returnMessage(params, 500, 'Error getting presets');
             return false;
         }
+        presets = presets || [];
         common.returnOutput(params, presets);
         return true;
     });
