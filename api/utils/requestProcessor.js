@@ -2780,12 +2780,25 @@ const processRequest = (params) => {
                     //validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
                     validateRead(params, 'core', async function() {
                         try {
-                            var result = await common.db.collection("events").findOne({ '_id': params.app_id });
-                            if (!result) {
-                                result = {};
+                            var result = await common.db.collection("events").findOne({ '_id': common.db.ObjectID(params.qstring.app_id) });
+                            result = result || {};
+                            result.list = result.list || [];
+                            result.segments = result.segments || {};
+
+                            if (result.list) {
+                                result.list = result.list.filter(function(l) {
+                                    return l.indexOf('[CLY]') !== 0;
+                                });
                             }
-                            result.list = [];
-                            result.segments = {};
+                            if (result.segments) {
+                                for (let i in result.segments) {
+                                    if (i.indexOf('[CLY]') === 0) {
+                                        delete result.segments[i];
+                                    }
+                                }
+                            }
+                            // result.list = []; - commented out to do not clear list. Keeping existing events.
+                            //result.segments = {};
                             const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
                             result.limits = {
                                 event_limit: pluginsGetConfig.event_limit,
@@ -2802,11 +2815,18 @@ const processRequest = (params) => {
                             aggregation.push({"$limit": pluginsGetConfig.event_limit || 500});
 
                             var res = await common.drillDb.collection("drill_meta").aggregate(aggregation).toArray();
-
                             for (var k = 0; k < res.length; k++) {
-                                result.list.push(res[k].e);
+                                if (result.list.indexOf(res[k].e) === -1) {
+                                    result.list.push(res[k].e);
+                                }
+
                                 if (res[k].sg && Object.keys(res[k].sg).length > 0) {
-                                    result.segments[res[k].e] = Object.keys(res[k].sg);
+                                    result.segments[res[k].e] = result.segments[res[k].e] || [];
+                                    for (var key in res[k].sg) {
+                                        if (result.segments[res[k].e].indexOf(key) === -1) {
+                                            result.segments[res[k].e].push(key);
+                                        }
+                                    }
                                 }
                                 if (result.omitted_segments && result.omitted_segments[res[k].e]) {
                                     for (let kz = 0; kz < result.omitted_segments[res[k].e].length; kz++) {

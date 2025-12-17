@@ -1089,7 +1089,7 @@ const verifyWidgetDetailsPageElements = ({
         for (index = 0; index < commentsTable.ratings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_RATING,
-                labelText: commentsTable.ratings[index],
+                labelText: commentsTable.ratings[commentsTable.ratings.length - 1 - index],
             });
         }
 
@@ -1103,14 +1103,14 @@ const verifyWidgetDetailsPageElements = ({
         for (index = 0; index < commentsTable.comments.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_COMMENT,
-                labelText: commentsTable.comments[index],
+                labelText: commentsTable.comments[commentsTable.comments.length - 1 - index],
             });
         }
 
         for (index = 0; index < commentsTable.emails.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_EMAIL,
-                labelText: commentsTable.emails[index],
+                labelText: commentsTable.emails[commentsTable.emails.length - 1 - index],
             });
         }
     }
