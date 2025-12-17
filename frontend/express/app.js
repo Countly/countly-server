@@ -1197,10 +1197,15 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                             }
                             else {
                                 var writableAppIds = [];
-                                if ('_' in member.permission && 'a' in member.permission._) {
+                                if (Array.isArray(member.permission._?.a)) {
                                     writableAppIds = member.permission._.a;
                                 }
-                                var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
+
+                                var readableAppIds = [];
+                                if (member.permission.r) {
+                                    readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
+                                }
+
                                 var preparedReadableIds = [];
                                 var preparedWritableIds = [];
 
