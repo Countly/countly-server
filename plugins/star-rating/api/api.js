@@ -1102,6 +1102,17 @@ function uploadFile(myfile, id, callback) {
                     skip: skip,
                     sort: sort
                 }, {});
+                //Set values for empty fields
+                if (data && data.data && data.data.length > 0) {
+                    for (var i = 0; i < data.data.length; i++) {
+                        if (!data.data[i].comment) {
+                            data.data[i].comment = "No comment provided";
+                        }
+                        if (!data.data[i].email) {
+                            data.data[i].email = "No email provided";
+                        }
+                    }
+                }
                 common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: data.total, iTotalDisplayRecords: data.display, "aaData": data.data});
             }
             catch (e) {
