@@ -51,3 +51,4 @@ cohorts.forEach(function(cohort) {
 print("\nUpdated " + updatedCount + " cohorts with usage_30d_count field");
 print("Field tracks total views in the last 30 days, independent of view_users array size.");
 
+
