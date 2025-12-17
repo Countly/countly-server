@@ -245,7 +245,7 @@ const verifyEventStatsListBoxElements = ({
 
     cy.verifyElement({
         element: eventStatsListBoxElements().LIST_BOX_SEARCH_INPUT,
-        elementPlaceHolder: "Search in 14 Events",
+        elementPlaceHolder: "Search in 13 Events",
     });
 
     cy.verifyElement({
