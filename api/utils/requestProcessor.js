@@ -2784,6 +2784,19 @@ const processRequest = (params) => {
                             result = result || {};
                             result.list = result.list || [];
                             result.segments = result.segments || {};
+
+                            if (result.list) {
+                                result.list = result.list.filter(function(l) {
+                                    return l.indexOf('[CLY]') !== 0;
+                                });
+                            }
+                            if (result.segments) {
+                                for (let i in result.segments) {
+                                    if (i.indexOf('[CLY]') === 0) {
+                                        delete result.segments[i];
+                                    }
+                                }
+                            }
                             // result.list = []; - commented out to do not clear list. Keeping existing events.
                             //result.segments = {};
                             const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
