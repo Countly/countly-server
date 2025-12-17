@@ -2780,12 +2780,12 @@ const processRequest = (params) => {
                     //validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
                     validateRead(params, 'core', async function() {
                         try {
-                            var result = await common.db.collection("events").findOne({ '_id': params.app_id });
-                            if (!result) {
-                                result = {};
-                            }
-                            result.list = [];
-                            result.segments = {};
+                            var result = await common.db.collection("events").findOne({ '_id': common.db.ObjectID(params.qstring.app_id) });
+                            result = result || {};
+                            result.list = result.list || [];
+                            result.segments = result.segments || {};
+                            // result.list = []; - commented out to do not clear list. Keeping existing events.
+                            //result.segments = {};
                             const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
                             result.limits = {
                                 event_limit: pluginsGetConfig.event_limit,
@@ -2804,6 +2804,9 @@ const processRequest = (params) => {
                             var res = await common.drillDb.collection("drill_meta").aggregate(aggregation).toArray();
 
                             for (var k = 0; k < res.length; k++) {
+                                if (result.list.indexOf(res[k].e) !== -1) {
+                                    continue;
+                                }
                                 result.list.push(res[k].e);
                                 if (res[k].sg && Object.keys(res[k].sg).length > 0) {
                                     result.segments[res[k].e] = Object.keys(res[k].sg);
