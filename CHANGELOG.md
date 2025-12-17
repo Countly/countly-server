@@ -1,6 +1,7 @@
 ## Version 25.03.XX
 Fixes:
 - [core] fixes for changeOwner script
+- [core] Add null checking for user permission when opening the dashboard
 
 Enterprise Fixes:
 - [retention_segments] Adding null check for breakdown filtering
