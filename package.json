@@ -6,7 +6,7 @@
     "packages": [
       "api/**/*",
       "plugins/*",
-      "ui-test/*",
+      "ui-tests/*",
       "bin/**/*"
     ]
   },
