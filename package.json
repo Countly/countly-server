@@ -7,7 +7,7 @@
       "api/**/*",
       "plugins/*",
       "ui-tests/*",
-      "bin/**/*"
+      "bin/scripts/*"
     ]
   },
   "keywords": [
