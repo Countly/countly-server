@@ -64,7 +64,7 @@ const goToConfigTab = (nopop) => {
 };
 
 const createRequest = (sdkName, sdkVersion) => {
-    return 'http://localhost:3001/i?app_key=1&device_id=1&begin_session=1&sdk_name=' + sdkName + '&sdk_version=' + sdkVersion;
+    return 'http://localhost:3010/i?app_key=1&device_id=1&begin_session=1&sdk_name=' + sdkName + '&sdk_version=' + sdkVersion;
 };
 
 const checkTooltipAppears = (tooltip, count, early) => {

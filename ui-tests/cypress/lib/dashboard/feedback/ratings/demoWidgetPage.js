@@ -61,6 +61,7 @@ const verifyDemoPageElementsAndRate = ({
     successIconColor
 }) => {
 
+    cy.wait(500);
     cy.verifyElement({
         element: demoPageElements.CLOSE_BUTTON,
     });

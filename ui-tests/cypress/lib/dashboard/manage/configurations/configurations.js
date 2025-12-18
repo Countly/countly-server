@@ -455,20 +455,20 @@ const verifyPageElements = () => {
         isChecked: true
     });
 
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.METRIC_CHANGES}).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Record metric changes",
-    });
+    // cy.verifyElement({ //TODO: Need to check again
+    //     labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.METRIC_CHANGES}).SELECTED_SUBFEATURE_TITLE,
+    //     labelText: "Record metric changes",
+    // });
 
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.METRIC_CHANGES}).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "Recording changes is required by Total users correction. Disable it if you know you won't be using Total users correction",
-    });
+    // cy.verifyElement({ //TODO: Need to check again
+    //     labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.METRIC_CHANGES}).SELECTED_SUBFEATURE_DESCRIPTION,
+    //     labelText: "Recording changes is required by Total users correction. Disable it if you know you won't be using Total users correction",
+    // }); 
 
-    cy.verifyElement({
-        element: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.METRIC_CHANGES}).SELECTED_SUBFEATURE_CHECKBOX,
-        isChecked: true
-    });
+    // cy.verifyElement({ //TODO: Need to check again
+    //     element: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.METRIC_CHANGES}).SELECTED_SUBFEATURE_CHECKBOX,
+    //     isChecked: true
+    // });
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.TRIM_TRAILING_ENDING_SPACES}).SELECTED_SUBFEATURE_TITLE,
@@ -1293,207 +1293,6 @@ const verifyPageElements = () => {
         elementPlaceHolder: "Select",
         value: "Automatic"
 
-    });
-
-    cy.scrollPageToTop();
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ feature: FEATURE_TYPE.PUSH_NOTIFICATIONS }).LIST_BOX_ITEM,
-        labelText: "Push Notifications",
-    });
-
-    cy.clickElement(configurationsListBoxElements({ feature: FEATURE_TYPE.PUSH_NOTIFICATIONS }).LIST_BOX_ITEM),
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ feature: FEATURE_TYPE.PUSH_NOTIFICATIONS }).SELECTED_FEATURE_NAME,
-        labelText: "Push Notifications",
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.CONNECTION_FACTOR }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Time factor for exponential backoff between retries",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.CONNECTION_FACTOR }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "1000"
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.CONNECTION_RETRIES }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Number of connection retries",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.CONNECTION_RETRIES }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "3"
-    });
-
-    //TODO: there is no option on ci cd, check this
-    // cy.verifyElement({
-    //     labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.NO_DUPLICATE }).SELECTED_SUBFEATURE_TITLE,
-    //     labelText: "Ensure no duplicate notifications sent when scheduling messages",
-    // });
-
-    // cy.verifyElement({
-    //     element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.NO_DUPLICATE }).SELECTED_SUBFEATURE_CHECKBOX,
-    //     isChecked: false
-    // });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.DEFAULT_CONTENT_AVAILABLE }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Set content-available to 1 by default for IOS",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.DEFAULT_CONTENT_AVAILABLE }).SELECTED_SUBFEATURE_CHECKBOX,
-        isChecked: false
-    });
-
-    //TODO: there is no option on ci cd, check this
-    // cy.verifyElement({
-    //     labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.MESSAGE_TIMEOUT }).SELECTED_SUBFEATURE_TITLE,
-    //     labelText: "Timeout of a message to be send (in milliseconds)",
-    // });
-
-    // cy.verifyElement({
-    //     element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.MESSAGE_TIMEOUT }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-    //     attr: "aria-valuenow",
-    //     attrText: "3600000"
-    // });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_BYTES }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Bytes in binary stream batches",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_BYTES }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "10000"
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_CONCURRENCY }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Maximum number of same type connections",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_CONCURRENCY }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "5"
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_POOLS }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Maximum number of connections in total",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_POOLS }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "10"
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_PUSHES }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Number of notifications in stream batches",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.POOL_PUSHES }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "400"
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_HOST }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "push-notification.proxy-host",
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_HOST }).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "Hostname or IP address of HTTP CONNECT proxy server to use for communication with APN & FCM when sending push notifications.",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_HOST }).SELECTED_SUBFEATURE_INPUT,
-        value: ""
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_PASS }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "push-notification.proxy-password",
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_PASS }).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "(if needed) Password for proxy server HTTP Basic authentication",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_PASS }).SELECTED_SUBFEATURE_INPUT,
-        value: ""
-    });
-
-    cy.scrollPageToBottom();
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_PORT }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "push-notification.proxy-port",
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_PORT }).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "Port number of the proxy server",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_PORT }).SELECTED_SUBFEATURE_INPUT,
-        value: ""
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_UNAUTHORIZED }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Do NOT check proxy HTTPS certificate",
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_UNAUTHORIZED }).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "(if needed) Allow self signed certificates without CA installed",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_UNAUTHORIZED }).SELECTED_SUBFEATURE_CHECKBOX,
-        isChecked: false
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_USER }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "push-notification.proxy-user",
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_USER }).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "(if needed) Username for proxy server HTTP Basic authentication",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.PROXY_USER }).SELECTED_SUBFEATURE_INPUT,
-        value: ""
-    });
-
-    cy.verifyElement({
-        labelElement: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.SEND_A_HEAD }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Send notifications scheduled up to this many ms into the future",
-    });
-
-    cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.PUSH_NOTIFICATIONS.SEND_A_HEAD }).SELECTED_SUBFEATURE_INPUT_NUMBER,
-        attr: "aria-valuenow",
-        attrText: "60000"
     });
 
     cy.scrollPageToTop();

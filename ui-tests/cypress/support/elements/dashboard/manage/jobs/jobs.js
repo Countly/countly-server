@@ -22,8 +22,8 @@ const jobsDataTableElements = (index = 0) => ({
     COLUMN_NAME_NEXT_RUN_SORTABLE_ICON: 'datatable-jobs-sortable-icon-next-run',
     COLUMN_NAME_LAST_RUN_LABEL: 'datatable-jobs-label-last-run',
     COLUMN_NAME_LAST_RUN_SORTABLE_ICON: 'datatable-jobs-sortable-icon-last-run',
-    COLUMN_NAME_TOTAL_LABEL: 'datatable-jobs-label-total',
-    COLUMN_NAME_TOTAL_SORTABLE_ICON: 'datatable-jobs-sortable-icon-total',
+    COLUMN_NAME_TOTAL_RUNS_LABEL: 'datatable-jobs-label-total-runs',
+    COLUMN_NAME_TOTAL_RUNS_SORTABLE_ICON: 'datatable-jobs-sortable-icon-total-runs',
 
     //Columns' Rows' Datas Elements 
     NAME: 'datatable-jobs-name-' + index,

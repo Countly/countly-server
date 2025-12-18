@@ -3393,6 +3393,13 @@ describe('Testing Crashes', function() {
                 .get('/i/crashes/delete?args=' + JSON.stringify({ crash_id: crashGroup._id }) + '&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN);
         });
     });
+    describe("Trigger deleted data clenup", function() {
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:mutationManagerJob", function() {
+                setTimeout(done, 10000);
+            });
+        });
+    });
 
     describe('Crash app version', async() => {
         it('should process crash app version as string', async() => {
@@ -3917,6 +3924,9 @@ describe('Testing Crashes', function() {
     });
 
     describe('Reset app', function() {
+        it('wait before reset', function(done) {
+            setTimeout(done, 2000);
+        });
         it('should reset data', function(done) {
             var params = {app_id: APP_ID, period: "reset"};
             request

@@ -101,7 +101,7 @@
                                     <el-dropdown-item v-if="symbolicationEnabled && !crashgroup._symbol_id" :command="{url: '#/crash/symbols/'}">
                                         {{i18n("crash_symbolication.should-upload")}}
                                     </el-dropdown-item>
-                                    <el-dropdown-item v-if="!!crashgroup.binary_images" :command="{url: '/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + crashgroup.lrid}">
+                                    <el-dropdown-item v-if="!!crashgroup.binary_images" :command="{url: '#/crashes/' + crashgroup._id + '/binary-images/' + crashgroup.lrid}">
                                         {{i18n("crashes.show-binary-images")}}
                                     </el-dropdown-item>
                                     <el-dropdown-item :command="{url: '/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + crashgroup.lrid, download: true}">
@@ -277,7 +277,7 @@
             </cly-section>
             <cly-section :title="i18n('crashes.crash-occurences')" class="recent-crash-occurences">
                 <p class="text-small color-cool-gray-50 bu-pl-3">{{i18n('crashes.recent-crash-occurances-description',currentLimit)}}</p>
-                <cly-datatable-n :force-loading="isLoading" :rows="crashes" :exportFormat="formatExportFunction" ref="tableData" @row-click="handleRowClick" row-class-name="bu-is-clickable">
+                <cly-datatable-n :force-loading="isLoading" :rows="crashes" :exportFormat="formatExportFunction" ref="tableData" @row-click="handleRowClick" row-class-name="bu-is-clickable" :defaultSort="{}">
                     <template v-slot:header-left="filterScope">
                         <cly-multi-select v-model="userFilter" :fields="userFilterFields"></cly-multi-select>
                     </template>
@@ -333,15 +333,7 @@
                                         </template>
                                         <template v-slot:header-right>
                                             <cly-more-options @command="handleCrashStacktraceCommand($event, props.row)">
-                                                <el-dropdown-item v-if="symbolicationEnabled && !!props.row._symbol_id" command="symbolicate">
-                                                    <span>
-                                                        {{!props.row.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
-                                                    </span>
-                                                </el-dropdown-item>
-                                                <el-dropdown-item v-if="symbolicationEnabled && !props.row._symbol_id" :command="{url: '#/crash/symbols/'}">
-                                                    {{i18n("crash_symbolication.should-upload")}}
-                                                </el-dropdown-item>
-                                                <el-dropdown-item v-if="!!props.row.binary_images" :command="{url: '/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id}">
+                                                <el-dropdown-item v-if="!!props.row.binary_images" :command="{url: '#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id}">
                                                     {{i18n('crashes.show-binary-images')}}
                                                 </el-dropdown-item>
                                                 <el-dropdown-item :command="{url: '/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + props.row._id, download: true}">

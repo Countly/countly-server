@@ -1347,12 +1347,26 @@
             params.sdk_version = getVersion(params.timestamp);
             if (Math.random() > 0.9) {
                 //Add hc
+                var sc = -1;
+                var em = "";
+                var is_good = true;
+                if (Math.random() > 0.9) {
+                    is_good = false;
+                }
+                var error_messages = ["Some error", "Some other error", "Critical error", "Minor error", "Major error", "Fatal error", "Non-fatal error"];
+
+                if (!is_good) {
+                    sc = 502;
+                    em = error_messages[getRandomInt(0, error_messages.length - 1)];
+                }
+
+
                 params.hc = JSON.stringify({
-                    "hc": Math.random() * 10,
-                    "el": Math.random() * 10,
-                    "sc": Math.random() * 10,
-                    "wl": Math.random() * 10,
-                    "em": Math.random() * 10
+                    "hc": parseInt(Math.random() * 30, 10),
+                    "el": parseInt(Math.random() * 20, 10),
+                    "sc": sc,
+                    "wl": parseInt(Math.random() * 10, 10),
+                    "em": em
                 });
             }
             bulk.push(params);

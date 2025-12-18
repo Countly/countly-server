@@ -152,6 +152,8 @@ const OVERRIDES = {
             QUEUEDMINMESSAGES: 'queuedMinMessages',
             QUEUEDMAXMESSAGESKBYTES: 'queuedMaxMessagesKbytes',
             SESSIONTIMEOUTMS: 'sessionTimeoutMs',
+            HEARTBEATINTERVALMS: 'heartbeatIntervalMs',
+            REBALANCETIMEOUTMS: 'rebalanceTimeoutMs',
             MAXPOLLINTERVALMS: 'maxPollIntervalMs',
             AUTOOFFSETRESET: 'autoOffsetReset',
             ENABLEAUTOCOMMIT: 'enableAutoCommit',

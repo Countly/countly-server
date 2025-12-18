@@ -3,14 +3,7 @@ var plugin = {},
     log = common.log('compliance-hub:ingestor'),
     plugins = require('../../pluginManager.js');
 
-const FEATURE_NAME = 'compliance_hub';
-
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
-    plugins.internalDrillEvents.push("[CLY]_consent");
 
     //write api call
     plugins.register("/sdk/process_user", function(ob) {
