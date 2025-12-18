@@ -412,7 +412,7 @@ const FEATURE_NAME = 'views';
             for (var z in selectMap) {
                 var matchStage0 = {"$match": {"_id": {"$regex": prefix + z + "_.*"}}};
                 if (settings && settings.onlyIDs) {
-                    matchStage0.vw = {"$in": settings.onlyIDs};
+                    matchStage0.$match.vw = {"$in": settings.onlyIDs};
                 }
                 projector = {_id: "$vw", name: "$n"};
                 for (let i = 0; i < settings.levels.daily.length; i++) {
@@ -634,7 +634,11 @@ const FEATURE_NAME = 'views';
         }
         else {
             var qq = settings.count_query || {};
+            qq._id = {"$regex": "^" + params.qstring.app_id + "_.*"};
             common.db.collection("app_viewsmeta").count(qq, function(err, total) {
+                if (err) {
+                    log.e(err);
+                }
                 common.db.collection(collectionName).aggregate(pipeline, {allowDiskUse: true}, function(err1, res) {
                     if (err1) {
                         log.e(err1);
@@ -810,7 +814,7 @@ const FEATURE_NAME = 'views';
                     var pipeline = createAggregatePipeline(params, selOptions);
                     pipeline.push({
                         $lookup: {
-                            from: "app_viewsmeta" + params.qstring.app_id,
+                            from: "app_viewsmeta",
                             localField: "_id",
                             foreignField: "_id",
                             as: "view_meta"
@@ -908,7 +912,8 @@ const FEATURE_NAME = 'views';
 
                     if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                         selOptions.count_query = {};
-                        query = [{$addFields: {"sortcol": { $cond: [ "$display", "$display", "$view"] }}}];
+
+                        query = [{"$match": {"_id": {"$regex": "^" + params.qstring.app_id}}}, {$addFields: {"sortcol": { $cond: [ "$display", "$display", "$view"] }}}];
                         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                             //Dealing with special symbols
                             params.qstring.sSearch = params.qstring.sSearch.replace(/\\/g, "\\\\");
@@ -975,6 +980,8 @@ const FEATURE_NAME = 'views';
                                         ret.sEcho = params.qstring.sEcho;
                                         ret.iTotalRecords = total || ret.data.length;
                                         ret.iTotalDisplayRecords = total || ret.data.length;
+                                        ret.aaData = ret.data;
+                                        delete ret.data;
                                         common.returnOutput(params, ret);
                                     });
                                 });
@@ -1170,7 +1177,7 @@ const FEATURE_NAME = 'views';
                 else if (params.qstring.action === "listNames") {
                     common.db.collection("app_viewsmeta").count({"_id": {"$regex": "^" + params.qstring.app_id + "_.*"}}, function(errCount, totalCn) {
                         if (!errCount && totalCn && totalCn < 10000) {
-                            common.db.collection("app_viewsmeta").find({}, {view: 1, display: 1}).toArray(function(err, res) {
+                            common.db.collection("app_viewsmeta").find({"_id": {"$regex": "^" + params.qstring.app_id + "_.*"}}, {view: 1, display: 1}).toArray(function(err, res) {
                                 common.returnOutput(params, res || []);
                             });
                         }
@@ -1583,7 +1590,7 @@ const FEATURE_NAME = 'views';
 
 
     plugins.register("/i/apps/create", function() {
-        common.db.collection('app_viewsmeta').ensureIndex({"view": 1}, {'unique': 1}, function() {});
+        common.db.collection('app_viewsmeta').ensureIndex({"a": 1, "view": 1}, {'unique': 1}, function() {});
     });
 
     plugins.register("/i/apps/delete", function(ob) {
@@ -1594,7 +1601,7 @@ const FEATURE_NAME = 'views';
         /* old end */
 
         common.db.collection("views").findOne({'_id': common.db.ObjectID(appId)}, {}, function(err, viewInfo) {
-            //deleing user last view data(old_collections)
+            //deleting user last view data(old_collections)
             common.db.collection('app_userviews' + appId).drop(function() {});
             common.db.collection('app_viewsmeta' + appId).drop(function() {});
 
