@@ -116,12 +116,18 @@
 		var resetResultMessage = "<%= message %>";
 		
 		// Preserve URL hash for OAuth2 redirect flow
+		// During OAuth2 authentication, the user is redirected to an external provider and back,
+		// which causes the URL hash (e.g., #/analytics/sessions) to be lost.
+		// We store it here in sessionStorage so it can be restored on the dashboard page
+		// after successful authentication, ensuring users land on their intended page.
+		// NOTE: The key 'countly_oauth_return_hash' must match the key used in dashboard.html
 		(function() {
+			var OAUTH_HASH_KEY = 'countly_oauth_return_hash';
 			var hash = window.location.hash;
 			if (hash && hash.length > 1) {
 				// Store hash in sessionStorage to preserve it through OAuth2 redirect
 				try {
-					sessionStorage.setItem('countly_oauth_return_hash', hash);
+					sessionStorage.setItem(OAUTH_HASH_KEY, hash);
 				} catch(e) {
 					// Ignore if sessionStorage is not available
 				}
