@@ -187,6 +187,9 @@ describe('Testing Times Of Day', function() {
                 setTimeout(done, 500 * testUtils.testScalingFactor);
             });
     });
+    it('Trigger deletion job to run', function(done) {
+        testUtils.triggerJobToRun("api:mutationManagerJob", done);
+    });
     it('Should get empty data', function(done) {
         checkEmptyData(done);
     });
