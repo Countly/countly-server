@@ -753,13 +753,15 @@ usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_i
     * Inner function to merge user data
     * @param {object} newAppUserP  - new user data
     * @param {object} oldAppUser - old user data
+    * @param {object} mergeOptions - options provided by plugins for merging
     */
-    function mergeUserData(newAppUserP, oldAppUser) {
+    function mergeUserData(newAppUserP, oldAppUser, mergeOptions) {
         //allow plugins to deal with user mergin properties
         plugins.dispatch("/i/user_merge", {
             app_id: app_id,
             newAppUser: newAppUserP,
-            oldAppUser: oldAppUser
+            oldAppUser: oldAppUser,
+            mergeOptions: mergeOptions
         }, async function() {
             //merge user data
             try {
@@ -805,7 +807,7 @@ usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_i
             callback(null, oldAppUser);
         }
         else {
-            //we have to merge user data
+            var results = [];
             if (!newAppUser.ls || (newAppUser.ls < oldAppUser.ls)) {
                 //switching user identity
                 var temp = oldAppUser._id;
@@ -825,15 +827,59 @@ usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_i
                 oldAppUser = newAppUser;
                 newAppUser = tempDoc;
             }
-            await common.db.collection("app_user_merges").insertOne({
-                //If we want to ensure order later then for each A->B we should check if there is B->C in progress and wait  for it to finish first. So we could recheck using $regex
-                _id: app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid,
-                merged_to: newAppUser.uid,
-                ts: Math.round(new Date().getTime() / 1000),
-                lu: Math.round(new Date().getTime() / 1000),
-                t: 0 //tries
-            }, {ignore_errors: [11000]});
-            mergeUserData(newAppUser, oldAppUser);
+
+            plugins.dispatch("/i/suggest_merged_uid", {
+                app_id: app_id,
+                newAppUser: newAppUser,
+                oldAppUser: oldAppUser,
+                results: results
+            }, async function() {
+                var mergeOptions = {};
+                //We don't have any suggested routes for merging. Mergw by old logic
+                if (results.length === 0 || results[0].error) {
+                    if (results[0].error) {
+                        log.e("error");
+                    }
+                }
+                else {
+                    mergeOptions = results[0];
+                    if (oldAppUser.uid === mergeOptions.winner) {
+                        //log.e("Switching documents to keep old user uid instead of new one");
+                        //switching around doc references
+                        var tempDoc2 = oldAppUser;
+                        oldAppUser = newAppUser;
+                        newAppUser = tempDoc2;
+                        newAppUser.did = new_device_id + "";
+                    }
+                    else if (newAppUser.uid !== mergeOptions.winner && oldAppUser.uid !== mergeOptions.winner) {
+                        log.e("ERROR. Double merge change");//Keeping to see if it happens when we test.
+                        //Should never happen. Both should be changed to some new uid
+                        var discarded_uid = newAppUser.uid;
+                        newAppUser.uid = mergeOptions.winner;
+                        newAppUser.did = new_device_id + "";
+
+                        //Add to merges to update documents
+                        await common.db.collection("app_user_merges").insertOne({
+                            //If we want to ensure order later then for each A->B we should check if there is B->C in progress and wait  for it to finish first. So we could recheck using $regex
+                            _id: app_id + "_" + newAppUser.uid + "_" + discarded_uid,
+                            merged_to: newAppUser.uid,
+                            ts: Math.round(new Date().getTime() / 1000),
+                            lu: Math.round(new Date().getTime() / 1000),
+                            t: 0 //tries
+                        }, {ignore_errors: [11000]});
+                    }
+
+                }
+                await common.db.collection("app_user_merges").insertOne({
+                    //If we want to ensure order later then for each A->B we should check if there is B->C in progress and wait  for it to finish first. So we could recheck using $regex
+                    _id: app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid,
+                    merged_to: newAppUser.uid,
+                    ts: Math.round(new Date().getTime() / 1000),
+                    lu: Math.round(new Date().getTime() / 1000),
+                    t: 0 //tries
+                }, {ignore_errors: [11000]});
+                mergeUserData(newAppUser, oldAppUser, mergeOptions);
+            });
         }
 
     }
