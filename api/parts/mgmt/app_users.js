@@ -756,7 +756,7 @@ usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_i
     * @param {object} mergeOptions - options provided by plugins for merging
     */
     function mergeUserData(newAppUserP, oldAppUser, mergeOptions) {
-        //allow plugins to deal with user mergin properties
+        //allow plugins to deal with user merging properties
         plugins.dispatch("/i/user_merge", {
             app_id: app_id,
             newAppUser: newAppUserP,
