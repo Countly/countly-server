@@ -17,6 +17,23 @@
     <script><%- javascript %></script>
 	<link rel="icon" type="image/png" href="<%- cdn %><%- countlyFavicon %>">
     <script type="text/javascript">
+        // Restore URL hash preserved during OAuth2 authentication flow
+        (function() {
+            try {
+                var savedHash = sessionStorage.getItem('countly_oauth_return_hash');
+                if (savedHash && savedHash.length > 1) {
+                    // Clear the saved hash
+                    sessionStorage.removeItem('countly_oauth_return_hash');
+                    // Restore the hash to the current URL
+                    if (window.location.hash !== savedHash) {
+                        window.location.hash = savedHash;
+                    }
+                }
+            } catch(e) {
+                // Ignore if sessionStorage is not available
+            }
+        })();
+        
         //no one should really need this
         window.eval = function(){
             console.log("eval not available");
