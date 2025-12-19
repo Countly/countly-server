@@ -835,7 +835,7 @@ usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_i
                 results: results
             }, async function() {
                 var mergeOptions = {};
-                //We don't have any suggested routes for merging. Mergw by old logic
+                //We don't have any suggested routes for merging. Merge by old logic
                 if (results.length === 0 || (results[0] && results[0].error)) {
                     if (results[0] && results[0].error) {
                         log.e("Error while suggesting merged UID: " + JSON.stringify(results[0].error));
