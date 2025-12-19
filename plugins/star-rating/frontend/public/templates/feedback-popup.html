@@ -435,10 +435,54 @@
                             duration: 250,
                             animation: 'scale'
                         });
+                        handleWidgetResize('feedback');
                     },
                     type: "GET",
                     url: url + "/o/feedback/widget"
                 });
+
+                function handleWidgetResize(screen) {
+                    console.log("Resizing widget...");
+                    if (window.parent && typeof window.parent.postMessage === "function") {
+                        const bodyElement = $('body');
+                        let modalContentElement = null;
+
+                        if (screen === 'feedback') {
+                            modalContentElement = $('.modal-content')[0];
+                        }
+                        else if (screen === 'success') {
+                            modalContentElement = $('.success-modal-content')[0];
+                        }
+
+                        const bottomMargin = parseFloat(bodyElement.css('margin-bottom')) || 0;
+                        const leftMargin = parseFloat(bodyElement.css('margin-left')) || 0;
+                        const rightMargin = parseFloat(bodyElement.css('margin-right')) || 0;
+                        const topMargin = parseFloat(bodyElement.css('margin-top')) || 0;
+
+                        console.log("Widget body element: ", modalContentElement);
+
+                        const width = modalContentElement.offsetWidth + (leftMargin + rightMargin);
+                        const height = modalContentElement.offsetHeight + (topMargin + bottomMargin);
+
+                        console.log("Widget size: ", { width: width, height: height });
+
+                        var d = {
+                            key: "resize-me",
+                            data: {
+                                width: width,
+                                height: height
+                            }
+                        };
+
+                        var parent = "*";
+
+                        if (parentOrigin) {
+                            parent = parentOrigin;
+                        }
+
+                        window.parent.postMessage(d, parent);
+                    }
+                }
 
                 var eventObject = {
                     key: "[CLY]_star_rating",
@@ -561,6 +605,8 @@
                         showCommentCheckbox.setAttribute('data-state', 0);
                         document.getElementById('countly-feedback-comment-textarea').style.display = "none";
                     }
+
+                    handleWidgetResize('feedback');
                 }
 
                 function showHideEmailArea() {
@@ -572,6 +618,8 @@
                         showEmailCheckbox.setAttribute('data-state', 0);
                         document.getElementById('countly-feedback-contact-me-email').style.display = "none";
                     }
+
+                    handleWidgetResize('feedback');
                 }
 
                 function consent() {
@@ -620,6 +668,7 @@
                                 // set popup to default state
                                 document.getElementsByClassName("success-modal-content")[0].style.display = "none";
                                 document.getElementsByClassName("modal-content")[0].style.display = "flex";
+                                handleWidgetResize('success');
                                 document.getElementById('countly-feedback-comment-textarea').value = "";
                                 document.getElementById('countly-feedback-contact-me-email').value = "";
                                 for (var i = 0; i < 5; i++) {
