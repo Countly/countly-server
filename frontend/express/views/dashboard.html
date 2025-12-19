@@ -2008,23 +2008,30 @@
                 Countly.user_details({custom:{content_messages:true}}); // Ensure user is eligible for content messages
                 Countly.content.enterContentZone(function(params){
                     if (params.journeyId && (params.widget_id || params.id)) {
-                        var check = params.journeyId + "_";
-                        if  (params.widget_id) {
-                            check += "widget_" + params.widget_id;
-                        }
-                        else {
-                            check += "content_" + params.id;
-                        }
-                        var key = "cly_seenJourneyIds_c2VlbkpvdXJuZXlJZHM"; // Base64 for 'seenJourneyIds' to avoid potential key conflicts
-                        var seen = JSON.parse(localStorage.getItem(key) || "[]");
+                        try {
+                            var check = params.journeyId + "_";
+                            if  (params.widget_id) {
+                                check += "widget_" + params.widget_id;
+                            }
+                            else {
+                                check += "content_" + params.id;
+                            }
+                            var key = "cly_seenJourneyIds_c2VlbkpvdXJuZXlJZHM"; // Base64 for 'seenJourneyIds' to avoid potential key conflicts
+                            var seen = JSON.parse(localStorage.getItem(key) || "[]");
 
-                        if (seen.includes(check)) {
+                            if (seen.includes(check)) {
+                                return false;
+                            }
+
+                            seen.push(check);
+                            localStorage.setItem(key, JSON.stringify(seen));
+                            return true;
+                        }
+                        catch (e) {
+                            // Handle localStorage errors (disabled, full, security exceptions in private browsing)
+                            // Fail open - allow content to be shown if we can't track it
                             return false;
                         }
-
-                        seen.push(check);
-                        localStorage.setItem(key, JSON.stringify(seen));
-                        return true;
                     }
                     return false;
                 });
