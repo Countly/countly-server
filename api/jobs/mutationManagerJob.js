@@ -439,7 +439,7 @@ class MutationManagerJob extends Job {
 
             await common.queryRunner.executeQuery(
                 queryDef,
-                { queryObj: task.query, targetTable: task.collection, validation_command_id: commandId },
+                { queryObj: task.query, targetTable: task.collection, db: task.db, validation_command_id: commandId },
                 {}
             );
             await common.db.collection("mutation_manager").updateOne(
@@ -496,7 +496,7 @@ class MutationManagerJob extends Job {
             const commandId = `um_${String(task._id)}_${retryIndex}`; // update mutation
             await common.queryRunner.executeQuery(
                 queryDef,
-                { queryObj: task.query, updateObj: task.update, targetTable: task.collection, validation_command_id: commandId },
+                { queryObj: task.query, updateObj: task.update, targetTable: task.collection, db: task.db, validation_command_id: commandId },
                 {}
             );
             await common.db.collection("mutation_manager").updateOne(
