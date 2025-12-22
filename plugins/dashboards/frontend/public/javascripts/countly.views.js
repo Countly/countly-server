@@ -1651,12 +1651,60 @@
                     });
                 }, 5000);
             }
+
+            // Clean preview parameters when navigating away from preview pages
+            this.cleanPreviewParams = function() {
+                var currentSearchParams = new URLSearchParams(window.location.search || "");
+                var hasPreviewParams = currentSearchParams.has("preview") || currentSearchParams.has("cleanupPreview");
+
+                if (hasPreviewParams) {
+                    // Remove preview parameters from URL
+                    currentSearchParams.delete("preview");
+                    currentSearchParams.delete("cleanupPreview");
+
+                    var newSearch = currentSearchParams.toString();
+                    var newUrl = window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash;
+
+                    // Use replaceState to avoid adding to history
+                    window.history.replaceState({}, '', newUrl);
+                }
+            };
+
+            // Listen for hash changes (navigation between dashboards)
+            this.hashChangeHandler = function() {
+                // Small delay to ensure route has updated
+                setTimeout(function() {
+                    self.cleanPreviewParams();
+                }, 100);
+            };
+
+            window.addEventListener('hashchange', this.hashChangeHandler);
+        },
+        watch: {
+            '$route': {
+                handler: function(to, from) {
+                    // Clean preview parameters when navigating to a different dashboard
+                    if (to && from && to.params.dashboardId !== from.params.dashboardId) {
+                        var self = this;
+                        setTimeout(function() {
+                            self.cleanPreviewParams();
+                        }, 100);
+                    }
+                },
+                immediate: false
+            }
         },
         beforeDestroy: function() {
             // Clear the tracking timeout if user leaves before 5 seconds
             if (this.viewTrackingTimeout) {
                 clearTimeout(this.viewTrackingTimeout);
             }
+
+            // Remove hash change listener
+            if (this.hashChangeHandler) {
+                window.removeEventListener('hashchange', this.hashChangeHandler);
+            }
+
             this.$store.dispatch("countlyDashboards/requests/reset");
         }
     });

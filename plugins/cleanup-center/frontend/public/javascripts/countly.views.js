@@ -29,7 +29,8 @@
                 currentFilter: {
                     app: null,
                     types: ALLOWED_DASHBOARD_TYPES.slice(),
-                    entity: ''
+                    entity: '',
+                    outdated: null // null = all, true = outdated only, false = not outdated
                 },
                 sortBy: 'lastSeen',
                 density: 'comfortable',
@@ -172,6 +173,14 @@
                     );
                 }
 
+                // Apply outdated filter
+                if (this.currentFilter.outdated !== null && this.currentFilter.outdated !== undefined) {
+                    entities = entities.filter(e => {
+                        const isOutdated = e.isUnused || false;
+                        return this.currentFilter.outdated ? isOutdated : !isOutdated;
+                    });
+                }
+
                 // Apply search query
                 if (this.searchQuery) {
                     const query = this.searchQuery.toLowerCase();
@@ -212,6 +221,10 @@
                 }
                 else {
                     summary.push(this.i18n('cleanup-center.all-entities'));
+                }
+
+                if (this.currentFilter.outdated !== null && this.currentFilter.outdated !== undefined) {
+                    summary.push(this.currentFilter.outdated ? this.i18n('cleanup-center.outdated') : this.i18n('cleanup-center.not-outdated'));
                 }
 
                 return summary.join(', ');
@@ -278,6 +291,9 @@
                     }
                 });
                 return Array.from(actors).sort();
+            },
+            showAllApps: function() {
+                return this.selectedApp === null || this.selectedApp === undefined;
             }
         },
         mounted: function() {
@@ -449,6 +465,39 @@
                     this.loadAuditHistory();
                 }
             },
+            handleAllAppsToggle: function(checked) {
+                if (checked) {
+                    // Show all apps
+                    this.selectedApp = null;
+                }
+                else {
+                    // Show specific app (default to active app)
+                    this.selectedApp = countlyCommon.ACTIVE_APP_ID;
+                }
+                this.onAppChange();
+            },
+            handleFilterAllAppsToggle: function(checked, formScope) {
+                if (checked) {
+                    // Show all apps
+                    formScope.editedObject.app = null;
+                }
+                else {
+                    // Show specific app (default to active app)
+                    formScope.editedObject.app = countlyCommon.ACTIVE_APP_ID;
+                }
+            },
+            toggleOutdatedFilter: function(value) {
+                // If clicking the same value, reset to null (show all)
+                if (this.currentFilter.outdated === value) {
+                    this.currentFilter.outdated = null;
+                }
+                else {
+                    this.currentFilter.outdated = value;
+                }
+                this.currentPage = 1;
+                this.loadEntities();
+                this.savePreferences();
+            },
             refresh: function() {
                 // Disable periodic auto-refresh to avoid unnecessary reloads; data is fetched on page load and user actions.
                 return $.Deferred().resolve();
@@ -466,7 +515,8 @@
                 const filter = {
                     app: newFilter.app || null,
                     types: Array.isArray(newFilter.types) && newFilter.types.length > 0 ? newFilter.types : ALLOWED_DASHBOARD_TYPES.slice(),
-                    entity: (newFilter.entity || '').trim()
+                    entity: (newFilter.entity || '').trim(),
+                    outdated: newFilter.outdated !== undefined ? newFilter.outdated : null
                 };
                 this.currentFilter = filter;
                 this.selectedApp = (typeof filter.app === 'undefined') ? countlyCommon.ACTIVE_APP_ID : filter.app;
@@ -487,7 +537,8 @@
                 this.currentFilter = {
                     app: null,
                     types: ALLOWED_DASHBOARD_TYPES.slice(),
-                    entity: ''
+                    entity: '',
+                    outdated: null
                 };
                 this.selectedApp = null;
                 this.currentPage = 1;
@@ -553,6 +604,21 @@
                 const entity = command.entity;
 
                 switch (action) {
+                case 'view':
+                    this.openDetailsDrawer(entity);
+                    break;
+                case 'hide':
+                    this.toggleHide(entity);
+                    break;
+                case 'block':
+                    this.toggleBlock(entity);
+                    break;
+                case 'rename':
+                    this.renameEntity(entity);
+                    break;
+                case 'delete':
+                    this.deleteEntity(entity);
+                    break;
                 case 'preview':
                     this.openPreview(entity);
                     break;
@@ -575,18 +641,25 @@
                 }
 
                 const entityType = parts[0];
-                const appId = parts[1];
                 // Entity id may contain underscores; rejoin remainder
                 const entityId = parts.slice(2).join('_');
 
                 if (entityType === 'dashboard') {
                     // Build hash-based dashboard URL with preview flags that are ignored by tracking
-                    const hashPath = '#/' + encodeURIComponent(appId) + '/custom/' + encodeURIComponent(entityId);
+                    // Dashboard route format: #/custom/{dashboardId} (no appId in hash)
+                    const hashPath = '#/custom/' + encodeURIComponent(entityId);
                     previewUrl = base + pathPrefix + '/dashboard' + query + hashPath;
                 }
                 else if (entityType === 'cohort') {
                     // Build cohort detail URL with preview flags
-                    const hashPath = '#/' + encodeURIComponent(appId) + '/cohorts/detail/' + encodeURIComponent(entityId);
+                    // Cohort route format: #/cohorts/detail/{cohortId} (no appId in hash)
+                    const hashPath = '#/cohorts/detail/' + encodeURIComponent(entityId);
+                    previewUrl = base + pathPrefix + '/dashboard' + query + hashPath;
+                }
+                else if (entityType === 'funnel') {
+                    // Build funnel detail URL with preview flags
+                    // Funnel route format: #/funnels/detail/{funnelId} (no appId in hash)
+                    const hashPath = '#/funnels/detail/' + encodeURIComponent(entityId);
                     previewUrl = base + pathPrefix + '/dashboard' + query + hashPath;
                 }
                 else {
@@ -626,7 +699,18 @@
                 this.$refs.dataTable.clearSelection();
                 this.selectedEntityIds = [];
             },
-            openDetailsDrawer: function(row) {
+            openDetailsDrawer: function(row, column, event) {
+                // Don't open drawer if clicking on dropdown menu or more options button
+                if (event && event.target) {
+                    const target = event.target;
+                    // Check if click is on dropdown menu, dropdown item, or more options button
+                    if (target.closest('.el-dropdown-menu') ||
+                        target.closest('.el-dropdown-menu__item') ||
+                        target.closest('.cly-more-options') ||
+                        target.closest('[class*="dropdown"]')) {
+                        return;
+                    }
+                }
                 this.selectedEntity = row;
                 this.openDrawer('entityDetailsDrawer', {});
             },
@@ -952,10 +1036,54 @@
                     this.$set(row, 'hover', true);
                 }
             },
-            onCellMouseLeave: function(row) {
-                if (row.hover) {
-                    this.$set(row, 'hover', false);
+            onCellMouseLeave: function(row, column, cell, event) {
+                // Don't hide hover if mouse is moving to dropdown menu
+                if (event && event.relatedTarget) {
+                    const relatedTarget = event.relatedTarget;
+                    // Check if mouse is moving to dropdown menu
+                    if (relatedTarget.closest && (
+                        relatedTarget.closest('.el-dropdown-menu') ||
+                        relatedTarget.closest('.el-dropdown-menu__item') ||
+                        relatedTarget.closest('.cly-more-options') ||
+                        relatedTarget.closest('[class*="dropdown"]') ||
+                        relatedTarget.closest('.el-popper')
+                    )) {
+                        return; // Keep hover state
+                    }
                 }
+                // Small delay to allow for menu interaction
+                const self = this;
+                setTimeout(function() {
+                    // Check if dropdown menu is still visible
+                    const dropdownMenu = document.querySelector('.el-dropdown-menu:not([style*="display: none"])');
+                    if (row.hover && !dropdownMenu) {
+                        self.$set(row, 'hover', false);
+                    }
+                }, 150);
+            },
+            getUnusedWarningTitle: function(entityType) {
+                if (entityType === 'dashboard') {
+                    return this.i18n('cleanup-center.unused-dashboard-warning');
+                }
+                else if (entityType === 'cohort') {
+                    return this.i18n('cleanup-center.unused-cohort-warning');
+                }
+                else if (entityType === 'funnel') {
+                    return this.i18n('cleanup-center.unused-funnel-warning');
+                }
+                return '';
+            },
+            getUnusedWarningDescription: function(entityType) {
+                if (entityType === 'dashboard') {
+                    return this.i18n('cleanup-center.unused-dashboard-description');
+                }
+                else if (entityType === 'cohort') {
+                    return this.i18n('cleanup-center.unused-cohort-description');
+                }
+                else if (entityType === 'funnel') {
+                    return this.i18n('cleanup-center.unused-funnel-description');
+                }
+                return '';
             },
             updateDrawerSize: function() {
                 const width = window.innerWidth;
@@ -1022,9 +1150,19 @@
                     return 'N/A';
                 }
 
-                // Handle both seconds (10 digits) and milliseconds (13 digits)
+                // Handle both seconds (10 digits) and milliseconds (13 digits), and ISO strings
                 let ts = timestamp;
-                if (typeof ts === 'number') {
+                if (typeof ts === 'string') {
+                    // Try to parse as ISO date string
+                    const parsed = new Date(ts);
+                    if (!isNaN(parsed.getTime())) {
+                        ts = parsed.getTime();
+                    }
+                    else {
+                        return 'N/A';
+                    }
+                }
+                else if (typeof ts === 'number') {
                     // If timestamp is in seconds (10 digits), convert to milliseconds
                     const tsStr = Math.round(ts).toString();
                     if (tsStr.length === 10) {
@@ -1041,24 +1179,6 @@
                     return 'N/A';
                 }
 
-                // Use Countly's built-in formatTimeAgoText if available
-                if (countlyCommon && countlyCommon.formatTimeAgoText) {
-                    try {
-                        const result = countlyCommon.formatTimeAgoText(ts);
-                        // formatTimeAgoText returns an object with {text, tooltip, color}
-                        if (result && typeof result === 'object' && result.text) {
-                            return result.text;
-                        }
-                        // If it's already a string, return it
-                        if (typeof result === 'string') {
-                            return result;
-                        }
-                    }
-                    catch (e) {
-                        // Fall through to custom formatting
-                    }
-                }
-
                 // Fallback to custom formatting
                 const now = new Date();
                 const diff = Math.abs(now - date);
@@ -1068,31 +1188,45 @@
                     return 'Just now';
                 }
                 if (minutes < 60) {
-                    return minutes + 'm ago';
+                    return minutes + (minutes === 1 ? ' minute ago' : ' minutes ago');
                 }
                 const hours = Math.floor(minutes / 60);
                 if (hours < 24) {
-                    return hours + 'h ago';
+                    return hours + (hours === 1 ? ' hour ago' : ' hours ago');
                 }
                 const days = Math.floor(hours / 24);
-                if (days < 30) {
-                    return days + 'd ago';
+                if (days < 7) {
+                    return days + (days === 1 ? ' day ago' : ' days ago');
+                }
+                const weeks = Math.floor(days / 7);
+                if (weeks < 4) {
+                    return weeks + (weeks === 1 ? ' week ago' : ' weeks ago');
                 }
                 const months = Math.floor(days / 30);
                 if (months < 12) {
-                    return months + 'mo ago';
+                    return months + (months === 1 ? ' month ago' : ' months ago');
                 }
                 const years = Math.floor(days / 365);
-                return years + 'y ago';
+                return years + (years === 1 ? ' year ago' : ' years ago');
             },
             formatFullTimestamp: function(timestamp) {
                 if (!timestamp) {
                     return '';
                 }
 
-                // Handle both seconds (10 digits) and milliseconds (13 digits)
+                // Handle both seconds (10 digits) and milliseconds (13 digits), and ISO strings
                 let ts = timestamp;
-                if (typeof ts === 'number') {
+                if (typeof ts === 'string') {
+                    // Try to parse as ISO date string
+                    const parsed = new Date(ts);
+                    if (!isNaN(parsed.getTime())) {
+                        ts = parsed.getTime();
+                    }
+                    else {
+                        return '';
+                    }
+                }
+                else if (typeof ts === 'number') {
                     // If timestamp is in seconds (10 digits), convert to milliseconds
                     const tsStr = Math.round(ts).toString();
                     if (tsStr.length === 10) {
@@ -1109,25 +1243,14 @@
                     return '';
                 }
 
-                // Use Countly's formatTimeAndDateShort if available (NOT formatTime which is for durations!)
-                if (countlyCommon && countlyCommon.formatTimeAndDateShort) {
-                    return countlyCommon.formatTimeAndDateShort(ts);
-                }
-
-                // Use moment if available
-                // eslint-disable-next-line no-undef
-                if (typeof moment !== 'undefined') {
-                    // eslint-disable-next-line no-undef
-                    return moment(ts).format('YYYY-MM-DD HH:mm');
-                }
-
-                // Fallback to custom formatting
+                // Format as "26 May 2025, 14:11"
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const day = date.getDate();
+                const month = months[date.getMonth()];
                 const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');
-                return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
+                return day + ' ' + month + ' ' + year + ', ' + hours + ':' + minutes;
             },
             formatLastViewedDate: function(timestamp) {
                 if (!timestamp) {
@@ -1262,6 +1385,16 @@
                 }
                 return name.substring(0, 2).toUpperCase();
             },
+            truncateText: function(text, maxLength) {
+                if (!text) {
+                    return '';
+                }
+                maxLength = maxLength || 40;
+                if (text.length <= maxLength) {
+                    return text;
+                }
+                return text.substring(0, maxLength) + '...';
+            },
             formatViewUsers: function(viewUsers) {
                 if (!viewUsers || !Array.isArray(viewUsers)) {
                     return [];
@@ -1342,14 +1475,29 @@
                 });
 
                 // Prepare chart data - format dates nicely
-                var xAxisData = last30Days.map(function(dateStr) {
+                // Extract unique months for X-axis labels
+                var monthSet = new Set();
+                var firstDate = new Date(last30Days[0]);
+                var lastDate = new Date(last30Days[last30Days.length - 1]);
+
+                last30Days.forEach(function(dateStr) {
                     var d = new Date(dateStr);
                     var month = d.toLocaleDateString(undefined, {month: 'short'});
-                    var day = d.getDate();
-                    return month + ' ' + day;
+                    monthSet.add(month);
                 });
-                var xAxisStartLabel = xAxisData[0] || '';
-                var xAxisEndLabel = xAxisData[xAxisData.length - 1] || '';
+
+                // Create X-axis data with month names only
+                var xAxisData = last30Days.map(function(dateStr) {
+                    var d = new Date(dateStr);
+                    return d.toLocaleDateString(undefined, {month: 'short'});
+                });
+
+                // Get first and last month names
+                var firstMonth = firstDate.toLocaleDateString(undefined, {month: 'short'});
+                var lastMonth = lastDate.toLocaleDateString(undefined, {month: 'short'});
+                var xAxisStartLabel = firstMonth;
+                var xAxisEndLabel = lastMonth;
+
                 var yAxisData = last30Days.map(function(d) {
                     return dateMap[d];
                 });
@@ -1388,29 +1536,37 @@
                         bottom: '48px',
                         containLabel: true
                     },
+                    // Show X-axis interval labels as a simple range under the chart
+                    // (hide per-tick labels to avoid clutter / "..." placeholders)
+                    graphic: [
+                        {
+                            type: 'text',
+                            left: 10,
+                            bottom: 10,
+                            style: {
+                                text: xAxisStartLabel || '',
+                                fill: '#666',
+                                fontSize: 11
+                            }
+                        },
+                        {
+                            type: 'text',
+                            right: 10,
+                            bottom: 10,
+                            style: {
+                                text: xAxisEndLabel || '',
+                                fill: '#666',
+                                fontSize: 11,
+                                align: 'right'
+                            }
+                        }
+                    ],
                     xAxis: {
                         type: 'category',
                         data: xAxisData,
                         boundaryGap: false,
                         axisLabel: {
-                            interval: 0, // evaluate every tick
-                            formatter: function(value, index) {
-                                if (index === 0) {
-                                    return xAxisStartLabel;
-                                }
-                                if (index === xAxisData.length - 1) {
-                                    return xAxisEndLabel;
-                                }
-                                return '';
-                            },
-                            showMinLabel: true,
-                            showMaxLabel: true,
-                            fontSize: 11,
-                            color: '#666',
-                            rotate: 0,
-                            align: 'center',
-                            margin: 12,
-                            overflow: 'break'
+                            show: false
                         },
                         axisLine: {
                             show: false

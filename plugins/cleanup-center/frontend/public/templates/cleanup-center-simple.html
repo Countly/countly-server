@@ -43,18 +43,45 @@
                                             </div>
                                             
                                             <cly-form-field :label="i18n('cleanup-center.app-filter')">
+                                                <div class="bu-is-flex bu-is-align-items-center" style="gap: 8px;">
+                                                    <el-select
+                                                        placement="bottom-start"
+                                                        class="select-full-width"
+                                                        v-model="formScope.editedObject.app"
+                                                        :placeholder="i18n('cleanup-center.all-apps')"
+                                                        :disabled="!formScope.editedObject.app || formScope.editedObject.app === null"
+                                                        clearable
+                                                        filterable>
+                                                        <el-option
+                                                            v-for="app in apps"
+                                                            :key="app._id"
+                                                            :label="app.name"
+                                                            :value="app._id">
+                                                        </el-option>
+                                                    </el-select>
+                                                    <el-checkbox 
+                                                        :checked="!formScope.editedObject.app || formScope.editedObject.app === null"
+                                                        @change="(checked) => handleFilterAllAppsToggle(checked, formScope)"
+                                                        size="small">
+                                                        All Apps
+                                                    </el-checkbox>
+                                                </div>
+                                            </cly-form-field>
+
+                                            <cly-form-field :label="i18n('cleanup-center.status-filter')">
                                                 <el-select
                                                     placement="bottom-start"
                                                     class="select-full-width"
-                                                    v-model="formScope.editedObject.app"
-                                                    :placeholder="i18n('cleanup-center.all-apps')"
-                                                    clearable
-                                                    filterable>
+                                                    v-model="formScope.editedObject.outdated"
+                                                    :placeholder="i18n('cleanup-center.all-statuses')"
+                                                    clearable>
                                                     <el-option
-                                                        v-for="app in apps"
-                                                        :key="app._id"
-                                                        :label="app.name"
-                                                        :value="app._id">
+                                                        :label="i18n('cleanup-center.outdated')"
+                                                        :value="true">
+                                                    </el-option>
+                                                    <el-option
+                                                        :label="i18n('cleanup-center.not-outdated')"
+                                                        :value="false">
                                                     </el-option>
                                                 </el-select>
                                             </cly-form-field>
@@ -142,12 +169,13 @@
                     <el-table-column
                         prop="type"
                         :label="i18n('cleanup-center.type')"
-                        width="100"
+                        width="140"
                         sortable>
                         <template slot-scope="scope">
-                            <el-tooltip :content="getTypeLabel(scope.row.type)" placement="top">
+                            <div class="bu-is-flex bu-is-align-items-center" style="gap: 6px;">
                                 <i :class="getTypeIcon(scope.row.type)"></i>
-                            </el-tooltip>
+                                <span class="text-small">{{ getTypeLabel(scope.row.type) }}</span>
+                            </div>
                         </template>
                     </el-table-column>
 
@@ -166,13 +194,36 @@
                         prop="key"
                         :label="i18n('cleanup-center.entity')"
                         min-width="200"
-                        sortable
-                        show-overflow-tooltip>
+                        sortable>
                         <template slot-scope="scope">
-                            <div class="text-medium">{{ scope.row.key }}</div>
-                            <div v-if="scope.row.displayName && scope.row.displayName !== scope.row.key" 
-                                 class="text-small color-cool-gray-50">
-                                {{ scope.row.displayName }}
+                            <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                                <el-tooltip
+                                    placement="top"
+                                    :content="scope.row.displayName && scope.row.displayName !== scope.row.key
+                                        ? (scope.row.displayName + ' (' + scope.row.key + ')')
+                                        : scope.row.key">
+                                    <div 
+                                        class="entity-name-truncate" 
+                                        style="flex: 1 1 auto; min-width: 0; cursor: pointer;"
+                                        @click.stop="openDetailsDrawer(scope.row)">
+                                        <div class="text-medium table-link-user">{{ truncateText(scope.row.key, 40) }}</div>
+                                        <div v-if="scope.row.displayName && scope.row.displayName !== scope.row.key" 
+                                             class="text-small color-cool-gray-50">
+                                            {{ truncateText(scope.row.displayName, 30) }}
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <span
+                                    v-if="scope.row.isUnused"
+                                    style="flex-shrink: 0;">
+                                    <el-tooltip :content="i18n('cleanup-center.outdated-explainer')" placement="top">
+                                        <cly-status-tag
+                                            color="red"
+                                            size="small"
+                                            :text="i18n('cleanup-center.outdated')">
+                                        </cly-status-tag>
+                                    </el-tooltip>
+                                </span>
                             </div>
                         </template>
                     </el-table-column>
@@ -184,14 +235,15 @@
                         width="160"
                         sortable>
                         <template slot-scope="scope">
-                            <div v-if="scope.row.lastSeen" class="text-small">
+                            <div v-if="scope.row.lastSeen">
                                 <!-- For textual statuses like 'Active' or 'N/A', just show the text -->
                                 <template v-if="typeof scope.row.lastSeen === 'string' && (scope.row.lastSeen === 'Active' || scope.row.lastSeen === 'N/A')">
                                     <div class="text-medium">{{ scope.row.lastSeen }}</div>
                                 </template>
-                                <!-- Otherwise, show clean formatted date -->
+                                <!-- Otherwise, show days ago as main text and date as secondary -->
                                 <template v-else>
-                                    <div class="text-medium">{{ formatLastViewedDate(scope.row.lastSeen) }}</div>
+                                    <div class="text-medium">{{ formatRelativeTime(scope.row.lastSeen) }}</div>
+                                    <div class="text-small color-cool-gray-50">{{ formatFullTimestamp(scope.row.lastSeen) }}</div>
                                 </template>
                             </div>
                             <el-tag v-else type="warning" size="mini">{{ i18n('common.missing') }}</el-tag>
@@ -205,9 +257,9 @@
                         width="140"
                         sortable>
                         <template slot-scope="scope">
-                            <div v-if="scope.row.updatedAt" class="text-small">
+                            <div v-if="scope.row.updatedAt">
                                 <div class="text-medium">{{ formatRelativeTime(scope.row.updatedAt) }}</div>
-                                <div class="color-cool-gray-50">{{ formatFullTimestamp(scope.row.updatedAt) }}</div>
+                                <div class="text-small color-cool-gray-50">{{ formatFullTimestamp(scope.row.updatedAt) }}</div>
                             </div>
                             <el-tag v-else type="warning" size="mini">{{ i18n('common.missing') }}</el-tag>
                         </template>
@@ -219,14 +271,18 @@
                         align="center"
                         width="64">
                         <template slot-scope="scope">
-                            <el-tooltip content="Preview (no tracking)" placement="top">
-                                <el-button
-                                    type="text"
-                                    size="mini"
-                                    icon="ion-eye"
-                                    @click.stop="openPreview(scope.row)">
-                                </el-button>
-                            </el-tooltip>
+                            <cly-more-options 
+                                v-if="scope.row.hover" 
+                                size="small" 
+                                @command="handleRowAction({action: $event, entity: scope.row})"
+                                :test-id="'more-button-' + scope.$index">
+                                <el-dropdown-item command="view">
+                                    <i class="el-icon-view"></i> {{ i18n('cleanup-center.view-details') }}
+                                </el-dropdown-item>
+                                <el-dropdown-item command="preview">
+                                    <i class="ion-ios-browsers"></i> {{ i18n('cleanup-center.open-in-new-tab') }}
+                                </el-dropdown-item>
+                            </cly-more-options>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -353,15 +409,23 @@
                     <p>Loading...</p>
                 </div>
                 <div v-else>
-                    <!-- Warning for Unused Dashboards -->
+                    <!-- Warning for Unused Entities (Dashboard, Cohort, Funnel) -->
                     <el-alert
-                        v-if="selectedEntity.type === 'dashboard' && selectedEntity.isUnused"
-                        :title="i18n('cleanup-center.unused-dashboard-warning')"
+                        v-if="selectedEntity.isUnused && (selectedEntity.type === 'dashboard' || selectedEntity.type === 'cohort' || selectedEntity.type === 'funnel')"
+                        :title="getUnusedWarningTitle(selectedEntity.type)"
                         type="warning"
                         :closable="false"
                         class="bu-mb-4"
                         show-icon>
-                        <div>{{ i18n('cleanup-center.unused-dashboard-description') }}</div>
+                        <div>{{ getUnusedWarningDescription(selectedEntity.type) }}</div>
+                        <div class="bu-mt-2">
+                            <el-button
+                                type="text"
+                                class="bu-p-0"
+                                @click="openPreview(selectedEntity)">
+                                <i class="ion-ios-browsers bu-mr-1"></i> {{ i18n('cleanup-center.open-preview-in-new-tab') }}
+                            </el-button>
+                        </div>
                     </el-alert>
                     
                     <!-- Essential Fields - Single Horizontal Row -->

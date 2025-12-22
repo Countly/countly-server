@@ -115,12 +115,21 @@
                     <div class="bu-columns bu-is-multiline bu-is-variable bu-is-2" style="padding: 16px;">
                         <div class="bu-column is-3">
                             <label class="text-small color-cool-gray-50 bu-mb-1" style="display: block;">Project</label>
+                            <div class="bu-is-flex bu-is-align-items-center" style="gap: 8px; margin-bottom: 8px;">
+                                <el-checkbox 
+                                    :checked="showAllApps"
+                                    @change="handleAllAppsToggle"
+                                    size="small">
+                                    All Apps
+                                </el-checkbox>
+                            </div>
                             <el-select 
                                 v-model="selectedApp" 
                                 filterable
                                 placeholder="Select Project" 
                                 size="small"
                                 style="width: 100%;"
+                                :disabled="showAllApps"
                                 @change="onAppChange">
                                 <el-option
                                     v-for="app in apps"
@@ -272,7 +281,7 @@
                 <el-table-column
                     prop="type"
                     label="Type"
-                    width="90"
+                    width="140"
                     sortable>
                     <template slot="header">
                         <div>
@@ -294,9 +303,10 @@
                         </div>
                     </template>
                     <template slot-scope="scope">
-                        <el-tooltip :content="getTypeLabel(scope.row.type)" placement="top">
+                        <div class="bu-is-flex bu-is-align-items-center" style="gap: 6px;">
                             <i :class="getTypeIcon(scope.row.type)" style="font-size: 18px; color: #606266;"></i>
-                        </el-tooltip>
+                            <span class="text-small">{{ getTypeLabel(scope.row.type) }}</span>
+                        </div>
                     </template>
                 </el-table-column>
 
@@ -327,11 +337,41 @@
                         </el-input>
                     </template>
                     <template slot-scope="scope">
-                        <div>
-                            <div class="entity-key" style="font-weight: 500; color: #303133;">{{ scope.row.key }}</div>
-                            <div class="text-small color-cool-gray-50" v-if="scope.row.displayName && scope.row.displayName !== scope.row.key">
-                                {{ scope.row.displayName }}
-                            </div>
+                        <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                            <el-tooltip
+                                placement="top"
+                                :content="scope.row.displayName && scope.row.displayName !== scope.row.key
+                                    ? (scope.row.displayName + ' (' + scope.row.key + ')')
+                                    : scope.row.key">
+                                <div
+                                    style="
+                                        overflow: hidden;
+                                        text-overflow: ellipsis;
+                                        white-space: nowrap;
+                                        flex: 1 1 auto;
+                                        min-width: 0;
+                                    ">
+                                    <span class="entity-key" style="font-weight: 500; color: #303133;">
+                                        {{ truncateText(scope.row.key, 40) }}
+                                    </span>
+                                    <span
+                                        class="text-small color-cool-gray-50 bu-ml-1"
+                                        v-if="scope.row.displayName && scope.row.displayName !== scope.row.key">
+                                        {{ truncateText(scope.row.displayName, 30) }}
+                                    </span>
+                                </div>
+                            </el-tooltip>
+                            <span
+                                v-if="scope.row.isUnused || (typeof scope.row.lastSeen === 'string' && scope.row.lastSeen === 'Outdated')"
+                                style="flex-shrink: 0;">
+                                <el-tooltip :content="i18n('cleanup-center.outdated-explainer')" placement="top">
+                                    <cly-status-tag
+                                        color="red"
+                                        size="small"
+                                        :text="i18n('cleanup-center.outdated')">
+                                    </cly-status-tag>
+                                </el-tooltip>
+                            </span>
                         </div>
                     </template>
                 </el-table-column>
@@ -373,7 +413,10 @@
                     width="140"
                     sortable>
                     <template slot-scope="scope">
-                        <span class="text-small">{{ formatRelativeTime(scope.row.lastSeen) }}</span>
+                        <div class="text-small">
+                            <span v-if="scope.row.lastSeen">{{ formatRelativeTime(scope.row.lastSeen) }}</span>
+                            <span v-else>-</span>
+                        </div>
                     </template>
                 </el-table-column>
 
@@ -873,6 +916,27 @@
                         <tr>
                             <td class="meta-label">Last Viewed</td>
                             <td>{{ formatFullTimestamp(selectedEntity.lastSeen) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="meta-label">Usage (30d)</td>
+                            <td>{{ formatNumber(selectedEntity.usage30d || 0) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="meta-label">Usage Status</td>
+                            <td>
+                                <el-tag
+                                    v-if="selectedEntity.isUnused"
+                                    type="danger"
+                                    size="small">
+                                    {{ i18n('cleanup-center.outdated') }}
+                                </el-tag>
+                                <el-tag
+                                    v-else
+                                    type="success"
+                                    size="small">
+                                    {{ i18n('cleanup-center.in-use') }}
+                                </el-tag>
+                            </td>
                         </tr>
                         <tr>
                             <td class="meta-label">Created</td>
