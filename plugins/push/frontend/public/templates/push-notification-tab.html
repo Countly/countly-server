@@ -1,6 +1,11 @@
 <script type="text/x-template" id="push-notification-tab">
     <div v-bind:class="[componentId]">
         <cly-main>
+            <cly-notification
+                v-if="!kafkaStatus.available"
+                :closable="false"
+                class="bu-mb-5"
+                :text="i18n('push-notification.no-kafka-warning') + '<br/>' + 'Kafka connection verification failed with following error: <b>' + kafkaStatus.error + '</b>'"/>
             <cly-section>
                 <cly-metric-cards :multiline="false">
                     <cly-metric-card

@@ -2,11 +2,11 @@
  * @typedef {import("./new/types/message").PlatformKey} PlatformKey
  */
 
-const common = require('../../../api/utils/common'),
-    crypto = require('crypto'),
-    moment = require('moment-timezone'),
-    log = common.log('push:api:dashboard');
-
+const common = require('../../../api/utils/common');
+const crypto = require('crypto');
+const moment = require('moment-timezone');
+const log = common.log('push:api:dashboard');
+const { isProducerInitialized, verifyKafka } = require("./new/lib/kafka.js");
 const platforms = require("./new/constants/platform-keymap.js");
 const platformKeys = /** @type {PlatformKey[]} */(Object.keys(platforms));
 
@@ -376,7 +376,31 @@ module.exports.dashboard = async function(params) {
             };
         });
 
+        let isKafkaAvailable = true;
+        let errorMessage;
+        try {
+            verifyKafka();
+        }
+        catch (error) {
+            isKafkaAvailable = false;
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            else {
+                errorMessage = 'Unknown error verifying Kafka availability';
+                log.e(errorMessage, error);
+            }
+        }
+        if (!isProducerInitialized()) {
+            isKafkaAvailable = false;
+            errorMessage = 'Kafka producer is not connected';
+        }
+
         common.returnOutput(params, {
+            kafkaStatus: {
+                available: isKafkaAvailable,
+                error: errorMessage
+            },
             sent: events[0].m,
             sent_automated: events[0].a,
             sent_tx: events[0].t,

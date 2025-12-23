@@ -1447,6 +1447,7 @@
             },
             mapMainDashboard: function(dashboardDto) {
                 return {
+                    kafkaStatus: dashboardDto.kafkaStatus,
                     series: this.mapSeries(dashboardDto),
                     periods: this.mapPeriods(dashboardDto),
                     totalAppUsers: parseInt(dashboardDto.users),
@@ -3299,6 +3300,10 @@
             series: series,
             periods: periods,
             totalAppUsers: 0,
+            kafkaStatus: {
+                available: true,
+                error: null
+            },
             enabledUsers: enabledUsers,
             totalActions: totalActions,
             totalSent: totalSent,
