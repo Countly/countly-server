@@ -165,7 +165,7 @@ var handleMerges = function(db, callback) {
                         if (err0) {
                             log.e(err0);
                         }
-                        db.collection("metric_changes" + app_id).update({uid: olduid}, {'$set': {uid: usersApi.merged_to}}, {multi: true}, function(err7) {
+                        db.collection("metric_changes" + app_id).update({uid: olduid}, {'$set': {uid: user.merged_to}}, {multi: true}, function(err7) {
                             if (err7) {
                                 log.e("Failed metric changes update in app_users merge", err7);
                             }
