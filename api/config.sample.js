@@ -149,24 +149,37 @@ var countlyConfig = {
             optimize_move_to_prewhere: 1,
             query_plan_optimize_lazy_materialization: 1
         },
-        // Cluster configuration for distributed ClickHouse deployments
-        // Supports: single (default), sharded, replicated, ha modes
+        /**
+         * Cluster configuration for distributed ClickHouse deployments
+         *
+         * Configuration uses boolean flags for clarity:
+         * - shards: false, replicas: false → single mode (default)
+         * - shards: false, replicas: true  → replicated mode (HA, recommended)
+         * - shards: true,  replicas: false → sharded mode (horizontal scaling, no HA)
+         * - shards: true,  replicas: true  → ha mode (full HA with sharding)
+         *
+         * @property {string} name - Cluster name (must match ClickHouse cluster config)
+         * @property {boolean} shards - Enable sharding (horizontal scaling across multiple shards)
+         * @property {boolean} replicas - Enable replication (high availability with multiple replicas)
+         * @property {boolean} isCloud - ClickHouse Cloud mode (skip DDL, validate schema exists)
+         */
         cluster: {
-            enabled: false,
             name: 'countly_cluster',
-            mode: 'single', // 'single' | 'sharded' | 'replicated' | 'ha'
-            isCloud: false // Set to true for ClickHouse Cloud or externally managed schemas (skips DDL, validates schema exists)
+            shards: false, // Enable sharding (horizontal scaling)
+            replicas: false, // Enable replication (high availability)
+            isCloud: false // Set to true for ClickHouse Cloud
         },
-        // Replication configuration (for 'replicated' and 'ha' modes)
+        // Replication configuration (used when cluster.replicas=true)
         replication: {
             coordinatorType: 'keeper', // 'keeper' (ClickHouse Keeper) or 'zookeeper'
             zkPath: '/clickhouse/tables/{shard}/{database}/{table}',
             replicaName: '{replica}'
         },
         // Parallel replicas configuration for query acceleration
+        // Only effective when cluster.replicas=true or cluster.isCloud=true
         parallelReplicas: {
-            enabled: false,
-            maxParallelReplicas: 2,
+            enabled: false, // Enable parallel replica queries
+            maxParallelReplicas: 2, // Number of replicas to use for parallel queries
             clusterForParallelReplicas: null // null = auto-detect from cluster.name
         },
         // Distributed table configuration

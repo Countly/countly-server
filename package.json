@@ -24,7 +24,12 @@
     "start:frontend": "node frontend/express/app.js",
     "start:aggregator": "node api/aggregator.js",
     "start:ingestor": "node api/ingestor.js",
-    "start:jobserver": "node jobServer/index.js"
+    "start:jobserver": "node jobServer/index.js",
+    "start:api:dev": "COUNTLY_CONFIG__SYMLINKED=true NODE_ENV=development COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings api/api.js",
+    "start:frontend:dev": "COUNTLY_CONFIG__SYMLINKED=true NODE_ENV=development COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings frontend/express/app.js",
+    "start:aggregator:dev": "COUNTLY_CONFIG__SYMLINKED=true NODE_ENV=development COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings api/aggregator.js",
+    "start:ingestor:dev": "COUNTLY_CONFIG__SYMLINKED=true NODE_ENV=development COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings api/ingestor.js",
+    "start:jobserver:dev": "COUNTLY_CONFIG__SYMLINKED=true NODE_ENV=development COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings jobServer/index.js"
   },
   "lint-staged": {
     "*.{js,vue}": [
