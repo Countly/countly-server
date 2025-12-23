@@ -10,6 +10,8 @@
  * @typedef {import('../types/queue.ts').AutoTriggerEvent} AutoTriggerEvent
  * @typedef {import('../types/queue.ts').ResultEventDTO} ResultEventDTO
  * @typedef {() => (args: any) => number} PartitionerFactory
+ * @typedef {import('../../../../kafka/api/api.js').kafkajs.Kafka} Kafka
+ * @typedef {import('../../../../kafka/api/api.js').kafkajs.Producer} Producer
  */
 
 const kafkaConfig = require("../constants/kafka-config.json");
@@ -22,7 +24,7 @@ const {
 const common = require('../../../../../api/utils/common');
 const log = common.log('push:kafka');
 
-/** @type {Producer} */
+/** @type {Producer=} */
 let PRODUCER;
 
 /**
@@ -30,16 +32,7 @@ let PRODUCER;
  * @returns {Promise<{kafkaInstance: Kafka, Partitioners: any}>} Resolves with the Kafka instance and partitioners
  */
 async function loadKafka() {
-    if (!common.config.kafka?.enabled) {
-        throw new Error("Kafka is not enabled in the configuration");
-    }
-    try {
-        require.resolve('../../../../kafka/api/lib/KafkaConsumer');
-        require.resolve('../../../../kafka/api/lib/kafkaClient');
-    }
-    catch (e) {
-        throw new Error("Kafka plugin is not available");
-    }
+    verifyKafka();
     const {
         onReady: onKafkaClientReady,
         kafkajs: { Partitioners }
@@ -50,15 +43,43 @@ async function loadKafka() {
 }
 
 /**
+ * Verifies that the Kafka plugin is available and enabled.
+ * @returns {boolean} True if the plugin is available and enabled
+ * @throws {Error} if the plugin is not available or not enabled
+ */
+function verifyKafka() {
+    if (!common.config.kafka?.enabled) {
+        throw new Error("Kafka is not enabled in the configuration");
+    }
+    try {
+        require.resolve('../../../../kafka/api/lib/KafkaConsumer');
+        require.resolve('../../../../kafka/api/lib/kafkaClient');
+    }
+    catch (e) {
+        throw new Error("Kafka plugin is not available");
+    }
+    return true;
+}
+
+/**
  * Sets up the Kafka producer with the given partitioner.
  * @param {Kafka} kafkaInstance - the Kafka client instance
  * @param {PartitionerFactory} createPartitioner - function to create the partitioner
  * @returns {Promise<Producer>} Resolves with the connected producer
  */
 async function setupProducer(kafkaInstance, createPartitioner) {
-    PRODUCER = kafkaInstance.producer({ createPartitioner });
-    await PRODUCER.connect();
+    let localProducer = kafkaInstance.producer({ createPartitioner });
+    await localProducer.connect();
+    PRODUCER = localProducer;
     return PRODUCER;
+}
+
+/**
+ * Checks if the Kafka producer is initialized.
+ * @returns {Promise<boolean>} Resolves with true if initialized, false otherwise
+ */
+async function isProducerInitialized() {
+    return !!PRODUCER;
 }
 
 /**
@@ -188,7 +209,7 @@ async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResult
  */
 async function sendScheduleEvents(scheduleEvents) {
     if (!PRODUCER) {
-        throw new Error("Producer is not initialized");
+        throw new Error("Kafka producer is not initialized");
     }
     // important: if you ever need to update the partitioner, you also have to
     // change it in the scheduler service (we use the default partitioner here
@@ -224,7 +245,7 @@ async function sendScheduleEvents(scheduleEvents) {
  */
 async function sendPushEvents(pushes) {
     if (!PRODUCER) {
-        throw new Error("Producer is not initialized");
+        throw new Error("Kafka producer is not initialized");
     }
     await PRODUCER.send({
         topic: kafkaConfig.topics.SEND.name,
@@ -239,7 +260,7 @@ async function sendPushEvents(pushes) {
  */
 async function sendResultEvents(results) {
     if (!PRODUCER) {
-        throw new Error("Producer is not initialized");
+        throw new Error("Kafka producer is not initialized");
     }
     await PRODUCER.send({
         topic: kafkaConfig.topics.RESULT.name,
@@ -255,7 +276,7 @@ async function sendResultEvents(results) {
  */
 async function sendAutoTriggerEvents(autoTriggerEvents) {
     if (!PRODUCER) {
-        throw new Error("Producer is not initialized");
+        throw new Error("Kafka producer is not initialized");
     }
     await PRODUCER.send({
         topic: kafkaConfig.topics.AUTO_TRIGGER.name,
@@ -265,6 +286,8 @@ async function sendAutoTriggerEvents(autoTriggerEvents) {
 
 
 module.exports = ({
+    verifyKafka,
+    isProducerInitialized,
     loadKafka,
     setupProducer,
     setupTopicsAndPartitions,
