@@ -258,7 +258,8 @@
                         collection: this.localCollection,
                         db: this.localDb,
                         url: "/o/export/db",
-                        get_index: this.index
+                        get_index: this.index,
+                        api_key: countlyGlobal.member.api_key
                     };
                     return apiQueryData;
                 },
