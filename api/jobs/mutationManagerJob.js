@@ -14,6 +14,21 @@ const DEFAULT_JOB_CONFIG = {
 };
 let jobConfigState = { ...DEFAULT_JOB_CONFIG };
 
+const MONGO_DATABASES = {
+    countly: () => common.db,
+    countly_drill: () => common.drillDb,
+    countly_out: () => common.outDb
+};
+
+/**
+ * Get MongoDB database instance by name
+ * @param {string} name - Database name
+ * @returns {Db|null} MongoDB database instance
+ */
+function getMongoDbInstance(name) {
+    return name && typeof MONGO_DATABASES[name] !== 'undefined' ? MONGO_DATABASES[name]() : null;
+}
+
 let clickHouseRunner;
 try {
     clickHouseRunner = require('../../plugins/clickhouse/api/queries/clickhouseCoreQueries.js');
@@ -179,10 +194,19 @@ class MutationManagerJob extends Job {
             return;
         }
 
+        const mongoDb = getMongoDbInstance(task.db);
         const clickhouseEnabled = mutationManager.isClickhouseEnabled();
         const hasClickhouseDelete = clickhouseEnabled && !!(clickHouseRunner && clickHouseRunner.deleteGranularDataByQuery);
         const hasClickhouseUpdate = clickhouseEnabled && !!(clickHouseRunner && clickHouseRunner.updateGranularDataByQuery);
         const hasClickhouse = (type === 'update' ? hasClickhouseUpdate : hasClickhouseDelete);
+
+        if (!mongoDb && !hasClickhouse) {
+            const reason = `mongo_db_unavailable:${task.db || 'missing'}`;
+            log.e("Mutation task failed; Mongo database unavailable and ClickHouse disabled", { taskId: task._id, db: task.db });
+            await this.markFailedOrRetry(task, reason);
+            summary.push({ query: task.query, status: "failed", error: reason });
+            return;
+        }
 
         if (hasClickhouse) {
             try {
@@ -202,12 +226,17 @@ class MutationManagerJob extends Job {
             }
         }
 
-        let mongoOk = false;
-        if (type === 'update') {
-            mongoOk = await this.updateMongo(task);
+        let mongoOk = true;
+        if (mongoDb) {
+            if (type === 'update') {
+                mongoOk = await this.updateMongo(task, mongoDb);
+            }
+            else {
+                mongoOk = await this.deleteMongo(task, mongoDb);
+            }
         }
         else {
-            mongoOk = await this.deleteMongo(task);
+            log.i("Mongo mutation skipped (unavailable database); continuing with ClickHouse only", { taskId: task._id, db: task.db });
         }
 
         let chScheduledOk = true;
@@ -376,17 +405,26 @@ class MutationManagerJob extends Job {
     /**
      * Delete documents from MongoDB
      * @param {Object} task - The deletion task
+     * @param {Object} mongoDb - MongoDB database instance
      */
-    async deleteMongo(task) {
+    async deleteMongo(task, mongoDb) {
         if (!task.query || !Object.keys(task.query).length) {
             await this.markFailedOrRetry(task, "empty_mongo_query");
+            return false;
+        }
+
+        const targetDb = mongoDb || getMongoDbInstance(task.db);
+        if (!targetDb) {
+            const reason = `mongo_db_unavailable:${task.db || 'missing'}`;
+            log.e("Mongo deletion skipped (database unavailable)", { taskId: task._id, db: task.db });
+            await this.markFailedOrRetry(task, reason);
             return false;
         }
 
         let res;
         const start = Date.now();
         try {
-            res = await common.drillDb.collection(task.collection).deleteMany(task.query || {});
+            res = await targetDb.collection(task.collection).deleteMany(task.query || {});
         }
         catch (err) {
             const duration = Date.now() - start;
@@ -403,8 +441,9 @@ class MutationManagerJob extends Job {
     /**
      * Update documents in MongoDB
      * @param {Object} task - The mutation task
+     * @param {Object} mongoDb - MongoDB database instance
      */
-    async updateMongo(task) {
+    async updateMongo(task, mongoDb) {
         if (!task.query || !Object.keys(task.query).length) {
             await this.markFailedOrRetry(task, "empty_mongo_query");
             return false;
@@ -413,10 +452,19 @@ class MutationManagerJob extends Job {
             await this.markFailedOrRetry(task, "empty_mongo_update");
             return false;
         }
+
+        const targetDb = mongoDb || getMongoDbInstance(task.db);
+        if (!targetDb) {
+            const reason = `mongo_db_unavailable:${task.db || 'missing'}`;
+            log.e("Mongo update skipped (database unavailable)", { taskId: task._id, db: task.db });
+            await this.markFailedOrRetry(task, reason);
+            return false;
+        }
+
         let res;
         const start = Date.now();
         try {
-            res = await common.drillDb.collection(task.collection).updateMany(task.query, task.update || {});
+            res = await targetDb.collection(task.collection).updateMany(task.query, task.update || {});
         }
         catch (err) {
             const duration = Date.now() - start;
@@ -462,7 +510,7 @@ class MutationManagerJob extends Job {
 
             await common.queryRunner.executeQuery(
                 queryDef,
-                { queryObj: task.query, targetTable: task.collection, validation_command_id: commandId },
+                { queryObj: task.query, targetTable: task.collection, db: task.db, validation_command_id: commandId },
                 {}
             );
             await common.db.collection("mutation_manager").updateOne(
@@ -519,7 +567,7 @@ class MutationManagerJob extends Job {
             const commandId = `um_${String(task._id)}_${retryIndex}`; // update mutation
             await common.queryRunner.executeQuery(
                 queryDef,
-                { queryObj: task.query, updateObj: task.update, targetTable: task.collection, validation_command_id: commandId },
+                { queryObj: task.query, updateObj: task.update, targetTable: task.collection, db: task.db, validation_command_id: commandId },
                 {}
             );
             await common.db.collection("mutation_manager").updateOne(
