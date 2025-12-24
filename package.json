@@ -18,7 +18,8 @@
   },
   "scripts": {
     "test": "grunt --verbose",
-    "test:unit": "NODE_PATH=./node_modules/ npx mocha 'test/unit/*.unit.js' 'test/unit/*.unit.test.js' 'plugins/*/tests/**/*.unit.js' --reporter spec --timeout 50000",
+    "test:unit": "NODE_PATH=./node_modules/ npx mocha --preserve-symlinks --preserve-symlinks-main 'test/unit/*.unit.js' 'test/unit/*.unit.test.js' 'plugins/*/tests/**/*.unit.js' --reporter spec --timeout 50000",
+    "test:clickhouse:cluster": "node plugins/clickhouse/tests/run-cluster-tests.js",
     "prepare": "husky",
     "start:api": "node api/api.js",
     "start:frontend": "node frontend/express/app.js",
