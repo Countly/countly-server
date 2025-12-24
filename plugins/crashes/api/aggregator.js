@@ -194,13 +194,16 @@ const setFieldsIfExist = function(fieldList, source, target) {
                         {
                             // Project needed properties from user properties (up) so they are available in document root.
                             $project: {
-                                _id: '$fullDocument._id',
+                                __id: '$fullDocument._id',
                                 a: '$fullDocument.a',
                                 cd: '$fullDocument.cd',
                                 e: '$fullDocument.e',
                                 n: '$fullDocument.n',
                                 sg: '$fullDocument.sg',
                                 ts: '$fullDocument.ts',
+                                uid: '$fullDocument.uid',
+                                up: '$fullDocument.up',
+                                up_extra: '$fullDocument.up_extra',
                             },
                         },
                     ],
@@ -326,7 +329,7 @@ const setFieldsIfExist = function(fieldList, source, target) {
                                 groupInsert.startTs = moment(currEvent.ts).unix();
                                 groupInsert.latest_version = currEvent.sg.app_version;
                                 groupInsert.latest_version_for_sort = common.transformAppVersion(currEvent.sg.app_version);
-                                groupInsert.lrid = `${currEvent._id}`;
+                                groupInsert.lrid = `${currEvent.__id || currEvent._id}`;
                                 groupInsert.error = currEvent.sg.error || '';
 
                                 setFieldsIfExist(buildSpecific, currEvent.sg, groupInsert);
@@ -466,7 +469,7 @@ const setFieldsIfExist = function(fieldList, source, target) {
                                         if (plugins.getConfig('crashes').same_app_version_crash_update) {
                                             if (crashGroup.latest_version && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.latest_version.replace(/\./g, ':')) >= 0) {
                                                 group.error = currEvent.sg.error;
-                                                group.lrid = `${currEvent._id}`;
+                                                group.lrid = `${currEvent.__id || currEvent._id}`;
 
                                                 setFieldsIfExist(buildSpecific, currEvent.sg, group);
                                             }
@@ -474,7 +477,7 @@ const setFieldsIfExist = function(fieldList, source, target) {
                                         else {
                                             if (crashGroup.latest_version && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.latest_version.replace(/\./g, ':')) > 0) {
                                                 group.error = currEvent.sg.error;
-                                                group.lrid = `${currEvent._id}`;
+                                                group.lrid = `${currEvent.__id || currEvent._id}`;
 
                                                 setFieldsIfExist(buildSpecific, currEvent.sg, group);
                                             }
@@ -536,15 +539,16 @@ const setFieldsIfExist = function(fieldList, source, target) {
                         {
                             // Project needed properties from user properties (up) so they are available in document root.
                             $project: {
-                                _id: '$fullDocument._id',
+                                __id: '$fullDocument._id',
                                 a: '$fullDocument.a',
                                 cd: '$fullDocument.cd',
                                 e: '$fullDocument.e',
                                 n: '$fullDocument.n',
+                                sg: '$fullDocument.sg',
                                 ts: '$fullDocument.ts',
-                                up_extra: '$fullDocument.up_extra',
+                                uid: '$fullDocument.uid',
                                 up: '$fullDocument.up',
-                                sg: '$fullDocument.sg'
+                                up_extra: '$fullDocument.up_extra',
                             },
                         },
                     ],
@@ -635,14 +639,16 @@ const setFieldsIfExist = function(fieldList, source, target) {
                         {
                             // Project needed properties from user properties (up) so they are available in document root.
                             $project: {
-                                _id: '$fullDocument._id',
-                                _uid: '$fullDocument._uid',
+                                __id: '$fullDocument._id',
                                 a: '$fullDocument.a',
                                 cd: '$fullDocument.cd',
                                 e: '$fullDocument.e',
                                 n: '$fullDocument.n',
                                 sg: '$fullDocument.sg',
                                 ts: '$fullDocument.ts',
+                                uid: '$fullDocument.uid',
+                                up: '$fullDocument.up',
+                                up_extra: '$fullDocument.up_extra',
                             },
                         },
                     ],
