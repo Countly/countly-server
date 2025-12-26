@@ -134,9 +134,13 @@ var countlyConfig = {
         },
         // Identity configuration for user merging and dictionary data retention
         identity: {
-            daysOld: 30 // Number of days after which identity mappings are baked into cold partitions.
+            daysOld: 30, // Number of days after which identity mappings are baked into cold partitions.
             // Dictionary only loads mappings from the last (daysOld + 1) days.
             // Used by both identity dictionary and ColdPartitionMerging job.
+            lifetime: {
+                min: 60, // Minimum dictionary cache lifetime in seconds (dictionary won't reload before this time)
+                max: 120 // Maximum dictionary cache lifetime in seconds (dictionary will reload after this time)
+            }
         },
         clickhouse_settings: {
             idle_connection_timeout: 11000 + '',
