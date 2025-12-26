@@ -266,7 +266,7 @@ function handleRequest(req, res) {
     res.setHeader('Keep-Alive', 'timeout=5, max=1000');
 
     if (req.method.toLowerCase() === 'post') {
-        const formidableOptions = {};
+        const formidableOptions = { multiples: true };
         if (countlyConfig.api.maxUploadFileSize) {
             formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
         }
