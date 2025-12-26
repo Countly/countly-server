@@ -126,9 +126,22 @@ var countlyConfig = {
         },
         max_open_connections: 10,
         // Dictionary configuration for DictionaryManager
-        // dictionary: {
-        //     enableMongoDBSource: true // Enable/disable MongoDB as a dictionary source (default: true, auto-disabled if mongodb driver not available)
-        // },
+        dictionary: {
+            enableMongoDBSource: true, // Enable/disable MongoDB as a dictionary source (auto-disabled if mongodb driver not available)
+            nativePort: 9000, // Native TCP port for dictionary connections (use 9440 for Cloud with TLS)
+            host: null, // Override host for dictionary connections (defaults to ClickHouse URL host)
+            secure: false // Enable TLS for dictionary connections (required for ClickHouse Cloud)
+        },
+        // Identity configuration for user merging and dictionary data retention
+        identity: {
+            daysOld: 30, // Number of days after which identity mappings are baked into cold partitions.
+            // Dictionary only loads mappings from the last (daysOld + 1) days.
+            // Used by both identity dictionary and ColdPartitionMerging job.
+            lifetime: {
+                min: 60, // Minimum dictionary cache lifetime in seconds (dictionary won't reload before this time)
+                max: 120 // Maximum dictionary cache lifetime in seconds (dictionary will reload after this time)
+            }
+        },
         clickhouse_settings: {
             idle_connection_timeout: 11000 + '',
             async_insert: 1,
@@ -139,6 +152,44 @@ var countlyConfig = {
             allow_suspicious_types_in_order_by: 1,
             optimize_move_to_prewhere: 1,
             query_plan_optimize_lazy_materialization: 1
+        },
+        /**
+         * Cluster configuration for distributed ClickHouse deployments
+         *
+         * Configuration uses boolean flags for clarity:
+         * - shards: false, replicas: false → single mode (default)
+         * - shards: false, replicas: true  → replicated mode (HA, recommended)
+         * - shards: true,  replicas: false → sharded mode (horizontal scaling, no HA)
+         * - shards: true,  replicas: true  → ha mode (full HA with sharding)
+         *
+         * @property {string} name - Cluster name (must match ClickHouse cluster config)
+         * @property {boolean} shards - Enable sharding (horizontal scaling across multiple shards)
+         * @property {boolean} replicas - Enable replication (high availability with multiple replicas)
+         * @property {boolean} isCloud - ClickHouse Cloud mode (skip DDL, validate schema exists)
+         */
+        cluster: {
+            name: 'countly_cluster',
+            shards: false, // Enable sharding (horizontal scaling)
+            replicas: false, // Enable replication (high availability)
+            isCloud: false // Set to true for ClickHouse Cloud
+        },
+        // Replication configuration (used when cluster.replicas=true)
+        replication: {
+            coordinatorType: 'keeper', // 'keeper' (ClickHouse Keeper) or 'zookeeper'
+            zkPath: '/clickhouse/tables/{shard}/{database}/{table}',
+            replicaName: '{replica}'
+        },
+        // Parallel replicas configuration for query acceleration
+        // Only effective when cluster.replicas=true or cluster.isCloud=true
+        parallelReplicas: {
+            enabled: false, // Enable parallel replica queries
+            maxParallelReplicas: 2, // Number of replicas to use for parallel queries
+            clusterForParallelReplicas: null // null = auto-detect from cluster.name
+        },
+        // Distributed table configuration
+        distributed: {
+            writeThrough: true, // Write through distributed tables (not direct to local)
+            insertDistributedSync: true // Wait for data to be written to all shards
         }
     },
     /**
