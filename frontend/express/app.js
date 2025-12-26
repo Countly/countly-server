@@ -100,23 +100,79 @@ function setCountlyType(isFlexInstance) {
 
 /**
 * Check if my-countly plugin is enabled and set Countly type
+* @param {number} retryCount - Current retry attempt number
+* @param {number} maxRetries - Maximum number of retry attempts
 **/
-function checkCountlyType() {
+function checkCountlyType(retryCount, maxRetries) {
+    retryCount = retryCount || 0;
+    maxRetries = maxRetries || 5;
+    const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 10000); // Exponential backoff, max 10 seconds
+    const timeoutDuration = 10000; // 10 seconds timeout for each attempt
+    let timeoutId = null;
+    let isCompleted = false;
+
+    // Helper function to handle completion
+    function complete(success) {
+        if (isCompleted) return;
+        isCompleted = true;
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+        }
+        if (success) {
+            setCountlyType(IS_FLEX);
+        }
+    }
+
+    // Helper function to handle retry or failure
+    function handleFailure(reason) {
+        if (isCompleted) return;
+        console.log(reason);
+        if (retryCount < maxRetries) {
+            console.log(`Retrying checkCountlyType (attempt ${retryCount + 1}/${maxRetries}) after ${retryDelay}ms...`);
+            setTimeout(function() {
+                checkCountlyType(retryCount + 1, maxRetries);
+            }, retryDelay);
+        } else {
+            console.log('Max retries reached. Setting default Countly type.');
+            complete(false);
+        }
+    }
+
+    // Set timeout to catch cases where promise/callback never fires
+    timeoutId = setTimeout(function() {
+        if (!isCompleted) {
+            handleFailure('Timeout: Database connection or query did not complete within ' + timeoutDuration + 'ms');
+        }
+    }, timeoutDuration);
+
     try {
         plugins.dbConnection(countlyConfig).then(function(db) {
+            if (isCompleted) return;
+            
             db.collection('plugins').findOne({_id: 'plugins'}, (err, result) => {
+                if (isCompleted) return;
+
+                if (err) {
+                    handleFailure('Error while querying plugins collection: ' + err);
+                    return;
+                }
+
                 if (result && result.plugins && result.plugins['my-countly']) {
                     IS_FLEX = true;
                     console.log('Plugin status checked. Flex status:', IS_FLEX);
                 }
 
-                setCountlyType(IS_FLEX);
+                complete(true);
             });
+        }).catch(function(err) {
+            if (isCompleted) return;
+            handleFailure('Error while connecting to database: ' + err);
         });
     }
     catch (err) {
-        console.log('Error while checking my-countly plugin status:', err);
-        setCountlyType(IS_FLEX);
+        if (isCompleted) return;
+        handleFailure('Error while checking my-countly plugin status: ' + err);
     }
 }
 
