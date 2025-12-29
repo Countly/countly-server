@@ -1,4 +1,4 @@
-/* global app, countlyVue, CV, countlyGlobal, CountlyHelpers, $ */
+/* global app, countlyVue, CV, countlyGlobal, CountlyHelpers, $, countlyCommon */
 
 // if configuration view exists
 if (app.configurationsView) {
@@ -20,15 +20,17 @@ var TwoFAUser = countlyVue.views.create({
         return {
             TFAsettings: countlyGlobal.member.two_factor_auth,
             dataModal: {showDialog: false},
-            qrcode_html: $('<div>').html(countlyGlobal["2fa_qrcode_html"]).text(),
-            secret_token: countlyGlobal["2fa_secret_token"],
-            secret_code: ""
+            qrcode_html: null,
+            secret_token: null,
+            secret_code: null
         };
     },
     methods: {
         onChange: function(value) {
+            this.secret_code = null;
             if (value) {
                 this.dataModal.showDialog = true;
+                this.getQRCode();
             }
             else {
                 CountlyHelpers.confirm(
@@ -40,7 +42,7 @@ var TwoFAUser = countlyVue.views.create({
                         }
                         $.ajax({
                             type: "GET",
-                            url: countlyGlobal.path + "/i/two-factor-auth",
+                            url: countlyCommon.API_PARTS.data.w + "/two-factor-auth",
                             data: {
                                 method: "disable"
                             },
@@ -86,10 +88,10 @@ var TwoFAUser = countlyVue.views.create({
             var self = this;
             $.ajax({
                 type: "GET",
-                url: countlyGlobal.path + "/i/two-factor-auth",
+                url: countlyCommon.API_PARTS.data.w + "/two-factor-auth",
                 data: {
                     method: "enable",
-                    secret_token: countlyGlobal["2fa_secret_token"],
+                    secret_token: self.secret_token,
                     auth_code: self.secret_code
                 },
                 success: function() {
@@ -119,6 +121,40 @@ var TwoFAUser = countlyVue.views.create({
                         type: "error"
                     });
                     self.dataModal.showDialog = false;
+                }
+            });
+        },
+        getQRCode() {
+            this.qrcode_html = null;
+            this.secret_token = null;
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.w + '/two-factor-auth',
+                data: {
+                    method: "generate-qr-code",
+                    "countly-token": countlyGlobal.auth_token,
+                    "Content-Type": "application/json; charset=utf-8",
+                },
+                success: (data) => {
+                    this.qrcode_html = countlyCommon.unescapeHtml(data.qrCode);
+                    this.secret_token = data.secret;
+                },
+                error: (xhr) => {
+                    var errMessage = "";
+
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        errMessage = response.result || xhr.statusText;
+                    }
+                    catch (err) {
+                        errMessage = xhr.statusText;
+                    }
+
+                    CountlyHelpers.notify({
+                        title: $.i18n.map["two-factor-auth.failsetup_title"],
+                        message: $.i18n.prop("two-factor-auth.failsetup_message", errMessage),
+                        type: "error"
+                    });
                 }
             });
         }

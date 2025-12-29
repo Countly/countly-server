@@ -1,40 +1,13 @@
 var pluginObject = {},
     {authenticator: GA} = require("otplib"),
-    URL = require('url').URL,
-    qrcode = require("qrcode"),
     countlyConfig = require('../../../frontend/express/config'),
     plugins = require('../../pluginManager.js'),
     apiUtils = require("../../../api/utils/utils.js"),
     members = require("../../../frontend/express/libs/members.js"),
-    versionInfo = require("../../../frontend/express/version.info"),
     languages = require('../../../frontend/express/locale.conf'),
     preventBruteforce = require('../../../frontend/express/libs/preventBruteforce.js');
 
-/**
- @param {string} username - user identifier
- @param {string} secret - base32 encoded 2FA secret
- @param {function} callback - function to call with an error, if any, and a SVG string
- */
-function generateQRCode(username, secret, callback) {
-    var domain = versionInfo.company || versionInfo.title || "Countly";
-
-    if (domain === "Countly") {
-        try {
-            const apiURL = plugins.getConfig("api").domain;
-            if (apiURL) {
-                let parsedURL = new URL(apiURL);
-                domain = parsedURL.hostname;
-            }
-        }
-        catch (err) {
-            console.log(`Error parsing api URL: ${err}`);
-        }
-    }
-
-    qrcode.toString(GA.keyuri(username, domain, secret),
-        {type: "svg", color: {light: "#FFF0"}, errorCorrectionLevel: "L"},
-        callback);
-}
+const { generateQRCode } = require('../lib.js');
 
 (function(plugin) {
     plugin.init = function(app, countlyDb) {
@@ -81,7 +54,7 @@ function generateQRCode(username, secret, callback) {
                                 // everything is ok, let the user reset their password
                                 countlyDb.collection('password_reset').updateOne({prid: req.params.prid}, {$set: {two_factor_auth_passed: true}}, {}, function(passwordResetUpdateErr) {
                                     if (passwordResetUpdateErr) {
-                                        console.log(`Error setting 2FA pass for password reset: ${passwordResetUpdateErr}`);
+                                        console.error(`Error setting 2FA pass for password reset: ${passwordResetUpdateErr}`);
                                     }
                                     next();
                                 });
@@ -90,7 +63,7 @@ function generateQRCode(username, secret, callback) {
                                 // 2FA auth code was wrong, delete the password reset token
                                 countlyDb.collection('password_reset').deleteOne({prid: req.params.prid}, function(passwordResetDelErr) {
                                     if (passwordResetDelErr) {
-                                        console.log(`Error deleting password reset: ${passwordResetDelErr}`);
+                                        console.error(`Error deleting password reset: ${passwordResetDelErr}`);
                                     }
                                 });
                                 res.redirect(countlyConfig.path + '/forgot');
@@ -139,38 +112,36 @@ function generateQRCode(username, secret, callback) {
 
         // modify login flow
         app.post(countlyConfig.path + '/login', function(req, res, next) {
-            members.verifyCredentials(req.body.username, req.body.password, function(member) {
+            members.verifyCredentials(req.body.username, req.body.password, async function(member) {
                 // if member exists and 2fa is enabled globally or for the user
                 if (member && (member.two_factor_auth && member.two_factor_auth.enabled || plugins.getConfig("two-factor-auth").globally_enabled)) {
                     // if 2fa is not set up for the user
                     if ((member.two_factor_auth === undefined || member.two_factor_auth.secret_token === undefined) &&
                         (req.body.auth_code === undefined || req.body.secret_token === undefined)) {
                         const secretToken = GA.generateSecret();
-
-                        generateQRCode(member.username, secretToken, function(err, svg) {
-                            if (err) {
-                                console.log(`Error generating QR code: ${err}`);
-                                res.redirect(countlyConfig.path + "/login?message=two-factor-auth.login.error");
-                            }
-                            else {
-                                res.render("../../../plugins/two-factor-auth/frontend/public/templates/setup2fa", {
-                                    cdn: countlyConfig.cdn || "",
-                                    countlyFavicon: req.countly.favicon,
-                                    countlyPage: req.countly.page,
-                                    countlyTitle: req.countly.title,
-                                    csrf: req.csrfToken(),
-                                    inject_template: req.template,
-                                    languages: languages,
-                                    message: req.flash('info'),
-                                    path: countlyConfig.path || "",
-                                    themeFiles: req.themeFiles,
-                                    username: req.body.username || "",
-                                    password: req.body.password || "",
-                                    secret_token: secretToken,
-                                    qrcode_html: svg
-                                });
-                            }
-                        });
+                        try {
+                            const svg = await generateQRCode(member.username, secretToken, console.warn);
+                            res.render("../../../plugins/two-factor-auth/frontend/public/templates/setup2fa", {
+                                cdn: countlyConfig.cdn || "",
+                                countlyFavicon: req.countly.favicon,
+                                countlyPage: req.countly.page,
+                                countlyTitle: req.countly.title,
+                                csrf: req.csrfToken(),
+                                inject_template: req.template,
+                                languages: languages,
+                                message: req.flash('info'),
+                                path: countlyConfig.path || "",
+                                themeFiles: req.themeFiles,
+                                username: req.body.username || "",
+                                password: req.body.password || "",
+                                secret_token: secretToken,
+                                qrcode_html: svg
+                            });
+                        }
+                        catch (err) {
+                            console.error("Error generating QR code", err);
+                            res.redirect(countlyConfig.path + "/login?message=two-factor-auth.login.error");
+                        }
                     }
                     // else if user did not provide 2fa code (login flow first phase)
                     else if (!req.body.auth_code) {
@@ -208,7 +179,7 @@ function generateQRCode(username, secret, callback) {
                                         },
                                         function(enableErr) {
                                             if (enableErr) {
-                                                console.log(`Error enabling 2FA for ${member.username}: ${enableErr.message}`);
+                                                console.error(`Error enabling 2FA for ${member.username}: ${enableErr.message}`);
                                             }
                                             else {
                                                 plugins.callMethod("logAction", {req: req, res: res, user: member, action: "two_factor_auth_enabled", data: {}});
@@ -221,30 +192,29 @@ function generateQRCode(username, secret, callback) {
                             else {
                                 // 2fa is being set up
                                 if (req.body.secret_token) {
-                                    generateQRCode(member.username, req.body.secret_token, function(err, svg) {
-                                        if (err) {
-                                            console.log(`Error generating QR code: ${err}`);
-                                            res.redirect(countlyConfig.path + "/login?message=two-factor-auth.login.error");
-                                        }
-                                        else {
-                                            res.render("../../../plugins/two-factor-auth/frontend/public/templates/setup2fa", {
-                                                cdn: countlyConfig.cdn || "",
-                                                countlyFavicon: req.countly.favicon,
-                                                countlyPage: req.countly.page,
-                                                countlyTitle: req.countly.title,
-                                                csrf: req.csrfToken(),
-                                                inject_template: req.template,
-                                                languages: languages,
-                                                message: req.flash('info'),
-                                                path: countlyConfig.path || "",
-                                                themeFiles: req.themeFiles,
-                                                username: req.body.username || "",
-                                                password: req.body.password || "",
-                                                secret_token: req.body.secret_token,
-                                                qrcode_html: svg
-                                            });
-                                        }
-                                    });
+                                    try {
+                                        const svg = await generateQRCode(member.username, req.body.secret_token, console.warn);
+                                        res.render("../../../plugins/two-factor-auth/frontend/public/templates/setup2fa", {
+                                            cdn: countlyConfig.cdn || "",
+                                            countlyFavicon: req.countly.favicon,
+                                            countlyPage: req.countly.page,
+                                            countlyTitle: req.countly.title,
+                                            csrf: req.csrfToken(),
+                                            inject_template: req.template,
+                                            languages: languages,
+                                            message: req.flash('info'),
+                                            path: countlyConfig.path || "",
+                                            themeFiles: req.themeFiles,
+                                            username: req.body.username || "",
+                                            password: req.body.password || "",
+                                            secret_token: req.body.secret_token,
+                                            qrcode_html: svg
+                                        });
+                                    }
+                                    catch (err) {
+                                        console.error("Error generating QR code", err);
+                                        res.redirect(countlyConfig.path + "/login?message=two-factor-auth.login.error");
+                                    }
                                 }
                                 // 2fa is already set up
                                 else {
@@ -268,7 +238,7 @@ function generateQRCode(username, secret, callback) {
                             }
                         }
                         catch (verifyErr) {
-                            console.log(`Error verifying 2FA for ${member.username}: ${verifyErr.message}`);
+                            console.error(`Error verifying 2FA for ${member.username}: ${verifyErr.message}`);
                             res.redirect(countlyConfig.path + "/login?message=two-factor-auth.login.code");
                         }
                     }
@@ -284,19 +254,6 @@ function generateQRCode(username, secret, callback) {
     // these variables are passed to countly.views.js
     // therefore the view / vars are loaded in the existing countly window
     plugin.renderDashboard = function(params) {
-        var secretToken = GA.generateSecret();
-
-        params.data.countlyGlobal["2fa_secret_token"] = secretToken;
-
-        generateQRCode(params.data.countlyGlobal.member.username, secretToken, function(err, svg) {
-            if (err) {
-                console.log(`Error generating QR code: ${err}`);
-                params.data.countlyGlobal["2fa_qrcode_html"] = "<span>:(</span>";
-            }
-            else {
-                params.data.countlyGlobal["2fa_qrcode_html"] = svg;
-            }
-        });
         params.data.countlyGlobal["2fa_globally_enabled"] = !!plugins.getConfig("two-factor-auth").globally_enabled;
     };
 }(pluginObject));
