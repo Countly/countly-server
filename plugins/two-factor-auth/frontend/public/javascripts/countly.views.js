@@ -27,7 +27,6 @@ var TwoFAUser = countlyVue.views.create({
     },
     methods: {
         onChange: function(value) {
-            this.secret_code = null;
             if (value) {
                 this.dataModal.showDialog = true;
                 this.getQRCode();
@@ -127,6 +126,7 @@ var TwoFAUser = countlyVue.views.create({
         getQRCode() {
             this.qrcode_html = null;
             this.secret_token = null;
+            this.secret_code = null;
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.w + '/two-factor-auth',
