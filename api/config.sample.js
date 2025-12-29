@@ -33,7 +33,7 @@ var countlyConfig = {
                 enabled: true
             },
             clickhouse: {
-                enabled: false
+                enabled: true
             }
         },
         comparisonLogs: {
