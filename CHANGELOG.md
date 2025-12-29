@@ -3,6 +3,7 @@ Fixes:
 - [core] fixes for changeOwner script
 - [core] Add null checking for user permission when opening the dashboard
 - [core] Preserve URL hash during oauth
+- [2fa] Removed the secret and qr code from the dashboard response
 
 Enterprise Fixes:
 - [retention_segments] Adding null check for breakdown filtering
