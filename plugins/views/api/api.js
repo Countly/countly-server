@@ -1787,14 +1787,23 @@ const FEATURE_NAME = 'views';
                         dati[z].views = dati[z]._id;
                     }
 
-                    if (dati) {
-                        dati = {chartData: dati};
+                    if (dati && dati.length) {
+                        getUniqueValuesForTable(paramsObj, dati, function(ret) {
+                            var rows = ret && ret.data ? ret.data : dati;
+                            data.dashData = {
+                                isValid: true,
+                                data: {chartData: rows || []}
+                            };
+                            resolve();
+                        });
                     }
-                    data.dashData = {
-                        isValid: true,
-                        data: dati || { chartData: [] }
-                    };
-                    resolve();
+                    else {
+                        data.dashData = {
+                            isValid: true,
+                            data: dati || { chartData: [] }
+                        };
+                        resolve();
+                    }
                 });
             }
             else {
