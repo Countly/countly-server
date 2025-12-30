@@ -17,6 +17,7 @@ const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
 const tracker = require('./parts/mgmt/tracker.js');
+const { RateLimiterMemory } = require("rate-limiter-flexible");
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
@@ -119,6 +120,8 @@ plugins.connectToAllDatabases().then(function() {
         api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
         dashboard_rate_limit_window: 60,
         dashboard_rate_limit_requests: 500,
+        api_rate_limit_window: 0,
+        api_rate_limit_requests: 0,
         proxy_hostname: "",
         proxy_port: "",
         proxy_username: "",
@@ -375,6 +378,31 @@ plugins.connectToAllDatabases().then(function() {
         console.log("Starting worker", process.pid, "parent:", process.ppid);
         const taskManager = require('./utils/taskmanager.js');
 
+        const rateLimitWindow = parseInt(plugins.getConfig("security").api_rate_limit_window) || 0;
+        const rateLimitRequests = parseInt(plugins.getConfig("security").api_rate_limit_requests) || 0;
+        const rateLimiterInstance = new RateLimiterMemory({ points: rateLimitRequests, duration: rateLimitWindow });
+        const requiresRateLimiting = rateLimitWindow > 0 && rateLimitRequests > 0;
+        const omit = /^\/i(\?|$)/; // omit /i endpoint from rate limiting
+        /**
+         * Rate Limiting Middleware
+         * @param {Function} next - The next middleware function
+         * @returns {Function} - The wrapped middleware function with rate limiting
+         */
+        const rateLimit = (next) => {
+            if (!requiresRateLimiting) {
+                return next;
+            }
+            return (req, res) => {
+                if (omit.test(req.url)) {
+                    return next(req, res);
+                }
+                rateLimiterInstance
+                    .consume(common.getIpAddress(req))
+                    .then(() => next(req, res))
+                    .catch(() => common.returnMessage({ req, res, qstring: {} }, 429, "Too Many Requests"));
+            };
+        };
+
         common.cache = new CacheWorker();
         common.cache.start();
 
@@ -412,10 +440,10 @@ plugins.connectToAllDatabases().then(function() {
             if (common.config.api.ssl.ca) {
                 sslOptions.ca = fs.readFileSync(common.config.api.ssl.ca);
             }
-            server = https.createServer(sslOptions, handleRequest);
+            server = https.createServer(sslOptions, rateLimit(handleRequest));
         }
         else {
-            server = http.createServer(handleRequest);
+            server = http.createServer(rateLimit(handleRequest));
         }
 
         server.listen(serverOptions.port, serverOptions.host).timeout = common.config.api.timeout || 120000;
