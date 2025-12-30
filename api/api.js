@@ -378,8 +378,8 @@ plugins.connectToAllDatabases().then(function() {
         console.log("Starting worker", process.pid, "parent:", process.ppid);
         const taskManager = require('./utils/taskmanager.js');
 
-        const rateLimitWindow = parseInt(plugins.getConfig("security").api_rate_limit_window) || 0;
-        const rateLimitRequests = parseInt(plugins.getConfig("security").api_rate_limit_requests) || 0;
+        const rateLimitWindow = parseInt(plugins.getConfig("security").api_rate_limit_window, 10) || 0;
+        const rateLimitRequests = parseInt(plugins.getConfig("security").api_rate_limit_requests, 10) || 0;
         const rateLimiterInstance = new RateLimiterMemory({ points: rateLimitRequests, duration: rateLimitWindow });
         const requiresRateLimiting = rateLimitWindow > 0 && rateLimitRequests > 0;
         const omit = /^\/i(\?|$)/; // omit /i endpoint from rate limiting
