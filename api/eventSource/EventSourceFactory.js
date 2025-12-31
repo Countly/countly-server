@@ -98,6 +98,10 @@ class EventSourceFactory {
             log.d(`[${config.name}] Kafka disabled in configuration`);
             return false;
         }
+        if (!countlyConfig.eventSink?.sinks?.includes('kafka')) {
+            log.d(`[${config.name}] No Kafka event sink in configuration`);
+            return false;
+        }
         try {
             require.resolve('../../plugins/kafka/api/lib/KafkaConsumer');
             require.resolve('../../plugins/kafka/api/lib/kafkaClient');
