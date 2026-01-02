@@ -32,12 +32,12 @@ module.exports = defineConfig({
                     const data = new Uint8Array(fs.readFileSync(filePath));
                     const pdfDoc = await pdfjsLib.getDocument({ data }).promise;
 
-                    // Import pixelmatch only if logo check is needed
-                    let pixelmatch;
+                    // Import blazediff only if logo check is needed
+                    let blazediff;
                     const doLogoCheck = !!options.referenceLogoPath;
                     if (doLogoCheck) {
-                        const pm = await import("pixelmatch");
-                        pixelmatch = pm.default;
+                        const { diff } = await import("@blazediff/core");
+                        blazediff = diff;
                     }
 
                     let hasImage = false;
@@ -88,7 +88,7 @@ module.exports = defineConfig({
                                     const resizedPdfImg = PNG.sync.read(resizedPdfBuffer);
 
                                     const diff = new PNG({ width: refLogo.width, height: refLogo.height });
-                                    const mismatched = pixelmatch(
+                                    const mismatched = blazediff(
                                         refLogo.data,
                                         resizedPdfImg.data,
                                         diff.data,
