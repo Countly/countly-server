@@ -162,7 +162,8 @@ plugins.register("/i/data-manager/category/edit", function(ob) {
                 bulkArray.push({
                     'updateOne': {
                         'filter': {
-                            '_id': id
+                            '_id': id,
+                            app: appId
                         },
                         'update': {
                             '$set': {

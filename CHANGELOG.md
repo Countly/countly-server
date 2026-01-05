@@ -1,3 +1,42 @@
+## Version 25.03.XX
+Fixes:
+- [core] fixes for changeOwner script
+- [core] Add null checking for user permission when opening the dashboard
+- [core] Preserve URL hash during oauth
+- [core] Rate limiting for api endpoints
+- [2fa] Removed the secret and qr code from the dashboard response
+
+Enterprise Fixes:
+- [retention_segments] Adding null check for breakdown filtering
+- [data-masking] Correctly dealing with unexpected filter on event_data collection while masking
+- [profile-groups] Error handling on missing list on failed profile group report download
+
+Dependencies:
+- Bump @vitejs/plugin-vue from 6.0.1 to 6.0.2
+- Bump @vitejs/plugin-vue from 6.0.1 to 6.0.2
+- Bump @vue-flow/core from 1.47.0 to 1.48.0
+- Bump body-parser from 2.2.0 to 2.2.1
+- Bump countly-sdk-web from 25.4.1 to 25.4.2
+- Bump glob from 10.3.12 to 10.5.0
+- Bump js-yaml from 3.14.1 to 3.14.2
+- Bump js-yaml from 3.14.1 to 3.14.2
+- Bump js-yaml from 4.1.0 to 4.1.1
+- Bump jsonwebtoken from 9.0.2 to 9.0.3
+- Bump jsonwebtoken from 9.0.2 to 9.0.3
+- Bump jws from 3.2.2 to 3.2.3
+- Bump mocha from 11.7.4 to 11.7.5
+- Bump node-forge from 1.3.1 to 1.3.3
+- Bump nodemailer from 7.0.10 to 7.0.11
+- Bump sass from 1.93.3 to 1.94.2
+- Bump sass from 1.93.3 to 1.96.0
+- Bump sass-embedded from 1.93.3 to 1.96.0
+- Bump sharp from 0.34.4 to 0.34.5
+- Bump sharp from 0.34.4 to 0.34.5
+- Bump swiper from 11.2.10 to 12.0.3
+- Bump terser from 5.44.0 to 5.44.1
+- Bump vite from 7.1.12 to 7.2.7
+- Bump vue-i18n from 11.1.12 to 11.2.2
+
 ## Version 25.03.30
 Fixes:
 - [journeys] Save to profiile block implemented
