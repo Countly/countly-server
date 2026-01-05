@@ -952,6 +952,7 @@ async function getEventsDataForApp(params, apps, appId, widget) {
     var breakdowns = widget.breakdowns;
     var events = widget.events || [];
     var widgetData = {}, segment;
+    var limit = 10; // model.getTableData(segment, 10);
 
     switch (visualization) {
     case 'time-series':
@@ -976,6 +977,7 @@ async function getEventsDataForApp(params, apps, appId, widget) {
             var event = events[k].replace(appId + separator, "");
             var collection = "events" + crypto.createHash('sha1').update(event + appId).digest('hex');
             var model = await getEventsModel(params, apps, appId, collection, segment, event, widget);
+            var metrics = Array.isArray(widget.metrics) && widget.metrics.length ? widget.metrics : ["c", "s", "dur"];
 
             switch (visualization) {
             case 'time-series':
@@ -987,12 +989,9 @@ async function getEventsDataForApp(params, apps, appId, widget) {
 
                 break;
             case 'bar-chart':
-                widgetData[event] = model.getBars(segment, 10);
-
-                break;
             case 'table':
-                widgetData[event] = model.getTableData(segment, 10);
-
+                var segmentationData = await fetchSegmentedEventDataForWidget(params, apps, appId, event, segment, widget, limit, metrics);
+                widgetData[event] = segmentationData;
                 break;
             default:
                 break;
@@ -1233,6 +1232,70 @@ function getEventsModel(params, apps, appId, collection, segment, event, widget)
             return resolve(model);
         });
     });
+}
+
+/**
+ * Fetch segmented event data from Drill for events widget
+ * @param {Object} params - request params
+ * @param {Object} apps - apps map
+ * @param {string} appId - application id
+ * @param {string} event - event key
+ * @param {string} segment - segment name
+ * @param {Object} widget - widget definition
+ * @param {number} limit - max items to fetch
+ * @param {Array} metrics - metrics to fetch
+ * @returns {Promise<Array>} segment data
+ */
+async function fetchSegmentedEventDataForWidget(params, apps, appId, event, segment, widget, limit, metrics) {
+    if (!segment || segment === toSegment("no-segment")) {
+        return {
+            segment: segment,
+            metrics: metrics,
+            data: []
+        };
+    }
+    if (!common.drillQueryRunner || typeof common.drillQueryRunner.fetchAggregatedSegmentedEventData === "undefined") {
+        return {
+            segment: segment,
+            metrics: metrics,
+            data: []
+        };
+    }
+    try {
+        var timezone = (apps[appId] && apps[appId].timezone) || params.appTimezone || "UTC";
+        var period = widget.custom_period || params.qstring.period;
+        var offset = params.qstring && params.qstring.periodOffset ? parseInt(params.qstring.periodOffset) : undefined;
+        var tsRange = countlyCommon.getPeriodRange(period, timezone, offset);
+        var segmentationField = segment.indexOf("sg.") === 0 ? segment : "sg." + segment;
+        var drillRaw = await common.drillQueryRunner.fetchAggregatedSegmentedEventData({
+            apps: [appId + ""],
+            events: [event],
+            ts: tsRange,
+            segmentation: segmentationField,
+            limit: limit || 10
+        });
+        var drillData = Array.isArray(drillRaw) ? drillRaw : [];
+        var preparedDrillData = (drillData || []).map((item) => {
+            var data = Object.assign({}, item);
+            var segName = data.curr_segment || data._id || "";
+            data.curr_segment = countlyCommon.decode(segName);
+            delete data._id;
+            return data;
+        });
+        return {
+            segment: segment,
+            metrics: metrics,
+            data: preparedDrillData
+        };
+    }
+    catch (err) {
+        log.d("Error while fetching drill fallback data for events widget", err);
+        return {
+            segment: segment,
+            metrics: metrics,
+            data: []
+        };
+    }
 }
 
 /**
