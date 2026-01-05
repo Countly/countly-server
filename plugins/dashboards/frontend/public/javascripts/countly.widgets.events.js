@@ -39,30 +39,20 @@
                 return false;
             },
             getTableData: function() {
-                this.data = this.data || {};
-                var data = {"apps": [], dashData: {"data": {}}, "metrics": this.data.metrics, bar_color: this.data.bar_color};
-                if (this.data && this.data.dashData && this.data.dashData.data) { //Single app 
-                    for (var app in this.data.dashData.data) {
-                        for (var event in this.data.dashData.data[app]) {
-                            data.apps.push(app + event);
-                            data.dashData.data[app + event] = this.data.dashData.data[app][event];
+                var segmentationDataset = this.getSegmentationDataset();
+                if (segmentationDataset && Array.isArray(segmentationDataset.data)) {
+                    segmentationDataset.data.forEach(function(entry) {
+                        if (typeof entry.dur === "number") {
+                            entry.dur = countlyCommon.formatSecond(entry.dur);
                         }
-                    }
+                    });
+                    return segmentationDataset.data;
                 }
-                return this.calculateTableDataFromWidget(data);
+                return [];
             },
             tableStructure: function() {
-                this.data = this.data || {};
-                var data = {"apps": [], dashData: {"data": {}}, "metrics": this.data.metrics, bar_color: this.data.bar_color};
-                if (this.data && this.data.dashData && this.data.dashData.data) { //Single app 
-                    for (var app in this.data.dashData.data) {
-                        for (var event in this.data.dashData.data[app]) {
-                            data.apps.push(app + event);
-                            data.dashData.data[app + event] = this.data.dashData.data[app][event];
-                        }
-                    }
-                }
-                return this.calculateTableColsFromWidget(data, this.map);
+                var segmentationDataset = this.getSegmentationDataset();
+                return segmentationDataset && Array.isArray(segmentationDataset.data) ? this.buildSegmentationTableColumns(segmentationDataset) : [];
             },
             timelineGraph: function() {
                 this.data = this.data || {};
@@ -145,16 +135,8 @@
                 }
             },
             stackedBarOptions: function() {
-                this.data = this.data || {};
-                var data = {dashData: {"data": {}}, "metrics": this.data.metrics, bar_color: this.data.bar_color};
-                if (this.data && this.data.dashData && this.data.dashData.data) { //Single app 
-                    for (var app in this.data.dashData.data) {
-                        for (var event in this.data.dashData.data[app]) {
-                            data.dashData.data[app + event] = this.data.dashData.data[app][event];
-                        }
-                    }
-                }
-                return this.calculateStackedBarOptionsFromWidget(data, this.map);
+                var segmentationDataset = this.getSegmentationDataset();
+                return segmentationDataset && Array.isArray(segmentationDataset.data) ? this.buildSegmentationBarOptions(segmentationDataset) : null;
             },
             number: function() {
                 var eventsObj = this.calculateNumberFromWidget(this.data);
@@ -197,6 +179,68 @@
         methods: {
             refresh: function() {
                 this.refreshNotes();
+            },
+            formatDuration: function(value) {
+                return countlyCommon.formatSecond(value || 0);
+            },
+            getSegmentationDataset: function() {
+                if (!this.data || !this.data.dashData || !this.data.dashData.data) {
+                    return null;
+                }
+                var appIds = Object.keys(this.data.dashData.data);
+                if (!appIds.length) {
+                    return null;
+                }
+                var firstApp = appIds[0];
+                var events = Object.keys(this.data.dashData.data[firstApp] || {});
+                if (!events.length) {
+                    return null;
+                }
+                var dataset = this.data.dashData.data[firstApp][events[0]];
+                if (dataset && Array.isArray(dataset.data)) {
+                    return dataset;
+                }
+                return null;
+            },
+            buildSegmentationTableColumns: function(dataset) {
+                dataset = dataset || {};
+                var metrics = Array.isArray(dataset.metrics) ? dataset.metrics : [];
+                var columns = [{
+                    prop: "curr_segment",
+                    title: CV.i18n("events.table.segmentation")
+                }];
+                for (var i = 0; i < metrics.length; i++) {
+                    var metricKey = metrics[i];
+                    var columnType = metricKey === "dur" ? "duration" : "number";
+                    columns.push({
+                        prop: metricKey,
+                        title: this.map[metricKey] || metricKey,
+                        type: columnType
+                    });
+                }
+                return columns;
+            },
+            buildSegmentationBarOptions: function(dataset) {
+                dataset = dataset || {};
+                var metrics = Array.isArray(dataset.metrics) ? dataset.metrics : [];
+                var metricKey = metrics.length ? metrics[0] : "c";
+                var labels = [];
+                var values = [];
+                if (Array.isArray(dataset.data)) {
+                    dataset.data.forEach(function(entry) {
+                        labels.push(entry.curr_segment || "");
+                        values.push(entry[metricKey] || 0);
+                    });
+                }
+                var series = [{
+                    name: this.map[metricKey] || metricKey,
+                    data: values,
+                    color: this.data.bar_color
+                }];
+                return {
+                    xAxis: {data: labels},
+                    series: series
+                };
             },
             onWidgetCommand: function(event) {
                 if (event === 'add' || event === 'manage' || event === 'show') {
