@@ -382,7 +382,7 @@ plugins.connectToAllDatabases().then(function() {
         const rateLimitRequests = parseInt(plugins.getConfig("security").api_rate_limit_requests, 10) || 0;
         const rateLimiterInstance = new RateLimiterMemory({ points: rateLimitRequests, duration: rateLimitWindow });
         const requiresRateLimiting = rateLimitWindow > 0 && rateLimitRequests > 0;
-        const omit = /^\/i(\?|$)/; // omit /i endpoint from rate limiting
+        const omit = /^\/i(\/bulk)?(\?|$)/; // omit /i endpoint from rate limiting
         /**
          * Rate Limiting Middleware
          * @param {Function} next - The next middleware function
@@ -396,10 +396,14 @@ plugins.connectToAllDatabases().then(function() {
                 if (omit.test(req.url)) {
                     return next(req, res);
                 }
+                const ip = common.getIpAddress(req);
                 rateLimiterInstance
-                    .consume(common.getIpAddress(req))
+                    .consume(ip)
                     .then(() => next(req, res))
-                    .catch(() => common.returnMessage({ req, res, qstring: {} }, 429, "Too Many Requests"));
+                    .catch(() => {
+                        log.w(`Rate limit exceeded for IP: ${ip}`);
+                        common.returnMessage({ req, res, qstring: {} }, 429, "Too Many Requests");
+                    });
             };
         };
 
