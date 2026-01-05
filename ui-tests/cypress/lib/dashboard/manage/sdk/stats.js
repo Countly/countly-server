@@ -12,6 +12,8 @@ const verifyStaticElementsOfPage = () => {
         labelText: "SDK stats",
     });
 
+    cy.checkPaceRunning();
+    cy.checkPaceActive();
     cy.scrollPageToTop();
 
     cy.verifyElement({

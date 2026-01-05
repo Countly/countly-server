@@ -147,10 +147,6 @@ function request(url, method, conf) {
     let opts = {}, proto;
     try {
         let u = new URL(url);
-        opts.host = u.hostname;
-        opts.port = u.port;
-        opts.path = u.pathname;
-        opts.protocol = u.protocol;
         proto = u.protocol.substring(0, u.protocol.length - 1);
         if (!protos[proto]) {
             return new Error('Invalid protocol in url ' + url);
@@ -161,7 +157,7 @@ function request(url, method, conf) {
     }
     catch (e) {
         log.e('Failed to parse media URL', e);
-        opts = {method, url};
+        opts = {method};
         proto = url.substr(0, url.indexOf(':'));
     }
 
@@ -175,9 +171,7 @@ function request(url, method, conf) {
         });
         opts.agent = new Agent();
     }
-
-    opts.url = url;
-    return protos[proto].request(opts);
+    return protos[proto].request(url, opts);
 }
 
 

@@ -46,7 +46,7 @@ const sessionDurationsDataTableElements = (index = 0) => ({
 
     //Columns' Rows' Datas Elements 
     SESSION_DURATION: 'datatable-session-durations-session-duration-' + index,
-    NUMBER_OF_SESSIONS: 'datatable-session-durations-session-duration-' + index,
+    NUMBER_OF_SESSIONS: 'datatable-session-durations-number-of-sessions-' + index,
     PERCENT_VALUE: 'datatable-session-durations-percent-' + index,
     PERCENT_PROGRESS_BAR: 'datatable-session-durations-progress-bar-' + index,
 
