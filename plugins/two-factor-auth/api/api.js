@@ -150,16 +150,16 @@ plugins.register("/i/two-factor-auth", function(ob) {
         });
         break;
     case "generate-qr-code":
-        validateUser(ob.params, async function() {
-            try {
-                var secret = GA.generateSecret();
-                const qrCode = await generateQRCode(ob.params.member.username, secret, log.w);
-                common.returnOutput(ob.params, { secret, qrCode });
-            }
-            catch (err) {
-                log.e("Error generating QR code", err);
-                common.returnMessage(ob.params, 500, "Error generating QR code");
-            }
+        validateUser(ob.params, function() {
+            var secret = GA.generateSecret();
+            generateQRCode(ob.params.member.username, secret, log.w)
+                .then((qrCode) => {
+                    common.returnOutput(ob.params, { secret, qrCode });
+                })
+                .catch((err) => {
+                    log.e("Error generating QR code", err);
+                    common.returnMessage(ob.params, 500, "Error generating QR code");
+                });
         });
         break;
     default:
