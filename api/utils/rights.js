@@ -1162,8 +1162,8 @@ exports.hasAdminAccess = function(member, app_id, type) {
         var passesAllRules = true;
         for (var i = 0; i < types.length; i++) {
             if (member.permission[types[i]] && member.permission[types[i]][app_id]) {
-                if(!member.permission[types[i]][app_id].all) {
-                   passesAllRules = false;
+                if (!member.permission[types[i]][app_id].all) {
+                    passesAllRules = false;
                 }
             }
             else {
