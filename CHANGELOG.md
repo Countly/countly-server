@@ -3,6 +3,7 @@ Fixes:
 - [core] fixes for changeOwner script
 - [core] Add null checking for user permission when opening the dashboard
 - [core] Preserve URL hash during oauth
+- [core] Rate limiting for api endpoints
 
 Enterprise Fixes:
 - [retention_segments] Adding null check for breakdown filtering
@@ -29,7 +30,7 @@ Dependencies:
 - Bump sass from 1.93.3 to 1.96.0
 - Bump sass-embedded from 1.93.3 to 1.96.0
 - Bump sharp from 0.34.4 to 0.34.5
-- Bump sharp from 0.34.4 to 0.34.5 
+- Bump sharp from 0.34.4 to 0.34.5
 - Bump swiper from 11.2.10 to 12.0.3
 - Bump terser from 5.44.0 to 5.44.1
 - Bump vite from 7.1.12 to 7.2.7
