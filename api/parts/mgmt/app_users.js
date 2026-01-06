@@ -756,7 +756,7 @@ usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_i
     * @param {object} mergeOptions - options provided by plugins for merging
     */
     function mergeUserData(newAppUserP, oldAppUser, mergeOptions) {
-        //allow plugins to deal with user mergin properties
+        //allow plugins to deal with user merging properties
         plugins.dispatch("/i/user_merge", {
             app_id: app_id,
             newAppUser: newAppUserP,
@@ -835,10 +835,10 @@ usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_i
                 results: results
             }, async function() {
                 var mergeOptions = {};
-                //We don't have any suggested routes for merging. Mergw by old logic
+                //We don't have any suggested routes for merging. Merge by old logic
                 if (results.length === 0 || (results[0] && results[0].error)) {
                     if (results[0] && results[0].error) {
-                        log.e("error");
+                        log.e("Error while suggesting merged UID: " + JSON.stringify(results[0].error));
                     }
                 }
                 else {
