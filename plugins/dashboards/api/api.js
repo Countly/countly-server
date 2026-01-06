@@ -1206,17 +1206,17 @@ plugins.setConfigs("dashboards", {
             }
 
             //Filter out app_ids that current users does not have access to
-            if(widget.apps && Array.isArray(widget.apps)){
+            if (widget.apps && Array.isArray(widget.apps)) {
                 var user_apps = getUserApps(params.member) || [];
                 var admin_apps = getAdminApps(params.member) || [];
                 widget.apps = widget.apps.filter(appId => {
-                    if(params.member.global_admin){
+                    if (params.member.global_admin) {
                         return true;
                     }
-                    else if(user_apps && user_apps.indexOf(appId) !== -1){
+                    else if (user_apps && user_apps.indexOf(appId) !== -1) {
                         return true;
                     }
-                    else if(admin_apps && admin_apps.indexOf(appId) !== -1){
+                    else if (admin_apps && admin_apps.indexOf(appId) !== -1) {
                         return true;
                     }
                     return false;
@@ -1306,17 +1306,17 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
             //Filter out app_ids that current users does not have access to
-            if(widget.apps && Array.isArray(widget.apps)){
+            if (widget.apps && Array.isArray(widget.apps)) {
                 var user_apps = getUserApps(params.member) || [];
                 var admin_apps = getAdminApps(params.member) || [];
                 widget.apps = widget.apps.filter(appId => {
-                    if(params.member.global_admin){
+                    if (params.member.global_admin) {
                         return true;
                     }
-                    else if(user_apps && user_apps.indexOf(appId) !== -1){
+                    else if (user_apps && user_apps.indexOf(appId) !== -1) {
                         return true;
                     }
-                    else if(admin_apps && admin_apps.indexOf(appId) !== -1){
+                    else if (admin_apps && admin_apps.indexOf(appId) !== -1) {
                         return true;
                     }
                     return false;
