@@ -117,6 +117,7 @@ function sha512Hash(str, addSalt) {
  * @param {Function} callback | Callback function
  */
 function verifyMemberArgon2Hash(username, password, countlyDb, callback) {
+    console.log("verifying", username, password);
     var emailVal = null;
     if (username && typeof username === 'string') {
         emailVal = username.toString().toLocaleLowerCase();
@@ -126,8 +127,11 @@ function verifyMemberArgon2Hash(username, password, countlyDb, callback) {
     }
     countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": emailVal}]}]}, (err, member) => {
         if (member) {
+            console.log("member found");
             if (isArgon2Hash(member.password)) {
+                console.log("hash is argon");
                 verifyArgon2Hash(member.password, password).then(match => {
+                    console.log("password verified", match);
                     if (match) {
                         callback(undefined, member);
                     }
@@ -139,6 +143,7 @@ function verifyMemberArgon2Hash(username, password, countlyDb, callback) {
                 });
             }
             else {
+                console.log("hash is not argon2");
                 var password_SHA1 = sha1Hash(password);
                 var password_SHA5 = sha512Hash(password);
 
@@ -156,6 +161,7 @@ function verifyMemberArgon2Hash(username, password, countlyDb, callback) {
             }
         }
         else {
+            console.log("member not found");
             callback("Username is wrong!");
         }
     });
