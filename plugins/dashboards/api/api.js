@@ -12,7 +12,7 @@ var pluginOb = {},
     localize = require('../../../api/utils/localization.js'),
     async = require('async'),
     mail = require("../../../api/parts/mgmt/mail"),
-    { validateUser, getAdminApps, getUserApps } = require('../../../api/utils/rights.js');
+    { validateUser, getUserApps, getAdminApps} = require('../../../api/utils/rights.js');
 
 var ejs = require("ejs");
 
