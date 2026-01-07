@@ -11,6 +11,7 @@ pluginManager.dbConnection().then(async(db) => {
                     'api.metric_changes': '',
                     'flows.maxSamplingSize': '',
                     'flows.samplingThreshold': '',
+                    'drill.custom_property_limit':'',
                     'push.rate': '',
                     'push.deduplicate': '',
                     'push.sendahead': '',
