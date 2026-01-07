@@ -247,6 +247,7 @@ var countlyConfig = {
             saslMechanism: null, // SASL mechanism (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512, GSSAPI)
             saslUsername: null, // SASL username for authentication
             saslPassword: null, // SASL password for authentication
+            saslAuthenticationTimeout: 10000, // Timeout for SASL authentication handshake in milliseconds (default: 10 seconds)
 
             // Common producer settings
             lingerMs: 5, // Time to wait for more messages before sending batch (default: 5ms)
@@ -254,22 +255,6 @@ var countlyConfig = {
             initialRetryTime: 100, // Initial retry backoff time in milliseconds (default: 100ms)
             maxRetryTime: 30000, // Maximum retry backoff time in milliseconds (default: 30 seconds)
             acks: -1 // Acknowledgment level (-1: all replicas, 1: leader only, 0: no acks) - WARNING: 0=no wait (data loss if broker fails), 1=leader only (data loss if leader fails before replication)
-        },
-
-        // Producer-specific settings (handled by KafkaProducer)
-        producer: {
-            // Batch size controls for throughput optimization
-            batchSize: 1048576, // Maximum batch size in bytes (default: 1MB)
-            batchNumMessages: 10000, // Maximum number of messages per batch (default: 10,000)
-
-            // Queue buffering for high throughput
-            queueBufferingMaxMessages: 100000, // Maximum messages to buffer in producer queue (default: 100,000)
-            queueBufferingMaxKbytes: 1048576, // Maximum memory for buffering in KB (default: 1GB)
-
-            // Compression and timeouts
-            compressionLevel: 1, // LZ4 compression level 1-12 (default: 1, balanced speed/compression)
-            messageTimeoutMs: 300000, // Maximum time to deliver a message in milliseconds (default: 5 minutes) - WARNING: Too low causes data loss when message drops after timeout
-            deliveryTimeoutMs: 300000 // Total time for delivery including retries in milliseconds (default: 5 minutes) - WARNING: Too low causes data loss when all retries exhausted
         },
 
         // Consumer-specific settings (handled by KafkaConsumer)
@@ -289,15 +274,19 @@ var countlyConfig = {
 
             // Consumer group settings (conservative defaults to reduce rebalancing)
             sessionTimeoutMs: 60000, // Consumer session timeout in milliseconds (default: 60 seconds) - WARNING: Too low causes rebalances, potentially losing in-flight messages
-            heartbeatInterval: 10000, // Heartbeat interval in milliseconds (default: 10 seconds, should be ~1/6 of sessionTimeout)
-            rebalanceTimeout: 120000, // Rebalance timeout in milliseconds (default: 2 minutes)
-            maxPollIntervalMs: 600000, // Maximum time between polls in milliseconds (default: 10 minutes) - WARNING: Too low causes consumer to be kicked out, losing uncommitted offsets
+            heartbeatIntervalMs: 10000, // Heartbeat interval in milliseconds (default: 10 seconds, should be ~1/6 of sessionTimeout)
+            rebalanceTimeoutMs: 120000, // Rebalance timeout in milliseconds (default: 2 minutes)
+            maxPollIntervalMs: 300000, // Maximum time between polls in milliseconds (default: 5 minutes) - WARNING: Too low causes consumer to be kicked out, losing uncommitted offsets
             autoOffsetReset: 'earliest', // Where to start reading when no offset exists (latest/earliest)
             enableAutoCommit: false, // Disable auto-commit for exactly-once processing (default: false) - WARNING: true can cause data loss on consumer crash before processing
 
             // Error handling settings
             invalidJsonBehavior: "skip", // How to handle invalid JSON messages: 'skip' or 'fail' (default: skip)
-            invalidJsonMetrics: true // Whether to log metrics for invalid JSON messages (default: true)
+            invalidJsonMetrics: true, // Whether to log metrics for invalid JSON messages (default: true)
+
+            // Metadata and rack-aware settings
+            metadataMaxAge: 300000, // How often to refresh topic/partition metadata in milliseconds (default: 5 minutes)
+            rackId: null // Rack ID for rack-aware consumption (follower fetching). null = disabled
         }
     },
 
@@ -317,7 +306,7 @@ var countlyConfig = {
     * - sinks: ['mongo', 'kafka'] - Write to both in parallel
     */
     eventSink: {
-        sinks: ['mongo'], // Default: MongoDB only. Add 'kafka' for dual writes
+        sinks: ['kafka'], // Default: Kafka only. Add 'mongo' for dual writes
     },
 
     /**
