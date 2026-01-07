@@ -1,15 +1,15 @@
-## Version 25.03.XX
+## Version 25.03.31
 Fixes:
-- [core] fixes for changeOwner script
 - [core] Add null checking for user permission when opening the dashboard
+- [core] fixes for changeOwner script
 - [core] Preserve URL hash during oauth
 - [core] Rate limiting for api endpoints
 - [2fa] Removed the secret and qr code from the dashboard response
 
 Enterprise Fixes:
-- [retention_segments] Adding null check for breakdown filtering
 - [data-masking] Correctly dealing with unexpected filter on event_data collection while masking
 - [profile-groups] Error handling on missing list on failed profile group report download
+- [retention_segments] Adding null check for breakdown filtering
 
 Dependencies:
 - Bump @vitejs/plugin-vue from 6.0.1 to 6.0.2
