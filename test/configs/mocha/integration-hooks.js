@@ -82,7 +82,8 @@ const TEST_PORTS = {
     NGINX: 10080 + PORT_OFFSET,
     API: 13001 + PORT_OFFSET,
     FRONTEND: 16001 + PORT_OFFSET,
-    INGESTOR: 13010 + PORT_OFFSET
+    INGESTOR: 13010 + PORT_OFFSET,
+    JOBSERVER: 13020 + PORT_OFFSET
 };
 
 // Countly services to start
@@ -250,11 +251,11 @@ function generateNginxConfig() {
 
     config = config.replace(/\{\{INGESTOR_PORT\}\}/g, TEST_PORTS.INGESTOR.toString());
     config = config.replace(/\{\{API_PORT\}\}/g, TEST_PORTS.API.toString());
-    config = config.replace(/\{\{JOBSERVER_PORT\}\}/g, (13020 + PORT_OFFSET).toString());
+    config = config.replace(/\{\{JOBSERVER_PORT\}\}/g, TEST_PORTS.JOBSERVER.toString());
     config = config.replace(/\{\{FRONTEND_PORT\}\}/g, TEST_PORTS.FRONTEND.toString());
 
     fs.writeFileSync(outputPath, config);
-    console.log(`[test-setup-hooks] Generated nginx config with ports: API=${TEST_PORTS.API}, Frontend=${TEST_PORTS.FRONTEND}, Ingestor=${TEST_PORTS.INGESTOR}`);
+    console.log(`[test-setup-hooks] Generated nginx config with ports: API=${TEST_PORTS.API}, Frontend=${TEST_PORTS.FRONTEND}, Ingestor=${TEST_PORTS.INGESTOR}, JobServer=${TEST_PORTS.JOBSERVER}`);
 }
 
 /**
@@ -402,6 +403,60 @@ function captureDockerLogs() {
 }
 
 /**
+ * Run install_plugins.js to ensure all plugins are properly installed
+ * This runs for ALL plugins regardless of which test suite is being run
+ * Uses env-cmd to set the correct test environment variables
+ */
+async function runInstallPlugins() {
+    console.log('[test-setup-hooks] Running install_plugins.js for all plugins...');
+    return new Promise((resolve, reject) => {
+        const proc = spawn('npx', [
+            'env-cmd', '-r', ENV_RC_FILE, '-e', `base,${TEST_SUITE}`,
+            'node', '--preserve-symlinks', '--preserve-symlinks-main',
+            'bin/scripts/install_plugins.js', '--force'
+        ], {
+            cwd: CORE_DIR,
+            stdio: ['pipe', 'pipe', 'pipe'],
+            env: { ...process.env, NODE_ENV: 'development' }
+        });
+
+        let stdout = '';
+        let stderr = '';
+
+        proc.stdout.on('data', (data) => {
+            stdout += data.toString();
+            // Print progress dots
+            process.stdout.write('.');
+        });
+
+        proc.stderr.on('data', (data) => {
+            stderr += data.toString();
+        });
+
+        proc.on('close', (code) => {
+            console.log(''); // New line after dots
+            if (code === 0) {
+                console.log('[test-setup-hooks] install_plugins.js completed successfully');
+                resolve();
+            }
+            else {
+                console.error('[test-setup-hooks] install_plugins.js failed with code:', code);
+                console.error('[test-setup-hooks] stdout:', stdout);
+                console.error('[test-setup-hooks] stderr:', stderr);
+                // Don't reject - allow tests to continue even if install fails
+                // Some plugins may not have install scripts
+                resolve();
+            }
+        });
+
+        proc.on('error', (err) => {
+            console.error('[test-setup-hooks] Failed to run install_plugins.js:', err.message);
+            resolve(); // Don't reject - allow tests to continue
+        });
+    });
+}
+
+/**
  * Initialize test database with required documents
  * Creates plugins document needed by tests
  * Clears members collection for clean setup tests (unless plugin tests)
@@ -476,7 +531,7 @@ function startCountlyServices() {
         // Use env-cmd with rc file: base environment + suite-specific overrides
         const proc = spawn('npx', [
             'env-cmd', '-r', ENV_RC_FILE, '-e', `base,${TEST_SUITE}`,
-            'node', '--max-old-space-size=512', '--preserve-symlinks', '--preserve-symlinks-main', script
+            'node', '--preserve-symlinks', '--preserve-symlinks-main', script
         ], {
             cwd: CORE_DIR,
             stdio: ['pipe', 'pipe', 'pipe'],
@@ -805,6 +860,14 @@ async function waitForCountlyIngestor() {
     await waitForPort(TEST_PORTS.INGESTOR, 'Ingestor', 90);
 }
 
+/**
+ * Wait for Countly JobServer to be ready
+ */
+async function waitForJobServer() {
+    console.log('[test-setup-hooks] Waiting for Countly JobServer to be ready...');
+    await waitForPort(TEST_PORTS.JOBSERVER, 'JobServer', 90);
+}
+
 // Mocha root hooks
 exports.mochaHooks = {
     async beforeAll() {
@@ -819,6 +882,10 @@ exports.mochaHooks = {
             // Initialize test database with plugins document
             initializeTestDatabase();
 
+            // Run install_plugins.js for ALL plugins (regardless of test suite)
+            // This ensures all plugins are properly installed before tests run
+            await runInstallPlugins();
+
             // Wait for Kafka transaction coordinator to be fully ready BEFORE starting Countly services
             // The broker reports healthy before the coordinator is loaded, causing producer init failures
             console.log('[test-setup-hooks] Waiting 10s for Kafka transaction coordinator to stabilize...');
@@ -831,6 +898,7 @@ exports.mochaHooks = {
             await waitForCountlyAPI();
             await waitForCountlyFrontend();
             await waitForCountlyIngestor();
+            await waitForJobServer();
 
             // Wait for Nginx to be ready (entry point)
             await waitForNginx();
