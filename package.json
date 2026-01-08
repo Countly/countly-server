@@ -17,11 +17,6 @@
     "test": "grunt --verbose",
     "prepare": "husky"
   },
-  "lint-staged": {
-    "*.{js,vue}": [
-      "eslint --fix --no-quiet"
-    ]
-  },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^3.1.0",
     "docdash": "^2.0.1",

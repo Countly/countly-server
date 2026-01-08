@@ -1,0 +1,5 @@
+{
+  "*.{js,vue}": [
+    "eslint --fix --no-quiet"
+  ]
+}
