@@ -119,13 +119,16 @@
                     rows: [],
                     isEmitting: false,
 
-                    // To-do: vue-scroll will be added later and below state will be used for it
-                    // scrollOps: {
-                    //     vuescroll: {},
-                    //     scrollPanel: { initialScrollX: false },
-                    //     rail: { gutterOfSide: '1px', gutterOfEnds: '15px' },
-                    //     bar: { background: '#A7AEB8', size: '6px', specifyBorderRadius: '3px', keepShow: false }
-                    // }
+                    scrollOps: {
+                        vuescroll: {},
+                        scrollPanel: {
+                            initialScrollX: false,
+                            scrollingX: false,
+                            scrollingY: true
+                        },
+                        rail: { gutterOfSide: '1px', gutterOfEnds: '15px' },
+                        bar: { background: '#A7AEB8', size: '6px', specifyBorderRadius: '3px', keepShow: false }
+                    }
                 };
             },
             created() {
@@ -164,6 +167,7 @@
                 addRow() {
                     this.rows.push(this.makeEmptyRow());
                     this.emitModelChange();
+                    this.scrollToBottom();
                 },
                 onDeleteRow(id) {
                     const i = this.rows.findIndex(r => r.id === id);
@@ -205,6 +209,14 @@
                         value: '',
                         conjunction: 'AND'
                     };
+                },
+                scrollToBottom() {
+                    const scroller = this.$refs.filterScroll;
+                    if (scroller && typeof scroller.scrollTo !== 'undefined') {
+                        this.$nextTick(() => {
+                            scroller.scrollTo({ y: '100%' }, 300);
+                        });
+                    }
                 }
             }
         });
@@ -294,17 +306,29 @@
                     },
                     onReady: function(context, rows) {
                         if (rows.length) {
-                            self.projectionOptions = Object.keys(rows[0]).sort();
-                            self.projectionOptions = self.projectionOptions.map(function(item) {
+                            var isCH = self.isClickhouseDbSelected === true;
+                            var baseKeys = Object.keys(rows[0]).filter(function(k) {
+                                return k !== "_view";
+                            });
+                            var sortedKeys = baseKeys.slice().sort();
+                            var filterKeys = sortedKeys.filter(function(k) {
+                                if (!isCH) {
+                                    return true;
+                                }
+                                var val = rows[0][k];
+                                var isNestedField = val && typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date);
+                                return !isNestedField;
+                            });
+                            self.projectionOptions = sortedKeys.map(function(item) {
                                 return {
                                     "label": item,
                                     "value": item
                                 };
                             });
-                            self.filterFields = self.projectionOptions.map(function(item) {
+                            self.filterFields = filterKeys.map(function(item) {
                                 return {
-                                    "label": item.label,
-                                    "value": item.value
+                                    "label": item,
+                                    "value": item
                                 };
                             });
                         }
@@ -521,8 +545,12 @@
                     this.projectionEnabled = formData.projectionEnabled;
                     // query
                     if (this.isClickhouseDbSelected) {
-                        this.queryFilterObj = formData.filterObj || { rows: [] };
-                        if (this.queryFilterObj && Array.isArray(this.queryFilterObj.rows) && this.queryFilterObj.rows.length) {
+                        var chRows = (formData.filterObj && Array.isArray(formData.filterObj.rows)) ? formData.filterObj.rows : [];
+                        var sanitizedRows = chRows.filter(function(r) {
+                            return r && r.field && r.operator;
+                        });
+                        this.queryFilterObj = sanitizedRows.length ? { rows: sanitizedRows } : { rows: [] };
+                        if (sanitizedRows.length) {
                             this.queryFilter = JSON.stringify(this.queryFilterObj);
                         }
                         else {
@@ -561,16 +589,23 @@
                     app.navigate("#/manage/db/" + this.localDb + "/" + this.selectedCollection);
                     this.fetch(true);
                 },
+                getActiveFilterFormRef: function() {
+                    return this.isClickhouseDbSelected ? this.$refs.dbviewerChFilterForm : this.$refs.dbviewerFilterForm;
+                },
                 clearFilters: function() {
-                    this.$refs.dbviewerFilterForm.editedObject.projectionEnabled = false;
-                    this.$refs.dbviewerFilterForm.editedObject.sortEnabled = false;
-                    this.$refs.dbviewerFilterForm.editedObject.projection = null;
-                    this.$refs.dbviewerFilterForm.editedObject.sort = null;
-                    this.$refs.dbviewerFilterForm.editedObject.filter = null;
-                    this.$refs.dbviewerFilterForm.editedObject.filterObj = { rows: [] };
+                    var blank = {
+                        filter: null,
+                        filterObj: { rows: [] },
+                        projectionEnabled: false,
+                        projection: [],
+                        sortEnabled: false,
+                        sort: ""
+                    };
                     this.isDescentSort = false;
-                    this.queryFilter = null;
-                    this.queryFilterObj = { rows: [] };
+                    var activeForm = this.getActiveFilterFormRef();
+                    if (activeForm && activeForm.editedObject) {
+                        Object.assign(activeForm.editedObject, blank);
+                    }
                 },
                 fetch: function(force) {
                     this.isRefresh = false;
@@ -593,7 +628,6 @@
                         sort = JSON.stringify(this.preparedSortObject);
                     }
                     var apiQueryData = {
-                        api_key: countlyGlobal.member.api_key,
                         app_id: countlyCommon.ACTIVE_APP_ID,
                         //filename: "DBViewer" + moment().format("DD-MMM-YYYY"), - using passed filename from form
                         projection: JSON.stringify(this.preparedProjectionFields),
@@ -602,11 +636,16 @@
                         collection: this.localCollection,
                         db: this.localDb,
                         url: "/o/export/db",
-                        get_index: this.index
+                        get_index: this.index,
+                        api_key: countlyGlobal.member.api_key
                     };
                     return apiQueryData;
                 },
                 refresh: function(force) {
+                    var isAnyFilterOpen = (this.formDialogs && ((this.formDialogs.queryFilter && this.formDialogs.queryFilter.isOpened) || (this.formDialogs.clickhouseQueryFilter && this.formDialogs.clickhouseQueryFilter.isOpened)));
+                    if (isAnyFilterOpen) {
+                        return;
+                    }
                     this.isRefresh = true;
                     this.fetch(force);
                     this.isExpanded = true;
@@ -646,7 +685,7 @@
             },
             computed: {
                 dbviewerAPIEndpoint: function() {
-                    var url = '/db?api_key=' + countlyGlobal.member.api_key + '&app_id=' + countlyCommon.ACTIVE_APP_ID + '&dbs=' + this.localDb + '&collection=' + this.localCollection;
+                    var url = '/db?app_id=' + countlyCommon.ACTIVE_APP_ID + '&dbs=' + this.localDb + '&collection=' + this.localCollection;
                     if (this.queryFilter) {
                         url += '&filter=' + encodeURIComponent(this.queryFilter);
                     }

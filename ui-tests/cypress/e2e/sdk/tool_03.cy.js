@@ -14,6 +14,6 @@ describe('3.Success tooltip (latest Web SDK version)', () => {
     });
     it('3.3-Test', function() {
         goToConfigTab(true);
-        checkTooltipAppears('success');
+        checkTooltipAppears('success', 28);
     });
 });

@@ -3,14 +3,7 @@ var plugin = {},
     log = common.log('compliance-hub:ingestor'),
     plugins = require('../../pluginManager.js');
 
-const FEATURE_NAME = 'compliance_hub';
-
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
-    plugins.internalDrillEvents.push("[CLY]_consent");
 
     //write api call
     plugins.register("/sdk/process_user", function(ob) {
@@ -29,44 +22,48 @@ const FEATURE_NAME = 'compliance_hub';
             }
 
             var update = {};
-            var changes = {};
-            var after = JSON.parse(JSON.stringify(params.app_user.consent));
-            var metrics = {i: false, o: false};
-            for (var i in params.qstring.consent) {
-                //check if we already dont have that setting
-                after[i] = params.qstring.consent[i];
-                if (params.app_user.consent[i] !== params.qstring.consent[i]) {
-                    //record only changes
-                    update["consent." + i] = params.qstring.consent[i];
-                    changes[i] = params.qstring.consent[i];
-                    if (params.qstring.consent[i]) {
-                        metrics.i = true;
+            var hasIn = false;
+            var hasOut = false;
+            var stateSegmentation = {};
+            Object.keys(params.app_user.consent).forEach(function(k) {
+                stateSegmentation[k + "_bf"] = String(params.app_user.consent[k]);
+            });
+
+            Object.keys(params.qstring.consent).forEach(function(k2) {
+                var prevVal = params.app_user.consent[k2];
+                var currVal = params.qstring.consent[k2];
+                stateSegmentation[k2 + "_bf"] = (prevVal === null || typeof prevVal === "undefined") ? null : String(prevVal);
+                stateSegmentation[k2] = String(currVal);
+                if (prevVal !== currVal) {
+                    update["consent." + k2] = currVal;
+                    if (currVal) {
+                        hasIn = true;
                     }
                     else {
-                        metrics.o = true;
+                        hasOut = true;
                     }
                 }
-            }
+            });
 
             if (Object.keys(update).length) {
                 var type = [];
-                if (metrics.i) {
+                ob.updates.push({$set: update});
+                if (hasIn) {
                     type.push("i");
                 }
-                if (metrics.o) {
+                if (hasOut) {
                     type.push("o");
                 }
                 if (type.length === 1) {
-                    type = type[0];
+                    stateSegmentation._type = type[0];
                 }
-                ob.updates.push({$set: update});
-                changes._type = type;
-
+                else if (type.length > 1) {
+                    stateSegmentation._type = type;
+                }
                 params.qstring.events.push({
                     key: "[CLY]_consent",
                     count: 1,
-                    segmentation: changes,
-                    bf: JSON.parse(JSON.stringify(params.app_user.consent))
+                    segmentation: stateSegmentation
                 });
             }
         }

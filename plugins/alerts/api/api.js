@@ -84,6 +84,10 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
 
         validateCreate(params, FEATURE_NAME, function() {
             let alertConfig = params.qstring.alert_config;
+            if (!alertConfig) {
+                common.returnMessage(params, 400, 'Missing alert_config');
+                return;
+            }
             try {
                 alertConfig = JSON.parse(alertConfig);
                 var checkProps = {
@@ -101,8 +105,13 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
                     const id = alertConfig._id;
                     delete alertConfig._id;
                     alertConfig.createdBy = params.member._id;
+                    var query = { _id: common.db.ObjectID(id) };
+                    //If not global admin, limit update to own alerts only
+                    if (params.member.global_admin !== true) {
+                        query.createdBy = params.member._id;
+                    }
                     return common.db.collection("alerts").findAndModify(
-                        { _id: common.db.ObjectID(id) },
+                        query,
                         {},
                         {$set: alertConfig},
                         function(err, result) {
@@ -151,13 +160,26 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
         validateUpdate(params, FEATURE_NAME, function() {
             let alertID = params.qstring.alertID;
             try {
+                var query = { "_id": common.db.ObjectID(alertID) };
+                //If not global admin, limit delete to own alerts only
+                if (params.member.global_admin !== true) {
+                    query.createdBy = params.member._id;
+                }
                 common.db.collection("alerts").remove(
-                    { "_id": common.db.ObjectID(alertID) },
+                    query,
                     function(err, result) {
                         log.d(err, result, "delete an alert");
                         if (!err) {
-                            notifyAlertProcessor();
-                            common.returnMessage(params, 200, "Deleted an alert");
+                            if (result && result.deletedCount > 0) {
+                                notifyAlertProcessor();
+                                common.returnMessage(params, 200, "Deleted an alert");
+                            }
+                            else {
+                                common.returnMessage(params, 400, "Alert to delete not found. Make sure alert exists and you have rights to delete it.");
+                            }
+                        }
+                        else {
+                            common.returnMessage(params, 500, "Failed to delete an alert");
                         }
                     }
                 );
@@ -190,9 +212,14 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
             }
             const batch = [];
             for (const alertID in statusList) {
+                var qquery = { _id: common.db.ObjectID(alertID) };
+                //If not global admin, limit status change to own alerts only
+                if (params.member.global_admin !== true) {
+                    qquery.createdBy = params.member._id;
+                }
                 batch.push(
                     common.db.collection("alerts").findAndModify(
-                        { _id: common.db.ObjectID(alertID) },
+                        qquery,
                         {},
                         { $set: { enabled: statusList[alertID] } },
                         { new: false, upsert: false }

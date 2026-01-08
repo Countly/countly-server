@@ -14,6 +14,6 @@ describe('8.Success tooltip (latest iOS SDK version)', () => {
     });
     it('8.3-Test', function() {
         goToConfigTab(true);
-        checkTooltipAppears('success');
+        checkTooltipAppears('success', 28);
     });
 });

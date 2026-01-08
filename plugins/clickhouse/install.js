@@ -1,0 +1,1 @@
+console.log("ClickHouse plugin installed successfully");

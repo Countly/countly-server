@@ -5,6 +5,7 @@ var common = require('../utils/common.js');
 //const { DataBatchReader } = require('../parts/data/dataBatchReader');
 const plugins = require('../../plugins/pluginManager.js');
 var usage = require('./usage.js');
+var moment = require('moment');
 const log = require('../utils/log.js')('aggregator-core:api');
 const {WriteBatcher} = require('../parts/data/batcher.js');
 const {Cacher} = require('../parts/data/cacher.js');
@@ -116,7 +117,7 @@ var crypto = require('crypto');
             }
         });
         try {
-            for await (const {token, events} of eventSource) {
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     // Process each event in the batch
                     for (const currEvent of events) {
@@ -125,9 +126,9 @@ var crypto = require('crypto');
                             await usage.processEventTotalsFromStream(token, currEvent, common.manualWriteBatcher);
                         }
                     }
-                    common.manualWriteBatcher.flush("countly", "events_data");
+                    await common.manualWriteBatcher.flush("countly", "events_data");
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Event processing error:', err);
@@ -152,7 +153,7 @@ var crypto = require('crypto');
             }
         });
         try {
-            for await (const {token, events} of eventSource) {
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     for (var k = 0; k < events.length; k++) {
                         if (events[k].e === "[CLY]_session_begin" && events[k].a) {
@@ -170,7 +171,7 @@ var crypto = require('crypto');
                     }
                     await common.manualWriteBatcher.flush("countly", "users");
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Event processing error:', err);
@@ -195,7 +196,7 @@ var crypto = require('crypto');
             }
         });
         try {
-            for await (const {token, events} of eventSource) {
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     for (var k = 0; k < events.length; k++) {
                         if (events[k].e === "[CLY]_session" && events[k].a) {
@@ -205,8 +206,8 @@ var crypto = require('crypto');
                                 if (app) {
                                     var dur = 0;
                                     dur = events[k].dur || 0;
-
                                     await usage.processSessionDurationRange(writeBatcher, token, dur, events[k].did, {"app_id": events[k].a, "app": app, "time": common.initTimeObj(app.timezone, events[k].ts), "appTimezone": (app.timezone || "UTC")});
+                                    await usage.processViewCount(writeBatcher, token, events[k]?.up_extra?.vc, events[k].did, {"app_id": events[k].a, "app": app, "time": common.initTimeObj(app.timezone, events[k].ts), "appTimezone": (app.timezone || "UTC")});
 
                                 }
                             }
@@ -215,9 +216,9 @@ var crypto = require('crypto');
                             }
                         }
                     }
-                    await common.manualWriteBatcher.flush("countly", "users");
+                    await writeBatcher.flush("countly", "users");
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Event processing error:', err);
@@ -305,7 +306,7 @@ var crypto = require('crypto');
 
     //Processing event meta
     plugins.register("/aggregator", async function() {
-        var drillMetaCache = new Cacher(common.drillDb);
+        var drillMetaCache = new Cacher(common.drillDb, {configs_db: common.db}); //Used for Apps info
         const eventSource = new UnifiedEventSource('drill-meta', {
             mongo: {
                 db: common.drillDb,
@@ -331,12 +332,13 @@ var crypto = require('crypto');
             }
         });
         try {
-            for await (const {/*token,*/ events} of eventSource) {
+            // eslint-disable-next-line no-unused-vars
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     await reloadConfig(); //reloads configs if needed.
                     // Process each event in the batch
                     var updates = {};
-                    //Should sort before by event 
+                    //Should sort before by event
                     for (var z = 0; z < events.length; z++) {
                         if (events[z].a && events[z].e) {
                             if (events[z].e === "[CLY]_property_update") {
@@ -355,18 +357,28 @@ var crypto = require('crypto');
                             var meta = await drillMetaCache.getOne("drill_meta", {_id: events[z].a + "_meta_" + event_hash});
                             var app_id = events[z].a;
                             if ((!meta || !meta._id) && !updates[app_id + "_meta_" + event_hash]) {
+                                var lts = Date.now();
                                 updates[app_id + "_meta_" + event_hash] = {
                                     _id: app_id + "_meta_" + event_hash,
                                     app_id: events[z].a,
                                     e: events[z].e,
-                                    type: "e"
+                                    type: "e",
+                                    lts: lts
                                 };
                                 meta = {
                                     _id: app_id + "_meta_" + event_hash,
                                     app_id: events[z].a,
                                     e: events[z].e,
-                                    type: "e"
+                                    type: "e",
+                                    lts: lts
                                 };
+                            }
+
+                            if (!meta.lts || moment(Date.now()).isAfter(moment(meta.lts), 'day')) {
+                                var lts2 = Date.now();
+                                updates[app_id + "_meta_" + event_hash] = updates[app_id + "_meta_" + event_hash] || {};
+                                updates[app_id + "_meta_" + event_hash].lts = lts2;
+                                meta.lts = lts2;
                             }
                             for (var sgk in events[z].sg) {
                                 if (!meta.sg || !meta.sg[sgk]) {
@@ -432,7 +444,7 @@ var crypto = require('crypto');
                         await common.drillDb.collection("drill_meta").bulkWrite(bulkOps);
                     }
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Event processing error:', err);

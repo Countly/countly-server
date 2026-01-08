@@ -77,6 +77,7 @@ var pluginManager = function pluginManager() {
      * @type {{collection: string, db: mongodb.Db, property: string, expireAfterSeconds: number}[]}
      */
     this.ttlCollections = [];
+    this.ttlCollections.push({"db": "countly", "collection": "drill_data_cache", "expireAfterSeconds": 600, "property": "lu"});
     /**
      *  Custom configuration files for different databases for docker env
      */
@@ -291,10 +292,6 @@ var pluginManager = function pluginManager() {
             for (let i = 0, l = pluginNames.length; i < l; i++) {
                 fullPluginsMap[pluginNames[i]] = true;
             }
-
-            if (err) {
-                console.log(err);
-            }
             if (!err) {
                 res = res || {};
                 for (let ns in configsOnchanges) {
@@ -382,12 +379,39 @@ var pluginManager = function pluginManager() {
     * @param {function} onchange - function to call when configurations change
     **/
     this.setConfigs = function(namespace, conf, exclude, onchange) {
+        // Apply environment variable overrides before setting defaults
+        var processedConf = {};
+        for (let key in conf) {
+            if (!Object.prototype.hasOwnProperty.call(conf, key)) {
+                continue;
+            }
+            // Check for environment variable: COUNTLY_SETTINGS__NAMESPACE__KEY
+            var envVarName = 'COUNTLY_SETTINGS__' + namespace.toUpperCase() + '__' + key.toUpperCase();
+            if (process.env[envVarName] !== undefined) {
+                var envValue = process.env[envVarName];
+                // Try to parse as JSON first (for objects, arrays, booleans, numbers)
+                try {
+                    processedConf[key] = JSON.parse(envValue);
+                }
+                catch (e) {
+                    // If parsing fails, use as string
+                    processedConf[key] = envValue;
+                }
+            }
+            else {
+                processedConf[key] = conf[key];
+            }
+        }
+
         if (!defaultConfigs[namespace]) {
-            defaultConfigs[namespace] = conf;
+            defaultConfigs[namespace] = processedConf;
         }
         else {
-            for (let i in conf) {
-                defaultConfigs[namespace][i] = conf[i];
+            for (let i in processedConf) {
+                if (!Object.prototype.hasOwnProperty.call(processedConf, i)) {
+                    continue;
+                }
+                defaultConfigs[namespace][i] = processedConf[i];
             }
         }
         if (exclude) {
@@ -920,11 +944,23 @@ var pluginManager = function pluginManager() {
 
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             try {
-                var plugin = require("./" + pluginNames[i] + "/frontend/app");
-                plugs.push({'name': pluginNames[i], "plugin": plugin});
-                app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
-                if (plugin.staticPaths) {
-                    plugin.staticPaths(app, countlyDb, express);
+                //Require init_config if it exists
+                var initConfigPath = path.resolve(__dirname, pluginNames[i] + "/api/init_configs.js");
+                if (fs.existsSync(initConfigPath)) {
+                    require(initConfigPath);
+                }
+                var appPath = path.resolve(__dirname, pluginNames[i] + "/frontend/app.js");
+                let plugin;
+                if (fs.existsSync(appPath)) {
+                    plugin = require(appPath);
+                    plugs.push({'name': pluginNames[i], "plugin": plugin});
+                    app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
+                    if (plugin.staticPaths) {
+                        plugin.staticPaths(app, countlyDb, express);
+                    }
+                }
+                else {
+                    app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
                 }
             }
             catch (ex) {
@@ -1883,7 +1919,12 @@ var pluginManager = function pluginManager() {
         require('../api/utils/countlyFs').setHandler(dbFs);
         common.drillDb = dbDrill;
 
-
+        try {
+            common.db.collection("drill_data_cache").createIndex({lu: 1});
+        }
+        catch (err) {
+            console.log('Plugin Manager: Failed to create index on drill_data_cache collection for lu field:', err);
+        }
         var self = this;
         await new Promise(function(resolve) {
             self.loadConfigs(common.db, function() {
@@ -2068,10 +2109,19 @@ var pluginManager = function pluginManager() {
             await client.connect();
         }
         catch (ex) {
+            var safeDbName = dbName;
+            var start = dbName.indexOf("://") + 3;
+            var end = dbName.indexOf("@", start);
+            if (end > -1 && start > 3) {
+                var middle = dbName.indexOf(":", start);
+                if (middle > -1 && middle < end) {
+                    safeDbName = dbName.substring(0, middle) + ":*****" + dbName.substring(end);
+                }
+            }
             logDbRead.e("Error connecting to database", ex);
             logDbRead.e("With params %j", {
                 db: db_name,
-                connection: dbName,
+                connection: safeDbName,
                 options: dbOptions
             });
             //exit to retry to reconnect on restart

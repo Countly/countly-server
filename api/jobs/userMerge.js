@@ -30,7 +30,7 @@ var handleMerges = function(db, callback) {
     }
     paralel_cn = Math.max(1, paralel_cn);
 
-    var date = Math.round(new Date().getTime() / 1000) - 60;
+    var date = Math.round(new Date().getTime() / 1000) - 1;//ar least one second old merges
     var limit = 100;
     if (paralel_cn && paralel_cn > limit) {
         limit = paralel_cn;
@@ -165,7 +165,7 @@ var handleMerges = function(db, callback) {
                         if (err0) {
                             log.e(err0);
                         }
-                        db.collection("metric_changes" + app_id).update({uid: olduid}, {'$set': {uid: usersApi.merged_to}}, {multi: true}, function(err7) {
+                        db.collection("metric_changes" + app_id).update({uid: olduid}, {'$set': {uid: user.merged_to}}, {multi: true}, function(err7) {
                             if (err7) {
                                 log.e("Failed metric changes update in app_users merge", err7);
                             }

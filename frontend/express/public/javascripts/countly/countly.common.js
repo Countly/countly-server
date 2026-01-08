@@ -170,11 +170,25 @@
             store.set("countly_date", period);
         };
         /* Returns strings representing dates, not timestamps*/
-        countlyCommon.getPeriodAsDateStrings = function() {
+        countlyCommon.getPeriodAsDateStrings = function(passed_period) {
             var array = [];
-            if (Array.isArray(_period)) {
+            var splitted;
+            if (passed_period) {
+                if (Array.isArray(passed_period)) {
+                    var periodObj = countlyCommon.calcSpecificPeriodObj(passed_period);
+                    splitted = periodObj.currentPeriodArr[0].split(".");
+                    array.push(splitted[2] + "-" + splitted[1] + "-" + splitted[0] + " 00:00:00");
+                    splitted = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
+                    array.push(splitted[2] + "-" + splitted[1] + "-" + splitted[0] + " 23:59:59");
+                    return JSON.stringify(array);
+                }
+                else {
+                    return passed_period;
+                }
+            }
+            else if (Array.isArray(_period)) {
                 if (countlyCommon.periodObj.currentPeriodArr && countlyCommon.periodObj.currentPeriodArr.length > 0) {
-                    var splitted = countlyCommon.periodObj.currentPeriodArr[0].split(".");
+                    splitted = countlyCommon.periodObj.currentPeriodArr[0].split(".");
                     array.push(splitted[2] + "-" + splitted[1] + "-" + splitted[0] + " 00:00:00");
                     splitted = countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1].split(".");
                     array.push(splitted[2] + "-" + splitted[1] + "-" + splitted[0] + " 23:59:59");

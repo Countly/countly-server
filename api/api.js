@@ -16,44 +16,25 @@ const moment = require("moment");
 const tracker = require('./parts/mgmt/tracker.js');
 require("./init_configs.js");
 
-// EXTENSIVE DEBUGGING - Print configuration
-console.log('=== COUNTLY API STARTUP DEBUG ===');
-console.log('Process ENV SERVICE_TYPE:', process.env.SERVICE_TYPE);
-console.log('Config loaded:', !!countlyConfig);
-console.log('Config keys:', Object.keys(countlyConfig));
-console.log('Full config:', JSON.stringify(countlyConfig, null, 2));
-console.log('API config:', JSON.stringify(countlyConfig.api, null, 2));
-console.log('MongoDB config:', JSON.stringify(countlyConfig.mongodb, null, 2));
-console.log('ClickHouse config:', JSON.stringify(countlyConfig.clickhouse, null, 2));
-console.log('Logging config:', JSON.stringify(countlyConfig.logging, null, 2));
-console.log('=== END CONFIG DEBUG ===');
-
 var granuralQueries = require('./parts/queries/coreAggregation.js');
 
 //Add deletion manager endpoint
 require('./utils/mutationManager.js');
+const { RateLimiterMemory } = require("rate-limiter-flexible");
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
 
-console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
-console.log('=== DATABASE CONFIG CHECK ===');
-console.log('countlyConfig.mongodb:', JSON.stringify(countlyConfig.mongodb, null, 2));
-console.log('frontendConfig.mongodb:', JSON.stringify(frontendConfig.mongodb, null, 2));
+log.i("Starting Countly", "version", versionInfo.version, "package", pack.version);
 if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
     log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
-    console.log('WARNING: Database configs do not match!');
 }
-console.log('=== END DATABASE CONFIG CHECK ===');
 
 // Finaly set the visible title
 process.title = t.join(' ');
 
-console.log('=== CONNECTING TO DATABASES ===');
 plugins.connectToAllDatabases().then(function() {
-    console.log('✓ Database connection successful');
-    console.log('common.db available:', !!common.db);
-    console.log('common.drillDb available:', !!common.drillDb);
+    log.d('Database connection successful');
 
     plugins.loadConfigs(common.db, function() {
         tracker.enable();
@@ -62,21 +43,36 @@ plugins.connectToAllDatabases().then(function() {
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);
     common.queryRunner = new QueryRunner();
-    console.log('✓ Batchers and QueryRunner initialized');
 
     common.drillQueryRunner = granuralQueries;
     if (common.drillDb) {
-        common.drillReadBatcher = new ReadBatcher(common.drillDb);
-        console.log('✓ Drill database components initialized');
+        common.drillReadBatcher = new ReadBatcher(common.drillDb, {configs_db: common.db});
     }
 
     /**
      * Set Max Sockets
      */
-    console.log('=== SETTING MAX SOCKETS ===');
-    console.log('countlyConfig.api.max_sockets:', countlyConfig.api.max_sockets);
     http.globalAgent.maxSockets = countlyConfig.api.max_sockets || 1024;
-    console.log('✓ Max sockets set to:', http.globalAgent.maxSockets);
+
+    // mutation manager default settings
+    [
+        { key: 'max_retries', value: 3 },
+        { key: 'retry_delay_ms', value: 30 * 60 * 1000 },
+        { key: 'validation_interval_ms', value: 3 * 60 * 1000 },
+        { key: 'stale_ms', value: 24 * 60 * 60 * 1000 },
+        { key: 'batch_limit', value: 10 }
+    ].forEach(item => {
+        const path = `mutation_manager.${item.key}`;
+        const update = {};
+        update[path] = item.value;
+        common.db.collection('plugins').updateOne(
+            { _id: 'plugins', [path]: { $exists: false } },
+            { $set: update }
+        ).catch(e => {
+            const message = `Failed to add mutation_manager default for ${item.key}: ${e}`;
+            log && log.e ? log.e(message) : console.log(message);
+        });
+    });
 
     if (common.queryRunner && typeof common.queryRunner.isAdapterAvailable === 'function' && common.queryRunner.isAdapterAvailable('clickhouse')) {
         common.db.collection('plugins').updateOne(
@@ -97,15 +93,9 @@ plugins.connectToAllDatabases().then(function() {
     }
 
     /**
-     * Initialize Plugins
-     */
-    console.log('=== INITIALIZING PLUGINS ===');
-
-    /**
     * Initialize Plugins
     */
     plugins.init();
-    console.log('✓ Plugins initialized');
 
     /**
      *  Trying to gracefully handle the batch state
@@ -189,7 +179,6 @@ plugins.connectToAllDatabases().then(function() {
         }
     });
 
-
     plugins.installMissingPlugins(common.db);
     const taskManager = require('./utils/taskmanager.js');
     //since process restarted mark running tasks as errored
@@ -197,17 +186,42 @@ plugins.connectToAllDatabases().then(function() {
 
     plugins.dispatch("/master", {}); // init hook
 
-    console.log('=== CREATING SERVER ===');
-    console.log('common.config.api:', JSON.stringify(common.config.api, null, 2));
+    const rateLimitWindow = parseInt(plugins.getConfig("security").api_rate_limit_window, 10) || 0;
+    const rateLimitRequests = parseInt(plugins.getConfig("security").api_rate_limit_requests, 10) || 0;
+    const rateLimiterInstance = new RateLimiterMemory({ points: rateLimitRequests, duration: rateLimitWindow });
+    const requiresRateLimiting = rateLimitWindow > 0 && rateLimitRequests > 0;
+    const omit = /^\/i(\/bulk)?(\?|$)/; // omit /i endpoint from rate limiting
+    /**
+     * Rate Limiting Middleware
+     * @param {Function} next - The next middleware function
+     * @returns {Function} - The wrapped middleware function with rate limiting
+     */
+    const rateLimit = (next) => {
+        if (!requiresRateLimiting) {
+            return next;
+        }
+        return (req, res) => {
+            if (omit.test(req.url)) {
+                return next(req, res);
+            }
+            const ip = common.getIpAddress(req);
+            rateLimiterInstance
+                .consume(ip)
+                .then(() => next(req, res))
+                .catch(() => {
+                    log.w(`Rate limit exceeded for IP: ${ip}`);
+                    common.returnMessage({ req, res, qstring: {} }, 429, "Too Many Requests");
+                });
+        };
+    };
+
     const serverOptions = {
         port: common.config.api.port,
         host: common.config.api.host || ''
     };
-    console.log('Server options:', serverOptions);
 
     let server;
     if (common.config.api.ssl && common.config.api.ssl.enabled) {
-        console.log('Creating HTTPS server with SSL');
         const sslOptions = {
             key: fs.readFileSync(common.config.api.ssl.key),
             cert: fs.readFileSync(common.config.api.ssl.cert)
@@ -215,35 +229,23 @@ plugins.connectToAllDatabases().then(function() {
         if (common.config.api.ssl.ca) {
             sslOptions.ca = fs.readFileSync(common.config.api.ssl.ca);
         }
-        server = https.createServer(sslOptions, handleRequest);
+        server = https.createServer(sslOptions, rateLimit(handleRequest));
     }
     else {
-        console.log('Creating HTTP server');
-        server = http.createServer(handleRequest);
+        server = http.createServer(rateLimit(handleRequest));
     }
 
-    console.log('Starting server on', serverOptions.host + ':' + serverOptions.port);
     server.listen(serverOptions.port, serverOptions.host, () => {
-        console.log('✓ Server listening on', serverOptions.host + ':' + serverOptions.port);
+        log.i('Server listening on', serverOptions.host + ':' + serverOptions.port);
     });
 
     server.timeout = common.config.api.timeout || 120000;
     server.keepAliveTimeout = common.config.api.timeout || 120000;
-    server.headersTimeout = (common.config.api.timeout || 120000) + 1000; // Slightly higher
-    console.log('✓ Server timeouts configured:', {
-        timeout: server.timeout,
-        keepAliveTimeout: server.keepAliveTimeout,
-        headersTimeout: server.headersTimeout
-    });
+    server.headersTimeout = (common.config.api.timeout || 120000) + 1000;
 
-
-    console.log('=== LOADING PLUGIN CONFIGS ===');
     plugins.loadConfigs(common.db);
-    console.log('✓ Plugin configs loaded');
-    console.log('=== API STARTUP COMPLETE ===');
 }).catch(function(error) {
-    console.error('❌ DATABASE CONNECTION FAILED:', error);
-    console.error('Error details:', error.stack);
+    log.e('Database connection failed:', error);
     process.exit(1);
 });
 

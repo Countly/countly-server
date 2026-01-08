@@ -196,22 +196,10 @@ export interface CountlyFrontendConfig {
   [key: string]: any;
 }
 
-/** Kafka producer configuration */
+/** Kafka producer configuration - Producer settings are handled via rdkafka config */
 export interface KafkaProducerConfig {
-  /** Maximum batch size in bytes */
-  batchSize?: number; // default: 1048576 (1MB)
-  /** Maximum number of messages per batch */
-  batchNumMessages?: number; // default: 10000
-  /** Maximum messages to buffer in producer queue */
-  queueBufferingMaxMessages?: number; // default: 100000
-  /** Maximum memory for buffering in KB */
-  queueBufferingMaxKbytes?: number; // default: 1048576 (1GB)
-  /** LZ4 compression level 1-12 */
-  compressionLevel?: number; // default: 1
-  /** Maximum time to deliver a message in milliseconds */
-  messageTimeoutMs?: number; // default: 300000 (5 minutes)
-  /** Total time for delivery including retries in milliseconds */
-  deliveryTimeoutMs?: number; // default: 300000 (5 minutes)
+  // Producer-specific configs removed - KafkaJS handles batching internally
+  // Use rdkafka.lingerMs, rdkafka.acks, rdkafka.retries for producer settings
 }
 
 /** Kafka consumer configuration */
@@ -231,17 +219,25 @@ export interface KafkaConsumerConfig {
   /** Number of partitions to consume concurrently per process */
   partitionsConsumedConcurrently?: number; // default: 4
   /** Consumer session timeout in milliseconds */
-  sessionTimeoutMs?: number; // default: 30000
+  sessionTimeoutMs?: number; // default: 60000
+  /** Heartbeat interval in milliseconds (should be ~1/6 of sessionTimeout) */
+  heartbeatIntervalMs?: number; // default: 10000
+  /** Rebalance timeout in milliseconds */
+  rebalanceTimeoutMs?: number; // default: 120000
   /** Maximum time between polls in milliseconds */
   maxPollIntervalMs?: number; // default: 300000 (5 minutes)
   /** Where to start reading when no offset exists */
-  autoOffsetReset?: "latest" | "earliest"; // default: "latest"
+  autoOffsetReset?: "latest" | "earliest"; // default: "earliest"
   /** Disable auto-commit for exactly-once processing */
   enableAutoCommit?: boolean; // default: false
   /** How to handle invalid JSON messages */
   invalidJsonBehavior?: "skip" | "fail"; // default: "skip"
   /** Whether to log metrics for invalid JSON messages */
   invalidJsonMetrics?: boolean; // default: true
+  /** How often to refresh topic/partition metadata in milliseconds */
+  metadataMaxAge?: number; // default: 300000 (5 minutes)
+  /** Rack ID for rack-aware consumption (follower fetching) */
+  rackId?: string | null; // default: null (disabled)
 }
 
 /** Kafka rdkafka (librdkafka) configuration */
@@ -262,6 +258,8 @@ export interface KafkaRdkafkaConfig {
   saslUsername?: string | null;
   /** SASL password for authentication */
   saslPassword?: string | null;
+  /** Timeout for SASL authentication handshake in milliseconds */
+  saslAuthenticationTimeout?: number; // default: 10000
   /** Time to wait for more messages before sending batch */
   lingerMs?: number; // default: 5
   /** Number of retries for failed requests */
@@ -308,6 +306,71 @@ export interface EventSinkConfig {
   sinks?: Array<"mongo" | "kafka">; // default: ["mongo"]
 }
 
+/** ClickHouse dictionary configuration */
+export interface ClickHouseDictionaryConfig {
+  /** Enable MongoDB as a dictionary source (requires mongodb driver) */
+  enableMongoDBSource?: boolean; // default: true
+  /** Native TCP port for dictionary connections (use 9440 for Cloud with TLS) */
+  nativePort?: number; // default: 9000
+  /** Override host for dictionary connections (defaults to ClickHouse URL host) */
+  host?: string | null; // default: null
+  /** Enable TLS for dictionary connections (required for ClickHouse Cloud) */
+  secure?: boolean; // default: false
+}
+
+/** ClickHouse identity configuration for user merging and dictionary data retention */
+export interface ClickHouseIdentityConfig {
+  /** Number of days after which identity mappings are baked into cold partitions */
+  daysOld?: number; // default: 30
+  /** Dictionary cache lifetime settings */
+  lifetime?: {
+    /** Minimum dictionary cache lifetime in seconds */
+    min?: number; // default: 60
+    /** Maximum dictionary cache lifetime in seconds */
+    max?: number; // default: 120
+  };
+}
+
+/** ClickHouse cluster configuration */
+export interface ClickHouseClusterConfig {
+  /** Cluster name (must match ClickHouse cluster config) */
+  name?: string; // default: "countly_cluster"
+  /** Enable sharding (horizontal scaling across multiple shards) */
+  shards?: boolean; // default: false
+  /** Enable replication (high availability with multiple replicas) */
+  replicas?: boolean; // default: false
+  /** ClickHouse Cloud mode (skip DDL, validate schema exists) */
+  isCloud?: boolean; // default: false
+}
+
+/** ClickHouse replication configuration (used when cluster.replicas=true) */
+export interface ClickHouseReplicationConfig {
+  /** Coordinator type: 'keeper' (ClickHouse Keeper) or 'zookeeper' */
+  coordinatorType?: "keeper" | "zookeeper"; // default: "keeper"
+  /** ZooKeeper path for table replicas */
+  zkPath?: string; // default: "/clickhouse/tables/{shard}/{database}/{table}"
+  /** Replica name template */
+  replicaName?: string; // default: "{replica}"
+}
+
+/** ClickHouse parallel replicas configuration for query acceleration */
+export interface ClickHouseParallelReplicasConfig {
+  /** Enable parallel replica queries */
+  enabled?: boolean; // default: false
+  /** Number of replicas to use for parallel queries */
+  maxParallelReplicas?: number; // default: 2
+  /** Cluster name for parallel replicas (null = auto-detect from cluster.name) */
+  clusterForParallelReplicas?: string | null; // default: null
+}
+
+/** ClickHouse distributed table configuration */
+export interface ClickHouseDistributedConfig {
+  /** Write through distributed tables (not direct to local) */
+  writeThrough?: boolean; // default: true
+  /** Wait for data to be written to all shards */
+  insertDistributedSync?: boolean; // default: true
+}
+
 /** ClickHouse database configuration */
 export interface ClickHouseConfig {
   /** ClickHouse server URL */
@@ -338,6 +401,10 @@ export interface ClickHouseConfig {
   };
   /** Maximum number of open connections */
   max_open_connections?: number; // default: 10
+  /** Dictionary configuration */
+  dictionary?: ClickHouseDictionaryConfig;
+  /** Identity configuration for user merging and dictionary data retention */
+  identity?: ClickHouseIdentityConfig;
   /** ClickHouse specific settings */
   clickhouse_settings?: {
     /** Idle connection timeout */
@@ -363,6 +430,14 @@ export interface ClickHouseConfig {
     /** Additional ClickHouse settings */
     [key: string]: any;
   };
+  /** Cluster configuration for distributed ClickHouse deployments */
+  cluster?: ClickHouseClusterConfig;
+  /** Replication configuration (used when cluster.replicas=true) */
+  replication?: ClickHouseReplicationConfig;
+  /** Parallel replicas configuration for query acceleration */
+  parallelReplicas?: ClickHouseParallelReplicasConfig;
+  /** Distributed table configuration */
+  distributed?: ClickHouseDistributedConfig;
   /** Additional connection options */
   [key: string]: any;
 }

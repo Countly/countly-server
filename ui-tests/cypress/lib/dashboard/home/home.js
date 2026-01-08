@@ -81,13 +81,6 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.verifyElement({
-        labelElement: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_LABEL,
-        labelText: "Avg. Requests Received",
-        tooltipElement: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TOOLTIP,
-        tooltipText: "The number of write API requests the Countly Server receives for each session (includes sessions, session extensions, events, etc.)."
-    });
-
-    cy.verifyElement({
         element: homePageElements.AUDIENCE.CHART_TYPE_SELECT_COMBOBOX,
         elementPlaceHolder: "Select"
     });
@@ -137,12 +130,12 @@ const verifyStaticElementsOfPage = () => {
         tooltipText: "The total number of pages viewed, in the selected time period."
     });
 
-    /*cy.verifyElement({
+    cy.verifyElement({
         labelElement: homePageElements.VIEWS.UNIQUE_VIEWS_LABEL,
         labelText: "Unique Views",
         tooltipElement: homePageElements.VIEWS.UNIQUE_VIEWS_TOOLTIP,
         tooltipText: "Number of times a page is viewed in your application for the first time by users during a session, in the selected time period."
-    });*/
+    });
 
     cy.verifyElement({
         labelElement: homePageElements.VIEWS.BOUNCE_RATE_LABEL,
@@ -392,20 +385,6 @@ const verifyEmptyPageElements = () => {
         elementText: "NA",
     });
 
-    cy.verifyElement({
-        element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_NUMBER,
-        elementText: "0.0",
-    });
-
-    cy.verifyElement({
-        element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TREND_ICON,
-    });
-
-    cy.verifyElement({
-        element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TREND_VALUE,
-        elementText: "NA",
-    });
-
     cy.scrollPageToCenter('.main-view');
 
     cy.verifyElement({
@@ -605,22 +584,6 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.AUDIENCE.AVG_SESSION_DURATION_TREND_VALUE,
-        elementText: null,
-    });
-
-    /*cy.verifyElement({
-        shouldNot: true,
-        element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_NUMBER,
-        elementText: "0.0",
-    });*/
-
-    cy.verifyElement({
-        element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TREND_ICON,
-    });
-
-    cy.verifyElement({
-        shouldNot: true,
-        element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TREND_VALUE,
         elementText: null,
     });
 

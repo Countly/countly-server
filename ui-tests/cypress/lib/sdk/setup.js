@@ -64,20 +64,22 @@ const goToConfigTab = (nopop) => {
 };
 
 const createRequest = (sdkName, sdkVersion) => {
-    return 'http://localhost:3001/i?app_key=1&device_id=1&begin_session=1&sdk_name=' + sdkName + '&sdk_version=' + sdkVersion;
+    return 'http://localhost:3010/i?app_key=1&device_id=1&begin_session=1&sdk_name=' + sdkName + '&sdk_version=' + sdkVersion;
 };
 
 const checkTooltipAppears = (tooltip, count, early) => {
-    cy.get('.cly-vue-tooltip-icon.ion.ion-help-circled.tooltip-' + tooltip).should('have.length', count ? count : 27);
+    const expectedCount = count ? count : 28;
+    const selectorForState = '.sdk-support-text.tooltip-' + tooltip;
+
+    cy.get(selectorForState).should('have.length', expectedCount)
+        .each(($el) => {
+            const text = $el.text().trim();
+            expect(text.length, 'support text should not be empty').to.be.greaterThan(0);
+        });
 
     if (early) {
         return;
     }
-
-    cy.get('.cly-vue-tooltip-icon.ion.ion-help-circled.tooltip-neutral').should(tooltip == 'neutral' ? 'be.visible' : 'not.exist');
-    cy.get('.cly-vue-tooltip-icon.ion.ion-help-circled.tooltip-warning').should(tooltip == 'warning' ? 'be.visible' : 'not.exist');
-    cy.get('.cly-vue-tooltip-icon.ion.ion-help-circled.tooltip-danger').should(tooltip == 'danger' ? 'be.visible' : 'not.exist');
-    cy.get('.cly-vue-tooltip-icon.ion.ion-help-circled.tooltip-success').should(tooltip == 'success' ? 'be.visible' : 'not.exist');
 };
 
 module.exports = {

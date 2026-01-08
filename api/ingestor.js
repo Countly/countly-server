@@ -6,6 +6,7 @@ const log = require('./utils/log.js')('ingestor-core:api');
 const {processRequest} = require('./ingestor/requestProcessor');
 const common = require('./utils/common.js');
 const {Cacher} = require('./parts/data/cacher.js');
+const {WriteBatcher} = require('./parts/data/batcher.js');
 require("./init_configs.js");
 
 var t = ["countly:", "ingestor"];
@@ -31,11 +32,12 @@ plugins.loadConfigs = plugins.loadConfigsIngestor;
 
 plugins.connectToAllDatabases(true).then(function() {
     log.i("Db connections done");
-    // common.writeBatcher = new WriteBatcher(common.db);
+    //Write Batcher is used by sdk metrics
+    common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new Cacher(common.db);
     //common.insertBatcher = new InsertBatcher(common.db);
     if (common.drillDb) {
-        common.drillReadBatcher = new Cacher(common.drillDb);
+        common.drillReadBatcher = new Cacher(common.drillDb, {configs_db: common.db});
     }
     /**
     * Set Max Sockets

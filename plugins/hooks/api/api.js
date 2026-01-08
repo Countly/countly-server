@@ -12,14 +12,6 @@ const rights = require('../../../api/utils/rights');
 
 const FEATURE_NAME = 'hooks';
 
-plugins.setConfigs("hooks", {
-    batchActionSize: 0, // size for processing actions each time
-    refreshRulesPeriod: 3000, // miliseconds to fetch hook records
-    pipelineInterval: 1000, // milliseconds to batch process pipeline
-    requestLimit: 0, //maximum request that can be handled in given time frame. 0 means no rate limit applied
-    timeWindowForRequestLimit: 60000, //time window for request limits in milliseconds
-});
-
 global.triggerRequestCount = [];
 
 /**
@@ -57,6 +49,12 @@ class Hooks {
     */
     registerTriggers() {
         for (let type in Triggers) {
+
+            if (type === 'IncomingDataTrigger') {
+                log.d("Skipping IncomingDataTrigger - handled in aggregator");
+                continue;
+            }
+
             const t = new Triggers[type]({
                 pipeline: (data) => {
                     this._queueEventEmitter.emit('push', data);
@@ -80,27 +78,52 @@ class Hooks {
     /**
     *  fetch hook records from db 
     */
-    fetchRules() {
-        const self = this;
-        const db = common.db;
-        db && db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray(function(err, result) {
-            log.d("Fetch rules:", result, err, process.pid);
-            if (result) {
+    async fetchRules() {
+
+        try {
+            log.d("Fetching hook rules...", process.pid);
+            const self = this;
+            const db = common.db;
+
+            // Add check for database connection
+            if (!db) {
+                log.e("Database not available yet, will retry on next interval", process.pid);
+                return;
+            }
+
+            log.d("Database connection exists, querying hooks collection", process.pid);
+
+            db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray(function(err, result) {
+                if (err) {
+                    log.e("Fetch hook rules error:", err, process.pid);
+                    return;
+                }
+                log.d("Fetch rules - found", result ? result.length : 0, "rules", process.pid);
+                if (result) {
                 //change profile group triggers to cohorts triggers. There are no events which starts with /profile-group, in reality it is just cohort events 
-                for (var z = 0; z < result.length; z++) {
-                    if (result[z].trigger && result[z].trigger.type === "InternalEventTrigger" && result[z].trigger.configuration && result[z].trigger.configuration.eventType) {
-                        if (result[z].trigger.configuration.eventType === "/profile-group/enter") {
-                            result[z].trigger.configuration.eventType = "/cohort/enter";
-                        }
-                        else if (result[z].trigger.configuration.eventType === "/profile-group/exit") {
-                            result[z].trigger.configuration.eventType = "/cohort/exit";
+                    for (var z = 0; z < result.length; z++) {
+                        if (result[z].trigger && result[z].trigger.type === "InternalEventTrigger" && result[z].trigger.configuration && result[z].trigger.configuration.eventType) {
+                            if (result[z].trigger.configuration.eventType === "/profile-group/enter") {
+                                result[z].trigger.configuration.eventType = "/cohort/enter";
+                            }
+                            else if (result[z].trigger.configuration.eventType === "/profile-group/exit") {
+                                result[z].trigger.configuration.eventType = "/cohort/exit";
+                            }
                         }
                     }
+                    self._cachedRules = result;
+                    log.d("Cached rules updated, calling syncRulesWithTrigger", process.pid);
+                    self.syncRulesWithTrigger();
                 }
-                self._cachedRules = result;
-                self.syncRulesWithTrigger();
-            }
-        });
+                else {
+                    log.d("No rules found in database", process.pid);
+                }
+            });
+        }
+        catch (e) {
+            log.e("Fetch hook rules error:", e, process.pid);
+        }
+
     }
 
     /**
@@ -141,7 +164,7 @@ class Hooks {
                     const rule = item.rule;
 
                     //rate limiter
-                    if (checkRateLimitReached(rule)) {
+                    if (utils.checkRateLimitReached(rule)) {
                         log.e("[call limit reached]", `call limit reached for ${rule._id}`);
                         utils.addErrorRecord(rule._id, `call limit reached for ${rule._id}`);
                         if (callback) {
@@ -181,51 +204,7 @@ class Hooks {
         }, plugins.getConfig("hooks").pipelineInterval);
     }
 }
-const checkRateLimitReached = function(rule) {
 
-    if (plugins.getConfig("hooks").requestLimit === 0) {
-        return false;
-    }
-
-    let requestCount = global.triggerRequestCount.find(item=> {
-        return item.ruleId.toString() === rule._id.toString();
-    });
-
-    if (!requestCount) { //no record in time interval
-        addInitialRequestCounter(rule); //add initial record for time window frame
-        return false;
-    }
-
-    return incrementRequestCounter(rule);
-
-
-};
-
-const addInitialRequestCounter = function(rule) {
-    let startTime = Date.now();
-    let endTime = startTime + plugins.getConfig("hooks").timeWindowForRequestLimit;
-    global.triggerRequestCount.push({ruleId: rule._id.toString(), startTime: startTime, endTime: endTime, counter: 1});
-};
-
-const incrementRequestCounter = function(rule) {
-    //delete records which are not in time frame
-    const currentTimestamp = Date.now();
-    global.triggerRequestCount = global.triggerRequestCount.filter(item => {
-        return currentTimestamp >= item.startTime && currentTimestamp <= item.endTime;
-    }); //we don't need to check the rule id. if timeframe is passed counter is also not valid for other rules
-
-    let counterIndex = global.triggerRequestCount.findIndex(item => {
-        return item.ruleId.toString() === rule._id.toString();
-    });
-    if (counterIndex < 0) {
-        return false;
-    }
-
-    global.triggerRequestCount[counterIndex].counter++;
-
-    return global.triggerRequestCount[counterIndex].counter > plugins.getConfig("hooks").requestLimit;
-
-};
 
 const CheckEffectProperties = function(effect) {
     var rules = {};
@@ -250,10 +229,6 @@ const CheckHookProperties = function(hookConfig) {
     };
     return rules;
 };
-
-plugins.register("/permissions/features", function(ob) {
-    ob.features.push(FEATURE_NAME);
-});
 
 /**
 * @api {post} /i/hook/save create or update hook 
@@ -712,6 +687,8 @@ plugins.register("/i/hook/test", function(ob) {
     return true;
 });
 
+module.exports = Hooks;
 
-// init instnace;
+
+// init instance;
 new Hooks();

@@ -9,9 +9,12 @@ var plugin = {},
     Promise = require("bluebird"),
     trace = require("./parts/stacktrace.js"),
     plugins = require('../../pluginManager.js'),
+    countlyCommon = require('../../../api/lib/countly.common.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 var log = common.log('crashes:api');
+var {getCrashesTable, getCrashesBreakdown} = require('./queries/crashes.js');
 const FEATURE_NAME = 'crashes';
+
 
 /**
 * Crash metrics
@@ -37,9 +40,6 @@ const FEATURE_NAME = 'crashes';
 */
 
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
     plugins.register("/master", function() {
         fs.chmod(path.resolve(__dirname + "/../bin/minidump_stackwalk"), 0o744, function(err) {
             if (err && !process.env.COUNTLY_CONTAINER) {
@@ -47,8 +47,6 @@ const FEATURE_NAME = 'crashes';
             }
         });
     });
-    var bools = {"root": true, "online": true, "muted": true, "signal": true, "background": true};
-    plugins.internalDrillEvents.push("[CLY]_crash");
 
     plugins.register("/i/device_id", function(ob) {
         var appId = ob.app_id;
@@ -140,8 +138,8 @@ const FEATURE_NAME = 'crashes';
         var obParams = ob.params;
 
         if (obParams.qstring.method === 'reports') {
-            validateRead(obParams, FEATURE_NAME, function(params) {
-                var report_ids = [];
+            validateRead(obParams, FEATURE_NAME, async function(params) {
+                let report_ids = [];
 
                 if (params.qstring.report_ids) {
                     try {
@@ -155,18 +153,25 @@ const FEATURE_NAME = 'crashes';
                     report_ids = [params.qstring.report_id];
                 }
 
-                report_ids = report_ids.map(function(rid) {
-                    return common.db.ObjectID(rid);
-                });
-                common.drillDb.collection("drill_events").find({"a": (params.app_id + ""), "e": "[CLY]_crash", "n": {$in: report_ids}}).toArray(function(err, reports) {
-                    var reportMap = {};
-
-                    reports.forEach(function(rep) {
-                        reportMap[rep._id] = rep;
+                let crashes = null;
+                try {
+                    crashes = await getCrashesTable({
+                        query: { _id: { $in: report_ids } },
                     });
+                }
+                catch (err) {
+                    log.e('Error fetching crashes', err);
+                    common.returnMessage(params, 400, 'Error fetching crashes');
+                    return;
+                }
 
-                    common.returnOutput(params, reportMap);
+                const reportMap = {};
+
+                crashes.forEach(function(crash) {
+                    reportMap[crash._id] = crash;
                 });
+
+                common.returnOutput(params, reportMap);
             });
             return true;
         }
@@ -182,9 +187,47 @@ const FEATURE_NAME = 'crashes';
                             common.returnOutput(params, res);
                         });
                     }
+                    else if (params.qstring.breakdown) {
+                        //Breakdown of property
+
+                        try {
+                            var query2 = {
+                                "a": (params.app_id + ""),
+                                "n": params.qstring.group,
+                                "e": "[CLY]_crash"
+                            };
+
+                            var currentTimezone = countlyCommon.getTimezone(params);
+                            if (!currentTimezone) {
+                                currentTimezone = 'UTC';
+                            }
+                            query2.ts = countlyCommon.getPeriodRange(params.qstring.period, currentTimezone);
+                            var field = "sg." + (params.qstring.field.replace("custom.", "custom_"));
+
+                            var breakdowndata = await getCrashesBreakdown({
+                                query: query2,
+                                field: field,
+                                limit: 10
+                            });
+                            var output = {
+                                app_id: params.app_id,
+                                group: params.qstring.group,
+                                field: params.qstring.field,
+                                data: {}
+                            };
+                            for (var z = 0; z < breakdowndata.length; z++) {
+                                output.data[breakdowndata[z]._id] = breakdowndata[z].count;
+                            }
+                            common.returnMessage(params, 200, output);
+                        }
+                        catch (err) {
+                            log.e("Error getting breakdown for crashes:", err);
+                            common.returnMessage(params, 500, 'Error getting breakdown for crashes');
+                        }
+                    }
                     else {
                         common.db.collection('app_users' + params.app_id).estimatedDocumentCount(function(err, total) {
-                            common.db.collection('app_crashgroups' + params.app_id).findOne({groups: params.qstring.group}, function(crashGroupsErr, result) {
+                            common.db.collection('app_crashgroups' + params.app_id).findOne({groups: params.qstring.group}, async function(crashGroupsErr, result) {
                                 if (result) {
                                     trace.postprocessCrash(result);
                                     result.total = total;
@@ -197,54 +240,20 @@ const FEATURE_NAME = 'crashes';
                                         }
                                     }
                                     //Fetch from drill. If not enough - check old collections.
-                                    var cursor0 = common.drillDb.collection("drill_events").find({"a": (params.app_id + ""), "e": "[CLY]_crash", "n": (result._id + "")}).sort({ts: -1});
-                                    cursor0.limit(plugins.getConfig("crashes").report_limit);
-                                    cursor0.toArray(function(cursorErr, res0) {
-                                        if (cursorErr) {
-                                            log.e("Error fetching crash reports from drill: " + cursorErr);
-                                        }
-                                        res0 = res0 || [];
-                                        console.log("Fetched " + res0.length + " crash reports from drill for crash group " + result._id);
-                                        if (res0 && res0.length) {
-                                            for (var z = 0; z < res0.length; z++) {
-                                                //Converts to usual format
-                                                res0[z].sg = res0[z].sg || {};
-                                                var dd = res0[z].sg;
-                                                dd.ts = res0[z].ts;
-                                                dd._id = res0[z]._id;
-                                                for (var bkey in bools) {
-                                                    if (res0[z].sg[bkey] === "true") {
-                                                        res0[z].sg[bkey] = 1;
-                                                    }
-                                                    else if (res0[z].sg[bkey] === "false") {
-                                                        res0[z].sg[bkey] = 0;
-                                                    }
-                                                }
-                                                var rw = ["not_os_specific", "nonfatal", "javascript", "native_cpp", "plcrash"];
-                                                for (var ii = 0; ii < rw.length; ii++) {
-                                                    if (res0[z].sg[rw[ii]] === "true") {
-                                                        res0[z].sg[rw[ii]] = true;
-                                                    }
-                                                    else if (res0[z].sg[rw[ii]] === "false") {
-                                                        res0[z].sg[rw[ii]] = false;
-                                                    }
-                                                }
-                                                dd.custom = res0[z].custom || {};
-                                                for (var key in res0[z].sg) {
-                                                    if (key.indexOf("custom_") === 0) {
-                                                        dd.custom[key.replace("custom_", "")] = res0[z].sg[key];
-                                                    }
-                                                }
-                                                dd.group = res0[z].n;
-                                                dd.uid = res0[z].uid;
-                                                dd.cd = res0[z].cd;
-                                                res0[z] = dd;
-                                                trace.postprocessCrash(res0[z]);
-                                            }
-                                            result.data = res0;
-                                        }
-                                        common.returnOutput(params, result);
-                                    });
+
+                                    var query = {
+                                        "a": (params.app_id + ""),
+                                        "n": params.qstring.group,
+                                        "e": "[CLY]_crash"
+                                    };
+
+                                    var limit = plugins.getConfig("crashes").report_limit;
+                                    var crashtable = await getCrashesTable({ query: query, limit: limit });
+                                    result.data = crashtable || [];
+
+
+                                    common.returnOutput(params, result);
+
                                     if (result.is_new) {
                                         common.db.collection('app_crashgroups' + params.app_id).update({groups: params.qstring.group}, {$set: {is_new: false}}, function() {});
                                         common.db.collection('app_crashgroups' + params.app_id).update({_id: "meta"}, {$inc: {isnew: -1}}, function() {});
@@ -564,62 +573,88 @@ const FEATURE_NAME = 'crashes';
 
         switch (paths[3]) {
         case 'download_stacktrace':
-            validateRead(obParams, FEATURE_NAME, function(params) {
+            validateRead(obParams, FEATURE_NAME, async function(params) {
                 if (!params.qstring.crash_id) {
                     common.returnMessage(params, 400, 'Please provide crash_id parameter');
                     return;
                 }
                 var id = params.qstring.crash_id + "";
-                common.drillDb.collection("drill_events").findOne({'_id': id}, {fields: {error: 1}}, function(err, crash) {
-                    if (err || !crash) {
-                        common.returnMessage(params, 400, 'Crash not found');
-                        return;
-                    }
-                    if (!crash.error) {
-                        common.returnMessage(params, 400, 'Crash does not have stacktrace');
-                        return;
-                    }
-                    if (params.res.writeHead) {
-                        params.res.writeHead(200, {
-                            'Content-Type': 'application/octet-stream',
-                            'Content-Length': crash.error.length,
-                            'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_stacktrace.txt"
-                        });
-                        params.res.write(crash.error);
-                        params.res.end();
-                    }
-                });
+                let crash = null;
+                try {
+                    [crash] = await getCrashesTable({
+                        query: { _id: id },
+                        fields: { error: 1 },
+                        limit: 1,
+                    });
+                }
+                catch (err) {
+                    log.e('Downloading stacktrace, error fetching crash document', err);
+                    common.returnMessage(params, 400, 'Crash fetching error');
+                    return;
+                }
+
+                if (!crash) {
+                    common.returnMessage(params, 400, 'Crash not found');
+                    return;
+                }
+                if (crash && !crash.error) {
+                    common.returnMessage(params, 400, 'Crash does not have stacktrace');
+                    return;
+                }
+
+                if (crash && crash.error && params.res.writeHead) {
+                    params.res.writeHead(200, {
+                        'Content-Type': 'application/octet-stream',
+                        'Content-Length': crash.error.length,
+                        'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_stacktrace.txt"
+                    });
+                    params.res.write(crash.error);
+                    params.res.end();
+                }
             });
             break;
         case 'download_binary':
-            validateRead(obParams, FEATURE_NAME, function(params) {
+            validateRead(obParams, FEATURE_NAME, async function(params) {
                 if (!params.qstring.crash_id) {
                     common.returnMessage(params, 400, 'Please provide crash_id parameter');
                     return;
                 }
                 var id = params.qstring.crash_id + "";
-                common.drillDb.collection("drill_events").findOne({'_id': id}, {fields: {binary_crash_dump: 1}}, function(err, crash) {
-                    if (err || !crash) {
-                        common.returnMessage(params, 400, 'Crash not found');
-                        return;
-                    }
-                    if (!crash.binary_crash_dump) {
-                        common.returnMessage(params, 400, 'Crash does not have binary_dump');
-                        return;
-                    }
-                    if (params.res.writeHead) {
-                        var buf = Buffer.from(crash.binary_crash_dump, 'base64');
-                        params.res.writeHead(200, {
-                            'Content-Type': 'application/octet-stream',
-                            'Content-Length': buf.byteLength,
-                            'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_bin.dmp"
-                        });
-                        let stream = new Duplex();
-                        stream.push(buf);
-                        stream.push(null);
-                        stream.pipe(params.res);
-                    }
-                });
+                let crash = null;
+                try {
+                    [crash] = await getCrashesTable({
+                        query: { _id: id },
+                        fields: { error: 1 },
+                        limit: 1,
+                    });
+                }
+                catch (err) {
+                    log.e('Downloading binary, error fetching crash document', err);
+                    common.returnMessage(params, 400, 'Crash fetching error');
+                    return;
+                }
+
+                if (!crash) {
+                    common.returnMessage(params, 400, 'Crash not found');
+                    return;
+                }
+                if (crash && !crash.binary_crash_dump) {
+                    common.returnMessage(params, 400, 'Crash does not have binary_dump');
+                    return;
+                }
+
+                if (crash && crash.binary_crash_dump && params.res.writeHead) {
+                    var buf = Buffer.from(crash.binary_crash_dump, 'base64');
+                    params.res.writeHead(200, {
+                        'Content-Type': 'application/octet-stream',
+                        'Content-Length': buf.byteLength,
+                        'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_bin.dmp"
+                    });
+                    let stream = new Duplex();
+                    stream.push(buf);
+                    stream.push(null);
+                    stream.pipe(params.res);
+                }
             });
             break;
         default:

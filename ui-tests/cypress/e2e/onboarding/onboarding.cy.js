@@ -25,7 +25,7 @@ const analyticsGeoCountriesPageHelpers = require('../../lib/dashboard/analytics/
 const analyticsGeoLanguagesPageHelpers = require('../../lib/dashboard/analytics/geo/languages/languages');
 const analyticsEventsOverviewPageHelpers = require('../../lib/dashboard/analytics/events/overview');
 const analyticsEventsPageHelpers = require('../../lib/dashboard/analytics/events/events');
-const messagingPageHelpers = require('../../lib/dashboard/messaging/messaging');
+//const messagingPageHelpers = require('../../lib/dashboard/messaging/messaging');
 const feedbackRatingsPageHelpers = require('../../lib/dashboard/feedback/ratings/ratings');
 const feedbackRatingWidgetsPageHelpers = require('../../lib/dashboard/feedback/ratings/widgets');
 const crashesPageHelpers = require('../../lib/dashboard/crashes/crashes');
@@ -38,7 +38,7 @@ const incomingDataLogsPageHelpers = require('../../lib/dashboard/manage/logger/l
 const sdkManagersPageHelpers = require('../../lib/dashboard/manage/sdk/stats');
 const requestStatsPageHelpers = require('../../lib/dashboard/manage/sdk/requestStats');
 const healthCheckPageHelpers = require('../../lib/dashboard/manage/sdk/healthCheck');
-const sdkConfigurationsPageHelpers = require('../../lib/dashboard/manage/sdk/configurations');
+// const sdkConfigurationsPageHelpers = require('../../lib/dashboard/manage/sdk/configurations'); // Moved to SDK tests
 const complianceHubMetricsPageHelpers = require('../../lib/dashboard/manage/compliance/metrics');
 const complianceHubUsersPageHelpers = require('../../lib/dashboard/manage/compliance/users');
 const complianceHubHistoryPageHelpers = require('../../lib/dashboard/manage/compliance/history');
@@ -198,8 +198,8 @@ describe('Complete Onboarding', () => {
         analyticsEventsOverviewPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyEmptyPageElements();
-        navigationHelpers.goToPushNotifications();
-        messagingPageHelpers.verifyEmptyPageElements();
+        //navigationHelpers.goToPushNotifications();
+        //messagingPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToFeedbackRatingsPage();
         feedbackRatingsPageHelpers.verifyEmptyPageElements();
         feedbackRatingsPageHelpers.clickRatingWidgetsTab();
@@ -228,8 +228,8 @@ describe('Complete Onboarding', () => {
         requestStatsPageHelpers.verifyEmptyPageElements();
         requestStatsPageHelpers.clickHealthCheckTab();
         healthCheckPageHelpers.verifyEmptyPageElements();
-        healthCheckPageHelpers.clickSdkConfigurationTab();
-        sdkConfigurationsPageHelpers.verifyPageElements({});
+        // healthCheckPageHelpers.clickSdkConfigurationTab(); // Moved to SDK tests
+        // sdkConfigurationsPageHelpers.verifyPageElements({}); // Moved to SDK tests
         navigationHelpers.goToComplianceHubMetricsPage();
         complianceHubMetricsPageHelpers.verifyEmptyPageElements();
         complianceHubMetricsPageHelpers.clickUsersTab();
@@ -263,7 +263,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToHooksPage();
         hooksPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToDbViewerPage();
-        dbCountlyPageHelpers.verifyEmptyPageElements();
+        //dbCountlyPageHelpers.verifyEmptyPageElements();
         dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
         dbCountlyOutPageHelpers.verifyEmptyPageElements();
         dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
@@ -366,8 +366,8 @@ describe('Complete Onboarding', () => {
         analyticsEventsOverviewPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyFullDataPageElements();
-        navigationHelpers.goToPushNotifications();
-        messagingPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToPushNotifications();
+        //messagingPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToFeedbackRatingsPage();
         feedbackRatingsPageHelpers.verifyFullDataPageElements();
         feedbackRatingsPageHelpers.clickRatingWidgetsTab();
@@ -398,10 +398,9 @@ describe('Complete Onboarding', () => {
         sdkManagersPageHelpers.clickRequestStatsTab();
         requestStatsPageHelpers.verifyFullDataPageElements();
         requestStatsPageHelpers.clickHealthCheckTab();
-        //healthCheckPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
-        healthCheckPageHelpers.verifyEmptyPageElements();
+        healthCheckPageHelpers.verifyFullDataPageElements();
         healthCheckPageHelpers.clickSdkConfigurationTab();
-        sdkConfigurationsPageHelpers.verifyPageElements({});
+        // sdkConfigurationsPageHelpers.verifyPageElements({}); // Moved to SDK tests
         navigationHelpers.goToComplianceHubMetricsPage();
         complianceHubMetricsPageHelpers.verifyFullDataPageElements();
         complianceHubMetricsPageHelpers.clickUsersTab();

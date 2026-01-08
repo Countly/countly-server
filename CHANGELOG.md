@@ -1,18 +1,95 @@
-## 25.xx
-Dependencies:
-- Remove SQLite
+## Version 25.03.31
+Fixes:
+- [core] Add null checking for user permission when opening the dashboard
+- [core] fixes for changeOwner script
+- [core] Preserve URL hash during oauth
+- [core] Rate limiting for api endpoints
+- [2fa] Removed the secret and qr code from the dashboard response
 
-## Version 25.03.xx
+Enterprise Fixes:
+- [data-masking] Correctly dealing with unexpected filter on event_data collection while masking
+- [profile-groups] Error handling on missing list on failed profile group report download
+- [retention_segments] Adding null check for breakdown filtering
+
+Dependencies:
+- Bump @vitejs/plugin-vue from 6.0.1 to 6.0.2
+- Bump @vitejs/plugin-vue from 6.0.1 to 6.0.2
+- Bump @vue-flow/core from 1.47.0 to 1.48.0
+- Bump body-parser from 2.2.0 to 2.2.1
+- Bump countly-sdk-web from 25.4.1 to 25.4.2
+- Bump glob from 10.3.12 to 10.5.0
+- Bump js-yaml from 3.14.1 to 3.14.2
+- Bump js-yaml from 3.14.1 to 3.14.2
+- Bump js-yaml from 4.1.0 to 4.1.1
+- Bump jsonwebtoken from 9.0.2 to 9.0.3
+- Bump jsonwebtoken from 9.0.2 to 9.0.3
+- Bump jws from 3.2.2 to 3.2.3
+- Bump mocha from 11.7.4 to 11.7.5
+- Bump node-forge from 1.3.1 to 1.3.3
+- Bump nodemailer from 7.0.10 to 7.0.11
+- Bump sass from 1.93.3 to 1.94.2
+- Bump sass from 1.93.3 to 1.96.0
+- Bump sass-embedded from 1.93.3 to 1.96.0
+- Bump sharp from 0.34.4 to 0.34.5
+- Bump sharp from 0.34.4 to 0.34.5
+- Bump swiper from 11.2.10 to 12.0.3
+- Bump terser from 5.44.0 to 5.44.1
+- Bump vite from 7.1.12 to 7.2.7
+- Bump vue-i18n from 11.1.12 to 11.2.2
+
+## Version 25.03.30
+Fixes:
+- [journeys] Save to profiile block implemented
+- [push] Better FCM error handling
+
+## Version 25.03.29
+Fixes:
+- [core] Do not output password in logs on mongodb connection initialisation error
+- [core] Hide error details on render error from response
+- [dashboards] Do not show error if request is cancelled.
+- [dbviewer] Hide api_key from requests
+- [events] Do not throw error in UI on returned group data if there is no segmentation set
+
+Enterprise Fixes:
+- [drill] Fixed timeline recalculation
+- [surveys] Do not fetch survey meta data if plugin is disabled
+
+## Version 25.03.28
+Fixes:
+- [alerts] Add alert interval validation in the frontend
+- [events] Correctly navigate to event groupmin events menu
+
+Enterprise Fixes:
+- [applications] Ensure application management list reorders after create/update
+- [concurrent_users] Fix email check for alert
+- [dashboards] Keep dashboard sidebar sorted alphabetically after additions
+- [data-manager] Correctly show last triggered for events if data masking is enabled
+
+## Version 25.03.27
+Fixes:
+- [core-vis] Fix chart legend click event
+- [push] Fixed the options of the request being made during mime detection
+- [views] Fix view name that is displayed in view table
+- [data-manager] Fix last modified data for event and segment
+
+Enterprise Fixes:
+- [concurrent_users] Fix alert threshold comparison
+- [dashboards] Add setting to disable public dashboards
+- [surveys] Handle multiple survey submission from same user based on survey visibility
+- [users] Display user property limits in user profiles when exceeded
+- [users] Set correct users widget table rows amount according to selected setting
+
+## Version 25.03.26
 Fixes:
 - [push] Fixed timeout setting
 - [security] Fixed injection possibility on res.expose
 
 Enterprise Fixes:
-- [groups] Add logs for user updates
-- [surveys] Change question map log to debug log
-
-Enterprise Fixes:
 - [data-manager] Fixed bug when merging events with ampersand symbol in the name
+- [groups] Add logs for user updates
+- [nps] Sort widgets by internal name and search by name or internal name
+- [surveys] Change question map log to debug log
+- [surveys] Sort widgets by internal name and search by name or internal name
 
 Dependencies:
 - Bump axios from 1.12.2 to 1.13.1 in /plugins/cognito
@@ -34,6 +111,8 @@ Fixes:
 Enterprise Fixes:
 - [ab-testing] Add script for fixing variant cohort
 - [groups] Fix user permission update after updating user group permission
+- [funnels] Fixed delete confirmation using correct button copy
+
 ## Version 25.03.24
 Fixes:
 - [jobs] Fix condition for scheduling alert job
@@ -64,6 +143,7 @@ Enterprise Fixes:
 - [revenue] Card in revenue page are now correctly indentified
 - [users] Add survey section to user feedback page
 - [users] Fixed uploading user profile pictures
+
 
 ## Version 25.03.22
 Fixes:
@@ -142,6 +222,7 @@ Enterprise Fixes:
 Dependencies:
 - Bump puppeteer from 24.16.2 to 24.17.0
 
+
 ## Version 25.03.16
 Enterprise Fixes:
 - [journeys] Fix for skip threshold check in concurrent requests
@@ -150,6 +231,7 @@ Enterprise Fixes:
 Dependencies:
 - Bump get-random-values from 3.0.0 to 4.0.0
 - Bump puppeteer from 24.16.1 to 24.16.2
+
 
 ## Version 25.03.15
 Enterprise Fixes:
@@ -184,6 +266,7 @@ Enterprise Fixes:
 - [flows] Showing correct state for disabled flows
 - [surveys] Move "not likely" label next to 0 on mobile screens
 
+
 ## Version 25.03.12
 Features:
 - [plugins] Add configuration warning tags to settings UI
@@ -205,6 +288,7 @@ Dependencies:
 - Bump mongodb from 6.17.0 to 6.18.0
 - Bump puppeteer from 24.14.0 to 24.15.0
 - Bump supertest from 7.1.3 to 7.1.4
+
 
 ## Version 25.03.11
 Fixes:
@@ -301,6 +385,7 @@ Fixes:
 - [hooks] Added null check for incoming data
 - [push] Fix external drawer initialization
 - [times-of-day] Fix chart component
+
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
 - [ab-testing] Updates

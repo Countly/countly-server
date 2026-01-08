@@ -269,12 +269,35 @@ function fetchDatapoints(db, filter, options, callback) {
                         if (!acc.daily) {
                             acc.daily = {};
                         }
+                        if (!acc.dailybreakdown) {
+                            acc.dailybreakdown = {};
+                        }
                         options.dailyDates.forEach(date => {
                             if (date.startsWith(current.m)) {
                                 var day = date.split(":")[2];
                                 if (current.d && current.d[day] && Object.keys(current.d[day]).length) {
                                     for (var hour in current.d[day]) {
-                                        acc.daily[date] = (acc.daily[date] || 0) + (current.d[day][hour].e || 0) + (current.d[day][hour].s || 0);
+                                        acc.dailybreakdown[date] = acc.dailybreakdown[date] || {};
+                                        if (current.d[day][hour].dp) {
+                                            acc.daily[date] = (acc.daily[date] || 0) + (current.d[day][hour].dp || 0);
+                                            acc.dailybreakdown[date].actions = (acc.dailybreakdown[date].actions || 0) + (current.d[day][hour].ac || 0);
+                                            acc.dailybreakdown[date].attribution_click = (acc.dailybreakdown[date].attribution_click || 0) + (current.d[day][hour].aclk || 0);
+                                            acc.dailybreakdown[date].crash = (acc.dailybreakdown[date].crash || 0) + (current.d[day][hour].c || 0);
+                                            acc.dailybreakdown[date].custom_events = (acc.dailybreakdown[date].custom_events || 0) + (current.d[day][hour].ce || 0);
+                                            acc.dailybreakdown[date].consents = (acc.dailybreakdown[date].consents || 0) + (current.d[day][hour].cs || 0);
+                                            acc.dailybreakdown[date].nps = (acc.dailybreakdown[date].nps || 0) + (current.d[day][hour].n || 0);
+                                            acc.dailybreakdown[date].sessions = (acc.dailybreakdown[date].sessions || 0) + (current.d[day][hour].s || 0);
+                                            acc.dailybreakdown[date].surveys = (acc.dailybreakdown[date].surveys || 0) + (current.d[day][hour].srv || 0);
+                                            acc.dailybreakdown[date].ratings = (acc.dailybreakdown[date].ratings || 0) + (current.d[day][hour].str || 0);
+                                            acc.dailybreakdown[date].views = (acc.dailybreakdown[date].views || 0) + (current.d[day][hour].v || 0);
+                                            acc.dailybreakdown[date].push_action = (acc.dailybreakdown[date].push_action || 0) + (current.d[day][hour].p || 0);
+                                            acc.dailybreakdown[date].apm = (acc.dailybreakdown[date].apm || 0) + (current.d[day][hour].apm || 0);
+                                            acc.dailybreakdown[date].push_sent = (acc.dailybreakdown[date].push_sent || 0) + (current.d[day][hour].ps || 0);
+                                            acc.dailybreakdown[date].llm = (acc.dailybreakdown[date].llm || 0) + (current.d[day][hour].llm || 0);
+                                        }
+                                        else {
+                                            acc.daily[date] = (acc.daily[date] || 0) + (current.d[day][hour].e || 0) + (current.d[day][hour].s || 0);
+                                        }
                                     }
                                 }
                             }

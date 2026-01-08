@@ -1083,7 +1083,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
 
             if (argProperties[arg]['max-length']) {
-                if (args[arg].length > argProperties[arg]['max-length']) {
+                if (args[arg] && args[arg].length > argProperties[arg]['max-length']) {
                     if (returnErrors) {
                         returnObj.errors.push("Length of " + arg + " is greater than max length value");
                         returnObj.result = false;
@@ -1096,7 +1096,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
 
             if (argProperties[arg]['min-length']) {
-                if (args[arg].length < argProperties[arg]['min-length']) {
+                if (args[arg] && args[arg].length < argProperties[arg]['min-length']) {
                     if (returnErrors) {
                         returnObj.errors.push("Length of " + arg + " is lower than min length value");
                         returnObj.result = false;
@@ -1498,7 +1498,9 @@ var ipLogger = common.log('ip:api');
 common.getIpAddress = function(req) {
     var ipAddress = "";
     if (req) {
-        if (req.headers) {
+        // TODO: add config option to trust x-forwarded-for header
+        // or add a configuration option to set trusted proxies
+        if (req.headers && ("x-forwarded-for" in req.headers || "x-real-ip" in req.headers)) {
             ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || "";
         }
         else if (req.connection && req.connection.remoteAddress) {

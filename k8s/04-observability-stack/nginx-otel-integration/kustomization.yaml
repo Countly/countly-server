@@ -1,9 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-# This patches the NGINX Ingress Controller to enable OpenTelemetry
-# Apply after both nginx-ingress and observability-stack are deployed:
-# kubectl apply -f 03-observability-stack/nginx-otel-integration/nginx-otel-configmap-patch.yaml
-
-# Note: This is a standalone patch that should be applied directly
-# It cannot be used with kustomize as it patches a resource in a different deployment

@@ -9,6 +9,7 @@ var usersApi = {},
     plugins = require('../../../plugins/pluginManager.js'),
     { ObjectId } = require('mongodb');
 var path = require('path');
+var config = require("../../config.js");
 const fs = require('fs');
 var countlyFs = require('./../../utils/countlyFs.js');
 //var cp = require('child_process'); //call process
@@ -465,8 +466,18 @@ usersApi.getUid = async function(app_id, callback) {
     }
 };
 
-
-
+/** 
+ * Function to determine if app is recorded in mongodb database 
+ * @returns {boolean} true if data is recorded in mongo, false otherwise
+ */
+function dataIsRecordedInMongo() {
+    if (config.eventSink && Array.isArray(config.eventSink.sinks) && config.eventSink.sinks.indexOf('mongo') !== -1) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
 
 usersApi.mergeOtherPlugins = function(options, callback) {
     var db = options.db;
@@ -548,30 +559,42 @@ usersApi.mergeOtherPlugins = function(options, callback) {
                         }
                         else {
                             //Merge data in drill_events collection
-                            common.drillDb.collection('drill_events').updateMany({"a": app_id, "uid": oldAppUser.uid}, {'$set': {"uid": newAppUser.uid}}, function(err1) {
-                                if (err1) {
-                                    log.e("Failed to update drill_events collection", err1);
-                                    common.db.collection('app_user_merges').update({"_id": iid}, {'$unset': {"cc": ""}, "$set": {"retry_error": "Failure while merging drill_events data", "lu": Math.round(new Date().getTime() / 1000)}}, {upsert: false}, function(err4) {
-                                        if (err4) {
-                                            log.e(err4);
-                                        }
-                                        if (callback && typeof callback === 'function') {
-                                            callback(err4);
-                                        }
-                                    });
-                                }
-                                else {
+                            if (dataIsRecordedInMongo()) {
+                                common.drillDb.collection('drill_events').updateMany({"a": app_id, "uid": oldAppUser.uid}, {'$set': {"uid": newAppUser.uid}}, function(err1) {
+                                    if (err1) {
+                                        log.e("Failed to update drill_events collection", err1);
+                                        common.db.collection('app_user_merges').update({"_id": iid}, {'$unset': {"cc": ""}, "$set": {"retry_error": "Failure while merging drill_events data", "lu": Math.round(new Date().getTime() / 1000)}}, {upsert: false}, function(err4) {
+                                            if (err4) {
+                                                log.e(err4);
+                                            }
+                                            if (callback && typeof callback === 'function') {
+                                                callback(err4);
+                                            }
+                                        });
+                                    }
+                                    else {
                                     //data merged. Delete record from merges collection
-                                    common.db.collection('app_user_merges').remove({"_id": iid}, function(err5) {
-                                        if (err5) {
-                                            log.e("Failed to remove merge document", err5);
-                                        }
-                                        if (callback && typeof callback === 'function') {
-                                            callback(err5);
-                                        }
-                                    });
-                                }
-                            });
+                                        common.db.collection('app_user_merges').remove({"_id": iid}, function(err5) {
+                                            if (err5) {
+                                                log.e("Failed to remove merge document", err5);
+                                            }
+                                            if (callback && typeof callback === 'function') {
+                                                callback(err5);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                            else {
+                                common.db.collection('app_user_merges').remove({"_id": iid}, function(err5) {
+                                    if (err5) {
+                                        log.e("Failed to remove merge document", err5);
+                                    }
+                                    if (callback && typeof callback === 'function') {
+                                        callback(err5);
+                                    }
+                                });
+                            }
                         }
                     });
                 }
@@ -730,13 +753,15 @@ usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_i
     * Inner function to merge user data
     * @param {object} newAppUserP  - new user data
     * @param {object} oldAppUser - old user data
+    * @param {object} mergeOptions - options provided by plugins for merging
     */
-    function mergeUserData(newAppUserP, oldAppUser) {
-        //allow plugins to deal with user mergin properties
+    function mergeUserData(newAppUserP, oldAppUser, mergeOptions) {
+        //allow plugins to deal with user merging properties
         plugins.dispatch("/i/user_merge", {
             app_id: app_id,
             newAppUser: newAppUserP,
-            oldAppUser: oldAppUser
+            oldAppUser: oldAppUser,
+            mergeOptions: mergeOptions
         }, async function() {
             //merge user data
             try {
@@ -782,7 +807,7 @@ usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_i
             callback(null, oldAppUser);
         }
         else {
-            //we have to merge user data
+            var results = [];
             if (!newAppUser.ls || (newAppUser.ls < oldAppUser.ls)) {
                 //switching user identity
                 var temp = oldAppUser._id;
@@ -802,15 +827,59 @@ usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_i
                 oldAppUser = newAppUser;
                 newAppUser = tempDoc;
             }
-            await common.db.collection("app_user_merges").insertOne({
-                //If we want to ensure order later then for each A->B we should check if there is B->C in progress and wait  for it to finish first. So we could recheck using $regex
-                _id: app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid,
-                merged_to: newAppUser.uid,
-                ts: Math.round(new Date().getTime() / 1000),
-                lu: Math.round(new Date().getTime() / 1000),
-                t: 0 //tries
-            }, {ignore_errors: [11000]});
-            mergeUserData(newAppUser, oldAppUser);
+
+            plugins.dispatch("/i/suggest_merged_uid", {
+                app_id: app_id,
+                newAppUser: newAppUser,
+                oldAppUser: oldAppUser,
+                results: results
+            }, async function() {
+                var mergeOptions = {};
+                //We don't have any suggested routes for merging. Merge by old logic
+                if (results.length === 0 || (results[0] && results[0].error)) {
+                    if (results[0] && results[0].error) {
+                        log.e("Error while suggesting merged UID: " + JSON.stringify(results[0].error));
+                    }
+                }
+                else {
+                    mergeOptions = results[0];
+                    if (oldAppUser.uid === mergeOptions.winner) {
+                        //log.e("Switching documents to keep old user uid instead of new one");
+                        //switching around doc references
+                        var tempDoc2 = oldAppUser;
+                        oldAppUser = newAppUser;
+                        newAppUser = tempDoc2;
+                        newAppUser.did = new_device_id + "";
+                    }
+                    else if (newAppUser.uid !== mergeOptions.winner && oldAppUser.uid !== mergeOptions.winner) {
+                        log.e("ERROR. Double merge change");//Keeping to see if it happens when we test.
+                        //Should never happen. Both should be changed to some new uid
+                        var discarded_uid = newAppUser.uid;
+                        newAppUser.uid = mergeOptions.winner;
+                        newAppUser.did = new_device_id + "";
+
+                        //Add to merges to update documents
+                        await common.db.collection("app_user_merges").insertOne({
+                            //If we want to ensure order later then for each A->B we should check if there is B->C in progress and wait  for it to finish first. So we could recheck using $regex
+                            _id: app_id + "_" + newAppUser.uid + "_" + discarded_uid,
+                            merged_to: newAppUser.uid,
+                            ts: Math.round(new Date().getTime() / 1000),
+                            lu: Math.round(new Date().getTime() / 1000),
+                            t: 0 //tries
+                        }, {ignore_errors: [11000]});
+                    }
+
+                }
+                await common.db.collection("app_user_merges").insertOne({
+                    //If we want to ensure order later then for each A->B we should check if there is B->C in progress and wait  for it to finish first. So we could recheck using $regex
+                    _id: app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid,
+                    merged_to: newAppUser.uid,
+                    ts: Math.round(new Date().getTime() / 1000),
+                    lu: Math.round(new Date().getTime() / 1000),
+                    t: 0 //tries
+                }, {ignore_errors: [11000]});
+                mergeUserData(newAppUser, oldAppUser, mergeOptions);
+            });
         }
 
     }

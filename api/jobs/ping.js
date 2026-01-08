@@ -64,7 +64,7 @@ class PingJob extends Job {
 
                 if (days > 0) {
                     //calculate seconds timestamp of days before today
-                    var startTs = Math.round((new Date().getTime() - (30 * 24 * 60 * 60 * 1000)) / 1000);
+                    var startTs = Math.round((new Date().getTime() - (days * 24 * 60 * 60 * 1000)) / 1000);
 
                     //sync server events - use aggregation pipeline to group by day and action on MongoDB side
                     var aggregationPipeline = [

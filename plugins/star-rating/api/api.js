@@ -13,21 +13,13 @@ var ejs = require("ejs"),
     path = require('path'),
     reportUtils = require('../../reports/api/utils.js');
 var calculatedDataManager = require('../../../api/utils/calculatedDataManager.js');
+var {fetchCommentsTable} = require('./queries/star.js');
 
 var cohortsEnabled = plugins.getPlugins().indexOf('cohorts') > -1;
 var surveysEnabled = plugins.getPlugins().indexOf('surveys') > -1;
 
 if (cohortsEnabled) {
     var cohorts = require('../../cohorts/api/parts/cohorts');
-}
-
-if (!surveysEnabled) {
-    plugins.setConfigs("feedback", {
-        main_color: "#0166D6",
-        font_color: "#0166D6",
-        feedback_logo: ""
-
-    });
 }
 
 const FEATURE_NAME = 'star_rating';
@@ -305,10 +297,6 @@ function uploadFile(myfile, id, callback) {
 }
 
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
     /**
      * @api {get} /o/sdk Get ratings widgets
      * @apiName GetWidgets
@@ -533,12 +521,6 @@ function uploadFile(myfile, id, callback) {
         });
     });
 
-    /**
-     *    register internalEvent
-     */
-    plugins.internalEvents.push('[CLY]_star_rating');
-    plugins.internalDrillEvents.push("[CLY]_star_rating");
-    plugins.internalOmitSegments["[CLY]_star_rating"] = ["email", "comment", "widget_id", "contactMe"];
     var createFeedbackWidget = function(ob) {
         var obParams = ob.params;
 
@@ -768,17 +750,12 @@ function uploadFile(myfile, id, callback) {
         return true;
     };
     var removeWidgetData = function(widgetId, app, callback) {
-        var collectionName = "feedback" + app;
-        common.db.collection(collectionName).remove({
-            "widget_id": widgetId
-        }, function(err) {
-            if (!err) {
-                callback(null);
-            }
-            else {
-                callback(err);
-            }
+        plugins.dispatch("/core/delete_granular_data", {
+            db: "countly_drill",
+            collection: "drill_events",
+            query: { a: app + "", e: "[CLY]_star_rating", n: widgetId }
         });
+        callback(null);
     };
     var increaseWidgetShowCount = function(ob) {
         var obParams = ob.params;
@@ -1073,100 +1050,27 @@ function uploadFile(myfile, id, callback) {
      * }
      */
     plugins.register('/o/feedback/data', function(ob) {
-        /*var params = ob.params;
-        var app = params.qstring.app_id;
-        var collectionName = 'feedback' + app;
-        var query = {};
-        var skip = parseInt(params.qstring.iDisplayStart || 0);
-        var limit = parseInt(params.qstring.iDisplayLength || 0);
-        var colNames = ['rating', 'comment', 'email', 'ts'];
-
-        if (params.qstring.widget_id) {
-            query.widget_id = params.qstring.widget_id;
-        }
-        if (params.qstring.rating) {
-            query.rating = parseInt(params.qstring.rating);
-        }
-        if (params.qstring.version) {
-            query.app_version = params.qstring.version;
-        }
-        if (params.qstring.platform) {
-            query.platform = params.qstring.platform;
-        }
-        if (params.qstring.device_id) {
-            query.device_id = params.qstring.device_id;
-        }
-        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-            query.$text = { $search: params.qstring.sSearch };
-        }
-        if (params.qstring.iSortCol_0) {
-            try {
-                var colIndex = parseInt(params.qstring.iSortCol_0);
-                var colName = colNames[colIndex];
-                var sortType = params.qstring.sSortDir_0 === 'asc' ? 1 : -1;
-                var sort = {};
-                sort[colName] = sortType;
-            }
-            catch (e) {
-                common.returnMessage(params, 400, 'Invalid column index for sorting');
-                return true;
-            }
-        }
-        if (params.qstring.uid) {
-            query.uid = params.qstring.uid;
-        }
-
-        validateRead(params, FEATURE_NAME, function() {
-            query.ts = countlyCommon.getTimestampRangeQuery(params, true);
-            var cursor = common.db.collection(collectionName).find(query);
-            cursor.count(function(err, total) {
-                if (!err) {
-                    if (sort) {
-                        cursor.sort(sort);
-                    }
-                    cursor.skip(skip);
-                    cursor.limit(limit);
-                    cursor.toArray(function(cursorErr, res) {
-                        if (!cursorErr) {
-                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, "aaData": res});
-                        }
-                        else {
-                            common.returnMessage(params, 500, cursorErr);
-                        }
-                    });
-                }
-                else {
-                    common.returnMessage(params, 500, err);
-                }
-            });
-        });
-        return true;*/
-
         var params = ob.params;
         var app = params.qstring.app_id;
-        var collectionName = "drill_events";
-        var query = {"a": app, "e": "[CLY]_star_rating"};
+        var query = {"a": (app + ""), "e": "[CLY]_star_rating"};
         var skip = parseInt(params.qstring.iDisplayStart || 0);
         var limit = parseInt(params.qstring.iDisplayLength || 0);
-        var colNames = ['sg.rating', 'sg.comment', 'sg.email', 'ts'];
+        var colNames = ['comment', 'ts', 'email', 'rating'];
 
         if (params.qstring.widget_id) {
             query.n = params.qstring.widget_id;
         }
         if (params.qstring.rating) {
-            query.sg.rating = parseInt(params.qstring.rating, 10);
+            query["sg.rating"] = parseInt(params.qstring.rating, 10);
         }
         if (params.qstring.version) {
-            query.sg.app_version = params.qstring.version;
+            query["sg.app_version"] = params.qstring.version;
         }
         if (params.qstring.platform) {
-            query.sg.platform = params.qstring.platform;
+            query["sg.platform"] = params.qstring.platform;
         }
         if (params.qstring.device_id) {
             query.did = params.qstring.device_id;
-        }
-        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-            query.$text = { $search: params.qstring.sSearch };
         }
 
         if (params.qstring.iSortCol_0) {
@@ -1186,29 +1090,34 @@ function uploadFile(myfile, id, callback) {
             query.uid = params.qstring.uid;
         }
 
-        validateRead(params, FEATURE_NAME, function() {
+        validateRead(params, FEATURE_NAME, async function() {
+            //{query:query, appID:app}
             query.ts = countlyCommon.getTimestampRangeQuery(params, false);
-            var cursor = common.drillDb.collection(collectionName).find(query, {_id: 1, comment: "$sg.comment", email: "$sg.email", rating: "$sg.rating", cd: 1, uid: 1});
-            cursor.count(function(err, total) {
-                if (!err) {
-                    if (sort) {
-                        cursor.sort(sort);
+            try {
+                var data = await fetchCommentsTable({
+                    query: query,
+                    sSearch: params.qstring.sSearch || "",
+                    appID: app,
+                    limit: limit,
+                    skip: skip,
+                    sort: sort
+                }, {});
+                //Set values for empty fields
+                if (data && data.data && data.data.length > 0) {
+                    for (var i = 0; i < data.data.length; i++) {
+                        if (!data.data[i].comment) {
+                            data.data[i].comment = "No comment provided";
+                        }
+                        if (!data.data[i].email) {
+                            data.data[i].email = "No email provided";
+                        }
                     }
-                    cursor.skip(skip);
-                    cursor.limit(limit);
-                    cursor.toArray(function(cursorErr, res) {
-                        if (!cursorErr) {
-                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, "aaData": res});
-                        }
-                        else {
-                            common.returnMessage(params, 500, cursorErr);
-                        }
-                    });
                 }
-                else {
-                    common.returnMessage(params, 500, err);
-                }
-            });
+                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: data.total, iTotalDisplayRecords: data.display, "aaData": data.data});
+            }
+            catch (e) {
+                common.returnMessage(params, 500, e.message);
+            }
         });
         return true;
     });
@@ -1500,7 +1409,6 @@ function uploadFile(myfile, id, callback) {
             }
             countlyCommon.setPeriod(params.qstring.period, true);
             var periodObj = countlyCommon.periodObj;
-
             if (params.qstring.fetchFromGranural && common.drillDb) {
                 calculatedDataManager.longtask({
                     db: common.db,
@@ -1590,21 +1498,16 @@ function uploadFile(myfile, id, callback) {
             type: "rating",
             "app_id": appId
         });
-        if (common.drillDb) {
-            common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_star_rating"}, function() {});
-        }
     });
-    plugins.register("/i/apps/clear", function(ob) {
-        var appId = ob.appId;
-        if (common.drillDb) {
-            common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_star_rating", ts: {$lt: ob.moment.valueOf()}}, function() {});
-        }
+    plugins.register("/i/apps/clear", function(/*ob*/) {
+        /**
+         * Granular and aggregated data is deleted with other event data in core plugin
+         */
     });
-    plugins.register("/i/apps/clear_all", function(ob) {
-        var appId = ob.appId;
-        if (common.drillDb) {
-            common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_star_rating"}, function() {});
-        }
+    plugins.register("/i/apps/clear_all", function(/*ob*/) {
+        /**
+         * Granular and aggregated data is deleted with other event data in core plugin
+         */
     });
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
@@ -1612,9 +1515,6 @@ function uploadFile(myfile, id, callback) {
             type: "rating",
             "app_id": appId
         });
-        if (common.drillDb) {
-            common.drillDb.collection("drill_events").deleteMany({"a": (appId + ""), "e": "[CLY]_star_rating"}, function() {});
-        }
     });
     plugins.register("/i/device_id", function(ob) {
         var appId = ob.app_id;

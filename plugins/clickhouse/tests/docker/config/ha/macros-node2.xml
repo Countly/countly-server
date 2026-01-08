@@ -1,0 +1,8 @@
+<clickhouse>
+    <!-- HA Mode: Node 2 - Shard 01, Replica 2 -->
+    <macros>
+        <shard>01</shard>
+        <replica>clickhouse2</replica>
+        <cluster>countly_cluster</cluster>
+    </macros>
+</clickhouse>

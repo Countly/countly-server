@@ -17,7 +17,8 @@ class Cacher {
         this.options = options || {};
 
         this.transformationFunctions = {};
-        plugins.loadConfigs(db, () => {
+        var configs_db = (this.options.configs_db || this.db);
+        plugins.loadConfigs(configs_db, () => {
             this.loadConfig(options);
             this.schedule();
         });
@@ -200,6 +201,26 @@ class Cacher {
             options = {};
         }
         return promiseOrCallback(this.get(collection, query, options.projection, options.transformation, options.refetch, false), callback);
+    }
+
+
+    /**
+     *  Get multiple documents from cache or from db and cache it
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {object} query - query for the documents
+     *  @param {object} options - options object
+     *  @param {function=} callback - optional to get result, or else will return promise
+     *  @returns {Promise} if callback not passed, returns promise
+     */
+    getMany(collection, query, options, callback) {
+        if (typeof options === "function") {
+            callback = options;
+            options = {};
+        }
+        if (!options) {
+            options = {};
+        }
+        return promiseOrCallback(this.get(collection, query, options.projection, options.transformation, options.refetch, true), callback);
     }
 
     /**

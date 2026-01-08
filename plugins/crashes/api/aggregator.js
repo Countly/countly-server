@@ -9,6 +9,7 @@ const log = require('../../../api/utils/log.js')('crashes:aggregator');
 const ranges = ['ram', 'bat', 'disk', 'run', 'session'];
 const segments = ['os_version', 'os_name', 'manufacture', 'device', 'resolution', 'app_version', 'cpu', 'opengl', 'orientation', 'view', 'browser'];
 const bools = { root: true, online: true, muted: true, signal: true, background: true };
+const buildSpecific = ['architecture', 'app_build', 'binary_images', 'build_uuid', 'executable_name', 'load_address', 'binary_crash_dump', 'unprocessed'];
 
 const props = [
     //device metrics
@@ -166,6 +167,14 @@ const recalculateStats = async function(currEvent) {
     }
 };
 
+const setFieldsIfExist = function(fieldList, source, target) {
+    fieldList.forEach((item) => {
+        if (item in source) {
+            target[item] = source[item];
+        }
+    });
+};
+
 (() => {
     plugins.register('/aggregator', async() => {
         const eventSource = new UnifiedEventSource(
@@ -185,13 +194,16 @@ const recalculateStats = async function(currEvent) {
                         {
                             // Project needed properties from user properties (up) so they are available in document root.
                             $project: {
-                                _id: '$fullDocument._id',
+                                __id: '$fullDocument._id',
                                 a: '$fullDocument.a',
                                 cd: '$fullDocument.cd',
                                 e: '$fullDocument.e',
                                 n: '$fullDocument.n',
                                 sg: '$fullDocument.sg',
                                 ts: '$fullDocument.ts',
+                                uid: '$fullDocument.uid',
+                                up: '$fullDocument.up',
+                                up_extra: '$fullDocument.up_extra',
                             },
                         },
                     ],
@@ -211,20 +223,18 @@ const recalculateStats = async function(currEvent) {
 
         const localWriteBatcher = new WriteBatcher(common.db);
 
-        for await (const { token, events } of eventSource) {
+        await eventSource.processWithAutoAck(async(token, events) => {
             // events is an array of event, each event has the same structure as drill documents.
             // They will come this way in kafka, the pipeline above should make sure they are the same if coming from changestreams.
             if (events && Array.isArray(events)) {
+                var affected_apps = {};
                 for (let idx = 0; idx < events.length; idx += 1) {
                     const currEvent = events[idx];
                     // Kafka will send all events here, so filter out if needed.
                     if (currEvent.e === '[CLY]_crash' && 'a' in currEvent) {
-                        common.readBatcher.getOne('apps', common.db.ObjectID(currEvent.a), async(err, app) => {
-                            if (err) {
-                                log.e('Error getting app data for crash', err);
-                                return;
-                            }
-
+                        affected_apps[currEvent.a] = true;
+                        try {
+                            var app = await common.readBatcher.getOne('apps', common.db.ObjectID(currEvent.a));
                             if (app && '_id' in app) {
                                 const params = {app_id: currEvent.a, app: app, time: common.initTimeObj(app.timezone, currEvent.ts), appTimezone: (app.timezone || 'UTC')};
                                 const platform = currEvent.sg?.os || currEvent.up?.p;
@@ -319,8 +329,11 @@ const recalculateStats = async function(currEvent) {
                                 groupInsert.startTs = moment(currEvent.ts).unix();
                                 groupInsert.latest_version = currEvent.sg.app_version;
                                 groupInsert.latest_version_for_sort = common.transformAppVersion(currEvent.sg.app_version);
-                                groupInsert.lrid = `${currEvent._id}`;
+                                groupInsert.lrid = `${currEvent.__id || currEvent._id}`;
                                 groupInsert.error = currEvent.sg.error || '';
+
+                                setFieldsIfExist(buildSpecific, currEvent.sg, groupInsert);
+
                                 const metrics = [];
 
                                 metaInc.reports = 1;
@@ -375,14 +388,19 @@ const recalculateStats = async function(currEvent) {
                                     // Other segment types
                                     else if (props[i] in currEvent.sg && segments.includes(props[i])) {
                                         let safeKey = (currEvent.sg[props[i]] + '').replace(/^\$/, '').replace(/\./g, ':');
-
-                                        if (safeKey) {
-                                            if (groupInc[props[i] + '.' + safeKey]) {
-                                                groupInc[props[i] + '.' + safeKey]++;
+                                        //In meta document for crash groups we store total stats for app_version and os. Need to record in crash group as needed to update meta on delete operation. Once we switch to calculating full data from granular, this can be removed from aggregation.
+                                        if (props[i] === "app_version" || props[i] === "os") {
+                                            if (safeKey) {
+                                                if (groupInc[props[i] + '.' + safeKey]) {
+                                                    groupInc[props[i] + '.' + safeKey]++;
+                                                }
+                                                else {
+                                                    groupInc[props[i] + '.' + safeKey] = 1;
+                                                }
                                             }
-                                            else {
-                                                groupInc[props[i] + '.' + safeKey] = 1;
-                                            }
+                                        }
+                                        else {
+                                            groupSet[props[i]] = {};
                                         }
                                     }
                                 }
@@ -394,12 +412,13 @@ const recalculateStats = async function(currEvent) {
                                             let safeKey = (currEvent.sg[key] + '').replace(/^\$/, '').replace(/\./g, ':');
                                             key = key.replace(/^custom_/, '');
                                             if (safeKey) {
-                                                if (groupInc['custom.' + key + '.' + safeKey]) {
+                                                groupSet['custom.' + key] = {};
+                                                /* if (groupInc['custom.' + key + '.' + safeKey]) {
                                                     groupInc['custom.' + key + '.' + safeKey]++;
                                                 }
                                                 else {
                                                     groupInc['custom.' + key + '.' + safeKey] = 1;
-                                                }
+                                                }*/
                                             }
                                         }
                                     }
@@ -450,13 +469,17 @@ const recalculateStats = async function(currEvent) {
                                         if (plugins.getConfig('crashes').same_app_version_crash_update) {
                                             if (crashGroup.latest_version && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.latest_version.replace(/\./g, ':')) >= 0) {
                                                 group.error = currEvent.sg.error;
-                                                group.lrid = `${currEvent._id}`;
+                                                group.lrid = `${currEvent.__id || currEvent._id}`;
+
+                                                setFieldsIfExist(buildSpecific, currEvent.sg, group);
                                             }
                                         }
                                         else {
                                             if (crashGroup.latest_version && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.latest_version.replace(/\./g, ':')) > 0) {
                                                 group.error = currEvent.sg.error;
-                                                group.lrid = `${currEvent._id}`;
+                                                group.lrid = `${currEvent.__id || currEvent._id}`;
+
+                                                setFieldsIfExist(buildSpecific, currEvent.sg, group);
                                             }
                                         }
                                         if (crashGroup.resolved_version && crashGroup.is_resolved && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.resolved_version.replace(/\./g, ':')) > 0) {
@@ -480,14 +503,22 @@ const recalculateStats = async function(currEvent) {
                                 //total numbers
                                 localWriteBatcher.add('app_crashgroups' + params.app_id, 'meta', {$inc: metaInc}, 'countly', {token: token});
                             }
-                        });
+                            else {
+                                log.e('App not found for crash aggregation:' + currEvent.a);
+                            }
+                        }
+                        catch (ee) {
+                            log.e('Error processing crash event:', ee);
+                        }
                     }
                 }
-
                 // Flush batchers
                 await localWriteBatcher.flush('countly', 'crashdata');
+                for (var appId in affected_apps) {
+                    await localWriteBatcher.flush('countly', 'app_crashgroups' + appId);
+                }
             }
-        }
+        });
     });
 
     plugins.register('/aggregator', async() => {
@@ -508,15 +539,16 @@ const recalculateStats = async function(currEvent) {
                         {
                             // Project needed properties from user properties (up) so they are available in document root.
                             $project: {
-                                _id: '$fullDocument._id',
+                                __id: '$fullDocument._id',
                                 a: '$fullDocument.a',
                                 cd: '$fullDocument.cd',
                                 e: '$fullDocument.e',
                                 n: '$fullDocument.n',
+                                sg: '$fullDocument.sg',
                                 ts: '$fullDocument.ts',
-                                up_extra: '$fullDocument.up_extra',
+                                uid: '$fullDocument.uid',
                                 up: '$fullDocument.up',
-                                sg: '$fullDocument.sg'
+                                up_extra: '$fullDocument.up_extra',
                             },
                         },
                     ],
@@ -536,7 +568,7 @@ const recalculateStats = async function(currEvent) {
 
         const localWriteBatcher = new WriteBatcher(common.db);
 
-        for await (const { token, events } of eventSource) {
+        await eventSource.processWithAutoAck(async(token, events) => {
             // events is an array of event, each event has the same structure as drill documents.
             // They will come this way in kafka, the pipeline above should make sure they are the same if coming from changestreams.
             if (events && Array.isArray(events)) {
@@ -586,7 +618,7 @@ const recalculateStats = async function(currEvent) {
                 // Flush batchers
                 await localWriteBatcher.flush('countly', 'crashdata');
             }
-        }
+        });
     });
 
     plugins.register('/aggregator', async() => {
@@ -607,14 +639,16 @@ const recalculateStats = async function(currEvent) {
                         {
                             // Project needed properties from user properties (up) so they are available in document root.
                             $project: {
-                                _id: '$fullDocument._id',
-                                _uid: '$fullDocument._uid',
+                                __id: '$fullDocument._id',
                                 a: '$fullDocument.a',
                                 cd: '$fullDocument.cd',
                                 e: '$fullDocument.e',
                                 n: '$fullDocument.n',
                                 sg: '$fullDocument.sg',
                                 ts: '$fullDocument.ts',
+                                uid: '$fullDocument.uid',
+                                up: '$fullDocument.up',
+                                up_extra: '$fullDocument.up_extra',
                             },
                         },
                     ],
@@ -634,7 +668,7 @@ const recalculateStats = async function(currEvent) {
 
         const localWriteBatcher = new WriteBatcher(common.db);
 
-        for await (const { token, events } of eventSource) {
+        await eventSource.processWithAutoAck(async(token, events) => {
             if (events && Array.isArray(events)) {
                 for (let idx = 0; idx < events.length; idx += 1) {
                     const currEvent = events[idx];
@@ -699,6 +733,6 @@ const recalculateStats = async function(currEvent) {
                 // Flush batchers
                 await localWriteBatcher.flush('countly', 'crashdata');
             }
-        }
+        });
     });
 })();

@@ -68,7 +68,7 @@ const crypto = require('crypto');
             }
         });
         try {
-            for await (const {token, events} of eventSource) {
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     for (var z = 0; z < events.length; z++) {
                         var next = events[z];
@@ -218,11 +218,11 @@ const crypto = require('crypto');
                             }
                         }
                     }
-                    await common.manualWriteBatcher.flush("countly", "app_viewsdata");
+                    await common.manualWriteBatcher.flush("countly", "app_viewdata");
                     await common.manualWriteBatcher.flush("countly", "app_viewsmeta");
 
                 }
-            }
+            });
         }
         catch (err) {
             log.e('Event processing error:', err);
@@ -255,7 +255,7 @@ const crypto = require('crypto');
             }
         });
         try {
-            for await (const {token, events} of eventSource) {
+            await eventSource.processWithAutoAck(async(token, events) => {
                 if (events && Array.isArray(events)) {
                     for (var z = 0; z < events.length; z++) {
                         if (events[z].e === "[CLY]_view_update") {
@@ -319,9 +319,9 @@ const crypto = require('crypto');
                             }
                         }
                     }
-                    common.manualWriteBatcher.flush("countly", "app_viewdata");
+                    await common.manualWriteBatcher.flush("countly", "app_viewdata");
                 }
-            }
+            });
         }
         catch (err) {
             log.e(err);

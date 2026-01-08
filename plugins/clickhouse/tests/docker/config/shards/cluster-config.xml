@@ -1,0 +1,27 @@
+<clickhouse>
+    <!-- Shards Mode: 2 shards, no replication (Horizontal Scaling) -->
+    <remote_servers>
+        <countly_cluster>
+            <shard>
+                <replica>
+                    <host>clickhouse1</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <shard>
+                <replica>
+                    <host>clickhouse2</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+        </countly_cluster>
+    </remote_servers>
+
+    <!-- ZooKeeper for ON CLUSTER DDL coordination (not for replication) -->
+    <zookeeper>
+        <node>
+            <host>clickhouse-keeper</host>
+            <port>9181</port>
+        </node>
+    </zookeeper>
+</clickhouse>

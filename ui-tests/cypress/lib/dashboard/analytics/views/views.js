@@ -95,17 +95,6 @@ const verifyStaticElementsOfPage = () => {
         tooltipText: "Total (unique) value for this period is estimated and corrected using the biggest time buckets from available daily, weekly and monthly stats. Exact total counts are available for this year, month and day periods"
     });
 
-    /*cy.verifyElement({
-        labelElement: viewsDataTableElements().COLUMN_NAME_NEW_USERS_LABEL,
-        isElementVisible: false,
-        labelText: "New Users",
-    });
-
-    cy.verifyElement({
-        isElementVisible: false,
-        element: viewsDataTableElements().COLUMN_NAME_NEW_USERS_SORTABLE_ICON,
-    });*/
-
     cy.verifyElement({
         labelElement: viewsDataTableElements().COLUMN_NAME_TOTAL_VISITS_LABEL,
         isElementVisible: false,
@@ -171,17 +160,6 @@ const verifyStaticElementsOfPage = () => {
         isElementVisible: false,
         element: viewsDataTableElements().COLUMN_NAME_BOUNCE_RATE_SORTABLE_ICON,
     });
-
-    /*cy.verifyElement({
-        labelElement: viewsDataTableElements().COLUMN_NAME_UNIQUE_VIEWS_LABEL,
-        isElementVisible: false,
-        labelText: "Unique Views",
-    });
-
-    cy.verifyElement({
-        isElementVisible: false,
-        element: viewsDataTableElements().COLUMN_NAME_UNIQUE_VIEWS_SORTABLE_ICON,
-    });*/
 };
 
 const verifyEmptyPageElements = () => {
@@ -221,7 +199,7 @@ const verifyFullDataPageElements = () => {
 const verifyViewsMetricCard = ({
     isEmpty = false,
     totalViewsValue = null,
-    uniqueViews = null,
+    totalUsersValue = null,
     bounceRatePercentage = null,
 }) => {
 
@@ -234,12 +212,12 @@ const verifyViewsMetricCard = ({
         tooltipText: "The total number of pages viewed, in the selected time period."
     });
 
-    /*cy.verifyElement({
-        labelElement: viewsMetricCardElements.UNIQUE_VIEWS_LABEL,
-        labelText: "Unique Views",
-        tooltipElement: viewsMetricCardElements.UNIQUE_VIEWS_TOOLTIP,
-        tooltipText: "Number of times a page is viewed in your application for the first time by users during a session, in the selected time period."
-    });*/
+    cy.verifyElement({
+        labelElement: viewsMetricCardElements.TOTAL_USERS_LABEL,
+        labelText: "Total Users",
+        tooltipElement: viewsMetricCardElements.TOTAL_USERS_TOOLTIP,
+        tooltipText: "Number of unique users who had any view in the selected time period."
+    });
 
     cy.verifyElement({
         labelElement: viewsMetricCardElements.BOUNCE_RATE_LABEL,
@@ -254,10 +232,10 @@ const verifyViewsMetricCard = ({
             elementText: "0",
         });
 
-        /*cy.verifyElement({
-            element: viewsMetricCardElements.UNIQUE_VIEWS_VALUE,
+        cy.verifyElement({
+            element: viewsMetricCardElements.TOTAL_USERS_VALUE,
             elementText: "0"
-        });*/
+        });
 
         cy.verifyElement({
             element: viewsMetricCardElements.BOUNCE_RATE_VALUE,
@@ -273,8 +251,8 @@ const verifyViewsMetricCard = ({
 
     cy.verifyElement({
         shouldNot: !isEmpty,
-        element: viewsMetricCardElements.UNIQUE_VIEWS_VALUE,
-        elementText: uniqueViews
+        element: viewsMetricCardElements.TOTAL_USERS_VALUE,
+        elementText: totalUsersValue
     });
 
     cy.verifyElement({
@@ -335,14 +313,12 @@ const verifyViewsDataFromTable = ({
     isEmpty = false,
     view = null,
     totalUsers = null,
-    newUsers = null,
     totalVisits = null,
     landings = null,
     exits = null,
     avgTime = null,
     bounces = null,
     bounceRate = null,
-    returningUsers = null,
 }) => {
 
     if (isEmpty) {
@@ -381,12 +357,6 @@ const verifyViewsDataFromTable = ({
 
     cy.verifyElement({
         shouldNot: !isEmpty,
-        element: viewsDataTableElements(index).NEW_USERS,
-        elementText: newUsers
-    });
-
-    cy.verifyElement({
-        shouldNot: !isEmpty,
         element: viewsDataTableElements(index).TOTAL_VISITS,
         elementText: totalVisits
     });
@@ -419,12 +389,6 @@ const verifyViewsDataFromTable = ({
         shouldNot: !isEmpty,
         element: viewsDataTableElements(index).BOUNCE_RATE,
         elementText: bounceRate
-    });
-
-    cy.verifyElement({
-        shouldNot: !isEmpty,
-        element: viewsDataTableElements(index).RETURNING_USERS,
-        elementText: returningUsers
     });
 };
 

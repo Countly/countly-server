@@ -61,6 +61,9 @@ var countlyConfig = {
         port: 27017,
         max_pool_size: 500,
         replicaName: "rs0",
+        serverOptions: {
+            directConnection: true
+        }
         //username: test,
         //password: test,
         //mongos: false,
@@ -102,6 +105,8 @@ var countlyConfig = {
     * @property {number} [request_timeout=1200000] - request timeout in milliseconds
     * @property {object} [keep_alive] - keep alive settings
     * @property {number} [max_open_connections=10] - maximum number of open connections
+    * @property {object} [dictionary] - dictionary configuration
+    * @property {boolean} [dictionary.enableMongoDBSource=true] - enable MongoDB as a dictionary source (requires mongodb driver)
     * @property {object} [clickhouse_settings] - ClickHouse specific settings
     */
     clickhouse: {
@@ -120,6 +125,23 @@ var countlyConfig = {
             idle_socket_ttl: 10000,
         },
         max_open_connections: 10,
+        // Dictionary configuration for DictionaryManager
+        dictionary: {
+            enableMongoDBSource: true, // Enable/disable MongoDB as a dictionary source (auto-disabled if mongodb driver not available)
+            nativePort: 9000, // Native TCP port for dictionary connections (use 9440 for Cloud with TLS)
+            host: null, // Override host for dictionary connections (defaults to ClickHouse URL host)
+            secure: false // Enable TLS for dictionary connections (required for ClickHouse Cloud)
+        },
+        // Identity configuration for user merging and dictionary data retention
+        identity: {
+            daysOld: 30, // Number of days after which identity mappings are baked into cold partitions.
+            // Dictionary only loads mappings from the last (daysOld + 1) days.
+            // Used by both identity dictionary and ColdPartitionMerging job.
+            lifetime: {
+                min: 60, // Minimum dictionary cache lifetime in seconds (dictionary won't reload before this time)
+                max: 120 // Maximum dictionary cache lifetime in seconds (dictionary will reload after this time)
+            }
+        },
         clickhouse_settings: {
             idle_connection_timeout: 11000 + '',
             async_insert: 1,
@@ -130,6 +152,49 @@ var countlyConfig = {
             allow_suspicious_types_in_order_by: 1,
             optimize_move_to_prewhere: 1,
             query_plan_optimize_lazy_materialization: 1
+        },
+        /**
+         * Cluster configuration for distributed ClickHouse deployments
+         *
+         * Configuration uses boolean flags for clarity.
+         * The combination of `shards` and `replicas` determines the cluster mode:
+         * - shards: false, replicas: false → single-node mode (default)
+         * - shards: false, replicas: true  → replicated mode (HA, recommended)
+         * - shards: true,  replicas: false → sharded mode (horizontal scaling, no HA)
+         * - shards: true,  replicas: true  → sharded + replicated (full HA with sharding)
+         *
+         * `isCloud` is orthogonal to the above modes and is used when running on
+         * ClickHouse Cloud. In cloud mode, DDL is typically managed externally, so
+         * the API will skip DDL statements and expect the required schema to exist.
+         *
+         * @property {string} name - Cluster name (must match ClickHouse cluster config)
+         * @property {boolean} shards - Enable sharding (horizontal scaling across multiple shards)
+         * @property {boolean} replicas - Enable replication (high availability with multiple replicas)
+         * @property {boolean} isCloud - Enable ClickHouse Cloud mode (skip DDL, validate schema exists)
+         */
+        cluster: {
+            name: 'countly_cluster',
+            shards: false, // Enable sharding (horizontal scaling)
+            replicas: false, // Enable replication (high availability)
+            isCloud: false // Set to true for ClickHouse Cloud
+        },
+        // Replication configuration (used when cluster.replicas=true)
+        replication: {
+            coordinatorType: 'keeper', // 'keeper' (ClickHouse Keeper) or 'zookeeper'
+            zkPath: '/clickhouse/tables/{shard}/{database}/{table}',
+            replicaName: '{replica}'
+        },
+        // Parallel replicas configuration for query acceleration
+        // Only effective when cluster.replicas=true or cluster.isCloud=true
+        parallelReplicas: {
+            enabled: false, // Enable parallel replica queries
+            maxParallelReplicas: 2, // Number of replicas to use for parallel queries
+            clusterForParallelReplicas: null // null = auto-detect from cluster.name
+        },
+        // Distributed table configuration
+        distributed: {
+            writeThrough: true, // Write through distributed tables (not direct to local)
+            insertDistributedSync: true // Wait for data to be written to all shards
         }
     },
     /**
@@ -163,11 +228,17 @@ var countlyConfig = {
         enabled: false, // Enable/disable Kafka integration globally (when true, becomes hard dependency)
         drillEventsTopic: "drill-events", // Default topic name for event data
         groupIdPrefix: "cly_", // Prefix added to all consumer group IDs
+
+        // Kafka Connect monitoring (for Health Manager Ingestion Status)
+        connectApiUrl: "http://localhost:8083", // Kafka Connect REST API URL
+        connectConsumerGroupId: "connect-clickhouse-sink", // Kafka Connect consumer group ID for sink lag monitoring
+
         partitions: 10, // Default number of partitions for new topics
         replicationFactor: 1, // Default replication factor for new topics (use 3+ in production)
         retentionMs: 604800000, // Message retention time in milliseconds (default: 7 days)
         enableTransactions: false, // Enable transactional producers (set per producer instance)
         transactionTimeout: 60000, // Transaction timeout in milliseconds (default: 60 seconds)
+        batchDeduplication: true, // Enable batch-level deduplication to prevent reprocessing on rebalance (default: true)
 
         // Basic connection and security settings (used by KafkaClient)
         rdkafka: {
@@ -181,6 +252,7 @@ var countlyConfig = {
             saslMechanism: null, // SASL mechanism (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512, GSSAPI)
             saslUsername: null, // SASL username for authentication
             saslPassword: null, // SASL password for authentication
+            saslAuthenticationTimeout: 10000, // Timeout for SASL authentication handshake in milliseconds (default: 10 seconds)
 
             // Common producer settings
             lingerMs: 5, // Time to wait for more messages before sending batch (default: 5ms)
@@ -188,22 +260,6 @@ var countlyConfig = {
             initialRetryTime: 100, // Initial retry backoff time in milliseconds (default: 100ms)
             maxRetryTime: 30000, // Maximum retry backoff time in milliseconds (default: 30 seconds)
             acks: -1 // Acknowledgment level (-1: all replicas, 1: leader only, 0: no acks) - WARNING: 0=no wait (data loss if broker fails), 1=leader only (data loss if leader fails before replication)
-        },
-
-        // Producer-specific settings (handled by KafkaProducer)
-        producer: {
-            // Batch size controls for throughput optimization
-            batchSize: 1048576, // Maximum batch size in bytes (default: 1MB)
-            batchNumMessages: 10000, // Maximum number of messages per batch (default: 10,000)
-
-            // Queue buffering for high throughput
-            queueBufferingMaxMessages: 100000, // Maximum messages to buffer in producer queue (default: 100,000)
-            queueBufferingMaxKbytes: 1048576, // Maximum memory for buffering in KB (default: 1GB)
-
-            // Compression and timeouts
-            compressionLevel: 1, // LZ4 compression level 1-12 (default: 1, balanced speed/compression)
-            messageTimeoutMs: 300000, // Maximum time to deliver a message in milliseconds (default: 5 minutes) - WARNING: Too low causes data loss when message drops after timeout
-            deliveryTimeoutMs: 300000 // Total time for delivery including retries in milliseconds (default: 5 minutes) - WARNING: Too low causes data loss when all retries exhausted
         },
 
         // Consumer-specific settings (handled by KafkaConsumer)
@@ -221,15 +277,21 @@ var countlyConfig = {
             // Concurrency and performance settings
             partitionsConsumedConcurrently: 4, // Number of partitions to consume concurrently per process (default: 4)
 
-            // Consumer group settings
-            sessionTimeoutMs: 30000, // Consumer session timeout in milliseconds (default: 30 seconds) - WARNING: Too low causes rebalances, potentially losing in-flight messages
+            // Consumer group settings (conservative defaults to reduce rebalancing)
+            sessionTimeoutMs: 60000, // Consumer session timeout in milliseconds (default: 60 seconds) - WARNING: Too low causes rebalances, potentially losing in-flight messages
+            heartbeatIntervalMs: 10000, // Heartbeat interval in milliseconds (default: 10 seconds, should be ~1/6 of sessionTimeout)
+            rebalanceTimeoutMs: 120000, // Rebalance timeout in milliseconds (default: 2 minutes)
             maxPollIntervalMs: 300000, // Maximum time between polls in milliseconds (default: 5 minutes) - WARNING: Too low causes consumer to be kicked out, losing uncommitted offsets
             autoOffsetReset: 'earliest', // Where to start reading when no offset exists (latest/earliest)
             enableAutoCommit: false, // Disable auto-commit for exactly-once processing (default: false) - WARNING: true can cause data loss on consumer crash before processing
 
             // Error handling settings
             invalidJsonBehavior: "skip", // How to handle invalid JSON messages: 'skip' or 'fail' (default: skip)
-            invalidJsonMetrics: true // Whether to log metrics for invalid JSON messages (default: true)
+            invalidJsonMetrics: true, // Whether to log metrics for invalid JSON messages (default: true)
+
+            // Metadata and rack-aware settings
+            metadataMaxAge: 300000, // How often to refresh topic/partition metadata in milliseconds (default: 5 minutes)
+            rackId: null // Rack ID for rack-aware consumption (follower fetching). null = disabled
         }
     },
 
@@ -249,7 +311,7 @@ var countlyConfig = {
     * - sinks: ['mongo', 'kafka'] - Write to both in parallel
     */
     eventSink: {
-        sinks: ['mongo'], // Default: MongoDB only. Add 'kafka' for dual writes
+        sinks: ['kafka'], // Default: Kafka only. Add 'mongo' for dual writes
     },
 
     /**

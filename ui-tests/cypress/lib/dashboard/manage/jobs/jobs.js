@@ -48,9 +48,9 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.verifyElement({
-        labelElement: jobsDataTableElements().COLUMN_NAME_TOTAL_LABEL,
-        labelText: "Total",
-        element: jobsDataTableElements().COLUMN_NAME_TOTAL_SORTABLE_ICON,
+        labelElement: jobsDataTableElements().COLUMN_NAME_TOTAL_RUNS_LABEL,
+        labelText: "Total Runs",
+        element: jobsDataTableElements().COLUMN_NAME_TOTAL_RUNS_SORTABLE_ICON,
     });
 };
 

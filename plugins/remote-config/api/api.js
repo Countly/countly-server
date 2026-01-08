@@ -8,16 +8,7 @@ var pluginOb = {},
 
 const FEATURE_NAME = 'remote_config';
 
-plugins.setConfigs("remote-config", {
-    maximum_allowed_parameters: 2000,
-    conditions_per_paramaeters: 20
-});
-
 (function() {
-    plugins.register("/permissions/features", function(ob) {
-        ob.features.push(FEATURE_NAME);
-    });
-
     /**
      * @api {get} /o/sdk?method=rc Get remote configs in sdk
      * @apiName GetRemoteConfigInSdk

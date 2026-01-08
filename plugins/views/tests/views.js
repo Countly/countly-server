@@ -357,7 +357,7 @@ describe('Testing views plugin', function() {
             tableResponse.yesterday.iTotalDisplayRecords += 1;
             pushValues("yesterday", 0, { "u": 1, "t": 1, "s": 1, "view": "testview0"});
             if (days_this_month < 2) {
-                pushValues("30days", 0, {"t": 1, "s": 1});
+                pushValues("30days", 0, {"u": 1, "t": 1, "s": 1});
             }
             else {
                 pushValues("30days", 0, {"t": 1, "s": 1});
@@ -370,7 +370,12 @@ describe('Testing views plugin', function() {
             if (days_this_year > 1) {
                 tableResponse.month.iTotalRecords = 1;
                 tableResponse.month.iTotalDisplayRecords = 1;
-                pushValues("month", 0, {"t": 1, "s": 1});
+                if (days_this_month < 25) {
+                    pushValues("month", 0, {"u": 1, "t": 1, "s": 1});
+                }
+                else {
+                    pushValues("month", 0, {"t": 1, "s": 1});
+                }
                 //tableResponse["month"]['aaData'][0]['n']=1;
             }
 
@@ -627,7 +632,7 @@ describe('Testing views plugin', function() {
                 });
         });
         it('Trigger deletion job to run to clean out data completely from granular data', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", function(error) {
+            testUtils.triggerJobToRun("api:mutationManagerJob", function(error) {
                 if (error) {
                     console.log(error);
                 }
@@ -1066,7 +1071,7 @@ describe('Testing views plugin', function() {
                 });
         });
         it('Trigger deletion job to run', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", function() {
+            testUtils.triggerJobToRun("api:mutationManagerJob", function() {
                 setTimeout(done, 5000);
             });
         });
@@ -1449,7 +1454,7 @@ describe('Testing views plugin', function() {
                 });
         });
         it('Trigger deletion job to run', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", function() {
+            testUtils.triggerJobToRun("api:mutationManagerJob", function() {
                 setTimeout(done, 500 * testUtils.testScalingFactor);
             });
         });

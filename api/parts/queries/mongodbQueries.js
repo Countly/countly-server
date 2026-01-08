@@ -17,7 +17,7 @@ var obb = {};
      * @returns  {object} - projection
      */
     agg.getDateStringProjection = function(bucket, timezone) {
-        if (!(bucket === "h" || bucket === "d" || bucket === "m" || bucket === "w")) {
+        if (!(bucket === "h" || bucket === "d" || bucket === "m" || bucket === "w" || bucket === "y")) {
             bucket = "d";
         }
         var dstr = {"$toDate": "$ts"};
@@ -33,7 +33,47 @@ var obb = {};
         else if (bucket === "d") {
             dstr = {"$dateToString": {"date": dstr, "format": "%Y:%m:%d", "timezone": (timezone || "UTC")}};
         }
+        else if (bucket === "y") {
+            dstr = {"$dateToString": {"date": dstr, "format": "%Y", "timezone": (timezone || "UTC")}};
+        }
         return dstr;
+    };
+
+    agg.getUniqueUserModel = async function(options) {
+        var pipeline = [];
+        pipeline.push({"$match": options.query});
+        var facets = {};
+        for (var z = 0; z < options.buckets.length; z++) {
+            var facet = [];
+            facet.push({"$group": {"_id": {"u": "$uid", "d": agg.getDateStringProjection(options.buckets[z], options.timezone)}}});
+            facet.push({"$group": {"_id": "$_id.d", "u": {"$sum": 1}}});
+            facets[options.buckets[z]] = facet;
+        }
+        pipeline.push({"$facet": facets});
+        var data = await common.drillDb.collection("drill_events").aggregate(pipeline).toArray();
+        var returnData = [];
+        data = data[0] || {};
+        for (var i = 0;i < options.buckets.length;i++) {
+            for (var m = 0;m < (data[options.buckets[i]] || []).length;m++) {
+                var iid = data[options.buckets[i]][m]._id.replaceAll(/\:/gi, ".").replaceAll(/\.0/gi, ".");
+                if (options.buckets[i] === "w") {
+                    iid = iid.replace(".", ".w");
+                }
+
+                returnData.push({
+                    _id: iid,
+                    u: data[options.buckets[i]][m].u
+                });
+
+            }
+        }
+        return {
+            _queryMeta: {
+                adapter: 'mongodb',
+                query: pipeline || 'MongoDB event segmentation aggregation pipeline',
+            },
+            data: returnData
+        };
     };
 
     /**
@@ -324,6 +364,17 @@ var obb = {};
                 query: pipeline || 'MongoDB event segmentation aggregation pipeline',
             },
             data: data
+        };
+    };
+
+    agg.getDrillCursorForExport = async function(options) {
+        var cursor = common.drillDb.collection("drill_events").aggregate(options.pipeline).stream();
+        return {
+            _queryMeta: {
+                adapter: 'mongodb',
+                query: options.pipeline || 'MongoDB event segmentation aggregation pipeline',
+            },
+            data: cursor
         };
     };
 

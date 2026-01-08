@@ -422,12 +422,14 @@ class ReadBatcher {
     /**
      *  Create batcher instance
      *  @param {Db} db - database object
+     *  @param {object} options - options for the batcher(Optional)
      */
-    constructor(db) {
+    constructor(db, options) {
         this.db = db;
         this.data = {};
         this.promises = {};
-        plugins.loadConfigs(db, () => {
+        this.options = options || {};
+        plugins.loadConfigs((this.options.configs_db || db), () => {
             this.loadConfig();
             this.schedule();
         });

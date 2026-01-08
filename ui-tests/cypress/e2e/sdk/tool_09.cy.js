@@ -18,6 +18,6 @@ describe('9.Mixed tooltip (multiple SDK versions)', () => {
     it('9.3-Test', function() {
         goToConfigTab(true);
         checkTooltipAppears('success', 2, true);
-        checkTooltipAppears('warning', 25, true);
+        checkTooltipAppears('warning', 32, true);
     });
 });
