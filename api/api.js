@@ -20,6 +20,7 @@ var granuralQueries = require('./parts/queries/coreAggregation.js');
 
 //Add deletion manager endpoint
 require('./utils/mutationManager.js');
+const { RateLimiterMemory } = require("rate-limiter-flexible");
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
@@ -185,6 +186,35 @@ plugins.connectToAllDatabases().then(function() {
 
     plugins.dispatch("/master", {}); // init hook
 
+    const rateLimitWindow = parseInt(plugins.getConfig("security").api_rate_limit_window, 10) || 0;
+    const rateLimitRequests = parseInt(plugins.getConfig("security").api_rate_limit_requests, 10) || 0;
+    const rateLimiterInstance = new RateLimiterMemory({ points: rateLimitRequests, duration: rateLimitWindow });
+    const requiresRateLimiting = rateLimitWindow > 0 && rateLimitRequests > 0;
+    const omit = /^\/i(\/bulk)?(\?|$)/; // omit /i endpoint from rate limiting
+    /**
+     * Rate Limiting Middleware
+     * @param {Function} next - The next middleware function
+     * @returns {Function} - The wrapped middleware function with rate limiting
+     */
+    const rateLimit = (next) => {
+        if (!requiresRateLimiting) {
+            return next;
+        }
+        return (req, res) => {
+            if (omit.test(req.url)) {
+                return next(req, res);
+            }
+            const ip = common.getIpAddress(req);
+            rateLimiterInstance
+                .consume(ip)
+                .then(() => next(req, res))
+                .catch(() => {
+                    log.w(`Rate limit exceeded for IP: ${ip}`);
+                    common.returnMessage({ req, res, qstring: {} }, 429, "Too Many Requests");
+                });
+        };
+    };
+
     const serverOptions = {
         port: common.config.api.port,
         host: common.config.api.host || ''
@@ -199,10 +229,10 @@ plugins.connectToAllDatabases().then(function() {
         if (common.config.api.ssl.ca) {
             sslOptions.ca = fs.readFileSync(common.config.api.ssl.ca);
         }
-        server = https.createServer(sslOptions, handleRequest);
+        server = https.createServer(sslOptions, rateLimit(handleRequest));
     }
     else {
-        server = http.createServer(handleRequest);
+        server = http.createServer(rateLimit(handleRequest));
     }
 
     server.listen(serverOptions.port, serverOptions.host, () => {

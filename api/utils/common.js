@@ -1498,7 +1498,9 @@ var ipLogger = common.log('ip:api');
 common.getIpAddress = function(req) {
     var ipAddress = "";
     if (req) {
-        if (req.headers) {
+        // TODO: add config option to trust x-forwarded-for header
+        // or add a configuration option to set trusted proxies
+        if (req.headers && ("x-forwarded-for" in req.headers || "x-real-ip" in req.headers)) {
             ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || "";
         }
         else if (req.connection && req.connection.remoteAddress) {

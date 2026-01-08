@@ -75,7 +75,7 @@ const create = (params) => {
 const update = (params) => {
     if (params.qstring.args) {
         params.qstring.args = JSON.parse(params.qstring.args);
-        common.db.collection(COLLECTION_NAME).update({'_id': params.qstring.args._id}, {$set: params.qstring.args}, (error) =>{
+        common.db.collection(COLLECTION_NAME).updateOne({'_id': params.qstring.args._id, app_id: params.qstring.app_id}, {$set: params.qstring.args}, (error) =>{
             if (error) {
                 common.returnMessage(params, 500, `error: ${error}`);
                 return false;
@@ -89,7 +89,7 @@ const update = (params) => {
         params.qstring.event_order.forEach(function(id, index) {
             bulkArray.push({
                 'updateOne': {
-                    'filter': { '_id': id },
+                    'filter': { '_id': id, app_id: params.qstring.app_id },
                     'update': { '$set': { 'order': index } }
                 }
             });
@@ -106,7 +106,7 @@ const update = (params) => {
         params.qstring.update_status = JSON.parse(params.qstring.update_status);
         params.qstring.status = JSON.parse(params.qstring.status);
         var idss = params.qstring.update_status;
-        common.db.collection(COLLECTION_NAME).update({ _id: { $in: params.qstring.update_status } }, { $set: { status: params.qstring.status } }, {multi: true}, function(error) {
+        common.db.collection(COLLECTION_NAME).update({ _id: { $in: params.qstring.update_status }, app_id: params.qstring.app_id }, { $set: { status: params.qstring.status } }, {multi: true}, function(error) {
             if (error) {
                 common.returnMessage(params, 500, `error: ${error}`);
                 return false;
@@ -173,7 +173,7 @@ const remove = async(params) => {
     }
     params.qstring.args = JSON.parse(params.qstring.args);
     var idss = params.qstring.args;
-    common.db.collection(COLLECTION_NAME).remove({_id: { $in: params.qstring.args }}, (error) =>{
+    common.db.collection(COLLECTION_NAME).remove({_id: { $in: params.qstring.args }, app_id: params.qstring.app_id}, (error) =>{
         if (error) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;

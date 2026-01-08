@@ -12,7 +12,7 @@ var pluginOb = {},
     localize = require('../../../api/utils/localization.js'),
     async = require('async'),
     mail = require("../../../api/parts/mgmt/mail"),
-    { validateUser } = require('../../../api/utils/rights.js');
+    { validateUser, getUserApps, getAdminApps} = require('../../../api/utils/rights.js');
 
 var ejs = require("ejs");
 
@@ -1200,6 +1200,24 @@ var ejs = require("ejs");
                 widget.contenthtml = sanitizeNote(widget.contenthtml);
             }
 
+            //Filter out app_ids that current users does not have access to
+            if (widget.apps && Array.isArray(widget.apps)) {
+                var user_apps = getUserApps(params.member) || [];
+                var admin_apps = getAdminApps(params.member) || [];
+                widget.apps = widget.apps.filter(appId => {
+                    if (params.member.global_admin) {
+                        return true;
+                    }
+                    else if (user_apps && user_apps.indexOf(appId) !== -1) {
+                        return true;
+                    }
+                    else if (admin_apps && admin_apps.indexOf(appId) !== -1) {
+                        return true;
+                    }
+                    return false;
+                });
+            }
+
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                 if (err || !dashboard) {
                     common.returnMessage(params, 400, "Dashboard with the given id doesn't exist");
@@ -1282,6 +1300,24 @@ var ejs = require("ejs");
                 common.returnMessage(params, 400, 'Invalid parameter: widget_id');
                 return true;
             }
+            //Filter out app_ids that current users does not have access to
+            if (widget.apps && Array.isArray(widget.apps)) {
+                var user_apps = getUserApps(params.member) || [];
+                var admin_apps = getAdminApps(params.member) || [];
+                widget.apps = widget.apps.filter(appId => {
+                    if (params.member.global_admin) {
+                        return true;
+                    }
+                    else if (user_apps && user_apps.indexOf(appId) !== -1) {
+                        return true;
+                    }
+                    else if (admin_apps && admin_apps.indexOf(appId) !== -1) {
+                        return true;
+                    }
+                    return false;
+                });
+            }
+
 
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (err || !dashboard) {
