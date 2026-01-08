@@ -156,16 +156,21 @@ var countlyConfig = {
         /**
          * Cluster configuration for distributed ClickHouse deployments
          *
-         * Configuration uses boolean flags for clarity:
-         * - shards: false, replicas: false → single mode (default)
+         * Configuration uses boolean flags for clarity.
+         * The combination of `shards` and `replicas` determines the cluster mode:
+         * - shards: false, replicas: false → single-node mode (default)
          * - shards: false, replicas: true  → replicated mode (HA, recommended)
          * - shards: true,  replicas: false → sharded mode (horizontal scaling, no HA)
-         * - shards: true,  replicas: true  → ha mode (full HA with sharding)
+         * - shards: true,  replicas: true  → sharded + replicated (full HA with sharding)
+         *
+         * `isCloud` is orthogonal to the above modes and is used when running on
+         * ClickHouse Cloud. In cloud mode, DDL is typically managed externally, so
+         * the API will skip DDL statements and expect the required schema to exist.
          *
          * @property {string} name - Cluster name (must match ClickHouse cluster config)
          * @property {boolean} shards - Enable sharding (horizontal scaling across multiple shards)
          * @property {boolean} replicas - Enable replication (high availability with multiple replicas)
-         * @property {boolean} isCloud - ClickHouse Cloud mode (skip DDL, validate schema exists)
+         * @property {boolean} isCloud - Enable ClickHouse Cloud mode (skip DDL, validate schema exists)
          */
         cluster: {
             name: 'countly_cluster',
