@@ -175,7 +175,7 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
                                 common.returnMessage(params, 200, "Deleted an alert");
                             }
                             else {
-                                common.returnMessage(params, 404, "Alert to delete not found. Make sure alert exists and you have rights to delete it.");
+                                common.returnMessage(params, 400, "Alert to delete not found. Make sure alert exists and you have rights to delete it.");
                             }
                         }
                         else {

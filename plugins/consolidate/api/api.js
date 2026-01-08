@@ -21,7 +21,7 @@ plugins.register("/i", async function(ob) {
         let consolidateDestinations = [];
 
         // get config from application document
-        if (ob.app.plugins && ob.app.plugins.consolidate && ob.app.plugins.consolidate.length) {
+        if (ob && ob.app && ob.app.plugins && ob.app.plugins.consolidate && ob.app.plugins.consolidate.length) {
             consolidateDestinations = ob.app.plugins.consolidate;
         }
         else {
