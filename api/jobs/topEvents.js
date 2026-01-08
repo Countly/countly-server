@@ -35,15 +35,6 @@ class TopEventsJob extends job.Job {
     }
 
     /**
-     * If the event's name include [CLY], removed them.
-     * @param {array} eventsData - events list.
-     * @return {array} filtered data.
-     */
-    eventsFilter(eventsData) {
-        return eventsData.filter(l => !l.startsWith('[CLY]_'));
-    }
-
-    /**
      *
      * @param {object} params  - params object
      * @param {object} data  - object where to collect data
@@ -205,58 +196,55 @@ class TopEventsJob extends job.Job {
     async getAppEvents(app) {
         log.d(app._id + ": Fetching app events");
         const getEvents = await new Promise((res, rej) => common.db.collection("events").findOne({ _id: app._id }, (errorEvents, result) => errorEvents ? rej(errorEvents) : res(result)));
-        if (getEvents && 'list' in getEvents) {
-            const eventMap = this.eventsFilter(getEvents.list);
-            if (eventMap && eventMap instanceof Array) {
-                for (const period of TopEventsJob.PERIODS) {
-                    const data = {};
-                    const sessionData = {};
-                    const usersData = {};
-                    const usersCollectionName = "users";
-                    const ob = { app_id: app._id, appTimezone: app.timezone, qstring: { period: period } };
-                    // if (period === "hour") {
-                    //     ob.time = common.initTimeObj(app.timezone, new Date().getTime());
-                    //     ob.qstring.action = "refresh";
-                    // }
-                    let totalCount = 0;
-                    let prevTotalCount = 0;
-                    let totalSum = 0;
-                    let prevTotalSum = 0;
-                    let totalDuration = 0;
-                    let prevTotalDuration = 0;
+        if (Array.isArray(getEvents?.list)) {
+            for (const period of TopEventsJob.PERIODS) {
+                const data = {};
+                const sessionData = {};
+                const usersData = {};
+                const usersCollectionName = "users";
+                const ob = { app_id: app._id, appTimezone: app.timezone, qstring: { period: period } };
+                // if (period === "hour") {
+                //     ob.time = common.initTimeObj(app.timezone, new Date().getTime());
+                //     ob.qstring.action = "refresh";
+                // }
+                let totalCount = 0;
+                let prevTotalCount = 0;
+                let totalSum = 0;
+                let prevTotalSum = 0;
+                let totalDuration = 0;
+                let prevTotalDuration = 0;
 
-                    //Fetching totals for this period
-                    await this.fetchEventTotalCounts({ app_id: app._id, appTimezone: app.timezone, qstring: { period: period } }, data, false);
-                    var period2 = countlyCommon.getPeriodObj({appTimezone: app.timezone, qstring: {}}, period);
-                    var newPeriod = [period2.start - (period2.end - period2.start), period2.start];
-                    //Fetching totals for previous period
-                    await this.fetchEventTotalCounts({ app_id: app._id, appTimezone: app.timezone, qstring: { period: newPeriod } }, data, true);
-                    // filter out the ones not in eventMap
-                    if (typeof data === "object") {
-                        Object.keys(data).forEach((key) => {
-                            if (!eventMap.includes(key)) {
-                                delete data[key];
-                            }
-                        });
-                    }
-
-                    for (var event in data) {
-                        //Calculating trend
-                        var trend = countlyCommon.getPercentChange(data[event].data.count["prev-total"], data[event].data.count.total);
-                        data[event].data.count.change = trend.percent;
-                        data[event].data.count.trend = trend.trend;
-                        totalCount += data[event].data.count.total;
-                        prevTotalCount += data[event].data.count["prev-total"];
-                        totalSum += data[event].data.sum.total;
-                        prevTotalSum += data[event].data.sum["prev-total"];
-                        totalDuration += data[event].data.duration.total;
-                        prevTotalDuration += data[event].data.duration["prev-total"];
-                    }
-                    log.d("    getting session count (" + period + ")");
-                    await this.getSessionCount({ ob, sessionData, usersData, usersCollectionName });
-                    log.d("    saving data (" + period + ")");
-                    await this.saveAppEvents({ app, data, sessionData, usersData, period, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration });
+                //Fetching totals for this period
+                await this.fetchEventTotalCounts({ app_id: app._id, appTimezone: app.timezone, qstring: { period: period } }, data, false);
+                var period2 = countlyCommon.getPeriodObj({appTimezone: app.timezone, qstring: {}}, period);
+                var newPeriod = [period2.start - (period2.end - period2.start), period2.start];
+                //Fetching totals for previous period
+                await this.fetchEventTotalCounts({ app_id: app._id, appTimezone: app.timezone, qstring: { period: newPeriod } }, data, true);
+                // filter out the internal events
+                if (typeof data === "object") {
+                    Object.keys(data).forEach((key) => {
+                        if (key.startsWith('[CLY]_')) {
+                            delete data[key];
+                        }
+                    });
                 }
+
+                for (var event in data) {
+                    //Calculating trend
+                    var trend = countlyCommon.getPercentChange(data[event].data.count["prev-total"], data[event].data.count.total);
+                    data[event].data.count.change = trend.percent;
+                    data[event].data.count.trend = trend.trend;
+                    totalCount += data[event].data.count.total;
+                    prevTotalCount += data[event].data.count["prev-total"];
+                    totalSum += data[event].data.sum.total;
+                    prevTotalSum += data[event].data.sum["prev-total"];
+                    totalDuration += data[event].data.duration.total;
+                    prevTotalDuration += data[event].data.duration["prev-total"];
+                }
+                log.d("    getting session count (" + period + ")");
+                await this.getSessionCount({ ob, sessionData, usersData, usersCollectionName });
+                log.d("    saving data (" + period + ")");
+                await this.saveAppEvents({ app, data, sessionData, usersData, period, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration });
             }
         }
         else {
