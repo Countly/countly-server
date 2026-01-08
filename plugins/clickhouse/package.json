@@ -1,0 +1,26 @@
+{
+  "name": "countly-clickhouse",
+  "title": "ClickHouse Integration",
+  "version": "1.0.0",
+  "description": "ClickHouse database integration for high-performance analytics",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
+  "keywords": [
+    "countly",
+    "analytics",
+    "clickhouse",
+    "database",
+    "high-performance"
+  ],
+  "dependencies": {
+    "@clickhouse/client": "^1.13.0"
+  },
+  "private": true
+}

@@ -1,0 +1,192 @@
+# ClickHouse HA Mode: 2 shards x 2 replicas (Full High Availability)
+#
+# Usage:
+#   docker compose -f docker-compose.ha.yml up -d
+#   docker compose -f docker-compose.ha.yml down -v
+#
+# Configuration:
+#   shards: true, replicas: true, isCloud: false
+#
+# Topology:
+#   Shard 1: clickhouse1 (replica1) + clickhouse2 (replica2)
+#   Shard 2: clickhouse3 (replica1) + clickhouse4 (replica2)
+#
+# Ports:
+#   - 8123: ClickHouse HTTP (shard1-replica1)
+#   - 8124: ClickHouse HTTP (shard1-replica2)
+#   - 8125: ClickHouse HTTP (shard2-replica1)
+#   - 8126: ClickHouse HTTP (shard2-replica2)
+#   - 9181: ClickHouse Keeper
+
+services:
+  # ClickHouse Keeper for coordination/replication
+  clickhouse-keeper:
+    image: clickhouse/clickhouse-keeper:25.8
+    container_name: ch-test-keeper
+    hostname: clickhouse-keeper
+    ports:
+      - "9181:9181"
+    volumes:
+      - keeper-data:/var/lib/clickhouse
+      - ./config/keeper-config.xml:/etc/clickhouse-keeper/keeper_config.xml:ro
+    networks:
+      - ch-test-network
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-keeper-client -q 'ruok' 2>/dev/null | grep -q imok || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  # ====== SHARD 1 ======
+
+  # Shard 1, Replica 1 (primary entry point)
+  clickhouse1:
+    image: clickhouse/clickhouse-server:25.8
+    container_name: ch-test-node1
+    hostname: clickhouse1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      CLICKHOUSE_DB: countly_drill
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ""
+      CLICKHOUSE_SKIP_USER_SETUP: 1
+    volumes:
+      - clickhouse1-data:/var/lib/clickhouse
+      - ./config/ha/cluster-config.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+      - ./config/ha/macros-node1.xml:/etc/clickhouse-server/config.d/macros.xml:ro
+    networks:
+      ch-test-network:
+        aliases:
+          - clickhouse  # Default alias for tests
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    depends_on:
+      clickhouse-keeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # Shard 1, Replica 2
+  clickhouse2:
+    image: clickhouse/clickhouse-server:25.8
+    container_name: ch-test-node2
+    hostname: clickhouse2
+    ports:
+      - "8124:8123"
+      - "9001:9000"
+    environment:
+      CLICKHOUSE_DB: countly_drill
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ""
+      CLICKHOUSE_SKIP_USER_SETUP: 1
+    volumes:
+      - clickhouse2-data:/var/lib/clickhouse
+      - ./config/ha/cluster-config.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+      - ./config/ha/macros-node2.xml:/etc/clickhouse-server/config.d/macros.xml:ro
+    networks:
+      - ch-test-network
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    depends_on:
+      clickhouse-keeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ====== SHARD 2 ======
+
+  # Shard 2, Replica 1
+  clickhouse3:
+    image: clickhouse/clickhouse-server:25.8
+    container_name: ch-test-node3
+    hostname: clickhouse3
+    ports:
+      - "8125:8123"
+      - "9002:9000"
+    environment:
+      CLICKHOUSE_DB: countly_drill
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ""
+      CLICKHOUSE_SKIP_USER_SETUP: 1
+    volumes:
+      - clickhouse3-data:/var/lib/clickhouse
+      - ./config/ha/cluster-config.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+      - ./config/ha/macros-node3.xml:/etc/clickhouse-server/config.d/macros.xml:ro
+    networks:
+      - ch-test-network
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    depends_on:
+      clickhouse-keeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # Shard 2, Replica 2
+  clickhouse4:
+    image: clickhouse/clickhouse-server:25.8
+    container_name: ch-test-node4
+    hostname: clickhouse4
+    ports:
+      - "8126:8123"
+      - "9003:9000"
+    environment:
+      CLICKHOUSE_DB: countly_drill
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ""
+      CLICKHOUSE_SKIP_USER_SETUP: 1
+    volumes:
+      - clickhouse4-data:/var/lib/clickhouse
+      - ./config/ha/cluster-config.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+      - ./config/ha/macros-node4.xml:/etc/clickhouse-server/config.d/macros.xml:ro
+    networks:
+      - ch-test-network
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    depends_on:
+      clickhouse-keeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  keeper-data:
+  clickhouse1-data:
+  clickhouse2-data:
+  clickhouse3-data:
+  clickhouse4-data:
+
+networks:
+  ch-test-network:
+    name: ch-test-ha-network

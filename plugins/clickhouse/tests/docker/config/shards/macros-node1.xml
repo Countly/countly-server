@@ -1,0 +1,8 @@
+<clickhouse>
+    <!-- Shards Mode: Node 1 - Shard 01 -->
+    <macros>
+        <shard>01</shard>
+        <replica>clickhouse1</replica>
+        <cluster>countly_cluster</cluster>
+    </macros>
+</clickhouse>

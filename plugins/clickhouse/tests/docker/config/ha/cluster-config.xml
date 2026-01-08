@@ -1,0 +1,38 @@
+<clickhouse>
+    <!-- HA Mode: 2 shards x 2 replicas (Full High Availability) -->
+    <remote_servers>
+        <countly_cluster>
+            <!-- Shard 1: clickhouse1 (primary) + clickhouse2 (replica) -->
+            <shard>
+                <internal_replication>true</internal_replication>
+                <replica>
+                    <host>clickhouse1</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>clickhouse2</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <!-- Shard 2: clickhouse3 (primary) + clickhouse4 (replica) -->
+            <shard>
+                <internal_replication>true</internal_replication>
+                <replica>
+                    <host>clickhouse3</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>clickhouse4</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+        </countly_cluster>
+    </remote_servers>
+
+    <zookeeper>
+        <node>
+            <host>clickhouse-keeper</host>
+            <port>9181</port>
+        </node>
+    </zookeeper>
+</clickhouse>

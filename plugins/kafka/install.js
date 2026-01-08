@@ -1,0 +1,1 @@
+console.log("Kafka plugin installed successfully");
