@@ -30,13 +30,33 @@
             }
         };
         
-        // Log plugin information for remote debugging
-        if (typeof countlyGlobal !== 'undefined' && countlyGlobal.plugins) {
-            console.log('%c[Countly Plugin Debug]', 'color: #4CAF50; font-weight: bold; font-size: 14px;');
-            console.log('Loaded plugins:', countlyGlobal.plugins);
-            console.log('Total plugins:', countlyGlobal.plugins.length);
-            console.log('Plugin list:', countlyGlobal.plugins.join(', '));
-        }
+        // Log plugin information for remote debugging (wait for countlyGlobal to be available)
+        (function() {
+            function logPluginInfo() {
+                if (typeof countlyGlobal !== 'undefined' && countlyGlobal.plugins) {
+                    console.log('%c[Countly Plugin Debug]', 'color: #4CAF50; font-weight: bold; font-size: 14px;');
+                    console.log('Loaded plugins:', countlyGlobal.plugins);
+                    console.log('Total plugins:', countlyGlobal.plugins.length);
+                    console.log('Plugin list:', countlyGlobal.plugins.join(', '));
+                    
+                    // Check for cleanup-center specifically
+                    if (countlyGlobal.plugins.indexOf('cleanup-center') !== -1) {
+                        console.log('%c[Cleanup Center]', 'color: #FF5722; font-weight: bold;', 'Plugin is ENABLED in countlyGlobal.plugins');
+                    } else {
+                        console.warn('%c[Cleanup Center]', 'color: #FF9800; font-weight: bold;', 'Plugin is NOT in countlyGlobal.plugins array');
+                    }
+                } else {
+                    console.warn('[Countly Plugin Debug] countlyGlobal not available yet, retrying...');
+                    setTimeout(logPluginInfo, 100);
+                }
+            }
+            // Try immediately and also on DOM ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', logPluginInfo);
+            } else {
+                setTimeout(logPluginInfo, 0);
+            }
+        })();
         
         window.loadPlugin = function(plugin, callback, args){
             if (typeof plugin !== "string") {

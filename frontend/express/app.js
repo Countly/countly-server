@@ -1069,25 +1069,57 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     plgns.unshift('push');
                 }
                 plgns.forEach(plugin => {
-                    var pluginDir = __dirname + `/../../plugins/${common.sanitizeFilename(plugin)}`;
-                    try {
-                        var pluginStat = fs.lstatSync(pluginDir);
-                        var isSymlink = pluginStat.isSymbolicLink();
-                        var actualPath = isSymlink ? fs.realpathSync(pluginDir) : pluginDir;
-                        var pluginSource = isSymlink ? 'ENTERPRISE' : 'CORE';
+                    // Check both possible locations: core/plugins and enterprise plugins
+                    var corePluginDir = __dirname + `/../../plugins/${common.sanitizeFilename(plugin)}`;
+                    var enterprisePluginDir = path.resolve(__dirname + '/../../../plugins/' + common.sanitizeFilename(plugin));
+                    var pluginDir = null;
+                    var pluginSource = 'UNKNOWN';
+                    var actualPath = null;
+                    var isSymlink = false;
 
-                        console.log('[Dashboard] Loading plugin assets:', plugin, '- Source:', pluginSource);
-                        if (isSymlink) {
-                            console.log('[Dashboard]   Plugin symlink target:', actualPath);
+                    // First check if it exists in core/plugins
+                    try {
+                        if (fs.existsSync(corePluginDir)) {
+                            var pluginStat = fs.lstatSync(corePluginDir);
+                            isSymlink = pluginStat.isSymbolicLink();
+                            actualPath = isSymlink ? fs.realpathSync(corePluginDir) : corePluginDir;
+                            pluginDir = corePluginDir;
+                            pluginSource = isSymlink ? 'ENTERPRISE (symlink in core/plugins)' : 'CORE (directory in core/plugins)';
+
+                            console.log('[Dashboard] Loading plugin assets:', plugin, '- Source:', pluginSource);
+                            if (isSymlink) {
+                                console.log('[Dashboard]   Plugin symlink target:', actualPath);
+                                console.log('[Dashboard]   Checking if symlink points to enterprise plugins:', actualPath.indexOf('plugins/') !== -1 ? 'YES' : 'NO');
+                            }
+                        }
+                        else if (fs.existsSync(enterprisePluginDir)) {
+                            pluginDir = enterprisePluginDir;
+                            actualPath = enterprisePluginDir;
+                            pluginSource = 'ENTERPRISE (direct from plugins/)';
+                            console.log('[Dashboard] Loading plugin assets:', plugin, '- Source:', pluginSource);
+                            console.log('[Dashboard]   Plugin path:', actualPath);
+                        }
+                        else {
+                            console.warn('[Dashboard] Plugin not found in core/plugins or enterprise plugins:', plugin);
+                            pluginDir = corePluginDir; // Use default for error handling
                         }
                     }
                     catch (e) {
-                        // If we can't check the plugin path, continue anyway
+                        console.log('[Dashboard] Error checking plugin path for %s: %j', plugin, e.message);
+                        pluginDir = corePluginDir; // Fallback to default
+                    }
+
+                    if (!pluginDir) {
+                        console.error('[Dashboard] Could not determine plugin directory for:', plugin);
+                        return;
                     }
 
                     try {
                         let contents = fs.readdirSync(pluginDir + '/frontend/public/javascripts') || [];
                         toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
+                        if (plugin === 'cleanup-center') {
+                            console.log('[Dashboard] [Cleanup Center] Loaded JS files:', contents.filter(n => typeof n === 'string' && n.includes('.js')));
+                        }
                     }
                     catch (e) {
                         console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
