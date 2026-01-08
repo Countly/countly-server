@@ -20,6 +20,7 @@
  *   - Run test runner to manage docker lifecycle: node plugins/clickhouse/tests/run-cluster-tests.js
  */
 const Module = require('module');
+require('should');
 
 const {
     MODES,
