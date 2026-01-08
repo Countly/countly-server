@@ -36,8 +36,8 @@
     "start:aggregator:dev": "COUNTLY_CONFIG__SYMLINKED=true COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings api/aggregator.js",
     "start:ingestor:dev": "COUNTLY_CONFIG__SYMLINKED=true COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings api/ingestor.js",
     "start:jobserver:dev": "COUNTLY_CONFIG__SYMLINKED=true COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings jobServer/index.js",
-    "start:all:dev": "npm run start:api:dev & npm run start:frontend:dev & npm run start:ingestor:dev & npm run start:aggregator:dev & start:jobserver:dev & wait",
-    "test:services": "env-cmd -f test/configs/base.env -f test/configs/suite-overrides/core.env sh -c 'npm run start:api:dev & npm run start:frontend:dev & npm run start:ingestor:dev & npm run start:aggregator:dev & start:jobserver:dev & wait'"
+    "start:all:dev": "npm run start:api:dev & npm run start:frontend:dev & npm run start:ingestor:dev & npm run start:aggregator:dev & npm run start:jobserver:dev & wait",
+    "test:services": "env-cmd -f test/configs/base.env -f test/configs/suite-overrides/core.env sh -c 'npm run start:api:dev & npm run start:frontend:dev & npm run start:ingestor:dev & npm run start:aggregator:dev & npm run start:jobserver:dev & wait'"
   },
   "lint-staged": {
     "*.{js,vue}": [
