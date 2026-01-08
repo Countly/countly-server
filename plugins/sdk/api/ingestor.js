@@ -57,9 +57,9 @@ var common = require('../../../api/utils/common.js');
         }
 
         //record request delay
-        if (!params.time) {
-            params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-        }
+        /*if (!params.time) {
+            params.time = common.initTimeObj(params.appTimezone, params?.qstring?.timestamp);
+        }*/
         common.recordCustomMeasurement(params, "sdks", params.app_id, ["d"], Math.round(Math.max(Date.now() - params.time.mstimestamp, 0) / 1000));
         if (params.qstring.hc) {
             if (typeof params.qstring.hc === "string") {
