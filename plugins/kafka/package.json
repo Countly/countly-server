@@ -1,0 +1,18 @@
+{
+  "name": "countly-kafka-connector",
+  "title": "Kafka Connector",
+  "version": "1.0.0",
+  "description": "Kafka connector for Countly",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "cly_dependencies": {
+    "drill": true
+  },
+  "private": true,
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "lz4-napi": "^2.8.0"
+  }
+}
