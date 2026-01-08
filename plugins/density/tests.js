@@ -105,7 +105,7 @@ describe('Testing Density metrics', function() {
         it('send some data', function(done) {
             var params = {"_density": "400dpi", "_os": "Android"};
             request
-                .get('/i?device_id=' + DEVICE_ID + '7&app_key=' + APP_KEY + "&begin_session=1&metrics=" + JSON.stringify(params))
+                .get('/i?device_id=' + DEVICE_ID + '12&app_key=' + APP_KEY + "&begin_session=1&metrics=" + JSON.stringify(params))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
