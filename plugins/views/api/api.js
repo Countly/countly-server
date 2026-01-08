@@ -53,10 +53,10 @@ const FEATURE_NAME = 'views';
                         const bulk = common.db.collection("app_viewsmeta").initializeUnorderedBulkOp();
                         for (var k = 0; k < data.length; k++) {
                             if (data[k].value !== "") {
-                                bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$set: {"display": data[k].value}});
+                                bulk.find({_id: common.db.ObjectID(data[k].key), a: (appId + "")}).updateOne({$set: {"display": data[k].value}});
                             }
                             else {
-                                bulk.find({_id: common.db.ObjectID(data[k].key)}).updateOne({$unset: {"display": true}});
+                                bulk.find({_id: common.db.ObjectID(data[k].key), a: (appId + "")}).updateOne({$unset: {"display": true}});
                             }
                             haveUpdate = true;
                         }
@@ -101,7 +101,7 @@ const FEATURE_NAME = 'views';
                                         log.e(err1);
                                     }
                                     if (viewInfo) {
-                                        common.db.collection("app_viewsmeta").findOne({'_id': viewid}, {}, function(err, viewrecord) {
+                                        common.db.collection("app_viewsmeta").findOne({'_id': viewid, "a": (appId + "")}, {}, function(err, viewrecord) {
                                             if (viewrecord && viewrecord.view) {
                                                 viewName = viewrecord.view;
                                                 viewUrl = viewrecord.view;
@@ -1787,14 +1787,23 @@ const FEATURE_NAME = 'views';
                         dati[z].views = dati[z]._id;
                     }
 
-                    if (dati) {
-                        dati = {chartData: dati};
+                    if (dati && dati.length) {
+                        getUniqueValuesForTable(paramsObj, dati, function(ret) {
+                            var rows = ret && ret.data ? ret.data : dati;
+                            data.dashData = {
+                                isValid: true,
+                                data: {chartData: rows || []}
+                            };
+                            resolve();
+                        });
                     }
-                    data.dashData = {
-                        isValid: true,
-                        data: dati || { chartData: [] }
-                    };
-                    resolve();
+                    else {
+                        data.dashData = {
+                            isValid: true,
+                            data: dati || { chartData: [] }
+                        };
+                        resolve();
+                    }
                 });
             }
             else {
