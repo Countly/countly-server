@@ -40,11 +40,11 @@ class TopEventsJob extends job.Job {
      * @return {array} filtered data.
      */
     eventsFilter(eventsData) {
-        return eventsData.filter(l => !l.includes('[CLY]'));
+        return eventsData.filter(l => !l.startsWith('[CLY]_'));
     }
 
     /**
-     * 
+     *
      * @param {object} params  - params object
      * @param {object} data  - object where to collect data
      * @param {boolean} previous  - if fetching for previous period
