@@ -64,6 +64,8 @@ plugins.setConfigs("security", {
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
     dashboard_rate_limit_window: 60,
     dashboard_rate_limit_requests: 500,
+    api_rate_limit_window: 0,
+    api_rate_limit_requests: 0,
     proxy_hostname: "",
     proxy_port: "",
     proxy_username: "",
