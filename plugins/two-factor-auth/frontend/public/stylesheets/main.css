@@ -100,3 +100,11 @@
     color: #a8a8a8;
     font-size: 12px;
 }
+
+#two-factor-auth-setup-modal ol {
+    font-size: 18px;
+}
+
+#two-factor-auth-setup-modal ol a {
+    color: #0166D6;
+}
