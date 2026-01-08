@@ -928,10 +928,34 @@
                 if (row.hidden) {
                     return 'row-hidden';
                 }
-                if (row.isUnused) {
-                    return 'row-unused';
-                }
+                // Removed row-unused class - now using tags instead
                 return '';
+            },
+            isEntityOutdated: function(entity) {
+                // Check if entity is outdated based on lastSeen
+                if (!entity.lastSeen || typeof entity.lastSeen === 'string') {
+                    // If lastSeen is a string like 'Active' or 'N/A', it's not outdated
+                    if (entity.lastSeen === 'Active' || entity.lastSeen === 'N/A') {
+                        return false;
+                    }
+                    // If it's a string date, try to parse it
+                    if (typeof entity.lastSeen === 'string' && entity.lastSeen.length > 10) {
+                        const lastSeenTime = new Date(entity.lastSeen).getTime();
+                        if (!isNaN(lastSeenTime)) {
+                            const ninetyDaysAgo = Date.now() - (90 * 24 * 60 * 60 * 1000);
+                            return lastSeenTime < ninetyDaysAgo;
+                        }
+                    }
+                    // If lastSeen is null or invalid, consider it outdated
+                    return true;
+                }
+                // If lastSeen is a date object or timestamp
+                const lastSeenTime = new Date(entity.lastSeen).getTime();
+                if (isNaN(lastSeenTime)) {
+                    return true; // Invalid date = outdated
+                }
+                const ninetyDaysAgo = Date.now() - (90 * 24 * 60 * 60 * 1000);
+                return lastSeenTime < ninetyDaysAgo;
             },
             setupKeyboardShortcuts: function() {
                 document.addEventListener('keydown', function(e) {

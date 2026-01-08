@@ -142,12 +142,13 @@
                     <el-table-column
                         prop="type"
                         :label="i18n('cleanup-center.type')"
-                        width="100"
+                        width="150"
                         sortable>
                         <template slot-scope="scope">
-                            <el-tooltip :content="getTypeLabel(scope.row.type)" placement="top">
+                            <div class="bu-is-flex bu-is-align-items-center" style="gap: 8px;">
                                 <i :class="getTypeIcon(scope.row.type)"></i>
-                            </el-tooltip>
+                                <span class="text-medium">{{ getTypeLabel(scope.row.type) }}</span>
+                            </div>
                         </template>
                     </el-table-column>
 
@@ -166,13 +167,33 @@
                         prop="key"
                         :label="i18n('cleanup-center.entity')"
                         min-width="200"
-                        sortable
-                        show-overflow-tooltip>
+                        sortable>
                         <template slot-scope="scope">
-                            <div class="text-medium">{{ scope.row.key }}</div>
-                            <div v-if="scope.row.displayName && scope.row.displayName !== scope.row.key" 
-                                 class="text-small color-cool-gray-50">
-                                {{ scope.row.displayName }}
+                            <div class="bu-is-flex bu-is-align-items-center" style="gap: 8px;">
+                                <div style="flex: 1; min-width: 0;">
+                                    <el-tooltip :content="scope.row.key" placement="top">
+                                        <div class="text-medium entity-name-truncate">
+                                            {{ scope.row.key }}
+                                        </div>
+                                    </el-tooltip>
+                                    <el-tooltip v-if="scope.row.displayName && scope.row.displayName !== scope.row.key" 
+                                                :content="scope.row.displayName" 
+                                                placement="top">
+                                        <div class="text-small color-cool-gray-50 entity-name-truncate">
+                                            {{ scope.row.displayName }}
+                                        </div>
+                                    </el-tooltip>
+                                </div>
+                                <el-tooltip 
+                                    v-if="scope.row.isUnused || (typeof scope.row.lastSeen === 'string' && scope.row.lastSeen === 'Outdated')"
+                                    :content="i18n('cleanup-center.outdated-explainer')"
+                                    placement="top">
+                                    <cly-status-tag 
+                                        color="red" 
+                                        size="small"
+                                        :text="i18n('cleanup-center.outdated')">
+                                    </cly-status-tag>
+                                </el-tooltip>
                             </div>
                         </template>
                     </el-table-column>
@@ -353,6 +374,20 @@
                     <p>Loading...</p>
                 </div>
                 <div v-else>
+                    <!-- Status Tags -->
+                    <div class="bu-mb-4 bu-is-flex" style="gap: 8px;">
+                        <el-tooltip 
+                            v-if="selectedEntity.isUnused || (typeof selectedEntity.lastSeen === 'string' && selectedEntity.lastSeen === 'Outdated')"
+                            :content="i18n('cleanup-center.outdated-explainer')"
+                            placement="top">
+                            <cly-status-tag 
+                                color="red" 
+                                size="small"
+                                :text="i18n('cleanup-center.outdated')">
+                            </cly-status-tag>
+                        </el-tooltip>
+                    </div>
+                    
                     <!-- Warning for Unused Dashboards -->
                     <el-alert
                         v-if="selectedEntity.type === 'dashboard' && selectedEntity.isUnused"
