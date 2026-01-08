@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<clickhouse>
+    <!-- Low memory settings for lightweight tests -->
+    <!-- Reduce cache sizes relative to RAM (default is 0.5, we use 0.1) -->
+    <cache_size_to_ram_max_ratio replace="replace">0.1</cache_size_to_ram_max_ratio>
+
+    <!-- Allow using more than available RAM if swap exists (for low-RAM containers) -->
+    <max_server_memory_usage_to_ram_ratio replace="replace">0.5</max_server_memory_usage_to_ram_ratio>
+
+    <!-- Explicitly limit mark cache to 256MB (default 5GB) -->
+    <mark_cache_size replace="replace">268435456</mark_cache_size>
+
+    <!-- Limit uncompressed cache to 64MB (default 8GB) -->
+    <uncompressed_cache_size replace="replace">67108864</uncompressed_cache_size>
+
+    <!-- Disable async inserts for test reliability - ensures inserts complete before returning -->
+    <profiles>
+        <default>
+            <async_insert>0</async_insert>
+            <wait_for_async_insert>1</wait_for_async_insert>
+        </default>
+    </profiles>
+</clickhouse>

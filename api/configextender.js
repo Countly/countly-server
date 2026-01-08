@@ -65,6 +65,11 @@ const OVERRIDES = {
         }
     },
 
+    // ClickHouse configuration overrides.
+    // Explicitly mapped keys are listed below. Additional nested keys (like cluster.*,
+    // parallelReplicas.*, replication.*, distributed.*, dictionary.*) work via the
+    // recursive dig() fallback mechanism, which creates nested objects from underscore-
+    // separated env var names (e.g., COUNTLY_CONFIG__CLICKHOUSE_CLUSTER_ENABLED -> clickhouse.cluster.enabled).
     CLICKHOUSE: {
         URL: 'url',
         USERNAME: 'username',
@@ -83,7 +88,54 @@ const OVERRIDES = {
         },
         // Mark CLICKHOUSE_SETTINGS as a passthrough object
         // Any subkeys will be automatically mapped to lowercase
-        CLICKHOUSE_SETTINGS: 'clickhouse_settings'
+        CLICKHOUSE_SETTINGS: {
+            ASYNC_INSERT: 'async_insert',
+            ASYNC_INSERT_BUSY_TIMEOUT_MS: 'async_insert_busy_timeout_ms',
+            ASYNC_INSERT_STALE_TIMEOUT_MS: 'async_insert_stale_timeout_ms',
+            WAIT_FOR_ASYNC_INSERT: 'wait_for_async_insert',
+            MAX_INSERT_BLOCK_SIZE: 'max_insert_block_size',
+            MAX_THREADS: 'max_threads',
+            MAX_MEMORY_USAGE: 'max_memory_usage'
+        },
+        // Cluster configuration
+        CLUSTER: {
+            NAME: 'name',
+            SHARDS: 'shards',
+            REPLICAS: 'replicas',
+            ISCLOUD: 'isCloud'
+        },
+        // Replication configuration
+        REPLICATION: {
+            COORDINATORTYPE: 'coordinatorType',
+            ZKPATH: 'zkPath',
+            REPLICANAME: 'replicaName'
+        },
+        // Parallel replicas configuration
+        PARALLELREPLICAS: {
+            ENABLED: 'enabled',
+            MAXPARALLELREPLICAS: 'maxParallelReplicas',
+            CLUSTERFORPARALLELREPLICAS: 'clusterForParallelReplicas'
+        },
+        // Distributed configuration
+        DISTRIBUTED: {
+            WRITETHROUGH: 'writeThrough',
+            INSERTDISTRIBUTEDSYNC: 'insertDistributedSync'
+        },
+        // Identity configuration
+        IDENTITY: {
+            DAYSOLD: 'daysOld',
+            LIFETIME: {
+                MIN: 'min',
+                MAX: 'max'
+            }
+        },
+        // Dictionary configuration
+        DICTIONARY: {
+            ENABLEMONGODBSOURCE: 'enableMongoDBSource',
+            NATIVEPORT: 'nativePort',
+            HOST: 'host',
+            SECURE: 'secure'
+        }
     },
 
     DATABASE: {
@@ -115,6 +167,7 @@ const OVERRIDES = {
         TRANSACTIONTIMEOUT: 'transactionTimeout',
         CONNECTAPIURL: 'connectApiUrl',
         CONNECTCONSUMERGROUPID: 'connectConsumerGroupId',
+        BATCHDEDUPLICATION: 'batchDeduplication',
         RDKAFKA: {
             BROKERS: 'brokers',
             CLIENTID: 'clientId',
@@ -124,42 +177,46 @@ const OVERRIDES = {
             SASLMECHANISM: 'saslMechanism',
             SASLUSERNAME: 'saslUsername',
             SASLPASSWORD: 'saslPassword',
+            SASLAUTHENTICATIONTIMEOUT: 'saslAuthenticationTimeout',
             LINGERMS: 'lingerMs',
             RETRIES: 'retries',
             INITIALRETRYTIME: 'initialRetryTime',
             MAXRETRYTIME: 'maxRetryTime',
             ACKS: 'acks'
         },
-        PRODUCER: {
-            BATCHSIZE: 'batchSize',
-            BATCHNUMMESSAGES: 'batchNumMessages',
-            QUEUEBUFFERINGMAXMESSAGES: 'queueBufferingMaxMessages',
-            QUEUEBUFFERINGMAXKBYTES: 'queueBufferingMaxKbytes',
-            COMPRESSIONLEVEL: 'compressionLevel',
-            MESSAGETIMEOUTMS: 'messageTimeoutMs',
-            DELIVERYTIMEOUTMS: 'deliveryTimeoutMs'
-        },
         CONSUMER: {
             FETCHMINBYTES: 'fetchMinBytes',
             FETCHMAXWAITMS: 'fetchMaxWaitMs',
             FETCHMAXBYTES: 'fetchMaxBytes',
             MAXPARTITIONFETCHBYTES: 'maxPartitionFetchBytes',
-            QUEUEDMINMESSAGES: 'queuedMinMessages',
-            QUEUEDMAXMESSAGESKBYTES: 'queuedMaxMessagesKbytes',
             SESSIONTIMEOUTMS: 'sessionTimeoutMs',
             HEARTBEATINTERVALMS: 'heartbeatIntervalMs',
             REBALANCETIMEOUTMS: 'rebalanceTimeoutMs',
-            MAXPOLLINTERVALMS: 'maxPollIntervalMs',
             AUTOOFFSETRESET: 'autoOffsetReset',
             ENABLEAUTOCOMMIT: 'enableAutoCommit',
             PARTITIONSCONSUMEDCONCURRENTLY: 'partitionsConsumedConcurrently',
             INVALIDJSONBEHAVIOR: 'invalidJsonBehavior',
-            INVALIDJSONMETRICS: 'invalidJsonMetrics'
+            INVALIDJSONMETRICS: 'invalidJsonMetrics',
+            METADATAMAXAGE: 'metadataMaxAge',
+            RACKID: 'rackId'
         }
     },
 
     EVENTSINK: {
         SINKS: 'sinks'
+    },
+
+    INGESTOR: {
+        PORT: 'port',
+        HOST: 'host',
+        MAX_SOCKETS: 'max_sockets',
+        TIMEOUT: 'timeout',
+        MAXUPLOADFILESIZE: 'maxUploadFileSize'
+    },
+
+    LOGGING: {
+        PRETTYPRINT: 'prettyPrint',
+        DEFAULT: 'default'
     },
 
     IGNOREPROXIES: 'ignoreProxies',
