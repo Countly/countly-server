@@ -45,6 +45,16 @@ catch {
     //
 }
 
+let ClusterManager = null;
+try {
+    ClusterManager = require('../../plugins/clickhouse/api/managers/ClusterManager');
+}
+catch {
+    // ClusterManager not available (clickhouse plugin not loaded)
+}
+
+const countlyConfig = require('../config');
+
 /**
  * Normalize mutation manager job configuration values
  * @param {Object} cfg - Raw configuration object from the DB
@@ -308,10 +318,23 @@ class MutationManagerJob extends Job {
             .sort({ ts: 1 })
             .toArray();
 
+        let isClusterMode = false;
+        if (ClusterManager) {
+            try {
+                const cm = new ClusterManager(countlyConfig.clickhouse || {});
+                isClusterMode = cm.isClusterMode();
+            }
+            catch (e) {
+                log.w('Could not determine cluster mode for validation table', e?.message);
+            }
+        }
+
         for (const task of awaiting) {
             try {
                 if (chHealth && typeof chHealth.getMutationStatus === 'function') {
-                    const status = await chHealth.getMutationStatus({ validation_command_id: task.validation_command_id, table: task.collection, database: task.db });
+                    // In cluster mode, mutations target _local tables, so validation must check _local
+                    const validationTable = isClusterMode ? task.collection + '_local' : task.collection;
+                    const status = await chHealth.getMutationStatus({ validation_command_id: task.validation_command_id, table: validationTable, database: task.db });
                     if (status && status.is_done) {
                         await common.db.collection("mutation_manager").updateOne(
                             { _id: task._id },

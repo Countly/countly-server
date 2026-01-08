@@ -43,6 +43,7 @@ frontend/express/public/stylesheets/vue/clyvue.css.map
 log/
 log/supervisord/
 plugins/plugins.json.*
+test/configs/conf/nginx.generated.conf
 .sdk
 dump
 dist/
