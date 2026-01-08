@@ -29,6 +29,15 @@
                 ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", "method=get_events", "display_loader=false"]
             }
         };
+        
+        // Log plugin information for remote debugging
+        if (typeof countlyGlobal !== 'undefined' && countlyGlobal.plugins) {
+            console.log('%c[Countly Plugin Debug]', 'color: #4CAF50; font-weight: bold; font-size: 14px;');
+            console.log('Loaded plugins:', countlyGlobal.plugins);
+            console.log('Total plugins:', countlyGlobal.plugins.length);
+            console.log('Plugin list:', countlyGlobal.plugins.join(', '));
+        }
+        
         window.loadPlugin = function(plugin, callback, args){
             if (typeof plugin !== "string") {
                 console.log("when loading plugin, provided plugin was not a string, but a", plugin);
@@ -37,12 +46,15 @@
                 console.log("when loading plugin", plugin, "provided callback was not a function, but a", callback);
             }
             if (countlyGlobal.plugins.indexOf(plugin) !== -1) {
+                console.log('%c[Plugin Load]', 'color: #2196F3; font-weight: bold;', 'Loading plugin:', plugin);
                 if (Array.isArray(args)){
                     callback.apply(window, args);
                 }
                 else {
                     callback(args);
                 }
+            } else {
+                console.warn('%c[Plugin Load]', 'color: #FF9800; font-weight: bold;', 'Plugin not found in enabled plugins:', plugin);
             }
         };
     </script>

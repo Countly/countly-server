@@ -1069,15 +1069,31 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     plgns.unshift('push');
                 }
                 plgns.forEach(plugin => {
+                    var pluginDir = __dirname + `/../../plugins/${common.sanitizeFilename(plugin)}`;
                     try {
-                        let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/javascripts`) || [];
+                        var pluginStat = fs.lstatSync(pluginDir);
+                        var isSymlink = pluginStat.isSymbolicLink();
+                        var actualPath = isSymlink ? fs.realpathSync(pluginDir) : pluginDir;
+                        var pluginSource = isSymlink ? 'ENTERPRISE' : 'CORE';
+
+                        console.log('[Dashboard] Loading plugin assets:', plugin, '- Source:', pluginSource);
+                        if (isSymlink) {
+                            console.log('[Dashboard]   Plugin symlink target:', actualPath);
+                        }
+                    }
+                    catch (e) {
+                        // If we can't check the plugin path, continue anyway
+                    }
+
+                    try {
+                        let contents = fs.readdirSync(pluginDir + '/frontend/public/javascripts') || [];
                         toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
                     }
                     catch (e) {
                         console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
                     }
                     try {
-                        let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/stylesheets`) || [];
+                        let contents = fs.readdirSync(pluginDir + '/frontend/public/stylesheets') || [];
                         toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => typeof n === 'string' && n.includes('.css') && n.length > 4 && n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
                     }
                     catch (e) {

@@ -879,8 +879,19 @@ var pluginManager = function pluginManager() {
 
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             try {
+                var pluginPath = path.resolve(__dirname, './' + pluginNames[i]);
+                var pluginStat = fs.lstatSync(pluginPath);
+                var isSymlink = pluginStat.isSymbolicLink();
+                var actualPath = isSymlink ? fs.realpathSync(pluginPath) : pluginPath;
+                var pluginSource = isSymlink ? 'ENTERPRISE (symlink)' : 'CORE (directory)';
+
+                console.log('[Plugin Loader] Loading plugin:', pluginNames[i], '- Source:', pluginSource);
+                if (isSymlink) {
+                    console.log('[Plugin Loader]   Symlink target:', actualPath);
+                }
+
                 var plugin = require("./" + pluginNames[i] + "/frontend/app");
-                plugs.push({'name': pluginNames[i], "plugin": plugin});
+                plugs.push({'name': pluginNames[i], "plugin": plugin, "source": pluginSource, "isSymlink": isSymlink, "path": actualPath});
                 app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
                 if (plugin.staticPaths) {
                     plugin.staticPaths(app, countlyDb, express);
