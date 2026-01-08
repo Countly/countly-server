@@ -231,7 +231,14 @@ class TopEventsJob extends job.Job {
                     var newPeriod = [period2.start - (period2.end - period2.start), period2.start];
                     //Fetching totals for previous period
                     await this.fetchEventTotalCounts({ app_id: app._id, appTimezone: app.timezone, qstring: { period: newPeriod } }, data, true);
-
+                    // filter out the ones not in eventMap
+                    if (typeof data === "object") {
+                        Object.keys(data).forEach((key) => {
+                            if (!eventMap.includes(key)) {
+                                delete data[key];
+                            }
+                        });
+                    }
 
                     for (var event in data) {
                         //Calculating trend
