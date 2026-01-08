@@ -64,7 +64,8 @@ class UnifiedEventSource {
      * @param {Object} [dependencies={}] - Optional dependency injection for testing and modularity
      * @param {Object} [dependencies.countlyConfig] - Countly configuration object (defaults to require('../config'))
      * @param {Logger} [dependencies.log] - Logger instance (defaults to Log('UnifiedEventSource'))
-     * 
+     * @param {Object} [dependencies.source] - Pre-initialized event source (for testing only)
+     *
      * @example
      * // Basic usage - will use Kafka if enabled, ChangeStream otherwise
      * const eventSource = new UnifiedEventSource('session-processor', {
@@ -105,15 +106,22 @@ class UnifiedEventSource {
         this.#countlyConfig = dependencies.countlyConfig || require('../config');
         this.#options = options;
 
-        // Get common for database access (used for batch deduplication state)
-        const common = dependencies.common || require('../utils/common.js');
+        // Allow injecting pre-initialized source for testing
+        if (dependencies.source) {
+            this.#source = dependencies.source;
+            this.#log.d(`UnifiedEventSource created: ${name} (injected source)`);
+        }
+        else {
+            // Get common for database access (used for batch deduplication state)
+            const common = dependencies.common || require('../utils/common.js');
 
-        this.#source = EventSourceFactory.create(name, options, {
-            countlyConfig: this.#countlyConfig,
-            db: common.db // Pass main database for batch deduplication state
-        });
+            this.#source = EventSourceFactory.create(name, options, {
+                countlyConfig: this.#countlyConfig,
+                db: common.db // Pass main database for batch deduplication state
+            });
 
-        this.#log.d(`UnifiedEventSource created: ${name} (${this.#source.constructor.name})`);
+            this.#log.d(`UnifiedEventSource created: ${name} (${this.#source.constructor.name})`);
+        }
     }
 
     /**

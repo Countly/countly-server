@@ -29,14 +29,20 @@ class UnifiedEventSink {
     /**
      * Create a UnifiedEventSink instance
      * Configuration is loaded automatically from the global config
-     * 
+     *
      * @param {Object} [dependencies={}] - Optional dependency injection for testing and modularity
      * @param {Object} [dependencies.config] - Configuration override for testing
      * @param {Logger} [dependencies.log] - Logger instance (defaults to Log('eventSink:unified'))
+     * @param {Array} [dependencies.sinks] - Pre-initialized sinks array (for testing only)
      */
     constructor(dependencies = {}) {
         this.#config = dependencies.config || countlyConfig ;
         this.#log = dependencies.log || Log('eventSink:unified');
+        // Allow injecting pre-initialized sinks for testing
+        if (dependencies.sinks) {
+            this.#sinks = dependencies.sinks;
+            this.#initialized = true;
+        }
         this.#log.d('UnifiedEventSink created');
     }
 
