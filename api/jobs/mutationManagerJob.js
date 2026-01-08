@@ -318,22 +318,22 @@ class MutationManagerJob extends Job {
             .sort({ ts: 1 })
             .toArray();
 
+        let isClusterMode = false;
+        if (ClusterManager) {
+            try {
+                const cm = new ClusterManager(countlyConfig.clickhouse || {});
+                isClusterMode = cm.isClusterMode();
+            }
+            catch (e) {
+                log.w('Could not determine cluster mode for validation table', e?.message);
+            }
+        }
+
         for (const task of awaiting) {
             try {
                 if (chHealth && typeof chHealth.getMutationStatus === 'function') {
                     // In cluster mode, mutations target _local tables, so validation must check _local
-                    let validationTable = task.collection;
-                    if (ClusterManager) {
-                        try {
-                            const cm = new ClusterManager(countlyConfig.clickhouse || {});
-                            if (cm.isClusterMode()) {
-                                validationTable = task.collection + '_local';
-                            }
-                        }
-                        catch (e) {
-                            log.w('Could not determine cluster mode for validation table', e?.message);
-                        }
-                    }
+                    const validationTable = isClusterMode ? task.collection + '_local' : task.collection;
                     const status = await chHealth.getMutationStatus({ validation_command_id: task.validation_command_id, table: validationTable, database: task.db });
                     if (status && status.is_done) {
                         await common.db.collection("mutation_manager").updateOne(
