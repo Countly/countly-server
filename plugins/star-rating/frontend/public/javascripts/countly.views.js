@@ -217,12 +217,22 @@
 
                 if (this.settings.isEditMode) {
                     starRatingPlugin.editFeedbackWidget(submitted, function() {
+                        CountlyHelpers.notify({
+                            title: 'Success',
+                            message: CV.i18n('star-rating.widget.edit.success'),
+                            type: 'success'
+                        });
                         self.$emit('widgets-refresh');
                         done();
                     });
                 }
                 else {
                     starRatingPlugin.createFeedbackWidget(submitted, function() {
+                        CountlyHelpers.notify({
+                            title: 'Success',
+                            message: CV.i18n('star-rating.widget.create.success'),
+                            type: 'success'
+                        });
                         self.$emit('widgets-refresh');
                         done();
                     });
