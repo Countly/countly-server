@@ -17,8 +17,8 @@
                             </el-switch>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable prop="name" column-key="name" :label="i18n('plugins.name')" width="200">
-                        <template slot-scope="rowScope">
+                    <el-table-column sortable prop="name" :label="i18n('plugins.name')" width="200">
+                        <template #default="rowScope">
                             <a :href="rowScope.row.homepage" target="_blank" :data-test-id="'datatable-features-feature-name-' + rowScope.$index">{{ rowScope.row.name }}</a>
                         </template>
                     </el-table-column>
@@ -72,7 +72,7 @@
             </cly-datatable-n>
 		</cly-section>
         <cly-confirm-dialog @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="danger" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :title="dialog.title" >
-            <template slot-scope="scope">
+            <template #default="scope">
                 <div v-html="dialog.text"></div>
             </template>
         </cly-confirm-dialog>

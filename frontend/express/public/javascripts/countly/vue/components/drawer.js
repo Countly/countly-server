@@ -1,10 +1,11 @@
-/* global Vue, CV */
+/* global CV */
 
 (function(countlyVue) {
 
     var _mixins = countlyVue.mixins;
+    var IS_VUE_3 = countlyVue.compat ? countlyVue.compat.IS_VUE_3 : false;
 
-    Vue.component("cly-drawer", countlyVue.components.create(
+    countlyVue.registerComponent("cly-drawer", countlyVue.components.create(
         // @vue/component
         {
             inheritAttrs: false,
@@ -82,9 +83,21 @@
                 }
             },
             mounted: function() {
-                this.sidecarContents = this.$children.filter(function(child) {
-                    return child.isContent && child.role === "sidecar";
-                });
+                // Vue 3 compatibility: $children is removed in Vue 3
+                // Use provide/inject pattern - children register themselves with parent
+                if (IS_VUE_3 && this._registeredChildren) {
+                    this.sidecarContents = this._registeredChildren.filter(function(child) {
+                        return child.isContent && child.role === "sidecar";
+                    });
+                }
+                else if (this.$children) {
+                    this.sidecarContents = this.$children.filter(function(child) {
+                        return child.isContent && child.role === "sidecar";
+                    });
+                }
+                else {
+                    this.sidecarContents = [];
+                }
             },
             methods: {
                 doClose: function() {

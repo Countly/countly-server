@@ -31,7 +31,7 @@
                 <el-table-column prop="uuid" label="Build UUID" width="400"></el-table-column>
                 <el-table-column prop="loadAddress" label="Load Address"></el-table-column>
                 <el-table-column width="120" fixed="right" v-if="symbolicationEnabled">
-                    <template slot-scope="col">
+                    <template #default="col">
                         <el-button type="text" @click="openDrawer('crashSymbol', { build: col.row.uuid, platform: crash.os })" v-if="!hasSymbol(col.row.uuid)">Add Symbol</el-button>
                     </template>
                 </el-table-column>

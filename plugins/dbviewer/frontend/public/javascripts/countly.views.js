@@ -1,11 +1,11 @@
-/*global countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, _, countlyAuth, Vue*/
+/*global countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, _, countlyAuth*/
 
 (function() {
 
     var FEATURE_NAME = 'dbviewer';
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         // Helper UI Components
-        Vue.component("cly-dbviewer-mongodb-filtering", countlyVue.views.create({
+        countlyVue.registerComponent("cly-dbviewer-mongodb-filtering", countlyVue.views.create({
             template: countlyVue.T("/dbviewer/templates/filtering/dbviewer-mongodb-filtering.html"),
             props: {
                 value: { type: [String, Object], default: '' }

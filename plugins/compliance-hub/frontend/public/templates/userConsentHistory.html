@@ -10,7 +10,7 @@
         <cly-datatable-n :force-loading="isLoading" :data-source="userConsentHistoryTableSource" :default-sort="{prop: 'ts', order: 'descending'}">
             <template v-slot="scope">
                 <el-table-column fixed type="expand">
-                    <template slot-scope="props">
+                    <template #default="props">
                         <div class="bu-level cly-vue-compliance__consent_history_expanded_column">
                             <div class="bu-level-left text-medium font-weight-bold">Device ID</div>
                             <div style="width: 80%;" class="bu-level-right">

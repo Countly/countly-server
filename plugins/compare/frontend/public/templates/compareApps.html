@@ -1,6 +1,6 @@
 <div v-bind:class="[componentId]">
   <cly-header>
-    <cly-back-link slot="header-top" :title="i18n('compare.back')"></cly-back-link>
+    <template #header-top><cly-back-link :title="i18n('compare.back')"></cly-back-link></template>
     <template v-slot:header-bottom>
       <div class="bu-is-flex bu-is-align-items-center">
         <h2 class="bu-mr-2"> {{i18n('compare.apps.title')}} </h2>

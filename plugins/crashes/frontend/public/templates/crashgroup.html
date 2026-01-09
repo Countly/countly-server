@@ -131,10 +131,10 @@
                         </el-collapse>
                     </el-tab-pane>
                     <el-tab-pane name="comments">
-                        <span slot="label">
+                        <template #label><span>
                             {{i18n("crashes.comments")}} <span class="bu-tag"
                                 style="background-color: #A7AEB8; font-size: 13px; font-weight: 500;">{{comments.length}}</span>
-                        </span>
+                        </span></template>
                         <div class="bu-mx-5 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center"
                             v-if="comments.length === 0">
                             <img class="bu-mb-2" style="margin-top: 32px; height: 76px;"
@@ -283,7 +283,7 @@
                     </template>
                     <template v-slot="scope">
                         <el-table-column type="expand">
-                            <template slot-scope="props">
+                            <template #default="props">
                                 <el-card class="bu-mb-5" shadow="never" :body-style="{padding: '0px'}">
                                     <div class="bu-columns bu-is-gapless bu-is-mobile">
                                         <cly-crashes-dashboard-tile :columnWidth="props.row.custom ? 3 : 4">
@@ -374,12 +374,12 @@
                             </template>
                         </el-table-column>
                         <el-table-column prop="ts" :label="i18n('crashes.crashed')" sortable>
-                            <template slot-scope="col">
+                            <template #default="col">
                                 <span v-html="formatTimeAgo(col.row.ts)"></span>
                             </template>
                         </el-table-column>
                         <el-table-column prop="os" :label="i18n('crashes.os_version')">
-                            <template slot-scope="col">
+                            <template #default="col">
                                 {{col.row.os}} {{col.row.os_version}}
                             </template>
                         </el-table-column>
@@ -387,7 +387,7 @@
                         <el-table-column prop="app_version" :label="i18n('crashes.app_version')" sortable sort-by="app_version_for_sort">
                         </el-table-column>
                         <el-table-column v-if="hasUserPermission" :label="i18n('crashes.user')">
-                            <template slot-scope="col">
+                            <template #default="col">
                                 {{col.row.user && col.row.user.name || col.row.uid}}
                                 <a class="crash-user-profile-link" :href="'/#/users/' + col.row.uid"><i
                                         class="fas fa-arrow-circle-right"></i></a>

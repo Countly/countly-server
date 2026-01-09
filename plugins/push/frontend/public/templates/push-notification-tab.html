@@ -50,8 +50,8 @@
                         </cly-multi-select>
                     </template>
                     <template v-slot="scope">
-                        <el-table-column fixed width="400" type="clickable" sortable="custom" prop="name" :label="i18n('push-notification.table-campaign-name')" class="cly-vue-push-notification-table-column">
-                            <template slot-scope="scope">
+                        <el-table-column fixed width="400" type="clickable" sortable="custom" prop="name" :label="i18n('push-notification.table-notification-name')" class="cly-vue-push-notification-table-column">
+                            <template #default="scope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
                                     <a v-bind:href="'#/messaging/details/' + scope.row._id" class="bu-is-flex bu-is-align-items-center">
                                         <a class="has-ellipsis" :data-test-id="'datatable-messaging-notification-name-' + scope.$index">{{(scope.row.name)}}</a>
@@ -99,18 +99,18 @@
                                 </template>
                             </el-table-column>
                         </template>
-                        <el-table-column width="220" prop="status" :label="i18n('push-notification.table-status')">
-                            <template slot-scope="scope">
-                                <cly-status-tag :text="statusOptions[scope.row.status] && statusOptions[scope.row.status].label || '' " :color="getStatusBackgroundColor(scope.row.status)" :data-test-id="'datatable-messaging-status-' + scope.$index"> </cly-status-tag>
+                        <el-table-column width="220" sortable="custom" prop="status" :label="i18n('push-notification.table-status')">
+                            <template #default="scope">
+                                <cly-status-tag :data-test-id="'datatable-messaging-status-' +  scope.$index" :text="statusOptions[scope.row.status] && statusOptions[scope.row.status].label || '' " :color="getStatusBackgroundColor(scope.row.status)"> </cly-status-tag>
                             </template>
                         </el-table-column>
                         <el-table-column width="220" sortable="custom" prop="sent" :label="i18n('push-notification.table-sent')" class="cly-vue-push-notification-table-column">
-                            <template slot-scope="scope">
-                                <span class="cly-vue-push-notification-table-column__numbers-only" :data-test-id="'datatable-messaging-sent-' + scope.$index"> {{formatNumber(scope.row.sent)}} </span>
+                            <template #default="scope">
+                                <span class="cly-vue-push-notification-table-column__numbers-only" :data-test-id="'datatable-messaging-sent-' +  scope.$index"> {{formatNumber(scope.row.sent)}} </span>
                             </template>
                         </el-table-column>
                         <el-table-column min-width="200" sortable="custom" prop="actioned" :label="i18n('push-notification.table-actioned')" class="cly-vue-push-notification-table-column">
-                            <template slot-scope="scope">
+                            <template #default="scope">
                                 <div class="bu-level">
                                     <div class="bu-level-left cly-vue-push-notification-table-column__numbers-only">
                                         <span class="bu-mr-1" :data-test-id="'datatable-messaging-actioned-value-' + scope.$index">{{formatNumber(scope.row.actioned)}}</span>
@@ -121,7 +121,7 @@
                             </template>
                         </el-table-column>
 						<el-table-column  min-width="280" sortable="custom" prop="lastDate" :label="i18n('push-notification.table-date-sent')" class="cly-vue-push-notification-table-column">
-                            <template slot-scope="scope">
+                            <template #default="scope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
                                     <template v-if="scope.row.lastDate && scope.row.lastDate.date">
                                         <span class="cly-vue-push-notification-table-column__first-line" :data-test-id="'datatable-messaging-date-sent-' + scope.$index">{{scope.row.lastDate.date}}</span>
@@ -133,20 +133,28 @@
                                 </div>
                             </template>
                         </el-table-column>
-
+                        <el-table-column min-width="220" sortable="custom" prop="createdDateTime" :label="i18n('push-notification.table-created')"  class="cly-vue-push-notification-table-column">
+                            <template #default="scope">
+                                <div class="bu-is-flex bu-is-flex-direction-column">
+                                    <span class="cly-vue-push-notification-table-column__first-line" :data-test-id="'datatable-messaging-created-date-' +  scope.$index">{{scope.row.createdDateTime.date}}</span>
+                                    <span class="cly-vue-push-notification-table-column__second-line" :data-test-id="'datatable-messaging-created-time-' +  scope.$index">{{scope.row.createdDateTime.time}}</span>
+                                </div>
+                            </template>
+                        </el-table-column>
+                        
                         <el-table-column type="options">
-                            <template slot-scope="scope">
-                                <cly-more-options :test-id="'datatable-' + scope.$index" v-if="scope.row.hover" size="small" @command="handleUserCommands($event, scope.row._id, scope.row.notificationType)">
-                                    <el-dropdown-item v-if="shouldShowStartUserCommand(scope.row.status)" :command="UserCommandEnum.START" :data-test-id="'datatable-messaging-more-option-start-' + scope.$index">{{i18n('push-notification.start')}} </el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowStopUserCommand(scope.row.status)" :command="UserCommandEnum.STOP" :data-test-id="'datatable-messaging-more-option-stop-' + scope.$index">{{i18n('push-notification.stop')}} </el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowEditUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT" :data-test-id="'datatable-messaging-more-option-edit-' + scope.$index">{{i18n('push-notification.edit')}}</el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowEditDraftUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT_DRAFT" :data-test-id="'datatable-messaging-more-option-edit-draft-' + scope.$index">{{i18n('push-notification.edit-draft')}}</el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowEditRejectUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT_REJECT" :data-test-id="'datatable-messaging-more-option-edit-reject-' + scope.$index">{{i18n('push-notification.edit')}}</el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowDuplicateUserCommand(scope.row.status)" :command="UserCommandEnum.DUPLICATE" :data-test-id="'datatable-messaging-more-option-duplicate-' + scope.$index">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowDeleteUserCommand(scope.row.status)"  :command="UserCommandEnum.DELETE" :data-test-id="'datatable-messaging-more-option-delete-' + scope.$index">{{i18n('push-notification.delete')}}</el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowResendUserCommand(scope.row.status)" :command="UserCommandEnum.RESEND" :data-test-id="'datatable-messaging-more-option-resend-' + scope.$index">{{i18n('push-notification.resend')}}</el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowApproveUserCommand(scope.row.status)"  :command="UserCommandEnum.APPROVE" :data-test-id="'datatable-messaging-more-option-approve-' + scope.$index">{{i18n('push-notification.approve')}}</el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowRejectUserCommand(scope.row.status)" :command="UserCommandEnum.REJECT" :data-test-id="'datatable-messaging-more-option-reject-' + scope.$index">{{i18n('push-notification.reject')}}</el-dropdown-item>
+                            <template #default="scope">
+                                <cly-more-options :test-id="'datatable-' +  scope.$index" v-if="scope.row.hover" size="small" @command="handleUserCommands($event, scope.row._id)">
+                                    <el-dropdown-item v-if="shouldShowStartUserCommand(scope.row.status)" :command="UserCommandEnum.START">{{i18n('push-notification.start')}} </el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowStopUserCommand(scope.row.status)" :command="UserCommandEnum.STOP">{{i18n('push-notification.stop')}} </el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowEditUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT">{{i18n('push-notification.edit')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowEditDraftUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT_DRAFT">{{i18n('push-notification.edit-draft')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowEditRejectUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT_REJECT">{{i18n('push-notification.edit')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowDuplicateUserCommand(scope.row.status)" :command="UserCommandEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowDeleteUserCommand(scope.row.status)"  :command="UserCommandEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowResendUserCommand(scope.row.status)" :command="UserCommandEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowApproveUserCommand(scope.row.status)"  :command="UserCommandEnum.APPROVE">{{i18n('push-notification.approve')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowRejectUserCommand(scope.row.status)" :command="UserCommandEnum.REJECT">{{i18n('push-notification.reject')}}</el-dropdown-item>
                                 </cly-more-options>
                             </template>
                         </el-table-column>

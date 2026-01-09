@@ -1,5 +1,8 @@
 /* global countlyVue, countlyCommon, countlyEventsOverview,CV, app, CountlyHelpers, moment*/
 (function() {
+    // Vue 3 compatibility: use EventBus from compat module if available
+    var EventBus = countlyVue.compat ? countlyVue.compat.EventBus : null;
+
     var EventsTable = countlyVue.views.BaseView.extend({
         mixins: [countlyVue.mixins.i18n],
         data: function() {
@@ -455,7 +458,12 @@
             this.module = countlyEventsOverview.getVuexModule();
             CV.vuex.registerGlobally(this.module);
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            CV.vuex.unregister(this.module.name);
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             CV.vuex.unregister(this.module.name);
         },
         methods: {
@@ -471,7 +479,13 @@
                     }
                 }
                 else {
-                    this.$root.$emit("cly-error", {message: errored});//show error
+                    // Vue 3 compatibility: use EventBus instead of $root.$emit
+                    if (EventBus) {
+                        EventBus.$emit("cly-error", {message: errored});
+                    }
+                    else {
+                        this.$root.$emit("cly-error", {message: errored});//show error
+                    }
                 }
 
             },

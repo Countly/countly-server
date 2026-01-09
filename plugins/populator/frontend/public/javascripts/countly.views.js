@@ -1,4 +1,4 @@
-/* global app, countlyAuth, countlyVue, countlyPopulator, CountlyHelpers, CV, countlyCommon, countlyGlobal, Vue, moment */
+/* global app, countlyAuth, countlyVue, countlyPopulator, CountlyHelpers, CV, countlyCommon, countlyGlobal, moment */
 (function() {
     var FEATURE_NAME = 'populator';
 
@@ -175,10 +175,10 @@
                 case "edit":
                     this.titleDescription = {header: CV.i18n('populator.drawer-title-edit'), button: CV.i18n('populator.drawer-save-template')};
                     if (template.events && template.events.length) {
-                        Vue.set(this.$refs.populatorTemplateDrawer.sectionActivity, 'events', true);
+                        countlyVue.set(this.$refs.populatorTemplateDrawer.sectionActivity, 'events', true);
                     }
                     if (template.views && template.views.length) {
-                        Vue.set(this.$refs.populatorTemplateDrawer.sectionActivity, 'views', true);
+                        countlyVue.set(this.$refs.populatorTemplateDrawer.sectionActivity, 'views', true);
                     }
                     template = this.decodeHtmlEntities(template);
                     this.openDrawer("populatorTemplate", template);
@@ -681,7 +681,7 @@
         }
     });
 
-    Vue.component("cly-populator-template-drawer", countlyVue.views.create({
+    countlyVue.registerComponent("cly-populator-template-drawer", countlyVue.views.create({
         props: {
             controls: {type: Object, default: {}},
             titleDescription: {type: Object, default: {}}
@@ -927,9 +927,9 @@
             },
             sectionActivityChange: function(value, section) {
                 if (!this.sectionActivity[section]) {
-                    Vue.set(this.sectionActivity, section, false);
+                    countlyVue.set(this.sectionActivity, section, false);
                 }
-                Vue.set(this.sectionActivity, section, value);
+                countlyVue.set(this.sectionActivity, section, value);
             }
         },
         components: {

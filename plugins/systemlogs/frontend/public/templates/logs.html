@@ -12,33 +12,33 @@
 			<cly-datatable-n test-id="datatable-audit-logs" :data-source="remoteTableDataSource" :export-api="getExportAPI" :default-sort="{prop: 'ts', order: 'descending'}" @row-click="handleTableRowClick" ref="table" :row-class-name="tableRowClassName">
                 <template v-slot="scope">
                     <el-table-column type="expand">
-                        <template slot-scope="rowScope">
+                        <template #default="rowScope">
                             <div :data-test-id="'datatable-audit-logs-expand-row-' + rowScope.$index">
                                 <expand-table v-if="detailData[rowScope.row._id]" :row="detailData[rowScope.row._id]"></expand-table>
                             </div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="ts" :label="i18n('systemlogs.timestamp')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div :data-test-id="'datatable-audit-logs-time-' + scope.$index">
                                 {{scope.row.displayTs}}
                             </div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="u" :label="i18n('systemlogs.user')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <a :href='scope.row.href' :title='scope.row.u' :data-test-id="'datatable-audit-logs-user-' + scope.$index">{{scope.row.u}}</a>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="ip" :label="i18n('systemlogs.ip-address')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div :data-test-id="'datatable-audit-logs-ip-' + scope.$index">
                                 {{scope.row.ip}}
                             </div>
                         </template>
                     </el-table-column>
                     <el-table-column :label="i18n('systemlogs.action')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <p :data-test-id="'datatable-audit-logs-action-action-name-' + scope.$index">{{scope.row.actionName}}</p>
                             <p v-if="scope.row.app_name" :title="scope.row.i.app_id" :data-test-id="'datatable-audit-logs-action-app-name-' + scope.$index">{{scope.row.app_name}}</p>
                             <p v-if="scope.row.user_name" :title="scope.row.i.user_id" :data-test-id="'datatable-audit-logs-action-user-name-' + scope.$index">{{scope.row.user_name}}</p>

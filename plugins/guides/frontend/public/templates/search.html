@@ -15,8 +15,8 @@
                 :placeholder="i18n('guides.search.in-guides')"
                 @keyup.enter.native="OnEnterSearch"
             >
-                <i slot="prefix" class="el-input__icon el-icon-search"></i>
-                <i slot="suffix" class="el-input__icon el-icon-circle-close" @click="clearSearch"></i>
+                <template #prefix><i class="el-input__icon el-icon-search"></i></template>
+                <template #suffix><i class="el-input__icon el-icon-circle-close" @click="clearSearch"></i></template>
             </el-input>
             </form>
         </template>

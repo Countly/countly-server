@@ -1,6 +1,6 @@
-/* global Vue, CV, countlyCommon, ElementTiptap */
+/* global CV, countlyCommon, ElementTiptap */
 (function(countlyVue) {
-    Vue.component("cly-content-layout", countlyVue.components.create({
+    countlyVue.registerComponent("cly-content-layout", countlyVue.components.create({
         template: CV.T('/javascripts/countly/vue/templates/content/content.html'),
 
         props: {
@@ -22,7 +22,7 @@
         }
     }));
 
-    Vue.component("cly-content-header", countlyVue.components.create({
+    countlyVue.registerComponent("cly-content-header", countlyVue.components.create({
         template: CV.T('/javascripts/countly/vue/templates/content/content-header.html'),
 
         props: {
@@ -218,7 +218,7 @@
         }
     }));
 
-    Vue.component("cly-content-body", countlyVue.components.create({
+    countlyVue.registerComponent("cly-content-body", countlyVue.components.create({
         props: {
             hideLeftSidebar: {
                 type: Boolean,
@@ -302,7 +302,7 @@
         }
     }));
 
-    Vue.component("cly-status-badge", countlyVue.components.create({
+    countlyVue.registerComponent("cly-status-badge", countlyVue.components.create({
         props: {
             mode: {
                 type: String,
@@ -382,7 +382,7 @@
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TEXTAREA = 'textarea';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_UPLOAD = 'upload';
 
-    Vue.component('cly-content-builder-sidebar-step', countlyVue.components.create({
+    countlyVue.registerComponent('cly-content-builder-sidebar-step', countlyVue.components.create({
         props: {
             header: {
                 default: null,
@@ -523,7 +523,7 @@
     const COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_HORIZONTAL = 'horizontal';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_VERTICAL = 'vertical';
 
-    Vue.component("cly-content-builder-sidebar-input", countlyVue.components.create({
+    countlyVue.registerComponent("cly-content-builder-sidebar-input", countlyVue.components.create({
         props: {
             componentTooltip: {
                 default: null,
@@ -776,7 +776,7 @@
 
     const DEFAULT_LIST_BLOCK_IMAGE_PLACEHOLDER_URL = '/content/images/fullscreenPlaceholderImage.png';
 
-    Vue.component('cly-content-block-list-input', countlyVue.components.create({
+    countlyVue.registerComponent('cly-content-block-list-input', countlyVue.components.create({
         props: {
             blockInputs: {
                 default: () => [],
@@ -820,7 +820,7 @@
         template: CV.T('/javascripts/countly/vue/templates/content/UI/content-block-list-input.html'),
     }));
 
-    Vue.component("cly-option-swapper", countlyVue.components.create({
+    countlyVue.registerComponent("cly-option-swapper", countlyVue.components.create({
         template: CV.T('/javascripts/countly/vue/templates/UI/option-swapper.html'),
 
         props: {
@@ -876,7 +876,7 @@
         }
     }));
 
-    Vue.component("cly-device-selector", countlyVue.components.BaseComponent.extend({
+    countlyVue.registerComponent("cly-device-selector", countlyVue.components.BaseComponent.extend({
         props: {
             value: {
                 type: String,

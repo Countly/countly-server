@@ -61,7 +61,12 @@
             this.$refs.write.addEventListener("change", this.resizeTextarea);
             document.addEventListener('click', this.close);
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            document.removeEventListener('click', this.close)
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             document.removeEventListener('click', this.close)
         },
         watch: {

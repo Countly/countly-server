@@ -1,0 +1,306 @@
+services:
+  # ------------------------------
+  # Kafka (KRaft Mode, Broker + Controller)
+  # ------------------------------
+  kafka:
+    image: apache/kafka:4.0.0
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://kafka:29093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: "/tmp/kraft-combined-logs"
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+      # JVM memory — safe for local machines
+      KAFKA_HEAP_OPTS: "-Xms512m -Xmx1g"
+      # Hard message size limits
+      KAFKA_MESSAGE_MAX_BYTES: "52428800"
+      KAFKA_REPLICA_FETCH_MAX_BYTES: "52428800"
+      KAFKA_SOCKET_REQUEST_MAX_BYTES: "52428800"
+      # Fast flush for instant writes (testing only)
+      KAFKA_LOG_FLUSH_INTERVAL_MESSAGES: "1"
+      KAFKA_LOG_FLUSH_INTERVAL_MS: "0"
+      # Smaller segments for faster handling
+      KAFKA_LOG_SEGMENT_BYTES: "10485760"
+    networks:
+      - kafka-net
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-broker-api-versions.sh", "--bootstrap-server", "kafka:29092"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+
+  # ------------------------------
+  # Kafka Connect (CI Image with ClickHouse Connector)
+  # ------------------------------
+  kafka-connect:
+    image: gcr.io/countly-dev-313620/kafka-connect-clickhouse-ci:kafka-4.0.0-ch-1.3.5
+    container_name: kafka-connect
+    depends_on:
+      kafka:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    networks:
+      - kafka-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/connectors"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  # ------------------------------
+  # DLQ Topic Setup (one-shot)
+  # ------------------------------
+  dlq-init:
+    image: apache/kafka:4.0.0
+    container_name: dlq-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: >
+      sh -c "
+      echo 'Creating DLQ topic...';
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create
+      --topic drill-events-dlq --partitions 1 --replication-factor 1
+      --config retention.bytes=104857600 --config retention.ms=86400000
+      --if-not-exists;
+      echo 'DLQ topic ready';
+      "
+    networks:
+      - kafka-net
+    restart: "no"
+
+  # ------------------------------
+  # ClickHouse
+  # ------------------------------
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8
+    container_name: clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      CLICKHOUSE_DB: countly_drill
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ""
+      CLICKHOUSE_SKIP_USER_SETUP: 1
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./clickhouse-config.xml:/etc/clickhouse-server/config.d/low-ram.xml:ro
+      - ./clickhouse-users.xml:/etc/clickhouse-server/users.d/low-ram-profile.xml:ro
+      - ./clickhouse-users-test.xml:/etc/clickhouse-server/users.d/test-profile.xml:ro
+    networks:
+      - kafka-net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    
+  # ------------------------------
+  # ClickHouse Init (create database and tables)
+  # Synced with plugins/clickhouse/api/sql/*.sql
+  # ------------------------------
+  clickhouse-init:
+    image: curlimages/curl:latest
+    container_name: clickhouse-init
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    networks:
+      - kafka-net
+    command:
+      - sh
+      - -c
+      - |
+        echo 'Creating countly_drill database...'
+        curl -s -X POST 'http://clickhouse:8123/' -d 'CREATE DATABASE IF NOT EXISTS countly_drill'
+
+        echo 'Creating drill_events table (01-drill_events.sql)...'
+        curl -s -X POST 'http://clickhouse:8123/?allow_experimental_object_type=1' -d '
+        CREATE TABLE IF NOT EXISTS countly_drill.drill_events
+        (
+            a      LowCardinality(String),
+            e      LowCardinality(String),
+            n      String,
+            uid    String,
+            uid_canon Nullable(String),
+            did    String,
+            lsid   String,
+            _id    String,
+            ts     DateTime64(3),
+            up     JSON(max_dynamic_paths = 32),
+            custom JSON(max_dynamic_paths = 0),
+            cmp    JSON(max_dynamic_paths = 0),
+            sg     JSON(max_dynamic_paths = 0),
+            c      UInt32,
+            s      Float64,
+            dur    UInt32,
+            lu     Nullable(DateTime64(3)) CODEC (Delta, LZ4),
+            cd     DateTime64(3) DEFAULT now64(3) CODEC (Delta, LZ4)
+        )
+            ENGINE = MergeTree()
+            PARTITION BY toYYYYMM(ts, '\''UTC'\'')
+            ORDER BY (a, e, n, ts)
+            SETTINGS
+                index_granularity = 8192,
+                allow_experimental_object_type = 1,
+                object_serialization_version = '\''v3'\'',
+                object_shared_data_serialization_version = '\''advanced'\'',
+                object_shared_data_serialization_version_for_zero_level_parts = '\''map_with_buckets'\'',
+                object_shared_data_buckets_for_compact_part = 8,
+                object_shared_data_buckets_for_wide_part = 32
+        '
+
+        echo 'Adding bloom filter index (02-drill_events_indexes.sql)...'
+        curl -s -X POST 'http://clickhouse:8123/' -d '
+        ALTER TABLE countly_drill.drill_events ADD INDEX IF NOT EXISTS uid_bloom (uid) TYPE bloom_filter(0.01) GRANULARITY 4
+        ' || echo 'Index may already exist'
+
+        echo 'Creating drill_snapshots table (03-drill-snapshots.sql)...'
+        curl -s -X POST 'http://clickhouse:8123/' -d '
+        CREATE TABLE IF NOT EXISTS countly_drill.drill_snapshots
+        (
+            _id          String,
+            calculating  UInt32,
+            u            UInt32,
+            t            UInt32,
+            s            Float64,
+            s0           String,
+            s1           String,
+            s2           String,
+            s3           String,
+            s4           String,
+            dur          Float64,
+            cd           DateTime64(3) DEFAULT now64(3) CODEC (Delta, LZ4),
+            lu           DateTime64(3) DEFAULT now64(3) CODEC (Delta, LZ4)
+        )
+            ENGINE = MergeTree()
+            ORDER BY (cd, _id)
+            TTL cd + INTERVAL 1 HOUR
+        '
+
+        echo 'Verifying tables created...'
+        curl -s 'http://clickhouse:8123/?query=SHOW%20TABLES%20FROM%20countly_drill'
+        echo ''
+        echo 'ClickHouse initialization complete!'
+    restart: "no"
+
+  # ------------------------------
+  # MongoDB 8.0 + Replica Set
+  # ------------------------------
+  mongodb:
+    image: mongo:8.0
+    container_name: mongodb
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--wiredTigerCacheSizeGB", "1"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - kafka-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb-init:
+    image: mongo:8.0
+    container_name: mongodb-init
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    command: >
+      sh -c "
+      mongosh --host mongodb:27017 --eval
+      'try{rs.status()}catch(e){rs.initiate({_id:\"rs0\",members:[{_id:0,host:\"mongodb:27017\"}]})}';
+      "
+    networks:
+      - kafka-net
+    restart: "no"
+
+  # ------------------------------
+  # Connector Initialization (one-shot)
+  # ------------------------------
+  connector-init:
+    image: curlimages/curl:latest
+    container_name: connector-init
+    depends_on:
+      kafka-connect:
+        condition: service_healthy
+      dlq-init:
+        condition: service_completed_successfully
+      clickhouse-init:
+        condition: service_completed_successfully
+    networks:
+      - kafka-net
+    command:
+      - sh
+      - -c
+      - |
+        echo 'Waiting for Kafka Connect API...'
+        for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+          if curl -s http://kafka-connect:8083/connectors >/dev/null 2>&1; then
+            echo 'Kafka Connect is ready!'
+            break
+          fi
+          echo "Waiting... (attempt $$i/20)"
+          sleep 3
+        done
+
+        echo 'Creating ClickHouse sink connector...'
+        curl -X PUT -H 'Content-Type: application/json' \
+          -d '{
+            "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
+            "tasks.max": "1",
+            "topics": "drill-events",
+            "hostname": "clickhouse",
+            "port": "8123",
+            "ssl": "false",
+            "database": "countly_drill",
+            "username": "default",
+            "password": "",
+            "topic2TableMap": "drill-events=drill_events",
+            "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+            "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+            "value.converter.schemas.enable": "false",
+            "errors.tolerance": "all",
+            "errors.retry.timeout": "300000",
+            "errors.retry.delay.max.ms": "10000",
+            "errors.deadletterqueue.topic.name": "drill-events-dlq",
+            "errors.deadletterqueue.context.headers.enable": "true",
+            "errors.deadletterqueue.topic.replication.factor": "1"
+          }' \
+          http://kafka-connect:8083/connectors/clickhouse-sink/config
+
+        echo ''
+        echo 'Verifying connector status...'
+        sleep 3
+        curl -s http://kafka-connect:8083/connectors/clickhouse-sink/status
+        echo ''
+        echo 'Connector initialization complete!'
+    restart: "no"
+
+volumes:
+  mongodb-data:
+  clickhouse-data:
+
+networks:
+  kafka-net:
+    driver: bridge

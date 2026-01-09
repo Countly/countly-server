@@ -302,13 +302,13 @@
 <script type="text/x-template" id="details-message-tab">
     <el-card class="box-card cly-vue-push-notification-details-summary-card">
         <template v-if="pushNotification.messageType === MessageTypeEnum.CONTENT">
-            <div slot="header" class="clearfix">
+            <template #header><div class="clearfix">
                 <span class="bu-mr-1 color-cool-gray-50 font-weight-bold text-small">{{i18n('push-notification-details.localization-filter-label')}}</span>
                 <el-select v-model="selectedMessageLocale">
                     <el-option v-for="item in localizations" :key="item.value" :value="item.value" :label="item.label">
                     </el-option>
                 </el-select>
-            </div>
+            </div></template>
             <div class="bu-p-1">
                 <div class="bu-level bu-mb-4 bu-is-justify-content-flex-start bu-is-align-items-flex-start">
                     <div class="bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__label">

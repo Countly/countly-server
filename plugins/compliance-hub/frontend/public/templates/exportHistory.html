@@ -25,14 +25,14 @@
         <cly-datatable-n test-id="datatable-compliance-hub-export-purge-history" :data-source="exportHistoryTableSource" :default-sort="{prop: 'ts', order: 'descending'}">
             <template v-slot="scope">
                 <el-table-column sortable="custom" prop="u" label="USER">
-                    <template slot-scope="scope">
+                    <template #default="scope">
                         <div :data-test-id="'datatable-export-purge-history-user-' + scope.$index">
                             {{scope.row.u}}
                         </div>
                     </template>
                 </el-table-column>
                 <el-table-column sortable="custom" prop="ip" label="IP ADDRESS">
-                    <template slot-scope="scope">
+                    <template #default="scope">
                         <div :data-test-id="'datatable-export-purge-history-ip-address-' + scope.$index">
                             {{scope.row.ip}}
                         </div>

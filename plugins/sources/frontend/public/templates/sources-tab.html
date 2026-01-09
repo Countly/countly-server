@@ -28,7 +28,7 @@
       </template>
       <template v-slot="scope">
         <el-table-column type="expand">
-          <template slot-scope="rowScope">
+          <template #default="rowScope">
             <extend-table class="acquisition-sources-view__extend-table" v-if="sourcesDetailData[rowScope.row.sources]" :rows="sourcesDetailData[rowScope.row.sources]"></extend-table>
           </template>
         </el-table-column>

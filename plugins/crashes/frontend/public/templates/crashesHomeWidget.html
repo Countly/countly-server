@@ -6,9 +6,9 @@
 					<!-- {{item.name}}
 					<cly-tooltip-icon v-if="item.info" class="bu-ml-2" icon="ion-help-circled" :tooltip="item.info"></cly-tooltip-icon> -->
 					<template v-slot:number>{{item.value}}</template>
-					<span v-if="item.trend=='d'" slot="description" :class="['cly-trend-down', item.reverse ? 'negated' : '']" :data-test-id="'metric-card-crashes-index-' + idx + '-coloumn-trend-desc'"><i class="cly-trend-down-icon ion-android-arrow-down" :data-test-id="'metric-card-crashes-index-' + idx + '-coloumn-trend-icon'"></i>{{item.change}}</span>
-					<span v-else-if="item.trend=='u'" slot="description" :class="['cly-trend-up', item.reverse ? 'negated' : '']" :data-test-id="'metric-card-crashes-index-' + idx + '-coloumn-trend-desc'"><i class="cly-trend-up-icon ion-android-arrow-up" :data-test-id="'metric-card-crashes-index-' + idx + '-coloumn-trend-icon'"></i>{{item.change}}</span>
-					<span v-else slot="description" class="cly-trend-neutral" :data-test-id="'metric-card-crashes-index-' + idx + '-coloumn-trend-desc'"><i class="cly-trend-up-icon cly-trend-neutral-icon ion-minus-round" :data-test-id="'metric-card-crashes-index-' + idx + '-coloumn-trend-icon'"></i>{{item.change}}</span>
+					<template #description><span v-if="item.trend=='d'" :class="['cly-trend-down', item.reverse ? 'negated' : '']" :data-test-id="'metric-card-crashes-index-' + idx + '-coloumn-trend-desc'"><i class="cly-trend-down-icon ion-android-arrow-down" :data-test-id="'metric-card-crashes-index-' + idx + '-coloumn-trend-icon'"></i>{{item.change}}</span>
+					<span v-else-if="item.trend=='u'" :class="['cly-trend-up', item.reverse ? 'negated' : '']" :data-test-id="'metric-card-crashes-index-' + idx + '-coloumn-trend-desc'"><i class="cly-trend-up-icon ion-android-arrow-up" :data-test-id="'metric-card-crashes-index-' + idx + '-coloumn-trend-icon'"></i>{{item.change}}</span>
+					<span v-else class="cly-trend-neutral" :data-test-id="'metric-card-crashes-index-' + idx + '-coloumn-trend-desc'"><i class="cly-trend-up-icon cly-trend-neutral-icon ion-minus-round" :data-test-id="'metric-card-crashes-index-' + idx + '-coloumn-trend-icon'"></i>{{item.change}}</span></template>
 				</cly-metric-card>
 		</cly-metric-cards>
 	</cly-section>

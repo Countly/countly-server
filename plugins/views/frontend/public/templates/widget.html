@@ -14,7 +14,7 @@
    <cly-datatable-n :rows="getTableData" :hideTop="true" :height="maxTableHeight" >
 		<template v-slot="scope">	
 			<el-table-column  v-for="(item, index) in tableStructure" :sortable="false" :prop="item.prop" :label="item.title">
-				<template slot-scope="scope">
+				<template #default="scope">
 					<span v-if="item.prop === 'view'">
 						{{scope.row[item.prop] || ""}}
 					</span>

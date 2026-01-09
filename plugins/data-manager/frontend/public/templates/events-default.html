@@ -185,7 +185,7 @@
     :saveButtonLabel="i18n('common.delete')" 
     :cancelButtonLabel="i18n('common.no-dont-delete')" 
     :title="i18n('data-manager.delete-events')">
-        <template slot-scope="scope">
+        <template #default="scope">
             <div data-test-id="delete-event-popup-delete-event-permanently-question-label">{{i18n('data-manager.delete-event-permanently')}}<br/></div>
             <small data-test-id="delete-popup-delete-event-warning-label" class="color-red-100">{{ i18n('data-manager.delete-event-warning') }}</small>
             <ul>

@@ -14,21 +14,21 @@
                 <template v-slot="scope">
                     <el-table-column :sortable="true" prop="duration" :label="i18n('common.session-duration')"
                         :sort-method="sortDurationBuckets">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div :data-test-id="'datatable-session-durations-session-duration-' + scope.$index">
                                 {{scope.row.duration}}</div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="numberOfSessions"
                         :label="i18n('common.number-of-sessions')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div :data-test-id="'datatable-session-durations-number-of-sessions-' + scope.$index">
                                 {{formatNumber(scope.row.numberOfSessions)}}</div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="numberOfSessions" column-key="percentage"
                         :label="i18n('common.percent')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div class="bu-level-left">
                                 <div class="bu-level-item slipping-away-users-table-data-item"
                                     :data-test-id="'datatable-session-durations-percent-' + scope.$index">

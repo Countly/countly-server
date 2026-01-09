@@ -2,28 +2,28 @@
 	<cly-datatable-n test-id="datatable-sdk-versions" :rows="versionDetail" :resizable="true" :force-loading="isLoading">
 		<template v-slot="scope">
 			<el-table-column sortable="custom" prop="sdk_version" :label="i18n('platforms.table.platform-version')">
-				<template slot-scope="scope">
+				<template #default="scope">
 					<div :data-test-id="'datatable-sdks-sdk-versions-platform-version-' + scope.$index">
 						{{scope.row.sdk_version}}
 					</div>
 				</template>
 			</el-table-column>
 			<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')">
-				<template slot-scope="scope">
+				<template #default="scope">
 					<div :data-test-id="'datatable-sdk-versions-total-sessions-' + scope.$index">
 						{{scope.row.t}}
 					</div>
 				</template>
 			</el-table-column>
 			<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')">
-				<template slot-scope="scope">
+				<template #default="scope">
 					<div :data-test-id="'datatable-sdk-versions-total-users-' + scope.$index">
 						{{scope.row.u}}
 					</div>
 				</template>
 			</el-table-column>
 			<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')">
-				<template slot-scope="scope">
+				<template #default="scope">
 					<div :data-test-id="'datatable-sdk-versions-new-users-' + scope.$index">
 						{{scope.row.n}}
 					</div>

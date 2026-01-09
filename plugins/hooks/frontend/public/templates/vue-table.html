@@ -38,7 +38,7 @@
             </el-table-column>
            
             <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true" prop="name"  min-width="240" class="is-clickable">
-                <template slot-scope="scope">
+                <template #default="scope">
                     <div>
                         <div class="is-name-col bu-is-clickable" @click="onRowClick(scope.row)" :data-test-id="'datatable-hooks-hook-name-' + scope.$index">{{scope.row.name}}</div>
                         <div v-if="scope.row.description" class="is-desc-col" :data-test-id="'datatable-hooks-hook-description-' + scope.$index">{{scope.row.description}}</div>
@@ -50,7 +50,7 @@
             <template v-slot:header="scope">
                <span>{{i18n('hooks.trigger')}} <i class="el-icon-arrow-right el-icon-right"></i> {{ i18n('hooks.effects') }}</span>
             </template>
-            <template slot-scope="scope" sortable="true">
+            <template #default="scope" sortable="true">
                 <div v-html="scope.row.triggerEffectColumn" :data-test-id="'datatable-hooks-trigger-action-' + scope.$index"></div>
             </template>
                 
@@ -59,7 +59,7 @@
                 <el-table-column 
                     v-if="col.value === 'triggerCount'"  
                     sortable="true" align="right" prop="triggerCount" :label="i18n('hooks.trigger-count')" min-width="155">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <span :data-test-id="'datatable-hooks-trigger-count-' + scope.$index">{{scope.row.triggerCount}}</span>
                         </template>
                 </el-table-column>
@@ -67,7 +67,7 @@
                     align="left"
                     v-if="col.value === 'lastTriggerTimestampString'"  
                     sortable="true"  prop="lastTriggerTimestampString" :label="i18n('hooks.trigger-last-time')" min-width="160" >
-                    <template slot-scope="scope">
+                    <template #default="scope">
                         <span :data-test-id="'datatable-hooks-last-triggered-' + scope.$index">{{scope.row.lastTriggerTimestampString}}</span>
                     </template>
                 </el-table-column>
@@ -75,7 +75,7 @@
 
 
             <el-table-column :label="i18n('hooks.create-by')" prop="createdByUser" min-width="150" sortable="true">
-                <template slot-scope="scope">
+                <template #default="scope">
                     <div class="is-last-col">
                         <div >
                             <div class="is-created-by-col" :data-test-id="'datatable-hooks-created-by-' + scope.$index">

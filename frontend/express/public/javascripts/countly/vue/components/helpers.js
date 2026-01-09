@@ -1,13 +1,13 @@
-/* global Vue, CV, $, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon CountlyHelpers*/
+/* global CV, $, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon, CountlyHelpers */
 
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
-    Vue.component("vue-json-pretty", VueJsonPretty.default);
-    Vue.use(ElementTiptapPlugin);
-    Vue.component("cly-back-link", countlyBaseComponent.extend(
+    countlyVue.registerComponent("vue-json-pretty", VueJsonPretty.default);
+    countlyVue.registerPlugin(ElementTiptapPlugin);
+    countlyVue.registerComponent("cly-back-link", countlyBaseComponent.extend(
         // @vue/component
         {
             mixins: [
@@ -42,7 +42,7 @@
         }
     ));
 
-    Vue.component("cly-in-page-notification", countlyBaseComponent.extend(
+    countlyVue.registerComponent("cly-in-page-notification", countlyBaseComponent.extend(
         {
             props: {
                 text: {type: String, required: false},
@@ -64,7 +64,7 @@
         }
     ));
 
-    Vue.component("cly-empty-home", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-empty-home", countlyBaseComponent.extend({
         template: '<div class="cly-vue-empty-home">\n' +
                     '<div class="bu-mb-3" v-if="image">\n' +
                         '<img :src="image" class="image">\n' +
@@ -86,7 +86,7 @@
         }
     }));
 
-    Vue.component('cly-status-tag', countlyBaseComponent.extend({
+    countlyVue.registerComponent('cly-status-tag', countlyBaseComponent.extend({
         props: {
             color: {
                 default: 'green',
@@ -145,7 +145,7 @@
         `
     }));
 
-    Vue.component("cly-diff-helper", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-diff-helper", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
@@ -230,7 +230,7 @@
 				'</div>'
     }));
 
-    Vue.component("cly-metric-cards", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-metric-cards", countlyBaseComponent.extend({
         template: '<div :class="topClasses" class="cly-vue-metric-cards bu-columns bu-is-gapless bu-is-mobile"><slot></slot></div>',
         props: {
             multiline: {
@@ -256,7 +256,7 @@
         }
     }));
 
-    Vue.component("cly-metric-card", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-metric-card", countlyBaseComponent.extend({
         mixins: [
             _mixins.commonFormatters
         ],
@@ -348,7 +348,7 @@
                     </div>'
     }));
 
-    Vue.component("cly-metric-breakdown", countlyVue.components.create({
+    countlyVue.registerComponent("cly-metric-breakdown", countlyVue.components.create({
         template: countlyVue.T('/javascripts/countly/vue/templates/breakdown.html'),
         mixins: [
             _mixins.i18n
@@ -430,7 +430,7 @@
         }
     }));
 
-    Vue.component("cly-tooltip-icon", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-tooltip-icon", countlyBaseComponent.extend({
         props: {
             icon: {
                 type: String,
@@ -460,7 +460,7 @@
         template: '<i v-if="tooltip" :class="\'cly-vue-tooltip-icon \' + icon + \' \' + tooltipClass" v-tooltip="tooltipConf"></i>'
     }));
 
-    Vue.component("cly-remover", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-remover", countlyBaseComponent.extend({
         props: {
             disabled: {
                 type: Boolean,
@@ -492,7 +492,7 @@
         "auto-chart": true
     };
 
-    Vue.component("cly-popover", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-popover", countlyBaseComponent.extend({
         props: {
             size: {
                 type: String,
@@ -515,12 +515,12 @@
                     </v-popover>',
     }));
 
-    Vue.component("cly-value", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-value", countlyBaseComponent.extend({
         template: '<span></span>',
         props: ['value']
     }));
 
-    Vue.component("cly-app-select", {
+    countlyVue.registerComponent("cly-app-select", {
         template: `
         <cly-select-x
             :options="options"
@@ -643,7 +643,7 @@
         }
     });
 
-    Vue.component("cly-event-select", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         template: '<div class="cly-event-select">\
                     <cly-select-x\
@@ -871,7 +871,7 @@
         }
     }));
 
-    Vue.component("cly-paginate", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-paginate", countlyBaseComponent.extend({
         template: '<div>\
                         <slot v-bind="passedScope"></slot>\
                         <slot name="controls">\
@@ -975,7 +975,7 @@
         }
     }));
 
-    Vue.component("cly-color-tag", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-color-tag", countlyBaseComponent.extend({
         data: function() {
             return {
                 selectedTag: this.defaultTag
@@ -1013,7 +1013,7 @@
                     </div>'
     }));
 
-    Vue.component("cly-json-editor", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-json-editor", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
@@ -1115,7 +1115,7 @@
                     </slot>\
                    </div>'
     }));
-    Vue.component("cly-notification", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-notification", countlyBaseComponent.extend({
         template: `
             <div
                 v-if="isModalVisible"
@@ -1282,7 +1282,15 @@
                 this.autoHideTimeout = setTimeout(this.closeModal, this.DEFAULT_STAY_TIME_IN_MS);
             }
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            if (this.autoHide && this.autoHideTimeout) {
+                clearTimeout(this.autoHideTimeout);
+                this.autoHideTimeout = null;
+            }
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             if (this.autoHide && this.autoHideTimeout) {
                 clearTimeout(this.autoHideTimeout);
                 this.autoHideTimeout = null;
@@ -1290,7 +1298,7 @@
         }
     }));
 
-    Vue.component("cly-empty-view", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-empty-view", countlyBaseComponent.extend({
         template: '<div :class="classes">\
                         <slot name="icon">\
                             <div v-if="visual!==\'framed\'" class="bu-mt-6">\
@@ -1384,13 +1392,13 @@
                     </div>',
     });
 
-    Vue.component("cly-empty-chart", BaseEmptyViewForElements);
+    countlyVue.registerComponent("cly-empty-chart", BaseEmptyViewForElements);
 
-    Vue.component("cly-empty-datatable", BaseEmptyViewForElements);
+    countlyVue.registerComponent("cly-empty-datatable", BaseEmptyViewForElements);
 
-    Vue.component("cly-blank", BaseEmptyViewForElements);
+    countlyVue.registerComponent("cly-blank", BaseEmptyViewForElements);
 
-    Vue.component("cly-breadcrumbs", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-breadcrumbs", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
@@ -1413,7 +1421,7 @@
                     </div>"
     }));
 
-    Vue.component("cly-multiplex", {
+    countlyVue.registerComponent("cly-multiplex", {
         props: {
             children: {
                 type: Array,
@@ -1430,7 +1438,7 @@
                     </div>'
     });
 
-    Vue.component("cly-list-drawer", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-list-drawer", countlyBaseComponent.extend({
         props: {
             list: {
                 type: Array,
@@ -1487,7 +1495,7 @@
                     </div>'
     }));
 
-    Vue.component("cly-auto-refresh-toggle", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-auto-refresh-toggle", countlyBaseComponent.extend({
         template: "<div class='cly-vue-auto-refresh-toggle'>\
                         <div v-if='autoRefresh' class='bu-level-item'>\
                             <span class='cly-vue-auto-refresh-toggle__refresh--enabled' :data-test-id='testId + \"-auto-refresh-toggle-is-label\"'>{{i18n('auto-refresh.is')}}</span>\
@@ -1540,7 +1548,7 @@
     }));
 
 
-    Vue.component("cly-database-engine-debug-panel", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-database-engine-debug-panel", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],

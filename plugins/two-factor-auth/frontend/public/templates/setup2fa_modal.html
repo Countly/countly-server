@@ -33,13 +33,13 @@
                     <el-input v-model="secret_code"></el-input>
                 </div>
             </div>
-            <div class="bu-columns bu-is-gapless">
-                <div class="bu-column bu-is-12">
-                    <span slot="footer" class="dialog-footer">
-                        <el-button @click="dataModal.showDialog = false">{{i18n('common.cancel')}}</el-button>
-                        <el-button type="primary" @click="confirmDialog">{{i18n('events.general.confirm')}}</el-button>
-                    </span>
-                </div>
+        </div>
+        <div class="bu-columns bu-is-gapless">
+            <div class="bu-column bu-is-12">
+                <template #footer><span class="dialog-footer">
+                    <el-button @click="dataModal.showDialog = false">{{i18n('common.cancel')}}</el-button>
+                    <el-button type="primary" @click="confirmDialog">{{i18n('events.general.confirm')}}</el-button>
+                </span></template>
             </div>
         </cly-main>
     </el-dialog>

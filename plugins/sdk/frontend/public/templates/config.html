@@ -31,7 +31,7 @@
                                 <cly-tooltip-icon class="ion ion-help-circled" placement="bottom"></cly-tooltip-icon>
                             </h3>
                             <cly-section class="bu-mr-5 bu-mb-4">
-                                <template slot-scope="scope">
+                                <template #default="scope">
                                     <div 
                                         v-for="key in group.list" :key="key"
                                             v-if="shouldShowKey(key)"

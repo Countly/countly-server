@@ -1,4 +1,4 @@
-/* global countlyCommon, CountlyHelpers, store, app, jQuery, countlyVue, CV, Vue*/
+/* global countlyCommon, CountlyHelpers, store, app, jQuery, countlyVue, CV */
 (function(countlyTaskManager, $) {
 
     //Private Properties
@@ -442,9 +442,9 @@
                     appId = task.app_id || payload.appId;
 
                 if (!unread[appId]) {
-                    Vue.set(unread, appId, {});
+                    countlyVue.set(unread, appId, {});
                 }
-                Vue.set(unread[appId], task._id, {type: task.type});
+                countlyVue.set(unread[appId], task._id, {type: task.type});
                 store.set("countly_task_monitor_unread", unread);
             },
             setRead: function(state, payload) {
@@ -453,7 +453,7 @@
                     taskId = payload.taskId;
 
                 if (unread[appId]) {
-                    Vue.delete(unread[appId], taskId);
+                    countlyVue.del(unread[appId], taskId);
                     store.set("countly_task_monitor_unread", unread);
                 }
             }

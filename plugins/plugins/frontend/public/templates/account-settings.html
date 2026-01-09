@@ -123,7 +123,7 @@
                 </cly-section>
                 <h3 class="bu-my-4"> {{i18n('configs.danger-zone')}} &nbsp;</h3>
                 <cly-section class="bu-mr-4">
-                    <template slot-scope="scope">
+                    <template #default="scope">
                         <div class="bu-columns bu-is-vcentered bu-p-3 bu-mx-1">
                             <div class="bu-column bu-is-10">
                                 <p class="bu-has-text-weight-medium">{{i18n('configs.delete-account')}} </p>
@@ -138,7 +138,7 @@
             </div>
         </div>
         <cly-confirm-dialog @cancel="deleteAccount.showDialog = false" @confirm="submitDeleteDialog" :visible.sync="deleteAccount.showDialog" dialogType="danger" :saveButtonLabel="deleteAccount.saveButtonLabel" :cancelButtonLabel="deleteAccount.cancelButtonLabel" :title="deleteAccount.title" >
-            <template slot-scope="scope">
+            <template #default="scope">
                 <ul>
                     <li>{{i18n('configs.cannot-be-undone')}}</li>
                     <li>{{i18n('configs.will-permanently-delete')}}</li>
@@ -150,7 +150,7 @@
             </template>
         </cly-confirm-dialog>
         <cly-confirm-dialog @cancel="changePassword.showDialog = false" @confirm="passwordDialog" :visible.sync="changePassword.showDialog" :saveButtonLabel="changePassword.saveButtonLabel" :cancelButtonLabel="changePassword.cancelButtonLabel" :title="changePassword.title" >
-            <template slot-scope="scope">  
+            <template #default="scope">  
                 <div>
                     <cly-form-field rules="required" :label="i18n('configs.current-password')">
                         <el-input type="password" :placeholder="i18n('configs.current-password')" v-model="changePassword.password"></el-input>

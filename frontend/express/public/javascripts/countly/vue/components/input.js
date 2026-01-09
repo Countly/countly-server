@@ -1,4 +1,4 @@
-/* global Vue, CV, countlyGlobal, $, _, countlyCommon */
+/* global CV, countlyGlobal, $, _, countlyCommon */
 
 (function(countlyVue) {
 
@@ -8,7 +8,7 @@
     const COLOR_FORMAT_HEX = 'hex';
     const COLOR_FORMAT_RGB = 'rgb';
 
-    Vue.component("cly-colorpicker", countlyVue.components.create({
+    countlyVue.registerComponent("cly-colorpicker", countlyVue.components.create({
         template: CV.T('/javascripts/countly/vue/templates/UI/color-picker.html'),
 
         components: {
@@ -271,7 +271,7 @@
         }
     }));
 
-    Vue.component("cly-dropzone", window.vue2Dropzone);
+    countlyVue.registerComponent("cly-dropzone", window.vue2Dropzone);
 
     var AbstractListBox = countlyVue.views.BaseView.extend({
         props: {
@@ -425,7 +425,7 @@
         }
     };
 
-    Vue.component("cly-listbox", AbstractListBox.extend({
+    countlyVue.registerComponent("cly-listbox", AbstractListBox.extend({
         mixins: [SearchableOptionsMixin],
         props: {
             searchable: {type: Boolean, default: false, required: false}, //override the mixin
@@ -463,7 +463,7 @@
                                 autocomplete="off"\
                                 v-model="searchQuery"\
                                 :placeholder="searchPlaceholder">\
-                                <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                                <template #prefix><i class="el-input__icon el-icon-search"></i></template>\
                             </el-input>\
                         </form>\
                     </div>\
@@ -508,7 +508,7 @@
                 </div>'
     }));
 
-    Vue.component("cly-checklistbox", AbstractListBox.extend({
+    countlyVue.registerComponent("cly-checklistbox", AbstractListBox.extend({
         mixins: [SearchableOptionsMixin],
         props: {
             value: {
@@ -677,7 +677,7 @@
                                 autocomplete="off"\
                                 v-model="searchQuery"\
                                 :placeholder="searchPlaceholder">\
-                                <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                                <template #prefix><i class="el-input__icon el-icon-search"></i></template>\
                             </el-input>\
                         </form>\
                     </div>\
@@ -971,7 +971,7 @@
         }
     };
 
-    Vue.component("cly-select-x", countlyVue.components.create({
+    countlyVue.registerComponent("cly-select-x", countlyVue.components.create({
         mixins: [TabbedOptionsMixin, SearchableOptionsMixin, _mixins.i18n],
         template: CV.T('/javascripts/countly/vue/templates/selectx.html'),
         props: {
@@ -1228,7 +1228,7 @@
         }
     }));
 
-    Vue.component("cly-check", countlyVue.components.BaseComponent.extend(
+    countlyVue.registerComponent("cly-check", countlyVue.components.BaseComponent.extend(
         // @vue/component
         {
             props: {
@@ -1304,7 +1304,7 @@
         }
     ));
 
-    Vue.component('cly-radio-block', countlyVue.components.BaseComponent.extend({
+    countlyVue.registerComponent('cly-radio-block', countlyVue.components.BaseComponent.extend({
         props: {
             value: {required: true, default: -1, type: [ String, Number ]},
             items: {
@@ -1398,7 +1398,7 @@
                             '</div>\n' +
                         '</div>'
     }));
-    Vue.component('cly-dynamic-textarea', countlyVue.components.BaseComponent.extend({
+    countlyVue.registerComponent('cly-dynamic-textarea', countlyVue.components.BaseComponent.extend({
         template: '<div contenteditable="true" @input="update" v-html="content"></div>',
         props: ['content'],
         methods: {
@@ -1412,7 +1412,7 @@
         SIMPLE_EMAIL = new RegExp('^' + REGEX_EMAIL + '$', 'i'),
         NAMED_EMAIL = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
 
-    Vue.component('cly-select-email', countlyVue.components.BaseComponent.extend({
+    countlyVue.registerComponent('cly-select-email', countlyVue.components.BaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
@@ -1523,7 +1523,7 @@
         }
     }));
 
-    Vue.component("cly-sortable-items", countlyVue.components.BaseComponent.extend({
+    countlyVue.registerComponent("cly-sortable-items", countlyVue.components.BaseComponent.extend({
         props: {
             value: {
                 type: Array

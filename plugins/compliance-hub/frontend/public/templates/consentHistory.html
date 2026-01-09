@@ -26,7 +26,7 @@
         <cly-datatable-n test-id="datatable-compliance-hub-consent-history" :force-loading="consentHistoryLoading" :data-source="consentHistoryTableSource" :default-sort="{prop: 'ts', order: 'ascending'}" ref="table" @row-click="tableRowClickHandler" row-class-name="bu-is-clickable">
             <template v-slot="scope">
                 <el-table-column fixed type="expand">
-                    <template slot-scope="props">
+                    <template #default="props">
                         <div class="bu-level bu-mb-4 cly-vue-compliance__consent_history_expanded_column">
                             <div class="bu-level-left text-medium font-weight-bold" :data-test-id="'expand-device-id-label-' + props.$index">Device ID</div>
                             <div style="width: 80%;" class="bu-level-right">
@@ -70,14 +70,14 @@
                     </template>
                 </el-table-column>
                 <el-table-column fixed width="250" sortable="custom" prop="device_id" label="ID">
-                    <template slot-scope="scope">
+                    <template #default="scope">
                         <div :data-test-id="'datatable-consent-history-id-' + scope.$index">
                             {{scope.row.device_id}}
                         </div>
                     </template>
                 </el-table-column>
                 <el-table-column sortable="custom" prop="uid" label="UID">
-                    <template slot-scope="scope">
+                    <template #default="scope">
                         <div :data-test-id="'datatable-consent-history-uid-' + scope.$index">
                             {{scope.row.uid}}
                         </div>

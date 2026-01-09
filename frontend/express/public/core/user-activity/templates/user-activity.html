@@ -13,7 +13,7 @@
             <cly-datatable-n test-id="user-activity" :rows="userActivityRows" :exportFormat="formatExportFunction" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="bucket" :label="i18n('user-activity.table-session-count')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div class="bu-columns bu-is-gapless">
                                 <div class="bu-column bu-is-2" :data-test-id="'datatable-user-activity-session-count-' + scope.$index">
                                     <span>{{scope.row.bucket}}</span>
@@ -22,7 +22,7 @@
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="all" :label="i18n('user-activity.table-all-users')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div class="bu-level">
                                 <div class="bu-is-flex user-activity-table__data-item-container">
                                     <div class="bu-level bu-is-justify-content-flex-start" :data-test-id="'datatable-user-activity-all-users-value-' + scope.$index">
@@ -40,7 +40,7 @@
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="thirtyDays" :label="i18n('user-activity.table-thirty-days')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div class="bu-level">
                                 <div class="bu-is-flex user-activity-table__data-item-container">
                                     <div class="bu-level bu-is-justify-content-flex-start" :data-test-id="'datatable-user-activity-active-users-thirty-days-value-' + scope.$index">
@@ -58,7 +58,7 @@
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="sevenDays" :label="i18n('user-activity.table-seven-days')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                                 <div class="bu-level">
                                     <div class="bu-is-flex user-activity-table__data-item-container">
                                         <div class="bu-level bu-is-justify-content-flex-start" :data-test-id="'datatable-user-activity-active-users-seven-days-value-' + scope.$index">

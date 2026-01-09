@@ -26,7 +26,7 @@
 			<cly-datatable-n  test-id="languages" :rows="appRows" :exportFormat="formatExportFunction" :resizable="true" :force-loading="isLoading" v-loading="isLoading">
 				<template v-slot="scope">
 					<el-table-column sortable="custom" prop="langs" :label="i18n('languages.table.language')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div class="bu-level">
                                 <div class="bu-level bu-is-justify-content-flex-start" :data-test-id="'datatable-languages-language-' + scope.$index">
                                     <span>{{scope.row.langs}}</span>
@@ -35,7 +35,7 @@
                         </template>
                     </el-table-column>
 					<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')">
-						<template slot-scope="scope">
+						<template #default="scope">
                             <div class="bu-level">
                                 <div class="bu-is-flex user-activity-table__data-item-container">
                                     <div class="bu-level bu-is-justify-content-flex-start" :data-test-id="'datatable-languages-total-session-' + scope.$index">
@@ -53,7 +53,7 @@
                         </template>
 					</el-table-column>
 					<el-table-column sortable="custom" prop="u" :label="i18n('common.table.total-users')">
-						<template slot-scope="scope">
+						<template #default="scope">
                             <div class="bu-level">
                                 <div class="bu-is-flex user-activity-table__data-item-container">
                                     <div class="bu-level bu-is-justify-content-flex-start" :data-test-id="'datatable-languages-total-users-' + scope.$index">
@@ -71,7 +71,7 @@
                         </template>
 					</el-table-column>
 					<el-table-column sortable="custom" prop="n" :label="i18n('common.table.new-users')">
-						<template slot-scope="scope">
+						<template #default="scope">
                             <div class="bu-level">
                                 <div class="bu-is-flex user-activity-table__data-item-container">
                                     <div class="bu-level bu-is-justify-content-flex-start" :data-test-id="'datatable-languages-new-users-' + scope.$index">

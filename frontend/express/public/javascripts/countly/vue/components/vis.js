@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, countlyLocation, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon, countlyAuth */
+/* global countlyCommon, countlyLocation, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon, countlyAuth */
 // _mergeWith is Lodash mergeWith - /frontend/express/public/javascripts/utils/lodash.mergeWith.js
 
 (function(countlyVue) {
@@ -2004,11 +2004,11 @@
                     <el-button size="small">\
                         <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon" data-test-id="chart-type-annotation-icon"/>\
                     </el-button>\
-                    <el-dropdown-menu slot="dropdown">\
+                    <template #dropdown><el-dropdown-menu>\
                         <el-dropdown-item data-test-id="chart-type-annotation-item-add-note" v-if="hasCreateRight" command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
                         <el-dropdown-item data-test-id="chart-type-annotation-item-manage-notes" command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
                         <el-dropdown-item data-test-id="chart-type-annotation-item-hide-notes" v-if="hasUpdateRight" command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
-                    </el-dropdown-menu>\
+                    </el-dropdown-menu></template>\
                 </el-dropdown>\
                 <drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>\
             </div>'
@@ -2398,9 +2398,9 @@
                     </div>'
     });
 
-    Vue.component("cly-chart-zoom", ZoomInteractive);
+    countlyVue.registerComponent("cly-chart-zoom", ZoomInteractive);
 
-    Vue.component("cly-chart-generic", BaseChart.extend({
+    countlyVue.registerComponent("cly-chart-generic", BaseChart.extend({
         data: function() {
             return {
                 forwardedSlots: ["chart-left", "chart-right"]
@@ -2449,7 +2449,7 @@
                     </div>'
     }));
 
-    Vue.component("cly-chart-flow", BaseChart.extend({
+    countlyVue.registerComponent("cly-chart-flow", BaseChart.extend({
         data: function() {
             return {
                 forwardedSlots: ["chart-left", "chart-right", "chart-header-left-input"],
@@ -2523,7 +2523,7 @@
                     </div>'
     }));
 
-    Vue.component("cly-chart-line", BaseLineChart.extend({
+    countlyVue.registerComponent("cly-chart-line", BaseLineChart.extend({
         mixins: [
             xAxisOverflowHandler,
             countlyVue.mixins.autoRefresh
@@ -2616,7 +2616,7 @@
                     </div>'
     }));
 
-    Vue.component("cly-chart-time", BaseLineChart.extend({
+    countlyVue.registerComponent("cly-chart-time", BaseLineChart.extend({
         data: function() {
             return {
                 forwardedSlots: ["chart-left", "chart-right"],
@@ -2781,7 +2781,7 @@
                     </div>'
     }));
 
-    Vue.component("cly-chart-bar", BaseBarChart.extend({
+    countlyVue.registerComponent("cly-chart-bar", BaseBarChart.extend({
         mixins: [
             xAxisOverflowHandler
         ],
@@ -2871,7 +2871,7 @@
                     </div>'
     }));
 
-    Vue.component("cly-chart-pie", BasePieChart.extend({
+    countlyVue.registerComponent("cly-chart-pie", BasePieChart.extend({
         data: function() {
             return {
                 forwardedSlots: ["chart-left", "chart-right"]
@@ -2961,7 +2961,7 @@
                     </div>'
     }));
 
-    Vue.component("cly-map-picker", countlyVue.components.create({
+    countlyVue.registerComponent("cly-map-picker", countlyVue.components.create({
         components: {
             'l-map': Vue2Leaflet.LMap,
             'l-tile-layer': Vue2Leaflet.LTileLayer,
@@ -3089,7 +3089,15 @@
             ]);
             this.locateUserWhenMarkerNotFound();
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            this.unregisterEventListenersWhenEnabled([
+                {name: 'click', handler: this.onLocationClick},
+                {name: 'locationfound', handler: this.onLocationFound}
+            ]);
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             this.unregisterEventListenersWhenEnabled([
                 {name: 'click', handler: this.onLocationClick},
                 {name: 'locationfound', handler: this.onLocationFound}
@@ -3098,7 +3106,7 @@
         template: CV.T('/javascripts/countly/vue/templates/mappicker.html')
     }));
 
-    Vue.component("cly-worldmap", countlyVue.components.create({
+    countlyVue.registerComponent("cly-worldmap", countlyVue.components.create({
         components: {
             'l-map': Vue2Leaflet.LMap,
             'l-circle-marker': Vue2Leaflet.LCircleMarker,
@@ -3252,10 +3260,16 @@
                 self.handleViewChange();
             });
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
             this.geojsonHome = [];
             this.geojsonDetail = [];
             // We don't need reactivity for these fields. So they are defined outside "data".
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
+            this.geojsonHome = [];
+            this.geojsonDetail = [];
         },
         data: function() {
             return {

@@ -22,12 +22,12 @@
       :subTitle="empty.body"
       :actionTitle="i18n('feedback.add-new-widget')"
       :hasAction="canUserCreate">
-      <div slot="icon" class="bu-mt-6">
+      <template #icon><div class="bu-mt-6">
         <img data-test-id="ratings-widgets-empty-view-icon" width="96" height="96" :src="empty.image"/>
-      </div>
-      <div slot="action" v-if="canUserCreate">
+      </div></template>
+      <template #action><div v-if="canUserCreate">
         <div data-test-id="ratings-widgets-empty-view-action-button" @click="createWidget()" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">+ {{i18n('feedback.add-new-widget')}}</div>
-      </div>
+      </div></template>
     </cly-empty-view>
   </cly-main>
 </div>

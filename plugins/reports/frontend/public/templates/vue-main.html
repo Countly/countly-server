@@ -44,13 +44,13 @@
             </el-table-column>
            
             <el-table-column fixed :label="i18n('report.report-title')"  min-width="200" sortable="true">
-                <template slot-scope="scope">
+                <template #default="scope">
                     <div v-html="scope.row.title" :data-test-id = "'datatable-reports-report-name-' + scope.$index"></div>
                 </template>
             </el-table-column> 
 
             <el-table-column min-width="230" :label="(i18n('reports.emails'))" sortable="true">
-            <template slot-scope="scope" sortable="true">
+            <template #default="scope" sortable="true">
                 <div class="email-column" v-html="scope.row.emails.join(' ')" :data-test-id = "'datatable-reports-emails-' + scope.$index"></div>
             </template>
                 
@@ -65,7 +65,7 @@
             </el-table-column>
 
             <el-table-column  min-width="130" sortable="true" :label="i18n('reports.frequency')">
-                <template slot-scope="scope" sortable="true">
+                <template #default="scope" sortable="true">
                     <span class="text-medium color-cool-gray-50" :data-test-id="'datatable-reports-frequency-' + scope.$index">{{i18n("reports." + scope.row.frequency)}}</span>
                 </template>
             </el-table-column>
@@ -75,7 +75,7 @@
             </el-table-column> -->
 
             <el-table-column  min-width="250" :label="i18n('reports.time')" sortable="true">
-                <template slot-scope="scope">
+                <template #default="scope">
                     <div class="bu-is-flex">
                         <div class="bu-is-flex-grow-1">
                             <div class="is-created-by-col" :data-test-id="'datatable-reports-time-' + scope.$index">

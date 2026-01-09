@@ -1,0 +1,2 @@
+# Docker data volumes - exclude persistent data from version control
+data/

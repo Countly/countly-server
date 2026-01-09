@@ -1145,7 +1145,12 @@
                 }
             },
             template: CV.T("/vue-example/templates/external-tab.html"),
+            // Vue 2 lifecycle hook
             beforeDestroy: function() {
+                this.localStore.unregisterModule("foo");
+            },
+            // Vue 3 lifecycle hook
+            beforeUnmount: function() {
                 this.localStore.unregisterModule("foo");
             }
         })

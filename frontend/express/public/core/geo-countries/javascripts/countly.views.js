@@ -303,7 +303,12 @@ var CountriesHomeWidget = countlyVue.views.create({
         this.module = countlyCountry.getVuexModule();
         CV.vuex.registerGlobally(this.module);
     },
+    // Vue 2 lifecycle hook
     beforeDestroy: function() {
+        CV.vuex.unregister(this.module.name);
+    },
+    // Vue 3 lifecycle hook
+    beforeUnmount: function() {
         CV.vuex.unregister(this.module.name);
     },
     mounted: function() {

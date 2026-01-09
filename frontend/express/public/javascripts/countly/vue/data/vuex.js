@@ -1,4 +1,4 @@
-/* global Vue, Vuex, _, countlyGlobal, CV, app */
+/* global Vuex, _, countlyGlobal, CV, app */
 
 (function(countlyVue) {
 
@@ -470,7 +470,7 @@
                 var rowKey = keyFn(row);
                 var currentPatch = Object.assign({}, state.patches[rowKey], fields);
 
-                Vue.set(state.patches, rowKey, currentPatch);
+                countlyVue.set(state.patches, rowKey, currentPatch);
             },
             unpatch: function(state, obj) {
                 var row = obj.row,
@@ -490,14 +490,14 @@
                     }
 
                     if (!fields) {
-                        Vue.delete(state.patches, rowKey);
+                        countlyVue.del(state.patches, rowKey);
                     }
                     else {
                         fields.forEach(function(fieldName) {
-                            Vue.delete(state.patches[rowKey], fieldName);
+                            countlyVue.del(state.patches[rowKey], fieldName);
                         });
                         if (Object.keys(state.patches[rowKey]).length === 0) {
-                            Vue.delete(state.patches, rowKey);
+                            countlyVue.del(state.patches, rowKey);
                         }
                     }
                 });

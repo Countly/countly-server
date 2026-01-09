@@ -171,8 +171,8 @@
                 </div>
                 <div class="user-management-drawer-content__permission-table-header bu-px-1">
                   <el-input v-model="filteredFeatures[index].searchQuery" :placeholder="i18n('management-users.search-placeholder')" class="user-management-drawer-content__feature-search" @input="search(index)">
-                    <i slot="prefix" class="el-input__icon el-icon-search"></i>
-                    <i slot="suffix" class="el-input__icon el-icon-circle-close" @click="clearSearch(index)"></i>
+                    <template #prefix><i class="el-input__icon el-icon-search"></i></template>
+                    <template #suffix><i class="el-input__icon el-icon-circle-close" @click="clearSearch(index)"></i></template>
                   </el-input> 
                   <div class="user-management-drawer-content__permission-type-cols">
                     <div class="user-management-drawer-content__permission-type">

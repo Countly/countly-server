@@ -294,7 +294,13 @@ var TechnologyHomeWidget = countlyVue.views.create({
         this.module = countlyDevicesAndTypes.getVuexModule();
         CV.vuex.registerGlobally(this.module);
     },
+    // Vue 2 lifecycle hook
     beforeDestroy: function() {
+        CV.vuex.unregister(this.module.name);
+        this.module = null;
+    },
+    // Vue 3 lifecycle hook
+    beforeUnmount: function() {
         CV.vuex.unregister(this.module.name);
         this.module = null;
     },

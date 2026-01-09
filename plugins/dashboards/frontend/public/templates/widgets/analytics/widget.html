@@ -137,7 +137,7 @@
                             :prop="item.prop"
                             :sortable="false"
                         >
-                            <template slot-scope="scope">
+                            <template #default="scope">
                                 <span v-if="item.type === 'number'">
                                     {{ formatNumber(scope.row[item.prop] || 0) }}
                                 </span>

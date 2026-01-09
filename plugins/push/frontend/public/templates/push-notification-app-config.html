@@ -182,7 +182,7 @@
             width="720px"
             autoCentered
             :visible.sync="isDialogVisible">
-            <template slot="title">
+            <template #title>
                 <div class="bu-is-flex bu-is-align-items-center bu-ml-2">
                     <h3>{{i18n('push-notification.user-list')}}</h3>
                     <cly-tooltip-icon :tooltip="i18n('push-notification.test-users-description')" icon="ion ion-help-circled" style="margin-left:8px"> </cly-tooltip-icon>
@@ -194,7 +194,7 @@
             <cly-datatable-n :rows="selectedTestUsersRows" v-loading="areRowsLoading || isUpdateTestUsersLoading" :force-loading="areRowsLoading || isUpdateTestUsersLoading" :hideTop="true">
                 <template v-slot="scope">
                     <el-table-column :label="i18n('push-notification.username')" v-if="selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.USER_ID">
-                        <template slot-scope="rowScope">
+                        <template #default="rowScope">
                             <div class="bu-is-flex bu-is-align-items-center">
                                 <img :src="rowScope.row.picture" width="16px" height="16px" class="bu-mr-2" style="border-radius: 50%;" />
                                 <span class="has-ellipsis">{{rowScope.row.username}}</span>
@@ -208,7 +208,7 @@
                         </template>
                     </el-table-column>
                     <el-table-column type="options">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <cly-more-options v-if="scope.row.hover" size="small" @command="onDeleteTestUser(scope.row)">
                                 <el-dropdown-item>{{i18n('push-notification.delete')}}</el-dropdown-item>
                             </cly-more-options>

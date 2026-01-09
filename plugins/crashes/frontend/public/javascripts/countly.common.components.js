@@ -1,7 +1,7 @@
-/*global countlyVue, Vue */
+/*global countlyVue */
 
 (function() {
-    Vue.component("cly-crashes-dashboard-tile", countlyVue.views.create({
+    countlyVue.registerComponent("cly-crashes-dashboard-tile", countlyVue.views.create({
         props: {
             showDonut: {type: Boolean, default: false},
             donutPercentage: {type: Number, default: 50},

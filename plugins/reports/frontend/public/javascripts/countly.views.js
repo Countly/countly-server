@@ -274,7 +274,14 @@
                     });
                     self.eventOptions = eventOptions;
                 });
-                this.$children[0].editedObject.selectedEvents = [];
+                // Vue 3 compatibility: $children is removed in Vue 3
+                // Access via $refs if available, fallback to $children for Vue 2
+                if (this.$refs.formStep && this.$refs.formStep.editedObject) {
+                    this.$refs.formStep.editedObject.selectedEvents = [];
+                }
+                else if (this.$children && this.$children[0] && this.$children[0].editedObject) {
+                    this.$children[0].editedObject.selectedEvents = [];
+                }
             },
             onSubmit: function(doc) {
                 doc.metrics = {};

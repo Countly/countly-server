@@ -132,35 +132,47 @@
                 :hasExport="false">
                     <template v-slot="scope">
                         <el-table-column prop="name" :label="i18n('populator.template')" sortable>
-                            <div slot-scope="rowScope" class="has-ellipsis" v-tooltip="decodeHtml(rowScope.row.name)">
-                                <a v-if="rowScope.row.hasEnvironment" class="color-dark-blue-100" @click="onRowClick(rowScope.row)" :data-test-id="'datatable-templates-template-' + rowScope.$index">{{ decodeHtml(rowScope.row.name) }}</a>
-                                <span v-else :data-test-id="'datatable-templates-template-' + rowScope.$index">{{ decodeHtml(rowScope.row.name) }}</span>
-                            </div>
+                            <template #default="rowScope">
+                                <div class="has-ellipsis" v-tooltip="decodeHtml(rowScope.row.name)">
+                                    <a v-if="rowScope.row.hasEnvironment" class="color-dark-blue-100" @click="onRowClick(rowScope.row)" :data-test-id="'datatable-templates-template-' + rowScope.$index">{{ decodeHtml(rowScope.row.name) }}</a>
+                                    <span v-else :data-test-id="'datatable-templates-template-' + rowScope.$index">{{ decodeHtml(rowScope.row.name) }}</span>
+                                </div>
+                            </template>
                         </el-table-column>
                         <el-table-column prop="userCount" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-users')" sortable>
-                                <div slot-scope="rowScope" class="bu-has-text-right" :data-test-id="'datatable-templates-number-of-users-' + rowScope.$index">
+                            <template #default="rowScope">
+                                <div class="bu-has-text-right" :data-test-id="'datatable-templates-number-of-users-' + rowScope.$index">
                                     {{ rowScope.row.userCount }}
                                 </div>
+                            </template>
                         </el-table-column>
                         <el-table-column prop="eventCount" width="180" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-events')" sortable>
-                                <div slot-scope="rowScope" class="bu-has-text-right" :data-test-id="'datatable-templates-number-of-events-' + rowScope.$index">
+                            <template #default="rowScope">
+                                <div class="bu-has-text-right" :data-test-id="'datatable-templates-number-of-events-' + rowScope.$index">
                                     {{ rowScope.row.eventCount }}
                                 </div>
+                            </template>
                         </el-table-column>
                         <el-table-column prop="viewCount" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-views')" sortable>
-                                <div slot-scope="rowScope" class="bu-has-text-right" :data-test-id="'datatable-templates-views-' + rowScope.$index">
+                            <template #default="rowScope">
+                                <div class="bu-has-text-right" :data-test-id="'datatable-templates-views-' + rowScope.$index">
                                     {{ rowScope.row.viewCount }}
                                 </div>
+                            </template>
                         </el-table-column>
                         <el-table-column prop="sequenceCount" label-class-name="bu-has-text-right" :label="i18n('populator.number-of-sequences')" sortable>
-                                <div slot-scope="rowScope" class="bu-has-text-right" :data-test-id="'datatable-templates-sequences-' + rowScope.$index">
+                            <template #default="rowScope">
+                                <div class="bu-has-text-right" :data-test-id="'datatable-templates-sequences-' + rowScope.$index">
                                     {{ rowScope.row.sequenceCount }}
                                 </div>
+                            </template>
                         </el-table-column>
                         <el-table-column prop="generatedOn" :label="i18n('populator.generated-on')" sortable>
-                                <div slot-scope="rowScope" :data-test-id="'datatable-templates-generated-on-' + rowScope.$index">
+                            <template #default="rowScope">
+                                <div :data-test-id="'datatable-templates-generated-on-' + rowScope.$index">
                                     {{ rowScope.row.generatedOn }}
                                 </div>
+                            </template>
                         </el-table-column>
                         <el-table-column type="options">
                             <template v-slot="col">
@@ -177,7 +189,7 @@
         </el-tab-pane>
     </cly-tabs>
     <cly-confirm-dialog class="populator-wrapper__start-dialog" :show-close="false" @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :saveButtonVisibility="dialog.saveButtonVisibility" :title="dialog.title" >
-        <template slot-scope="scope">
+        <template #default="scope">
             <div v-html="dialog.text"></div>
         </template>
     </cly-confirm-dialog>

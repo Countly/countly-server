@@ -509,7 +509,12 @@
         mounted: function() {
             document.addEventListener('keyup', this.escape);
         },
+        // Vue 2 lifecycle hook
         destroyed: function() {
+            document.removeEventListener('keyup', this.escape);
+        },
+        // Vue 3 lifecycle hook
+        unmounted: function() {
             document.removeEventListener('keyup', this.escape);
         },
         template: "#emoji-picker"
@@ -854,7 +859,14 @@
             this.startMutationObserver();
             this.addPasteEventListener(this.onPaste);
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            this.removeUserPropertyEventListeners();
+            this.disconnectMutationObserver();
+            this.removePasteEventListener(this.onPaste);
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             this.removeUserPropertyEventListeners();
             this.disconnectMutationObserver();
             this.removePasteEventListener(this.onPaste);

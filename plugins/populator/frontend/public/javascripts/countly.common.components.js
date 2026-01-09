@@ -1,7 +1,7 @@
-/*global countlyVue, Vue, CV, CountlyHelpers */
+/*global countlyVue, CV, CountlyHelpers */
 
 (function() {
-    Vue.component("cly-populator-left-container", countlyVue.components.BaseComponent.extend({
+    countlyVue.registerComponent("cly-populator-left-container", countlyVue.components.BaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         props: {
             data: {
@@ -78,7 +78,12 @@
         created: function() {
             this.steps = this.data;
         },
+        // Vue 2 lifecycle hook
         destroyed: function() {
+            window.removeEventListener('mousewheel', this.handleScroll);
+        },
+        // Vue 3 lifecycle hook
+        unmounted: function() {
             window.removeEventListener('mousewheel', this.handleScroll);
         },
         template: '<div>\
@@ -94,7 +99,7 @@
                 </div>'
     }));
 
-    Vue.component("cly-populator-number-selector", countlyVue.components.BaseComponent.extend({
+    countlyVue.registerComponent("cly-populator-number-selector", countlyVue.components.BaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         props: {
             value: {
@@ -142,7 +147,7 @@
                   </div>'
     }));
 
-    Vue.component("cly-populator-condition-selector", countlyVue.components.BaseComponent.extend({
+    countlyVue.registerComponent("cly-populator-condition-selector", countlyVue.components.BaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         props: {
             value: {
@@ -287,7 +292,7 @@
                 </div>'
     }));
 
-    Vue.component("cly-populator-section-detail", countlyVue.components.BaseComponent.extend({
+    countlyVue.registerComponent("cly-populator-section-detail", countlyVue.components.BaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         props: {
             title: {
@@ -1285,7 +1290,7 @@
         template: CV.T("/populator/templates/sections/behavior.html")
     });
 
-    Vue.component("cly-populator-section", countlyVue.components.BaseComponent.extend({
+    countlyVue.registerComponent("cly-populator-section", countlyVue.components.BaseComponent.extend({
         props: {
             type: {
                 type: String,

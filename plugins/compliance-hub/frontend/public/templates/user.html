@@ -3,7 +3,7 @@
         <cly-datatable-n test-id="datatable-compliance-hub-users" :data-source="userTableDataSource" :default-sort="{prop: 'lac', order: 'descending'}">
             <template v-slot="scope">
                 <el-table-column fixed="left" width="365" sortable="custom" prop="did" label="ID">
-                    <template slot-scope="scope">
+                    <template #default="scope">
                         <div :data-test-id="'datatable-users-id-' + scope.$index">
                             {{scope.row.did}}
                         </div>

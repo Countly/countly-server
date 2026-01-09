@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Vue 3 Migration Load Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .pass { background-color: #d4edda; border-color: #c3e6cb; }
+        .fail { background-color: #f8d7da; border-color: #f5c6cb; }
+        .pending { background-color: #fff3cd; border-color: #ffeeba; }
+        h1 { color: #333; }
+        .results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Vue 3 Migration - Load Test</h1>
+    <p>This page tests that all Vue 3 migration files load correctly without syntax errors.</p>
+    
+    <div id="results" class="results">
+        <div id="test-globals" class="test pending">Testing global objects...</div>
+        <div id="test-view" class="test pending">Testing view.js...</div>
+        <div id="test-router" class="test pending">Testing router.js...</div>
+        <div id="test-app" class="test pending">Testing app.js...</div>
+        <div id="test-compat" class="test pending">Testing backbone-compat.js...</div>
+    </div>
+
+    <div id="content" style="display: none;"></div>
+
+    <script>
+        // Mock global dependencies
+        window.jQuery = window.$ = function(selector) {
+            if (typeof selector === 'function') {
+                setTimeout(selector, 0);
+                return;
+            }
+            return {
+                html: function() { return this; },
+                find: function() { return this; },
+                get: function() { return document.createElement('div'); },
+                on: function() { return this; },
+                off: function() { return this; },
+                addClass: function() { return this; },
+                removeClass: function() { return this; },
+                trigger: function() { return this; }
+            };
+        };
+        $.when = function() { return { then: function(f) { f(); return this; }, always: function(f) { f(); return this; }, fail: function() { return this; } }; };
+        $.Deferred = function() { return { resolve: function() { return { promise: function() { return this; } }; } }; };
+        $.extend = function(target) { 
+            for (var i = 1; i < arguments.length; i++) {
+                for (var k in arguments[i]) { target[k] = arguments[i][k]; }
+            }
+            return target;
+        };
+        $.i18n = { map: {}, prop: function(k) { return k; } };
+        
+        window.countlyCommon = { 
+            ACTIVE_APP_ID: 'test-app-id',
+            DEBUG: false,
+            APP_NAMESPACE: false,
+            setActiveApp: function() {}
+        };
+        window.countlyGlobal = { 
+            apps: { 'test-app-id': { type: 'mobile' } },
+            member: {}
+        };
+        window.countlyEvent = { initialize: function() { return Promise.resolve(); }, reset: function() {} };
+        window.countlyAuth = { validateCreate: function() { return true; }, validateRead: function() { return true; } };
+        window.CountlyHelpers = { isPluginEnabled: function() { return true; }, notify: function() {} };
+        window.store = { get: function() { return null; }, set: function() {} };
+        window.T = function() {};
+        window.T.get = function(t, cb) { cb(''); };
+        
+        // Mock Vue
+        window.Vue = {
+            createApp: function(opts) {
+                return {
+                    use: function() { return this; },
+                    component: function() { return this; },
+                    directive: function() { return this; },
+                    mount: function() { return {}; }
+                };
+            },
+            extend: function(opts) { return opts; }
+        };
+        window.Vuex = {
+            createStore: function(opts) { return { state: opts.state || {} }; },
+            Store: function(opts) { return { state: opts.state || {} }; }
+        };
+        window.VueRouter = {
+            createRouter: function() { 
+                return { 
+                    addRoute: function() {},
+                    push: function() { return Promise.resolve(); },
+                    replace: function() { return Promise.resolve(); },
+                    beforeEach: function() {},
+                    currentRoute: { value: { path: '/' } }
+                }; 
+            },
+            createWebHashHistory: function() { return {}; }
+        };
+        window.VueCompositionAPI = {};
+        
+        // Initialize countlyVue
+        window.countlyVue = {
+            container: { registerData: function() {}, getAllRoutes: function() { return []; } },
+            views: {},
+            vuex: { getGlobalStore: function() { return window.Vuex.createStore({}); } },
+            mixins: {},
+            i18n: function(k) { return k; }
+        };
+
+        function setResult(id, passed, message) {
+            var el = document.getElementById(id);
+            el.className = 'test ' + (passed ? 'pass' : 'fail');
+            el.innerHTML = (passed ? '✓' : '✗') + ' ' + message;
+        }
+
+        function loadScript(src, callback) {
+            var script = document.createElement('script');
+            script.src = src;
+            script.onload = function() { callback(null); };
+            script.onerror = function(e) { callback(e); };
+            document.body.appendChild(script);
+        }
+
+        // Run tests
+        setResult('test-globals', true, 'Global mocks initialized');
+
+        loadScript('../../frontend/express/public/javascripts/countly/vue/view.js', function(err) {
+            if (err) {
+                setResult('test-view', false, 'view.js failed to load: ' + err);
+            } else if (window.countlyVue.views.CountlyViewBase) {
+                setResult('test-view', true, 'view.js loaded - countlyVue.views.CountlyViewBase available');
+            } else {
+                setResult('test-view', false, 'view.js loaded but CountlyViewBase not found');
+            }
+
+            loadScript('../../frontend/express/public/javascripts/countly/vue/router.js', function(err) {
+                if (err) {
+                    setResult('test-router', false, 'router.js failed to load: ' + err);
+                } else if (window.countlyVue.router && window.countlyVue.history) {
+                    setResult('test-router', true, 'router.js loaded - countlyVue.router and countlyVue.history available');
+                } else {
+                    setResult('test-router', false, 'router.js loaded but router/history not found');
+                }
+
+                loadScript('../../frontend/express/public/javascripts/countly/vue/app.js', function(err) {
+                    if (err) {
+                        setResult('test-app', false, 'app.js failed to load: ' + err);
+                    } else if (window.countlyVue.app && window.countlyVue.app.eventBus) {
+                        setResult('test-app', true, 'app.js loaded - countlyVue.app and eventBus available');
+                    } else {
+                        setResult('test-app', false, 'app.js loaded but app/eventBus not found');
+                    }
+
+                    loadScript('../../frontend/express/public/javascripts/countly/vue/backbone-compat.js', function(err) {
+                        if (err) {
+                            setResult('test-compat', false, 'backbone-compat.js failed to load: ' + err);
+                        } else {
+                            setResult('test-compat', true, 'backbone-compat.js loaded');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

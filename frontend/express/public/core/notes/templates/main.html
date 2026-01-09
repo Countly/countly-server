@@ -16,7 +16,7 @@
     <cly-main>
         <cly-date-picker-g class="bu-mb-5"></cly-date-picker-g>
 		<cly-confirm-dialog @cancel="closeDeleteForm" @confirm="submitDeleteForm" :before-close="closeDeleteForm" ref="deleteConfirmDialog" :visible.sync="showDeleteDialog" dialogType="danger" :saveButtonLabel="deleteDialogConfirmText" :cancelButtonLabel="i18n('common.no-dont-delete')" :title="deleteDialogTitle" >
-			<template slot-scope="scope">
+			<template #default="scope">
 				{{deleteDialogText}}
 			</template>
 		</cly-confirm-dialog>
@@ -30,7 +30,7 @@
                 <el-table-column min-width="25" :sortable="false" prop="indicator">
                 </el-table-column>
                 <el-table-column min-width="250" :sortable="false" prop="note" :label="i18n('notes.note')">
-                    <template slot-scope="rowScope">
+                    <template #default="rowScope">
                         {{decodeHtml(rowScope.row.note)}}
                     </template>
                 </el-table-column>
@@ -39,7 +39,7 @@
                 <el-table-column sortable="custom" prop="owner_name" :label="i18n('notes.owner')">
                 </el-table-column>
                 <el-table-column sortable="custom" prop="emails" :label="i18n('notes.shared-with')">
-                        <template slot-scope="rowScope">
+                        <template #default="rowScope">
                         {{(rowScope.row.emails).toString() || '-'}}
                     </template>
                 </el-table-column>

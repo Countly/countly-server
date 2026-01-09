@@ -1,4 +1,4 @@
-/* global Vue, jQuery, _, countlyCommon, CountlyHelpers */
+/* global jQuery, _, countlyCommon, CountlyHelpers */
 
 (function(countlyVue, $) {
 
@@ -9,7 +9,7 @@
         Legacy layout components start here
     */
 
-    Vue.component("cly-panel", countlyBaseComponent.extend(
+    countlyVue.registerComponent("cly-panel", countlyBaseComponent.extend(
         // @vue/component
         {
             props: {
@@ -51,7 +51,7 @@
         Legacy input components start here
     */
 
-    Vue.component("cly-radio", countlyBaseComponent.extend(
+    countlyVue.registerComponent("cly-radio", countlyBaseComponent.extend(
         // @vue/component
         {
             props: {
@@ -100,7 +100,7 @@
         }
     ));
 
-    Vue.component("cly-generic-radio", countlyBaseComponent.extend(
+    countlyVue.registerComponent("cly-generic-radio", countlyBaseComponent.extend(
         // @vue/component
         {
             props: {
@@ -140,11 +140,12 @@
         }
     ));
 
-    Vue.component("cly-text-field", countlyBaseComponent.extend(
+    countlyVue.registerComponent("cly-text-field", countlyBaseComponent.extend(
         // @vue/component
         {
             mixins: [
-                _mixins.i18n
+                _mixins.i18n,
+                countlyVue.compat.listenersCompatMixin
             ],
             props: {
                 value: {required: true, type: [ String, Number ], default: ''},
@@ -186,7 +187,7 @@
         }
     ));
 
-    Vue.component("cly-check-list", countlyBaseComponent.extend(
+    countlyVue.registerComponent("cly-check-list", countlyBaseComponent.extend(
         // @vue/component
         {
             props: {
@@ -240,7 +241,7 @@
         }
     ));
 
-    Vue.component("cly-button", countlyBaseComponent.extend(
+    countlyVue.registerComponent("cly-button", countlyBaseComponent.extend(
         // @vue/component
         {
             props: {
@@ -263,13 +264,19 @@
                     return "button-light-skin";
                 }
             },
+            mixins: [
+                countlyVue.compat.listenersCompatMixin
+            ],
             template: '<div class="cly-vue-button" v-bind:class="activeClasses" v-on="$listeners">{{label}}</div>'
         }
     ));
 
-    Vue.component("cly-text-area", countlyBaseComponent.extend(
+    countlyVue.registerComponent("cly-text-area", countlyBaseComponent.extend(
         // @vue/component
         {
+            mixins: [
+                countlyVue.compat.listenersCompatMixin
+            ],
             props: {
                 value: {required: true, type: [ String, Number ], default: ''}
             },
@@ -292,7 +299,7 @@
         }
     ));
 
-    Vue.component("cly-select-n", countlyBaseComponent.extend(
+    countlyVue.registerComponent("cly-select-n", countlyBaseComponent.extend(
         // @vue/component
         {
             mixins: [
@@ -634,7 +641,7 @@
         Legacy form components start here
     */
 
-    Vue.component("cly-content", _mixins.BaseContent.extend({
+    countlyVue.registerComponent("cly-content", _mixins.BaseContent.extend({
         template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
                             '<div v-show="isActive"><slot/></div>\n' +
                         '</div>'
@@ -649,7 +656,7 @@
         }
     });
 
-    Vue.component("cly-step", BaseStep.extend({
+    countlyVue.registerComponent("cly-step", BaseStep.extend({
         methods: {
             setValid: function(valid) {
                 this.isValid = valid;
@@ -668,7 +675,7 @@
         Legacy dropdown components start here
     */
 
-    Vue.component("cly-menubox", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-menubox", countlyBaseComponent.extend({
         template: '<div class="cly-vue-menubox menubox-default-skin" v-click-outside="outsideClose">\n' +
                             '<div class="menu-toggler" :class="{active: isOpened}" @click="toggle">\n' +
                                 '<div class="text-container">\n' +
@@ -701,7 +708,7 @@
         }
     }));
 
-    Vue.component("cly-button-menu", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-button-menu", countlyBaseComponent.extend({
         template: '<div class="cly-vue-button-menu" :class="[skinClass]" v-click-outside="close">\n' +
                         '<div class="toggler" @click.stop="toggle"></div>\n' +
                         '<div class="menu-body" :class="{active: opened}">\n' +
@@ -755,7 +762,7 @@
         Legacy visualization components start here
     */
 
-    Vue.component("cly-time-graph-w", countlyBaseComponent.extend(
+    countlyVue.registerComponent("cly-time-graph-w", countlyBaseComponent.extend(
         // @vue/component
         {
             mixins: [
@@ -807,7 +814,12 @@
             mounted: function() {
                 this.refresh();
             },
+            // Vue 2 lifecycle hook
             beforeDestroy: function() {
+                this.unbindResizer();
+            },
+            // Vue 3 lifecycle hook
+            beforeUnmount: function() {
                 this.unbindResizer();
             },
             methods: {
@@ -903,7 +915,7 @@
         }
     ));
 
-    Vue.component("cly-graph-w", countlyBaseComponent.extend(
+    countlyVue.registerComponent("cly-graph-w", countlyBaseComponent.extend(
         // @vue/component
         {
             mixins: [

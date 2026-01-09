@@ -133,6 +133,35 @@
                 this.createNewApp();
             }
         },
+        mounted: function() {
+            // Set selected app
+            var appId = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
+            this.$store.dispatch('countlyAppManagement/setSelectedAppId', appId);
+
+            // Vue 3 compatibility: Listen for feedbackApp logo changes via EventBus
+            var EventBus = countlyVue.EventBus;
+            var self = this;
+            if (EventBus) {
+                this._feedbackAppLogoHandler = function(key, value) {
+                    self.onChange(key, value);
+                };
+                EventBus.$on("feedbackApp-logo-changed", this._feedbackAppLogoHandler);
+            }
+        },
+        beforeUnmount: function() {
+            // Vue 3 lifecycle hook
+            var EventBus = countlyVue.EventBus;
+            if (EventBus && this._feedbackAppLogoHandler) {
+                EventBus.$off("feedbackApp-logo-changed", this._feedbackAppLogoHandler);
+            }
+        },
+        beforeDestroy: function() {
+            // Vue 2 lifecycle hook
+            var EventBus = countlyVue.EventBus;
+            if (EventBus && this._feedbackAppLogoHandler) {
+                EventBus.$off("feedbackApp-logo-changed", this._feedbackAppLogoHandler);
+            }
+        },
         beforeCreate: function() {
             var self = this;
             if (countlyGlobal.config && countlyGlobal.config.code) {
@@ -908,10 +937,6 @@
             handleCancelForm: function() {
                 CountlyHelpers.goTo({url: "/manage/apps"});
             }
-        },
-        mounted: function() {
-            var appId = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
-            this.$store.dispatch('countlyAppManagement/setSelectedAppId', appId);
         }
     });
 

@@ -6,6 +6,9 @@
     var SUB_FEATURE_REDACTION = FEATURE_NAME + '_redaction';
     var SUB_FEATURE_TRANSFORMATIONS = FEATURE_NAME + '_transformations';
 
+    // Vue 3 compatibility: use EventBus from compat module if available
+    var EventBus = countlyVue.compat ? countlyVue.compat.EventBus : null;
+
     var EXTENDED_VIEWS = countlyDataManager.extended && countlyDataManager.extended.views || {};
     var COMPONENTS = EXTENDED_VIEWS.components || {};
     var defaultTemplates = EXTENDED_VIEWS.defaultTemplates || [
@@ -657,7 +660,13 @@
         methods: {
             handleCommand: function(event, scope, row) {
                 if (event === 'edit') {
-                    this.$root.$emit('dm-open-edit-event-drawer', row);
+                    // Vue 3 compatibility: use EventBus instead of $root.$emit
+                    if (EventBus) {
+                        EventBus.$emit('dm-open-edit-event-drawer', row);
+                    }
+                    else {
+                        this.$root.$emit('dm-open-edit-event-drawer', row);
+                    }
                 }
                 else if (event === 'delete') {
                     this.handleDelete([row]);
@@ -884,7 +893,13 @@
             handleCommand: function(ev, eventGroup) {
                 eventGroup.isEditMode = true;
                 if (ev === 'edit') {
-                    this.$root.$emit('dm-open-edit-event-group-drawer', eventGroup);
+                    // Vue 3 compatibility: use EventBus instead of $root.$emit
+                    if (EventBus) {
+                        EventBus.$emit('dm-open-edit-event-group-drawer', eventGroup);
+                    }
+                    else {
+                        this.$root.$emit('dm-open-edit-event-group-drawer', eventGroup);
+                    }
                 }
                 else if (ev === 'delete') {
                     this.deleteElement = eventGroup;
@@ -1085,10 +1100,11 @@
         },
         mounted: function() {
             var self = this;
-            this.$root.$on('dm-open-edit-segmentation-drawer', function(data) {
+            // Store references to handlers for cleanup
+            this._dmSegmentationHandler = function(data) {
                 self.openDrawer("segments", data);
-            });
-            this.$root.$on('dm-open-edit-event-drawer', function(data) {
+            };
+            this._dmEventHandler = function(data) {
                 data = JSON.parse(JSON.stringify(data));
                 if (self.isDrill) {
                     var segments = [];
@@ -1138,8 +1154,8 @@
                     });
                 }
                 self.openDrawer("events", data);
-            });
-            this.$root.$on('dm-open-edit-transform-drawer', function(doc) {
+            };
+            this._dmTransformHandler = function(doc) {
                 doc = JSON.parse(JSON.stringify(doc));
                 // doc.transformType = doc.actionType.split('_')[0] === 'EVENT' ? 'event' : 'segment';
                 doc.transformType = doc.actionType.split('_')[0].toLowerCase();
@@ -1177,8 +1193,8 @@
                 }
 
                 self.openDrawer("transform", doc);
-            });
-            this.$root.$on('dm-open-edit-event-group-drawer', function(data) {
+            };
+            this._dmEventGroupHandler = function(data) {
                 if (!data.display_map) {
                     data.display_map = {};
                 }
@@ -1186,13 +1202,45 @@
                     data.status = true;
                 }
                 self.openDrawer("eventgroup", data);
-            });
+            };
+
+            // Vue 3 compatibility: use EventBus instead of $root.$on
+            if (EventBus) {
+                EventBus.$on('dm-open-edit-segmentation-drawer', this._dmSegmentationHandler);
+                EventBus.$on('dm-open-edit-event-drawer', this._dmEventHandler);
+                EventBus.$on('dm-open-edit-transform-drawer', this._dmTransformHandler);
+                EventBus.$on('dm-open-edit-event-group-drawer', this._dmEventGroupHandler);
+            }
+            else {
+                this.$root.$on('dm-open-edit-segmentation-drawer', this._dmSegmentationHandler);
+                this.$root.$on('dm-open-edit-event-drawer', this._dmEventHandler);
+                this.$root.$on('dm-open-edit-transform-drawer', this._dmTransformHandler);
+                this.$root.$on('dm-open-edit-event-group-drawer', this._dmEventGroupHandler);
+            }
         },
-        destroyed: function() {
-            this.$root.$off('dm-open-edit-segmentation-drawer');
-            this.$root.$off('dm-open-edit-event-drawer');
-            this.$root.$off('dm-open-edit-transform-drawer');
-            this.$root.$off('dm-open-edit-event-group-drawer');
+        // Vue 2 lifecycle hook
+        beforeDestroy: function() {
+            if (EventBus) {
+                EventBus.$off('dm-open-edit-segmentation-drawer', this._dmSegmentationHandler);
+                EventBus.$off('dm-open-edit-event-drawer', this._dmEventHandler);
+                EventBus.$off('dm-open-edit-transform-drawer', this._dmTransformHandler);
+                EventBus.$off('dm-open-edit-event-group-drawer', this._dmEventGroupHandler);
+            }
+            else {
+                this.$root.$off('dm-open-edit-segmentation-drawer');
+                this.$root.$off('dm-open-edit-event-drawer');
+                this.$root.$off('dm-open-edit-transform-drawer');
+                this.$root.$off('dm-open-edit-event-group-drawer');
+            }
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
+            if (EventBus) {
+                EventBus.$off('dm-open-edit-segmentation-drawer', this._dmSegmentationHandler);
+                EventBus.$off('dm-open-edit-event-drawer', this._dmEventHandler);
+                EventBus.$off('dm-open-edit-transform-drawer', this._dmTransformHandler);
+                EventBus.$off('dm-open-edit-event-group-drawer', this._dmEventGroupHandler);
+            }
         }
     });
 

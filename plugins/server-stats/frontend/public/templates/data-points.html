@@ -28,7 +28,7 @@
 		<cly-section>
             <cly-datatable-n test-id="datatable-apps-datapoint" :exportFormat="formatExportFunction" :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
 				<el-table-column min-width="200" type="clickable" sortable="custom" prop="appName" :show-overflow-tooltip="true" :label="i18n('compare.apps.app-name')" fixed="left">
-					<template slot-scope="scope">
+					<template #default="scope">
 						<a v-if="!subPage && scope.row.appId" :href='"#/manage/data-points/" +scope.row.appId' :data-test-id="'datatable-datapoints-app-name-' + scope.$index">{{scope.row.appName}}</a>
 						<span v-else class="i_am_not_clickable" data-test-id="datatable-all-datapoints">{{scope.row.appName}}</span>
 					</template>
@@ -59,7 +59,7 @@
 							placement="right"
 							offset=50
 							:close-delay=50>
-							<div slot="default">
+							<template #default>
 								<div class="bu-is-uppercase bu-has-text-weight-medium popover-title">
 									{{i18n('server-stats.event-breakdown')}}
 								</div>
@@ -73,8 +73,8 @@
 										</td>
 									</tr>
 								</table>
-							</div>
-							<span slot="reference">{{eventsNumberFormatter(scopeRow.row.events)}}</span>
+							</template>
+							<template #reference><span>{{eventsNumberFormatter(scopeRow.row.events)}}</span></template>
 						</el-popover>
 					</div>
 				</template>

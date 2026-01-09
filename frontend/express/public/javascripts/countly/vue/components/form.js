@@ -1,9 +1,10 @@
-/* global Vue, app */
+/* global app */
 
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
-        _mixins = countlyVue.mixins;
+        _mixins = countlyVue.mixins,
+        IS_VUE_3 = countlyVue.compat ? countlyVue.compat.IS_VUE_3 : false;
 
     var BufferedObjectMixin = {
         props: {
@@ -135,9 +136,21 @@
             }
         },
         mounted: function() {
-            this.stepContents = this.$children.filter(function(child) {
-                return child.isContent && child.role === "default";
-            });
+            // Vue 3 compatibility: $children is removed in Vue 3
+            // Use provide/inject pattern - children register themselves with parent
+            if (IS_VUE_3 && this._registeredChildren) {
+                this.stepContents = this._registeredChildren.filter(function(child) {
+                    return child.isContent && child.role === "default";
+                });
+            }
+            else if (this.$children) {
+                this.stepContents = this.$children.filter(function(child) {
+                    return child.isContent && child.role === "default";
+                });
+            }
+            else {
+                this.stepContents = [];
+            }
             this.isMounted = true;
         },
         methods: {
@@ -254,14 +267,14 @@
         }
     });
 
-    Vue.component("cly-form", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-form", countlyBaseComponent.extend({
         mixins: [MultiStepFormMixin],
         template: '<div class="cly-vue-form"><slot name="default"\n' +
                     'v-bind="passedScope">\n' +
                 '</slot></div>\n'
     }));
 
-    Vue.component("cly-form-step", BaseStep.extend({
+    countlyVue.registerComponent("cly-form-step", BaseStep.extend({
         props: {
             validatorFn: {type: Function},
             id: { type: String, required: true },
@@ -303,7 +316,12 @@
                 return true;
             }
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            this.watchHandle(); // unwatch
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             this.watchHandle(); // unwatch
         },
         template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
@@ -315,7 +333,7 @@
                 '</div>'
     }));
 
-    Vue.component("cly-form-field-group", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-form-field-group", countlyBaseComponent.extend({
         props: {
             label: String,
             highlight: {
@@ -354,7 +372,7 @@
                     </div>"
     }));
 
-    Vue.component("cly-form-field", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-form-field", countlyBaseComponent.extend({
         props: {
             subheading: {required: false},
             label: {required: false},
@@ -433,7 +451,7 @@
                   </div>'
     }));
 
-    Vue.component("cly-inline-form-field", countlyVue.components.BaseComponent.extend({
+    countlyVue.registerComponent("cly-inline-form-field", countlyVue.components.BaseComponent.extend({
         props: {
             label: String,
             help: String,
@@ -466,7 +484,7 @@
                   </div>'
     }));
 
-    Vue.component("cly-form-field-checklistbox", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-form-field-checklistbox", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         props: {
             value: { type: Array },

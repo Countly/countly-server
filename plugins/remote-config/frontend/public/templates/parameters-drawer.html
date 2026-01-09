@@ -15,11 +15,11 @@
             v-model="drawerScope.editedObject.parameter_key"
             maxlength="256"
             :placeholder="i18n('remote-config.parameter-key.placeholder')">
-            <span
-              class="el-input__count"
-              slot="suffix">
-              <span class="el-input__count-inner">{{ drawerScope.editedObject.parameter_key.length }}/256</span>
-            </span>
+            <template #suffix>
+              <span class="el-input__count">
+                <span class="el-input__count-inner">{{ drawerScope.editedObject.parameter_key.length }}/256</span>
+              </span>
+            </template>
           </el-input>
           <div v-if="validation.errors.length > 0" class="text-small color-red-100 bu-pt-1">
             {{i18n('remote-config.param-key-error')}}
@@ -51,7 +51,7 @@
               :placeholder="i18n('remote-config.default-value.placeholder')"
               test-id="default-value-input"
               >
-              <el-button type="text" slot="suffix" @click="openJsonEditor" class="cly-vue-remote-config-parameters-drawer__autocomplete-button">{ }</el-button>
+              <template #suffix><el-button type="text" @click="openJsonEditor" class="cly-vue-remote-config-parameters-drawer__autocomplete-button">{ }</el-button></template>
             </el-autocomplete>
           </cly-form-field>
         </div>

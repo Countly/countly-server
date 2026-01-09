@@ -11,7 +11,7 @@
   <template v-slot:title>
     <h3 class="color-cool-gray-100">{{i18n('remote-config.parameter.conditions.add.new.condition')}}</h3>
   </template>
-  <template slot-scope="scope">
+  <template #default="scope">
     <cly-form>
       <template v-slot="formScope">
         <cly-form-step id="conditions-dialog">

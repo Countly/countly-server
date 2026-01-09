@@ -34,7 +34,7 @@
                                     <div>
                                         <validation-provider v-if="item.key !== 'session'"  name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
                                             <el-input class="input" :disabled="item.disabled" v-model="item.probability" :class="{'is-error': v.errors.length > 0}">
-                                                <template slot="suffix">
+                                                <template #suffix>
                                                     <span class="text-medium color-cool-gray-50">%</span>
                                                 </template>
                                             </el-input>

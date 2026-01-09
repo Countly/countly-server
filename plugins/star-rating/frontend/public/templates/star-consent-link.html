@@ -10,12 +10,11 @@
         :placeholder="i18n('rating.drawer.consent.placeholder')"
         v-model="value.finalText"
       >
-        <span
-          class="el-input__count"
-          slot="suffix"
-        >
-          <span class="el-input__count-inner">{{ value.finalText.length }}/94</span>
-        </span>
+        <template #suffix>
+          <span class="el-input__count">
+            <span class="el-input__count-inner">{{ value.finalText.length }}/94</span>
+          </span>
+        </template>
       </el-input>
     </validation-provider>
     <div class="bu-pt-4 text-small text-heading" data-test-id="ratings-drawer-settings-add-user-consent-links-label">

@@ -4,7 +4,7 @@
 
     var countlyBaseComponent = countlyVue.components.BaseComponent;
 
-    Vue.component("cly-guide", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-guide", countlyBaseComponent.extend({
         props: {
             tooltip: {
                 type: Object,
@@ -45,7 +45,7 @@
         `
     }));
 
-    Vue.component("cly-header", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-header", countlyBaseComponent.extend({
         props: {
             title: String,
             backlink: {
@@ -158,7 +158,7 @@
     //Every view has a single cly-main component which encapsulates all other components/dom elements
     //This component is a single column full width component
     //A main component can have multiple sections
-    Vue.component("cly-main", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-main", countlyBaseComponent.extend({
         template: '<div class="cly-vue-main bu-columns bu-is-gapless bu-is-centered">\
                         <div class="bu-column bu-is-full" style="max-width: 1920px">\
                             <PersistentNotifications></PersistentNotifications>\
@@ -171,7 +171,7 @@
     }));
 
     //Each cly-section should mark a different component within the cly-main component
-    Vue.component("cly-section", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-section", countlyBaseComponent.extend({
         props: {
             title: String,
             autoGap: {
@@ -234,7 +234,7 @@
                     </div>'
     }));
 
-    Vue.component("cly-sub-section", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-sub-section", countlyBaseComponent.extend({
         template: '<div class="cly-vue-section__sub bu-px-4 bu-py-2">\
                         <slot></slot>\
                     </div>'
@@ -266,10 +266,10 @@
         methods: {
             setState: function(clientId, state) {
                 if (state) {
-                    Vue.set(this.clients, clientId, true);
+                    countlyVue.set(this.clients, clientId, true);
                 }
                 else {
-                    Vue.delete(this.clients, clientId);
+                    countlyVue.del(this.clients, clientId);
                 }
             }
         }
@@ -281,7 +281,12 @@
                 _ModalManager.setState(this.componentId, state);
             }
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            _ModalManager.setState(this.componentId, false);
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             _ModalManager.setState(this.componentId, false);
         }
     };

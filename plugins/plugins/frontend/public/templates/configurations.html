@@ -16,8 +16,8 @@
                 @focus="onFocus"
                 @keyup.enter.native="onEnterSearch"
             >
-                <i slot="prefix" class="el-input__icon el-icon-search"></i>
-                <i slot="suffix" class="el-input__icon el-icon-circle-close" @click="clearSearch"></i>
+                <template #prefix><i class="el-input__icon el-icon-search"></i></template>
+                <template #suffix><i class="el-input__icon el-icon-circle-close" @click="clearSearch"></i></template>
             </el-input>
         </form>
         </template>
@@ -45,7 +45,7 @@
                             <cly-tooltip-icon class="ion ion-help-circled" placement="bottom"></cly-tooltip-icon>
                         </h3>
                         <cly-section class="bu-mr-5">
-                            <template slot-scope="scope">
+                            <template #default="scope">
                                 <div 
                                     v-if="key !== '_user' && configsData[selectedConfig] && typeof configsData[selectedConfig][key] !== 'undefined'" 
                                     v-for="key in group.list" :key="key" 
@@ -229,7 +229,7 @@
                         </a>
                     </h3>
                     <cly-section class="bu-mr-5">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div 
                                 v-if="key !== '_user' && configsData[configKey] && typeof configsData[configKey][key] !== 'undefined'" 
                                 v-for="key in group.list" :key="key" 

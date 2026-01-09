@@ -13,17 +13,17 @@
             <cly-datatable-n test-id="slipping-away" :rows="slippingAwayUsersRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column test-id="slipping-away-no-session-in" sortable="custom"  prop="period" :label="i18n('slipping-away-users.table-period')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div :data-test-id="'datatable-no-sessions-in-' + scope.$index">{{scope.row.period}}</div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom"  prop="count" :label="i18n('slipping-away-users.table-count')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div :data-test-id="'datatable-slipping-away-user-count-' + scope.$index">{{formatNumber(scope.row.count)}}</div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom"  prop="percentage" :label="i18n('slipping-away-users.table-percentage')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div class="bu-level-left" style="padding: 7px 28px 7px 0;">
                                 <div class="bu-level-item slipping-away-users-table__data-item" :data-test-id="'datatable-percentage-' + scope.$index">
                                     <span>{{scope.row.percentage}}%</span>
@@ -33,7 +33,7 @@
                         </template>
                     </el-table-column>
                     <el-table-column prop="timeStamp"  align="center" v-if="showViewUsers">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div class="bu-level-right">
                                 <el-link type="primary" @click="onUserListClick(scope.row.timeStamp)" :underline="false" class="slipping-away-users-table__link">{{i18n('slipping-away-users.table-user-list')}}</el-link>
                             </div>

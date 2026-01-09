@@ -12,7 +12,7 @@
         :test-id="'add-value-for-selected-condition-' + condition.name"
         v-model ="condition.value"
         placeholder="Enter condition value">
-        <el-button type="text" slot="suffix" @click="openJsonEditorForCondition" class="cly-vue-remote-config-parameters-drawer__autocomplete-button">{ }</el-button>
+        <template #suffix><el-button type="text" @click="openJsonEditorForCondition" class="cly-vue-remote-config-parameters-drawer__autocomplete-button">{ }</el-button></template>
       </el-input>
       <json-editor v-if="condition.open" :isOpen="isOpen" v-model="condition.value"></json-editor>
     </div>

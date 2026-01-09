@@ -1711,7 +1711,13 @@ app.addPageScript("/drill#", function() {
             errorMessage: "",
             success: function() {
                 app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = "";
-                if (this.$root && this.$root.$children) {
+                // Vue 3 compatibility: $children is removed in Vue 3
+                // Use EventBus pattern or direct reference if available
+                var EventBus = countlyVue.EventBus;
+                if (EventBus) {
+                    EventBus.$emit("feedback-logo-changed", "feedback_logo", "feedback_logo");
+                }
+                else if (this.$root && this.$root.$children) {
                     for (var i = 0; i < this.$root.$children.length; i++) {
                         if (this.$root.$children[i].configsData) {
                             this.$root.$children[i].onChange("feedback_logo", "feedback_logo");
@@ -1775,7 +1781,13 @@ app.addPageScript("/drill#", function() {
                     errorMessage: "",
                     success: function() {
                         app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = "";
-                        if (this.$root && this.$root.$children) {
+                        // Vue 3 compatibility: $children is removed in Vue 3
+                        // Use EventBus pattern or direct reference if available
+                        var EventBus = countlyVue.EventBus;
+                        if (EventBus) {
+                            EventBus.$emit("feedbackApp-logo-changed", "feedbackApp.feedback_logo", "feedback_logo" + feedbackId);
+                        }
+                        else if (this.$root && this.$root.$children) {
                             for (var i = 0; i < this.$root.$children.length; i++) {
                                 if (this.$root.$children[i].appDetails) {
                                     this.$root.$children[i].onChange("feedbackApp.feedback_logo", "feedback_logo" + feedbackId);

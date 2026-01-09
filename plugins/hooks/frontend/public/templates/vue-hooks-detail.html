@@ -1,7 +1,7 @@
 <script type="text/x-template" id="hooks-detail-view">
 <div v-bind:class="[componentId]">
    <cly-header v-if="hookDetail">
-      <cly-back-link slot="header-top" :title="i18n('hooks.back-to-hooks')" link="/manage/hooks"></cly-back-link>
+      <template #header-top><cly-back-link :title="i18n('hooks.back-to-hooks')" link="/manage/hooks"></cly-back-link></template>
       <template v-slot:header-left class="bu-pt-2">
         <div>
           <h3>{{hookDetail.name}}</h3>

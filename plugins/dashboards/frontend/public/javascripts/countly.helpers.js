@@ -1,4 +1,4 @@
-/*global countlyVue, CV, Vue, countlyCommon, countlyGlobal, countlyDashboards, moment, countlyAuth*/
+/*global countlyVue, CV, countlyCommon, countlyGlobal, countlyDashboards, moment, countlyAuth*/
 
 (function() {
     /**
@@ -1259,27 +1259,27 @@
     /**
      * DRAWER HELPERS REGISTRATION
      */
-    Vue.component("clyd-metric", MetricComponent);
-    Vue.component("clyd-displaytype", DisplayTypeComponent);
-    Vue.component("clyd-breakdown", BreakdownComponent);
-    Vue.component("clyd-event", EventComponent);
-    Vue.component("clyd-datatype", DataTypeComponent);
-    Vue.component("clyd-appcount", AppCountComponent);
-    Vue.component("clyd-sourceapps", SourceAppsComponent);
-    Vue.component("clyd-visualization", VisualizationComponent);
-    Vue.component("clyd-title", TitleComponent);
-    Vue.component("clyd-period", PeriodComponent);
-    Vue.component("clyd-colors", ColorsComponent);
+    countlyVue.registerComponent("clyd-metric", MetricComponent);
+    countlyVue.registerComponent("clyd-displaytype", DisplayTypeComponent);
+    countlyVue.registerComponent("clyd-breakdown", BreakdownComponent);
+    countlyVue.registerComponent("clyd-event", EventComponent);
+    countlyVue.registerComponent("clyd-datatype", DataTypeComponent);
+    countlyVue.registerComponent("clyd-appcount", AppCountComponent);
+    countlyVue.registerComponent("clyd-sourceapps", SourceAppsComponent);
+    countlyVue.registerComponent("clyd-visualization", VisualizationComponent);
+    countlyVue.registerComponent("clyd-title", TitleComponent);
+    countlyVue.registerComponent("clyd-period", PeriodComponent);
+    countlyVue.registerComponent("clyd-colors", ColorsComponent);
 
     /**
      * WIDGET HELPERS REGISTRATION
      */
-    Vue.component("clyd-bucket", BucketComponent);
-    Vue.component("clyd-legend-period", WidgetPeriodComponent);
-    Vue.component("clyd-primary-legend", PrimaryWidgetLegend);
-    Vue.component("clyd-secondary-legend", SecondaryWidgetLegend);
-    Vue.component("clyd-title-labels", TitleLabelsComponent);
-    Vue.component("clyd-widget-title", WidgetTitleComponent);
-    Vue.component("clyd-widget-apps", WidgetAppsComponent);
+    countlyVue.registerComponent("clyd-bucket", BucketComponent);
+    countlyVue.registerComponent("clyd-legend-period", WidgetPeriodComponent);
+    countlyVue.registerComponent("clyd-primary-legend", PrimaryWidgetLegend);
+    countlyVue.registerComponent("clyd-secondary-legend", SecondaryWidgetLegend);
+    countlyVue.registerComponent("clyd-title-labels", TitleLabelsComponent);
+    countlyVue.registerComponent("clyd-widget-title", WidgetTitleComponent);
+    countlyVue.registerComponent("clyd-widget-apps", WidgetAppsComponent);
 
 })();

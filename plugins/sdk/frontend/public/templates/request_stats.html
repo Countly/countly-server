@@ -6,18 +6,18 @@
 			<cly-metric-cards :multiline="false">
 				<cly-metric-card test-id="requests-received"  formatting="long" :number=totals.r.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 				  <span class="has-ellipsis">Requests Received</span>
-				  <span v-if="totals.r.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down" data-test-id="cly-radio-trend-icon-requests-received"></i>{{totals.r.change}}</span>
-				  <span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up" data-test-id="cly-radio-trend-icon-requests-received"></i>{{totals.r.change}}</span>
+				  <template #description><span v-if="totals.r.trend=='d'" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down" data-test-id="cly-radio-trend-icon-requests-received"></i>{{totals.r.change}}</span>
+				  <span v-else class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up" data-test-id="cly-radio-trend-icon-requests-received"></i>{{totals.r.change}}</span></template>
 				</cly-metric-card>
 				<cly-metric-card test-id="requests-canceled" :number=totals.c.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 				  <span class="has-ellipsis">Requests Canceled</span>
-				  <span v-if="totals.c.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down" data-test-id="cly-radio-trend-icon-requests-canceled"></i>{{totals.c.change}}</span>
-				  <span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up" data-test-id="cly-radio-trend-icon-requests-canceled"></i>{{totals.c.change}}</span>
+				  <template #description><span v-if="totals.c.trend=='d'" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down" data-test-id="cly-radio-trend-icon-requests-canceled"></i>{{totals.c.change}}</span>
+				  <span v-else class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up" data-test-id="cly-radio-trend-icon-requests-canceled"></i>{{totals.c.change}}</span></template>
 				</cly-metric-card>
 				<cly-metric-card test-id="requests-queued" :number=totals.q.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 				  <span class="has-ellipsis">Requests Queued</span>
-				  <span v-if="totals.q.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down" data-test-id="cly-radio-trend-icon-requests-queued"></i>{{totals.q.change}}</span>
-				  <span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up" data-test-id="cly-radio-trend-icon-requests-queued"></i>{{totals.q.change}}</span>
+				  <template #description><span v-if="totals.q.trend=='d'" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down" data-test-id="cly-radio-trend-icon-requests-queued"></i>{{totals.q.change}}</span>
+				  <span v-else class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up" data-test-id="cly-radio-trend-icon-requests-queued"></i>{{totals.q.change}}</span></template>
 				</cly-metric-card>
 			  </cly-metric-cards>
 		  </cly-section>

@@ -1391,7 +1391,12 @@
         mounted: function() {
             this.initGrid();
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            this.destroyGrid();
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             this.destroyGrid();
         }
     });
@@ -1627,7 +1632,12 @@
                 self.$store.dispatch("countlyDashboards/requests/isInitializing", false);
             });
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            this.$store.dispatch("countlyDashboards/requests/reset");
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             this.$store.dispatch("countlyDashboards/requests/reset");
         }
     });

@@ -2,11 +2,22 @@
 
 (function(countlyVue, $) {
 
+    // Get compatibility utilities (loaded from vue/compat.js)
+    var compat = countlyVue.compat || {};
+    var IS_VUE_3 = compat.IS_VUE_3 || false;
+    var EventBus = compat.EventBus || { $on: function() {}, $off: function() {}, $emit: function() {} };
+
     // @vue/component
+    // Vue 2/3 compatible auto-refresh mixin
     var autoRefreshMixin = {
         mounted: function() {
             if (this.refresh || this.dateChanged) {
-                this.$root.$on("cly-refresh", this.refreshHandler);
+                if (IS_VUE_3) {
+                    EventBus.$on("cly-refresh", this.refreshHandler);
+                }
+                else {
+                    this.$root.$on("cly-refresh", this.refreshHandler);
+                }
             }
         },
         methods: {
@@ -23,7 +34,18 @@
         },
         beforeDestroy: function() {
             if (this.refresh || this.dateChanged) {
-                this.$root.$off("cly-refresh", this.refreshHandler);
+                if (IS_VUE_3) {
+                    EventBus.$off("cly-refresh", this.refreshHandler);
+                }
+                else {
+                    this.$root.$off("cly-refresh", this.refreshHandler);
+                }
+            }
+        },
+        // Vue 3 lifecycle hook alias
+        beforeUnmount: function() {
+            if (IS_VUE_3 && (this.refresh || this.dateChanged)) {
+                EventBus.$off("cly-refresh", this.refreshHandler);
             }
         }
     };
@@ -625,7 +647,13 @@
 
     var BackboneRouteAdapter = function() {};
 
-    Vue.prototype.$route = new BackboneRouteAdapter();
+    // In Vue 2, set on prototype. In Vue 3, we'll set on app.config.globalProperties
+    if (!IS_VUE_3) {
+        Vue.prototype.$route = new BackboneRouteAdapter();
+    }
+
+    // Store the adapter for Vue 3 app configuration
+    countlyVue._backboneRouteAdapter = new BackboneRouteAdapter();
 
     var DummyCompAPI = VueCompositionAPI.defineComponent({
         name: "DummyCompAPI",
@@ -752,7 +780,7 @@
                             :title="dialog.title"\
                             :show-close="dialog.showClose"\
                             :alignCenter="dialog.alignCenter">\
-                                <template slot-scope="scope">\
+                                <template #default="scope">\
                                     <div v-html="dialog.message"></div>\
                                 </template>\
                         </cly-confirm-dialog>\
@@ -767,7 +795,7 @@
                             :dialogType="dialog.type"\
                             :confirmButtonLabel="dialog.confirmLabel"\
                             :title="dialog.title">\
-                                <template slot-scope="scope">\
+                                <template #default="scope">\
                                     <div v-html="dialog.message"></div>\
                                 </template>\
                         </cly-message-dialog>\
@@ -870,12 +898,22 @@
         refresh: function() {
             var self = this;
             if (self.vm) {
-                self.vm.$root.$emit("cly-refresh", {reason: "periodical"}); // for 10 sec interval
+                if (IS_VUE_3) {
+                    EventBus.$emit("cly-refresh", {reason: "periodical"});
+                }
+                else {
+                    self.vm.$root.$emit("cly-refresh", {reason: "periodical"}); // for 10 sec interval
+                }
             }
         },
         onError: function(message) {
             if (this.vm) {
-                this.vm.$root.$emit("cly-error", {message: message});
+                if (IS_VUE_3) {
+                    EventBus.$emit("cly-error", {message: message});
+                }
+                else {
+                    this.vm.$root.$emit("cly-error", {message: message});
+                }
             }
         },
         afterRender: function() {
@@ -891,53 +929,152 @@
                 It is not clear why, but when a view with those components destroyed,
                 they leave some memory leaks. Instantiating DummyCompAPI triggers memory cleanups.
             */
-            self.vm = new Vue({
-                el: el,
-                store: _vuex.getGlobalStore(),
-                components: {
-                    DummyCompAPI: DummyCompAPI,
-                    MainView: self.component,
-                    GenericPopups: GenericPopupsView,
-                    QuickstartPopover: QuickstartPopoverView
-                },
-                template: '<div>\
+            if (IS_VUE_3 && Vue.createApp) {
+                // Vue 3 path
+                var vueApp = Vue.createApp({
+                    components: {
+                        DummyCompAPI: DummyCompAPI,
+                        MainView: self.component,
+                        GenericPopups: GenericPopupsView,
+                        QuickstartPopover: QuickstartPopoverView
+                    },
+                    template: '<div>\n                                    <MainView></MainView>\n                                    <GenericPopups></GenericPopups>\n                                    <DummyCompAPI></DummyCompAPI>\n                                    <QuickstartPopover></QuickstartPopover>\n                                </div>',
+                    beforeCreate: function() {
+                        this.$route = { params: self.params };
+                    },
+                    methods: {
+                        handleClyError: function(payload) {
+                            if (countlyCommon.DEBUG) {
+                                CountlyHelpers.notify({
+                                    title: _i18n("common.error"),
+                                    message: payload.message,
+                                    type: "error"
+                                });
+                            }
+                        },
+                        handleClyRefresh: function() {
+                            EventBus.$emit("cly-refresh", {reason: "dateChange"});
+                        }
+                    },
+                    created: function() {
+                        var vmSelf = this;
+                        EventBus.$on("cly-date-change", vmSelf.handleClyRefresh);
+                        EventBus.$on("cly-error", vmSelf.handleClyError);
+                    },
+                    beforeUnmount: function() {
+                        var vmSelf = this;
+                        EventBus.$off("cly-date-change", vmSelf.handleClyRefresh);
+                        EventBus.$off("cly-error", vmSelf.handleClyError);
+                    }
+                });
+                vueApp.use(_vuex.getGlobalStore());
+
+                // Set global properties (replaces Vue.prototype in Vue 2)
+                if (countlyVue._backboneRouteAdapter) {
+                    vueApp.config.globalProperties.$route = countlyVue._backboneRouteAdapter;
+                }
+
+                // Register pending plugins from imports.js and registerPlugin()
+                if (countlyVue._pendingPlugins) {
+                    countlyVue._pendingPlugins.forEach(function(item) {
+                        // Handle both formats: plain plugin or {plugin, options} object
+                        if (item && item.plugin) {
+                            if (item.options) {
+                                vueApp.use(item.plugin, item.options);
+                            }
+                            else {
+                                vueApp.use(item.plugin);
+                            }
+                        }
+                        else if (item) {
+                            vueApp.use(item);
+                        }
+                    });
+                }
+
+                // Register pending components from imports.js
+                if (countlyVue._pendingComponents) {
+                    Object.keys(countlyVue._pendingComponents).forEach(function(name) {
+                        vueApp.component(name, countlyVue._pendingComponents[name]);
+                    });
+                }
+
+                // Register pending directives from imports.js
+                if (countlyVue._pendingDirectives) {
+                    Object.keys(countlyVue._pendingDirectives).forEach(function(name) {
+                        vueApp.directive(name, countlyVue._pendingDirectives[name]);
+                    });
+                }
+
+                // Register global mixins for Vue 2 compatibility in Vue 3
+                // In Vue 3, $listeners is removed and merged into $attrs
+                if (countlyVue.compat && countlyVue.compat.listenersCompatMixin) {
+                    vueApp.mixin(countlyVue.compat.listenersCompatMixin);
+                }
+                // In Vue 3, $scopedSlots is removed and merged into $slots
+                if (countlyVue.compat && countlyVue.compat.scopedSlotsCompatMixin) {
+                    vueApp.mixin(countlyVue.compat.scopedSlotsCompatMixin);
+                }
+
+                self.vm = vueApp.mount(el);
+                self._vueApp = vueApp;
+            }
+            else {
+                // Vue 2 path
+                self.vm = new Vue({
+                    el: el,
+                    store: _vuex.getGlobalStore(),
+                    components: {
+                        DummyCompAPI: DummyCompAPI,
+                        MainView: self.component,
+                        GenericPopups: GenericPopupsView,
+                        QuickstartPopover: QuickstartPopoverView
+                    },
+                    template: '<div>\
                                 <MainView></MainView>\
                                 <GenericPopups></GenericPopups>\
                                 <DummyCompAPI></DummyCompAPI>\
                                 <QuickstartPopover></QuickstartPopover>\
                             </div>',
-                beforeCreate: function() {
-                    this.$route.params = self.params;
-                },
-                methods: {
-                    handleClyError: function(payload) {
-                        if (countlyCommon.DEBUG) {
-                            CountlyHelpers.notify({
-                                title: _i18n("common.error"),
-                                message: payload.message,
-                                type: "error"
-                            });
+                    beforeCreate: function() {
+                        this.$route.params = self.params;
+                    },
+                    methods: {
+                        handleClyError: function(payload) {
+                            if (countlyCommon.DEBUG) {
+                                CountlyHelpers.notify({
+                                    title: _i18n("common.error"),
+                                    message: payload.message,
+                                    type: "error"
+                                });
+                            }
+                        },
+                        handleClyRefresh: function() {
+                            this.$root.$emit("cly-refresh", {reason: "dateChange"});
                         }
                     },
-                    handleClyRefresh: function() {
-                        this.$root.$emit("cly-refresh", {reason: "dateChange"});
+                    created: function() {
+                        this.$on("cly-date-change", this.handleClyRefresh);
+                        this.$on("cly-error", this.handleClyError);
                     }
-                },
-                created: function() {
-                    this.$on("cly-date-change", this.handleClyRefresh);
-                    this.$on("cly-error", this.handleClyError);
-                }
-            });
+                });
+            }
         },
         destroy: function() {
             var self = this;
             this.templateLoader.destroy();
             if (self.vm) {
                 $("body").removeClass("cly-vue-theme-clydef");
-                self.vm.$destroy();
-                self.vm.$off();
+                if (IS_VUE_3 && self._vueApp) {
+                    self._vueApp.unmount();
+                }
+                else {
+                    self.vm.$destroy();
+                    self.vm.$off();
+                }
                 $(self.vm.$el).remove();
                 self.vm = null;
+                self._vueApp = null;
             }
             this.vuexLoader.destroy();
         }
@@ -945,7 +1082,8 @@
 
     var _uniqueComponentId = 0;
 
-    var countlyBaseComponent = Vue.extend({
+    // Vue 2/3 compatible base component creation
+    var countlyBaseComponentDef = {
         mixins: [
             basicComponentUtilsMixin
         ],
@@ -958,69 +1096,99 @@
             this.ucid = _uniqueComponentId.toString();
             _uniqueComponentId += 1;
         }
-    });
+    };
 
-    var countlyBaseView = countlyBaseComponent.extend(
-        // @vue/component
-        {
-            mixins: [
-                _mixins.autoRefresh,
-                _mixins.i18n,
-                _mixins.commonFormatters
-            ],
-            props: {
-                name: { type: String, default: null},
-                id: { type: String, default: null }
+    var countlyBaseComponent;
+    if (IS_VUE_3) {
+        // Vue 3: use plain object with defineComponent-like pattern
+        countlyBaseComponent = countlyBaseComponentDef;
+        countlyBaseComponent.extend = function(extension) {
+            return Object.assign({}, countlyBaseComponent, extension, {
+                mixins: (countlyBaseComponent.mixins || []).concat(extension.mixins || [])
+            });
+        };
+    }
+    else {
+        // Vue 2: use Vue.extend
+        countlyBaseComponent = Vue.extend(countlyBaseComponentDef);
+    }
+
+    var countlyBaseViewDef = {
+        mixins: [
+            _mixins.autoRefresh,
+            _mixins.i18n,
+            _mixins.commonFormatters
+        ].concat(IS_VUE_3 ? [countlyBaseComponentDef] : []),
+        props: {
+            name: { type: String, default: null},
+            id: { type: String, default: null }
+        },
+        computed: {
+            isParentActive: function() {
+                return this.$parent.isActive !== false;
             },
-            computed: {
-                isParentActive: function() {
-                    return this.$parent.isActive !== false;
-                },
-                vName: function() {
-                    return this.name;
-                },
-                vId: function() {
-                    return this.id;
-                }
+            vName: function() {
+                return this.name;
+            },
+            vId: function() {
+                return this.id;
             }
         }
-    );
+    };
 
-    var BaseContentMixin = countlyBaseComponent.extend(
-        // @vue/component
-        {
-            inheritAttrs: false,
-            mixins: [
-                _mixins.i18n
-            ],
-            props: {
-                name: { type: String, default: null},
-                id: { type: String, default: null },
-                alwaysMounted: { type: Boolean, default: true },
-                alwaysActive: { type: Boolean, default: false },
-                role: { type: String, default: "default" }
+    var countlyBaseView;
+    if (IS_VUE_3) {
+        countlyBaseView = countlyBaseViewDef;
+        countlyBaseView.extend = function(extension) {
+            return Object.assign({}, countlyBaseView, extension, {
+                mixins: (countlyBaseView.mixins || []).concat(extension.mixins || [])
+            });
+        };
+    }
+    else {
+        countlyBaseView = countlyBaseComponent.extend(countlyBaseViewDef);
+    }
+
+    var BaseContentMixinDef = {
+        inheritAttrs: false,
+        mixins: [
+            _mixins.i18n
+        ].concat(IS_VUE_3 ? [countlyBaseComponentDef] : []),
+        props: {
+            name: { type: String, default: null},
+            id: { type: String, default: null },
+            alwaysMounted: { type: Boolean, default: true },
+            alwaysActive: { type: Boolean, default: false },
+            role: { type: String, default: "default" }
+        },
+        data: function() {
+            return {
+                isContent: true
+            };
+        },
+        computed: {
+            isActive: function() {
+                return this.alwaysActive || (this.role === "default" && this.$parent.activeContentId === this.id);
             },
-            data: function() {
-                return {
-                    isContent: true
-                };
+            tName: function() {
+                return this.name;
             },
-            computed: {
-                isActive: function() {
-                    return this.alwaysActive || (this.role === "default" && this.$parent.activeContentId === this.id);
-                },
-                tName: function() {
-                    return this.name;
-                },
-                tId: function() {
-                    return this.id;
-                },
-                elementId: function() {
-                    return this.componentId + "-" + this.id;
-                }
+            tId: function() {
+                return this.id;
+            },
+            elementId: function() {
+                return this.componentId + "-" + this.id;
             }
         }
-    );
+    };
+
+    var BaseContentMixin;
+    if (IS_VUE_3) {
+        BaseContentMixin = BaseContentMixinDef;
+    }
+    else {
+        BaseContentMixin = countlyBaseComponent.extend(BaseContentMixinDef);
+    }
 
     var templateUtil = {
         stage: function(fileName) {

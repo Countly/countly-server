@@ -1,4 +1,4 @@
-/* global app countlyVue CV countlyCommon Vue countlyGuides countlyCMS countlyGlobal Countly */
+/* global app, countlyVue, CV, countlyCommon, countlyGuides, countlyCMS, countlyGlobal, Countly */
 
 (function() {
 
@@ -109,7 +109,7 @@
 
     // GLOBAL COMPONENTS
 
-    Vue.component("view-guide", countlyVue.components.create({
+    countlyVue.registerComponent("view-guide", countlyVue.components.create({
         template: CV.T('/guides/templates/dialog.html'),
         mixins: [countlyVue.mixins.i18n],
         components: {
@@ -202,7 +202,12 @@
             link.addEventListener('click', this.fetchAndDisplayWidget);
             document.addEventListener('keydown', this.handleEscapeKey);
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            document.removeEventListener('keydown', this.handleEscapeKey);
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             document.removeEventListener('keydown', this.handleEscapeKey);
         },
         computed: {

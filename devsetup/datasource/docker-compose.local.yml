@@ -1,0 +1,205 @@
+version: "3.9"
+
+services:
+  # ------------------------------
+  # Kafka (KRaft Mode, Broker + Controller)
+  # ------------------------------
+  kafka:
+    image: apache/kafka:4.0.0
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://kafka:29093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: "/tmp/kraft-combined-logs"
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+      # JVM memory — safe for local machines
+      KAFKA_HEAP_OPTS: "-Xms512m -Xmx1g"
+      # Hard message size limits
+      KAFKA_MESSAGE_MAX_BYTES: "52428800"
+      KAFKA_REPLICA_FETCH_MAX_BYTES: "52428800"
+      KAFKA_SOCKET_REQUEST_MAX_BYTES: "52428800"
+    networks:
+      - kafka-net
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-broker-api-versions.sh", "--bootstrap-server", "kafka:29092"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+
+  # ------------------------------
+  # Kafka Connect (GCR Image)
+  # ------------------------------
+  kafka-connect:
+    image: gcr.io/countly-dev-313620/kafka-connect-clickhouse:0.47.0-kafka-4.0.0-ch-1.3.2
+    container_name: kafka-connect
+    depends_on:
+      kafka:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: "kafka:29092"
+      CONNECT_CONNECT_PROTOCOL: "SESSIONED"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
+      CONNECT_REST_ADVERTISED_PORT: "8083"
+      CONNECT_LISTENERS: "http://0.0.0.0:8083"
+      CONNECT_GROUP_ID: "connect-cluster"
+      CONNECT_CONFIG_STORAGE_TOPIC: "connect_ch_configs"
+      CONNECT_OFFSET_STORAGE_TOPIC: "connect_ch_offsets"
+      CONNECT_STATUS_STORAGE_TOPIC: "connect_ch_status"
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_PLUGIN_PATH: "/opt/kafka/plugins"
+      CONNECT_REST_PORT: "8083"
+      # Consumer tuning
+      CONNECT_CONSUMER_FETCH_MAX_BYTES: "52428800"
+      CONNECT_CONSUMER_MAX_PARTITION_FETCH_BYTES: "52428800"
+      CONNECT_CONSUMER_FETCH_MIN_BYTES: "1048576"
+      CONNECT_CONSUMER_MAX_POLL_RECORDS: "500"
+      CONNECT_PRODUCER_MAX_REQUEST_SIZE: "52428800"
+      CONNECT_PRODUCER_BUFFER_MEMORY: "67108864"
+    networks:
+      - kafka-net
+
+  # ------------------------------
+  # DLQ Topic Setup (one-shot)
+  # ------------------------------
+  dlq-init:
+    image: apache/kafka:4.0.0
+    container_name: dlq-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: >
+      sh -c "
+      echo 'Creating DLQ topic...';
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create
+      --topic drill-events-dlq --partitions 1 --replication-factor 1
+      --config retention.bytes=104857600 --config retention.ms=86400000
+      --if-not-exists;
+      echo 'DLQ topic ready';
+      "
+    networks:
+      - kafka-net
+    restart: "no"
+
+  # ------------------------------
+  # ClickHouse
+  # ------------------------------
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8
+    container_name: clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      CLICKHOUSE_DB: countly_drill
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ""
+      CLICKHOUSE_SKIP_USER_SETUP: 1
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    networks:
+      - kafka-net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ------------------------------
+  # ClickHouse UI
+  # ------------------------------
+  ch-ui:
+    image: ghcr.io/caioricciuti/ch-ui:latest
+    container_name: ch-ui
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    ports:
+      - "5521:5521"
+    environment:
+      VITE_CLICKHOUSE_URL: http://localhost:8123
+      VITE_CLICKHOUSE_USER: default
+      VITE_CLICKHOUSE_PASS: ""
+    networks:
+      - kafka-net
+
+  # ------------------------------
+  # MongoDB 8.0 + Replica Set
+  # ------------------------------
+  mongodb:
+    image: mongo:8.0
+    container_name: mongodb
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--wiredTigerCacheSizeGB", "1"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - kafka-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb-init:
+    image: mongo:8.0
+    container_name: mongodb-init
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    command: >
+      sh -c "
+      mongosh --host mongodb:27017 --eval
+      'try{rs.status()}catch(e){rs.initiate({_id:\"rs0\",members:[{_id:0,host:\"mongodb:27017\"}]})}';
+      "
+    networks:
+      - kafka-net
+    restart: "no"
+
+  # ------------------------------
+  # Kafka UI
+  # ------------------------------
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    depends_on:
+      kafka:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: local
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://kafka-connect:8083
+    networks:
+      - kafka-net
+
+volumes:
+  mongodb-data:
+  clickhouse-data:
+
+networks:
+  kafka-net:
+    driver: bridge

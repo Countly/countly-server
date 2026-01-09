@@ -120,7 +120,7 @@
                                 <section v-for="item, idx in testResult" >
                                     <div class="hooks-test-result-row">
                                         <el-collapse-item  :name="idx" class="hook-test-collapse-item">  
-                                            <template slot="title">
+                                            <template #title>
                                                 <span class="cly-vue-hook-drawer__check_icon done-icon text-small color-white cly-bullet--green"><i class="fa fa-check"></i></span>
                                                 {{i18n('hooks.' + item.t)}}
                                             </template>

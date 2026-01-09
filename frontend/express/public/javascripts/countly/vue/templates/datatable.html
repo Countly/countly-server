@@ -79,7 +79,7 @@
                                                 autocomplete="off"
                                                 v-model="searchQuery"
                                                 placeholder="Search Columns">
-                                                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                                                <template #prefix><i class="el-input__icon el-icon-search"></i></template>
                                             </el-input>
                                         </div>
                                     </div>
@@ -127,7 +127,7 @@
             @selection-change="onSelectionChange"
             @cell-mouse-enter="onCellMouseEnter"
             ref="elTable">
-                <template slot="empty">
+                <template #empty>
                     <cly-empty-datatable :test-id="testId"></cly-empty-datatable>
                 </template>
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">

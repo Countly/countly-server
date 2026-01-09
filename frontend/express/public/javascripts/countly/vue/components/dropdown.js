@@ -1,11 +1,11 @@
-/* global jQuery, Vue, ELEMENT, CV, CountlyHelpers */
+/* global jQuery, ELEMENT, CV, CountlyHelpers */
 
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
-    Vue.component("cly-input-dropdown-trigger", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-input-dropdown-trigger", countlyBaseComponent.extend({
         props: {
             focused: {type: Boolean, default: false},
             opened: {type: Boolean, default: false},
@@ -72,7 +72,7 @@
                         <template v-slot:prefix>\
                             <slot name="prefix"></slot>\
                         </template>\
-                        <template slot="suffix" v-if="arrow">\
+                        <template v-slot:suffix v-if="arrow">\
                             <i class="el-select__caret" :class="[iconClass]"></i>\
                         </template>\
                     </component>'
@@ -82,7 +82,7 @@
         template: '<div style="width:100%"><slot v-slot></slot></div>'
     });
 
-    Vue.component("cly-dropdown", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-dropdown", countlyBaseComponent.extend({
         components: {
             'trigger-proxy': triggerProxy,
             'el-select-dropdown': ELEMENT.SelectDropdown
@@ -177,7 +177,13 @@
                 computedWidth: ""
             };
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            this.broadcast('ElSelectDropdown', 'destroyPopper');
+            this.$refs.popper && this.$refs.popper.doDestroy();
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             this.broadcast('ElSelectDropdown', 'destroyPopper');
             this.$refs.popper && this.$refs.popper.doDestroy();
         },
@@ -239,7 +245,7 @@
         }
     }));
 
-    Vue.component("cly-fields-select", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-fields-select", countlyBaseComponent.extend({
         mixins: [_mixins.i18n],
         template: '<cly-dropdown ref="dropdown" v-on="$listeners" class="cly-fields-select__dropdown">\
                         <template v-slot:trigger="dropdown">\
@@ -357,7 +363,7 @@
         }
     }));
 
-    Vue.component("cly-multi-select", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-multi-select", countlyBaseComponent.extend({
         mixins: [_mixins.i18n],
         template: '<cly-dropdown ref="dropdown" v-on="$listeners" class="cly-multi-select__dropdown">\
                         <template v-slot:trigger="dropdown">\
@@ -541,7 +547,7 @@
         }
     }));
 
-    Vue.component("cly-more-options", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-more-options", countlyBaseComponent.extend({
         componentName: 'ElDropdown',
         mixins: [ELEMENT.utils.Emitter],
         template: '<cly-dropdown :pop-class="popClass" class="cly-vue-more-options" ref="dropdown" :widthSameAsTrigger="widthSameAsTrigger" :placement="placement" :disabled="disabled" @hide="toggleArrowState" @show="toggleArrowState" v-on="$listeners">\
@@ -611,7 +617,11 @@
             };
         },
         mounted: function() {
-            this.$on('menu-item-click', this.handleMenuItemClick);
+            // Vue 2/3 compatibility: In Vue 2, components have $on method
+            // In Vue 3, we need to use a different approach for internal events
+            if (typeof this.$on === 'function') {
+                this.$on('menu-item-click', this.handleMenuItemClick);
+            }
         },
         methods: {
             handleMenuItemClick: function(command, instance) {
@@ -635,8 +645,16 @@
                 }
             }
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
-            this.$off();
+            if (typeof this.$off === 'function') {
+                this.$off();
+            }
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
+            // In Vue 3, $off is not available on component instances
+            // This is handled by Vue 3's automatic cleanup
         }
     }));
 

@@ -2,7 +2,7 @@
 	<div class="session-home-widget">	
 		<el-tabs v-model="sessionGraphTab" type="card" stretch>
 			<el-tab-pane :name="item.value" :key="idx" v-for="(item, idx) in chooseProperties" >
-				<div slot="label">
+				<template #label>
 					<div class="text-medium color-cool-gray-100 bu-mb-1 bu-p-5">
 						<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">
 							<div>
@@ -20,7 +20,7 @@
 							</div>
 						</div>
 					</div>
-				</div>
+				</template>
 				<div style="border-radius: 0 0px 4px 4px; background-color: #ffffff; border: 1px solid #ececec ">
                 <cly-chart-time category="session" :option="chartData(item.value)"></cly-chart-time>
 				</div>

@@ -6,7 +6,7 @@
                 <div class="bu-is-flex bu-is-align-items-center bu-mt-2">
                     <validation-provider name="probability" rules="required|integer|min_value:0" v-slot="v">
                         <el-input class="bu-mr-2 populator-template__behavior--session-input-container" :class="{'is-error': v.errors.length > 0}" v-model="behavior.runningSession[0]">
-                            <template slot="suffix">
+                            <template #suffix>
                                 <span class="text-medium color-cool-gray-50">{{i18n('populator-template.hour')}}</span>
                             </template>
                         </el-input>
@@ -14,7 +14,7 @@
                     -
                     <validation-provider name="probability" rules="required|integer|min_value:0" v-slot="v">
                         <el-input class="bu-ml-2 populator-template__behavior--session-input-container" :class="{'is-error': v.errors.length > 0}" v-model="behavior.runningSession[1]">
-                            <template slot="suffix">
+                            <template #suffix>
                                 <span class="text-medium color-cool-gray-50">{{i18n('populator-template.hour')}}</span>
                             </template>
                         </el-input>
@@ -26,7 +26,7 @@
                         <div class="bu-is-align-items-center bu-mt-2 bu-is-flex bu-ml-4">
                             <validation-provider name="hour" rules="required|integer|min_value:0" v-slot="v">
                                 <el-input class="populator-template__behavior--session-input-container bu-mr-2" v-model="item.values[0]" :class="{'is-error': v.errors.length > 0}">
-                                    <template slot="suffix">
+                                    <template #suffix>
                                         <span class="text-medium color-cool-gray-50">{{i18n('populator-template.hour')}}</span>
                                     </template>
                                 </el-input>
@@ -34,7 +34,7 @@
                             - 
                             <validation-provider name="hour" rules="required|integer|min_value:0" v-slot="v">
                                 <el-input class="populator-template__behavior--session-input-container bu-ml-2" v-model="item.values[1]" :class="{'is-error': v.errors.length > 0}">
-                                    <template slot="suffix">
+                                    <template #suffix>
                                         <span class="text-medium color-cool-gray-50">{{i18n('populator-template.hour')}}</span>
                                     </template>
                                 </el-input>
@@ -77,7 +77,7 @@
                         </span>
                         <validation-provider name="probability_sequence_value" rules="required|integer|min_value:0|max_value:100" v-slot="v">
                             <el-input v-model="sequence.probability" :disabled="sequence.disabled" class="sequence-probability" :class="{'is-error': v.errors.length > 0}">
-                                <template slot="suffix">
+                                <template #suffix>
                                     <span class="text-medium color-cool-gray-50">%</span>
                                 </template>
                             </el-input>
@@ -102,7 +102,7 @@
                                 </span>
                                 <validation-provider name="probability_sequence_condition" rules="required|integer|min_value:0|max_value:100" v-slot="v">
                                     <el-input v-model="value.probability" :disabled="value.disabled" class="sequence-condition-probability" :class="{'is-error': v.errors.length > 0}">
-                                        <template slot="suffix">
+                                        <template #suffix>
                                             <span class="text-medium color-cool-gray-50">%</span>
                                         </template>
                                     </el-input>

@@ -1,8 +1,8 @@
-/* global Vue, CV */
+/* global CV */
 
 (function(countlyVue) {
 
-    Vue.component("cly-dialog", countlyVue.components.create({
+    countlyVue.registerComponent("cly-dialog", countlyVue.components.create({
         props: {
             title: {
                 type: String,
@@ -43,7 +43,7 @@
     }));
 
 
-    Vue.component("cly-confirm-dialog", countlyVue.components.create({
+    countlyVue.registerComponent("cly-confirm-dialog", countlyVue.components.create({
         props: {
             title: {type: String, required: true},
             saveButtonLabel: {type: String, required: false, default: CV.i18n("common.save")},
@@ -110,7 +110,7 @@
     }));
 
 
-    Vue.component("cly-message-dialog", countlyVue.components.create({
+    countlyVue.registerComponent("cly-message-dialog", countlyVue.components.create({
         props: {
             title: {type: String, required: true},
             confirmButtonLabel: {type: String, required: false, default: CV.i18n("common.confirm")},
@@ -153,7 +153,7 @@
 
     var _mixins = countlyVue.mixins;
 
-    Vue.component("cly-form-dialog", countlyVue.components.create(
+    countlyVue.registerComponent("cly-form-dialog", countlyVue.components.create(
         // @vue/component
         {
             inheritAttrs: false,

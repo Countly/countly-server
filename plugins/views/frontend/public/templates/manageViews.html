@@ -8,7 +8,7 @@
     </cly-header>
     <cly-main>
 		<cly-confirm-dialog @cancel="closeDeleteForm" @confirm="submitDeleteForm" :before-close="closeDeleteForm" ref="deleteConfirmDialog" :visible.sync="showDeleteDialog" dialogType="danger" :saveButtonLabel="deleteDialogConfirmText" :cancelButtonLabel="i18n('common.no-dont-delete')" :title="deleteDialogTitle" >
-			<template slot-scope="scope">
+			<template #default="scope">
 				{{deleteDialogText}}
 			</template>
 		</cly-confirm-dialog>

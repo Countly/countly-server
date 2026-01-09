@@ -36,17 +36,17 @@
 				<template v-slot="scope">
 					<el-table-column sortable="custom" prop="city" :label="i18n('countries.table.city')"></el-table-column>
 					<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')">
-						<template slot-scope="scope">
+						<template #default="scope">
 							{{formatNumber(scope.row.t)}}
 						</template>
 					</el-table-column>
 					<el-table-column sortable="custom" prop="u" :label="i18n('common.table.total-users')">
-						<template slot-scope="scope">
+						<template #default="scope">
 							{{formatNumber(scope.row.u)}}
 						</template>
 					</el-table-column>
 					<el-table-column sortable="custom" prop="n" :label="i18n('common.table.new-users')">
-						<template slot-scope="scope">
+						<template #default="scope">
 							{{formatNumber(scope.row.n)}}
 						</template>
 					</el-table-column>

@@ -340,9 +340,9 @@
         <cly-header title="Dropdown components"></cly-header>
         <cly-main>
             <el-card class="box-card options-box" style="position:fixed; bottom:25px; right: 25px">
-                <div slot="header" class="clearfix">
+                <template #header><div class="clearfix">
                     <span>Options</span>
-                </div>
+                </div></template>
                 <div class="item">
                     <el-switch
                         active-text="Disable dropdowns"

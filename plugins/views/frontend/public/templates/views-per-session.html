@@ -14,7 +14,7 @@
                 <template v-slot="scope">
                     <el-table-column :sortable="true" prop="viewsBuckets"
                         :label="i18n('views-per-session.table-views-buckets')" :sort-method="sortSessionViewsBuckets">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div :data-test-id="'datatable-views-per-session-' + scope.$index">
                                 {{scope.row.viewsBuckets}}
                             </div>
@@ -22,7 +22,7 @@
                     </el-table-column>
                     <el-table-column sortable="custom" prop="numberOfSessions"
                         :label="i18n('common.number-of-sessions')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div
                                 :data-test-id="'datatable-views-per-session-number-of-sessions-' + scope.$index">
                                 {{formatNumber(scope.row.numberOfSessions)}}
@@ -30,7 +30,7 @@
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="percentage" :label="i18n('common.percent')">
-                        <template slot-scope="scope">
+                        <template #default="scope">
                             <div class="bu-level-left">
                                 <div class="bu-level-item slipping-away-users-table-data-item" :data-test-id="'datatable-views-per-session-percent-' + scope.$index">
                                     <span>{{scope.row.percentage}}%</span>

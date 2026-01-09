@@ -310,6 +310,31 @@
                 searchResultStructure: {},
             };
         },
+        mounted: function() {
+            // Vue 3 compatibility: Listen for feedback logo changes via EventBus
+            var EventBus = countlyVue.EventBus;
+            var self = this;
+            if (EventBus) {
+                this._feedbackLogoHandler = function(key, value) {
+                    self.onChange(key, value, "feedback");
+                };
+                EventBus.$on("feedback-logo-changed", this._feedbackLogoHandler);
+            }
+        },
+        beforeUnmount: function() {
+            // Vue 3 lifecycle hook
+            var EventBus = countlyVue.EventBus;
+            if (EventBus && this._feedbackLogoHandler) {
+                EventBus.$off("feedback-logo-changed", this._feedbackLogoHandler);
+            }
+        },
+        beforeDestroy: function() {
+            // Vue 2 lifecycle hook
+            var EventBus = countlyVue.EventBus;
+            if (EventBus && this._feedbackLogoHandler) {
+                EventBus.$off("feedback-logo-changed", this._feedbackLogoHandler);
+            }
+        },
         beforeCreate: function() {
             var self = this;
             if (this.$route.params.success) {

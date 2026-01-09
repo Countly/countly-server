@@ -1,8 +1,9 @@
-/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge, Sortable */
+/* global jQuery, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge, Sortable */
 
 (function(countlyVue, $) {
     var countlyBaseComponent = countlyVue.components.BaseComponent,
-        _mixins = countlyVue.mixins;
+        _mixins = countlyVue.mixins,
+        EventBus = countlyVue.compat ? countlyVue.compat.EventBus : null;
 
     var TableExtensionsMixin = {
         // NOTE: since this is a mixin and props are component specific, we should not define props here
@@ -387,11 +388,15 @@
             }
         },
 
-        beforeDestroy() {
+        beforeDestroy: function() {
+            this.setControlParams();
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             this.setControlParams();
         },
 
-        mounted() {
+        mounted: function() {
             // Initialize snapshot on mount to prevent false positives
             this.lastControlParamsSnapshot = this.getControlParamsSnapshot();
             this.triggerExternalSource();
@@ -709,7 +714,7 @@
                         }
                         return acc;
                     }, {});
-                    Vue.set(self.patches, rowKey, sourceChanges);
+                    countlyVue.set(self.patches, rowKey, sourceChanges);
                 });
             }
         },
@@ -739,7 +744,7 @@
 
                 newPatch = _merge({}, self.patches[rowKey] || {}, newPatch);
 
-                Vue.set(this.patches, rowKey, newPatch);
+                countlyVue.set(this.patches, rowKey, newPatch);
             },
             unpatch: function(row, fields) {
                 var self = this;
@@ -758,14 +763,14 @@
                     }
 
                     if (!fields) {
-                        Vue.delete(self.patches, rowKey);
+                        countlyVue.del(self.patches, rowKey);
                     }
                     else {
                         fields.forEach(function(fieldName) {
-                            Vue.delete(self.patches[rowKey], fieldName);
+                            countlyVue.del(self.patches[rowKey], fieldName);
                         });
                         if (Object.keys(self.patches[rowKey]).length === 0) {
-                            Vue.delete(self.patches, rowKey);
+                            countlyVue.del(self.patches, rowKey);
                         }
                     }
                 });
@@ -960,10 +965,31 @@
         },
         mounted: function() {
             var self = this;
-            this.$root.$on("cly-date-change", function() {
-                self.exportFileName = this.customFileName || self.getDefaultFileName();
-            });
+            // Vue 3 compatibility: use EventBus instead of $root.$on
+            if (EventBus) {
+                this._dateChangeHandler = function() {
+                    self.exportFileName = self.customFileName || self.getDefaultFileName();
+                };
+                EventBus.$on("cly-date-change", this._dateChangeHandler);
+            }
+            else {
+                this.$root.$on("cly-date-change", function() {
+                    self.exportFileName = this.customFileName || self.getDefaultFileName();
+                });
+            }
 
+        },
+        // Vue 2 lifecycle hook
+        beforeDestroy: function() {
+            if (EventBus && this._dateChangeHandler) {
+                EventBus.$off("cly-date-change", this._dateChangeHandler);
+            }
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
+            if (EventBus && this._dateChangeHandler) {
+                EventBus.$off("cly-date-change", this._dateChangeHandler);
+            }
         },
         data: function() {
             return {
@@ -1220,7 +1246,7 @@
         }
     };
 
-    Vue.component("cly-datatable-n", countlyVue.components.create({
+    countlyVue.registerComponent("cly-datatable-n", countlyVue.components.create({
         mixins: [
             _mixins.commonFormatters,
             _mixins.i18n,
@@ -1368,7 +1394,7 @@
         }
     }));
 
-    Vue.component("cly-datatable-undo-row", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-datatable-undo-row", countlyBaseComponent.extend({
         props: {
             delayedAction: {
                 type: Object

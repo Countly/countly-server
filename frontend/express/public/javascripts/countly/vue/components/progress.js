@@ -1,8 +1,8 @@
-/*global Vue*/
+/* eslint-disable no-unused-vars */
 (function(countlyVue) {
     var countlyBaseComponent = countlyVue.components.BaseComponent;
 
-    Vue.component("cly-progress-donut", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-progress-donut", countlyBaseComponent.extend({
         props: {
             percentage: {default: 42},
             color: {type: [String, Function, Array], default: '#00C3CA'},
@@ -33,7 +33,7 @@
                 </div>'
     }));
 
-    Vue.component("cly-progress-bar", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-progress-bar", countlyBaseComponent.extend({
         data: function() {
             return {
                 barWidthUnit: "%",

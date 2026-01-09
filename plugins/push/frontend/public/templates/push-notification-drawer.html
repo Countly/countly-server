@@ -523,7 +523,7 @@
                                         :class="{'is-error': validation.errors.length > 0}"
                                         :min="0"
                                         style="min-width:100px">
-                                        <template slot="suffix">
+                                        <template #suffix>
                                             <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.days')}}</span>
                                         </template>
                                     </el-input>
@@ -537,7 +537,7 @@
                                         :max="23"
                                         style="min-width:100px"
                                         :class="{'is-error': validation.errors.length > 0}">
-                                        <template slot="suffix">
+                                        <template #suffix>
                                             <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.hours')}}</span>
                                         </template>
                                     </el-input>
@@ -574,7 +574,7 @@
                             <div class="bu-level">
                                 <validation-provider v-slot="validation" rules="required|integer">
                                     <el-input v-model="pushNotificationUnderEdit.automatic.maximumMessagesPerUser" placeholder="0" :min="1" style="width:200px" :class="{'is-error': validation.errors.length > 0}">
-                                        <template slot="suffix">
+                                        <template #suffix>
                                             <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.messages')}}</span>
                                         </template>
                                     </el-input>
@@ -589,14 +589,14 @@
                             <div class="bu-is-flex is-justify-content-flex-start">
                                 <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
                                     <el-input v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.days" controls-position="right" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
-                                        <template slot="suffix">
+                                        <template #suffix>
                                             <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.days')}}</span>
                                         </template>
                                     </el-input>
                                 </validation-provider>
                                 <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23|min:1|max:2" class="bu-ml-1">
                                     <el-input v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.hours" controls-position="right" :min="0" :max="23" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
-                                        <template slot="suffix">
+                                        <template #suffix>
                                             <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.hours')}}</span>
                                         </template>
                                     </el-input>
@@ -659,7 +659,7 @@
                             <div class="cly-vue-push-notification-drawer__radio-button-group bu-mt-2">
                                 <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
                                     <el-input v-model="pushNotificationUnderEdit.delivery.repetition.every" :min="0" style="width:120px" :class="{'is-error': validation.errors.length > 0}">
-                                        <template slot="suffix">
+                                        <template #suffix>
                                             <span class="bu-mr-3 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">
                                                 {{pushNotificationUnderEdit.delivery.repetition.every === '0' || pushNotificationUnderEdit.delivery.repetition.every === '1' ? i18n('push-notification-drawer.repetition-' + pushNotificationUnderEdit.delivery.repetition.bucket) : i18n('push-notification-drawer.repetitions-' + pushNotificationUnderEdit.delivery.repetition.bucket)}}
                                             </span>
@@ -720,14 +720,14 @@
                         <div class="bu-is-flex is-justify-content-flex-start">
                             <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
                                 <el-input v-model="pushNotificationUnderEdit.expiration.days" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
-                                    <template slot="suffix">
+                                    <template #suffix>
                                         <span class="bu-mr-3 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.days')}}</span>
                                     </template>
                                 </el-input>
                             </validation-provider>
                             <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23" class="bu-ml-1">
                                 <el-input v-model="pushNotificationUnderEdit.expiration.hours" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
-                                    <template slot="suffix">
+                                    <template #suffix>
                                         <span class="bu-mr-3 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.hours')}}</span>
                                     </template>
                                 </el-input>
@@ -903,7 +903,7 @@
                     <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.platform-settings-description')}}</div>
                     <el-collapse v-if="shouldDisplayIOSSettings" v-model="expandedPlatformSettings" class="cly-vue-push-notification-accordion-with-left-side-arrow ">
                         <el-collapse-item  :name="PlatformEnum.IOS">
-                            <span class="collapse-title" slot="title"> IOS</span>
+                            <template #title><span class="collapse-title"> IOS</span></template>
                             <message-setting-element
                                 v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
                                 :input="pushNotificationUnderEdit.settings.ios.soundFilename"
@@ -1011,7 +1011,7 @@
                     </el-collapse>
                     <el-collapse v-if="shouldDisplayAndroidSettings" v-model="expandedPlatformSettings" class="cly-vue-push-notification-accordion-with-left-side-arrow">
                         <el-collapse-item :name="PlatformEnum.ANDROID">
-                            <span class="collapse-title" slot="title"> Android</span>
+                            <template #title><span class="collapse-title"> Android</span></template>
                             <message-setting-element
                                 v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
                                 :input="pushNotificationUnderEdit.settings.android.soundFilename"

@@ -42,7 +42,7 @@
                 </div>
                 <cly-section class="dbviewer-tab__result-table bu-mt-3">
                     <cly-datatable-n row-key="_id" :expand-row-keys="expandKeys" :hide-top="false" :show-header="false" :data-source="remoteTableDataSource" :export-query="getExportQuery" @search-query-changed="setSearchQuery" @row-click="handleTableRowClick" ref="table" :row-class-name="tableRowClassName">
-                        <template slot="header-left">
+                        <template #header-left>
                             <el-button @click="toggleExpand()" data-test-id="collapse-or-expand-button">{{ isExpanded ? i18n('dbviewer.collapse-all') : i18n('dbviewer.expand-all') }}</el-button>
                             <el-button v-if="queryFilter" @click="removeFilters()" icon="fas fa-minus-square" data-test-id="remove-filters-button"> {{ i18n('dbviewer.remove-filters') }} </el-button>
                             <el-button @click="showFilterPopup()" icon="fas fa-filter" data-test-id="filter-button"> {{ i18n('dbviewer.filter') }}</el-button>
@@ -138,7 +138,7 @@
                     </div>
                 </div>
             </template>
-            <template slot="controls-left">
+            <template #controls-left>
                 <div @click="clearFilters()" class="text-medium color-danger bu-is-clickable">
                     Remove Filter
                 </div>
@@ -229,7 +229,7 @@
                     </div> -->
                 </div>
             </template>
-            <template slot="controls-left">
+            <template #controls-left>
                 <div @click="clearFilters()" class="text-medium color-danger bu-is-clickable">
                     Remove Filter
                 </div>

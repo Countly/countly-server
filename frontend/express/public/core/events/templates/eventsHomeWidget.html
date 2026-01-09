@@ -12,8 +12,8 @@
             <cly-metric-cards :multiline="false" v-loading="isLoading">
                 <cly-metric-card formatting="long" :label="item.name" :test-id="'events-index-' + idx" :box-type="5" color="#097EFF" :tooltip="item.info" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in items">
                     <template v-slot:number>{{item.value}}</template>
-                    <span v-if="item.trend=='d'" slot="description" class="cly-trend-down" :data-test-id="'metric-card-events-index-' + idx + '-coloumn-trend-desc'"><i class="cly-trend-down-icon ion-android-arrow-down" :data-test-id="'metric-card-events-index-' + idx + '-coloumn-trend-arrow-icon'"></i>{{item.change}}</span>
-                    <span v-else slot="description" class="cly-trend-up" :data-test-id="'metric-card-events-index-' + idx + '-coloumn-trend-desc'"><i class="cly-trend-up-icon ion-android-arrow-up" :data-test-id="'metric-card-events-index-' + idx + '-coloumn-trend-arrow-icon'"></i>{{item.change}}</span>
+                    <template #description><span v-if="item.trend=='d'" class="cly-trend-down" :data-test-id="'metric-card-events-index-' + idx + '-coloumn-trend-desc'"><i class="cly-trend-down-icon ion-android-arrow-down" :data-test-id="'metric-card-events-index-' + idx + '-coloumn-trend-arrow-icon'"></i>{{item.change}}</span>
+                    <span v-else class="cly-trend-up" :data-test-id="'metric-card-events-index-' + idx + '-coloumn-trend-desc'"><i class="cly-trend-up-icon ion-android-arrow-up" :data-test-id="'metric-card-events-index-' + idx + '-coloumn-trend-arrow-icon'"></i>{{item.change}}</span></template>
                 </cly-metric-card>
                 <div v-if="items.length <1 && !isLoading" class="technology-analytics-wrapper__empty-card" :data-test-id="`empty-card-${i18n('events.overview.top.events.by.count').toLowerCase().replaceAll(/\s/g, '-')}`">
                     <div class="text-medium" :data-test-id="`empty-card-label-${i18n('events.overview.top.events.by.count').toLowerCase().replaceAll(/\s/g, '-')}`">{{i18n('common.table.no-data')}}</div>

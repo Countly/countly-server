@@ -3,7 +3,7 @@
 	<div class="session-home-widget">	
 		<el-tabs v-model="sessionGraphTab" type="card" stretch v-loading="isLoading">
 			<el-tab-pane :name="item.value" :key="idx" v-for="(item, idx) in chooseProperties" >
-				<div slot="label">
+				<template #label>
 					<div class="color-cool-gray-100 bu-p-5" :data-test-id="`tab-box-${item.label.toLowerCase().replace('.', '').replaceAll(/\s/g, '-')}`">
 						<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between" :data-test-id="`tab-box-label-tooltip-container-${item.label.toLowerCase().replace('.', '').replaceAll(/\s/g, '-')}`">
 							<div class="text-medium" :data-test-id="`tab-box-label-tooltip-${item.label.toLowerCase().replace('.', '').replaceAll(/\s/g, '-')}`">
@@ -21,7 +21,7 @@
 							</div>
 						</div>
 					</div>
-				</div>
+				</template>
 				<div class="bu-pb-4" :data-test-id="`tab-box-chart-${item.label.toLowerCase().replace('.', '').replaceAll(/\s/g, '-')}`" style="border-radius: 0 0px 4px 4px; background-color: #ffffff; border: 1px solid #ececec ">
                <cly-chart-time :val-formatter="item.formatter" :test-id="`${item.label.toLowerCase().replace('.', '').replaceAll(/\s/g, '-')}`" :option="chartData(item.value)" category="sessionHomeWidget"></cly-chart-time>
 				</div>

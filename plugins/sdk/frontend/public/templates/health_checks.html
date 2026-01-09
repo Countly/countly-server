@@ -6,18 +6,18 @@
 			<cly-metric-cards :multiline="false">
 				<cly-metric-card test-id="health-checks-received" formatting="long" :number=totals.hc_hc.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 				  <span class="has-ellipsis">Health Checks Received</span>
-				  <span v-if="totals.hc_hc.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down" data-test-id="cly-radio-trend-icon-health-checks-received"></i>{{totals.hc_hc.change}}</span>
-				  <span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up" data-test-id="cly-radio-trend-icon-health-checks-received"></i>{{totals.hc_hc.change}}</span>
+				  <template #description><span v-if="totals.hc_hc.trend=='d'" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down" data-test-id="cly-radio-trend-icon-health-checks-received"></i>{{totals.hc_hc.change}}</span>
+				  <span v-else class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up" data-test-id="cly-radio-trend-icon-health-checks-received"></i>{{totals.hc_hc.change}}</span></template>
 				</cly-metric-card>
 				<cly-metric-card test-id="sdk-error-logs" :number=totals.hc_el.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 				  <span class="has-ellipsis">SDK Error Logs</span>
-				  <span v-if="totals.hc_el.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down" data-test-id="cly-radio-trend-icon-sdk-error-logs"></i>{{totals.hc_el.change}}</span>
-				  <span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up" data-test-id="cly-radio-trend-icon-sdk-error-logs"></i>{{totals.hc_el.change}}</span>
+				  <template #description><span v-if="totals.hc_el.trend=='d'" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down" data-test-id="cly-radio-trend-icon-sdk-error-logs"></i>{{totals.hc_el.change}}</span>
+				  <span v-else class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up" data-test-id="cly-radio-trend-icon-sdk-error-logs"></i>{{totals.hc_el.change}}</span></template>
 				</cly-metric-card>
 				<cly-metric-card test-id="sdk-warn-logs" :number=totals.hc_wl.total color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 				  <span class="has-ellipsis">SDK Warn Logs</span>
-				  <span v-if="totals.hc_wl.trend=='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down" data-test-id="cly-radio-trend-icon-sdk-warn-logs"></i>{{totals.hc_wl.change}}</span>
-				  <span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up" data-test-id="cly-radio-trend-icon-sdk-warn-logs"></i>{{totals.hc_wl.change}}</span>
+				  <template #description><span v-if="totals.hc_wl.trend=='d'" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-trend-down-icon ion-android-arrow-down" data-test-id="cly-radio-trend-icon-sdk-warn-logs"></i>{{totals.hc_wl.change}}</span>
+				  <span v-else class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-trend-up-icon ion-android-arrow-up" data-test-id="cly-radio-trend-icon-sdk-warn-logs"></i>{{totals.hc_wl.change}}</span></template>
 				</cly-metric-card>
 			  </cly-metric-cards>
 		  </cly-section>

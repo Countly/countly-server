@@ -7,7 +7,7 @@
         :force-loading="!detailLogsInitialized">
         <template v-slot="scope">
             <!-- <el-table-column fixed label="Tracked data" sortable="true"  min-width="100" :class="is-clickable">
-                <template slot-scope="scope">
+                <template #default="scope">
                     <div v-html="scope.row.a"></div>
                 </template>
             </el-table-column>  -->
@@ -29,12 +29,12 @@
             </el-table-column>
 
             <el-table-column  :label="i18n('hooks.time')" sortable="true">
-                <template slot-scope="scope" sortable="true">
+                <template #default="scope" sortable="true">
                     <div>{{scope.row.timestamp_string}}</div>
                 </template>
             </el-table-column>
             <el-table-column align="left"  :label="i18n('hooks.action-step')"  sortable="true">
-                <template slot-scope="scope" sortable="true">
+                <template #default="scope" sortable="true">
                     <div>
                         {{scope.row.effectStep}} 
                     </div>
@@ -42,7 +42,7 @@
             </el-table-column> 
             
             <el-table-column :label="i18n('hooks.trigger-data')"  width="352"  sortable="true"  class="params-column">
-                <template slot-scope="scope" sortable="true">
+                <template #default="scope" sortable="true">
                     <div>
                         <pre class='code-pre-line'>{{scope.row._originalInput}} </pre>
                     </div>
@@ -50,7 +50,7 @@
             </el-table-column> 
             
             <el-table-column  :label="i18n('hooks.action-data')" width="352" sortable="true"  >
-                <template slot-scope="scope" sortable="true">
+                <template #default="scope" sortable="true">
                     <div>
                         <pre class='code-pre-line'>{{scope.row.params}} </pre>
                     </div>

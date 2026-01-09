@@ -2558,10 +2558,16 @@
                 this.selectedKeyToDelete = null;
             },
             addSelectedAppEventListener: function(callback) {
-                this.$on('selectedApp', callback);
+                // Vue 2/3 compatibility: In Vue 3, $on is not available on component instances
+                if (typeof this.$on === 'function') {
+                    this.$on('selectedApp', callback);
+                }
             },
             addDiscardEventListener: function(callback) {
-                this.$on('discard', callback);
+                // Vue 2/3 compatibility: In Vue 3, $on is not available on component instances
+                if (typeof this.$on === 'function') {
+                    this.$on('discard', callback);
+                }
             },
             addKeyFileReaderLoadListener: function(callback) {
                 keyFileReader.addEventListener('load', callback);
@@ -2771,7 +2777,13 @@
             this.addDiscardEventListener(this.onDiscard);
             this.reconcilate();
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            this.removeKeyFileReaderLoadListener(this.onKeyFileReady);
+            this.removeServiceAccountFileReaderLoadListener(this.onServiceAccountFileReady);
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             this.removeKeyFileReaderLoadListener(this.onKeyFileReady);
             this.removeServiceAccountFileReaderLoadListener(this.onServiceAccountFileReady);
         }

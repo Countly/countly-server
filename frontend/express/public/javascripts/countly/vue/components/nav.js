@@ -1,10 +1,10 @@
-/* global Vue, Backbone, app, countlyGlobal, CV */
+/* global Backbone, app, countlyGlobal, CV */
 
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent;
 
-    Vue.component("cly-tabs", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-tabs", countlyBaseComponent.extend({
         props: {
             value: String,
             routePattern: String,
@@ -51,7 +51,7 @@
         hide nested components based on the application state. Dynamic components provide
         that platform in an efficient and simple way.
     */
-    Vue.component("cly-dynamic-tabs", countlyBaseComponent.extend({
+    countlyVue.registerComponent("cly-dynamic-tabs", countlyBaseComponent.extend({
         data: function() {
             return {
                 apps: countlyGlobal.apps

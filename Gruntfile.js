@@ -37,26 +37,26 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/js-deep-equals.unsorted.min.js',
                     'frontend/express/public/javascripts/utils/polyfill/es6-promise.auto.min.js',
                     'frontend/express/public/javascripts/utils/polyfill/intersection-observer.js',
-                    'frontend/express/public/javascripts/utils/vue/vue.min.js',
-                    'frontend/express/public/javascripts/utils/vue/composition-api.min.js',
-                    'frontend/express/public/javascripts/utils/vue/vuex.min.js',
+                    // Vue 3 libraries
+                    'frontend/express/public/javascripts/utils/vue/vue3.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vuex4.min.js',
                     'frontend/express/public/javascripts/utils/echarts.5.min.js',
-                    'frontend/express/public/javascripts/utils/vue/vue-echarts.umd.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue-echarts3.umd.min.js',
                     'frontend/express/public/javascripts/utils/vue/vue-color.min.js',
                     'frontend/express/public/javascripts/utils/vue/v-tooltip.min.js',
                     'frontend/express/public/javascripts/utils/vue/vee-validate.full.min.js',
                     'frontend/express/public/javascripts/utils/vue/vue-clipboard.min.js',
                     'frontend/express/public/javascripts/utils/vue/vue-good-table.min.js',
                     'frontend/express/public/javascripts/utils/vue/vue2Dropzone.min.js',
-                    'frontend/express/public/javascripts/utils/vue/element-ui.js',
-                    'frontend/express/public/javascripts/utils/vue/vue2-leaflet.min.js',
+                    'frontend/express/public/javascripts/utils/vue/element-plus.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue3-leaflet.min.js',
                     'frontend/express/public/javascripts/utils/vue/inViewportMixin.js',
                     'frontend/express/public/javascripts/utils/vue/vuescroll.min.js',
                     'frontend/express/public/javascripts/utils/vue/vue-json-pretty.min.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
                     'frontend/express/public/javascripts/utils/Sortable.min.js',
-                    'frontend/express/public/javascripts/utils/vue/vuedraggable.umd.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vuedraggable3.umd.min.js',
                     'frontend/express/public/javascripts/utils/lodash.mergeWith.js',
                     'frontend/express/public/javascripts/utils/element-tiptap.umd.min.js'
                 ],
@@ -86,9 +86,15 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/countly.app.users.js',
                     'frontend/express/public/javascripts/countly/countly.view.js',
                     'frontend/express/public/javascripts/countly/countly.cms.js',
+                    'frontend/express/public/javascripts/countly/vue/compat.js',
                     'frontend/express/public/javascripts/countly/vue/core.js',
                     'frontend/express/public/javascripts/countly/vue/container.js',
+                    'frontend/express/public/javascripts/countly/vue/router.js',
+                    'frontend/express/public/javascripts/countly/vue/view.js',
+                    'frontend/express/public/javascripts/countly/vue/app.js',
                     'frontend/express/public/javascripts/countly/countly.template.js',
+                    'frontend/express/public/javascripts/countly/vue/integration.js',
+                    'frontend/express/public/javascripts/countly/vue/migration-helpers.js',
                     'frontend/express/public/javascripts/countly/vue/helpers.js',
                     'frontend/express/public/javascripts/countly/vue/data/vuex.js',
                     'frontend/express/public/javascripts/countly/countly.task.manager.js',
@@ -172,13 +178,115 @@ module.exports = function(grunt) {
             dist: {
                 files: {
                     'frontend/express/public/javascripts/min/countly.dom.js': 'frontend/express/public/javascripts/min/countly.dom.concat.js',
-                    'frontend/express/public/javascripts/min/countly.utils.js': 'frontend/express/public/javascripts/min/countly.utils.concat.js',
+                    // Skip countly.utils.js - Vue 3 libraries contain ES6+ syntax and are already minified
+                    // 'frontend/express/public/javascripts/min/countly.utils.js': 'frontend/express/public/javascripts/min/countly.utils.concat.js',
                     'frontend/express/public/javascripts/min/countly.visualization.js': 'frontend/express/public/javascripts/min/countly.visualization.concat.js',
                     'frontend/express/public/javascripts/min/countly.lib.js': 'frontend/express/public/javascripts/min/countly.lib.concat.js'
                 }
             }
         },
-        copy: {},
+        copy: {
+            vue3libs: {
+                files: [
+                    // Vue 3 core
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['node_modules/vue/dist/vue.global.prod.js'],
+                        dest: 'frontend/express/public/javascripts/utils/vue/',
+                        rename: function(dest) {
+                            return dest + 'vue3.min.js';
+                        }
+                    },
+                    // Vuex 4
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['node_modules/vuex/dist/vuex.global.prod.js'],
+                        dest: 'frontend/express/public/javascripts/utils/vue/',
+                        rename: function(dest) {
+                            return dest + 'vuex4.min.js';
+                        }
+                    },
+                    // Element Plus
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['node_modules/element-plus/dist/index.full.min.js'],
+                        dest: 'frontend/express/public/javascripts/utils/vue/',
+                        rename: function(dest) {
+                            return dest + 'element-plus.min.js';
+                        }
+                    },
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['node_modules/element-plus/dist/index.css'],
+                        dest: 'frontend/express/public/stylesheets/vue/',
+                        rename: function(dest) {
+                            return dest + 'element-plus.css';
+                        }
+                    },
+                    // Vue ECharts
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['node_modules/vue-echarts/dist/index.umd.min.js'],
+                        dest: 'frontend/express/public/javascripts/utils/vue/',
+                        rename: function(dest) {
+                            return dest + 'vue-echarts3.umd.min.js';
+                        }
+                    },
+                    // Vue Leaflet
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['node_modules/@vue-leaflet/vue-leaflet/dist/vue-leaflet.umd.js'],
+                        dest: 'frontend/express/public/javascripts/utils/vue/',
+                        rename: function(dest) {
+                            return dest + 'vue3-leaflet.min.js';
+                        }
+                    },
+                    // Vue Draggable (Vue 3)
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['node_modules/vuedraggable/dist/vuedraggable.umd.js'],
+                        dest: 'frontend/express/public/javascripts/utils/vue/',
+                        rename: function(dest) {
+                            return dest + 'vuedraggable3.umd.min.js';
+                        }
+                    },
+                    // Vue 3 Perfect Scrollbar
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['node_modules/vue3-perfect-scrollbar/dist/vue3-perfect-scrollbar.umd.js'],
+                        dest: 'frontend/express/public/javascripts/utils/vue/',
+                        rename: function(dest) {
+                            return dest + 'vue3-scrollbar.min.js';
+                        }
+                    },
+                    // VeeValidate 4
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['node_modules/vee-validate/dist/vee-validate.js'],
+                        dest: 'frontend/express/public/javascripts/utils/vue/',
+                        rename: function(dest) {
+                            return dest + 'vee-validate4.min.js';
+                        }
+                    }
+                ]
+            },
+            // Copy concat utils to final utils.js (Vue 3 libs already minified, uglify can't parse ES6+)
+            utilsConcat: {
+                files: [{
+                    src: 'frontend/express/public/javascripts/min/countly.utils.concat.js',
+                    dest: 'frontend/express/public/javascripts/min/countly.utils.js'
+                }]
+            }
+        },
         cssmin: {
             dist: {
                 files: {
@@ -277,6 +385,9 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', ['mochaTest']);
 
+    // Task to copy Vue 3 libraries from node_modules to frontend
+    grunt.registerTask('vue3libs', ['copy:vue3libs']);
+
     grunt.registerTask('replace-paths', 'Replace image paths in prod CSS files', function() {
         var cssFiles = [
             {
@@ -295,7 +406,7 @@ module.exports = function(grunt) {
         });
     });
 
-    grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'replace-paths', 'cssmin']);
+    grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'copy:utilsConcat', 'replace-paths', 'cssmin']);
 
     grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function() {
         var js = [], css = [], img = [], fs = require('fs'), path = require('path');

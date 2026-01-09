@@ -1,9 +1,10 @@
-/* global Vue, ELEMENT, moment, countlyCommon, _, CV, countlyPresets */
+/* global ELEMENT, moment, countlyCommon, _, CV, countlyPresets */
 
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
-        _mixins = countlyVue.mixins;
+        _mixins = countlyVue.mixins,
+        EventBus = countlyVue.compat ? countlyVue.compat.EventBus : null;
 
     var availableShortcuts = {
         "yesterday": {
@@ -869,7 +870,7 @@
         }
     };
 
-    Vue.component("cly-date-picker", countlyVue.components.create({
+    countlyVue.registerComponent("cly-date-picker", countlyVue.components.create({
         mixins: [
             _mixins.i18n,
             InputControlsMixin,
@@ -1603,7 +1604,12 @@
                 this.doClose();
             }
         },
+        // Vue 2 lifecycle hook
         beforeDestroy: function() {
+            this.clearCommitWarning(true);
+        },
+        // Vue 3 lifecycle hook
+        beforeUnmount: function() {
             this.clearCommitWarning(true);
         },
         template: CV.T('/javascripts/countly/vue/templates/datepicker.html')
@@ -1623,13 +1629,19 @@
         },
         methods: {
             onChange: function() {
-                this.$root.$emit("cly-date-change");
+                // Vue 3 compatibility: use EventBus instead of $root.$emit
+                if (EventBus) {
+                    EventBus.$emit("cly-date-change");
+                }
+                else {
+                    this.$root.$emit("cly-date-change");
+                }
             }
         },
         template: '<cly-date-picker is-global-date-picker v-bind="$attrs" timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-date-picker>'
     });
 
-    Vue.component("cly-date-picker-g", globalDatepicker);
+    countlyVue.registerComponent("cly-date-picker-g", globalDatepicker);
 
     /*
         Remove the following component.
@@ -1637,9 +1649,9 @@
         - surveys
         - cly-panel (deprecated)
     */
-    Vue.component("cly-global-date-selector-w", globalDatepicker);
+    countlyVue.registerComponent("cly-global-date-selector-w", globalDatepicker);
 
-    Vue.component("cly-time-picker", {
+    countlyVue.registerComponent("cly-time-picker", {
         props: {
             width: {
                 type: Number,
