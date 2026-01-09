@@ -1,17 +1,16 @@
 /**
  * @typedef {import('../types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import('../types/queue.ts').PushEvent} PushEvent
- * @typedef {import('../types/queue.ts').PushEventDTO} PushEventDTO
  * @typedef {import('../types/queue.ts').PushEventHandler} PushEventHandler
  * @typedef {import('../types/queue.ts').ScheduleEventHandler} ScheduleEventHandler
  * @typedef {import('../types/queue.ts').ResultEventHandler} ResultEventHandler
  * @typedef {import('../types/queue.ts').AutoTriggerEventHandler} AutoTriggerEventHandler
  * @typedef {import('../types/queue.ts').ResultEvent} ResultEvent
  * @typedef {import('../types/queue.ts').AutoTriggerEvent} AutoTriggerEvent
- * @typedef {import('../types/queue.ts').ResultEventDTO} ResultEventDTO
- * @typedef {() => (args: any) => number} PartitionerFactory
  * @typedef {import('../../../../kafka/api/api.js').kafkajs.Kafka} Kafka
  * @typedef {import('../../../../kafka/api/api.js').kafkajs.Producer} Producer
+ * @typedef {import('../../../../kafka/api/api.js').kafkajs.Partitioners} Partitioners
+ * @typedef {import('../../../../kafka/api/api.js').kafkajs.ICustomPartitioner} ICustomPartitioner
  */
 
 const kafkaConfig = require("../constants/kafka-config.json");
@@ -29,7 +28,7 @@ let PRODUCER;
 
 /**
  * Loads the Kafka client instance and partitioners from the Kafka plugin.
- * @returns {Promise<{kafkaInstance: Kafka, Partitioners: any}>} Resolves with the Kafka instance and partitioners
+ * @returns {Promise<{kafkaInstance: Kafka, Partitioners: Partitioners}>} Resolves with the Kafka instance and partitioners
  */
 async function loadKafka() {
     verifyKafka();
@@ -64,7 +63,7 @@ function verifyKafka() {
 /**
  * Sets up the Kafka producer with the given partitioner.
  * @param {Kafka} kafkaInstance - the Kafka client instance
- * @param {PartitionerFactory} createPartitioner - function to create the partitioner
+ * @param {ICustomPartitioner} createPartitioner - function to create the partitioner
  * @returns {Promise<Producer>} Resolves with the connected producer
  */
 async function setupProducer(kafkaInstance, createPartitioner) {
@@ -132,15 +131,16 @@ async function setupTopicsAndPartitions(kafkaInstance, forceRecreation = false) 
 /**
  * Connects to the kafka broker and creates the required topics.
  * Also sets up consumers for the topics and calls the provided handlers when messages are received.
+ * @param {Kafka} kafkaInstance - the Kafka client instance
+ * @param {ICustomPartitioner} createPartitioner - function to create the partitioner for the producer
  * @param {PushEventHandler} onPushMessages - function to call when there's a PushEvent in the PUSH_MESSAGES_TOPIC topic
  * @param {ScheduleEventHandler} onMessageSchedules - function to call when there's a
  * @param {ResultEventHandler} onMessageResults - function to call when there's a ResultEvent in the MESSAGE_RESULTS_TOPIC topic
  * @param {AutoTriggerEventHandler} onAutoTriggerEvents - function to call when there's an AutoTriggerEvent in the AUTO_TRIGGER_TOPIC topic
  * @returns {Promise<void>} Resolves when the consumers and producer are set up
  */
-async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResults, onAutoTriggerEvents) {
-    const { kafkaInstance, Partitioners } = await loadKafka();
-    await setupProducer(kafkaInstance, Partitioners.DefaultPartitioner);
+async function initPushQueue(kafkaInstance, createPartitioner, onPushMessages, onMessageSchedules, onMessageResults, onAutoTriggerEvents) {
+    await setupProducer(kafkaInstance, createPartitioner);
     await setupTopicsAndPartitions(kafkaInstance);
 
     const pushConsumer = kafkaInstance.consumer({

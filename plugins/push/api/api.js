@@ -44,7 +44,7 @@ const plugins = require('../../pluginManager'),
         }
     };
 
-const { initPushQueue } = require("./new/lib/kafka.js");
+const { initPushQueue, loadKafka } = require("./new/lib/kafka.js");
 const { composeAllScheduledPushes } = require('./new/composer.js');
 const { sendAllPushes } = require('./new/sender.js');
 const { saveResults } = require("./new/resultor.js");
@@ -52,7 +52,10 @@ const { scheduleMessageByAutoTriggers } = require("./new/scheduler.js");
 
 plugins.register("/master", async function() {
     try {
+        const { kafkaInstance, Partitioners } = await loadKafka();
         await initPushQueue(
+            kafkaInstance,
+            Partitioners.DefaultPartitioner,
             pushes => sendAllPushes(pushes),
             schedules => composeAllScheduledPushes(common.db, schedules),
             results => saveResults(common.db, results),
