@@ -119,7 +119,7 @@ describe('Testing Compliance Hub', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.result.should.eql("Success");
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + 2000);
                 });
         });
         it("validate if app users document is updated", function(done) {
