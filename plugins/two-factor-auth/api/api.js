@@ -6,6 +6,17 @@ var plugin = {},
     plugins = require('../../pluginManager.js'),
     { validateUser } = require('../../../api/utils/rights.js');
 
+const { generateQRCode } = require('../lib.js');
+const FEATURE_NAME = 'two_factor_auth';
+
+plugins.setConfigs("two-factor-auth", {
+    globally_enabled: false
+});
+
+plugins.register("/permissions/features", function(ob) {
+    ob.features.push(FEATURE_NAME);
+});
+
 plugins.register("/i/two-factor-auth", function(ob) {
     var config = plugins.getConfig("two-factor-auth");
 
@@ -136,6 +147,19 @@ plugins.register("/i/two-factor-auth", function(ob) {
                     }
                 );
             }
+        });
+        break;
+    case "generate-qr-code":
+        validateUser(ob.params, function() {
+            var secret = GA.generateSecret();
+            generateQRCode(ob.params.member.username, secret, log.w)
+                .then((qrCode) => {
+                    common.returnOutput(ob.params, { secret, qrCode });
+                })
+                .catch((err) => {
+                    log.e("Error generating QR code", err);
+                    common.returnMessage(ob.params, 500, "Error generating QR code");
+                });
         });
         break;
     default:
