@@ -1,0 +1,13 @@
+<clickhouse>
+    <!-- Low RAM configuration for systems with less than 16GB RAM -->
+    
+    <!-- Mark cache: reduced to 500 MB -->
+    <mark_cache_size>524288000</mark_cache_size>
+    
+    <!-- Disable log tables to save RAM -->
+    <asynchronous_metric_log remove="1"/>
+    <metric_log remove="1"/>
+    <text_log remove="1"/>
+    <trace_log remove="1"/>
+    <query_log remove="1"/>
+</clickhouse>

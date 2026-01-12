@@ -1,0 +1,24 @@
+{
+  "name": "clickhouse-sink",
+  "config": {
+    "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
+    "tasks.max": "1",
+    "topics": "drill-events",
+    "hostname": "clickhouse",
+    "port": "8123",
+    "database": "countly_drill",
+    "username": "default",
+    "password": "",
+    "ssl": "false",
+    "exactlyOnce": "false",
+    "topic2TableMap": "drill-events=drill_events",
+    "clickhouseSettings": "input_format_binary_read_json_as_string=1,allow_experimental_json_type=1,enable_json_type=1,async_insert=1,wait_for_async_insert=1",
+    "bypassRowBinary": "false",
+    "errors.tolerance": "none",
+    "errors.retry.timeout": "60",
+    "tableRefreshInterval": "300",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "false"
+  }
+}
