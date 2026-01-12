@@ -523,6 +523,23 @@
                 }
                 this.$store.dispatch(action, doc)
                     .then(function() {
+                        const type = doc._id ? "update" : "create";
+
+                        if (type === "create") {
+                            CountlyHelpers.notify({
+                                title: 'Success',
+                                message: CV.i18n('remote-config.create-message'),
+                                type: 'success'
+                            });
+                        }
+                        else if (type === "update") {
+                            CountlyHelpers.notify({
+                                title: 'Success',
+                                message: CV.i18n('remote-config.update-message'),
+                                type: 'success'
+                            });
+                        }
+
                         self.$emit("submit");
                     });
             },
@@ -834,6 +851,12 @@
                         }
 
                         self.$store.dispatch("countlyRemoteConfig/parameters/remove", row).then(function() {
+                            CountlyHelpers.notify({
+                                title: 'Success',
+                                message: CV.i18n('remote-config.delete-message'),
+                                type: 'success'
+                            });
+
                             self.onSubmit();
                         });
 
