@@ -339,6 +339,11 @@
                     },
                     dataType: "json",
                     success: function() {
+                        CountlyHelpers.notify({
+                            title: 'Success',
+                            message: CV.i18n('alerts.delete-alert-success'),
+                            type: 'success'
+                        });
                         context.dispatch("countlyAlerts/table/fetchAll", null, {
                             root: true,
                         });
