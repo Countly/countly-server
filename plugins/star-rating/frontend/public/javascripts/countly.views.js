@@ -1261,7 +1261,7 @@
                 if (!this.widget.trigger_size) {
                     this.widget.trigger_size = 'm';
                 }
-                if (!this.widget.status) {
+                if (typeof this.widget.status !== 'boolean') {
                     this.widget.status = true;
                 }
                 if (!this.widget.logo) {
