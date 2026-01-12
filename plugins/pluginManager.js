@@ -1444,9 +1444,22 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var errors = false;
 
+        // Debug logging for cleanup-center plugin
+        if (plugin === 'cleanup-center') {
+            console.log('[DEBUG cleanup-center] __dirname:', __dirname);
+            console.log('[DEBUG cleanup-center] Current working directory:', process.cwd());
+        }
+
         // Resolve plugin path and handle symlinks
         var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
         var pluginPath = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+
+        // Debug logging for cleanup-center plugin
+        if (plugin === 'cleanup-center') {
+            console.log('[DEBUG cleanup-center] Initial pluginPath:', pluginPath);
+            console.log('[DEBUG cleanup-center] eplugin:', eplugin ? 'exists' : 'null');
+        }
+
         // Resolve symlinks to get the actual plugin directory path
         // This ensures npm install happens in the real plugin directory, not the symlink location
         var resolvedPluginPath = pluginPath;
@@ -1455,11 +1468,25 @@ var pluginManager = function pluginManager() {
             if (pluginStat.isSymbolicLink()) {
                 resolvedPluginPath = fs.realpathSync(pluginPath);
                 console.log('Resolved symlink for plugin %j: %j -> %j', plugin, pluginPath, resolvedPluginPath);
+                if (plugin === 'cleanup-center') {
+                    console.log('[DEBUG cleanup-center] Symlink resolved to:', resolvedPluginPath);
+                }
+            }
+            else if (plugin === 'cleanup-center') {
+                console.log('[DEBUG cleanup-center] Not a symlink, using path:', resolvedPluginPath);
             }
         }
         catch (ex) {
             // If path doesn't exist or can't be accessed, use original path
             console.log('Could not resolve path for plugin %j, using: %j', plugin, pluginPath);
+            if (plugin === 'cleanup-center') {
+                console.log('[DEBUG cleanup-center] Error resolving path:', ex.message);
+            }
+        }
+
+        // Final debug output for cleanup-center
+        if (plugin === 'cleanup-center') {
+            console.log('[DEBUG cleanup-center] Final resolvedPluginPath for npm install:', resolvedPluginPath);
         }
 
         new Promise(function(resolve) {
@@ -1475,6 +1502,10 @@ var pluginManager = function pluginManager() {
                 var args = ["install"];
                 if (apiCountlyConfig.symlinked === true) {
                     args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+                }
+                if (plugin === 'cleanup-center') {
+                    console.log('[DEBUG cleanup-center] Running npm install in directory:', resolvedPluginPath);
+                    console.log('[DEBUG cleanup-center] npm args:', args);
                 }
                 const cmd = spawn('npm', args, {cwd: resolvedPluginPath});
                 var error2 = "";
@@ -1506,9 +1537,16 @@ var pluginManager = function pluginManager() {
             }
         }).then(function(result) {
             var scriptPath = path.join(resolvedPluginPath, 'install.js');
+            if (plugin === 'cleanup-center') {
+                console.log('[DEBUG cleanup-center] Install script path:', scriptPath);
+                console.log('[DEBUG cleanup-center] Script exists:', fs.existsSync(scriptPath));
+            }
             var args = [scriptPath];
             if (apiCountlyConfig.symlinked === true) {
                 args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+            }
+            if (plugin === 'cleanup-center') {
+                console.log('[DEBUG cleanup-center] Running install script with nodejs, args:', args);
             }
             var m = cp.spawn("nodejs", args);
             m.stdout.on('data', (data) => {
