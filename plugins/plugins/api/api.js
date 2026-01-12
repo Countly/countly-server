@@ -198,12 +198,30 @@ var plugin = {},
                 var allPlugins = res.plugins;
                 allPlugins = allPlugins || {};
 
-                var pluginList = plugins.getPlugins();//get list of plugins from plugin manager. Should have all available plugins there.
-                /*for (var zz in allPlugins) {
+                var pluginList = plugins.getPlugins(true);//get list of plugins from plugin manager. Should have all available plugins there.
+                // Clean up plugins that exist in database but not in filesystem
+                var pluginsToRemove = [];
+                for (var zz in allPlugins) {
                     if (pluginList.indexOf(zz) === -1) {
+                        pluginsToRemove.push(zz);
                         delete allPlugins[zz];
                     }
-                }*/
+                }
+                // Update database to remove orphaned plugins
+                if (pluginsToRemove.length > 0) {
+                    var updateObj = {};
+                    for (var i = 0; i < pluginsToRemove.length; i++) {
+                        updateObj['plugins.' + pluginsToRemove[i]] = '';
+                    }
+                    common.db.collection("plugins").updateOne({_id: "plugins"}, {$unset: updateObj}, function(err) {
+                        if (err) {
+                            log.e("Error removing orphaned plugins from database:", err);
+                        }
+                        else {
+                            log.d("Removed orphaned plugins from database:", pluginsToRemove);
+                        }
+                    });
+                }
 
                 for (var z = 0; z < pluginList.length; z++) {
                     if (typeof allPlugins[pluginList[z]] === 'undefined') {

@@ -1255,12 +1255,36 @@ var pluginManager = function pluginManager() {
                 this.updateConfigs(db, "plugins", plugConf, callback);
             }
             else {
+                // Clean up plugins that exist in database but not in filesystem
+                let pluginList = this.getPlugins(true); // Get all plugins from filesystem
+                var pluginsToRemove = [];
+                for (let pluginName in plugConf) {
+                    if (pluginList.indexOf(pluginName) === -1 && fullPluginsMap[pluginName] !== true) {
+                        pluginsToRemove.push(pluginName);
+                        delete plugConf[pluginName];
+                    }
+                }
+                // Update database to remove orphaned plugins
+                if (pluginsToRemove.length > 0) {
+                    var updateObj = {};
+                    for (let i = 0; i < pluginsToRemove.length; i++) {
+                        updateObj['plugins.' + pluginsToRemove[i]] = '';
+                    }
+                    db.collection("plugins").updateOne({_id: "plugins"}, {$unset: updateObj}, function(err) {
+                        if (err) {
+                            console.log("Error removing orphaned plugins from database:", err);
+                        }
+                        else {
+                            console.log("Removed orphaned plugins from database:", pluginsToRemove);
+                        }
+                    });
+                }
                 this.syncPlugins(plugConf, callback);
             }
         }
         else {
             //check if we need to sync plugins
-            var pluginList = this.getPlugins();
+            let pluginList = this.getPlugins();
             plugConf = this.getConfig("plugins") || {};
             //let master know we need to include initial plugins
             if (Object.keys(plugConf).length === 0) {
@@ -1420,12 +1444,28 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var errors = false;
 
+        // Resolve plugin path and handle symlinks
+        var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
+        var pluginPath = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+        // Resolve symlinks to get the actual plugin directory path
+        // This ensures npm install happens in the real plugin directory, not the symlink location
+        var resolvedPluginPath = pluginPath;
+        try {
+            var pluginStat = fs.lstatSync(pluginPath);
+            if (pluginStat.isSymbolicLink()) {
+                resolvedPluginPath = fs.realpathSync(pluginPath);
+                console.log('Resolved symlink for plugin %j: %j -> %j', plugin, pluginPath, resolvedPluginPath);
+            }
+        }
+        catch (ex) {
+            // If path doesn't exist or can't be accessed, use original path
+            console.log('Could not resolve path for plugin %j, using: %j', plugin, pluginPath);
+        }
+
         new Promise(function(resolve) {
-            var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
             if (eplugin && eplugin.prepackaged) {
                 return resolve(errors);
             }
-            var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             //if we are on docker skip npm install. 
             if (process && process.env && process.env.COUNTLY_CONTAINER && !process.env.FORCE_NPM_INSTALL) {
                 console.log('Skipping on docker');
@@ -1436,7 +1476,7 @@ var pluginManager = function pluginManager() {
                 if (apiCountlyConfig.symlinked === true) {
                     args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
                 }
-                const cmd = spawn('npm', args, {cwd: cwd});
+                const cmd = spawn('npm', args, {cwd: resolvedPluginPath});
                 var error2 = "";
 
                 cmd.stdout.on('data', (data) => {
@@ -1465,7 +1505,7 @@ var pluginManager = function pluginManager() {
                 console.log('Server is in offline mode, this command cannot be run. %j');
             }
         }).then(function(result) {
-            var scriptPath = path.join(__dirname, plugin, 'install.js');
+            var scriptPath = path.join(resolvedPluginPath, 'install.js');
             var args = [scriptPath];
             if (apiCountlyConfig.symlinked === true) {
                 args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
@@ -1501,15 +1541,31 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var errors = false;
 
+        // Resolve plugin path and handle symlinks
+        var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
+        var pluginPath = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+        // Resolve symlinks to get the actual plugin directory path
+        // This ensures npm install happens in the real plugin directory, not the symlink location
+        var resolvedPluginPath = pluginPath;
+        try {
+            var pluginStat = fs.lstatSync(pluginPath);
+            if (pluginStat.isSymbolicLink()) {
+                resolvedPluginPath = fs.realpathSync(pluginPath);
+                console.log('Resolved symlink for plugin %j: %j -> %j', plugin, pluginPath, resolvedPluginPath);
+            }
+        }
+        catch (ex) {
+            // If path doesn't exist or can't be accessed, use original path
+            console.log('Could not resolve path for plugin %j, using: %j', plugin, pluginPath);
+        }
+
         new Promise(function(resolve) {
-            var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
             if (eplugin && eplugin.prepackaged) {
                 return resolve(errors);
             }
-            var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             if (!self.getConfig("api").offline_mode) {
 
-                const cmd = spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: cwd});
+                const cmd = spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: resolvedPluginPath});
                 var error2 = "";
 
                 cmd.stdout.on('data', (data) => {
@@ -1537,7 +1593,7 @@ var pluginManager = function pluginManager() {
                 console.log('Server is in offline mode, this command cannot be run. %j');
             }
         }).then(function(result) {
-            var scriptPath = path.join(__dirname, plugin, 'install.js');
+            var scriptPath = path.join(resolvedPluginPath, 'install.js');
             var args = [scriptPath];
             if (apiCountlyConfig.symlinked === true) {
                 args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
