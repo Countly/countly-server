@@ -1,0 +1,435 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  pull_request:
+    branches: [ master, next, release.*, flex, newarchitecture ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      custom_tag:
+        description: 'Custom Docker tag (optional)'
+        required: false
+        default: ''
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  install:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-22.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v5
+
+      - name: Copy code
+        shell: bash
+        run: |
+          sudo mkdir -p /opt/countly
+          touch log/countly-dashboard.log
+          touch log/countly-api.log
+          cp -rf ./* /opt/countly
+        
+      - name: Github Actions Azure connection fix
+        run: |
+          # Workaround for https://github.com/actions/runner-images/issues/675#issuecomment-1381389712
+          sudo sed -i 's/azure/us/g' /etc/apt/sources.list
+        
+      - name: Installing Countly
+        shell: bash
+        working-directory: /opt/countly
+        run: sudo bash ./bin/countly.install.sh
+
+      - name: NodeJS version
+        shell: bash
+        run: node --version
+
+      - name: NPM version
+        shell: bash
+        run: npm --version
+
+      - name: Mongo version
+        shell: bash
+        run: mongosh --version
+
+      - name: Output API Logs
+        working-directory: /opt/countly
+        if: ${{ always() }}
+        run: cat log/countly-api.log
+
+      - name: Output Dashboard Logs
+        working-directory: /opt/countly
+        if: ${{ always() }}
+        run: cat log/countly-dashboard.log
+
+      - name: Output MongoDB Logs
+        if: ${{ always() }}
+        run: sudo cat /var/log/mongodb/mongod.log
+
+      - name: Output Nginx Logs
+        if: ${{ always() }}
+        run: sudo cat /var/log/nginx/error.log
+  lint:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:8.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    container:
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name  }}
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+        COUNTLY_CONFIG_API_PREVENT_JOBS: true
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Copy code
+        shell: bash
+        run: cp -rf ./* /opt/countly
+
+      - name: Enable command line
+        shell: bash
+        run: sudo bash /opt/countly/bin/scripts/detect.init.sh
+
+      - name: ShellCheck
+        shell: bash
+        run: |
+         apt-get update -y
+         apt-get -y install shellcheck
+         countly shellcheck
+
+      - name: ESLint
+        shell: bash
+        run: |
+         npm install eslint@8.57.0 eslint-plugin-vue@9.31.0 @stylistic/eslint-plugin@2.11.0
+         npx eslint .
+
+      - name: NPM install
+        shell: bash
+        working-directory: /opt/countly
+        run: npm install
+
+      - name: Enabling plugins
+        shell: bash
+        run: cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
+
+      - name: DistFiles
+        shell: bash
+        working-directory: /opt/countly
+        run: sudo countly task dist-all
+  test-api-core:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:8.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    container:
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+        COUNTLY_CONFIG_API_PREVENT_JOBS: true
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Copy code
+        shell: bash
+        run: |
+          cp -rf ./* /opt/countly
+          cp ./bin/docker/postinstall.sh /etc/my_init.d
+
+      - name: Prepare tests
+        shell: bash
+        run: bash bin/scripts/countly.prepare.ce.tests.sh
+
+      - name: Remove plugin tests
+        shell: bash
+        run: rm -rf /opt/countly/test/4.plugins
+
+      - name: Configure API
+        shell: bash
+        run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
+
+      - name: NPM install
+        shell: bash
+        working-directory: /opt/countly
+        run: npm install
+
+      - name: Run tests
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          npm install
+          /sbin/my_init &
+          node bin/scripts/test.connection.js
+          npx grunt mochaTest
+  test-api-plugins:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:8.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    container:
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+        COUNTLY_CONFIG_API_PREVENT_JOBS: true
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Copy code
+        shell: bash
+        run: cp -rf ./* /opt/countly
+
+      - name: Prepare files to use correct MongoDB host
+        shell: bash
+        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/run.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/run.sh"
+
+      - name: Prepare tests
+        shell: bash
+        run: bash bin/scripts/countly.prepare.ce.plugins.tests.sh
+
+      - name: Configure API
+        shell: bash
+        run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
+
+      - name: NPM install
+        shell: bash
+        working-directory: /opt/countly
+        run: npm install
+
+      - name: Install plugins
+        shell: bash
+        run: |
+         cp plugins/plugins.default.json /opt/countly/plugins/plugins.json
+         node /opt/countly/bin/scripts/install_plugins.js --force
+
+      - name: Run tests
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          npm install
+          /sbin/my_init &
+          node bin/scripts/test.connection.js
+          npx grunt mochaTest       
+
+  ui-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        test_type: [dashboard, onboarding]
+
+    services:
+      mongodb:
+        image: mongo:8.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    container:
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+        COUNTLY_CONFIG_API_PREVENT_JOBS: true
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Chrome
+        shell: bash
+        run: |
+          apt update
+          apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
+          apt install -y /tmp/chrome.deb
+
+      - name: Install Sharp dependencies for image processing
+        shell: bash
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -y
+          apt-get install -y libvips-dev
+
+      - name: Copy code
+        shell: bash
+        run: |
+          rm -rf /opt/countly/frontend
+          rm -rf /opt/countly/plugins/old-ui-compatibility
+          cp -rf ./* /opt/countly
+          cp /opt/countly/frontend/express/config.sample.js /opt/countly/frontend/express/config.js
+          cp /opt/countly/frontend/express/public/javascripts/countly/countly.config.sample.js /opt/countly/frontend/express/public/javascripts/countly/countly.config.js
+
+      - name: Prepare files to use correct MongoDB host
+        shell: bash
+        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"
+
+      - name: NPM install
+        shell: bash
+        working-directory: /opt/countly
+        run: npm install
+
+      - name: Prepare environment
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js
+          cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
+          npm install
+          sudo countly task dist-all
+          bash bin/backup/import_events.sh
+          bash bin/scripts/countly.prepare.ce.tests.sh
+          if [ "${{ matrix.test_type }}" = "dashboard" ]; then
+            countly add_user '${{ secrets.CYPRESS_USER_EMAIL }}' '${{ secrets.CYPRESS_USER_PASSWORD }}'
+            mongosh --host mongodb --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}", subscribe_newsletter: true}});'
+            mongosh --host mongodb --eval 'db.getSiblingDB("countly").plugins.updateOne({_id: "plugins"}, {$set: {"frontend.countly_tracking": true}});'
+          fi
+          cd ui-tests
+          echo '{"username": "${{ secrets.CYPRESS_USER_USERNAME }}","email": "${{ secrets.CYPRESS_USER_EMAIL }}","password": "${{ secrets.CYPRESS_USER_PASSWORD }}"}' > cypress/fixtures/user.json
+          sed -i 's/00000000-0000-0000-0000-000000000000/${{ secrets.CYPRESS_KEY }}/g' package.json
+          cp cypress.config.sample.js cypress.config.js
+          sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
+
+      - name: Run UI tests
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          /sbin/my_init &
+          cd ui-tests
+          npm install
+          if [ "${{ matrix.test_type }}" = "dashboard" ]; then
+            xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:dashboard
+          else
+            xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:onboarding
+          fi
+
+      - name: Upload UI tests artifacts
+        if: ${{ failure() }}
+        shell: bash
+        working-directory: /opt/countly/ui-tests/cypress
+        run: |
+          ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}_${{ matrix.test_type }}.tar.gz"
+          
+          mkdir -p screenshots videos downloads
+          find screenshots videos downloads -type d -empty -delete
+          
+          TAR_TARGETS=$(ls -d screenshots videos downloads 2>/dev/null || true)
+          
+          tar zcvf "$ARTIFACT_ARCHIVE_NAME" $TAR_TARGETS
+          curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
+
+  ui-test-sdk:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:8.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
+    container:
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+        COUNTLY_CONFIG_API_PREVENT_JOBS: true
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Chrome
+        shell: bash
+        run: |
+          apt update
+          apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
+          apt install -y /tmp/chrome.deb
+
+      - name: Copy code
+        shell: bash
+        run: cp -rf ./* /opt/countly
+
+      - name: Prepare files to use correct MongoDB host
+        shell: bash
+        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"
+
+      - name: NPM install
+        shell: bash
+        working-directory: /opt/countly
+        run: npm install
+
+      - name: Prepare environment
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js
+          cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
+          npm install
+          sudo countly task dist-all
+          bash bin/scripts/countly.prepare.ce.tests.sh
+          cd ui-tests
+          echo '{"username": "${{ secrets.CYPRESS_USER_USERNAME }}","email": "${{ secrets.CYPRESS_USER_EMAIL }}","password": "${{ secrets.CYPRESS_USER_PASSWORD }}"}' > cypress/fixtures/user.json
+          sed -i 's/00000000-0000-0000-0000-000000000000/${{ secrets.CYPRESS_KEY }}/g' package.json
+          cp cypress.config.sample.js cypress.config.js
+          sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
+
+      - name: Run UI tests
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          /sbin/my_init &
+          cd ui-tests
+          npm install
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
+          npm run cy:run:sdk
+
+      - name: Upload UI tests artifacts
+        if: ${{ failure() }}
+        shell: bash
+        working-directory: /opt/countly/ui-tests/cypress
+        run: |
+          ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}_ui_test_sdk.tar.gz"
+          mkdir -p screenshots videos
+          tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos
+          curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
