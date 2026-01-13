@@ -406,7 +406,7 @@ jobs:
           docker rm countly-test || true
           cd bin/datasource
           docker compose -f docker-compose.ci.yml down -v || true
-  test-lite-plugins:
+  test-api-plugins:
     runs-on: ubuntu-latest
 
     steps:
