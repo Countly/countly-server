@@ -118,6 +118,14 @@ Security is very important to us. If you discover any issue regarding security, 
 
 Plus lots of [open source libraries](https://support.countly.com/hc/en-us/articles/360037092232-Open-source-components)!         
 
+## 📚 Developer Documentation
+
+* [Coding Guidelines](CODING_GUIDELINES.md) — Development standards and best practices
+* [Security Guidelines](docs/SECURITY.md) — Security requirements for contributions
+* [Vue.js Guidelines](docs/VUEJS_GUIDELINES.md) — Frontend development patterns
+* [UI Testing Guide](docs/UI_TESTING.md) — Cypress testing and data-test-id usage
+* [Test Suite Documentation](test/README.md) — Running and writing tests
+
 ## 🤝 How can I help you with your efforts?
 
 1. Fork this repo
