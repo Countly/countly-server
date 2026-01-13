@@ -20,7 +20,7 @@
     "otp"
   ],
   "dependencies": {
-    "otplib": "^12.0.1",
+    "otplib": "^13.1.0",
     "qrcode": "^1.4.1"
   },
   "private": true
