@@ -914,6 +914,8 @@ jobs:
       - name: Install plugins
         run: |
           docker exec countly-test bash -c "
+            cat /opt/countly/plugins/plugins.default.json
+            cat /opt/countly/plugins/plugins.json
             cp -rf /opt/countly/plugins/plugins.default.json /opt/countly/plugins/plugins.json
             node /opt/countly/bin/scripts/install_plugins.js
             npm install
@@ -944,7 +946,6 @@ jobs:
             cd /opt/countly
             /sbin/my_init &
             cd ui-tests
-            npm install
             if [ "${{ matrix.test_type }}" = "dashboard" ]; then
               xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:dashboard
             elif [ "${{ matrix.test_type }}" = "sdk" ]; then
