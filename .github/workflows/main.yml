@@ -921,9 +921,9 @@ jobs:
 
       - name: Prepare environment
         shell: bash
-        working-directory: /opt/countly
         run: |
           docker exec countly-test bash -c "
+            cd /opt/countly
             bash bin/backup/import_events.sh
             bash bin/scripts/countly.prepare.ce.tests.sh
             if [ "${{ matrix.test_type }}" = "dashboard" ]; then
