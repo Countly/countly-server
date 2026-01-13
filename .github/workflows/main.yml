@@ -681,7 +681,7 @@ jobs:
           docker compose version
 
       - name: Start backend dependencies
-        working-directory: devsetup/datasource
+        working-directory: bin/datasource
         run: |
           docker compose -f docker-compose.ci.yml up -d
           docker compose -f docker-compose.ci.yml ps
@@ -751,7 +751,7 @@ jobs:
           done
 
       - name: Wait for connector-init to complete
-        working-directory: devsetup/datasource
+        working-directory: bin/datasource
         run: |
           echo "Waiting for connector-init service to complete..."
           for i in {1..60}; do
@@ -798,7 +798,7 @@ jobs:
           done
 
       - name: Show running services
-        working-directory: devsetup/datasource
+        working-directory: bin/datasource
         run: |
           docker compose -f docker-compose.ci.yml ps
           echo "Backend stack fully operational!"
