@@ -356,6 +356,7 @@ jobs:
           docker cp ./. countly-test:/opt/countly/
           docker exec countly-test bash -c "
             bash /opt/countly/bin/scripts/countly.prepare.ce.tests.sh
+            cp -rf /opt/countly/plugins/plugins.default.json /opt/countly/plugins/plugins.json
             rm -rf /opt/countly/test/4.plugins
           "
           echo 'Code copied into container.'
