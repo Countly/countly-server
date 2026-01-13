@@ -928,13 +928,13 @@ jobs:
             cd /opt/countly
             bash bin/backup/import_events.sh
             bash bin/scripts/countly.prepare.ce.tests.sh
-            if [ "${{ matrix.test_type }}" = "dashboard" ]; then
+            if [ \"${{ matrix.test_type }}\" = \"dashboard\" ]; then
               countly add_user '${{ secrets.CYPRESS_USER_EMAIL }}' '${{ secrets.CYPRESS_USER_PASSWORD }}'
-              mongosh --host mongodb --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}", subscribe_newsletter: true}});'
-              mongosh --host mongodb --eval 'db.getSiblingDB("countly").plugins.updateOne({_id: "plugins"}, {$set: {"frontend.countly_tracking": true}});'
+              mongosh --host mongodb --eval 'db.getSiblingDB(\"countly\").members.updateOne({username: \"${{ secrets.CYPRESS_USER_EMAIL }}\"}, {\$set: {username: \"${{ secrets.CYPRESS_USER_USERNAME }}\", subscribe_newsletter: true}});'
+              mongosh --host mongodb --eval 'db.getSiblingDB(\"countly\").plugins.updateOne({_id: \"plugins\"}, {\$set: {\"frontend.countly_tracking\": true}});'
             fi
             cd ui-tests
-            echo '{"username": "${{ secrets.CYPRESS_USER_USERNAME }}","email": "${{ secrets.CYPRESS_USER_EMAIL }}","password": "${{ secrets.CYPRESS_USER_PASSWORD }}"}' > cypress/fixtures/user.json
+            echo '{\"username\": \"${{ secrets.CYPRESS_USER_USERNAME }}\",\"email\": \"${{ secrets.CYPRESS_USER_EMAIL }}\",\"password\": \"${{ secrets.CYPRESS_USER_PASSWORD }}\"}' > cypress/fixtures/user.json
             sed -i 's/00000000-0000-0000-0000-000000000000/${{ secrets.CYPRESS_KEY }}/g' package.json
             cp cypress.config.sample.js cypress.config.js
             sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
@@ -945,13 +945,15 @@ jobs:
           docker exec countly-test bash -c "
             cd /opt/countly
             /sbin/my_init &
+            sleep 30
             cd ui-tests
-            if [ "${{ matrix.test_type }}" = "dashboard" ]; then
-              xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:dashboard
-            elif [ "${{ matrix.test_type }}" = "sdk" ]; then
-              xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:sdk
+            npm install
+            if [ \"${{ matrix.test_type }}\" = \"dashboard\" ]; then
+              xvfb-run --auto-servernum --server-args=\"-screen 0 1280x1024x24\" npm run cy:run:dashboard
+            elif [ \"${{ matrix.test_type }}\" = \"sdk\" ]; then
+              xvfb-run --auto-servernum --server-args=\"-screen 0 1280x1024x24\" npm run cy:run:sdk
             else
-              xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:onboarding
+              xvfb-run --auto-servernum --server-args=\"-screen 0 1280x1024x24\" npm run cy:run:onboarding
             fi
           " 2>&1
 
