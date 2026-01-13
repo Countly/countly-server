@@ -4,7 +4,6 @@ var crypto = require('crypto');
 var moment = require('moment-timezone');
 var testUtils = require("../../test/testUtils");
 var pluginManager = require("../../plugins/pluginManager.js");
-var Promise = require("bluebird");
 request = request(testUtils.url);
 
 
@@ -72,27 +71,29 @@ describe('Testing Hooks', function() {
                     }
                 ];
 
-                Promise.each(triggerTypes, function(trigger) {
-                    return new Promise(function(resolve) {
-                        const hookConfig = Object.assign({}, newHookConfig, {
-                            apps: [APP_ID],
-                            name: `test-${trigger.type}`,
-                            trigger: trigger
-                        });
-
-                        request.post(getRequestURL('/i/hook/save'))
-                            .send({hook_config: JSON.stringify(hookConfig)})
-                            .expect(200)
-                            .end(function(err, res) {
-                                if (err) {
-                                    return resolve();
-                                }
-                                res.body.should.be.an.instanceOf(String);
-                                newHookIds.push(res.body);
-                                resolve();
+                (async() => {
+                    for (const trigger of triggerTypes) {
+                        await new Promise(function(resolve) {
+                            const hookConfig = Object.assign({}, newHookConfig, {
+                                apps: [APP_ID],
+                                name: `test-${trigger.type}`,
+                                trigger: trigger
                             });
-                    });
-                }).then(function() {
+
+                            request.post(getRequestURL('/i/hook/save'))
+                                .send({hook_config: JSON.stringify(hookConfig)})
+                                .expect(200)
+                                .end(function(err, res) {
+                                    if (err) {
+                                        return resolve();
+                                    }
+                                    res.body.should.be.an.instanceOf(String);
+                                    newHookIds.push(res.body);
+                                    resolve();
+                                });
+                        });
+                    }
+                })().then(function() {
                     done();
                 });
             });
@@ -114,27 +115,29 @@ describe('Testing Hooks', function() {
                     }
                 ];
 
-                Promise.each(effectTypes, function(effect) {
-                    return new Promise(function(resolve) {
-                        const hookConfig = Object.assign({}, newHookConfig, {
-                            apps: [APP_ID],
-                            name: `test-${effect.type}`,
-                            effects: [effect]
-                        });
-
-                        request.post(getRequestURL('/i/hook/save'))
-                            .send({hook_config: JSON.stringify(hookConfig)})
-                            .expect(200)
-                            .end(function(err, res) {
-                                if (err) {
-                                    return resolve();
-                                }
-                                res.body.should.be.an.instanceOf(String);
-                                newHookIds.push(res.body);
-                                resolve();
+                (async() => {
+                    for (const effect of effectTypes) {
+                        await new Promise(function(resolve) {
+                            const hookConfig = Object.assign({}, newHookConfig, {
+                                apps: [APP_ID],
+                                name: `test-${effect.type}`,
+                                effects: [effect]
                             });
-                    });
-                }).then(function() {
+
+                            request.post(getRequestURL('/i/hook/save'))
+                                .send({hook_config: JSON.stringify(hookConfig)})
+                                .expect(200)
+                                .end(function(err, res) {
+                                    if (err) {
+                                        return resolve();
+                                    }
+                                    res.body.should.be.an.instanceOf(String);
+                                    newHookIds.push(res.body);
+                                    resolve();
+                                });
+                        });
+                    }
+                })().then(function() {
                     done();
                 });
             });
@@ -173,20 +176,22 @@ describe('Testing Hooks', function() {
                     Object.assign({}, newHookConfig, {apps: [APP_ID]}, {name: undefined}),
                     Object.assign({}, newHookConfig, {apps: undefined}),
                 ];
-                Promise.each(badRequests, function(hookConfig) {
-                    return new Promise(function(resolve) {
-                        request.post(getRequestURL('/i/hook/save'))
-                            .send({hook_config: JSON.stringify(hookConfig)})
-                            .expect(400)
-                            .end(function(err, res) {
-                                if (err) {
-                                    return resolve();
-                                }
-                                res.body.should.have.property('result', 'Not enough args');
-                                resolve();
-                            });
-                    });
-                }).then(function() {
+                (async() => {
+                    for (const hookConfig of badRequests) {
+                        await new Promise(function(resolve) {
+                            request.post(getRequestURL('/i/hook/save'))
+                                .send({hook_config: JSON.stringify(hookConfig)})
+                                .expect(400)
+                                .end(function(err, res) {
+                                    if (err) {
+                                        return resolve();
+                                    }
+                                    res.body.should.have.property('result', 'Not enough args');
+                                    resolve();
+                                });
+                        });
+                    }
+                })().then(function() {
                     done();
                 });
             });
@@ -199,26 +204,28 @@ describe('Testing Hooks', function() {
                     {type: "CustomCodeEffect", configuration: {}} // Missing code
                 ];
 
-                Promise.each(badEffects, function(effect) {
-                    return new Promise(function(resolve) {
-                        const hookConfig = Object.assign({}, newHookConfig, {
-                            apps: [APP_ID],
-                            name: "test-bad-effect",
-                            effects: [effect]
-                        });
-
-                        request.post(getRequestURL('/i/hook/save'))
-                            .send({hook_config: JSON.stringify(hookConfig)})
-                            .expect(400)
-                            .end(function(err, res) {
-                                if (err) {
-                                    return resolve();
-                                }
-                                res.body.should.have.property('result', 'Invalid configuration for effects');
-                                resolve();
+                (async() => {
+                    for (const effect of badEffects) {
+                        await new Promise(function(resolve) {
+                            const hookConfig = Object.assign({}, newHookConfig, {
+                                apps: [APP_ID],
+                                name: "test-bad-effect",
+                                effects: [effect]
                             });
-                    });
-                }).then(function() {
+
+                            request.post(getRequestURL('/i/hook/save'))
+                                .send({hook_config: JSON.stringify(hookConfig)})
+                                .expect(400)
+                                .end(function(err, res) {
+                                    if (err) {
+                                        return resolve();
+                                    }
+                                    res.body.should.have.property('result', 'Invalid configuration for effects');
+                                    resolve();
+                                });
+                        });
+                    }
+                })().then(function() {
                     done();
                 });
             });

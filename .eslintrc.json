@@ -363,6 +363,19 @@
     "overrides": [
         {
             "files": [
+                "**/tests.js",
+                "**/tests/**/*.js",
+                "test/**/*.js",
+                "**/*.test.js",
+                "**/*.spec.js"
+            ],
+            "rules": {
+                "no-restricted-syntax": "off",
+                "no-restricted-properties": "off"
+            }
+        },
+        {
+            "files": [
                 "plugins/content/frontend/vite.config.js",
                 "plugins/journey_engine/frontend/vite.config.js",
                 "plugins/journey_engine/frontend/vite-manifest.js"

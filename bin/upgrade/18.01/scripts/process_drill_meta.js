@@ -1,9 +1,8 @@
 var pluginManager = require("../../../../plugins/pluginManager");
 var async = require("async");
 var crypto = require("crypto");
-var Promise = require("bluebird");
 
-Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("countly_drill")]).spread(function(countlyDb, db){
+Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("countly_drill")]).then(function([countlyDb, db]){
     var reg = /^drill_events\.*/;
     
     var preset_sg = {

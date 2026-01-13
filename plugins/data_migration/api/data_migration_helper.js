@@ -1,6 +1,5 @@
 
 var crypto = require('crypto');
-var Promise = require("bluebird");
 var plugins = require('../../pluginManager.js');
 const fs = require('fs');
 const fse = require('fs-extra');
@@ -1013,9 +1012,11 @@ module.exports = function(my_db) {
             if (myscripts.length > 0) {
                 log_me(logpath, 'Scripts generated sucessfully', false);
                 my_logpath = logpath;
-                Promise.each(myscripts, function(command) {
-                    return run_command(command.cmd, command.args);
-                }).then(
+                (async() => {
+                    for (const command of myscripts) {
+                        await run_command(command.cmd, command.args);
+                    }
+                })().then(
                     function() {
                         //update messages 
                         if (mydata && mydata.app_ids) {
@@ -1307,9 +1308,11 @@ module.exports = function(my_db) {
                                 log_me(my_logpath, "Export scripts created", false);
                                 exp_count = scripts.length;
                                 resolve(exportid);
-                                Promise.each(scripts, function(command) {
-                                    return run_command(command.cmd, command.args);
-                                }).then(
+                                (async() => {
+                                    for (const command of scripts) {
+                                        await run_command(command.cmd, command.args);
+                                    }
+                                })().then(
                                     function() {
                                         log_me(my_logpath, "Files generated sucessfully", false);
                                         //create info file

@@ -1,6 +1,5 @@
 /*Script to merge all drill meta */
 const pluginManager = require('../../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 var crypto = require('crypto');
 const common = require('../../../../api/utils/common.js');
 
@@ -91,7 +90,7 @@ Promise.all(
     [
         pluginManager.dbConnection("countly")
     ])
-    .spread(function(countlyDB) {
+    .then(function([countlyDB]) {
 
         //Process each app
         countlyDB.collection('apps').find({}).toArray(function(err, apps) {
@@ -101,18 +100,20 @@ Promise.all(
                 countlyDB.close();
             }
             else {
-                Promise.each(apps, function(app) {
-                    return new Promise(function(resolve, reject) {
-                        migrateApp(app, countlyDB, function(err) {
-                            if (err) {
-                                reject();
-                            }
-                            else {
-                                resolve();
-                            }
+                (async () => {
+                    for (const app of apps) {
+                        await new Promise(function(resolve, reject) {
+                            migrateApp(app, countlyDB, function(err) {
+                                if (err) {
+                                    reject();
+                                }
+                                else {
+                                    resolve();
+                                }
+                            });
                         });
-                    });
-                }).then(function() {
+                    }
+                })().then(function() {
                     console.log("All apps processed");
                 }
                 ).catch(function(err) {

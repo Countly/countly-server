@@ -11,13 +11,12 @@ var INDEX_NAME = "cd_1";
 
 var async = require('async'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
     plugins = require('../../../plugins/pluginManager.js');
 
 //var db = plugins.dbConnection("countly");
 //var db_drill = plugins.dbConnection("countly_drill");
 
-Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).spread(function(db, db_drill) {
+Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).then(function([db, db_drill]) {
     var collections = [];
     collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_session" + APP_ID).digest('hex'));
     collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + APP_ID).digest('hex'));

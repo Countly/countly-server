@@ -8,7 +8,6 @@ var countlyEvents = {},
     common = require('./../../utils/common.js'),
     async = require('async'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
     plugins = require('../../../plugins/pluginManager.js');
 
 

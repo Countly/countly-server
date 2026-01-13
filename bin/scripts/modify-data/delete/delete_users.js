@@ -20,8 +20,7 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
-var Promise = require("bluebird");
-Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).spread(function(countlyDb, countlyDrill) {
+Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(function([countlyDb, countlyDrill]) {
     common.db = countlyDb;
     common.drillDb = countlyDrill;
     app_users.count(APP_ID, QUERY, function(err, res) {

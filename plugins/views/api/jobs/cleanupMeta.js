@@ -1,7 +1,6 @@
 // const job = require('../../../../api/parts/jobs/job.js');
 const Job = require('../../../../jobServer/Job');
 const log = require('../../../../api/utils/log.js')('job:views:cleanup_meta');
-var Promise = require("bluebird");
 
 
 const viewsUtils = require("../parts/viewsUtils.js");

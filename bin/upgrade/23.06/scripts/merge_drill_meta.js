@@ -1,6 +1,5 @@
 /*Script to merge all drill meta */
 const pluginManager = require('../../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 
 console.log("Merging all meta");
 
@@ -224,7 +223,7 @@ Promise.all(
         pluginManager.dbConnection("countly"),
         pluginManager.dbConnection("countly_drill")
     ])
-    .spread(async function(countlyDB, countlyDrillDB) {
+    .then(async function([countlyDB, countlyDrillDB]) {
         //Getting all drill_meta collections;
         countlyDrillDB.collections(function(err, colls) {
             if (err) {
@@ -241,10 +240,11 @@ Promise.all(
                     return (coll.indexOf("drill_meta") === 0 && coll.length > 11);
                 });
 
-                Promise.each(drillMetaCollections, function(coll) {
-                    return merge_meta_from_collection(countlyDB, countlyDrillDB, coll);
-                }
-                ).then(function() {
+                (async () => {
+                    for (const coll of drillMetaCollections) {
+                        await merge_meta_from_collection(countlyDB, countlyDrillDB, coll);
+                    }
+                })().then(function() {
                     console.log("All drill meta collections merged");
                     countlyDB.close();
                     countlyDrillDB.close();

@@ -1,5 +1,4 @@
 const plugins = require('../../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 var common = require('../../../../api/utils/common');
 
 var drill;
@@ -15,7 +14,7 @@ catch (e) {
 if (drill) {
     console.log("Cleaning up unnesesary values from drill meta.");
 
-    Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).spread(function(countlyDb, drillDb) {
+    Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).then(function([countlyDb, drillDb]) {
         common.drillDb = drillDb;
         countlyDb.collection("apps").find({}, {"_id": 1}).toArray(function(err, apps) {
             if (err) {
@@ -24,20 +23,22 @@ if (drill) {
                 drillDb.close();
             }
             else {
-                Promise.each(apps, function(app) {
-                    return new Promise(function(resolve, rejection) {
-                        console.log("Processing app:" + app._id);
-                        drill.cleanUpMeta({"app_id": app}, function(err1) {
-                            if (err1) {
-                                console.log(err1);
-                                rejection("Error in cleanup function");
-                            }
-                            else {
-                                resolve();
-                            }
+                (async () => {
+                    for (const app of apps) {
+                        await new Promise(function(resolve, rejection) {
+                            console.log("Processing app:" + app._id);
+                            drill.cleanUpMeta({"app_id": app}, function(err1) {
+                                if (err1) {
+                                    console.log(err1);
+                                    rejection("Error in cleanup function");
+                                }
+                                else {
+                                    resolve();
+                                }
+                            });
                         });
-                    });
-                }).then(function() {
+                    }
+                })().then(function() {
                     console.log("Done");
                     countlyDb.close();
                     drillDb.close();

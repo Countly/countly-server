@@ -16,36 +16,37 @@ var query = {"$and": [{"last_login": {"$lt": ts}}, {"locked": {"$ne": true}}]};
 //although mogodb does not return null on $lt, keep like above for safety
 
 var pluginManager = require('./../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 
 var errored = 0;
 if (dry_run) {
     console.log("This is dry run");
     console.log("Members will be only listed, not locked");
 }
-Promise.all([pluginManager.dbConnection("countly")]).spread(function(countlyDb) {
+Promise.all([pluginManager.dbConnection("countly")]).then(function([countlyDb]) {
     countlyDb.collection("members").aggregate([{"$match": query}, {"$project": {"_id": true, "email": true, "username": true, "full_name": true}}], {allowDiskUse: true}, function(err, res) {
         if (err) {
             console.log(err);
         }
 
-        Promise.each(res, function(data) {
-            return new Promise(function(resolve) {
-                console.log(JSON.stringify(data));
-                if (dry_run) {
-                    resolve();
-                }
-                else {
-                    countlyDb.collection("members").updateOne({_id: data._id}, {$set: {locked: true}}, function(err) {
-                        if (err) {
-                            console.log(err);
-                            errored++;
-                        }
+        (async() => {
+            for (const data of res) {
+                await new Promise(function(resolve) {
+                    console.log(JSON.stringify(data));
+                    if (dry_run) {
                         resolve();
-                    });
-                }
-            });
-        }).then(function() {
+                    }
+                    else {
+                        countlyDb.collection("members").updateOne({_id: data._id}, {$set: {locked: true}}, function(err) {
+                            if (err) {
+                                console.log(err);
+                                errored++;
+                            }
+                            resolve();
+                        });
+                    }
+                });
+            }
+        })().then(function() {
             if (errored > 0) {
                 console.log(errored + " requests failed");
             }

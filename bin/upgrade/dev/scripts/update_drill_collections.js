@@ -6,7 +6,7 @@ Promise.all(
         pluginManager.dbConnection("countly"),
         pluginManager.dbConnection("countly_drill")
     ])
-    .spread(async function(countlyDB, drill_db) {
+    .then(async function([countlyDB, drill_db]) {
         console.log("Fixing viws events");
 
         await common.drill_db.updateMany({"e": "[CLY]_view", "n": {"$exists": false}}, [{"$set": {"n": "$sg.name"}}]);

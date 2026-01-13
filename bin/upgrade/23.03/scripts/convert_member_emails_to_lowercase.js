@@ -6,7 +6,6 @@
  */
 
 var pluginManager = require('../../../../plugins/pluginManager');
-var Promise = require("bluebird");
 
 function updateCohortSharedEmails(db) {
     return new Promise((resolve, reject) => {

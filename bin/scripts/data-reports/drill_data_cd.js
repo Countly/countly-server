@@ -11,7 +11,6 @@ var startDate = new Date("2021-04-02T00:00:00");
 var endDate = new Date("2025-04-03T00:00:00");
 var apps = []; //Put in your APP ID like ["3469834986y34968y206y2"]
 
-var Promise = require("bluebird");
 var pluginManager = require("../../../plugins/pluginManager");
 var results = {};
 var dates = {};

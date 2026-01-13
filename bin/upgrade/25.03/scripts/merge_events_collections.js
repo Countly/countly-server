@@ -1,6 +1,5 @@
 /*Script to merge all drill meta */
 const pluginManager = require('../../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 var crypto = require('crypto');
 
 console.log("Merging all events collections into single collection");
@@ -146,7 +145,7 @@ Promise.all(
     [
         pluginManager.dbConnection("countly")
     ])
-    .spread(function(countlyDB) {
+    .then(function([countlyDB]) {
         countlyDB.collections(function(err, colls) {
             if (err) {
                 console.log('Script failed. Exiting');
@@ -169,18 +168,20 @@ Promise.all(
                         countlyDB.close();
                     }
                     else {
-                        Promise.each(collections, function(coll) {
-                            return new Promise(function(resolve, reject) {
-                                merge_data_from_collection(countlyDB, coll, mapped, function(error) {
-                                    if (error) {
-                                        reject();
-                                    }
-                                    else {
-                                        resolve();
-                                    }
+                        (async () => {
+                            for (const coll of collections) {
+                                await new Promise(function(resolve, reject) {
+                                    merge_data_from_collection(countlyDB, coll, mapped, function(error) {
+                                        if (error) {
+                                            reject();
+                                        }
+                                        else {
+                                            resolve();
+                                        }
+                                    });
                                 });
-                            });
-                        }).then(function() {
+                            }
+                        })().then(function() {
                             console.log("All events collections merged");
                             console.log("collections containing events data: ", reports.listed);
                             console.log("Skipped collections: ", reports.skipped);

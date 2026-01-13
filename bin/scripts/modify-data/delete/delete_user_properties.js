@@ -21,7 +21,6 @@ var internal_events = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_acti
 var unset = {};
 unset[PROPERTY] = "";
 
-var Promise = require("bluebird");
 Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).then(async function([db, dbDrill]) {
     console.log("Deleting property from app users");
     db.collection('app_users' + APP_ID).updateMany({}, {$unset: unset}, function(err,) {

@@ -2,7 +2,6 @@
 
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common.js'),
-    BPromise = require('bluebird'),
     moment = require('moment-timezone'),
     { validateRead } = require('../../../api/utils/rights.js');
 
@@ -103,7 +102,7 @@ catch (ex) {
             conditions.push({}); // find  all user count;
 
             conditions.forEach((condition) => {
-                tasks.push(new BPromise(function(resolve, reject) {
+                tasks.push(new Promise(function(resolve, reject) {
                     countlyDb.collection('app_users' + app_id).count(condition, function(err, count) {
                         if (err) {
                             return reject(err);
@@ -113,14 +112,14 @@ catch (ex) {
                 }));
             });
 
-            BPromise.all(tasks).spread(function() {
+            Promise.all(tasks).then(function(results) {
                 const result = [];
                 periods.forEach((p, index) => {
-                    let percentage = (arguments[index] / arguments[periods.length]) * 100;
+                    let percentage = (results[index] / results[periods.length]) * 100;
                     percentage = isNaN(percentage) ? 0 : percentage;
                     result.push({
                         period: p,
-                        count: arguments[index],
+                        count: results[index],
                         percentage: `${ percentage.toFixed(2) }`,
                         timeStamp: timeList[p],
                     });

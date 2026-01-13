@@ -1,6 +1,5 @@
 var pluginOb = {},
     crypto = require('crypto'),
-    Promise = require("bluebird"),
     common = require('../../../api/utils/common.js'),
     moment = require('moment-timezone'),
     authorize = require('../../../api/utils/authorizer.js'),
@@ -1236,87 +1235,86 @@ const FEATURE_NAME = 'views';
 
                             queryParams.comparison = params.qstring.comparison === 'true' || params.qstring.comparison === true;
 
-                            Promise.each(graphKeys, function(viewid) {
-                                return new Promise(function(resolve /*, reject*/) {
-                                    var paramsObj = {};
-                                    paramsObj.time = params.time;
-                                    paramsObj.app_id = params.qstring.app_id;
-                                    paramsObj.qstring = {};
-                                    for (let prop in params.qstring) {
-                                        paramsObj.qstring[prop] = params.qstring[prop];
-                                    }
-                                    //paramsObj.qstring.action = viewid.action || "";
-                                    var levels = ["u", "t", "s", "b", "e", "d", "scr", "uvc"];
-
-                                    if (!segment) {
-                                        segment = "no-segment";
-                                    }
-
-                                    fetch.getTimeObj(colName, paramsObj, {dontBreak: true, id_prefix: (params.qstring.app_id + "_"), "id": segment, id_postfix: "_" + (viewid.view.replace(params.qstring.app_id + "_", "")), levels: {daily: levels, monthly: [ "t", "s", "b", "e", "d", "scr"]}}, function(data2) {
-                                        if (offset) {
-                                            var props = {"b": true, "t": true, "s": true, "d": true, "u": true, "scr": true, "e": true};
-                                            //Trasform model to array, 
-                                            var arrayData = common.convertModelToArray(data2, (segment !== "no-segment"));
-                                            //log.e("arrayData: " + JSON.stringify(arrayData));
-                                            // shift data, 
-                                            arrayData = common.shiftHourlyData(arrayData, offset * -1);
-                                            //log.e("arrayData(shifted): " + JSON.stringify(arrayData));
-                                            // transform back to model.
-                                            data2 = common.convertArrayToModel(arrayData, (segment !== "no-segment") ? segment : null, props);
-                                            //log.e("rebuilded model" + JSON.stringify(data2));
+                            (async() => {
+                                for (const viewid of graphKeys) {
+                                    await new Promise(function(resolve /*, reject*/) {
+                                        var paramsObj = {};
+                                        paramsObj.time = params.time;
+                                        paramsObj.app_id = params.qstring.app_id;
+                                        paramsObj.qstring = {};
+                                        for (let prop in params.qstring) {
+                                            paramsObj.qstring[prop] = params.qstring[prop];
                                         }
-                                        var my_query = {
-                                            "a": params.qstring.app_id,
-                                            "e": "[CLY]_view",
-                                            "ts": currentRange,
-                                            "n": viewid.name
-                                        };
-                                        if (params.qstring.segment && params.qstring.segmentVal) {
-                                            my_query["sg." + params.qstring.segment] = params.qstring.segmentVal;
+                                        //paramsObj.qstring.action = viewid.action || "";
+                                        var levels = ["u", "t", "s", "b", "e", "d", "scr", "uvc"];
+
+                                        if (!segment) {
+                                            segment = "no-segment";
                                         }
 
-                                        calculatedDataManager.longtask({
-                                            db: common.db,
-                                            threshold: plugins.getConfig("api").request_threshold / 2,
-                                            app_id: params.qstring.app_id,
-                                            query_data: {
-                                                "timezone": tz,
-                                                "bucket": params.qstring.bucket,
-                                                "query": my_query
-                                            },
-                                            query_function: async function(query_data, callback) {
-                                                try {
-                                                    var totals = await getGraphValues(query_data);
-                                                    callback(null, totals);
-                                                }
-                                                catch (error) {
-                                                    log.e("Error occurred while fetching totals: " + error);
-                                                    callback("Error occurred while fetching totals" + error);
-                                                }
-                                            },
-                                            outputData: function(err5, data3) {
-                                                if (err5) {
-                                                    log.e(err5);
-                                                }
-                                                // log.e("Current data2: " + JSON.stringify(data2));
-                                                if (data3 && data3.data) {
-                                                    common.applyUniqueOnModel(data2, data3.data, "u", params.qstring.segmentVal);
-                                                }
-                                                //log.e("after applying model" + JSON.stringify(data2));
-                                                retData[viewid.view] = {};
-                                                retData[viewid.view][segment] = data2;
-                                                resolve();
+                                        fetch.getTimeObj(colName, paramsObj, {dontBreak: true, id_prefix: (params.qstring.app_id + "_"), "id": segment, id_postfix: "_" + (viewid.view.replace(params.qstring.app_id + "_", "")), levels: {daily: levels, monthly: [ "t", "s", "b", "e", "d", "scr"]}}, function(data2) {
+                                            if (offset) {
+                                                var props = {"b": true, "t": true, "s": true, "d": true, "u": true, "scr": true, "e": true};
+                                                //Trasform model to array, 
+                                                var arrayData = common.convertModelToArray(data2, (segment !== "no-segment"));
+                                                //log.e("arrayData: " + JSON.stringify(arrayData));
+                                                // shift data, 
+                                                arrayData = common.shiftHourlyData(arrayData, offset * -1);
+                                                //log.e("arrayData(shifted): " + JSON.stringify(arrayData));
+                                                // transform back to model.
+                                                data2 = common.convertArrayToModel(arrayData, (segment !== "no-segment") ? segment : null, props);
+                                                //log.e("rebuilded model" + JSON.stringify(data2));
                                             }
+                                            var my_query = {
+                                                "a": params.qstring.app_id,
+                                                "e": "[CLY]_view",
+                                                "ts": currentRange,
+                                                "n": viewid.name
+                                            };
+                                            if (params.qstring.segment && params.qstring.segmentVal) {
+                                                my_query["sg." + params.qstring.segment] = params.qstring.segmentVal;
+                                            }
+
+                                            calculatedDataManager.longtask({
+                                                db: common.db,
+                                                threshold: plugins.getConfig("api").request_threshold / 2,
+                                                app_id: params.qstring.app_id,
+                                                query_data: {
+                                                    "timezone": tz,
+                                                    "bucket": params.qstring.bucket,
+                                                    "query": my_query
+                                                },
+                                                query_function: async function(query_data, callback) {
+                                                    try {
+                                                        var totals = await getGraphValues(query_data);
+                                                        callback(null, totals);
+                                                    }
+                                                    catch (error) {
+                                                        log.e("Error occurred while fetching totals: " + error);
+                                                        callback("Error occurred while fetching totals" + error);
+                                                    }
+                                                },
+                                                outputData: function(err5, data3) {
+                                                    if (err5) {
+                                                        log.e(err5);
+                                                    }
+                                                    // log.e("Current data2: " + JSON.stringify(data2));
+                                                    if (data3 && data3.data) {
+                                                        common.applyUniqueOnModel(data2, data3.data, "u", params.qstring.segmentVal);
+                                                    }
+                                                    //log.e("after applying model" + JSON.stringify(data2));
+                                                    retData[viewid.view] = {};
+                                                    retData[viewid.view][segment] = data2;
+                                                    resolve();
+                                                }
+                                            });
+
                                         });
 
                                     });
-
-                                });
-                            }).then(
-                                function() {
-                                    common.returnOutput(params, {appID: params.qstring.app_id, data: retData});
                                 }
-                            );
+                                common.returnOutput(params, {appID: params.qstring.app_id, data: retData});
+                            })();
                         });
                     }
                 }

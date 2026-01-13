@@ -6,7 +6,6 @@ Query is editable to delete based on different criteria.
 */
 var pluginManager = require('./../../../plugins/pluginManager.js');
 var request = require('countly-request')(pluginManager.getConfig("security"));
-var Promise = require("bluebird");
 
 
 var SERVER_URL = "";
@@ -27,36 +26,38 @@ if (dry_run) {
     console.log("This is dry run");
     console.log("Members will be only listed, not deleted");
 }
-Promise.all([pluginManager.dbConnection("countly")]).spread(function(countlyDb) {
+Promise.all([pluginManager.dbConnection("countly")]).then(function([countlyDb]) {
     countlyDb.collection("members").aggregate([{"$match": query}, {"$project": {"_id": true, "email": true, "username": true, "full_name": true}}], {allowDiskUse: true}, function(err, res) {
         if (err) {
             console.log(err);
         }
 
-        Promise.each(res, function(data) {
-            return new Promise(function(resolve) {
-                console.log(JSON.stringify(data));
-                if (dry_run) {
-                    resolve();
-                }
-                else {
-                    sendRequest({
-                        requestType: 'POST',
-                        Url: SERVER_URL + "/i/users/delete",
-                        body: {
-                            api_key: API_KEY,
-                            args: {user_ids: [data._id + ""]}
-                        }
-                    }, function(data) {
-                        if (data.err) {
-                            console.log(JSON.stringify(data));
-                            errored++;
-                        }
+        (async() => {
+            for (const data of res) {
+                await new Promise(function(resolve) {
+                    console.log(JSON.stringify(data));
+                    if (dry_run) {
                         resolve();
-                    });
-                }
-            });
-        }).then(function() {
+                    }
+                    else {
+                        sendRequest({
+                            requestType: 'POST',
+                            Url: SERVER_URL + "/i/users/delete",
+                            body: {
+                                api_key: API_KEY,
+                                args: {user_ids: [data._id + ""]}
+                            }
+                        }, function(data) {
+                            if (data.err) {
+                                console.log(JSON.stringify(data));
+                                errored++;
+                            }
+                            resolve();
+                        });
+                    }
+                });
+            }
+        })().then(function() {
             if (errored > 0) {
                 console.log(errored + " requests failed");
             }

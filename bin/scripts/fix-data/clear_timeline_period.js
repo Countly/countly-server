@@ -6,7 +6,6 @@
  */
 
 var pluginManager = require('./../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 const APPS = []; //leave array empty to process all apps;
 var query_ids = {"_id": {"$regex": "^2024:1:30.*"}};
 
@@ -29,23 +28,24 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             return;
         }
         else {
-            Promise.each(apps, function(app) {
-                return new Promise(function(resolve, reject) {
-                    console.log("Clearing out data from timeline collection for: " + app.name);
-                    countlyDb.collection("eventTimes" + app._id).remove(query_ids, function(err) {
-                        if (err) {
-                            console.log(err);
-                            reject();
-                        }
-                        else {
-                            console.log("Cleared out data from timeline collection for: " + app.name);
-                            resolve();
+            (async() => {
+                for (const app of apps) {
+                    await new Promise(function(resolve, reject) {
+                        console.log("Clearing out data from timeline collection for: " + app.name);
+                        countlyDb.collection("eventTimes" + app._id).remove(query_ids, function(err) {
+                            if (err) {
+                                console.log(err);
+                                reject();
+                            }
+                            else {
+                                console.log("Cleared out data from timeline collection for: " + app.name);
+                                resolve();
 
-                        }
+                            }
+                        });
                     });
-                });
-
-            }).then(function() {
+                }
+            })().then(function() {
 
                 console.log("Clearing out data from timeline status collection");
                 var query2 = {};

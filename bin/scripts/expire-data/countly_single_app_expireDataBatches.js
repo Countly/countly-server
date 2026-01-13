@@ -39,7 +39,6 @@ var timeout = 500; //timeout in miliseconds between deletion. (One second  ==== 
 
 
 var async = require('async'),
-    Promise = require("bluebird"),
     plugins = require('../../../plugins/pluginManager.js');
 
 var errorCn = 0;
@@ -257,7 +256,7 @@ function processDrillCollections(drill_db, callback) {
     }
 }
 
-Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).spread(function(db, db_drill) {
+Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).then(function([db, db_drill]) {
     if (!APP_ID) {
         console.log("APP ID is missing");
         console.log('exited');

@@ -1,5 +1,4 @@
 const pluginManager = require('../../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 
 console.log("Started: Clearing internal user properties from meta");
 
@@ -8,7 +7,7 @@ Promise.all(
         pluginManager.dbConnection("countly"),
         pluginManager.dbConnection("countly_drill")
     ])
-    .spread(async function(countlyDB, countlyDrillDB) {
+    .then(async function([countlyDB, countlyDrillDB]) {
         try {
             let apps = await countlyDB.collection('apps').find({}).project({_id: 1}).toArray();
             for (const appId of apps.map(a => a._id)) {

@@ -14,7 +14,6 @@ const path = './summary_report.csv'; // Specify a valid path: 'summary_report.cs
 var union_with_old_collection = true; // False if all sessions are stored in drill_events collection
 var verbose = false; // true to show more output
 
-const Promise = require("bluebird");
 const crypto = require("crypto");
 const fs = require('fs');
 var pluginManager = require("../../../plugins/pluginManager");
@@ -36,189 +35,193 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         }
         else {
             console.log("Apps found:", apps.length);
-            Promise.each(apps, function(app) {
-                return new Promise(function(resolve, reject) {
-                    console.log("Processing app: ", app.name);
-                    countlyDb.collection("events").findOne({_id: app._id}, {'list': 1}, function(err, events) {
-                        if (err) {
-                            console.log("Error getting events: ", err);
-                            reject();
-                        }
-                        else {
-                            events = events || {};
-                            events.list = events.list || [];
-                            events.list = events.list.filter(function(ee) {
-                                if (ee.indexOf("[CLY]_") === 0) {
-                                    return false;
-                                }
-                                else {
-                                    return true;
-                                }
-                            });
-
-                            if (eventMap && eventMap[app._id + ""]) {
-                                var listBF = events.list.length;
+            (async() => {
+                for (const app of apps) {
+                    await new Promise(function(resolve, reject) {
+                        console.log("Processing app: ", app.name);
+                        countlyDb.collection("events").findOne({_id: app._id}, {'list': 1}, function(err, events) {
+                            if (err) {
+                                console.log("Error getting events: ", err);
+                                reject();
+                            }
+                            else {
+                                events = events || {};
+                                events.list = events.list || [];
                                 events.list = events.list.filter(function(ee) {
-                                    if (eventMap && eventMap[app._id + ""]) {
-                                        return eventMap[app._id + ""].indexOf(ee) > -1;
-                                    }
-                                    else {
+                                    if (ee.indexOf("[CLY]_") === 0) {
                                         return false;
                                     }
+                                    else {
+                                        return true;
+                                    }
                                 });
-                                if (events.list.length != listBF) {
-                                    console.log("    Filtered events based on eventMap: ", events.list.length, " from ", listBF);
+
+                                if (eventMap && eventMap[app._id + ""]) {
+                                    var listBF = events.list.length;
+                                    events.list = events.list.filter(function(ee) {
+                                        if (eventMap && eventMap[app._id + ""]) {
+                                            return eventMap[app._id + ""].indexOf(ee) > -1;
+                                        }
+                                        else {
+                                            return false;
+                                        }
+                                    });
+                                    if (events.list.length != listBF) {
+                                        console.log("    Filtered events based on eventMap: ", events.list.length, " from ", listBF);
+                                    }
                                 }
-                            }
 
-                            if (events && events.list && events.list.length) {
-                                endReport[app._id] = {"name": app.name, "total": events.list.length, "bad": 0};
-                                Promise.each(events.list, function(event) {
-                                    return new Promise(function(resolve2, reject2) {
-                                        console.log("    Processing event: ", event);
-                                        var params = {
-                                            app_id: app._id + "",
-                                            appTimezone: app.timezone,
-                                            qstring: { period: period},
-                                            time: common.initTimeObj(app.timezone, Date.now().valueOf())
-                                        };
+                                if (events && events.list && events.list.length) {
+                                    endReport[app._id] = {"name": app.name, "total": events.list.length, "bad": 0};
+                                    (async() => {
+                                        for (const event of events.list) {
+                                            await new Promise(function(resolve2, reject2) {
+                                                console.log("    Processing event: ", event);
+                                                var params = {
+                                                    app_id: app._id + "",
+                                                    appTimezone: app.timezone,
+                                                    qstring: { period: period},
+                                                    time: common.initTimeObj(app.timezone, Date.now().valueOf())
+                                                };
 
-                                        // Fetch drill data
-                                        var periodObject = countlyCommon.getPeriodObj({"appTimezone": app.timezone, "qstring": {"period": period}});
-                                        getDataFromDrill({event: event, app_id: app._id + "", timezone: app.timezone, drillDb: drillDb, periodObj: periodObject}, function(err, drillData) {
-                                            if (err) {
-                                                console.log("    Error getting drill data: ", err);
-                                                reject2();
-                                            }
-                                            else {
-                                                if (verbose) {
-                                                    console.log("    Drill data loaded");
-                                                    console.log(JSON.stringify(drillData));
-                                                }
-
-                                                // Fetch aggregated data
-                                                var collectionName = "events" + crypto.createHash('sha1').update(event + app._id).digest('hex');
-
-                                                fetch.getTimeObjForEvents(collectionName, params, null, function(data) {
-                                                    var mergedData = {};
-                                                    var totals = {"c": 0, "s": 0, "dur": 0};
-                                                    for (var z0 = 0; z0 < periodObject.currentPeriodArr.length; z0++) {
-                                                        var date = periodObject.currentPeriodArr[z0].split(".");
-                                                        if (data && data[date[0]] && data[date[0]][date[1]] && data[date[0]][date[1]][date[2]]) {
-                                                            mergedData[periodObject.currentPeriodArr[z0]] = {};
-                                                            mergedData[periodObject.currentPeriodArr[z0]].c = data[date[0]][date[1]][date[2]].c || 0;
-                                                            mergedData[periodObject.currentPeriodArr[z0]].s = data[date[0]][date[1]][date[2]].s || 0;
-                                                            mergedData[periodObject.currentPeriodArr[z0]].dur = data[date[0]][date[1]][date[2]].dur || 0;
-                                                            totals.c += data[date[0]][date[1]][date[2]].c || 0;
-                                                            totals.s += data[date[0]][date[1]][date[2]].s || 0;
-                                                            totals.dur += data[date[0]][date[1]][date[2]].dur || 0;
+                                                // Fetch drill data
+                                                var periodObject = countlyCommon.getPeriodObj({"appTimezone": app.timezone, "qstring": {"period": period}});
+                                                getDataFromDrill({event: event, app_id: app._id + "", timezone: app.timezone, drillDb: drillDb, periodObj: periodObject}, function(err, drillData) {
+                                                    if (err) {
+                                                        console.log("    Error getting drill data: ", err);
+                                                        reject2();
+                                                    }
+                                                    else {
+                                                        if (verbose) {
+                                                            console.log("    Drill data loaded");
+                                                            console.log(JSON.stringify(drillData));
                                                         }
-                                                    }
 
-                                                    if (verbose) {
-                                                        console.log("    Aggregated data loaded");
-                                                        console.log(JSON.stringify(mergedData));
-                                                    }
+                                                        // Fetch aggregated data
+                                                        var collectionName = "events" + crypto.createHash('sha1').update(event + app._id).digest('hex');
 
-                                                    var report = {"totals": {}, "data": {}};
-                                                    var haveAnything = false;
-                                                    for (var key in totals) {
-                                                        if (totals[key] != drillData.totals[key]) {
-                                                            report.totals[key] = (totals[key] || 0) - (drillData.totals[key] || 0);
-                                                            haveAnything = true;
-                                                        }
-                                                    }
-                                                    for (var z = 0; z < periodObject.currentPeriodArr.length; z++) {
-                                                        if (drillData.data[periodObject.currentPeriodArr[z]]) {
-                                                            if (mergedData[periodObject.currentPeriodArr[z]]) {
-                                                                var diff = {};
-                                                                for (var key0 in mergedData[periodObject.currentPeriodArr[z]]) {
-                                                                    diff[key0] = (mergedData[periodObject.currentPeriodArr[z]][key0] || 0) - (drillData.data[periodObject.currentPeriodArr[z]][key0] || 0);
+                                                        fetch.getTimeObjForEvents(collectionName, params, null, function(data) {
+                                                            var mergedData = {};
+                                                            var totals = {"c": 0, "s": 0, "dur": 0};
+                                                            for (var z0 = 0; z0 < periodObject.currentPeriodArr.length; z0++) {
+                                                                var date = periodObject.currentPeriodArr[z0].split(".");
+                                                                if (data && data[date[0]] && data[date[0]][date[1]] && data[date[0]][date[1]][date[2]]) {
+                                                                    mergedData[periodObject.currentPeriodArr[z0]] = {};
+                                                                    mergedData[periodObject.currentPeriodArr[z0]].c = data[date[0]][date[1]][date[2]].c || 0;
+                                                                    mergedData[periodObject.currentPeriodArr[z0]].s = data[date[0]][date[1]][date[2]].s || 0;
+                                                                    mergedData[periodObject.currentPeriodArr[z0]].dur = data[date[0]][date[1]][date[2]].dur || 0;
+                                                                    totals.c += data[date[0]][date[1]][date[2]].c || 0;
+                                                                    totals.s += data[date[0]][date[1]][date[2]].s || 0;
+                                                                    totals.dur += data[date[0]][date[1]][date[2]].dur || 0;
                                                                 }
-                                                                if (diff.c || diff.s || diff.dur) {
-                                                                    report.data[periodObject.currentPeriodArr[z]] = diff;
+                                                            }
+
+                                                            if (verbose) {
+                                                                console.log("    Aggregated data loaded");
+                                                                console.log(JSON.stringify(mergedData));
+                                                            }
+
+                                                            var report = {"totals": {}, "data": {}};
+                                                            var haveAnything = false;
+                                                            for (var key in totals) {
+                                                                if (totals[key] != drillData.totals[key]) {
+                                                                    report.totals[key] = (totals[key] || 0) - (drillData.totals[key] || 0);
                                                                     haveAnything = true;
                                                                 }
                                                             }
+                                                            for (var z = 0; z < periodObject.currentPeriodArr.length; z++) {
+                                                                if (drillData.data[periodObject.currentPeriodArr[z]]) {
+                                                                    if (mergedData[periodObject.currentPeriodArr[z]]) {
+                                                                        var diff = {};
+                                                                        for (var key0 in mergedData[periodObject.currentPeriodArr[z]]) {
+                                                                            diff[key0] = (mergedData[periodObject.currentPeriodArr[z]][key0] || 0) - (drillData.data[periodObject.currentPeriodArr[z]][key0] || 0);
+                                                                        }
+                                                                        if (diff.c || diff.s || diff.dur) {
+                                                                            report.data[periodObject.currentPeriodArr[z]] = diff;
+                                                                            haveAnything = true;
+                                                                        }
+                                                                    }
+                                                                    else {
+                                                                        report.data[periodObject.currentPeriodArr[z]] = {};
+                                                                        report.data[periodObject.currentPeriodArr[z]].c = -1 * drillData.data[periodObject.currentPeriodArr[z]].c;
+                                                                        report.data[periodObject.currentPeriodArr[z]].s = -1 * drillData.data[periodObject.currentPeriodArr[z]].s;
+                                                                        report.data[periodObject.currentPeriodArr[z]].dur = -1 * drillData.data[periodObject.currentPeriodArr[z]].dur;
+                                                                        haveAnything = true;
+                                                                    }
+                                                                }
+                                                                else {
+                                                                    if (mergedData[periodObject.currentPeriodArr[z]]) {
+                                                                        report.data[periodObject.currentPeriodArr[z]] = mergedData[periodObject.currentPeriodArr[z]];
+                                                                        haveAnything = true;
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            let aggCount = totals.c || 0;
+                                                            let drillCount = drillData.totals.c || 0;
+                                                            let percentageDiff = 0;
+                                                            if (drillCount !== 0) {
+                                                                percentageDiff = ((drillCount - aggCount) / drillCount) * 100;
+                                                            }
                                                             else {
-                                                                report.data[periodObject.currentPeriodArr[z]] = {};
-                                                                report.data[periodObject.currentPeriodArr[z]].c = -1 * drillData.data[periodObject.currentPeriodArr[z]].c;
-                                                                report.data[periodObject.currentPeriodArr[z]].s = -1 * drillData.data[periodObject.currentPeriodArr[z]].s;
-                                                                report.data[periodObject.currentPeriodArr[z]].dur = -1 * drillData.data[periodObject.currentPeriodArr[z]].dur;
-                                                                haveAnything = true;
+                                                                if (aggCount !== 0) {
+                                                                    // If drillCount is 0, and aggCount is not 0, show a large difference
+                                                                    percentageDiff = (aggCount > 0 ? 100 : -100); // 100% or -100% depending on the sign of aggCount
+                                                                }
+                                                                else {
+                                                                    percentageDiff = 0; // Both counts are 0, no difference
+                                                                }
                                                             }
-                                                        }
-                                                        else {
-                                                            if (mergedData[periodObject.currentPeriodArr[z]]) {
-                                                                report.data[periodObject.currentPeriodArr[z]] = mergedData[periodObject.currentPeriodArr[z]];
-                                                                haveAnything = true;
+
+                                                            console.log("----------------------------------------------");
+                                                            console.log("- Application name:", app.name);
+                                                            console.log("- Event name:", event);
+                                                            console.log("- Counts in Aggregated data:", aggCount);
+                                                            console.log("- Counts in Drill data:", drillCount);
+                                                            console.log("- Percentage difference between Drill data and Aggregated data:", percentageDiff.toFixed(2) + "%");
+                                                            console.log("-----------------------------------------------");
+
+                                                            // Store detailed report in endReport
+                                                            endReport[app._id]["events"] = endReport[app._id]["events"] || {};
+                                                            endReport[app._id]["events"][event] = {
+                                                                "e": event,
+                                                                "aggregated_count": aggCount,
+                                                                "drill_count": drillCount,
+                                                                "percentage_difference": percentageDiff.toFixed(2)
+                                                            };
+
+                                                            if (haveAnything) {
+                                                                // Increment "bad" count if haveAnything is true
+                                                                endReport[app._id]["bad"]++;
                                                             }
-                                                        }
+
+                                                            resolve2();
+                                                        });
                                                     }
-
-                                                    let aggCount = totals.c || 0;
-                                                    let drillCount = drillData.totals.c || 0;
-                                                    let percentageDiff = 0;
-                                                    if (drillCount !== 0) {
-                                                        percentageDiff = ((drillCount - aggCount) / drillCount) * 100;
-                                                    }
-                                                    else {
-                                                        if (aggCount !== 0) {
-                                                            // If drillCount is 0, and aggCount is not 0, show a large difference
-                                                            percentageDiff = (aggCount > 0 ? 100 : -100); // 100% or -100% depending on the sign of aggCount
-                                                        }
-                                                        else {
-                                                            percentageDiff = 0; // Both counts are 0, no difference
-                                                        }
-                                                    }
-
-                                                    console.log("----------------------------------------------");
-                                                    console.log("- Application name:", app.name);
-                                                    console.log("- Event name:", event);
-                                                    console.log("- Counts in Aggregated data:", aggCount);
-                                                    console.log("- Counts in Drill data:", drillCount);
-                                                    console.log("- Percentage difference between Drill data and Aggregated data:", percentageDiff.toFixed(2) + "%");
-                                                    console.log("-----------------------------------------------");
-
-                                                    // Store detailed report in endReport
-                                                    endReport[app._id]["events"] = endReport[app._id]["events"] || {};
-                                                    endReport[app._id]["events"][event] = {
-                                                        "e": event,
-                                                        "aggregated_count": aggCount,
-                                                        "drill_count": drillCount,
-                                                        "percentage_difference": percentageDiff.toFixed(2)
-                                                    };
-
-                                                    if (haveAnything) {
-                                                        // Increment "bad" count if haveAnything is true
-                                                        endReport[app._id]["bad"]++;
-                                                    }
-
-                                                    resolve2();
                                                 });
-                                            }
-                                        });
+                                            });
+                                        }
+                                    })().then(function() {
+                                        console.log("Finished processing app: ", app.name);
+                                        console.log("---------------------------------");
+                                        resolve();
+                                    }).catch(function(eee) {
+                                        console.log("Error processing app: ", app.name);
+                                        console.log("---------------------------------");
+                                        console.log(eee);
+                                        reject();
                                     });
-                                }).then(function() {
-                                    console.log("Finished processing app: ", app.name);
+                                }
+                                else {
+                                    console.log("No events in the App");
                                     console.log("---------------------------------");
                                     resolve();
-                                }).catch(function(eee) {
-                                    console.log("Error processing app: ", app.name);
-                                    console.log("---------------------------------");
-                                    console.log(eee);
-                                    reject();
-                                });
+                                }
                             }
-                            else {
-                                console.log("No events in the App");
-                                console.log("---------------------------------");
-                                resolve();
-                            }
-                        }
+                        });
                     });
-                });
-            }).then(function() {
+                }
+            })().then(function() {
                 console.log("Finished");
                 try {
                     // Complete CSV after processing the apps

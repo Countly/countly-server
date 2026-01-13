@@ -1,8 +1,7 @@
 var pluginManager = require("../../../../plugins/pluginManager");
-var Promise = require("bluebird");
 var countlyCommon = require("../../../../api/lib/countly.common");
 
-Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("countly_drill")]).spread(function(countlyDB,countlyDrillDB){
+Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("countly_drill")]).then(function([countlyDB,countlyDrillDB]){
     var webApps = [];
     var countlyDrillDBCollections = [];
     var crypto = require('crypto');

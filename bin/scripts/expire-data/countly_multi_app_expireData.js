@@ -8,13 +8,12 @@
 var EXPIRE_AFTER = 60 * 60 * 24 * 365; //1 year in seconds
 var INDEX_NAME = "cd_1";
 
-var Promise = require("bluebird"),
-    plugins = require('../../../plugins/pluginManager.js');
+var plugins = require('../../../plugins/pluginManager.js');
 
 //var db = plugins.dbConnection("countly");
 //var db_drill = plugins.dbConnection("countly_drill");
 
-Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).spread(function(db, db_drill) {
+Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).then(function([db, db_drill]) {
 
     var collection = "drill_events";
     console.log("processing", collection);

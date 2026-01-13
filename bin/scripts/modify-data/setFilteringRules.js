@@ -8,67 +8,70 @@
 
 var pluginManager = require('./../../../plugins/pluginManager.js');
 var request = require('request');
-var Promise = require("bluebird");
 
 var SERVER_URL = "https://yourpage.count.ly"; //Your server url. Has to be accessable from the machine where this script is run
 var API_KEY = "7e320fb5dd4af5bf123456e776474ef1"; //Any global admin API key
 var eventKeysToBlock = ["Share Score", "Invite Friends"]; //List of event keys for events to block
 
 //get database connections for countly and countly_drill
-Promise.all([pluginManager.dbConnection("countly")]).spread(function(countlyDb) {
+Promise.all([pluginManager.dbConnection("countly")]).then(function([countlyDb]) {
     //get list of apps
     countlyDb.collection("apps").find({}, {"_id": true, "name": true}).toArray(function(err, apps) {
         //get list of collections
-        Promise.each(apps, function(app) {
-            console.log("processing app:" + app.name + "(" + app._id + ")");
-            return new Promise(function(resolveTop) {
-                var blockUs = [];
-                countlyDb.collection("events").findOne({"_id": countlyDb.ObjectID(app._id + "")}, {"list": true}, function(err, eventsDb) {
-                    eventsDb = eventsDb || {};
-                    eventsDb.list = eventsDb.list || [];
-                    if (err) {
-                        console.log(err);
-                    }
-                    for (var z = 0; z < eventKeysToBlock.length; z++) {
-                        if (eventsDb.list.indexOf(eventKeysToBlock[z]) !== -1) {
-                            blockUs.push(eventKeysToBlock[z]);
+        (async() => {
+            for (const app of apps) {
+                console.log("processing app:" + app.name + "(" + app._id + ")");
+                await new Promise(function(resolveTop) {
+                    var blockUs = [];
+                    countlyDb.collection("events").findOne({"_id": countlyDb.ObjectID(app._id + "")}, {"list": true}, function(err, eventsDb) {
+                        eventsDb = eventsDb || {};
+                        eventsDb.list = eventsDb.list || [];
+                        if (err) {
+                            console.log(err);
                         }
-                    }
+                        for (var z = 0; z < eventKeysToBlock.length; z++) {
+                            if (eventsDb.list.indexOf(eventKeysToBlock[z]) !== -1) {
+                                blockUs.push(eventKeysToBlock[z]);
+                            }
+                        }
 
-                    if (blockUs.length > 0) {
-                        Promise.each(blockUs, function(eventKey) {
-                            var data = JSON.stringify({"is_arbitrary_input": false, "key": eventKey, "name": "", "rule": {}, "status": true, "type": "event", "app_id": app._id});
-                            return new Promise(function(resolve) {
-                                sendRequest({
-                                    requestType: 'GET',
-                                    Url: SERVER_URL + "/i/blocks/create?api_key=" + API_KEY + "&app_id=" + app._id + "&blocks=" + data,
-                                    body: {
-                                    }
-                                }, function(data) {
-                                    if (data && data.err) {
-                                        console.log(data.err);
-                                    }
-                                    else {
-                                        console.log("blocked " + eventKey);
-                                    }
-                                    resolve();
-                                });
+                        if (blockUs.length > 0) {
+                            (async() => {
+                                for (const eventKey of blockUs) {
+                                    var data = JSON.stringify({"is_arbitrary_input": false, "key": eventKey, "name": "", "rule": {}, "status": true, "type": "event", "app_id": app._id});
+                                    await new Promise(function(resolve) {
+                                        sendRequest({
+                                            requestType: 'GET',
+                                            Url: SERVER_URL + "/i/blocks/create?api_key=" + API_KEY + "&app_id=" + app._id + "&blocks=" + data,
+                                            body: {
+                                            }
+                                        }, function(data) {
+                                            if (data && data.err) {
+                                                console.log(data.err);
+                                            }
+                                            else {
+                                                console.log("blocked " + eventKey);
+                                            }
+                                            resolve();
+                                        });
+                                    });
+                                }
+                            })().then(function() {
+                                console.log("app " + app._id + " processed");
+                                resolveTop();
+                            }).catch(function(rejection) {
+                                console.log("Error:", rejection);
+                                resolveTop();
                             });
-                        }).then(function() {
-                            console.log("app " + app._id + " processed");
+                        }
+                        else {
+                            console.log("Nothing to block for this app");
                             resolveTop();
-                        }).catch(function(rejection) {
-                            console.log("Error:", rejection);
-                            resolveTop();
-                        });
-                    }
-                    else {
-                        console.log("Nothing to block for this app");
-                        resolveTop();
-                    }
+                        }
+                    });
                 });
-            });
-        }).then(function() {
+            }
+        })().then(function() {
             console.log("Done");
             countlyDb.close();
         }).catch(function(err) {

@@ -1,6 +1,5 @@
 
 const pluginManager = require('../../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 
 console.log("Deleting old meta documents");
 
@@ -26,17 +25,18 @@ Promise.all(
                     return (coll.indexOf("drill_meta") === 0 && coll.length > 11);
                 });
 
-                Promise.each(drillMetaCollections, function(coll) {
-                    return new Promise(function(resolve) {
-                        countlyDrillDB.collection(coll).drop(function(err3) {
-                            if (err3) {
-                                console.log(err3);
-                            }
-                            resolve();
+                (async() => {
+                    for (const coll of drillMetaCollections) {
+                        await new Promise(function(resolve) {
+                            countlyDrillDB.collection(coll).drop(function(err3) {
+                                if (err3) {
+                                    console.log(err3);
+                                }
+                                resolve();
+                            });
                         });
-                    });
-                }
-                ).then(function() {
+                    }
+                })().then(function() {
                     console.log("All old drill meta collections deleted");
                     countlyDB.close();
                     countlyDrillDB.close();

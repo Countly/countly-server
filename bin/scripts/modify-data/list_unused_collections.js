@@ -6,8 +6,7 @@
  */
 
 var pluginManager = require('./../../../plugins/pluginManager.js'),
-    crypto = require('crypto'),
-    Promise = require("bluebird");
+    crypto = require('crypto');
 
 
 var appIDs = [];
@@ -141,7 +140,7 @@ function checkViewsCollections(countlyDb, collections, callback) {
 
 }
 
-Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).spread(function(countlyDb, drillDb) {
+Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(function([countlyDb, drillDb]) {
     countlyDb.collection("apps").find({}).toArray(function(err, res) {
         console.log("Currently have " + res.length + " apps");
         var obQuery = [];

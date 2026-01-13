@@ -7,7 +7,6 @@ const common = require('../../../../api/utils/common.js');
 const ejs = require('ejs');
 const path = require('path');
 const fs = require('fs');
-var Promise = require("bluebird");
 const _ = require("lodash");
 const log = require('../../../../api/utils/log.js')('alert:utils');
 

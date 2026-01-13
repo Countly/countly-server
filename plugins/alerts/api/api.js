@@ -1,7 +1,6 @@
 const common = require('../../../api/utils/common.js');
 const plugins = require('../../pluginManager.js');
 const log = require('../../../api/utils/log.js')('alert:api');
-var Promise = require("bluebird");
 const utils = require('./parts/utils');
 const _ = require('lodash');
 const { validateCreate, validateRead, validateUpdate } = require('../../../api/utils/rights.js');

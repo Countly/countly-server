@@ -123,15 +123,17 @@ function check_renames(done) {
             done();
         }
         else {
-            Promise.each(merges, function(merge) {
-                return new Promise(function(resolve/*, reject*/) {
-                    merge_drill_data(merge, function() {
-                        countlyDb.collection('app_viewsmeta_renames').remove({_id: merge._id}, function() {
-                            resolve();
+            (async() => {
+                for (const merge of merges) {
+                    await new Promise(function(resolve/*, reject*/) {
+                        merge_drill_data(merge, function() {
+                            countlyDb.collection('app_viewsmeta_renames').remove({_id: merge._id}, function() {
+                                resolve();
+                            });
                         });
                     });
-                });
-            }).then(function() {
+                }
+            })().then(function() {
                 done();
             });
         }
@@ -151,67 +153,69 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 else {
                     if (res && res.length > 0) {
                         console.log("Updating" + res.length + " views");
-                        Promise.each(res, function(viewdata) {
-                            return new Promise(function(resolve/*, reject*/) {
-                                console.log("Updating view: " + viewdata.view);
-                                var ob = {_id: viewdata.view, "view": viewdata.view, "to": viewdata.view.replace(fromValue, toValue)};
-                                var setOb = {"view": ob.to};
-                                if (viewdata.url) {
-                                    if (viewdata.url.indexOf(fromValue) > -1) {
-                                        setOb["url"] = viewdata.url.replace(fromValue, toValue);
-                                        ob["url"] = setOb["url"];
-                                    }
-                                }
-                                else {
-                                    viewdata.url = viewdata.view;
-                                    ob["url"] = viewdata.url;
-                                }
-
-                                countlyDb.collection('app_viewsmeta_renames').insert(ob, function(err) {
-                                    if (err) {
-                                        if (err.code !== 11000) {
-                                            console.log(err);
+                        (async() => {
+                            for (const viewdata of res) {
+                                await new Promise(function(resolve/*, reject*/) {
+                                    console.log("Updating view: " + viewdata.view);
+                                    var ob = {_id: viewdata.view, "view": viewdata.view, "to": viewdata.view.replace(fromValue, toValue)};
+                                    var setOb = {"view": ob.to};
+                                    if (viewdata.url) {
+                                        if (viewdata.url.indexOf(fromValue) > -1) {
+                                            setOb["url"] = viewdata.url.replace(fromValue, toValue);
+                                            ob["url"] = setOb["url"];
                                         }
                                     }
-                                    console.log("Try renaming in app_viewsmeta");
-                                    console.log(viewdata._id);
-                                    console.log(JSON.stringify(setOb));
-                                    countlyDb.collection("app_viewsmeta" + appId).update({_id: countlyDb.ObjectID(viewdata._id)}, {$set: setOb}, function(err) {
-                                        if (err) {
-                                            console.log("Couldn't rename");
-                                            //we have error  - need to merge views.
-                                            //get current view with that name
-                                            countlyDb.collection("app_viewsmeta" + appId).findOne({"view": ob.to}, function(err, newview) {
-                                                console.log(newview);
-                                                console.log("Add to merge list: " + ob.to);
-                                                var iOb = {_id: newview._id + "_" + appId, "view": ob.to, "base": countlyDb.ObjectID(newview._id), mergeIn: [viewdata._id], "appID": appId, "segments": viewBase.segments};
+                                    else {
+                                        viewdata.url = viewdata.view;
+                                        ob["url"] = viewdata.url;
+                                    }
 
-                                                countlyDb.collection('app_viewsmeta_merges').insert(iOb, function(err) {
-                                                    if (err) {
-                                                        if (err.code !== 11000) {
-                                                            console.log(err);
+                                    countlyDb.collection('app_viewsmeta_renames').insert(ob, function(err) {
+                                        if (err) {
+                                            if (err.code !== 11000) {
+                                                console.log(err);
+                                            }
+                                        }
+                                        console.log("Try renaming in app_viewsmeta");
+                                        console.log(viewdata._id);
+                                        console.log(JSON.stringify(setOb));
+                                        countlyDb.collection("app_viewsmeta" + appId).update({_id: countlyDb.ObjectID(viewdata._id)}, {$set: setOb}, function(err) {
+                                            if (err) {
+                                                console.log("Couldn't rename");
+                                                //we have error  - need to merge views.
+                                                //get current view with that name
+                                                countlyDb.collection("app_viewsmeta" + appId).findOne({"view": ob.to}, function(err, newview) {
+                                                    console.log(newview);
+                                                    console.log("Add to merge list: " + ob.to);
+                                                    var iOb = {_id: newview._id + "_" + appId, "view": ob.to, "base": countlyDb.ObjectID(newview._id), mergeIn: [viewdata._id], "appID": appId, "segments": viewBase.segments};
+
+                                                    countlyDb.collection('app_viewsmeta_merges').insert(iOb, function(err) {
+                                                        if (err) {
+                                                            if (err.code !== 11000) {
+                                                                console.log(err);
+                                                            }
                                                         }
-                                                    }
-                                                    merge_drill_data(viewdata, function() {
-                                                        countlyDb.collection('app_viewsmeta_renames').remove({_id: ob._id}, function() {
-                                                            resolve();
+                                                        merge_drill_data(viewdata, function() {
+                                                            countlyDb.collection('app_viewsmeta_renames').remove({_id: ob._id}, function() {
+                                                                resolve();
+                                                            });
                                                         });
                                                     });
                                                 });
-                                            });
 
-                                        }
-                                        else {
-                                            merge_drill_data(viewdata, function() {
-                                                countlyDb.collection('app_viewsmeta_renames').remove({_id: ob._id}, function() {
-                                                    resolve();
+                                            }
+                                            else {
+                                                merge_drill_data(viewdata, function() {
+                                                    countlyDb.collection('app_viewsmeta_renames').remove({_id: ob._id}, function() {
+                                                        resolve();
+                                                    });
                                                 });
-                                            });
-                                        }
+                                            }
+                                        });
                                     });
                                 });
-                            });
-                        }).then(function() {
+                            }
+                        })().then(function() {
                             console.log("finished");
                             countlyDb.close();
 

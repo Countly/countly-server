@@ -5,7 +5,6 @@ Script fixes indexes for views collections and merges views if there are  views 
 
 var pluginManager = require('../../pluginManager.js'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
     countlyDb;
 
 console.log("Checking if name index is set");
@@ -17,101 +16,103 @@ function fixCollection(collection, mergeIN, mergeTo, appID, done) {
     var failed = 0;
     countlyDb.collection(collection).find({"vw": {$in: mergeIN}}).toArray(function(err, res) {
         if (res && res.length > 0) {
-            Promise.each(res, function(doc) {
-                return new Promise(function(resolve/*, reject*/) {
-                    var update = {};
-                    update["$inc"] = {};
-                    update["$set"] = {};
-                    update["$max"] = {};
-                    if (doc["d"]) {
-                        for (var dd in doc["d"]) {
-                            if (typeof doc["d"][dd] === 'object') {
-                                for (var p1 in doc["d"][dd]) {
-                                    if (typeof doc["d"][dd][p1] === 'object') {
-                                        for (var p2 in doc["d"][dd][p1]) {
-                                            if (typeof doc["d"][dd][p1][p2] === 'object') {
-                                                for (var p3 in doc["d"][dd][p1][p2]) {
-                                                    if (typeof doc["d"][dd][p1][p2][p3] === 'object') {
-                                                    //console.log("GO AWAY");
-                                                    }
-                                                    else {
-                                                        if (p3 === "u") {
-                                                            update["$max"]["d." + dd + "." + p1 + "." + p2 + "." + p3] = doc["d"][dd][p1][p2][p3];
+            (async() => {
+                for (const doc of res) {
+                    await new Promise(function(resolve/*, reject*/) {
+                        var update = {};
+                        update["$inc"] = {};
+                        update["$set"] = {};
+                        update["$max"] = {};
+                        if (doc["d"]) {
+                            for (var dd in doc["d"]) {
+                                if (typeof doc["d"][dd] === 'object') {
+                                    for (var p1 in doc["d"][dd]) {
+                                        if (typeof doc["d"][dd][p1] === 'object') {
+                                            for (var p2 in doc["d"][dd][p1]) {
+                                                if (typeof doc["d"][dd][p1][p2] === 'object') {
+                                                    for (var p3 in doc["d"][dd][p1][p2]) {
+                                                        if (typeof doc["d"][dd][p1][p2][p3] === 'object') {
+                                                            //console.log("GO AWAY");
                                                         }
                                                         else {
-                                                            update["$inc"]["d." + dd + "." + p1 + "." + p2 + "." + p3] = doc["d"][dd][p1][p2][p3];
+                                                            if (p3 === "u") {
+                                                                update["$max"]["d." + dd + "." + p1 + "." + p2 + "." + p3] = doc["d"][dd][p1][p2][p3];
+                                                            }
+                                                            else {
+                                                                update["$inc"]["d." + dd + "." + p1 + "." + p2 + "." + p3] = doc["d"][dd][p1][p2][p3];
+                                                            }
                                                         }
                                                     }
                                                 }
-                                            }
-                                            else {
-                                                if (p2 === "u") {
-                                                    update["$max"]["d." + dd + "." + p1 + "." + p2] = doc["d"][dd][p1][p2];
-                                                }
                                                 else {
-                                                    update["$inc"]["d." + dd + "." + p1 + "." + p2] = doc["d"][dd][p1][p2];
+                                                    if (p2 === "u") {
+                                                        update["$max"]["d." + dd + "." + p1 + "." + p2] = doc["d"][dd][p1][p2];
+                                                    }
+                                                    else {
+                                                        update["$inc"]["d." + dd + "." + p1 + "." + p2] = doc["d"][dd][p1][p2];
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }
-                                    else {
-                                        if (p1 === "u") {
-                                            update["$max"]["d." + dd + "." + p1] = doc["d"][dd][p1];
                                         }
                                         else {
-                                            update["$inc"]["d." + dd + "." + p1] = doc["d"][dd][p1];
+                                            if (p1 === "u") {
+                                                update["$max"]["d." + dd + "." + p1] = doc["d"][dd][p1];
+                                            }
+                                            else {
+                                                update["$inc"]["d." + dd + "." + p1] = doc["d"][dd][p1];
+                                            }
                                         }
                                     }
                                 }
+                                else {
+                                    if (dd === "u") {
+                                        update["$max"]["d." + dd] = doc["d"][dd];
+                                    }
+                                    else {
+                                        update["$inc"]["d." + dd] = doc["d"][dd];
+                                    }
+                                }
+
+                            }
+                        }
+                        if (doc.meta_v2 && doc.meta_v2.sv) {
+                            for (var k in doc.meta_v2.sv) {
+                                update["$set"]["meta_v2.sv." + k] = true;
+                            }
+                        }
+                        var new_id = doc["_id"].split("_");
+                        new_id[0] = mergeTo;
+                        new_id = new_id.join("_");
+
+                        update['$set']["_id"] = new_id;
+                        update['$set']["vw"] = countlyDb.ObjectID(mergeTo);
+                        update['$set']["s"] = doc["s"];
+                        update['$set']["m"] = doc["m"];
+                        update['$set']["a"] = appID;
+
+                        if (Object.keys(update["$max"]).length === 0) {
+                            delete update["$max"];
+                        }
+
+                        if (Object.keys(update["$inc"]).length === 0) {
+                            delete update["$inc"];
+                        }
+
+                        countlyDb.collection(collection).update({"_id": new_id}, update, {upsert: true}, function(err/*, res*/) {
+                            if (err) {
+                                console.log(err);
+                                resolve();
+                                failed++;
                             }
                             else {
-                                if (dd === "u") {
-                                    update["$max"]["d." + dd] = doc["d"][dd];
-                                }
-                                else {
-                                    update["$inc"]["d." + dd] = doc["d"][dd];
-                                }
+                                countlyDb.collection(collection).remove({_id: doc["_id"]}, function() {
+                                    resolve();
+                                });
                             }
-
-                        }
-                    }
-                    if (doc.meta_v2 && doc.meta_v2.sv) {
-                        for (var k in doc.meta_v2.sv) {
-                            update["$set"]["meta_v2.sv." + k] = true;
-                        }
-                    }
-                    var new_id = doc["_id"].split("_");
-                    new_id[0] = mergeTo;
-                    new_id = new_id.join("_");
-
-                    update['$set']["_id"] = new_id;
-                    update['$set']["vw"] = countlyDb.ObjectID(mergeTo);
-                    update['$set']["s"] = doc["s"];
-                    update['$set']["m"] = doc["m"];
-                    update['$set']["a"] = appID;
-
-                    if (Object.keys(update["$max"]).length === 0) {
-                        delete update["$max"];
-                    }
-
-                    if (Object.keys(update["$inc"]).length === 0) {
-                        delete update["$inc"];
-                    }
-
-                    countlyDb.collection(collection).update({"_id": new_id}, update, {upsert: true}, function(err/*, res*/) {
-                        if (err) {
-                            console.log(err);
-                            resolve();
-                            failed++;
-                        }
-                        else {
-                            countlyDb.collection(collection).remove({_id: doc["_id"]}, function() {
-                                resolve();
-                            });
-                        }
+                        });
                     });
-                });
-            }).then(function() {
+                }
+            })().then(function() {
                 done(failed);
             });
         }
@@ -184,14 +185,16 @@ function check_and_fix_data(appID, done) {
                         if (viewBase && viewBase[0]) {
                             viewBase = viewBase[0];
                         }
-                        Promise.each(res, function(viewGroup) {
-                            return new Promise(function(resolve/*, reject*/) {
-                                fixViews(viewBase, appID, viewGroup, function() {
-                                    console.log("View: " + viewBase._id + " - MERGED");
-                                    resolve();
+                        (async() => {
+                            for (const viewGroup of res) {
+                                await new Promise(function(resolve/*, reject*/) {
+                                    fixViews(viewBase, appID, viewGroup, function() {
+                                        console.log("View: " + viewBase._id + " - MERGED");
+                                        resolve();
+                                    });
                                 });
-                            });
-                        }).then(function() {
+                            }
+                        })().then(function() {
                             countlyDb.collection('app_viewsmeta' + appID).ensureIndex({"view": 1}, {'unique': 1}, function(err) {
                                 if (err) {
                                     rerun = true;
@@ -217,21 +220,23 @@ function merge_data(data, done) {
         collectionsToUpdate.push("app_viewdata" + crypto.createHash('sha1').update(p + data.appID).digest('hex'));
     }
     var failedCn = 0;
-    Promise.each(collectionsToUpdate, function(colName) {
-        return new Promise(function(resolve/*, reject*/) {
-            fixCollection(colName, data.mergeIn, data.base, data.appID, function(failed) {
-                countlyDb.collection('app_viewsmeta' + data.appID).remove({_id: {$in: data.mergeIn}}, {multi: true}, function(err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    if (failed > 0) {
-                        failedCn++;
-                    }
-                    resolve();
+    (async() => {
+        for (const colName of collectionsToUpdate) {
+            await new Promise(function(resolve/*, reject*/) {
+                fixCollection(colName, data.mergeIn, data.base, data.appID, function(failed) {
+                    countlyDb.collection('app_viewsmeta' + data.appID).remove({_id: {$in: data.mergeIn}}, {multi: true}, function(err) {
+                        if (err) {
+                            console.log(err);
+                        }
+                        if (failed > 0) {
+                            failedCn++;
+                        }
+                        resolve();
+                    });
                 });
             });
-        });
-    }).then(function() {
+        }
+    })().then(function() {
         if (failedCn > 0) {
             rerun = true;
             done();
@@ -255,13 +260,15 @@ function check_merges(done) {
             done();
         }
         else {
-            Promise.each(merges, function(merge) {
-                return new Promise(function(resolve/*, reject*/) {
-                    merge_data(merge, function() {
-                        resolve();
+            (async() => {
+                for (const merge of merges) {
+                    await new Promise(function(resolve/*, reject*/) {
+                        merge_data(merge, function() {
+                            resolve();
+                        });
                     });
-                });
-            }).then(function() {
+                }
+            })().then(function() {
                 done();
             });
         }
@@ -278,13 +285,15 @@ pluginManager.dbConnection().then((db) => {
             for (var z = 0; z < apps.length; z++) {
                 appIds.push(apps[z]._id + "");
             }
-            Promise.each(appIds, function(appID) {
-                return new Promise(function(resolve/*, reject*/) {
-                    check_and_fix_data(appID, function() {
-                        resolve();
+            (async() => {
+                for (const appID of appIds) {
+                    await new Promise(function(resolve/*, reject*/) {
+                        check_and_fix_data(appID, function() {
+                            resolve();
+                        });
                     });
-                });
-            }).then(function() {
+                }
+            })().then(function() {
 
                 if (badIndexes > 0) {
                     console.log("Bad indexes(attempted to fix): " + badIndexes);

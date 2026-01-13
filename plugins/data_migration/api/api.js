@@ -16,8 +16,6 @@ catch (e) {
     log.e("nginx-conf not installed");
 }
 
-var Promise = require("bluebird");
-
 var authorize = require('../../../api/utils/authorizer.js'); //for token
 
 const request = require('countly-request')(plugins.getConfig("security"));

@@ -60,7 +60,6 @@ Output example(if there are errors)
 
 */
 var plugins = require('./../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 var crypto = require('crypto');
 
 
@@ -206,81 +205,83 @@ function countDataPoints(options, callback) {
             }
             output(selectedEvents.length + " events found");
             if (selectedEvents.length > 0) {
-                Promise.each(selectedEvents, function(key) {
-                    return new Promise(function(resolve, reject) {
-                        var collection = "";
-                        var pipeline = [];
-                        if (calculate_from === "drill") {
-                            collection = "drill_events" + crypto.createHash('sha1').update(key + options.app._id).digest('hex');
-                            if (matchQuery) {
-                                pipeline.push({"$match": matchQuery});
-                            }
-                            pipeline.push({'$group': {'_id': "$m", 'cn': {"$sum": 1}}});
+                (async() => {
+                    for (const key of selectedEvents) {
+                        await new Promise(function(resolve, reject) {
+                            var collection = "";
+                            var pipeline = [];
+                            if (calculate_from === "drill") {
+                                collection = "drill_events" + crypto.createHash('sha1').update(key + options.app._id).digest('hex');
+                                if (matchQuery) {
+                                    pipeline.push({"$match": matchQuery});
+                                }
+                                pipeline.push({'$group': {'_id': "$m", 'cn': {"$sum": 1}}});
 
-                            options.db_drill.collection(collection).aggregate(pipeline, {"allowDiskUse": true}, function(err, oo) {
-                                if (err) {
-                                    reject(err);
-                                }
-                                else {
-                                    var dd = {};
-                                    for (var z = 0; z < oo.length; z++) {
-                                        dd[oo[z]._id] = oo[z].cn;
-                                        monthKeys[oo[z]._id] = true;
+                                options.db_drill.collection(collection).aggregate(pipeline, {"allowDiskUse": true}, function(err, oo) {
+                                    if (err) {
+                                        reject(err);
                                     }
-                                    data.push({"e": key, data: dd});
-                                    resolve();
-                                }
-                            });
-                        }
-                        else if (calculate_from === "drill_precise") {
-                            collection = "drill_events" + crypto.createHash('sha1').update(key + options.app._id).digest('hex');
-                            if (matchQuery) {
-                                pipeline.push({"$match": matchQuery});
-                            }
-                            pipeline.push({"$project": {"_id": 0, "y": {"$year": {"date": "$cd", "timezone": "GMT"}}, "m": {"$month": {"date": "$cd", "timezone": "GMT"}}}}, {'$group': {'_id': {"$concat": [{"$toString": '$y'}, ":", {"$toString": '$m'}]}, 'cn': {"$sum": 1}}});
-                            options.db_drill.collection(collection).aggregate(pipeline, {"allowDiskUse": true}, function(err, oo) {
-                                if (err) {
-                                    reject(err);
-                                }
-                                else {
-                                    var dd = {};
-                                    for (var z = 0; z < oo.length; z++) {
-                                        dd[oo[z]._id] = oo[z].cn;
-                                        monthKeys[oo[z]._id] = true;
-                                    }
-                                    data.push({"e": key, data: dd});
-                                    resolve();
-                                }
-                            });
-                        }
-                        else {
-                            collection = "events" + crypto.createHash('sha1').update(key + options.app._id).digest('hex');
-                            var ll = [];
-                            for (var z = 0; z < 31; z++) {
-                                ll.push("$d." + z + ".c");
-                            }
-                            pipeline.push({"$project": {"c": {"$sum": ll}, "m": "$m"}});
-                            pipeline.push({'$group': {'_id': "$m", 'cn': {"$sum": "$c"}}});
-
-                            options.db.collection(collection).aggregate(pipeline, {"allowDiskUse": true}, function(err, oo) {
-                                if (err) {
-                                    reject(err);
-                                }
-                                else {
-                                    var dd = {};
-                                    for (var z = 0; z < oo.length; z++) {
-                                        if (oo[z]._id.indexOf(":0") === -1) { //filter out zero docs
+                                    else {
+                                        var dd = {};
+                                        for (var z = 0; z < oo.length; z++) {
                                             dd[oo[z]._id] = oo[z].cn;
                                             monthKeys[oo[z]._id] = true;
                                         }
+                                        data.push({"e": key, data: dd});
+                                        resolve();
                                     }
-                                    data.push({"e": key, data: dd});
-                                    resolve();
+                                });
+                            }
+                            else if (calculate_from === "drill_precise") {
+                                collection = "drill_events" + crypto.createHash('sha1').update(key + options.app._id).digest('hex');
+                                if (matchQuery) {
+                                    pipeline.push({"$match": matchQuery});
                                 }
-                            });
-                        }
-                    });
-                }).then(function() {
+                                pipeline.push({"$project": {"_id": 0, "y": {"$year": {"date": "$cd", "timezone": "GMT"}}, "m": {"$month": {"date": "$cd", "timezone": "GMT"}}}}, {'$group': {'_id': {"$concat": [{"$toString": '$y'}, ":", {"$toString": '$m'}]}, 'cn': {"$sum": 1}}});
+                                options.db_drill.collection(collection).aggregate(pipeline, {"allowDiskUse": true}, function(err, oo) {
+                                    if (err) {
+                                        reject(err);
+                                    }
+                                    else {
+                                        var dd = {};
+                                        for (var z = 0; z < oo.length; z++) {
+                                            dd[oo[z]._id] = oo[z].cn;
+                                            monthKeys[oo[z]._id] = true;
+                                        }
+                                        data.push({"e": key, data: dd});
+                                        resolve();
+                                    }
+                                });
+                            }
+                            else {
+                                collection = "events" + crypto.createHash('sha1').update(key + options.app._id).digest('hex');
+                                var ll = [];
+                                for (var z = 0; z < 31; z++) {
+                                    ll.push("$d." + z + ".c");
+                                }
+                                pipeline.push({"$project": {"c": {"$sum": ll}, "m": "$m"}});
+                                pipeline.push({'$group': {'_id': "$m", 'cn': {"$sum": "$c"}}});
+
+                                options.db.collection(collection).aggregate(pipeline, {"allowDiskUse": true}, function(err, oo) {
+                                    if (err) {
+                                        reject(err);
+                                    }
+                                    else {
+                                        var dd = {};
+                                        for (var z = 0; z < oo.length; z++) {
+                                            if (oo[z]._id.indexOf(":0") === -1) { //filter out zero docs
+                                                dd[oo[z]._id] = oo[z].cn;
+                                                monthKeys[oo[z]._id] = true;
+                                            }
+                                        }
+                                        data.push({"e": key, data: dd});
+                                        resolve();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                })().then(function() {
                     callback(null, {"data": data, "keys": monthKeys});
                 }).catch(function(rejection) {
                     console.log("rejected");
@@ -296,7 +297,7 @@ function countDataPoints(options, callback) {
     });
 }
 
-Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).spread(function(db, db_drill) {
+Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).then(function([db, db_drill]) {
     getAppList({db: db}, function(err, apps) {
         if (err) {
             console.log(err);
@@ -305,22 +306,24 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
         }
         else {
             output(apps.length + " apps found");
-            Promise.each(apps, function(app) {
-                return new Promise(function(resolve, reject) {
-                    countDataPoints({db: db, db_drill: db_drill, app: app, eventsRule: eventsMatch, drillRule: matchQuery}, function(err, res) {
-                        if (err) {
-                            console.log(err);
-                            reject();
-                        }
-                        else {
-                            //merge data if needed
-                            // mergeData(res);
-                            outputData({app: app}, res);
-                        }
-                        resolve();
+            (async() => {
+                for (const app of apps) {
+                    await new Promise(function(resolve, reject) {
+                        countDataPoints({db: db, db_drill: db_drill, app: app, eventsRule: eventsMatch, drillRule: matchQuery}, function(err, res) {
+                            if (err) {
+                                console.log(err);
+                                reject();
+                            }
+                            else {
+                                //merge data if needed
+                                // mergeData(res);
+                                outputData({app: app}, res);
+                            }
+                            resolve();
+                        });
                     });
-                });
-            }).then(function() {
+                }
+            })().then(function() {
                 output("ALL done");
                 db.close();
                 db_drill.close();

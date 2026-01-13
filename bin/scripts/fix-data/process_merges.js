@@ -8,7 +8,6 @@ const pluginManager = require('../../../plugins/pluginManager.js');
 const common = require("../../../api/utils/common.js");
 var usersApi = require('../../../api/parts/mgmt/app_users.js');
 const {WriteBatcher, ReadBatcher, InsertBatcher} = require('../../../api/parts/data/batcher.js');
-var Promise = require("bluebird");
 
 
 

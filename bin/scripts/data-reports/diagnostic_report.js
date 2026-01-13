@@ -5,7 +5,6 @@
  *  Command: node diagnostic_report.js
  */
 
-var Promise = require("bluebird");
 const pluginManager = require('../../../plugins/pluginManager.js');
 
 var settings = {
@@ -82,20 +81,22 @@ function validate_views(db, callback) {
                 }
             }
 
-            Promise.each(listed, function(iid) {
-                return new Promise(function(resolve) {
-                    db.collection("app_viewsmeta" + iid).count(function(err, count) {
-                        if (err) {
-                            console.log(err);
-                        }
-                        if (count && count > settings.views.view_count) {
-                            report[iid] = report[iid] || {};
-                            report[iid].count = count || 0;
-                        }
-                        resolve();
+            (async() => {
+                for (const iid of listed) {
+                    await new Promise(function(resolve) {
+                        db.collection("app_viewsmeta" + iid).count(function(err, count) {
+                            if (err) {
+                                console.log(err);
+                            }
+                            if (count && count > settings.views.view_count) {
+                                report[iid] = report[iid] || {};
+                                report[iid].count = count || 0;
+                            }
+                            resolve();
+                        });
                     });
-                });
-            }).then(function() {
+                }
+            })().then(function() {
                 if (Object.keys(report).length > 0) {
                     console.log(JSON.stringify(report));
                 }
@@ -149,37 +150,39 @@ function validate_user_profiles(db, callback) {
             console.log(err);
         }
         apps = apps || [];
-        Promise.each(apps, function(app) {
-            return new Promise(function(resolve) {
-                //get flow count
-                //get duplicate uids
-                db.collection('app_users' + app._id).aggregate([{"$group": {"_id": "$uid", "cn": {"$sum": 1}}}, {"$match": {"cn": {"$gt": 1}}}, {"$sort": {"cn": -1}}], {"allowDiskUse": true}).toArray(function(err, list) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    //list with duplicated uids
-                    list = list || [];
-                    if (list.length > 0) {
-                        data[app._id] = data[app._id] || {};
-                        data[app._id].duplicates = list;
-                    }
-                    //get top merges count
-                    var now = Math.floor(Date.now().valueOf() / 1000);
-                    now = now - 30 * 24 * 60 * 60;
-                    //get top merges count for users that have been there in last 30 days
-                    db.collection('app_users' + app._id).aggregate([{"$match": {"lac": {"$gt": now}, "merges": {"$gt": 0}}}, {"$sort": {"merges": -1}}, {"$limit": 10}, {"$project": {"lac": 1, "merges": 1, "_id": 1, "uid": 1}}], {"allowDiskUse": true}).toArray(function(err, list) {
+        (async() => {
+            for (const app of apps) {
+                await new Promise(function(resolve) {
+                    //get flow count
+                    //get duplicate uids
+                    db.collection('app_users' + app._id).aggregate([{"$group": {"_id": "$uid", "cn": {"$sum": 1}}}, {"$match": {"cn": {"$gt": 1}}}, {"$sort": {"cn": -1}}], {"allowDiskUse": true}).toArray(function(err, list) {
                         if (err) {
                             console.log(err);
                         }
+                        //list with duplicated uids
+                        list = list || [];
                         if (list.length > 0) {
                             data[app._id] = data[app._id] || {};
-                            data[app._id].top_merges = list;
+                            data[app._id].duplicates = list;
                         }
-                        resolve();
+                        //get top merges count
+                        var now = Math.floor(Date.now().valueOf() / 1000);
+                        now = now - 30 * 24 * 60 * 60;
+                        //get top merges count for users that have been there in last 30 days
+                        db.collection('app_users' + app._id).aggregate([{"$match": {"lac": {"$gt": now}, "merges": {"$gt": 0}}}, {"$sort": {"merges": -1}}, {"$limit": 10}, {"$project": {"lac": 1, "merges": 1, "_id": 1, "uid": 1}}], {"allowDiskUse": true}).toArray(function(err, list) {
+                            if (err) {
+                                console.log(err);
+                            }
+                            if (list.length > 0) {
+                                data[app._id] = data[app._id] || {};
+                                data[app._id].top_merges = list;
+                            }
+                            resolve();
+                        });
                     });
                 });
-            });
-        }).then(function() {
+            }
+        })().then(function() {
             console.log("--App users collection--");
             console.log(JSON.stringify(data));
             callback();
@@ -200,35 +203,37 @@ function validate_flows(db, callback) {
                 console.log(err);
             }
             apps = apps || [];
-            Promise.each(apps, function(app) {
-                return new Promise(function(resolve) {
-                    //get flow count
-                    db.collection('flowSchema' + app._id).find({}).count(function(err, count) {
-                        flows.total += count || 0;
-                        db.collection('flowSchema' + app._id).find({"duration": {"$gt": settings.flows.duration * 1000}}).toArray(function(err, arr) {
-                            if (arr && arr.length > 0) {
-                                flows[app._id] = {};
-                                flows[app._id].count = count || 0;
-                                flows[app._id].long = arr.length;
-                                flows[app._id].long_queries = arr;
-                            }
-                            //get errored flows/not updated for more than 48 hours
-                            var now = Date.now().valueOf();
-                            now = now - 24 * 60 * 60 * 1000;
-                            db.collection('flowSchema' + app._id).find({"calculated": {"$lt": now}}).toArray(function(err, arr2) {
-                                if (arr2 && arr2.length > 0) {
-                                    flows[app._id] = flows[app._id] || {};
+            (async() => {
+                for (const app of apps) {
+                    await new Promise(function(resolve) {
+                        //get flow count
+                        db.collection('flowSchema' + app._id).find({}).count(function(err, count) {
+                            flows.total += count || 0;
+                            db.collection('flowSchema' + app._id).find({"duration": {"$gt": settings.flows.duration * 1000}}).toArray(function(err, arr) {
+                                if (arr && arr.length > 0) {
+                                    flows[app._id] = {};
                                     flows[app._id].count = count || 0;
-                                    flows[app._id].failing = arr2.length;
-                                    flows[app._id].failing = arr2;
+                                    flows[app._id].long = arr.length;
+                                    flows[app._id].long_queries = arr;
                                 }
-                                resolve();
-                            });
+                                //get errored flows/not updated for more than 48 hours
+                                var now = Date.now().valueOf();
+                                now = now - 24 * 60 * 60 * 1000;
+                                db.collection('flowSchema' + app._id).find({"calculated": {"$lt": now}}).toArray(function(err, arr2) {
+                                    if (arr2 && arr2.length > 0) {
+                                        flows[app._id] = flows[app._id] || {};
+                                        flows[app._id].count = count || 0;
+                                        flows[app._id].failing = arr2.length;
+                                        flows[app._id].failing = arr2;
+                                    }
+                                    resolve();
+                                });
 
+                            });
                         });
                     });
-                });
-            }).then(function() {
+                }
+            })().then(function() {
                 console.log("--FLOWS--");
                 console.log(JSON.stringify(flows));
                 callback();

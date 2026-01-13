@@ -11,7 +11,6 @@ var OLD_ID = "59832c06c5e80024b5e1fa1f"; //Id for old user
 var pluginManager = require('./../../../plugins/pluginManager');
 var common = require('./../../../api/utils/common');
 var async = require('async');
-const Promise = require('bluebird');
 
 pluginManager.dbConnection("countly").then((db) => {
     common.db = db;
@@ -118,27 +117,29 @@ pluginManager.dbConnection("countly").then((db) => {
                 }
                 else {
                     res = res || [];
-                    Promise.each(res, function(item) {
-                        return new Promise(function(resolve) {
-                            if (item.request) {
-                                var reqData = {};
-                                try {
-                                    reqData = JSON.parse(item.request);
-                                    if (reqData.json && reqData.json.api_key) {
-                                        reqData.json.api_key = newApiKey;
-                                        item.request = JSON.stringify(reqData);
+                    (async() => {
+                        for (const item of res) {
+                            await new Promise(function(resolve) {
+                                if (item.request) {
+                                    var reqData = {};
+                                    try {
+                                        reqData = JSON.parse(item.request);
+                                        if (reqData.json && reqData.json.api_key) {
+                                            reqData.json.api_key = newApiKey;
+                                            item.request = JSON.stringify(reqData);
+                                        }
+                                    }
+                                    catch (ex) {
+                                        reqData = {};
                                     }
                                 }
-                                catch (ex) {
-                                    reqData = {};
-                                }
-                            }
-                            common.db.collection("long_tasks").update({_id: item._id}, {$set: {"creator": NEW_ID, request: item.request}}, function() {
-                                cn++;
-                                resolve();
+                                common.db.collection("long_tasks").update({_id: item._id}, {$set: {"creator": NEW_ID, request: item.request}}, function() {
+                                    cn++;
+                                    resolve();
+                                });
                             });
-                        });
-                    }).then(function() {
+                        }
+                    })().then(function() {
                         console.log(cn + " records updated for long_tasks");
                         done();
                     });

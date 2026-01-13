@@ -14,7 +14,6 @@ var apps = []; //Put in your APP ID like ["3469834986y34968y206y2"]
 var internal_events = [];
 var verbose = true;
 
-var Promise = require("bluebird");
 var crypto = require('crypto');
 var pluginManager = require("../../../plugins/pluginManager");
 
@@ -77,66 +76,70 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             drillDb.close();
         }
         else {
-            Promise.each(apps, function(app) {
-                console.log('------' + app.name + '------');
-                return new Promise(function(resolve) {
-                    var dates = {};
-                    var results = {};
-                    //fetch events list
-                    countlyDb.collection("events").findOne({"_id": app._id}, {"list": 1}, function(err, events) {
-                        events = events || [];
-                        var list = events.list || [];
-                        if (verbose) {
-                            console.log(list.length + " events found");
-                        }
-                        for (var z = 0; z < internal_events.length; z++) {
-                            if (list.indexOf(internal_events[z]) === -1) {
-                                list.push(internal_events[z]);
+            (async() => {
+                for (const app of apps) {
+                    console.log('------' + app.name + '------');
+                    await new Promise(function(resolve) {
+                        var dates = {};
+                        var results = {};
+                        //fetch events list
+                        countlyDb.collection("events").findOne({"_id": app._id}, {"list": 1}, function(err, events) {
+                            events = events || [];
+                            var list = events.list || [];
+                            if (verbose) {
+                                console.log(list.length + " events found");
                             }
-                        }
-                        Promise.each(list, function(event) {
-                            return new Promise(function(resolve2) {
-                                //get hashed drill collection name
-                                let collection = "drill_events" + crypto.createHash('sha1').update(event + app._id).digest('hex');
-                                if (verbose) {
-                                    console.log(collection);
+                            for (var z = 0; z < internal_events.length; z++) {
+                                if (list.indexOf(internal_events[z]) === -1) {
+                                    list.push(internal_events[z]);
                                 }
-                                var pipeline = [
-                                    {"$match": {"cd": {"$gte": startDate, "$lt": endDate}}},
-                                    {"$group": {"_id": "$d", "c": {"$sum": 1}}}
-                                ];
-                                drillDb.collection(collection).aggregate(pipeline, {"allowDiskUse": true}).toArray(function(err, data) {
-                                    if (err) {
-                                        console.log(err);
-                                    }
-                                    if (data.length > 0) {
-                                        results["_total"] = results["_total"] || {};
-                                        results[event] = {};
-                                        for (var z = 0; z < data.length; z++) {
-                                            if (!dates[data[z]._id]) {
-                                                dates[data[z]._id] = true;
-                                            }
-                                            results[event][data[z]._id] = data[z].c;
-                                            results["_total"][data[z]._id] = results["_total"][data[z]._id] || 0;
-                                            results["_total"][data[z]._id] += data[z].c || 0;
+                            }
+                            (async() => {
+                                for (const event of list) {
+                                    await new Promise(function(resolve2) {
+                                        //get hashed drill collection name
+                                        let collection = "drill_events" + crypto.createHash('sha1').update(event + app._id).digest('hex');
+                                        if (verbose) {
+                                            console.log(collection);
                                         }
-                                    }
-                                    resolve2();
-                                });
+                                        var pipeline = [
+                                            {"$match": {"cd": {"$gte": startDate, "$lt": endDate}}},
+                                            {"$group": {"_id": "$d", "c": {"$sum": 1}}}
+                                        ];
+                                        drillDb.collection(collection).aggregate(pipeline, {"allowDiskUse": true}).toArray(function(err, data) {
+                                            if (err) {
+                                                console.log(err);
+                                            }
+                                            if (data.length > 0) {
+                                                results["_total"] = results["_total"] || {};
+                                                results[event] = {};
+                                                for (var z = 0; z < data.length; z++) {
+                                                    if (!dates[data[z]._id]) {
+                                                        dates[data[z]._id] = true;
+                                                    }
+                                                    results[event][data[z]._id] = data[z].c;
+                                                    results["_total"][data[z]._id] = results["_total"][data[z]._id] || 0;
+                                                    results["_total"][data[z]._id] += data[z].c || 0;
+                                                }
+                                            }
+                                            resolve2();
+                                        });
+                                    });
+                                }
+                            })().then(function() {
+                                //output
+                                //sort dates
+                                output_data(dates, results);
+                                resolve();
+                            }).catch(function(err) {
+                                output_data(dates, results);
+                                console.log(err);
+                                resolve();
                             });
-                        }).then(function() {
-                            //output
-                            //sort dates
-                            output_data(dates, results);
-                            resolve();
-                        }).catch(function(err) {
-                            output_data(dates, results);
-                            console.log(err);
-                            resolve();
                         });
                     });
-                });
-            }).then(function() {
+                }
+            })().then(function() {
                 countlyDb.close();
                 drillDb.close();
             }).catch(function(err) {

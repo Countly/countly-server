@@ -5,7 +5,6 @@
  *  Command: node fix_null_uids.js
  */
 const pluginManager = require('../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 
 console.log('looking for byval reports');
 
@@ -20,35 +19,37 @@ Promise.all([pluginManager.dbConnection("countly")]).then(async function([countl
         else {
             console.log("checking reports");
             reports = reports || [];
-            Promise.each(reports, function(report) {
-                return new Promise(function(resolve, reject) {
+            (async() => {
+                for (const report of reports) {
+                    await new Promise(function(resolve, reject) {
 
-                    try {
-                        report.request = JSON.parse(report.request);
-                        if (report.request && report.request.json && report.request.json.method === "segmentation" && report.request.json.projectionKey && !report.request.json.no_snapshots) {
-                            report.request.json.no_snapshots = true;
-                            countlyDb.collection('long_tasks').updateOne({_id: report._id}, {$set: {"request": JSON.stringify(report.request)}}, function(err) {
-                                if (err) {
-                                    console.log('Error while updating report', report._id);
-                                    reject();
-                                }
-                                else {
-                                    console.log('report updated', report._id);
-                                    resolve();
-                                }
-                            });
+                        try {
+                            report.request = JSON.parse(report.request);
+                            if (report.request && report.request.json && report.request.json.method === "segmentation" && report.request.json.projectionKey && !report.request.json.no_snapshots) {
+                                report.request.json.no_snapshots = true;
+                                countlyDb.collection('long_tasks').updateOne({_id: report._id}, {$set: {"request": JSON.stringify(report.request)}}, function(err) {
+                                    if (err) {
+                                        console.log('Error while updating report', report._id);
+                                        reject();
+                                    }
+                                    else {
+                                        console.log('report updated', report._id);
+                                        resolve();
+                                    }
+                                });
+                            }
+                            else {
+                                resolve();
+                            }
                         }
-                        else {
+                        catch (e) {
+                            console.log('Error while parsing report', report._id);
+                            console.log(e);
                             resolve();
                         }
-                    }
-                    catch (e) {
-                        console.log('Error while parsing report', report._id);
-                        console.log(e);
-                        resolve();
-                    }
-                });
-            }).then(function() {
+                    });
+                }
+            })().then(function() {
                 console.log('Finished');
                 countlyDb.close();
                 process.exit();

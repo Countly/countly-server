@@ -9,7 +9,6 @@ var crypto = require('crypto');
 
 const plugins = require('../../../plugins/pluginManager.js');
 const common = require('../../../api/utils/common.js');
-const Promise = require("bluebird");
 const _ = require('underscore');
 const async = require('async');
 
@@ -33,48 +32,50 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
         if (run_drill) {
             dbs.push("drill");
         }
-        Promise.each(dbs, function(dbname) {
-            return new Promise((resolve) => {
-                if (run_countly) {
-                    var currentDB = common.db;
-                    if (dbname === "drill") {
-                        currentDB = drillDb;
-                    }
-                    currentDB.collections(function(err, collections) {
-                        if (err) {
-                            output[dbname] = {"err": err};
-
+        (async() => {
+            for (const dbname of dbs) {
+                await new Promise((resolve) => {
+                    if (run_countly) {
+                        var currentDB = common.db;
+                        if (dbname === "drill") {
+                            currentDB = drillDb;
                         }
-                        else {
-                            output[dbname] = {"indexes": []};
-                            Promise.all(collections.map((collection) => {
-                                return new Promise((resolve1) => {
-                                    collection.indexes(function(err, indexes) {
-                                        var ob = parseCollectionName(collection.collectionName, appList, eventList, viewList);
-                                        var goodName = ob.pretty;
+                        currentDB.collections(function(err, collections) {
+                            if (err) {
+                                output[dbname] = {"err": err};
 
-                                        if (err) {
-                                            output[dbname]["indexes"].push({"name": goodName, "collection": collection.collectionName, "err": err});
-                                        }
-                                        else {
-                                            output[dbname]["indexes"].push({"name": goodName, "collection": collection.collectionName, "indexes": indexes});
-                                        }
-                                        resolve1();
+                            }
+                            else {
+                                output[dbname] = {"indexes": []};
+                                Promise.all(collections.map((collection) => {
+                                    return new Promise((resolve1) => {
+                                        collection.indexes(function(err, indexes) {
+                                            var ob = parseCollectionName(collection.collectionName, appList, eventList, viewList);
+                                            var goodName = ob.pretty;
+
+                                            if (err) {
+                                                output[dbname]["indexes"].push({"name": goodName, "collection": collection.collectionName, "err": err});
+                                            }
+                                            else {
+                                                output[dbname]["indexes"].push({"name": goodName, "collection": collection.collectionName, "indexes": indexes});
+                                            }
+                                            resolve1();
+                                        });
                                     });
+                                })).then(() => {
+                                    resolve();
                                 });
-                            })).then(() => {
-                                resolve();
-                            });
-                        }
+                            }
 
-                    });
-                }
-                else {
-                    resolve();
-                }
+                        });
+                    }
+                    else {
+                        resolve();
+                    }
 
-            });
-        }).then(function(err) {
+                });
+            }
+        })().then(function(err) {
             if (err) {
                 console.log(err);
             }

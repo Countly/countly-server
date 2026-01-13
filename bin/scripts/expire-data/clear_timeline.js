@@ -38,7 +38,6 @@ Ecpected output form dry_run=false
     Finished
 */
 var pluginManager = require('../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 var moment = require('moment-timezone');
 const { ObjectId } = require('mongodb');
 
@@ -58,101 +57,103 @@ Promise.all([pluginManager.dbConnection("countly")]).then(async function([countl
         else {
             var tsMax = getPeriod(keepPeriod);
             console.log("Max timestamp to keep:" + tsMax);
-            Promise.each(apps, function(app) {
-                return new Promise(function(resolve/*, reject*/) {
-                    console.log("\nprocessing app:" + app.name);
-                    console.log("collecting ids to delete");
+            (async() => {
+                for (const app of apps) {
+                    await new Promise(function(resolve/*, reject*/) {
+                        console.log("\nprocessing app:" + app.name);
+                        console.log("collecting ids to delete");
 
-                    var pipeline = [{"$match": {"app_id": (app._id + "")}}, {"$group": {"_id": {"$arrayElemAt": [{"$split": ["$_id", "_"]}, 1]}}}];
-                    countlyDb.collection("timelineStatus").aggregate(pipeline, function(err, dates) {
-                        console.log("ids collected: " + dates.length);
-                        if (err) {
-                            console.log(err);
-                            resolve();
-                        }
-                        else {
-                            var regex = [];
-                            var ids = [];
-                            var mappedDates = {};
-
-                            var maxYear = 0;
-                            for (var z = 0; z < dates.length; z++) {
-                                var dd = dates[z]._id.split(":");
-                                if (dd.length > 2) {
-                                    var day0 = dates[z]._id.replace("h", "");
-                                    var ff = moment(day0, "YYYY:M:D:H");
-                                    if (ff.valueOf() < tsMax) {
-                                        try {
-                                            var yy = parseInt(dd[0]);
-                                            if (yy > maxYear) {
-                                                maxYear = yy;
-                                            }
-                                        }
-                                        catch (ex) {
-                                            console.log(ex);
-                                        }
-                                        mappedDates[dd[0]] = mappedDates[dd[0]] || {};
-                                        mappedDates[dd[0]][dd[1]] = mappedDates[dd[0]][dd[1]] || {};
-                                        mappedDates[dd[0]][dd[1]][dd[2]] = true;
-                                    }
-                                }
-                            }
-                            var ids_listed = [];
-                            var regex_listed = [];
-                            for (var year in mappedDates) {
-                                if (parseInt(year) < maxYear) { //if there is any year bigger in  clear whole year
-                                    ids.push(new RegExp("^.{40}_" + year + ":.*"));
-                                    ids_listed.push("^.{40}_" + year + ":.*");
-                                    regex.push(new RegExp("^" + year + ":.*"));
-                                    regex_listed.push("^" + year + ":.*");
-                                }
-                                else {
-                                    for (var month in mappedDates[year]) {
-                                        for (var day in mappedDates[year][month]) {
-                                            ids.push(new RegExp("^.{40}_" + maxYear + ":" + month + ":" + day + ":h\\d?\\d$"));
-                                            ids_listed.push("^.{40}_" + maxYear + ":" + month + ":" + day + ":h\\d?\\d$");
-                                            regex.push(new RegExp("^" + year + ":" + month + ":" + day + ".*"));
-                                            regex_listed.push("^" + year + ":" + month + ":" + day + ".*");
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (dry_run) {
-                                console.log("collected regexes for deletion for data collection");
-                                console.log(JSON.stringify(regex_listed));
-                                console.log("collected regexes for deletion for status collection");
-                                console.log(JSON.stringify(ids_listed));
-                                console.log("Skiping deletion as this is dry run");
+                        var pipeline = [{"$match": {"app_id": (app._id + "")}}, {"$group": {"_id": {"$arrayElemAt": [{"$split": ["$_id", "_"]}, 1]}}}];
+                        countlyDb.collection("timelineStatus").aggregate(pipeline, function(err, dates) {
+                            console.log("ids collected: " + dates.length);
+                            if (err) {
+                                console.log(err);
                                 resolve();
-                                return;
                             }
                             else {
-                                console.log("clering timeline Data collection...");
-                                countlyDb.collection("eventTimes" + app._id).remove({"_id": {"$in": regex}}, function(err0, res0) {
-                                    if (err0) {
-                                        console.e.log(err0);
-                                        console.log("Data deletion failied. Skipping this App.");
-                                        resolve();
+                                var regex = [];
+                                var ids = [];
+                                var mappedDates = {};
+
+                                var maxYear = 0;
+                                for (var z = 0; z < dates.length; z++) {
+                                    var dd = dates[z]._id.split(":");
+                                    if (dd.length > 2) {
+                                        var day0 = dates[z]._id.replace("h", "");
+                                        var ff = moment(day0, "YYYY:M:D:H");
+                                        if (ff.valueOf() < tsMax) {
+                                            try {
+                                                var yy = parseInt(dd[0]);
+                                                if (yy > maxYear) {
+                                                    maxYear = yy;
+                                                }
+                                            }
+                                            catch (ex) {
+                                                console.log(ex);
+                                            }
+                                            mappedDates[dd[0]] = mappedDates[dd[0]] || {};
+                                            mappedDates[dd[0]][dd[1]] = mappedDates[dd[0]][dd[1]] || {};
+                                            mappedDates[dd[0]][dd[1]][dd[2]] = true;
+                                        }
+                                    }
+                                }
+                                var ids_listed = [];
+                                var regex_listed = [];
+                                for (var year in mappedDates) {
+                                    if (parseInt(year) < maxYear) { //if there is any year bigger in  clear whole year
+                                        ids.push(new RegExp("^.{40}_" + year + ":.*"));
+                                        ids_listed.push("^.{40}_" + year + ":.*");
+                                        regex.push(new RegExp("^" + year + ":.*"));
+                                        regex_listed.push("^" + year + ":.*");
                                     }
                                     else {
-                                        console.log(JSON.stringify(res0));
-                                        console.log("Process could take long time. Clering timelineStatus....");
-                                        countlyDb.collection("timelineStatus").remove({"app_id": (app._id + ""), "_id": {"$in": ids}}, function(err1, res) {
-                                            console.log(JSON.stringify(res));
-                                            countlyDb.collection("timelineStatus").ensureIndex({"app_id": 1}, function() {});
-                                            if (err1) {
-                                                console.log(err1);
+                                        for (var month in mappedDates[year]) {
+                                            for (var day in mappedDates[year][month]) {
+                                                ids.push(new RegExp("^.{40}_" + maxYear + ":" + month + ":" + day + ":h\\d?\\d$"));
+                                                ids_listed.push("^.{40}_" + maxYear + ":" + month + ":" + day + ":h\\d?\\d$");
+                                                regex.push(new RegExp("^" + year + ":" + month + ":" + day + ".*"));
+                                                regex_listed.push("^" + year + ":" + month + ":" + day + ".*");
                                             }
-                                            resolve();
-                                        });
+                                        }
                                     }
-                                });
+                                }
+
+                                if (dry_run) {
+                                    console.log("collected regexes for deletion for data collection");
+                                    console.log(JSON.stringify(regex_listed));
+                                    console.log("collected regexes for deletion for status collection");
+                                    console.log(JSON.stringify(ids_listed));
+                                    console.log("Skiping deletion as this is dry run");
+                                    resolve();
+                                    return;
+                                }
+                                else {
+                                    console.log("clering timeline Data collection...");
+                                    countlyDb.collection("eventTimes" + app._id).remove({"_id": {"$in": regex}}, function(err0, res0) {
+                                        if (err0) {
+                                            console.e.log(err0);
+                                            console.log("Data deletion failied. Skipping this App.");
+                                            resolve();
+                                        }
+                                        else {
+                                            console.log(JSON.stringify(res0));
+                                            console.log("Process could take long time. Clering timelineStatus....");
+                                            countlyDb.collection("timelineStatus").remove({"app_id": (app._id + ""), "_id": {"$in": ids}}, function(err1, res) {
+                                                console.log(JSON.stringify(res));
+                                                countlyDb.collection("timelineStatus").ensureIndex({"app_id": 1}, function() {});
+                                                if (err1) {
+                                                    console.log(err1);
+                                                }
+                                                resolve();
+                                            });
+                                        }
+                                    });
+                                }
                             }
-                        }
+                        });
                     });
-                });
-            }).then(function() {
+                }
+            })().then(function() {
                 console.log("Finished");
                 countlyDb.close();
             });

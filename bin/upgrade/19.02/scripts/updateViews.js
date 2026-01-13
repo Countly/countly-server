@@ -1,7 +1,6 @@
 var pluginManager = require('../../../../plugins/pluginManager.js'),
     async = require('async'),
-    crypto = require('crypto'),
-    Promise = require("bluebird");
+    crypto = require('crypto');
 
 console.log("Updating views");
 
@@ -135,10 +134,11 @@ pluginManager.dbConnection().then((countlyDb) => {
                     }
                 }
             }
-            Promise.each(year_docs, function(monthObject) {
-                console.log("processing" + monthObject._id);
-                var msplit = monthObject._id.split(':');
-                return new Promise(function(resolve, reject) {
+            (async () => {
+                for (const monthObject of year_docs) {
+                    console.log("processing" + monthObject._id);
+                    var msplit = monthObject._id.split(':');
+                    await new Promise(function(resolve, reject) {
                     let newObj = {};
                     newObj['no-segment'] = {};
                     newObj.platform = {};
@@ -204,43 +204,41 @@ pluginManager.dbConnection().then((countlyDb) => {
                                 }
                             }
                         }
-                    }, function(err) {
+                    }, async function(err) {
                         var allSegments = Object.keys(newObj);
-                        Promise.each(allSegments, function(ss) {
-                            return new Promise(async function(resolve1, reject1) {
-                                var colName = "app_viewdata" + crypto.createHash('sha1').update(appID).digest('hex');
-                                if (ss !== 'no-segment') {
-                                    colName = "app_viewdata" + crypto.createHash('sha1').update(ss + appID).digest('hex');
+                        for (const ss of allSegments) {
+                            var colName = "app_viewdata" + crypto.createHash('sha1').update(appID).digest('hex');
+                            if (ss !== 'no-segment') {
+                                colName = "app_viewdata" + crypto.createHash('sha1').update(ss + appID).digest('hex');
+                            }
+                            var bulk = countlyDb.collection(colName).initializeUnorderedBulkOp();
+                            for (var d in newObj[ss]) {
+                                if( viewsMap[d] ) {
+                                    var iid = viewsMap[d] + "";
+                                    bulk.find({'_id': iid + '_' + monthObject._id}).upsert().updateOne({$set: {'_id': iid + '_' + monthObject._id, 'vw': countlyDb.ObjectID(iid), 's': ss, 'm': monthObject._id, 'd': newObj[ss][d] }});
                                 }
-                                var bulk = countlyDb.collection(colName).initializeUnorderedBulkOp();
-                                for (var d in newObj[ss]) {
-                                    if( viewsMap[d] ) {
-                                        var iid = viewsMap[d] + "";
-                                        bulk.find({'_id': iid + '_' + monthObject._id}).upsert().updateOne({$set: {'_id': iid + '_' + monthObject._id, 'vw': countlyDb.ObjectID(iid), 's': ss, 'm': monthObject._id, 'd': newObj[ss][d] }});
-                                    }
+                            }
+                            if (bulk.length > 0) {
+                                try {
+                                    await bulk.execute();
                                 }
-                                if (bulk.length > 0) {
-                                    try {
-                                        await bulk.execute();
-                                    }
-                                    catch (e) {
-                                        console.log(e);
-                                    }
+                                catch (e) {
+                                    console.log(e);
                                 }
-                                resolve1();
-                            });
-                        }).then(function() {
-                            countlyDb.collection('app_viewdata' + appID).update({"m": monthObject._id}, {$set: {'dataMoved': true}}, {"multi": true}, function(err, res) {
-                                resolve();
-                            });
+                            }
+                        }
+                        countlyDb.collection('app_viewdata' + appID).update({"m": monthObject._id}, {$set: {'dataMoved': true}}, {"multi": true}, function(err, res) {
+                            resolve();
                         });
     
                     });
-                });
-            }).then(function() {
-                Promise.each(month_docs, function(monthObject) {
+                    });
+                }
+            })().then(function() {
+                (async () => {
+                for (const monthObject of month_docs) {
                     console.log("processing" + monthObject._id);
-                    return new Promise(async function(resolve, reject) {
+                    await new Promise(async function(resolve, reject) {
                         var newObj = {};
                         var newObj2 = {};
     
@@ -382,7 +380,8 @@ pluginManager.dbConnection().then((countlyDb) => {
                             resolve();
                         });
                     });
-                }).then(function() {
+                }
+                })().then(function() {
                     console.log("Finished in:" + (Date.now() - rightNow) / 1000);
                     var segmUpdate = {};
                     var updateSegments = false;
@@ -508,13 +507,15 @@ pluginManager.dbConnection().then((countlyDb) => {
         for (var z = 0; z < apps.length; z++) {
             appIds.push(apps[z]._id + "");
         }
-        Promise.each(appIds, function(appID) {
-            return new Promise(function(resolve, reject) {
-                check_and_fix_data(appID, function() {
-                    resolve();
+        (async () => {
+            for (const appID of appIds) {
+                await new Promise(function(resolve, reject) {
+                    check_and_fix_data(appID, function() {
+                        resolve();
+                    });
                 });
-            });
-        }).then(function() {
+            }
+        })().then(function() {
             console.log("Finished transforming data");
             countlyDb.close();
         });

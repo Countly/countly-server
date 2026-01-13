@@ -4,7 +4,6 @@
 */
 var common = require("./common.js"),
     plugins = require('../../plugins/pluginManager.js'),
-    Promise = require("bluebird"),
     crypto = require('crypto'),
     log = require('./log.js')('core:rights');
 
@@ -465,23 +464,24 @@ exports.validateUser = function(params, callback, callbackParam) {
 function wrapCallback(params, callback, callbackParam, func) {
     var promise = new Promise(func);
     if (typeof callback === "function") {
-        promise.asCallback(function(err) {
-            if (!err) {
-                let ret;
-                if (callbackParam) {
-                    ret = callback(callbackParam, params);
-                }
-                else {
-                    ret = callback(params);
-                }
-
-                if (ret && typeof ret.then === 'function') {
-                    ret.catch(e => {
-                        log.e('Error in CRUD callback', e);
-                        common.returnMessage(params, 500, 'Server error');
-                    });
-                }
+        promise.then(function() {
+            let ret;
+            if (callbackParam) {
+                ret = callback(callbackParam, params);
             }
+            else {
+                ret = callback(params);
+            }
+
+            if (ret && typeof ret.then === 'function') {
+                ret.catch(e => {
+                    log.e('Error in CRUD callback', e);
+                    common.returnMessage(params, 500, 'Server error');
+                });
+            }
+        }).catch(function(err) {
+            // Error is already handled by the promise rejection
+            log.d('Validation failed:', err);
         });
     }
     else if (callback) {
