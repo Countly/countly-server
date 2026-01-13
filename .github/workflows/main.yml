@@ -914,7 +914,7 @@ jobs:
       - name: Install plugins
         run: |
           docker exec countly-test bash -c "
-            cp './plugins/plugins.default.json' '/opt/countly/plugins/plugins.json'
+            cp -rf /opt/countly/plugins/plugins.default.json /opt/countly/plugins/plugins.json
             node /opt/countly/bin/scripts/install_plugins.js
             npm install
           "
