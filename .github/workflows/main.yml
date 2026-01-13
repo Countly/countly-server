@@ -360,6 +360,14 @@ jobs:
           "
           echo 'Code copied into container.'
 
+      - name: Install plugins
+        run: |
+          docker exec countly-test bash -c "
+            node /opt/countly/bin/scripts/install_plugins.js --force
+            cd /opt/countly
+            npm install
+          "
+
       - name: Verify Kafka topics created
         run: |
           echo "Checking if drill-events topic was created..."
@@ -385,7 +393,6 @@ jobs:
         run: |
           docker exec -i countly-test bash -c "
             cd /opt/countly
-            npm install
             /sbin/my_init &
             sleep 40
             node /opt/countly/bin/scripts/test.connection.js
