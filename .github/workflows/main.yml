@@ -134,9 +134,21 @@ jobs:
         run: sudo countly task dist-all
   unit-tests:
     runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:8.0
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
     container:
       image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name  }}
       env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
@@ -153,6 +165,7 @@ jobs:
 
       - name: Run unit tests
         shell: bash
+        working-directory: /opt/countly
         run: npm run test:unit
   test-api-core:
     runs-on: ubuntu-latest
