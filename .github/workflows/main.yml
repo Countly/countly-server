@@ -915,9 +915,9 @@ jobs:
         run: |
           docker exec countly-test bash -c "
             cat /opt/countly/plugins/plugins.default.json
-            cat /opt/countly/plugins/plugins.json
             cp -rf /opt/countly/plugins/plugins.default.json /opt/countly/plugins/plugins.json
-            node /opt/countly/bin/scripts/install_plugins.js
+            cat /opt/countly/plugins/plugins.json
+            node /opt/countly/bin/scripts/install_plugins.js --force
             npm install
           "
 
