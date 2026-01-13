@@ -385,10 +385,10 @@ jobs:
         run: |
           docker exec -i countly-test bash -c "
             cd /opt/countly
+            npm install
             /sbin/my_init &
             sleep 40
             node /opt/countly/bin/scripts/test.connection.js
-            npm install
             npx grunt mochaTest
           "
 
