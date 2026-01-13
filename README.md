@@ -123,6 +123,7 @@ Plus lots of [open source libraries](https://support.countly.com/hc/en-us/articl
 * [Coding Guidelines](CODING_GUIDELINES.md) — Development standards and best practices
 * [Security Guidelines](docs/SECURITY.md) — Security requirements for contributions
 * [Vue.js Guidelines](docs/VUEJS_GUIDELINES.md) — Frontend development patterns
+* [CSS Style Guide](docs/CSS_STYLE_GUIDE.md) — SASS, BEM, and Bulma conventions
 * [UI Testing Guide](docs/UI_TESTING.md) — Cypress testing and data-test-id usage
 * [Test Suite Documentation](test/README.md) — Running and writing tests
 

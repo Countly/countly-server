@@ -6,7 +6,10 @@ This document provides Vue.js specific guidelines for developing Countly Server 
 - [Component Architecture](#component-architecture)
 - [Naming Conventions](#naming-conventions)
 - [Template Best Practices](#template-best-practices)
+- [Template System](#template-system)
 - [State Management](#state-management)
+- [Vuex Modules](#vuex-modules)
+- [Backbone Integration](#backbone-integration)
 - [Security](#security)
 - [Testing with Data Test IDs](#testing-with-data-test-ids)
 
@@ -187,6 +190,74 @@ var MyView = countlyVue.views.create({
 
 ---
 
+## Template System
+
+Countly uses a custom template loading system since we don't use Single File Components.
+
+### Template Methods
+
+**Method 1: Template ID Reference**
+
+Templates are mounted to DOM and referenced by ID:
+
+```html
+<!-- Template file: templates/main.html -->
+<script type="text/x-template" id="drawer-template">
+    <div class="drawer-content">...</div>
+</script>
+<script type="text/x-template" id="card-template">
+    <div class="card">...</div>
+</script>
+```
+
+```javascript
+var DrawerComponent = countlyVue.views.create({
+    template: '#drawer-template',
+    // ...
+});
+```
+
+**Method 2: BackboneWrapper Template Loading**
+
+Templates are automatically loaded and wrapped:
+
+```javascript
+var exampleView = new countlyVue.views.BackboneWrapper({
+    component: MainView,
+    templates: [
+        // Load all templates in a file
+        "/vue-example/templates/empty.html",
+        
+        // Load with namespace mapping
+        {
+            namespace: 'vue-example',
+            mapping: {
+                'table-template': '/vue-example/templates/table.html',
+                'main-template': '/vue-example/templates/main.html'
+            }
+        }
+    ]
+});
+```
+
+The template ID is auto-generated as: `{namespace}-{key}` (e.g., `vue-example-table-template`).
+
+### Template File Content
+
+When using namespace mapping, template files contain raw HTML (no script wrapper):
+
+```html
+<!-- /vue-example/templates/main.html -->
+<div class="vue-example-wrapper" v-bind:class="[componentId]">
+    <tg-view></tg-view>
+    <table-view @open-drawer="openDrawer"></table-view>
+</div>
+```
+
+BackboneWrapper automatically wraps it with the script tag.
+
+---
+
 ## State Management
 
 ### Prefer Computed Properties
@@ -268,6 +339,155 @@ var ChildComponent = {
 
 ---
 
+## Vuex Modules
+
+Each Countly plugin maps to a single namespaced Vuex module via `countly{PluginName}.getVuexModule()`.
+
+### Defining a Vuex Module
+
+```javascript
+// countly.models.js
+countlyVueExample.getVuexModule = function() {
+    var getEmptyState = function() {
+        return {
+            graphPoints: [],
+            isLoading: false
+        };
+    };
+
+    var getters = {
+        graphPoints: function(state) {
+            return state.graphPoints;
+        },
+        isLoading: function(state) {
+            return state.isLoading;
+        }
+    };
+
+    var mutations = {
+        SET_GRAPH_POINTS: function(state, points) {
+            state.graphPoints = points;
+        },
+        SET_LOADING: function(state, isLoading) {
+            state.isLoading = isLoading;
+        }
+    };
+
+    var actions = {
+        initialize: function(context) {
+            context.dispatch("refresh");
+        },
+        refresh: function(context) {
+            context.commit("SET_LOADING", true);
+            // Fetch data...
+        }
+    };
+
+    return countlyVue.vuex.Module("countlyVueExample", {
+        state: getEmptyState,
+        getters: getters,
+        mutations: mutations,
+        actions: actions
+    });
+};
+```
+
+### Using in Views
+
+```javascript
+var MainView = countlyVue.views.BaseView.extend({
+    methods: {
+        refresh: function() {
+            this.$store.dispatch("countlyVueExample/refresh");
+        }
+    },
+    beforeCreate: function() {
+        this.$store.dispatch("countlyVueExample/initialize");
+    },
+    computed: {
+        graphPoints: function() {
+            return this.$store.getters["countlyVueExample/graphPoints"];
+        }
+    }
+});
+```
+
+### Registering with BackboneWrapper
+
+```javascript
+var vuex = [{
+    clyModel: countlyVueExample
+}];
+
+var exampleView = new countlyVue.views.BackboneWrapper({
+    component: MainView,
+    vuex: vuex,
+    templates: [...]
+});
+```
+
+---
+
+## Backbone Integration
+
+Vue views are integrated with Backbone router via `countlyVue.views.BackboneWrapper`.
+
+### Basic Routing
+
+```javascript
+var exampleView = new countlyVue.views.BackboneWrapper({
+    component: MainView,
+    vuex: [{clyModel: countlyVueExample}],
+    templates: ["/vue-example/templates/main.html"]
+});
+
+app.vueExampleView = exampleView;
+
+app.route("/vue/example", 'vue-example', function() {
+    this.renderWhenReady(this.vueExampleView);
+});
+```
+
+### BaseView vs BaseComponent
+
+All Vue views should extend **countlyVue.views.BaseView**:
+- Includes i18n mixin automatically
+- Has refresh method support for auto-refresh
+- Integrates with Countly's permission system
+
+All custom components should extend **countlyVue.components.BaseComponent**:
+- Provides access to common utilities
+- Allows consistent component patterns
+
+```javascript
+// View (entry point, routable)
+var MainView = countlyVue.views.BaseView.extend({
+    template: '#main-template',
+    methods: {
+        refresh: function() { ... }
+    }
+});
+
+// Component (reusable, not routed)
+var BackLinkComponent = countlyVue.components.BaseComponent.extend({
+    mixins: [countlyVue.mixins.i18n],
+    props: {
+        title: {type: String, required: false}
+    }
+});
+```
+
+### i18n in Templates
+
+The i18n mixin is automatically included in views:
+
+```html
+<h1>{{ i18n("common.back") }}</h1>
+<p>{{ i18n("common.welcome", userName) }}</p>
+```
+
+---
+
 ## Security
 
 ### XSS Prevention
@@ -327,7 +547,7 @@ Add `data-test-id` attributes to all interactive elements:
 <el-tab-pane 
     v-for="tab in tabs" 
     :key="tab.name"
-    :data-test-id="'tab-' + tab.name.toLowerCase().replace(' ', '-') + '-link'">
+    :data-test-id="'tab-' + tab.name.toLowerCase().replace(/ /g, '-') + '-link'">
     {{ tab.label }}
 </el-tab-pane>
 ```

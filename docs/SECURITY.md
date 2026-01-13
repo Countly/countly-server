@@ -146,11 +146,11 @@ var safeString = common.escape_html(unsafeString);
 
 ### Frontend
 
-**Data from API should be treated as HTML** (it's already escaped):
+**Data from API should be rendered as text** (Vue will escape it):
 
 ```html
-<!-- ✅ Correct: Render escaped content as HTML -->
-<p v-html="apiData.description"></p>
+<!-- ✅ Correct: Render API-provided text safely -->
+<p>{{ apiData.description }}</p>
 ```
 
 **User input that bypasses API must be escaped as text**:
@@ -225,7 +225,7 @@ function isSafeQuery(obj) {
         if (key.startsWith('$')) {
             return false;  // MongoDB operator detected
         }
-        if (typeof obj[key] === 'object' && !isSafeQuery(obj[key])) {
+        if (typeof obj[key] === 'object' && obj[key] !== null && !isSafeQuery(obj[key])) {
             return false;
         }
     }

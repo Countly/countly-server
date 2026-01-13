@@ -8,7 +8,11 @@ This document provides comprehensive coding standards and best practices for dev
 - [Frontend Development (Vue.js)](#frontend-development-vuejs)
 - [MongoDB Best Practices](#mongodb-best-practices)
 - [Security Requirements](#security-requirements)
+- [Documentation & Comments](#documentation--comments)
 - [Testing](#testing)
+- [Writing Custom Scripts](#writing-custom-scripts)
+- [Pull Request Guidelines](#pull-request-guidelines)
+- [Localization](#localization)
 - [Plugin Development](#plugin-development)
 
 ---
@@ -239,7 +243,7 @@ Add `data-test-id` attributes for UI testing:
 <el-tab-pane 
     v-for="tab in tabs" 
     :key="tab.name"
-    :data-test-id="'tab-' + tab.name.toLowerCase().replace(' ', '-') + '-link'">
+    :data-test-id="'tab-' + tab.name.toLowerCase().replace(/ /g, '-') + '-link'">
 </el-tab-pane>
 ```
 
@@ -389,6 +393,67 @@ cp.spawn("nodejs", [userInput]);
 ### CSV Injection Prevention
 
 Use `preventCSVInjection` when exporting to CSV/Excel formats.
+
+---
+
+## Documentation & Comments
+
+### JSDoc Documentation
+
+Document all public functions using JSDoc format for automatic documentation generation:
+
+```javascript
+/**
+ * Calculates the percent change between previous and current values.
+ * @param {number} previous - data for previous period
+ * @param {number} current - data for current period
+ * @returns {object} in the following format {"percent": "20%", "trend": "u"}
+ * @example
+ *   //outputs {"percent":"100%","trend":"u"}
+ *   countlyCommon.getPercentChange(100, 200);
+ */
+function getPercentChange(previous, current) { ... }
+```
+
+### Documenting Objects
+
+```javascript
+/**
+ * Object with common functions to be used for multiple purposes
+ * @name countlyCommon
+ * @global
+ * @namespace countlyCommon
+ */
+var countlyCommon = {};
+
+/**
+ * App Key of currently selected app or 0 when not initialized
+ * @type {string|number}
+ */
+countlyCommon.ACTIVE_APP_KEY = 0;
+```
+
+### Documenting Objects with Properties
+
+```javascript
+/**
+ * Currently selected period
+ * @property {array=} currentPeriodArr - array with ticks for current period
+ * @property {array=} previousPeriodArr - array with ticks for previous period
+ * @property {string} dateString - date format for graphs, example "D MMM, YYYY"
+ * @property {boolean} isSpecialPeriod - true if current period is special
+ * @property {number} daysInPeriod - amount of full days in selected period
+ */
+countlyCommon.periodObj = calculatePeriodObj();
+```
+
+### Generating Documentation
+
+```bash
+countly docs generate
+```
+
+Documentation is generated in `countly/frontend/express/public/docs` with browser-side docs in `browser/` and API docs in `api/`. View locally via `index.html` or at `http://yourdomain.com/docs`.
 
 ---
 
@@ -557,9 +622,128 @@ countlyDb.collection('apps').find({}).toArray(function(err, apps) {
 
 ---
 
+## Writing Custom Scripts
+
+### Prerequisites
+
+Custom scripts should be committed to `bin/scripts/` with appropriate subfolders.
+
+### Script Header Requirements
+
+Every script must include a header comment:
+
+```bash
+#!/bin/bash
+
+#  Description of what this script does
+#  Server: mongodb / countly / any
+#  Path: where the script should be located
+#  Command: bash myscript.sh
+```
+
+### Variable Documentation
+
+All configurable variables must be listed with comments:
+
+```bash
+#connection string without database
+connection_string="mongodb://localhost"
+
+#database to operate on
+db="countly"
+
+#output directory for results
+out_dir="./output"
+```
+
+### Script Requirements
+
+1. **Provide output** - Show progress of what the script does
+2. **Dry run option** - Especially for destructive operations, show what will happen
+3. **Error logging** - Properly log all errors
+4. **Idempotent** - Safe to run multiple times
+5. **No customer data** - Make scripts configurable (api_key, app_id, etc.)
+
+### Shell Script Validation
+
+```bash
+# Validate with shellcheck
+countly shellcheck
+
+# Or directly
+shellcheck myscript.sh
+```
+
+### Script Types
+
+| Type | Use Case |
+|------|----------|
+| Bash scripts | Command line operations, system tasks |
+| MongoDB scripts | Database queries, data manipulation |
+| Node.js scripts | Complex logic, API interactions |
+
+---
+
+## Pull Request Guidelines
+
+### Creating a PR
+
+1. **Write a clear description**:
+   - Link to issue/ticket
+   - Describe what and why
+   - Include notes for reviewers
+2. **Add appropriate labels** (`bug`, `feature`, `needs review`)
+3. **Keep PRs small and focused** - Avoid long-lived PRs
+4. **Add changelog entry** if applicable
+
+### Reviewing a PR
+
+- Check for obvious bugs or missed edge cases
+- Ensure unnecessary files/changes are removed
+- Verify complex code has inline comments
+- Confirm changelog is updated
+- Check for sufficient tests
+
+### Before Merging
+
+1. **All automated checks pass** - Investigate failures, don't ignore
+2. **At least one code review approval**
+3. **Merge when ready**
+4. **Verify deployment** - Check `master.count.ly` or `next.count.ly`
+
+### Ownership
+
+The PR creator owns it from creation to merge and deployment verification.
+
+---
+
+## Localization
+
+### File Structure
+
+Localization strings are stored in `.properties` files:
+- English: `<pluginname>.properties`
+- Other languages: `<pluginname>_<lang>.properties`
+
+### Adding New Strings
+
+1. Add to your plugin's properties file
+2. Submit to Transifex: https://www.transifex.com/osoner/countly/
+3. Commit to countly-localization repo for auto-sync
+
+### Building Locales
+
+```bash
+npx grunt locales
+```
+
+---
+
 ## Additional Resources
 
 - [API Documentation](http://countly.github.io/countly-server/)
 - [Plugin Development Guide](https://support.countly.com/hc/en-us/articles/360036862392)
 - [Security Guidelines](docs/SECURITY.md)
-- [Testing Guide](test/README.md)
+- [Vue.js Guidelines](docs/VUEJS_GUIDELINES.md)
+- [CSS Style Guide](docs/CSS_STYLE_GUIDE.md)
+- [UI Testing Guide](docs/UI_TESTING.md)

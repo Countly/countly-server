@@ -87,7 +87,7 @@ Tests run automatically on PRs:
 <el-tab-pane 
     v-for="tab in tabs" 
     :key="tab.name"
-    :data-test-id="'tab-' + (tab.dataTestId || tab.title.toLowerCase().replace(' ', '-')) + '-link'">
+    :data-test-id="'tab-' + (tab.dataTestId || tab.title.toLowerCase().replace(/ /g, '-')) + '-link'">
 </el-tab-pane>
 ```
 
@@ -226,7 +226,7 @@ cy.get('[data-test-id="hidden-button"]').click({ force: true });
 cy.get('[data-test-id="my-element"]').should('be.visible').click();
 ```
 
-### Step 4: Get Help
+### Step 5: Get Help
 
 If the issue persists:
 1. Share failure details in **#dev-team** Slack channel

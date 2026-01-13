@@ -183,12 +183,43 @@ npm run test:plugin -- <name>     # Single plugin tests
 # Linting
 countly plugin lint <pluginname>
 countly plugin lintfix <pluginname>
+
+# Shell script validation
+countly shellcheck
 ```
 
 ### Plugin Test Requirements
 - Test empty state, various inputs, and cleanup
 - Verify app lifecycle handlers work correctly
 - Include tests in `plugins/<name>/tests.js`
+
+## CSS & Styling
+
+- Use **SASS** (SCSS syntax) for stylesheets
+- Use **BEM naming** with `cly-vue-` prefix for all new classes
+- Use **Bulma** classes prefixed with `bu-` for grid/layout
+- Don't use `@import`, use `@use` in SASS files
+- Compile with `npx grunt sass` or `npx grunt dist-all`
+
+## JSDoc Comments
+
+Document all public functions:
+```javascript
+/**
+ * Calculates percent change between periods.
+ * @param {number} previous - data for previous period
+ * @param {number} current - data for current period
+ * @returns {object} {"percent": "20%", "trend": "u"}
+ */
+```
+
+## Custom Scripts
+
+Scripts in `bin/scripts/` must include:
+- Header comment with description, server type, path, command
+- All configurable variables with comments
+- Dry run option for destructive operations
+- Idempotent behavior (safe to run multiple times)
 
 ## Development Commands
 
@@ -213,3 +244,7 @@ node bin/commands/scripts/plugin.js disable <name>
 | Sample plugin | `plugins/empty/` |
 | TypeScript types | `types/` |
 | Coding guidelines | `CODING_GUIDELINES.md` |
+| Vue.js guidelines | `docs/VUEJS_GUIDELINES.md` |
+| CSS style guide | `docs/CSS_STYLE_GUIDE.md` |
+| Security guidelines | `docs/SECURITY.md` |
+| UI testing guide | `docs/UI_TESTING.md` |
