@@ -36,9 +36,7 @@ services:
 
   # Kafka Connect with ClickHouse connector
   kafka-connect:
-    build:
-      context: .
-      dockerfile: gcr.io/countly-dev-313620/kafka-connect-clickhouse:0.47.0-kafka-4.0.0-ch-1.3.2
+    image: countly/kafka-connect-clickhouse:latest
     container_name: kafka-connect
     depends_on:
       kafka:

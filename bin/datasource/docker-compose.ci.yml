@@ -42,10 +42,10 @@ services:
       retries: 8
 
   # ------------------------------
-  # Kafka Connect (CI Image with ClickHouse Connector)
+  # Kafka Connect (Docker Hub Image with ClickHouse Connector)
   # ------------------------------
   kafka-connect:
-    image: gcr.io/countly-dev-313620/kafka-connect-clickhouse-ci:kafka-4.0.0-ch-1.3.5
+    image: countly/kafka-connect-clickhouse:latest
     container_name: kafka-connect
     depends_on:
       kafka:
