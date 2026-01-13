@@ -671,168 +671,300 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_type: [dashboard, onboarding]
+        test_type: [dashboard, onboarding, sdk]
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install Chrome
-        shell: bash
+      - name: Check docker compose version
         run: |
-          apt update
-          apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
-          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
-          apt install -y /tmp/chrome.deb
+          docker compose version
+
+      - name: Start backend dependencies
+        working-directory: devsetup/datasource
+        run: |
+          docker compose -f docker-compose.ci.yml up -d
+          docker compose -f docker-compose.ci.yml ps
+
+      - name: Wait for Kafka
+        run: |
+          echo "Waiting for Kafka..."
+          for i in {1..40}; do
+            if docker ps --filter "name=kafka" --filter "health=healthy" --format '{{.Names}}' | grep -q kafka; then
+              echo "Kafka is healthy!"
+              break
+            fi
+            echo "Kafka not ready yet..."
+            sleep 5
+          done
+
+      - name: Wait for MongoDB Replica Set
+        run: |
+          echo "Waiting for MongoDB RS0..."
+          for i in {1..40}; do
+            if docker logs mongodb-init 2>&1 | grep -q 'Replica set'; then
+              echo "Replica set OK!"
+              break
+            fi
+            sleep 5
+          done
+
+      - name: Wait for ClickHouse
+        run: |
+          echo "Waiting for ClickHouse..."
+          for i in {1..40}; do
+            if curl -s http://localhost:8123/ping | grep -q 'Ok'; then
+              echo "ClickHouse is responding to ping!"
+              break
+            fi
+            echo "Still waiting..."
+            sleep 5
+          done
+          
+          echo "Verifying ClickHouse can accept queries..."
+          for i in {1..20}; do
+            if curl -s "http://localhost:8123/?query=SELECT%201" | grep -q '1'; then
+              echo "ClickHouse can execute queries!"
+              break
+            fi
+            echo "Waiting for query capability... (attempt $i/20)"
+            sleep 3
+          done
+          
+          echo "Creating test database to verify write capability..."
+          curl -s "http://localhost:8123/?query=CREATE%20DATABASE%20IF%20NOT%20EXISTS%20countly_drill" || echo "Database creation attempt"
+          sleep 2
+          
+          echo "Verifying database exists..."
+          curl -s "http://localhost:8123/?query=SHOW%20DATABASES" | grep -q "countly_drill" && echo "✓ Database ready" || echo "Database check failed"
+
+      - name: Wait for Kafka Connect
+        run: |
+          echo "Waiting for Kafka Connect..."
+          for i in {1..40}; do
+            if curl -s http://localhost:8083/connectors >/dev/null; then
+              echo "Kafka Connect API is ready!"
+              break
+            fi
+            echo "Not ready yet..."
+            sleep 5
+          done
+
+      - name: Wait for connector-init to complete
+        working-directory: devsetup/datasource
+        run: |
+          echo "Waiting for connector-init service to complete..."
+          for i in {1..60}; do
+            STATUS=$(docker inspect connector-init --format='{{.State.Status}}' 2>/dev/null || echo "not_found")
+            if [ "$STATUS" = "exited" ]; then
+              EXIT_CODE=$(docker inspect connector-init --format='{{.State.ExitCode}}' 2>/dev/null || echo "1")
+              if [ "$EXIT_CODE" = "0" ]; then
+                echo "connector-init completed successfully!"
+                break
+              else
+                echo "connector-init failed with exit code $EXIT_CODE"
+                docker logs connector-init
+                exit 1
+              fi
+            fi
+            echo "connector-init status: $STATUS (attempt $i/60)"
+            sleep 5
+          done
+          echo "Verifying connector is running..."
+          curl -s http://localhost:8083/connectors/clickhouse-sink/status | head -100
+
+      - name: Create Kafka topic
+        run: |
+          echo "Creating drill-events topic..."
+          docker exec kafka /opt/kafka/bin/kafka-topics.sh --create \
+            --topic drill-events \
+            --partitions 1 \
+            --replication-factor 1 \
+            --bootstrap-server kafka:29092 || echo "Topic may already exist"
+          echo "Verifying topic..."
+          docker exec kafka /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server kafka:29092
+
+      - name: Wait for Kafka consumer offsets topic
+        run: |
+          echo "Waiting for __consumer_offsets topic (required for consumer groups)..."
+          for i in {1..30}; do
+            if docker exec kafka /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server kafka:29092 | grep -q "__consumer_offsets"; then
+              echo "__consumer_offsets topic ready!"
+              sleep 5
+              break
+            fi
+            echo "Waiting... (attempt $i/30)"
+            sleep 2
+          done
+
+      - name: Show running services
+        working-directory: devsetup/datasource
+        run: |
+          docker compose -f docker-compose.ci.yml ps
+          echo "Backend stack fully operational!"
+
+      - name: Pull Countly Core image
+        run: |
+          docker pull countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
+
+      - name: Start Countly UI test container
+        run: |
+           docker run -d \
+            --name countly-test \
+            --network datasource_kafka-net \
+            -e NODE_ENV=test \
+            -e COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,logger,systemlogs,populator,reports,crashes,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,config-transfer,consolidate,data-manager,hooks,dashboards,journey_engine,content,clickhouse,guides,sdk,kafka,oidc,ai-assistant,revenue \
+            -e COUNTLY_CONFIG__MONGODB_HOST=mongodb \
+            -e COUNTLY_CONFIG__MONGODB_DB=countly \
+            -e COUNTLY_CONFIG__MONGODB_PORT=27017 \
+            -e COUNTLY_CONFIG__CLICKHOUSE_URL=http://clickhouse:8123 \
+            -e COUNTLY_CONFIG__CLICKHOUSE_USERNAME=default \
+            -e COUNTLY_CONFIG__CLICKHOUSE_PASSWORD= \
+            -e COUNTLY_CONFIG__CLICKHOUSE_DATABASE=countly_drill \
+            -e COUNTLY_CONFIG__FILESTORAGE=gridfs \
+            -e COUNTLY_CONFIG__DRILL_EVENTS_DRIVER=clickhouse \
+            -e COUNTLY_CONFIG__SHARED_CONNECTION=true \
+            -e COUNTLY_CONFIG__PATH= \
+            -e COUNTLY_CONFIG__DATABASE_ADAPTERPREFERENCE='["clickhouse","mongodb"]' \
+            -e COUNTLY_CONFIG__DATABASE_ADAPTERS_MONGODB_ENABLED=true \
+            -e COUNTLY_CONFIG__DATABASE_ADAPTERS_CLICKHOUSE_ENABLED=true \
+            -e COUNTLY_CONFIG__DATABASE_FAILONCONNECTIONERROR=true \
+            -e COUNTLY_CONFIG__DATABASE_DEBUG=true \
+            -e COUNTLY_CONFIG__DATABASE_COMPARISONLOGS_MODE=disabled \
+            -e COUNTLY_CONFIG__EVENTSINK_SINKS='["kafka","mongo"]' \
+            -e COUNTLY_CONFIG__KAFKA_ENABLED=true \
+            -e COUNTLY_CONFIG__KAFKA_BROKERS='["kafka:29092"]' \
+            -e COUNTLY_CONFIG__KAFKA_RDKAFKA_BROKERS='["kafka:29092"]' \
+            -e COUNTLY_CONFIG__KAFKA_DRILLEVENTSTOPIC=drill-events \
+            -e COUNTLY_CONFIG__KAFKA_CLUSTER_NAME=cly-kafka \
+            -e COUNTLY_CONFIG__KAFKA_NAMESPACE=kafka \
+            -e COUNTLY_CONFIG__KAFKA_GROUPIDPREFIX=cly_ \
+            -e COUNTLY_CONFIG__KAFKA_PARTITIONS=1 \
+            -e COUNTLY_CONFIG__KAFKA_REPLICATIONFACTOR=1 \
+            -e COUNTLY_CONFIG__KAFKA_CONSUMER_AUTOOFFSETRESET=earliest \
+            -e COUNTLY_CONFIG__RELOADCONFIGAFTER=5000 \
+            -e COUNTLY_CONFIG__KAFKA_RDKAFKA_LINGERMS=0 \
+            -e COUNTLY_CONFIG__KAFKA_RDKAFKA_RETRIES=1 \
+            -e COUNTLY_CONFIG__KAFKA_RDKAFKA_REQUESTTIMEOUTMS=5000 \
+            -e COUNTLY_CONFIG__KAFKA_RDKAFKA_CONNECTIONTIMEOUTMS=3000 \
+            -e COUNTLY_CONFIG__KAFKA_RDKAFKA_INITIALRETRYTIME=50 \
+            -e COUNTLY_CONFIG__KAFKA_RDKAFKA_MAXRETRYTIME=500 \
+            -e COUNTLY_CONFIG__KAFKA_PRODUCER_BATCHSIZE=1 \
+            -e COUNTLY_CONFIG__KAFKA_PRODUCER_BATCHNUMMESSAGES=1 \
+            -e COUNTLY_CONFIG__KAFKA_PRODUCER_QUEUEBUFFERINGMAXMESSAGES=100 \
+            -e COUNTLY_CONFIG__KAFKA_PRODUCER_QUEUEBUFFERINGMAXKBYTES=1024 \
+            -e COUNTLY_CONFIG__KAFKA_PRODUCER_COMPRESSIONLEVEL=0 \
+            -e COUNTLY_CONFIG__KAFKA_PRODUCER_MESSAGETIMEOUTMS=5000 \
+            -e COUNTLY_CONFIG__KAFKA_PRODUCER_DELIVERYTIMEOUTMS=5000 \
+            -e COUNTLY_CONFIG__KAFKA_CONSUMER_FETCHMINBYTES=1 \
+            -e COUNTLY_CONFIG__KAFKA_CONSUMER_FETCHMAXWAITMS=10 \
+            -e COUNTLY_CONFIG__KAFKA_CONSUMER_FETCHMAXBYTES=1048576 \
+            -e COUNTLY_CONFIG__KAFKA_CONSUMER_MAXPARTITIONFETCHBYTES=262144 \
+            -e COUNTLY_CONFIG__KAFKA_CONSUMER_PARTITIONSCONSUMEDCONCURRENTLY=1 \
+            -e COUNTLY_CONFIG__KAFKA_CONSUMER_SESSIONTIMEOUTMS=10000 \
+            -e COUNTLY_CONFIG__KAFKA_CONSUMER_HEARTBEATINTERVALMS=3000 \
+            -e COUNTLY_CONFIG__KAFKA_CONSUMER_MAXPOLLINTERVALMS=30000 \
+            -e COUNTLY_CONFIG__KAFKA_CONSUMER_REBALANCETIMEOUTMS=30000 \
+            -e COUNTLY_CONFIG__KAFKA_CONSUMER_INVALIDJSONBEHAVIOR=skip \
+            -e COUNTLY_CONFIG__KAFKA_CONSUMER_INVALIDJSONMETRICS=true \
+            -e COUNTLY_SETTINGS__LOGS__DEBUG='query-runner' \
+            -e COUNTLY_SETTINGS__FUNNELS__FUNNEL_CACHING=false \
+            -e COUNTLY_SETTINGS__DRILL__RECORD_META=true \
+            -e COUNTLY_SETTINGS__API__BATCH_PROCESSING=false \
+            -e COUNTLY_SETTINGS__API__BATCH_READ_PROCESSING=false \
+            countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }} \
+            sleep infinity
+
+      - name: Install Chrome
+        run: |
+          docker exec countly-test bash -c "
+            apt update
+            apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
+            wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
+            apt install -y /tmp/chrome.deb
+          "
 
       - name: Install Sharp dependencies for image processing
-        shell: bash
         run: |
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update -y
-          apt-get install -y libvips-dev
+          docker exec countly-test bash -c "
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update -y
+            apt-get install -y libvips-dev
+          "
 
-      - name: Copy code
-        shell: bash
+      - name: Copy plugins and scripts into container
         run: |
-          rm -rf /opt/countly/frontend
-          rm -rf /opt/countly/plugins/old-ui-compatibility
-          cp -rf ./* /opt/countly
-          cp /opt/countly/frontend/express/config.sample.js /opt/countly/frontend/express/config.js
-          cp /opt/countly/frontend/express/public/javascripts/countly/countly.config.sample.js /opt/countly/frontend/express/public/javascripts/countly/countly.config.js
+          docker cp ./. countly-test:/opt/countly/
+          docker exec countly-test bash -c "
+            rm -rf /opt/countly/plugins/old-ui-compatibility
+            cp /opt/countly/frontend/express/config.sample.js /opt/countly/frontend/express/config.js
+            cp /opt/countly/frontend/express/public/javascripts/countly/countly.config.sample.js /opt/countly/frontend/express/public/javascripts/countly/countly.config.js
+          "
+          echo 'Code copied into container.'
 
-      - name: Prepare files to use correct MongoDB host
-        shell: bash
-        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"
+      - name: Prepare files to use correct MongoDB and ClickHouse hosts
+        run: |
+          docker exec countly-test bash -c "
+            sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh
+            sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh
+            bash /opt/countly/bin/backup/import_events.sh
+          "
 
-      - name: NPM install
-        shell: bash
-        working-directory: /opt/countly
-        run: npm install
+      - name: Install plugins
+        run: |
+          docker exec countly-test bash -c "
+            cp './plugins/plugins.default.json' '/opt/countly/plugins/plugins.json'
+            node /opt/countly/bin/scripts/install_plugins.js
+            npm install
+          "
 
       - name: Prepare environment
         shell: bash
         working-directory: /opt/countly
         run: |
-          sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js
-          cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
-          npm install
-          sudo countly task dist-all
-          bash bin/backup/import_events.sh
-          bash bin/scripts/countly.prepare.ce.tests.sh
-          if [ "${{ matrix.test_type }}" = "dashboard" ]; then
-            countly add_user '${{ secrets.CYPRESS_USER_EMAIL }}' '${{ secrets.CYPRESS_USER_PASSWORD }}'
-            mongosh --host mongodb --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}", subscribe_newsletter: true}});'
-            mongosh --host mongodb --eval 'db.getSiblingDB("countly").plugins.updateOne({_id: "plugins"}, {$set: {"frontend.countly_tracking": true}});'
-          fi
-          cd ui-tests
-          echo '{"username": "${{ secrets.CYPRESS_USER_USERNAME }}","email": "${{ secrets.CYPRESS_USER_EMAIL }}","password": "${{ secrets.CYPRESS_USER_PASSWORD }}"}' > cypress/fixtures/user.json
-          sed -i 's/00000000-0000-0000-0000-000000000000/${{ secrets.CYPRESS_KEY }}/g' package.json
-          cp cypress.config.sample.js cypress.config.js
-          sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
+          docker exec countly-test bash -c "
+            bash bin/backup/import_events.sh
+            bash bin/scripts/countly.prepare.ce.tests.sh
+            if [ "${{ matrix.test_type }}" = "dashboard" ]; then
+              countly add_user '${{ secrets.CYPRESS_USER_EMAIL }}' '${{ secrets.CYPRESS_USER_PASSWORD }}'
+              mongosh --host mongodb --eval 'db.getSiblingDB("countly").members.updateOne({username: "${{ secrets.CYPRESS_USER_EMAIL }}"}, {$set: {username: "${{ secrets.CYPRESS_USER_USERNAME }}", subscribe_newsletter: true}});'
+              mongosh --host mongodb --eval 'db.getSiblingDB("countly").plugins.updateOne({_id: "plugins"}, {$set: {"frontend.countly_tracking": true}});'
+            fi
+            cd ui-tests
+            echo '{"username": "${{ secrets.CYPRESS_USER_USERNAME }}","email": "${{ secrets.CYPRESS_USER_EMAIL }}","password": "${{ secrets.CYPRESS_USER_PASSWORD }}"}' > cypress/fixtures/user.json
+            sed -i 's/00000000-0000-0000-0000-000000000000/${{ secrets.CYPRESS_KEY }}/g' package.json
+            cp cypress.config.sample.js cypress.config.js
+            sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
+          "
 
       - name: Run UI tests
-        shell: bash
-        working-directory: /opt/countly
         run: |
-          /sbin/my_init &
-          cd ui-tests
-          npm install
-          if [ "${{ matrix.test_type }}" = "dashboard" ]; then
-            xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:dashboard
-          else
-            xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:onboarding
-          fi
+          docker exec countly-test bash -c "
+            cd /opt/countly
+            /sbin/my_init &
+            cd ui-tests
+            npm install
+            if [ "${{ matrix.test_type }}" = "dashboard" ]; then
+              xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:dashboard
+            elif [ "${{ matrix.test_type }}" = "sdk" ]; then
+              xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:sdk
+            else
+              xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:onboarding
+            fi
+          " 2>&1
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
-        shell: bash
-        working-directory: /opt/countly/ui-tests/cypress
         run: |
-          ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}_${{ matrix.test_type }}.tar.gz"
+          docker exec countly-test bash -c "
+            cd /opt/countly/ui-tests/cypress
+            ARTIFACT_ARCHIVE_NAME=\"\$(date '+%Y%m%d-%H.%M')_countly-server_CI#${{ github.run_number }}_${{ matrix.test_type }}.tar.gz\"
+
+            mkdir -p screenshots videos downloads
+            find screenshots videos downloads -type d -empty -delete
           
-          mkdir -p screenshots videos downloads
-          find screenshots videos downloads -type d -empty -delete
+            TAR_TARGETS=\$(ls -d screenshots videos downloads 2>/dev/null || true)
           
-          TAR_TARGETS=$(ls -d screenshots videos downloads 2>/dev/null || true)
-          
-          tar zcvf "$ARTIFACT_ARCHIVE_NAME" $TAR_TARGETS
-          curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
-
-  ui-test-sdk:
-    runs-on: ubuntu-latest
-
-    services:
-      mongodb:
-        image: mongo:8.0
-        options: >-
-          --health-cmd mongosh
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 27017:27017
-
-    container:
-      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
-      env:
-        COUNTLY_CONFIG__MONGODB_HOST: mongodb
-        COUNTLY_CONFIG_API_PREVENT_JOBS: true
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Install Chrome
-        shell: bash
-        run: |
-          apt update
-          apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
-          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
-          apt install -y /tmp/chrome.deb
-
-      - name: Copy code
-        shell: bash
-        run: cp -rf ./* /opt/countly
-
-      - name: Prepare files to use correct MongoDB host
-        shell: bash
-        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"
-
-      - name: NPM install
-        shell: bash
-        working-directory: /opt/countly
-        run: npm install
-
-      - name: Prepare environment
-        shell: bash
-        working-directory: /opt/countly
-        run: |
-          sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js
-          cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
-          npm install
-          sudo countly task dist-all
-          bash bin/scripts/countly.prepare.ce.tests.sh
-          cd ui-tests
-          echo '{"username": "${{ secrets.CYPRESS_USER_USERNAME }}","email": "${{ secrets.CYPRESS_USER_EMAIL }}","password": "${{ secrets.CYPRESS_USER_PASSWORD }}"}' > cypress/fixtures/user.json
-          sed -i 's/00000000-0000-0000-0000-000000000000/${{ secrets.CYPRESS_KEY }}/g' package.json
-          cp cypress.config.sample.js cypress.config.js
-          sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
-
-      - name: Run UI tests
-        shell: bash
-        working-directory: /opt/countly
-        run: |
-          /sbin/my_init &
-          cd ui-tests
-          npm install
-          xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
-          npm run cy:run:sdk
-
-      - name: Upload UI tests artifacts
-        if: ${{ failure() }}
-        shell: bash
-        working-directory: /opt/countly/ui-tests/cypress
-        run: |
-          ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}_ui_test_sdk.tar.gz"
-          mkdir -p screenshots videos
-          tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos
-          curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
+            tar zcvf \"\$ARTIFACT_ARCHIVE_NAME\" \$TAR_TARGETS
+            curl -o /tmp/uploader.log -u \"${{ secrets.BOX_UPLOAD_AUTH }}\" \"${{ secrets.BOX_UPLOAD_PATH }}\" -T \"\$ARTIFACT_ARCHIVE_NAME\"
+          "
