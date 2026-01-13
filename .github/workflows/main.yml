@@ -144,13 +144,10 @@ jobs:
 
       - name: NPM install
         shell: bash
-        run: npm install
-
-      - name: Install plugins
-        shell: bash
         run: |
-         cp plugins/plugins.default.json ./plugins/plugins.json
-         node ./bin/scripts/install_plugins.js --force
+          npm install
+          cd plugins/clickhouse
+          npm install
 
       - name: Run unit tests
         shell: bash
