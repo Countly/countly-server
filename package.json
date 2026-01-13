@@ -18,7 +18,7 @@
   },
   "scripts": {
     "test": "grunt --verbose",
-    "test:unit": "NODE_PATH=./node_modules/ npx mocha --preserve-symlinks --preserve-symlinks-main 'test/unit-tests/*.js' 'plugins/*/tests/**/*.unit.js' --reporter spec --timeout 50000",
+    "test:unit": "NODE_PATH=./node_modules/ npx mocha --preserve-symlinks --preserve-symlinks-main 'test/unit/*.unit.js' 'plugins/*/tests/**/*.unit.js' --reporter spec --timeout 50000",
     "test:clickhouse:cluster": "node plugins/clickhouse/tests/run-cluster-tests.js",
     "test:api-core": "TEST_SUITE=core env-cmd -r test/configs/conf/.env-cmdrc.json -e base,core mocha --config test/configs/mocha/api-core.js",
     "test:lite-plugins": "TEST_SUITE=lite env-cmd -r test/configs/conf/.env-cmdrc.json -e base,lite node --preserve-symlinks --preserve-symlinks-main ./node_modules/mocha/bin/mocha.js --config test/configs/mocha/lite-plugins.js",
