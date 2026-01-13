@@ -71,6 +71,8 @@ Tests run automatically on PRs:
 - **Clarity**: Self-documenting element purposes
 - **Separation**: Testing concerns separate from styling
 
+![Data Test ID Example](images/ui-testing/data-test-id-example.png)
+
 ### Adding Test IDs
 
 #### Static Test IDs
@@ -170,18 +172,32 @@ Review error messages in the CI pipeline output. Common failure types:
 | Missing element | `Timed out retrying: Expected to find element` | Check data-test-id exists |
 | Element not visible | `element is not visible` | Check display conditions |
 
+**Example error screenshots:**
+
+Text mismatch:
+![Text mismatch error](images/ui-testing/error-text-mismatch.png)
+
+Missing element:
+![Missing element error](images/ui-testing/error-missing-element.png)
+
 ### Step 2: Review Artifacts
 
 Videos and screenshots are uploaded to Box tool for failed tests.
+
+![Box Tool Login](images/ui-testing/box-tool-login.png)
 
 **Accessing artifacts:**
 1. Log in to [Box](https://box.tools.count.ly)
 2. Find file by format: `{date}-{time}_{repo}_{action-id}.zip`
    - Example: `20250324-21.42_countly-server_CI#3379.zip`
+
+![Box Tool Files](images/ui-testing/box-tool-files.png)
 3. Download and review video/screenshots
 
 **Finding the action number:**
 The action number is near the PR title in GitHub Actions.
+
+![GitHub Action Number](images/ui-testing/github-action-number.png)
 
 ### Step 3: Reproduce Locally
 

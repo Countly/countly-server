@@ -731,6 +731,20 @@ Localization strings are stored in `.properties` files:
 2. Submit to Transifex: https://www.transifex.com/osoner/countly/
 3. Commit to countly-localization repo for auto-sync
 
+### Adding Resources to Transifex
+
+1. Select "Add new resource"
+
+![Transifex Add Resource](docs/images/localization/transifex-add-resource.png)
+
+2. Select your file and choose "Java Unicode (.properties)" as the file format
+
+![Transifex File Format](docs/images/localization/transifex-file-format.png)
+
+### Auto-Updating Transifex
+
+Commit your properties file to https://github.com/Countly/countly-localization to automatically sync with Transifex on each PR merge.
+
 ### Building Locales
 
 ```bash
