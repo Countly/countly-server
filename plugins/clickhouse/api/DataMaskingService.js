@@ -612,6 +612,12 @@ class DataMaskingService {
 
                 // Mask user properties if masking.prop is configured
                 if (masking.prop) {
+                    // Special handling: systemUserProperties exist both at root level and in nested objects
+                    // Currently only 'did' is in systemUserProperties
+                    // When up.did is masked, we also need to mask root-level did
+                    // Note: did does not exist in cmp for drill_events, only at root level and in up
+                    const systemUserProperties = { 'did': true }; // Properties that exist at multiple levels
+
                     for (const group in masking.prop) {
                         if (!masking.prop[group]) {
                             continue;
@@ -625,6 +631,15 @@ class DataMaskingService {
                                     if (maskedRow[group][prop] !== undefined) {
                                         log.d('Removing masked property', { group, prop });
                                         delete maskedRow[group][prop];
+                                    }
+                                }
+
+                                // Special handling for systemUserProperties (like did)
+                                if (systemUserProperties[prop]) {
+                                    // Mask root-level field if it exists
+                                    if (maskedRow[prop] !== undefined) {
+                                        log.d(`Removing root-level ${prop} (masked via ${group}.${prop} configuration)`);
+                                        delete maskedRow[prop];
                                     }
                                 }
                             }
