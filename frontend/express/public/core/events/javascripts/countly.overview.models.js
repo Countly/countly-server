@@ -308,7 +308,10 @@
                     "limit": limit
                 },
                 dataType: "json",
-            }, {"disableAutoCatch": true});//to be able to see if discarded
+            }, {
+                "disableAutoCatch": true,
+                preventRequestAbort: true,
+            });//to be able to see if discarded
         },
         fetchMonitorEvents: function(context, period) {
             return CV.$.ajax({
