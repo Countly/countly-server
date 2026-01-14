@@ -154,48 +154,31 @@ jobs:
         run: npm run test:clickhouse:cluster
   unit-tests:
     runs-on: ubuntu-latest
-    services:
-      mongodb:
-        image: mongo:8.0
-        options: >-
-          --health-cmd mongosh
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 27017:27017
-
-    container:
-      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name  }}
-      env:
-        COUNTLY_CONFIG__MONGODB_HOST: mongodb
-        COUNTLY_CONFIG_API_PREVENT_JOBS: true
-
+    
     steps:
       - uses: actions/checkout@v6
 
-      - name: Copy code
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      
+      - name: NPM install in plugins (skip ab-testing)
         shell: bash
-        run: cp -rf ./* /opt/countly
+        run: |
+            for dir in plugins/*/ ; do
+              if [ -f "$dir/package.json" ]; then
+                echo "Running npm install in $dir"
+                (cd "$dir" && npm install)
+              fi
+            done
 
       - name: NPM install
         shell: bash
-        working-directory: /opt/countly
         run: npm install
-
-      - name: Enabling plugins
-        shell: bash
-        run: cp "./plugins/plugins.default.json" "/opt/countly/plugins/plugins.json"
-
-      - name: Install plugins
-        shell: bash
-        run: |
-         cp plugins/plugins.default.json /opt/countly/plugins/plugins.json
-         node /opt/countly/bin/scripts/install_plugins.js --force
 
       - name: Run unit tests
         shell: bash
-        working-directory: /opt/countly
         run: npm run test:unit
   test-api-core:
     runs-on: ubuntu-latest
