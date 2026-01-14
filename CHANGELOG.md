@@ -1,4 +1,7 @@
 ## Version 24.05.XX
+Fixes:
+- [onboarding] Fix redirection to newsletter page
+
 Enterprise Fixes:
 - [retention_segments] Adding null check for breakdown filtering
 
