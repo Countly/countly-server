@@ -1,4 +1,4 @@
-## Version 25.03.X
+## Version 25.03.32
 Fixes:
 - [onboarding] Fix redirection to newsletter page
 
