@@ -750,6 +750,14 @@ const validateAppForWriteAPI = (params, done) => {
             return;
         }
 
+        if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
+            try {
+                params.qstring.metrics = JSON.parse(params.qstring.metrics);
+            }
+            catch (SyntaxError) {
+                console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
+            }
+        }
         plugins.dispatch("/sdk/validate_request", {params: params}, async function() { //validates request if there is no reason to block/cancel it
             if (params.cancelRequest) {
                 if (!params.res.finished && !params.waitForResponse) {
