@@ -1,3 +1,7 @@
+## Version 25.03.X
+Fixes:
+- [onboarding] Fix redirection to newsletter page
+
 ## Version 25.03.31
 Fixes:
 - [core] Add null checking for user permission when opening the dashboard
