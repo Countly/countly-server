@@ -83,7 +83,8 @@ class ClickhouseQueryService {
                         query_params: queryObj.params
                     });
                     const fallback = await resultSet.json();
-                    const maskedResult = this.maskingService.maskResults(fallback, queryObj.query);
+                    const projectionKey = queryObj.projectionKey || null;
+                    const maskedResult = this.maskingService.maskResults(fallback, queryObj.query, projectionKey);
 
                     const durationFb = Date.now() - startTime;
                     log.d(`ClickHouse query completed in ${durationFb}ms (fallback applied)`);
@@ -99,7 +100,8 @@ class ClickhouseQueryService {
                     query_params: queryObj.params
                 });
                 const result = await resultSet.json();
-                const maskedResult = this.maskingService.maskResults(result, queryObj.query);
+                const projectionKey = queryObj.projectionKey || null;
+                const maskedResult = this.maskingService.maskResults(result, queryObj.query, projectionKey);
 
                 const duration = Date.now() - startTime;
                 log.d(`ClickHouse query completed in ${duration}ms`);
@@ -285,6 +287,7 @@ class ClickhouseQueryService {
                 const src = resultSet.stream();
                 const maskingService = this.maskingService;
                 const shouldMaskResults = !usedMaskedQuery;
+                const projectionKey = options?.projectionKey || pipeline.projectionKey || null;
                 const transformStream = new Transform({
                     objectMode: true,
                     transform(chunk, encoding, callback) {
@@ -297,12 +300,12 @@ class ClickhouseQueryService {
                                 let dataToPush = obj;
                                 if (shouldMaskResults && obj && typeof obj === 'object' && obj.row) {
                                     // If it's wrapped in a row object
-                                    const maskedRow = maskingService.maskResults([obj.row], pipeline.query);
+                                    const maskedRow = maskingService.maskResults([obj.row], pipeline.query, projectionKey);
                                     dataToPush = { ...obj, row: maskedRow[0] };
                                 }
                                 else if (shouldMaskResults && obj && typeof obj === 'object') {
                                     // If it's a direct row object
-                                    const maskedRows = maskingService.maskResults([obj], pipeline.query);
+                                    const maskedRows = maskingService.maskResults([obj], pipeline.query, projectionKey);
                                     dataToPush = maskedRows[0];
                                 }
 
@@ -348,7 +351,8 @@ class ClickhouseQueryService {
                     }
                 }
                 // Mask results if query string masking failed or we fell back
-                const maskedResult = usedMaskedQuery ? rows : this.maskingService.maskResults(rows, pipeline.query);
+                const projectionKey = options?.projectionKey || pipeline.projectionKey || null;
+                const maskedResult = usedMaskedQuery ? rows : this.maskingService.maskResults(rows, pipeline.query, projectionKey);
                 return maskedResult;
             }
 
@@ -357,7 +361,8 @@ class ClickhouseQueryService {
             log.d(`ClickHouse aggregate query completed in ${duration}ms`);
 
             // Mask results if query string masking failed or we fell back
-            const maskedResult = usedMaskedQuery ? result : this.maskingService.maskResults(result, pipeline.query);
+            const projectionKey = options?.projectionKey || pipeline.projectionKey || null;
+            const maskedResult = usedMaskedQuery ? result : this.maskingService.maskResults(result, pipeline.query, projectionKey);
             return maskedResult;
 
         }

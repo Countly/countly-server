@@ -41,49 +41,55 @@ class DataMaskingService {
      */
     maskQueryString(query, _params) {
         try {
-            // explicitly mark as used to satisfy linter
+            // disabling query masking until it is still stable
+            // keeping result masking enabled
             void _params;
-            if (!this.appId) {
-                log.w('No app ID set, skipping query masking');
-                return { query, masked: false };
-            }
+            log.d('Query masking temporarily disabled, only result masking will be applied');
+            return { query, masked: false };
 
-            // Get masking settings for this app
-            const masking = this.getMaskingSettings(this.appId);
-            if (!masking) {
-                return { query, masked: false };
-            }
+            // Original query masking logic
 
-            // Check if we have any masking configured
-            const hasEventMasking = masking.events && Object.keys(masking.events).length > 0;
-            const hasPropMasking = masking.prop && Object.keys(masking.prop).length > 0;
+            // if (!this.appId) {
+            //     log.w('No app ID set, skipping query masking');
+            //     return { query, masked: false };
+            // }
 
-            if (!hasEventMasking && !hasPropMasking) {
-                return { query, masked: false };
-            }
+            // // Get masking settings for this app
+            // const masking = this.getMaskingSettings(this.appId);
+            // if (!masking) {
+            //     return { query, masked: false };
+            // }
 
-            let maskedQuery = query;
-            let maskingApplied = false;
+            // // Check if we have any masking configured
+            // const hasEventMasking = masking.events && Object.keys(masking.events).length > 0;
+            // const hasPropMasking = masking.prop && Object.keys(masking.prop).length > 0;
 
-            // Check if query contains sg (segments) in SELECT
-            if (hasEventMasking && query.includes('sg')) {
-                const segmentResult = this._maskSegmentsInQuery(maskedQuery, masking);
-                if (segmentResult.masked) {
-                    maskedQuery = segmentResult.query;
-                    maskingApplied = true;
-                }
-            }
+            // if (!hasEventMasking && !hasPropMasking) {
+            //     return { query, masked: false };
+            // }
 
-            // Check if query contains properties that need masking (up, custom, cmp)
-            if (hasPropMasking) {
-                const propMaskingResult = this._maskPropertiesInQuery(maskedQuery, masking);
-                if (propMaskingResult.masked) {
-                    maskedQuery = propMaskingResult.query;
-                    maskingApplied = true;
-                }
-            }
+            // let maskedQuery = query;
+            // let maskingApplied = false;
 
-            return { query: maskedQuery, masked: maskingApplied };
+            // // Check if query contains sg (segments) in SELECT
+            // if (hasEventMasking && query.includes('sg')) {
+            //     const segmentResult = this._maskSegmentsInQuery(maskedQuery, masking);
+            //     if (segmentResult.masked) {
+            //         maskedQuery = segmentResult.query;
+            //         maskingApplied = true;
+            //     }
+            // }
+
+            // // Check if query contains properties that need masking (up, custom, cmp)
+            // if (hasPropMasking) {
+            //     const propMaskingResult = this._maskPropertiesInQuery(maskedQuery, masking);
+            //     if (propMaskingResult.masked) {
+            //         maskedQuery = propMaskingResult.query;
+            //         maskingApplied = true;
+            //     }
+            // }
+
+            // return { query: maskedQuery, masked: maskingApplied };
         }
         catch (error) {
             log.e('Error masking query string', error);
@@ -335,10 +341,11 @@ class DataMaskingService {
     /**
      * Mask sensitive data from query results by removing masked fields
      * @param {Array} results - Query results
-     * @param {string} queryString - Original query string (unused but kept for signature)
+     * @param {string} queryString - Original query string (may contain projectionKey info)
+     * @param {Array} [projectionKey] - Optional projection key array mapping properties to s0-s4
      * @returns {Array} Masked results with fields removed
      */
-    maskResults(results, queryString) {
+    maskResults(results, queryString, projectionKey = null) {
         try {
             if (!this.appId || !results || !Array.isArray(results)) {
                 return results;
@@ -464,9 +471,125 @@ class DataMaskingService {
                 }
             }
 
+            // Check if this is a drill_snapshots query result (has s0-s4 columns)
+            // Detect by: 1) query string contains drill_snapshots, or 2) results have s0-s4 columns
+            // Also handles regular drill queries with projection (bucket_kind: seg/tot)
+            const isSnapshotQueryByString = typeof queryString === 'string' &&
+                queryString.toLowerCase().includes('drill_snapshots');
+            const isSnapshotQueryByResults = results.length > 0 && results.some(row =>
+                row && ('s0' in row || 's1' in row || 's2' in row || 's3' in row || 's4' in row)
+            );
+            const isSnapshotQuery = isSnapshotQueryByString || isSnapshotQueryByResults;
+
+            const hasMaskedProps = masking.prop && Object.keys(masking.prop).some(group => {
+                if (!masking.prop[group]) {
+                    return false;
+                }
+                return Object.keys(masking.prop[group]).some(prop => masking.prop[group][prop]);
+            });
+
+            log.d('Result masking check', {
+                isSnapshotQueryByString,
+                isSnapshotQueryByResults,
+                isSnapshotQuery,
+                hasMaskedProps,
+                resultsCount: results.length,
+                projectionKey: projectionKey,
+                projectionKeyType: typeof projectionKey,
+                projectionKeyLength: Array.isArray(projectionKey) ? projectionKey.length : 'N/A',
+                sampleRow: results[0] ? { bucket_kind: results[0].bucket_kind, row: results[0].row, hasS0: 's0' in results[0] } : null
+            });
+
             // Apply masking to each result row
             const maskedResults = results.map(row => {
                 const maskedRow = { ...row };
+
+                // Mask s0-s4 columns for drill_snapshots queries
+                // Try to determine which s0-s4 columns correspond to masked properties
+                // If we can't determine, mask all s0-s4 columns (fallback)
+                // Handle all bucket kinds: 'snapshot', 'seg', 'd', 'm', 'w', 'h', etc.
+                if (isSnapshotQuery && hasMaskedProps && row) {
+                    // Skip masking for 'tot' bucket_kind (totals row) or 'total' row type
+                    const shouldSkip = row.bucket_kind === 'tot' || row.row === 'total';
+
+                    // Mask all other rows that have s0-s4 columns (regardless of bucket_kind)
+                    // This includes: 'snapshot', 'seg', 'd', 'm', 'w', 'h', and any other bucket kinds
+                    const hasSColumns = 's0' in row || 's1' in row || 's2' in row || 's3' in row || 's4' in row;
+
+                    if (hasSColumns && !shouldSkip) {
+                        // Build set of s0-s4 columns to mask based on masked properties and projectionKey
+                        const sColumnsToMask = new Set();
+
+                        // If we have projectionKey, map properties to s0-s4 indices
+                        if (projectionKey && Array.isArray(projectionKey) && projectionKey.length > 0) {
+                            log.d('Processing projectionKey for result masking', {
+                                projectionKey,
+                                projectionKeyLength: projectionKey.length,
+                                maskingConfig: Object.keys(masking.prop || {})
+                            });
+                            projectionKey.forEach((propPath, index) => {
+                                // Only process indices 0-4 (s0-s4)
+                                if (index >= 0 && index <= 4) {
+                                    // Handle string property paths (e.g., 'up.cc', 'custom.field')
+                                    if (typeof propPath === 'string' && propPath.trim()) {
+                                        const parts = propPath.split('.');
+                                        // Property path must have at least group.prop format
+                                        if (parts.length >= 2) {
+                                            const group = parts[0];
+                                            const prop = parts.slice(1).join('.');
+                                            // Check if this property is configured to be masked
+                                            const isMasked = masking.prop[group] && masking.prop[group][prop];
+                                            log.d(`Checking property mapping`, {
+                                                propPath,
+                                                index,
+                                                group,
+                                                prop,
+                                                hasGroup: !!masking.prop[group],
+                                                hasProp: !!(masking.prop[group] && masking.prop[group][prop]),
+                                                isMasked
+                                            });
+                                            if (isMasked) {
+                                                sColumnsToMask.add(`s${index}`);
+                                                log.d(`Property ${propPath} maps to s${index}, will be masked in results`);
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                            log.d('Result masking projectionKey processing complete', {
+                                sColumnsToMask: Array.from(sColumnsToMask)
+                            });
+                        }
+                        else {
+                            log.d('No valid projectionKey for result masking', {
+                                projectionKey,
+                                isArray: Array.isArray(projectionKey),
+                                length: Array.isArray(projectionKey) ? projectionKey.length : 'N/A'
+                            });
+                        }
+
+                        // If no specific mappings found, mask all s0-s4 (fallback)
+                        // This happens when projectionKey is null, empty array, or no properties are configured to be masked
+                        if (sColumnsToMask.size === 0) {
+                            log.d('No projectionKey provided or no masked properties found in projectionKey, masking all s0-s4 columns (fallback)');
+                            for (let i = 0; i <= 4; i++) {
+                                sColumnsToMask.add(`s${i}`);
+                            }
+                        }
+
+                        // Mask only the columns that need masking
+                        for (let i = 0; i <= 4; i++) {
+                            const colName = `s${i}`;
+                            if (sColumnsToMask.has(colName) && colName in maskedRow) {
+                                log.d(`Masking snapshot column in result: ${colName}`, {
+                                    originalValue: maskedRow[colName],
+                                    rowType: row.row || row.bucket_kind
+                                });
+                                maskedRow[colName] = '';
+                            }
+                        }
+                    }
+                }
 
                 // Mask event segments if masking.events is configured
                 // For drill_events, event name is in 'e' field, not 'key'
