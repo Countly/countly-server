@@ -215,8 +215,13 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                     const id = alertConfig._id;
                     delete alertConfig._id;
                     alertConfig.createdBy = params.member._id;
+                    var query = { _id: common.db.ObjectID(id) };
+                    //If not global admin, limit update to own alerts only
+                    if (params.member.global_admin !== true) {
+                        query.createdBy = params.member._id;
+                    }
                     return common.db.collection("alerts").findAndModify(
-                        { _id: common.db.ObjectID(id) },
+                        query,
                         {},
                         {$set: alertConfig},
                         function(err, result) {
@@ -283,13 +288,26 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
         validateUpdate(params, FEATURE_NAME, function() {
             let alertID = params.qstring.alertID;
             try {
+                var query = { "_id": common.db.ObjectID(alertID) };
+                //If not global admin, limit delete to own alerts only
+                if (params.member.global_admin !== true) {
+                    query.createdBy = params.member._id;
+                }
                 common.db.collection("alerts").remove(
-                    { "_id": common.db.ObjectID(alertID) },
+                    query,
                     function(err, result) {
                         log.d(err, result, "delete an alert");
                         if (!err) {
-                            deleteJob(alertID);
-                            common.returnMessage(params, 200, "Deleted an alert");
+                            if (result && result.deletedCount > 0) {
+                                deleteJob(alertID);
+                                common.returnMessage(params, 200, "Deleted an alert");
+                            }
+                            else {
+                                common.returnMessage(params, 404, "Alert to delete not found. Make sure alert exists and you have rights to delete it.");
+                            }
+                        }
+                        else {
+                            common.returnMessage(params, 500, "Failed to delete an alert");
                         }
                     }
                 );
@@ -322,14 +340,27 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
         let params = ob.params;
 
         validateUpdate(params, FEATURE_NAME, function() {
-            const statusList = JSON.parse(params.qstring.status);
+            let statusList;
+            try {
+                statusList = JSON.parse(params.qstring.status);
+            }
+            catch (err) {
+                log.e('Parse alert status failed', params.qstring.status, err);
+                common.returnMessage(params, 500, "Failed to change alert status" + err.message);
+                return;
+            }
             const batch = [];
-            for (const appID in statusList) {
+            for (const alertID in statusList) {
+                var qquery = { _id: common.db.ObjectID(alertID) };
+                //If not global admin, limit status change to own alerts only
+                if (params.member.global_admin !== true) {
+                    qquery.createdBy = params.member._id;
+                }
                 batch.push(
                     common.db.collection("alerts").findAndModify(
-                        { _id: common.db.ObjectID(appID) },
+                        qquery,
                         {},
-                        { $set: { enabled: statusList[appID] } },
+                        { $set: { enabled: statusList[alertID] } },
                         { new: false, upsert: false }
                     )
                 );

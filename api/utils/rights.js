@@ -1155,15 +1155,25 @@ exports.hasAdminAccess = function(member, app_id, type) {
         return true;
     }
 
-    var isAdmin = true;
+    var isAdmin = false;
     // check users who has permission property
     if (hasPermissionObject) {
         var types = type ? [type] : ["c", "r", "u", "d"];
+        var passesAllRules = true;
         for (var i = 0; i < types.length; i++) {
-            if (member.permission[types[i]] && member.permission[types[i]][app_id] && !member.permission[types[i]][app_id].all) {
-                isAdmin = false;
+            if (member.permission[types[i]] && member.permission[types[i]][app_id]) {
+                if (!member.permission[types[i]][app_id].all) {
+                    passesAllRules = false;
+                }
+            }
+            else {
+                passesAllRules = false;
             }
         }
+        if (passesAllRules) {
+            isAdmin = true;
+        }
+
     }
     // check legacy users who has admin_of property
     // users should have at least one app in admin_of array

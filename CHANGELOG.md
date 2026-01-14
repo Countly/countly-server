@@ -1,13 +1,19 @@
-## Version 25.03.XX
+## Version 25.03.X
 Fixes:
-- [core] fixes for changeOwner script
+- [onboarding] Fix redirection to newsletter page
+
+## Version 25.03.31
+Fixes:
 - [core] Add null checking for user permission when opening the dashboard
+- [core] fixes for changeOwner script
 - [core] Preserve URL hash during oauth
+- [core] Rate limiting for api endpoints
+- [2fa] Removed the secret and qr code from the dashboard response
 
 Enterprise Fixes:
-- [retention_segments] Adding null check for breakdown filtering
 - [data-masking] Correctly dealing with unexpected filter on event_data collection while masking
 - [profile-groups] Error handling on missing list on failed profile group report download
+- [retention_segments] Adding null check for breakdown filtering
 
 Dependencies:
 - Bump @vitejs/plugin-vue from 6.0.1 to 6.0.2
@@ -29,7 +35,7 @@ Dependencies:
 - Bump sass from 1.93.3 to 1.96.0
 - Bump sass-embedded from 1.93.3 to 1.96.0
 - Bump sharp from 0.34.4 to 0.34.5
-- Bump sharp from 0.34.4 to 0.34.5 
+- Bump sharp from 0.34.4 to 0.34.5
 - Bump swiper from 11.2.10 to 12.0.3
 - Bump terser from 5.44.0 to 5.44.1
 - Bump vite from 7.1.12 to 7.2.7
