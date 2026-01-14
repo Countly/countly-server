@@ -1,6 +1,8 @@
 ## Version 24.05.XX
 Fixes:
 - [onboarding] Fix redirection to newsletter page
+- [star-rating] Fix active status checkbox in drawer
+- [star-rating] Fix consent fields in drawer
 
 Enterprise Fixes:
 - [retention_segments] Adding null check for breakdown filtering
