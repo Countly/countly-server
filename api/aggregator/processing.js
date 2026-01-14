@@ -398,13 +398,13 @@ var crypto = require('crypto');
                                     updates[app_id + "_meta_up"] = {
                                         _id: app_id + "_meta_up",
                                         app_id: events[z].a,
-                                        e: "[CLY]_session",
+                                        e: "up",
                                         type: "up"
                                     };
                                     meta_up = {
                                         _id: app_id + "_meta_up",
                                         app_id: events[z].a,
-                                        e: "[CLY]_session",
+                                        e: "up",
                                         type: "up"
                                     };
                                 }
