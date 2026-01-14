@@ -177,6 +177,13 @@ jobs:
         shell: bash
         run: npm install
 
+      - name: Copy needed files
+        shell: bash
+        run: |
+          cp -rf api/config.sample.js api/config.js
+          cp -rf frontend/express/config.sample.js frontend/express/config.js
+          cp -rf plugins/plugins.default.json plugins/plugins.json
+
       - name: Run unit tests
         shell: bash
         run: npm run test:unit
