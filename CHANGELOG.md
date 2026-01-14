@@ -1,6 +1,9 @@
-## Version 25.03.X
+## Version 25.03.32
 Fixes:
+- [core] Filtering out internal events while calculating top events
+- [fix] Data Regeneration Error
 - [onboarding] Fix redirection to newsletter page
+- [push] Message cancellation doesn't work on cohort exit
 
 ## Version 25.03.31
 Fixes:
