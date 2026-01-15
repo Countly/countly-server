@@ -305,12 +305,12 @@
                     "method": "top_events",
                     "period": "30days",
                     "filter": filter,
-                    "limit": limit
+                    "limit": limit,
+                    "preventRequestAbort": true
                 },
                 dataType: "json",
             }, {
                 "disableAutoCatch": true,
-                preventRequestAbort: true,
             });//to be able to see if discarded
         },
         fetchMonitorEvents: function(context, period) {
