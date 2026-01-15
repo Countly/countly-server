@@ -625,6 +625,69 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
                 }
             }
 
+            // Extract appID for data masking
+            /**
+             * Helper function to recursively find app IDs in a filter object
+             * Stops early when multiple app IDs are detected (size > 1)
+             * @param {Object} filter - Filter object to search
+             * @returns {Set<string>} Set of app IDs found
+             */
+            const findAppIdsInFilter = (filter) => {
+                const appIds = new Set();
+
+                if (!filter || typeof filter !== 'object') {
+                    return appIds;
+                }
+
+                // Direct 'a' field
+                if (filter.a) {
+                    appIds.add(filter.a);
+                    // Early exit if we already have multiple app IDs
+                    if (appIds.size > 1) {
+                        return appIds;
+                    }
+                }
+
+                // Check $or conditions
+                if (filter.$or && Array.isArray(filter.$or)) {
+                    for (const condition of filter.$or) {
+                        const ids = findAppIdsInFilter(condition);
+                        ids.forEach(id => appIds.add(id));
+                        // Early exit if we now have multiple app IDs
+                        if (appIds.size > 1) {
+                            return appIds;
+                        }
+                    }
+                }
+
+                // Check $and conditions
+                if (filter.$and && Array.isArray(filter.$and)) {
+                    for (const condition of filter.$and) {
+                        const ids = findAppIdsInFilter(condition);
+                        ids.forEach(id => appIds.add(id));
+                        // Early exit if we now have multiple app IDs
+                        if (appIds.size > 1) {
+                            return appIds;
+                        }
+                    }
+                }
+
+                return appIds;
+            };
+
+            const appIdsInFilter = findAppIdsInFilter(filterObj);
+            let appID = null;
+
+            if (appIdsInFilter.size === 1) {
+                // Single app ID found - use it
+                appID = Array.from(appIdsInFilter)[0];
+            }
+            else {
+                // Multiple app IDs found or no app ID found
+                // Use 'all' to enable per-row masking based on each row's 'a' field
+                appID = 'all';
+            }
+
             const useApproximateUniq = plugins.getConfig("drill", params.app && params.app.plugins, true).clickhouse_use_approximate_uniq;
             const limit = parseInt(params.qstring.limit || 10);
             const sSearch = params.qstring.sSearch || '';
@@ -643,6 +706,7 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
                     cursor,
                     paginationMode,
                     useApproximateUniq,
+                    appID: appID, // Pass appID for data masking
                     _dbviewerHelpers: {
                         qi,
                         getSchema: (db, tbl) => getSchema(common.clickhouseQueryService, db, tbl),

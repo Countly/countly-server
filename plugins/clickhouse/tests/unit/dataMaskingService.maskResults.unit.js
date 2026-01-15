@@ -686,4 +686,304 @@ describe('DataMaskingService - maskResults for drill_snapshots with different bu
             maskedResults[1].val.should.equal(50);
         });
     });
+
+    describe('appId === "all" - per-row app masking', function() {
+        beforeEach(function() {
+            // Reset with appId = 'all'
+            maskingService.setAppId('all');
+
+            // Mock plugins to return masking settings for multiple apps
+            mockPlugins.getMaskingSettings = function(appId) {
+                if (appId === 'all') {
+                    // Return object with all apps' masking settings
+                    return {
+                        'app-1': {
+                            prop: {
+                                'up': {
+                                    'cc': true, // Mask country code for app-1
+                                    'did': false // Don't mask device ID for app-1
+                                }
+                            }
+                        },
+                        'app-2': {
+                            prop: {
+                                'up': {
+                                    'cc': false, // Don't mask country code for app-2
+                                    'did': true // Mask device ID for app-2
+                                }
+                            }
+                        },
+                        'app-3': {
+                            prop: {
+                                'up': {
+                                    'cc': true, // Mask country code for app-3
+                                    'did': true // Mask device ID for app-3
+                                }
+                            }
+                        }
+                    };
+                }
+                else if (appId === 'app-1') {
+                    return {
+                        prop: {
+                            'up': {
+                                'cc': true,
+                                'did': false
+                            }
+                        }
+                    };
+                }
+                else if (appId === 'app-2') {
+                    return {
+                        prop: {
+                            'up': {
+                                'cc': false,
+                                'did': true
+                            }
+                        }
+                    };
+                }
+                else if (appId === 'app-3') {
+                    return {
+                        prop: {
+                            'up': {
+                                'cc': true,
+                                'did': true
+                            }
+                        }
+                    };
+                }
+                return null;
+            };
+        });
+
+        it('should apply per-app masking when rows have "a" field', function() {
+            const query = `SELECT 'snapshot' as bucket_kind, s0, s1, s2 FROM countly_drill.drill_snapshots`;
+            const projectionKey = ['up.cc', 'up.did'];
+
+            const results = [
+                {
+                    a: 'app-1', // app-1 masks cc but not did
+                    bucket_kind: 'snapshot',
+                    s0: 'US', // up.cc - should be masked (app-1 masks cc)
+                    s1: 'device123', // up.did - should NOT be masked (app-1 doesn't mask did)
+                    s2: null
+                },
+                {
+                    a: 'app-2', // app-2 masks did but not cc
+                    bucket_kind: 'snapshot',
+                    s0: 'TR', // up.cc - should NOT be masked (app-2 doesn't mask cc)
+                    s1: 'device456', // up.did - should be masked (app-2 masks did)
+                    s2: null
+                },
+                {
+                    a: 'app-3', // app-3 masks both cc and did
+                    bucket_kind: 'snapshot',
+                    s0: 'FR', // up.cc - should be masked (app-3 masks cc)
+                    s1: 'device789', // up.did - should be masked (app-3 masks did)
+                    s2: null
+                }
+            ];
+
+            const maskedResults = maskingService.maskResults(results, query, projectionKey);
+
+            maskedResults.should.have.length(3);
+            // Row 1: app-1 masks cc but not did
+            maskedResults[0].a.should.equal('app-1');
+            maskedResults[0].s0.should.equal(''); // Masked (cc)
+            maskedResults[0].s1.should.equal('device123'); // Not masked (did)
+            // Row 2: app-2 masks did but not cc
+            maskedResults[1].a.should.equal('app-2');
+            maskedResults[1].s0.should.equal('TR'); // Not masked (cc)
+            maskedResults[1].s1.should.equal(''); // Masked (did)
+            // Row 3: app-3 masks both
+            maskedResults[2].a.should.equal('app-3');
+            maskedResults[2].s0.should.equal(''); // Masked (cc)
+            maskedResults[2].s1.should.equal(''); // Masked (did)
+        });
+
+        it('should apply merged masking from all apps when row lacks "a" field', function() {
+            const query = `SELECT 'snapshot' as bucket_kind, s0, s1, s2 FROM countly_drill.drill_snapshots`;
+            const projectionKey = ['up.cc', 'up.did'];
+
+            const results = [
+                {
+                    // No 'a' field - should use merged masking (union: cc OR did masked by any app)
+                    bucket_kind: 'snapshot',
+                    s0: 'US', // up.cc - should be masked (app-1 or app-3 masks it)
+                    s1: 'device123', // up.did - should be masked (app-2 or app-3 masks it)
+                    s2: null
+                },
+                {
+                    a: 'app-1', // Has 'a' field - should use app-1 specific masking
+                    bucket_kind: 'snapshot',
+                    s0: 'CA', // up.cc - should be masked (app-1 masks cc)
+                    s1: 'device999', // up.did - should NOT be masked (app-1 doesn't mask did)
+                    s2: null
+                },
+                {
+                    // No 'a' field again - should use merged masking
+                    bucket_kind: 'snapshot',
+                    s0: 'DE', // up.cc - should be masked (merged: any app masks it)
+                    s1: 'device888', // up.did - should be masked (merged: any app masks it)
+                    s2: null
+                }
+            ];
+
+            const maskedResults = maskingService.maskResults(results, query, projectionKey);
+
+            maskedResults.should.have.length(3);
+            // Row 1: No 'a' field - merged masking (both cc and did masked by at least one app)
+            maskedResults[0].s0.should.equal(''); // Masked (merged: app-1 or app-3 masks cc)
+            maskedResults[0].s1.should.equal(''); // Masked (merged: app-2 or app-3 masks did)
+            // Row 2: Has 'a' field - app-1 specific masking
+            maskedResults[1].a.should.equal('app-1');
+            maskedResults[1].s0.should.equal(''); // Masked (app-1 masks cc)
+            maskedResults[1].s1.should.equal('device999'); // Not masked (app-1 doesn't mask did)
+            // Row 3: No 'a' field - merged masking again
+            maskedResults[2].s0.should.equal(''); // Masked (merged)
+            maskedResults[2].s1.should.equal(''); // Masked (merged)
+        });
+
+        it('should handle regular drill_events rows with per-app masking', function() {
+            const query = `SELECT * FROM countly_drill.drill_events WHERE a = {appId:String}`;
+
+            const results = [
+                {
+                    a: 'app-1',
+                    e: '[CLY]_action',
+                    up: {
+                        cc: 'US', // Should be masked (app-1 masks cc)
+                        did: 'device123', // Should NOT be masked (app-1 doesn't mask did)
+                        os: 'iOS' // Should NOT be masked (not configured)
+                    }
+                },
+                {
+                    a: 'app-2',
+                    e: '[CLY]_action',
+                    up: {
+                        cc: 'TR', // Should NOT be masked (app-2 doesn't mask cc)
+                        did: 'device456', // Should be masked (app-2 masks did)
+                        os: 'Android' // Should NOT be masked (not configured)
+                    }
+                },
+                {
+                    // No 'a' field - should use merged masking
+                    e: '[CLY]_action',
+                    up: {
+                        cc: 'FR', // Should be masked (merged: app-1 or app-3 masks it)
+                        did: 'device789', // Should be masked (merged: app-2 or app-3 masks it)
+                        os: 'Windows' // Should NOT be masked (not configured in any app)
+                    }
+                }
+            ];
+
+            const maskedResults = maskingService.maskResults(results, query, null);
+
+            maskedResults.should.have.length(3);
+            // Row 1: app-1
+            maskedResults[0].a.should.equal('app-1');
+            should.not.exist(maskedResults[0].up.cc); // Masked
+            maskedResults[0].up.did.should.equal('device123'); // Not masked
+            maskedResults[0].up.os.should.equal('iOS'); // Not masked
+            // Row 2: app-2
+            maskedResults[1].a.should.equal('app-2');
+            maskedResults[1].up.cc.should.equal('TR'); // Not masked
+            should.not.exist(maskedResults[1].up.did); // Masked
+            maskedResults[1].up.os.should.equal('Android'); // Not masked
+            // Row 3: No 'a' field - merged masking
+            should.not.exist(maskedResults[2].up.cc); // Masked (merged)
+            should.not.exist(maskedResults[2].up.did); // Masked (merged)
+            maskedResults[2].up.os.should.equal('Windows'); // Not masked
+        });
+
+        it('should handle root-level did masking with per-app settings', function() {
+            const query = `SELECT * FROM countly_drill.drill_events`;
+
+            const results = [
+                {
+                    a: 'app-1',
+                    did: 'root-device-1', // Root level did
+                    up: {
+                        did: 'up-device-1', // up.did - app-1 doesn't mask did, so both should remain
+                        cc: 'US' // Should be masked
+                    }
+                },
+                {
+                    a: 'app-2',
+                    did: 'root-device-2', // Root level did
+                    up: {
+                        did: 'up-device-2', // up.did - app-2 masks did, so both should be removed
+                        cc: 'TR' // Should NOT be masked
+                    }
+                },
+                {
+                    // No 'a' field - merged masking
+                    did: 'root-device-3', // Root level did
+                    up: {
+                        did: 'up-device-3', // up.did - merged masks did, so both should be removed
+                        cc: 'FR' // Should be masked (merged)
+                    }
+                }
+            ];
+
+            const maskedResults = maskingService.maskResults(results, query, null);
+
+            maskedResults.should.have.length(3);
+            // Row 1: app-1 doesn't mask did
+            maskedResults[0].a.should.equal('app-1');
+            maskedResults[0].did.should.equal('root-device-1'); // Not masked (app-1 doesn't mask did)
+            maskedResults[0].up.did.should.equal('up-device-1'); // Not masked
+            should.not.exist(maskedResults[0].up.cc); // Masked
+            // Row 2: app-2 masks did
+            maskedResults[1].a.should.equal('app-2');
+            should.not.exist(maskedResults[1].did); // Masked (app-2 masks did)
+            should.not.exist(maskedResults[1].up.did); // Masked
+            maskedResults[1].up.cc.should.equal('TR'); // Not masked
+            // Row 3: No 'a' field - merged masking
+            should.not.exist(maskedResults[2].did); // Masked (merged: app-2 or app-3 masks did)
+            // When all properties in 'up' are masked, the entire 'up' object is removed
+            should.not.exist(maskedResults[2].up); // Entire 'up' object removed (both did and cc are masked)
+        });
+
+        it('should handle empty merged masking when no apps have masking configured', function() {
+            // Mock plugins to return empty masking for all apps
+            mockPlugins.getMaskingSettings = function(appId) {
+                if (appId === 'all') {
+                    return {
+                        'app-1': { prop: {} },
+                        'app-2': { prop: {} }
+                    };
+                }
+                return { prop: {} };
+            };
+
+            const query = `SELECT 'snapshot' as bucket_kind, s0, s1 FROM countly_drill.drill_snapshots`;
+            const projectionKey = ['up.cc', 'up.did'];
+
+            const results = [
+                {
+                    // No 'a' field - merged masking should be empty
+                    bucket_kind: 'snapshot',
+                    s0: 'US',
+                    s1: 'device123'
+                },
+                {
+                    a: 'app-1',
+                    bucket_kind: 'snapshot',
+                    s0: 'CA',
+                    s1: 'device456'
+                }
+            ];
+
+            const maskedResults = maskingService.maskResults(results, query, projectionKey);
+
+            maskedResults.should.have.length(2);
+            // No masking should be applied
+            maskedResults[0].s0.should.equal('US');
+            maskedResults[0].s1.should.equal('device123');
+            maskedResults[1].s0.should.equal('CA');
+            maskedResults[1].s1.should.equal('device456');
+        });
+    });
 });
