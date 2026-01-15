@@ -1156,7 +1156,7 @@
                     }
 
                 }
-                starRatingPlugin.editFeedbackWidget({ _id: this.widget._id, status: (state), target_pages: target_pages, targeting: finalizedTargeting }, function() {
+                starRatingPlugin.editFeedbackWidget({ _id: this.widget._id, status: (state), target_pages: target_pages, targeting: finalizedTargeting, links: this.widget.links }, function() {
                     self.widget.is_active = (state ? "true" : "false");
                     self.widget.status = state;
 
