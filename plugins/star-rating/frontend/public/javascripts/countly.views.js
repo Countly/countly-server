@@ -26,7 +26,7 @@
             "link": "https://privacyPolicy.com",
             "textValue": "Privacy Policy",
             "linkValue": "https://privacyPolicy.com"
-        },
+        }
     ];
 
     var consentLink = countlyVue.views.create({
@@ -125,7 +125,7 @@
                 },
                 logoFile: "",
                 stamp: 0,
-                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
+                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
             };
         },
         watch: {
@@ -146,10 +146,10 @@
             finalTxt: function(links, inpFinalText) {
                 var finalText = inpFinalText;
 
-                if ('finalText' in links) {
+                if (links && 'finalText' in links) {
                     finalText = links.finalText;
                 }
-                else {
+                else if (Array.isArray(links)) {
                     links.forEach(link => {
                         const regex = new RegExp(`\\b${link.textValue}\\b`, 'g');
                         finalText = finalText.replace(regex, `<a href="${link.linkValue}" target="_blank">${link.textValue}</a>`);
@@ -179,12 +179,15 @@
                         submitted.finalText = submitted.links.finalText;
                         submitted.links = submitted.links.link;
                     }
-                    submitted.links.forEach(function(link) {
-                        var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
-                        link.linkValue = link.linkValue + separator + CLY_X_INT + '=1';
-                        delete link.text;
-                        delete link.link;
-                    });
+
+                    if (Array.isArray(submitted.links)) {
+                        submitted.links.forEach(function(link) {
+                            var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
+                            link.linkValue = link.linkValue + separator + CLY_X_INT + '=1';
+                            delete link.text;
+                            delete link.link;
+                        });
+                    }
                 }
                 if (this.logoFile !== "") {
                     submitted.logo = this.logoFile;

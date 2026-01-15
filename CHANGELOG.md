@@ -11,7 +11,6 @@ Fixes:
 - [onboarding] Fix redirection to newsletter page
 - [push] Message cancellation doesn't work on cohort exit
 
-
 ## Version 25.03.31
 Fixes:
 - [core] Add null checking for user permission when opening the dashboard
