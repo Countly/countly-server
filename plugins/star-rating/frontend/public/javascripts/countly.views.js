@@ -1201,7 +1201,6 @@
                         }
                         link.linkValue = link.linkValue.replace(new RegExp('[?&]' + CLY_X_INT + '=[^&]*'), '').replace(/[?&]$/, '');
                     });
-                    this.widget.links = {"link": this.widget.links, "finalText": this.widget.finalText};
                 }
                 else {
                     this.widget.links = {
