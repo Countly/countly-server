@@ -142,14 +142,18 @@
                 if (!ev.links || ev.links.length < 1) {
                     ev.links = defaultLinks;
                 }
+
+                if (typeof ev.finalText !== "string" || !ev.finalText) {
+                    ev.finalText = "I agree to the Terms and Conditions and Privacy Policy.";
+                }
             },
             finalTxt: function(links, inpFinalText) {
                 var finalText = inpFinalText;
 
-                if (links && 'finalText' in links) {
+                if (links && !Array.isArray(links) && typeof links.finalText === 'string') {
                     finalText = links.finalText;
                 }
-                else if (Array.isArray(links)) {
+                else if (Array.isArray(links) && typeof finalText === 'string') {
                     links.forEach(link => {
                         const regex = new RegExp(`\\b${link.textValue}\\b`, 'g');
                         finalText = finalText.replace(regex, `<a href="${link.linkValue}" target="_blank">${link.textValue}</a>`);
@@ -175,7 +179,7 @@
             onSubmit: function(submitted, done) {
                 var self = this;
                 if (submitted.links) {
-                    if (submitted.links.finalText) {
+                    if (!submitted.finalText && !Array.isArray(submitted.links) && submitted.links.finalText && Array.isArray(submitted.links.link)) {
                         submitted.finalText = submitted.links.finalText;
                         submitted.links = submitted.links.link;
                     }
