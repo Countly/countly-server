@@ -703,8 +703,8 @@ const queryHelpers = require('../QueryHelpers');
         const limit = parseInt(rawLimit, 10) || 20;
         sql += ` LIMIT ${limit + 1}`;
 
-        //Not passing app_id as Data redaction will not happen in plugins: complaince hub and audit logs.
-        const rows = await common.clickhouseQueryService.query({ query: sql, params: bindParams });
+        // Pass appID to enable data masking for compliance hub
+        const rows = await common.clickhouseQueryService.query({ query: sql, params: bindParams, appID: appID });
         const countResult = await CursorPagination.getCount(common.clickhouseQueryService, whereSQL, bindParams, useApproximateUniq);
         const pagination = CursorPagination.buildPaginationResponse(rows, limit, countResult, paginationModeResolved, snapshotTs);
 
