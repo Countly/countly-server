@@ -145,9 +145,21 @@
                                     parameters.forEach(function(parameter) {
                                         parameter.editable = true;
                                         resp.experiments.forEach(function(experiment) {
-                                            if (experiment && experiment.status !== "completed" && experiment.variants && experiment.variants.length > 0 && experiment.variants[0].parameters.length && experiment.variants[0].parameters.length > 0 && experiment.variants[0].parameters[0].name === parameter.parameter_key) {
-                                                parameter.abStatus = experiment.status;
-                                                parameter.editable = false;
+                                            if (experiment && experiment.status !== "completed" && experiment.variants && experiment.variants.length > 0) {
+                                                var parameterInExperiment = experiment.variants.find(function(variant) {
+                                                    if (variant.parameters && variant.parameters.length > 0) {
+                                                        return variant.parameters.find(function(vParameter) {
+                                                            return vParameter.name === parameter.parameter_key;
+                                                        });
+                                                    }
+
+                                                    return false;
+                                                });
+
+                                                if (parameterInExperiment) {
+                                                    parameter.abStatus = experiment.status;
+                                                    parameter.editable = false;
+                                                }
                                             }
                                         });
                                         if (parameter.expiry_dttm && parameter.expiry_dttm < Date.now()) {
