@@ -351,26 +351,97 @@ class DataMaskingService {
                 return results;
             }
 
-            // Get masking settings for this app
-            const masking = this.getMaskingSettings(this.appId);
-            // Build set of masked top-level fields (generalized)
+            /**
+             * Helper function to merge masking settings from all apps
+             * @param {Object} allAppsMasking - Object containing masking settings for all apps
+             * @returns {Object} Merged masking object with prop, events, and top fields
+             */
+            const mergeAllAppsMasking = (allAppsMasking) => {
+                const mergedMasking = {
+                    prop: {},
+                    events: {},
+                    top: { fields: [] }
+                };
+                const allTopFields = new Set();
+
+                if (allAppsMasking && typeof allAppsMasking === 'object') {
+                    for (const appId in allAppsMasking) {
+                        const appMasking = allAppsMasking[appId];
+                        if (appMasking) {
+                            if (appMasking.prop) {
+                                for (const group in appMasking.prop) {
+                                    if (!mergedMasking.prop[group]) {
+                                        mergedMasking.prop[group] = {};
+                                    }
+                                    for (const prop in appMasking.prop[group]) {
+                                        if (appMasking.prop[group][prop]) {
+                                            mergedMasking.prop[group][prop] = true;
+                                        }
+                                    }
+                                }
+                            }
+                            if (appMasking.events) {
+                                for (const eventName in appMasking.events) {
+                                    if (!mergedMasking.events[eventName]) {
+                                        mergedMasking.events[eventName] = { sg: {} };
+                                    }
+                                    if (appMasking.events[eventName].sg) {
+                                        for (const segName in appMasking.events[eventName].sg) {
+                                            if (appMasking.events[eventName].sg[segName]) {
+                                                mergedMasking.events[eventName].sg[segName] = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (appMasking.top && appMasking.top.fields && Array.isArray(appMasking.top.fields)) {
+                                for (const f of appMasking.top.fields) {
+                                    if (typeof f === 'string' && f.trim()) {
+                                        allTopFields.add(f.trim());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                mergedMasking.top.fields = Array.from(allTopFields);
+                return mergedMasking;
+            };
+
+            // Get all apps' masking settings if appId is 'all' (for alias reference parsing and fallback)
+            // We'll get per-row masking settings later when processing each row
+            let allAppsMasking = null;
+            let mergedMaskingForFallback = null;
+            let maskingForAliasRefs = null;
+
+            if (this.appId === 'all') {
+                allAppsMasking = this.getMaskingSettings('all');
+                // Merge all apps' masking for alias reference detection and fallback (union approach)
+                mergedMaskingForFallback = mergeAllAppsMasking(allAppsMasking);
+                maskingForAliasRefs = mergedMaskingForFallback;
+            }
+            else {
+                // For specific app, get its masking settings
+                maskingForAliasRefs = this.getMaskingSettings(this.appId);
+                mergedMaskingForFallback = null; // Not used when appId is specific
+            }
+
+            // Build set of masked top-level fields for alias reference detection
             const maskedTopFields = new Set();
-            if (masking && masking.top && Array.isArray(masking.top.fields)) {
-                for (const f of masking.top.fields) {
+            if (maskingForAliasRefs && maskingForAliasRefs.top && Array.isArray(maskingForAliasRefs.top.fields)) {
+                for (const f of maskingForAliasRefs.top.fields) {
                     if (typeof f === 'string' && f.trim()) {
                         maskedTopFields.add(f.trim());
                     }
                 }
             }
 
-            if (!masking || (!masking.events && !masking.prop && maskedTopFields.size === 0)) {
-                return results;
-            }
-
             log.d('Masking results based on config', {
                 appId: this.appId,
-                hasEvents: !!masking.events,
-                hasProp: !!masking.prop,
+                isAllApps: this.appId === 'all',
+                hasEvents: !!maskingForAliasRefs?.events,
+                hasProp: !!maskingForAliasRefs?.prop,
                 maskedTopFields: Array.from(maskedTopFields)
             });
 
@@ -404,9 +475,9 @@ class DataMaskingService {
                             }
 
                             // properties reference
-                            if (masking.prop) {
-                                for (const group in masking.prop) {
-                                    const groupMask = masking.prop[group];
+                            if (maskingForAliasRefs && maskingForAliasRefs.prop) {
+                                for (const group in maskingForAliasRefs.prop) {
+                                    const groupMask = maskingForAliasRefs.prop[group];
                                     if (!groupMask) {
                                         continue;
                                     }
@@ -429,11 +500,11 @@ class DataMaskingService {
                             }
 
                             // segments reference (record names; decision per row by event)
-                            if (masking.events) {
+                            if (maskingForAliasRefs && maskingForAliasRefs.events) {
                                 // collect all masked segment names
                                 const segNames = new Set();
-                                for (const ev in masking.events) {
-                                    const evCfg = masking.events[ev];
+                                for (const ev in maskingForAliasRefs.events) {
+                                    const evCfg = maskingForAliasRefs.events[ev];
                                     if (evCfg && evCfg.sg) {
                                         for (const seg in evCfg.sg) {
                                             if (evCfg.sg[seg]) {
@@ -481,28 +552,66 @@ class DataMaskingService {
             );
             const isSnapshotQuery = isSnapshotQueryByString || isSnapshotQueryByResults;
 
-            const hasMaskedProps = masking.prop && Object.keys(masking.prop).some(group => {
-                if (!masking.prop[group]) {
-                    return false;
-                }
-                return Object.keys(masking.prop[group]).some(prop => masking.prop[group][prop]);
-            });
-
             log.d('Result masking check', {
                 isSnapshotQueryByString,
                 isSnapshotQueryByResults,
                 isSnapshotQuery,
-                hasMaskedProps,
                 resultsCount: results.length,
                 projectionKey: projectionKey,
                 projectionKeyType: typeof projectionKey,
                 projectionKeyLength: Array.isArray(projectionKey) ? projectionKey.length : 'N/A',
-                sampleRow: results[0] ? { bucket_kind: results[0].bucket_kind, row: results[0].row, hasS0: 's0' in results[0] } : null
+                sampleRow: results[0] ? { bucket_kind: results[0].bucket_kind, row: results[0].row, hasS0: 's0' in results[0], hasA: 'a' in results[0] } : null
             });
 
             // Apply masking to each result row
             const maskedResults = results.map(row => {
                 const maskedRow = { ...row };
+
+                // Get masking settings for this specific row
+                // If appId is 'all', get settings from the row's 'a' field
+                // Otherwise, use the appId set in the service
+                let rowAppId = this.appId;
+                let masking = null;
+
+                if (this.appId === 'all') {
+                    // Get app ID from the row's 'a' field
+                    rowAppId = row.a || null;
+                    if (!rowAppId) {
+                        // If row doesn't have 'a' field, use merged masking from all apps as fallback
+                        log.d('Row missing app ID (a field), applying merged masking from all apps as fallback', { row: row.row || row.bucket_kind });
+                        masking = mergedMaskingForFallback;
+                    }
+                    else {
+                        // Get masking settings for this row's specific app
+                        masking = this.getMaskingSettings(rowAppId);
+                    }
+                }
+                else {
+                    // Get masking settings for the specific app
+                    masking = this.getMaskingSettings(rowAppId);
+                }
+
+                if (!masking || (!masking.events && !masking.prop && (!masking.top || !masking.top.fields || masking.top.fields.length === 0))) {
+                    // No masking configured for this app, return row as-is
+                    return maskedRow;
+                }
+
+                // Build set of masked top-level fields for this row
+                const maskedTopFieldsForRow = new Set();
+                if (masking.top && Array.isArray(masking.top.fields)) {
+                    for (const f of masking.top.fields) {
+                        if (typeof f === 'string' && f.trim()) {
+                            maskedTopFieldsForRow.add(f.trim());
+                        }
+                    }
+                }
+
+                const hasMaskedProps = masking.prop && Object.keys(masking.prop).some(group => {
+                    if (!masking.prop[group]) {
+                        return false;
+                    }
+                    return Object.keys(masking.prop[group]).some(prop => masking.prop[group][prop]);
+                });
 
                 // Mask s0-s4 columns for drill_snapshots queries
                 // Try to determine which s0-s4 columns correspond to masked properties
@@ -648,8 +757,8 @@ class DataMaskingService {
                 }
 
                 // Mask top-level fields (generalized) and any aliases that reference them
-                if (maskedTopFields.size > 0) {
-                    for (const topField of maskedTopFields) {
+                if (maskedTopFieldsForRow.size > 0) {
+                    for (const topField of maskedTopFieldsForRow) {
                         if (maskedRow[topField] !== undefined) {
                             delete maskedRow[topField];
                         }
@@ -658,7 +767,7 @@ class DataMaskingService {
                         const refs = aliasRefs[alias];
                         if (refs && Array.isArray(refs.top) && refs.top.length > 0 && maskedRow[alias] !== undefined) {
                             // If alias references any masked top-level field, remove it
-                            const hasMaskedTop = refs.top.some(tf => maskedTopFields.has(tf));
+                            const hasMaskedTop = refs.top.some(tf => maskedTopFieldsForRow.has(tf));
                             if (hasMaskedTop) {
                                 delete maskedRow[alias];
                             }
@@ -673,8 +782,11 @@ class DataMaskingService {
                         if (!refs || !refs.props || refs.props.length === 0) {
                             continue;
                         }
-                        // If alias references any masked prop, remove alias
-                        if (maskedRow[alias] !== undefined) {
+                        // Check if any of the referenced props are masked for this row's app
+                        const hasMaskedProp = refs.props.some(({ group, prop }) =>
+                            masking.prop[group] && masking.prop[group][prop]
+                        );
+                        if (hasMaskedProp && maskedRow[alias] !== undefined) {
                             delete maskedRow[alias];
                         }
                     }
