@@ -36,7 +36,7 @@ describe('Create New Widget', () => {
             contactViaCheckboxLabelText: "Contact me via e-mail",
             submitButtonText: "Submit Feedback",
             submitButtonColor: "#0166D6",
-            submitButtonFontColor: "#0166D6",
+            submitButtonFontColor: "#FFFFFF",
             hasPoweredByLogo: true
         });
 
@@ -68,7 +68,7 @@ describe('Create New Widget', () => {
             contactViaCheckboxLabelText: "Contact me via e-mail",
             submitButtonText: "Submit Feedback",
             submitButtonColor: "#0166D6",
-            submitButtonFontColor: "#0166D6",
+            submitButtonFontColor: "#FFFFFF",
             hasPoweredByLogo: true
         });
 
@@ -97,7 +97,7 @@ describe('Create New Widget', () => {
             selectedEmojiItemIndex: 5,
             submitButtonText: "Submit Feedback",
             selectedMainColor: '#0166D6',
-            selectedFontColor: '#0166D6',
+            selectedFontColor: '#FFFFFF',
             hasPoweredByLogo: true,
             thankYouMessageText: 'Thanks for your feedback!',
             successIconColor: '#0166D6'
