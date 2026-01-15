@@ -49,7 +49,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyPreviewTriggerButtonPopUpElements({
             triggerButtonText: "Feedback",
             triggerButtonColor: "#0166D6",
-            triggerButtonFontColor: "#0166D6"
+            triggerButtonFontColor: "#FFFFFF"
         });
 
         widgetsHelpers.clickNextStepButton();
