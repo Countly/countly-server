@@ -34,13 +34,34 @@ class DataMaskingService {
     }
 
     /**
+     * Check if masking should be enabled based on data-manager settings and skipDataMasking option
+     * Matches the pattern: plugins.getConfig("data-manager").enableDataMasking && !(ob && ob.options && ob.options.skipDataMasking)
+     * @param {Object} [options] - Options object that may contain skipDataMasking flag
+     * @returns {boolean} True if masking should be applied
+     */
+    shouldApplyMasking(options) {
+        if (!this.plugins || !this.plugins.getConfig) {
+            return false;
+        }
+        const dataManagerConfig = this.plugins.getConfig("data-manager");
+        // Match the exact pattern: enableDataMasking && !(options && options.skipDataMasking)
+        return dataManagerConfig && dataManagerConfig.enableDataMasking && !(options && options.skipDataMasking);
+    }
+
+    /**
      * Attempt to mask sensitive data from query string using regex patterns
      * @param {string} query - SQL query string with parameter placeholders
      * @param {Object} [_params] - Query parameters (unused)
+     * @param {Object} [options] - Optional options object
      * @returns {Object} Object with masked query and whether masking was applied
      */
-    maskQueryString(query, _params) {
+    maskQueryString(query, _params, options) {
         try {
+            // Check if masking should be applied
+            if (!this.shouldApplyMasking(options)) {
+                return { query, masked: false };
+            }
+
             // disabling query masking until it is still stable
             // keeping result masking enabled
             void _params;
@@ -343,10 +364,17 @@ class DataMaskingService {
      * @param {Array} results - Query results
      * @param {string} queryString - Original query string (may contain projectionKey info)
      * @param {Array} [projectionKey] - Optional projection key array mapping properties to s0-s4
+     * @param {Object} [options] - Optional options object
      * @returns {Array} Masked results with fields removed
      */
-    maskResults(results, queryString, projectionKey = null) {
+    maskResults(results, queryString, projectionKey = null, options = null) {
         try {
+            // Check if masking should be applied
+            if (!this.shouldApplyMasking(options)) {
+                log.d('Data masking is disabled or skipped, skipping masking');
+                return results;
+            }
+
             if (!this.appId || !results || !Array.isArray(results)) {
                 return results;
             }
@@ -613,6 +641,17 @@ class DataMaskingService {
                     return Object.keys(masking.prop[group]).some(prop => masking.prop[group][prop]);
                 });
 
+                log.d('Masking check for row', {
+                    rowAppId,
+                    hasMasking: !!masking,
+                    hasMaskedProps,
+                    maskingProp: masking?.prop,
+                    isSnapshotQuery,
+                    bucketKind: row.bucket_kind,
+                    hasSColumns: 's0' in row || 's1' in row,
+                    shouldSkip: row.bucket_kind === 'tot' || row.row === 'total'
+                });
+
                 // Mask s0-s4 columns for drill_snapshots queries
                 // Try to determine which s0-s4 columns correspond to masked properties
                 // If we can't determine, mask all s0-s4 columns (fallback)
@@ -634,7 +673,11 @@ class DataMaskingService {
                             log.d('Processing projectionKey for result masking', {
                                 projectionKey,
                                 projectionKeyLength: projectionKey.length,
-                                maskingConfig: Object.keys(masking.prop || {})
+                                maskingConfig: Object.keys(masking.prop || {}),
+                                maskingProp: masking.prop,
+                                rowBucketKind: row.bucket_kind,
+                                hasS0: 's0' in maskedRow,
+                                s0Value: maskedRow.s0
                             });
                             projectionKey.forEach((propPath, index) => {
                                 // Only process indices 0-4 (s0-s4)
@@ -668,6 +711,12 @@ class DataMaskingService {
                             log.d('Result masking projectionKey processing complete', {
                                 sColumnsToMask: Array.from(sColumnsToMask)
                             });
+
+                            // If projectionKey was provided and we've checked all properties, but found no masked ones,
+                            // don't mask anything. Only mask what's explicitly configured.
+                            if (sColumnsToMask.size === 0) {
+                                log.d('ProjectionKey provided but no masked properties found in it, skipping s0-s4 masking');
+                            }
                         }
                         else {
                             log.d('No valid projectionKey for result masking', {
@@ -675,15 +724,12 @@ class DataMaskingService {
                                 isArray: Array.isArray(projectionKey),
                                 length: Array.isArray(projectionKey) ? projectionKey.length : 'N/A'
                             });
-                        }
 
-                        // If no specific mappings found, mask all s0-s4 (fallback)
-                        // This happens when projectionKey is null, empty array, or no properties are configured to be masked
-                        if (sColumnsToMask.size === 0) {
-                            log.d('No projectionKey provided or no masked properties found in projectionKey, masking all s0-s4 columns (fallback)');
-                            for (let i = 0; i <= 4; i++) {
-                                sColumnsToMask.add(`s${i}`);
-                            }
+                            // Only apply fallback when projectionKey is completely missing (null or empty)
+                            // This is a safety measure, but we should avoid masking all columns if possible
+                            // If projectionKey is missing, we can't determine which columns to mask safely
+                            // So we skip masking s0-s4 columns rather than masking everything
+                            log.w('No projectionKey provided - cannot safely determine which s0-s4 columns to mask, skipping s0-s4 masking');
                         }
 
                         // Mask only the columns that need masking
@@ -825,7 +871,6 @@ class DataMaskingService {
 
                 return maskedRow;
             });
-
             return maskedResults;
         }
         catch (error) {

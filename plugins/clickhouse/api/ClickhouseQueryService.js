@@ -53,13 +53,16 @@ class ClickhouseQueryService {
         const startTime = Date.now();
 
         try {
+            // Check if masking should be applied (respects enableDataMasking and skipDataMasking)
+            const shouldMask = this.maskingService.shouldApplyMasking(queryObj?.options);
+
             if (queryObj?.appID) {
                 queryObj.appID = queryObj?.appID.toString();
                 this.maskingService.setAppId(queryObj.appID);
             }
 
-            // Attempt to mask query string
-            const maskAttempt = this.maskingService.maskQueryString(queryObj.query, queryObj.params);
+            // Attempt to mask query string only if masking is enabled
+            const maskAttempt = shouldMask ? this.maskingService.maskQueryString(queryObj.query, queryObj.params, queryObj?.options) : { query: queryObj.query, masked: false };
             const maskedQuery = maskAttempt.masked ? maskAttempt.query : null;
 
             // Execute masked query first; on failure, fallback to original and apply result-level masking
@@ -84,7 +87,7 @@ class ClickhouseQueryService {
                     });
                     const fallback = await resultSet.json();
                     const projectionKey = queryObj.projectionKey || null;
-                    const maskedResult = this.maskingService.maskResults(fallback, queryObj.query, projectionKey);
+                    const maskedResult = shouldMask ? this.maskingService.maskResults(fallback, queryObj.query, projectionKey, queryObj?.options) : fallback;
 
                     const durationFb = Date.now() - startTime;
                     log.d(`ClickHouse query completed in ${durationFb}ms (fallback applied)`);
@@ -101,7 +104,7 @@ class ClickhouseQueryService {
                 });
                 const result = await resultSet.json();
                 const projectionKey = queryObj.projectionKey || null;
-                const maskedResult = this.maskingService.maskResults(result, queryObj.query, projectionKey);
+                const maskedResult = shouldMask ? this.maskingService.maskResults(result, queryObj.query, projectionKey, queryObj?.options) : result;
 
                 const duration = Date.now() - startTime;
                 log.d(`ClickHouse query completed in ${duration}ms`);
@@ -205,6 +208,9 @@ class ClickhouseQueryService {
 
         let result;
         try {
+            // Check if masking should be applied (respects enableDataMasking and skipDataMasking)
+            const shouldMask = this.maskingService.shouldApplyMasking(options);
+
             // Extract appId from pipeline.appID first (like query method), then fall back to params.appID
             const appID = pipeline?.appID || (pipeline.params && pipeline.params.appID);
             if (appID) {
@@ -221,8 +227,8 @@ class ClickhouseQueryService {
                 effectiveSettings.max_query_size = LARGE_QUERY_MAX_SIZE;
             }
 
-            // Attempt to mask query string
-            const maskAttempt = this.maskingService.maskQueryString(pipeline.query, pipeline.params);
+            // Attempt to mask query string only if masking is enabled
+            const maskAttempt = shouldMask ? this.maskingService.maskQueryString(pipeline.query, pipeline.params, options) : { query: pipeline.query, masked: false };
             const maskedQuery = maskAttempt.masked ? maskAttempt.query : null;
             const queryParams = maskAttempt.masked ? {} : pipeline.params;
 
@@ -286,7 +292,7 @@ class ClickhouseQueryService {
             if (options?.stream) {
                 const src = resultSet.stream();
                 const maskingService = this.maskingService;
-                const shouldMaskResults = !usedMaskedQuery;
+                const shouldMaskResults = shouldMask && !usedMaskedQuery;
                 const projectionKey = options?.projectionKey || pipeline.projectionKey || null;
                 const transformStream = new Transform({
                     objectMode: true,
@@ -300,12 +306,12 @@ class ClickhouseQueryService {
                                 let dataToPush = obj;
                                 if (shouldMaskResults && obj && typeof obj === 'object' && obj.row) {
                                     // If it's wrapped in a row object
-                                    const maskedRow = maskingService.maskResults([obj.row], pipeline.query, projectionKey);
+                                    const maskedRow = maskingService.maskResults([obj.row], pipeline.query, projectionKey, options);
                                     dataToPush = { ...obj, row: maskedRow[0] };
                                 }
                                 else if (shouldMaskResults && obj && typeof obj === 'object') {
                                     // If it's a direct row object
-                                    const maskedRows = maskingService.maskResults([obj], pipeline.query, projectionKey);
+                                    const maskedRows = maskingService.maskResults([obj], pipeline.query, projectionKey, options);
                                     dataToPush = maskedRows[0];
                                 }
 
@@ -352,7 +358,7 @@ class ClickhouseQueryService {
                 }
                 // Mask results if query string masking failed or we fell back
                 const projectionKey = options?.projectionKey || pipeline.projectionKey || null;
-                const maskedResult = usedMaskedQuery ? rows : this.maskingService.maskResults(rows, pipeline.query, projectionKey);
+                const maskedResult = (shouldMask && !usedMaskedQuery) ? this.maskingService.maskResults(rows, pipeline.query, projectionKey, options) : rows;
                 return maskedResult;
             }
 
@@ -362,7 +368,7 @@ class ClickhouseQueryService {
 
             // Mask results if query string masking failed or we fell back
             const projectionKey = options?.projectionKey || pipeline.projectionKey || null;
-            const maskedResult = usedMaskedQuery ? result : this.maskingService.maskResults(result, pipeline.query, projectionKey);
+            const maskedResult = (shouldMask && !usedMaskedQuery) ? this.maskingService.maskResults(result, pipeline.query, projectionKey, options) : result;
             return maskedResult;
 
         }
