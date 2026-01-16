@@ -26,7 +26,8 @@
     "supertest": "7.0.0"
   },
   "scripts": {
-    "test": "grunt --verbose"
+    "test": "grunt --verbose",
+    "postinstall": "mkdir -p frontend/express/public/sdk/web && cp -rf node_modules/countly-sdk-web/lib/* frontend/express/public/sdk/web/"
   },
   "dependencies": {
     "all-the-cities": "3.1.0",
