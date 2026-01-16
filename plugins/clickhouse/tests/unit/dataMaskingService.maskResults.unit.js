@@ -27,7 +27,8 @@ describe('DataMaskingService - maskResults for drill_snapshots with different bu
     beforeEach(function() {
         maskingService = new DataMaskingService();
 
-        // Mock plugins with getMaskingSettings method
+        // Mock plugins with getMaskingSettings and getConfig methods
+        // getConfig is required for shouldApplyMasking to return true
         mockPlugins = {
             getMaskingSettings: function(appId) {
                 if (appId === 'test-app-123') {
@@ -42,6 +43,16 @@ describe('DataMaskingService - maskResults for drill_snapshots with different bu
                                 'sensitive_value': true
                             }
                         }
+                    };
+                }
+                return null;
+            },
+            getConfig: function(pluginName) {
+                // Return data-manager config with enableDataMasking: true
+                // This is required for shouldApplyMasking to return true
+                if (pluginName === 'data-manager') {
+                    return {
+                        enableDataMasking: true
                     };
                 }
                 return null;
@@ -540,7 +551,7 @@ describe('DataMaskingService - maskResults for drill_snapshots with different bu
     });
 
     describe('Fallback behavior', function() {
-        it('should mask all s0-s4 when projectionKey is not provided', function() {
+        it('should NOT mask s0-s4 when projectionKey is not provided (safety measure)', function() {
             const query = `SELECT bucket_kind, s0,s1,s2,s3,s4, u, t FROM drill_snapshots`;
             const projectionKey = null;
 
@@ -560,15 +571,16 @@ describe('DataMaskingService - maskResults for drill_snapshots with different bu
             const maskedResults = maskingService.maskResults(results, query, projectionKey);
 
             maskedResults.should.have.length(1);
-            // All s0-s4 should be masked (fallback)
-            maskedResults[0].s0.should.equal('');
-            maskedResults[0].s1.should.equal('');
-            maskedResults[0].s2.should.equal('');
-            maskedResults[0].s3.should.equal('');
-            maskedResults[0].s4.should.equal('');
+            // When projectionKey is missing, masking is skipped for safety
+            // (cannot safely determine which s0-s4 columns to mask)
+            maskedResults[0].s0.should.equal('iOS');
+            maskedResults[0].s1.should.equal('US');
+            maskedResults[0].s2.should.equal('device123');
+            should(maskedResults[0].s3).be.null();
+            should(maskedResults[0].s4).be.null();
         });
 
-        it('should mask all s0-s4 when projectionKey is empty array', function() {
+        it('should NOT mask s0-s4 when projectionKey is empty array (safety measure)', function() {
             const query = `SELECT bucket_kind, s0,s1,s2,s3,s4, u, t FROM drill_snapshots`;
             const projectionKey = [];
 
@@ -588,12 +600,13 @@ describe('DataMaskingService - maskResults for drill_snapshots with different bu
             const maskedResults = maskingService.maskResults(results, query, projectionKey);
 
             maskedResults.should.have.length(1);
-            // All s0-s4 should be masked (fallback)
-            maskedResults[0].s0.should.equal('');
-            maskedResults[0].s1.should.equal('');
-            maskedResults[0].s2.should.equal('');
-            maskedResults[0].s3.should.equal('');
-            maskedResults[0].s4.should.equal('');
+            // When projectionKey is empty, masking is skipped for safety
+            // (cannot safely determine which s0-s4 columns to mask)
+            maskedResults[0].s0.should.equal('iOS');
+            maskedResults[0].s1.should.equal('US');
+            maskedResults[0].s2.should.equal('device123');
+            should(maskedResults[0].s3).be.null();
+            should(maskedResults[0].s4).be.null();
         });
     });
 
