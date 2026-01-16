@@ -83,11 +83,11 @@
         </div>
 
         <!-- Operator -->
-        <div class="bu-column bu-is-3">
+        <div class="bu-column bu-is-2">
           <validation-provider :rules="'required'" v-slot="validation">
             <el-select
               v-model="local.operator"
-              placeholder="Operator"
+              placeholder="Select"
               size="small"
               :disabled="disabled || !local.field"
               :class="{'is-error': validation.errors.length > 0}"
@@ -105,7 +105,7 @@
         </div>
 
         <!-- Value -->
-        <div class="bu-column bu-is-4">
+        <div class="bu-column bu-is-5">
           <validation-provider :rules="needsValue ? 'required' : ''" v-slot="validation">
             <el-input
               v-model="local.value"
