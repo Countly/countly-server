@@ -245,9 +245,14 @@ function fetchDatapoints(db, filter, options, callback) {
         }
 
         if (options.monthlyBreakdown) {
+            var apps = {};
             const dataPoints = result
                 .reduce((acc, current) => {
                     let dp = (current.e || 0) + (current.s || 0);
+                    var appId = current.a;
+                    if (appId && typeof appId !== "undefined" && appId !== "[CLY]_consolidated" && !apps[appId]) {
+                        apps[appId] = 0;
+                    }
 
                     if (/^\[CLY\]_consolidated/.test(current._id)) {
                         // do not count consolidated dp for countly hosted clients
@@ -300,6 +305,9 @@ function fetchDatapoints(db, filter, options, callback) {
                                             acc.daily[date] = (acc.daily[date] || 0) + (current.d[day][hour].e || 0) + (current.d[day][hour].s || 0);
                                         }
                                     }
+                                    if (typeof apps[appId] !== "undefined") {
+                                        apps[appId] += acc.daily[date];
+                                    }
                                 }
                             }
                         });
@@ -307,7 +315,7 @@ function fetchDatapoints(db, filter, options, callback) {
 
                     return acc;
                 }, {});
-
+            dataPoints.apps = apps;
             return callback(dataPoints);
         }
 
