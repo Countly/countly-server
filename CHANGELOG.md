@@ -1,3 +1,7 @@
+## Version 25.03.XX
+Fixes:
+- [compliance-hub] Correctly merge user history on user merge
+
 ## Version 25.03.32
 Fixes:
 - [core] Filtering out internal events while calculating top events
