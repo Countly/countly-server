@@ -929,7 +929,7 @@
         template: CV.T('/data-manager/templates/events.html'),
         mixins: [
             countlyVue.mixins.auth(FEATURE_NAME),
-            countlyVue.mixins.hasDrawers(["events", "transform", "segments", "eventgroup", "regenerate"]),
+            countlyVue.mixins.hasDrawers(["events", "transform", "segments", "eventgroup", "regenerate", "piiDetection"]),
             countlyVue.container.tabsMixin({
                 "externalTabs": "/manage/data-manager/events"
             })
@@ -990,7 +990,8 @@
                     (this.isDrill && this.canUserCreateTransform && (this.currentSecondaryTab === 'events' || this.currentSecondaryTab === 'segmentation')) ||
                     (this.isDrill && this.canUserCreate && this.currentSecondaryTab === 'events') ||
                     (this.canUserCreate && this.currentSecondaryTab === 'event-groups') ||
-                    (this.isDrill && this.canUserCreateTransform && this.currentSecondaryTab === 'transformations')
+                    (this.isDrill && this.canUserCreateTransform && this.currentSecondaryTab === 'transformations') ||
+                    (this.isDrill && this.canUserCreate && this.currentSecondaryTab === 'pii-detection')
                 );
             }
         },
@@ -999,7 +1000,8 @@
             'transform-drawer': COMPONENTS.TransformDrawer,
             'segments-drawer': COMPONENTS.SegmentsDrawer,
             'event-group-drawer': EventGroupDrawer,
-            'regenerate-drawer': COMPONENTS.RegenerateDrawer
+            'regenerate-drawer': COMPONENTS.RegenerateDrawer,
+            'pii-detection-drawer': COMPONENTS.PiiDetectionDrawer
         },
         methods: {
             initialize: function() {
@@ -1041,6 +1043,9 @@
                 }
                 else if (event === 'create-segment-transform') {
                     this.openDrawer("transform", { tab: tab, transformType: 'segment', actionType: 'merge' });
+                }
+                else if (event === 'create-pii-detection') {
+                    this.$root.$emit('dm-open-create-pii-detection-drawer');
                 }
             },
             handleMetaCommands: function(event) {
@@ -1139,6 +1144,27 @@
                 }
                 self.openDrawer("events", data);
             });
+            this.$root.$on('dm-open-create-pii-detection-drawer', function() {
+                self.openDrawer("piiDetection", {
+                    name: '',
+                    regex: '',
+                    targetTypes: [],
+                    targetValues: {},
+                    status: 'ENABLED',
+                    isEditMode: false
+                });
+            });
+            this.$root.$on('dm-open-edit-pii-detection-drawer', function(rule) {
+                var doc = JSON.parse(JSON.stringify(rule));
+                if (!doc.targetValues) {
+                    doc.targetValues = {};
+                }
+                if (!doc.targetTypes) {
+                    doc.targetTypes = [];
+                }
+                doc.isEditMode = true;
+                self.openDrawer("piiDetection", doc);
+            });
             this.$root.$on('dm-open-edit-transform-drawer', function(doc) {
                 doc = JSON.parse(JSON.stringify(doc));
                 // doc.transformType = doc.actionType.split('_')[0] === 'EVENT' ? 'event' : 'segment';
@@ -1193,6 +1219,8 @@
             this.$root.$off('dm-open-edit-event-drawer');
             this.$root.$off('dm-open-edit-transform-drawer');
             this.$root.$off('dm-open-edit-event-group-drawer');
+            this.$root.$off('dm-open-create-pii-detection-drawer');
+            this.$root.$off('dm-open-edit-pii-detection-drawer');
         }
     });
 

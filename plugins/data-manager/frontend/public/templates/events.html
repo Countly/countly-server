@@ -26,6 +26,9 @@
                 <el-dropdown-item v-if="isDrill && canUserCreateTransform && (currentSecondaryTab === 'transformations') " :data-test-id="'events-page-create-new-' +i18n('data-manager.create-segment-transformation').replaceAll(' ', '-').toLowerCase() + '-button'" command="create-segment-transform">
                     {{i18n('data-manager.create-segment-transformation')}}
                 </el-dropdown-item>
+                <el-dropdown-item v-if="isDrill && canUserCreate && (currentSecondaryTab === 'pii-detection') " :data-test-id="'events-page-create-new-' +i18n('data-manager.create-pii-rule').replaceAll(' ', '-').toLowerCase() + '-button'" command="create-pii-detection">
+                    {{i18n('data-manager.create-pii-rule')}}
+                </el-dropdown-item>
             </cly-more-options>
           </div>
         <div v-if="isDrill && (canUserUpdate || canUserCreate || isUserGlobalAdmin)" class="bu-ml-2">
@@ -44,6 +47,7 @@
         <transform-drawer @close="closeDrawer" :controls="drawers.transform"></transform-drawer>
         <segments-drawer @close="closeDrawer" :controls="drawers.segments"></segments-drawer>
         <regenerate-drawer @close="closeDrawer" :controls="drawers.regenerate"></regenerate-drawer>
+        <pii-detection-drawer @close="closeDrawer" :controls="drawers.piiDetection"></pii-detection-drawer>
         <cly-form-dialog
             class="cly-vue-data-manager__dropzone"
             ref="importSchemaFormDialog"
