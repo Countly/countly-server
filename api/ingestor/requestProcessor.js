@@ -14,6 +14,7 @@ const countlyApi = {
     }
 };
 
+var eventsWithDefaultPlatformSegment = ["[CLY]_view", "[CLY]_action", "[CLY]_nps", "[CLY]_survey"];
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 // Initialize unified event sink
 let eventSink = null;
@@ -379,6 +380,13 @@ var processToDrill = async function(params, drill_updates, callback) {
                 dbEventObject.peid = events[i].peid;
             }
 
+
+            if (eventsWithDefaultPlatformSegment.indexOf(eventKey) !== -1) {
+                if (upWithMeta.up && upWithMeta.up.p && !(currEvent.segmentation && currEvent.segmentation.platform)) {
+                    currEvent.segmentation = currEvent.segmentation || {};
+                    currEvent.segmentation.platform = upWithMeta.up.p;
+                }
+            }
             if (eventKey === "[CLY]_view" && currEvent && currEvent.segmentation && currEvent.segmentation._idv) {
                 dbEventObject._id = params.app_id + "_" + dbAppUser.uid + "_" + currEvent.segmentation._idv;
                 if (!events[i].id) {
