@@ -380,9 +380,9 @@ var processToDrill = async function(params, drill_updates, callback) {
                 dbEventObject.peid = events[i].peid;
             }
 
-            
-            if(eventsWithDefaultPlatformSegment.indexOf(eventKey) !== -1){
-                if(upWithMeta.up && upWithMeta.up.p && !(currEvent.segmentation && currEvent.segmentation.platform)){
+
+            if (eventsWithDefaultPlatformSegment.indexOf(eventKey) !== -1) {
+                if (upWithMeta.up && upWithMeta.up.p && !(currEvent.segmentation && currEvent.segmentation.platform)) {
                     currEvent.segmentation = currEvent.segmentation || {};
                     currEvent.segmentation.platform = upWithMeta.up.p;
                 }
