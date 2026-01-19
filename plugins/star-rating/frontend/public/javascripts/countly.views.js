@@ -14,6 +14,21 @@
         return str;
     }
 
+    var defaultLinks = [
+        {
+            "text": "Terms and Conditions",
+            "link": "https://termsandconditions.com",
+            "textValue": "Terms and Conditions",
+            "linkValue": "https://termsandconditions.com"
+        },
+        {
+            "text": "Privacy Policy",
+            "link": "https://privacyPolicy.com",
+            "textValue": "Privacy Policy",
+            "linkValue": "https://privacyPolicy.com"
+        }
+    ];
+
     var consentLink = countlyVue.views.create({
         template: CV.T("/star-rating/templates/star-consent-link.html"),
         props: {
@@ -38,12 +53,12 @@
                 this.$delete(this.links, index);
             },
             onDelete: function(id) {
-                if (this.value.link.length > 1 && this.value.link.length <= this.maxLinks) {
-                    this.value.link.splice(id, 1);
+                if (this.value.links.length > 1 && this.value.links.length <= this.maxLinks) {
+                    this.value.links.splice(id, 1);
                 }
             },
             add: function() {
-                this.value.link.push({
+                this.value.links.push({
                     "text": "Another Link",
                     "link": "https://otherlink.com",
                     "textValue": "Another Link",
@@ -53,7 +68,7 @@
         },
         computed: {
             newLinkAllowed: function() {
-                return !this.readOnly && this.value.link.length < this.maxLinks;
+                return !this.readOnly && this.value.links.length < this.maxLinks;
             }
         }
     });
@@ -125,32 +140,25 @@
         // drawer event handlers
             onConsentCheckbox: function(ev) {
                 if (!ev.links || ev.links.length < 1) {
-                    ev.links = {
-                        "link": [
-                            {
-                                "text": "Terms and Conditions",
-                                "link": "https://termsandconditions.com",
-                                "textValue": "Terms and Conditions",
-                                "linkValue": "https://termsandconditions.com"
-                            },
-                            {
-                                "text": "Privacy Policy",
-                                "link": "https://privacyPolicy.com",
-                                "textValue": "Privacy Policy",
-                                "linkValue": "https://privacyPolicy.com"
-                            }
-                        ],
-                        "finalText": "I agree to the Terms and Conditions and Privacy Policy.",
-                    };
+                    ev.links = defaultLinks;
+                }
+
+                if (typeof ev.finalText !== "string" || !ev.finalText) {
+                    ev.finalText = "I agree to the Terms and Conditions and Privacy Policy.";
                 }
             },
-            finalTxt: function(links) {
-                let finalText = links.finalText;
+            finalTxt: function(links, inpFinalText) {
+                var finalText = inpFinalText;
 
-                links.link.forEach(link => {
-                    const regex = new RegExp(`\\b${link.textValue}\\b`, 'g');
-                    finalText = finalText.replace(regex, `<a href="${link.linkValue}" target="_blank">${link.textValue}</a>`);
-                });
+                if (links && !Array.isArray(links) && typeof links.finalText === 'string') {
+                    finalText = links.finalText;
+                }
+                else if (Array.isArray(links) && typeof finalText === 'string') {
+                    links.forEach(link => {
+                        const regex = new RegExp(`\\b${link.textValue}\\b`, 'g');
+                        finalText = finalText.replace(regex, `<a href="${link.linkValue}" target="_blank">${link.textValue}</a>`);
+                    });
+                }
 
                 return finalText;
             },
@@ -171,14 +179,19 @@
             onSubmit: function(submitted, done) {
                 var self = this;
                 if (submitted.links) {
-                    submitted.finalText = submitted.links.finalText;
-                    submitted.links = submitted.links.link;
-                    submitted.links.forEach(function(link) {
-                        var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
-                        link.linkValue = link.linkValue + separator + CLY_X_INT + '=1';
-                        delete link.text;
-                        delete link.link;
-                    });
+                    if (!submitted.finalText && !Array.isArray(submitted.links) && submitted.links.finalText && Array.isArray(submitted.links.link)) {
+                        submitted.finalText = submitted.links.finalText;
+                        submitted.links = submitted.links.link;
+                    }
+
+                    if (Array.isArray(submitted.links)) {
+                        submitted.links.forEach(function(link) {
+                            var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
+                            link.linkValue = link.linkValue + separator + CLY_X_INT + '=1';
+                            delete link.text;
+                            delete link.link;
+                        });
+                    }
                 }
                 if (this.logoFile !== "") {
                     submitted.logo = this.logoFile;
@@ -892,6 +905,8 @@
                 }
                 this.openDrawer("widget", {
                     consent: false,
+                    finalText: "I agree to the Terms and Conditions and Privacy Policy.",
+                    links: defaultLinks,
                     popup_header_text: 'What\'s your opinion about this page?',
                     popup_thanks_message: 'Thanks for your feedback!',
                     popup_button_callout: 'Submit Feedback',
@@ -1172,7 +1187,7 @@
                     }
 
                 }
-                starRatingPlugin.editFeedbackWidget({ _id: this.widget._id, status: (state), target_pages: target_pages, targeting: finalizedTargeting }, function() {
+                starRatingPlugin.editFeedbackWidget({ _id: this.widget._id, status: (state), target_pages: target_pages, targeting: finalizedTargeting, links: this.widget.links }, function() {
                     self.widget.is_active = (state ? "true" : "false");
                     self.widget.status = state;
 
@@ -1217,7 +1232,6 @@
                         }
                         link.linkValue = link.linkValue.replace(new RegExp('[?&]' + CLY_X_INT + '=[^&]*'), '').replace(/[?&]$/, '');
                     });
-                    this.widget.links = {"link": this.widget.links, "finalText": this.widget.finalText};
                 }
                 else {
                     this.widget.links = {
@@ -1261,7 +1275,7 @@
                 if (!this.widget.trigger_size) {
                     this.widget.trigger_size = 'm';
                 }
-                if (!this.widget.status) {
+                if (typeof this.widget.status !== 'boolean') {
                     this.widget.status = true;
                 }
                 if (!this.widget.logo) {

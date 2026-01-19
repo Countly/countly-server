@@ -1,6 +1,8 @@
 ## Version 25.03.XX
 Fixes:
 - [compliance-hub] Correctly merge user history on user merge
+- [star-rating] Fix active status checkbox in drawer
+- [star-rating] Fix consent fields in drawer
 
 ## Version 25.03.32
 Fixes:
