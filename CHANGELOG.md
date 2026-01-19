@@ -1,6 +1,7 @@
 ## Version 24.05.XX
 Fixes:
 - [onboarding] Fix redirection to newsletter page
+- [compliance-hub] Correctly merge user history on user merge
 
 Enterprise Fixes:
 - [retention_segments] Adding null check for breakdown filtering
