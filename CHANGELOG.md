@@ -1,5 +1,6 @@
 ## Version 24.05.XX
 Fixes:
+- [compliance-hub] Correctly merge user history on user merge
 - [onboarding] Fix redirection to newsletter page
 - [star-rating] Fix active status checkbox in drawer
 - [star-rating] Fix consent fields in drawer

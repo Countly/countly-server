@@ -16,6 +16,13 @@ const FEATURE_NAME = 'compliance_hub';
 
     plugins.internalDrillEvents.push("[CLY]_consent");
 
+    plugins.register("/master", function() {
+        common.db.collection('consent_history').ensureIndex({app_id: 1, device_id: 1}, function() {});
+        common.db.collection('consent_history').ensureIndex({app_id: 1, uid: 1}, function() {});
+        common.db.collection('consent_history').ensureIndex({app_id: 1, type: 1}, function() {});
+        common.db.collection('consent_history').ensureIndex({app_id: 1, ts: 1}, function() {});
+    });
+
     //write api call
     plugins.register("/sdk/user_properties", function(ob) {
         var params = ob.params;
@@ -129,7 +136,7 @@ const FEATURE_NAME = 'compliance_hub';
         case 'current': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                return false;
+                return true;
             }
             validateRead(params, FEATURE_NAME, function() {
                 var query = params.qstring.query || {};
@@ -142,7 +149,7 @@ const FEATURE_NAME = 'compliance_hub';
                     }
                 }
                 common.db.collection("app_users" + params.qstring.app_id).findOne(query, function(err, res) {
-                    common.returnOutput(params, res.consent || {});
+                    common.returnOutput(params, res?.consent || {});
                 });
             });
             break;
@@ -150,7 +157,7 @@ const FEATURE_NAME = 'compliance_hub';
         case 'search': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                return false;
+                return true;
             }
             validateRead(params, FEATURE_NAME, function() {
                 var query = params.qstring.query || {};
@@ -162,7 +169,8 @@ const FEATURE_NAME = 'compliance_hub';
                         query = {};
                     }
                 }
-                common.db.collection("consent_history").count(query, function(err, total) {
+                query.app_id = params.app_id.toString();
+                common.db.collection("consent_history").countDocuments(query, function(err, total) {
                     if (err) {
                         common.returnMessage(params, 400, err);
                     }
@@ -271,7 +279,7 @@ const FEATURE_NAME = 'compliance_hub';
         case 'consents': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                return false;
+                return true;
             }
             validateRead(params, FEATURE_NAME, function() {
                 appUsers.count(params.qstring.app_id, {}, function(err, total) {
@@ -338,7 +346,7 @@ const FEATURE_NAME = 'compliance_hub';
         var newUid = ob.newUser.uid;
         if (oldUid !== newUid) {
             return new Promise(function(resolve, reject) {
-                common.db.collection('consent_history').update({uid: oldUid}, {'$set': {uid: newUid}}, {multi: true}, function(err) {
+                common.db.collection('consent_history').update({app_id: ob.app_id, uid: oldUid}, {'$set': { uid: newUid}}, {multi: true}, function(err) {
                     if (err) {
                         reject(err);
                         return;
@@ -364,7 +372,7 @@ const FEATURE_NAME = 'compliance_hub';
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        common.db.collection('consent_history').drop(function() {});
+        common.db.collection('consent_history').deleteMany({app_id: appId}, function() {});
         if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
         }
@@ -373,7 +381,7 @@ const FEATURE_NAME = 'compliance_hub';
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        common.db.collection('consent_history').drop(function() {});
+        common.db.collection('consent_history').deleteMany({app_id: appId}, function() {});
         if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
         }
@@ -382,6 +390,7 @@ const FEATURE_NAME = 'compliance_hub';
     plugins.register("/i/apps/clear_all", function(ob) {
         var appId = ob.appId;
         common.db.collection('consents').remove({'_id': {$regex: appId + ".*"}}, function() {});
+        common.db.collection('consent_history').deleteMany({app_id: appId}, function() {});
         if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).drop(function() {});
         }
@@ -391,6 +400,7 @@ const FEATURE_NAME = 'compliance_hub';
         var appId = ob.appId;
         var ids = ob.ids;
         common.db.collection('consents').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: ids}}]}, function() {});
+        common.db.collection('consent_history').deleteMany({app_id: appId, ts: {$lt: ob.moment.valueOf()}}, function() {});
         if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + appId).digest('hex')).remove({ts: {$lt: ob.moment.valueOf()}}, function() {});
         }
