@@ -346,7 +346,7 @@ const FEATURE_NAME = 'compliance_hub';
         var newUid = ob.newUser.uid;
         if (oldUid !== newUid) {
             return new Promise(function(resolve, reject) {
-                common.db.collection('consent_history').update({uid: oldUid}, {'$set': {app_id: ob.app_id, uid: newUid}}, {multi: true}, function(err) {
+                common.db.collection('consent_history').update({app_id: ob.app_id, uid: oldUid}, {'$set': { uid: newUid}}, {multi: true}, function(err) {
                     if (err) {
                         reject(err);
                         return;
