@@ -81,4 +81,20 @@ This document describes best practices for logging, debugging, and error reporti
 
 ---
 
+
+## Log Message Formatting
+
+- **Be clear and concise:** Log messages should be easy to understand and provide enough context for debugging.
+- **Use structured formatting:** Prefer format specifiers (`%s`, `%j`, `%d`, etc.) for variables and objects. Example:
+  ```js
+  log.d('Processing user %s with data: %j', userId, userData);
+  ```
+- **Include relevant identifiers:** Always log IDs, error objects, and key parameters to help trace issues.
+- **Timestamp and level:** The logger automatically adds timestamps and log levels to each message.
+- **Consistent style:** Use similar phrasing for similar events across modules (e.g., "Starting job", "Job completed", "Error processing job").
+- **Avoid sensitive data:** Never log credentials, secrets, or personal data.
+- **Multi-line logs:** For complex objects, use `%j` to pretty-print JSON. For multi-step flows, use separate log statements for each step.
+
+---
+
 **Consistent, structured logging is required for all new code.**
