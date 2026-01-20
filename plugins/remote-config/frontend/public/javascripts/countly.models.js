@@ -146,9 +146,9 @@
                                         parameter.editable = true;
                                         resp.experiments.forEach(function(experiment) {
                                             if (experiment && experiment.status !== "completed" && experiment.variants && experiment.variants.length > 0) {
-                                                var parameterInExperiment = experiment.variants.find(function(variant) {
+                                                var parameterInExperiment = experiment.variants.some(function(variant) {
                                                     if (variant.parameters && variant.parameters.length > 0) {
-                                                        return variant.parameters.find(function(vParameter) {
+                                                        return variant.parameters.some(function(vParameter) {
                                                             return vParameter.name === parameter.parameter_key;
                                                         });
                                                     }
