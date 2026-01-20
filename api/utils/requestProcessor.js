@@ -706,6 +706,19 @@ const processRequest = (params) => {
             case '/i/event_groups':
                 switch (paths[3]) {
                 case 'create':
+                    if (!params.qstring.args) {
+                        common.returnMessage(params, 400, 'Error: args not found');
+                        return false;
+                    }
+                    try {
+                        params.qstring.args = JSON.parse(params.qstring.args);
+                        params.qstring.app_id = params.qstring.args.app_id;
+                    }
+                    catch (SyntaxError) {
+                        console.log('Parse %s JSON failed %s', apiPath, params.req.url, params.req.body);
+                        common.returnMessage(params, 400, 'Error: could not parse args');
+                        return false;
+                    }
                     validateCreate(params, 'core', countlyApi.mgmt.eventGroups.create);
                     break;
                 case 'update':
