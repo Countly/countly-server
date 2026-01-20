@@ -43,7 +43,6 @@ const create = (params) => {
         common.returnMessage(params, 400, 'Error: args not found');
         return false;
     }
-    params.qstring.args = JSON.parse(params.qstring.args);
     const {obj, errors} = common.validateArgs(params.qstring.args, argProps, true);
     if (!obj) {
         common.returnMessage(params, 400, `Error: ${errors}`);
