@@ -391,7 +391,7 @@ describe('Create New Widget', () => {
             question: widget.question,
             isActive: true,
             //widgetId: "", TODO
-            ratingsValue: "0",
+            ratingsValue: "1",
             ratingsRate: "0%",
             timesShownValue: "1",
             commentsTable: {
