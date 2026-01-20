@@ -3,6 +3,7 @@ Fixes:
 - [compliance-hub] Correctly merge user history on user merge
 - [star-rating] Fix active status checkbox in drawer
 - [star-rating] Fix consent fields in drawer
+- [remote-config] Fix searching for parameter in experiment variants
 
 ## Version 25.03.32
 Fixes:
