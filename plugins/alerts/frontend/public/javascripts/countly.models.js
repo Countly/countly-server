@@ -316,15 +316,11 @@
                     },
                     dataType: "json",
                     success: function() {
-                        CountlyHelpers.notify({
-                            message:
-                                jQuery.i18n.map["alerts.save-alert-success"],
-                        });
                         context.dispatch("countlyAlerts/table/fetchAll", null, {
                             root: true,
                         });
                     },
-                }).then(function() {});
+                }, { disableAutoCatch: true });
             },
             deleteAlert: function(context, options) {
                 return CV.$.ajax({
@@ -339,16 +335,11 @@
                     },
                     dataType: "json",
                     success: function() {
-                        CountlyHelpers.notify({
-                            title: 'Success',
-                            message: CV.i18n('alerts.delete-alert-success'),
-                            type: 'success'
-                        });
                         context.dispatch("countlyAlerts/table/fetchAll", null, {
                             root: true,
                         });
                     },
-                });
+                }, { disableAutoCatch: true });
             },
             deleteOnlineUsersAlert: function(context, options) {
                 return CV.$.ajax({
