@@ -5,8 +5,8 @@
 
 CREATE TABLE {{DATABASE}}.{{TABLE}} {{ON_CLUSTER}}
 (
-    a       LowCardinality(String),
-    e       LowCardinality(String),
+    a      LowCardinality(String),
+    e      LowCardinality(String),
     n      String,
     uid    String,
     uid_canon Nullable(String),
@@ -15,8 +15,8 @@ CREATE TABLE {{DATABASE}}.{{TABLE}} {{ON_CLUSTER}}
     _id    String,
     ts     DateTime64(3),
     up     JSON(max_dynamic_paths = 32),
-    custom JSON(max_dynamic_paths = 0),
-    cmp    JSON(max_dynamic_paths = 0),
+    custom Nullable(JSON(max_dynamic_paths = 0)),
+    cmp    Nullable(JSON(max_dynamic_paths = 0)),
     sg     JSON(max_dynamic_paths = 0),
     c      UInt32,
     s      Float64,
