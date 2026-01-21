@@ -149,7 +149,7 @@ module.exports = defineConfig({
 
                 folders.forEach((folder) => {
                     if (!fs.existsSync(folder)) {
-                        return; // folder yoksa skip
+                        return;
                     }
 
                     fs.readdirSync(folder).forEach((entry) => {
