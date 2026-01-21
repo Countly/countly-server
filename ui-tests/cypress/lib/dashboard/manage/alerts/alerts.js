@@ -467,8 +467,6 @@ const verifyAlertSavedNotification = (isUpdated = false) => {
 
 const verifyAlertsMetricCardElements = ({
     activeAlertsNumber,
-    totalAlertsSentNumber = 0,
-    alertsSentTodayNumber = 0
 }) => {
 
     cy.verifyElement({
