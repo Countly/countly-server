@@ -10,23 +10,7 @@ const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.mjs");
 const { PNG } = require("pngjs");
 const sharp = require("sharp");
 
-// UTILS
-// ================================
-function safeUnlink(filePath) {
-    if (filePath && fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-    }
-}
 
-function safeRmdir(dirPath) {
-    if (fs.existsSync(dirPath)) {
-        fs.rmSync(dirPath, { recursive: true, force: true });
-    }
-}
-
-function isOnlyCompressed(files) {
-    return files.length > 0 && files.every((f) => f.endsWith("-compressed.mp4"));
-}
 
 module.exports = defineConfig({
     e2e: {
@@ -149,65 +133,37 @@ module.exports = defineConfig({
                     };
                 },
             });
-            // Clean up videos and screenshots after each spec
+
             on("after:spec", (spec, results) => {
-                if (!results) {
-                    return;
-                }
+                const hasFailures = results?.tests?.some((t) =>
+                    t.attempts.some((a) => a.state === "failed")
+                );
 
-                const hasFinalFailures =
-                    results.stats?.failures > 0 ||
-                    results.tests?.some((test) => {
-                        const lastAttempt = test.attempts?.[test.attempts.length - 1];
-                        return lastAttempt?.state === "failed";
-                    });
-
-                // Delete artifacts if the final result is PASS
-                if (!hasFinalFailures && results.video) {
-                    const videoPath = results.video;
-                    const compressedPath = videoPath.replace(".mp4", "-compressed.mp4");
-
-                    safeUnlink(videoPath);
-                    safeUnlink(compressedPath);
+                if (!hasFailures && results?.video && fs.existsSync(results.video)) {
+                    fs.unlinkSync(results.video);
                 }
             });
 
-            // Clean up empty screenshot and video folders after run
             on("after:run", () => {
                 const folders = [config.videosFolder, config.screenshotsFolder];
 
-                folders.forEach((baseFolder) => {
-                    if (!fs.existsSync(baseFolder)) {
+                folders.forEach((folder) => {
+                    if (!fs.existsSync(folder)) {
                         return;
                     }
 
-                    fs.readdirSync(baseFolder).forEach((entry) => {
-                        const fullPath = path.join(baseFolder, entry);
+                    fs.readdirSync(folder).forEach((entry) => {
+                        const fullPath = path.join(folder, entry);
+
                         if (!fs.existsSync(fullPath)) {
                             return;
                         }
 
-                        if (!fs.statSync(fullPath).isDirectory()) {
-                            return;
-                        }
-
-                        const files = fs.readdirSync(fullPath);
-
-                        if (files.length === 0) {
-                            safeRmdir(fullPath);
-                            return;
-                        }
-
-                        if (isOnlyCompressed(files)) {
-                            safeRmdir(fullPath);
-                            return;
-                        }
-
-                        const hasMp4 = files.some((f) => f.endsWith(".mp4"));
-                        const hasScreenshots = files.some((f) => f.endsWith(".png"));
-
-                        if (!hasMp4 && !hasScreenshots) {
-                            safeRmdir(fullPath);
+                        if (fs.statSync(fullPath).isDirectory()) {
+                            const content = fs.readdirSync(fullPath);
+                            if (content.length === 0) {
+                                fs.rmSync(fullPath, { recursive: true, force: true });
+                            }
                         }
                     });
                 });
@@ -225,7 +181,6 @@ module.exports = defineConfig({
                 }
                 return launchOptions;
             });
-            return config;
         },
     },
 });
