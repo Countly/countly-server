@@ -523,7 +523,42 @@
                 }
                 this.$store.dispatch(action, doc)
                     .then(function() {
+
+                        if (!doc._id) {
+                            CountlyHelpers.notify({
+                                title: 'Success',
+                                message: CV.i18n('remote-config.parameter.create.success'),
+                                type: 'success'
+                            });
+                        }
+                        else {
+                            CountlyHelpers.notify({
+                                title: 'Success',
+                                message: CV.i18n('remote-config.parameter.edit.success'),
+                                type: 'success'
+                            });
+                        }
+
                         self.$emit("submit");
+                    })
+                    .catch(() => {
+
+                        if (!doc._id) {
+                            CountlyHelpers.notify({
+                                message: CV.i18n('remote-config.parameter.create.fail'),
+                                type: 'error',
+                                width: 'large',
+                            });
+
+                        }
+                        else {
+                            CountlyHelpers.notify({
+                                message: CV.i18n('remote-config.parameter.edit.fail'),
+                                type: 'error',
+                                width: 'large',
+                            });
+
+                        }
                     });
             },
             onCopy: function(doc) {
@@ -834,7 +869,20 @@
                         }
 
                         self.$store.dispatch("countlyRemoteConfig/parameters/remove", row).then(function() {
+                            CountlyHelpers.notify({
+                                title: 'Success',
+                                message: CV.i18n('remote-config.parameter.delete.success'),
+                                type: 'success'
+                            });
+
                             self.onSubmit();
+                        }).catch(() => {
+                            CountlyHelpers.notify({
+                                message: CV.i18n('remote-config.parameter.delete.fail'),
+                                type: 'error',
+                                width: 'large',
+                            });
+
                         });
 
                     }, [this.i18n("common.no-dont-delete"), this.i18n("remote-config.yes-delete-parameter")], {title: this.i18n("remote-config.delete-parameter-title"), image: "delete-email-report"});

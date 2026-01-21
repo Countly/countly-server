@@ -235,7 +235,7 @@
                     "segmentation": {}
                 });
             }
-        });
+        }, { disableAutoCatch: true });
     };
 
     starRatingPlugin.editFeedbackWidget = function(feedbackWidget, callback) {
@@ -248,9 +248,9 @@
             url: countlyCommon.API_URL + "/i/feedback/widgets/edit",
             data: data,
             success: function(json, textStatus, xhr) {
-                callback(json, xhr.status);
-            }
-        });
+                callback && callback(json, xhr.status);
+            },
+        }, { disableAutoCatch: true });
     };
 
     starRatingPlugin.removeFeedbackWidget = function(widget_id, with_data, callback) {
@@ -265,7 +265,7 @@
             success: function(json, textStatus, xhr) {
                 callback(json, xhr.status);
             }
-        });
+        }, { disableAutoCatch: true });
     };
 
     /**

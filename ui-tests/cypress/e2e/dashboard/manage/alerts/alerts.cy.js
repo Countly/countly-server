@@ -83,7 +83,7 @@ describe('Create New Alert', () => {
             alertsHelpers.selectTriggerMetric(TRIGGER_METRICS.FATAL_CRASHES_ERRORS_PER_SESSION);
             alertsHelpers.selectDoNotSendEmail();
             alertsHelpers.clickCreateButton();
-            alertsHelpers.verifyAlertSavedNotification();
+            alertsHelpers.verifyAlertSavedNotification(true);
 
             alertsHelpers.verifyAlertsMetricCardElements({
                 activeAlertsNumber: currentActiveAlertsCount + 1
@@ -265,7 +265,7 @@ describe('Create New Alert', () => {
                 condition: "Login duration increased by " + alert.triggerValue + " % in the last day"
             });
 
-            // DELETE THE ALERT 
+            // DELETE THE ALERT
             alertsHelpers.deleteAlert(alert.alertName);
             alertsHelpers.verifyAlertsMetricCardElements({
                 activeAlertsNumber: currentActiveAlertsCount

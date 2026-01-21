@@ -993,7 +993,44 @@
                     this.resetAlertConditionShow();
                     return;
                 }
-                this.$store.dispatch("countlyAlerts/saveAlert", settings);
+
+                this.$store.dispatch("countlyAlerts/saveAlert", settings).then(() => {
+                    if (!settings._id) {
+
+                        CountlyHelpers.notify({
+                            message: CV.i18n('alerts.create-alert-success'),
+                            title: 'Success',
+                            type: 'success'
+                        });
+                    }
+                    else {
+
+                        CountlyHelpers.notify({
+                            message: CV.i18n('alerts.update-alert-success'),
+                            title: 'Success',
+                            type: 'success'
+                        });
+                    }
+
+                }).catch(() => {
+
+                    if (!settings._id) {
+                        CountlyHelpers.notify({
+                            message: CV.i18n('alerts.create-alert-fail'),
+                            type: 'error',
+                            width: 'large',
+                        });
+                    }
+                    else {
+                        CountlyHelpers.notify({
+                            message: CV.i18n('alerts.update-alert-fail'),
+                            type: 'error',
+                            width: 'large',
+                        });
+
+                    }
+
+                });
                 this.resetAlertConditionShow();
             },
             onClose: function($event) {
@@ -1068,7 +1105,7 @@
                 document.body.appendChild(tmpEl);
                 const tempSelectWidth = tmpEl.getBoundingClientRect().width;
                 tmpEl.remove();
-                //this.changeColor(this.$refs.alertDataSubTypeSelect.$el); 
+                //this.changeColor(this.$refs.alertDataSubTypeSelect.$el);
                 return tempSelectWidth;
             },
             // Handle the change event of the element
@@ -1207,7 +1244,21 @@
                                         appid: self.deleteElement
                                             .selectedApps[0],
                                     }
-                                );
+                                ).then(() => {
+                                    CountlyHelpers.notify({
+                                        title: 'Success',
+                                        message: CV.i18n('alerts.delete-alert-success'),
+                                        type: 'success'
+                                    });
+
+                                }).catch(() => {
+                                    CountlyHelpers.notify({
+                                        message: CV.i18n('alerts.delete-alert-fail'),
+                                        type: 'error',
+                                        width: 'large',
+                                    });
+
+                                });
                             }
                         }
                     );
