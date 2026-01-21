@@ -12,7 +12,8 @@
         "api/utils/common.js",
         "api/utils/localization.js",
         "api/lib/countly.common.js",
-        "api/utils/requestProcessor.js"
+        "api/utils/requestProcessor.js",
+        "api/parts/data/geoData.js"
     ],
     "exclude": [
         "node_modules"
