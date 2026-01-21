@@ -10,8 +10,8 @@ var pluginOb = {},
 	 *  @param {object} options - Options to update
 	 *  @param {boolean} options.bounce - if bounce
 	 *  @param {boolean} options.exit - if exit
-     *  @param {params} params - params object
-     *  @param {params} callback - when done
+     *  @param {Params} params - params object
+     *  @param {Params} callback - when done
      **/
     /*const updateViewParams = async function(id, options, params) {
         var updateObj = {};

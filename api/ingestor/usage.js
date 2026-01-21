@@ -8,7 +8,7 @@ var usage = {},
 
 /**
 * Get location either from coordinate to populate country and city, or from country and city to get coordinates
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} loc - location object    
 * @param {number} loc.lat - lattitude    
 * @param {number} loc.lon - longitude 

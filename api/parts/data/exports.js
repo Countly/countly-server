@@ -194,7 +194,7 @@ exports.getType = function(key) {
 };
 /**
 * Output data as response
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {string} data - data to output
 * @param {string} filename - name of the file to output to browser
 * @param {string} type - type to be used in content type
@@ -331,7 +331,7 @@ function getValues(values, valuesMap, paramList, doc, options) {
 }
 /**
 * Stream data as response
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {Stream} stream - cursor object. Need to call stream on it. 
 * @param {string} options - options object 
 		options.filename - name of the file to output to browser
@@ -470,7 +470,7 @@ function isObjectId(id) {
 * Export data from database
 * @param {object} options - options for the export
 * @param {object} options.db - database connection
-* @param {params} options.params - params object
+* @param {Params} options.params - params object
 * @param {string} options.collection - name of the collection to export
 * @param {object} [options.query={}] - database query which data to filter
 * @param {object} [options.projection={}] - database projections which fields to return
@@ -568,7 +568,7 @@ exports.fromDatabase = function(options) {
 /**
 * Export data from response of request
 * @param {object} options - options for the export
-* @param {params} options.params - params object
+* @param {Params} options.params - params object
 * @param {object} options.path - path for api endpoint
 * @param {object} options.data - json data to use as post or query string
 * @param {object} options.prop - which property to export, tries to export whole response if not provided
@@ -734,7 +734,7 @@ exports.fromRequestQuery = function(options) {
 * Create export from provided data
 * @param {string|array} data - data to format
 * @param {object} options - options for the export
-* @param {params} options.params - params object
+* @param {Params} options.params - params object
 * @param {string} [options.type=json] - type of data to output
 * @param {string} [options.filename] - name of the file to output, by default auto generated
 * @param {function} options.output - callback function where to pass data, by default outputs as file based on type

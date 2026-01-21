@@ -19,7 +19,7 @@ const AVAILABLE_API_IDS = ["server-guides", "server-consents", "server-intro-vid
 
 /**
 * Get entries for a given API ID from Countly CMS
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {function} callback - callback function
 **/
 function fetchFromCMS(params, callback) {
@@ -73,7 +73,7 @@ function fetchFromCMS(params, callback) {
 
 /**
 * Transform and store CMS entries in DB
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} err - error object
 * @param {array} data - data array
 * @param {function} callback - callback function
@@ -138,7 +138,7 @@ function transformAndStoreData(params, err, data, callback) {
 
 /**
 * Get entries for a given API ID from Countly CMS
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 function syncCMSDataToDB(params) {
     // Check if there is a process running
@@ -186,7 +186,7 @@ cmsApi.saveEntries = function(params) {
 /**
 * Get entries for a given API ID
 * Will request from CMS if entries are stale or not found
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true
 **/
 cmsApi.getEntriesWithUpdate = function(params) {
@@ -270,7 +270,7 @@ cmsApi.getEntriesWithUpdate = function(params) {
 
 /**
 * Get entries for a given API ID
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true
 **/
 cmsApi.getEntries = function(params) {
@@ -330,7 +330,7 @@ cmsApi.getEntries = function(params) {
 
 /**
 * Clear cache for all API IDs
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 cmsApi.clearCache = function(params) {
     var query = {};
