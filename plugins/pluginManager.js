@@ -1954,19 +1954,6 @@ var pluginManager = function pluginManager() {
             useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
         }
 
-        // TEMPORARY DEBUG LOGGING - MONGODB CONNECTION
-        console.log('=== PLUGIN MANAGER DB CONNECTION DEBUG ===');
-        console.log('Process argv[1]:', process.argv[1]);
-        console.log('Using API config:', process.argv[1] && (process.argv[1].endsWith('api/api.js') ||
-                                process.argv[1].endsWith('api/ingestor.js') ||
-                                process.argv[1].endsWith('api/aggregator.js') ||
-                                process.argv[1].includes('/api/') ||
-                                process.argv[1].includes('jobServer/index.js')));
-        console.log('countlyConfig.mongodb:', JSON.stringify(countlyConfig.mongodb, null, 2));
-        console.log('apiCountlyConfig.mongodb:', JSON.stringify(apiCountlyConfig.mongodb, null, 2));
-        console.log('useConfig.mongodb:', JSON.stringify(useConfig.mongodb, null, 2));
-        console.log('config parameter:', typeof config === 'string' ? config : JSON.stringify(config, null, 2));
-        console.log('=== END PLUGIN MANAGER DB CONNECTION DEBUG ===');
         if (typeof config === "string") {
             db = config;
             if (this.dbConfigFiles[config]) {
@@ -2075,14 +2062,6 @@ var pluginManager = function pluginManager() {
                 dbName = dbName + "&retryWrites=false";
             }
         }
-
-        // TEMPORARY DEBUG LOGGING - FINAL MONGODB CONNECTION
-        console.log('=== PLUGIN MANAGER FINAL DB CONNECTION ===');
-        console.log('Database name:', db);
-        console.log('Connection string:', dbName);
-        console.log('Max pool size:', maxPoolSize);
-        console.log('DB options:', JSON.stringify(dbOptions, null, 2));
-        console.log('=== END PLUGIN MANAGER FINAL DB CONNECTION ===');
 
         var db_name = "countly";
         try {
