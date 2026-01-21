@@ -155,11 +155,15 @@ module.exports = defineConfig({
                     return;
                 }
 
-                const failures = results.stats?.failures || 0;
-                const hasRealFailures = failures > 0;
+                const hasFinalFailures =
+                    results.stats?.failures > 0 ||
+                    results.tests?.some((test) => {
+                        const lastAttempt = test.attempts?.[test.attempts.length - 1];
+                        return lastAttempt?.state === "failed";
+                    });
 
-                // Remove videos if no real failures
-                if (!hasRealFailures && results.video) {
+                // Delete artifacts if the final result is PASS
+                if (!hasFinalFailures && results.video) {
                     const videoPath = results.video;
                     const compressedPath = videoPath.replace(".mp4", "-compressed.mp4");
 
