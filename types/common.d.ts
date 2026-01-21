@@ -264,6 +264,13 @@ export interface Common {
     decode_html: (string: string) => string;
 
     /**
+     * Encode string for database storage by escaping $ and .
+     * @param {string} str - string to encode
+     * @returns {string} encoded string
+     **/
+    dbEncode: (str: string) => string;
+
+    /**
      * Check if string is a valid json
      * @param {string} val - string that might be json encoded
      * @returns {object} with property data for parsed data and property valid to check if it was valid json encoded string or not
@@ -661,6 +668,17 @@ export interface Common {
     recordMetric: (params: Params, props: CustomMetricProps) => void;
 
     /**
+     * Alias for internal recordMetric function - records specific metric
+     * @param {Params} params - params object
+     * @param {string} metric - metric to record
+     * @param {object} props - properties of a metric defining how to record it
+     * @param {object} tmpSet - object with already set meta properties
+     * @param {object} updateUsersZero - object with already set update for zero docs
+     * @param {object} updateUsersMonth - object with already set update for months docs
+     */
+    collectMetric: (params: Params, metric: string, props: any, tmpSet: any, updateUsersZero: any, updateUsersMonth: any) => void;
+
+    /**
      * Get object of date ids that should be used in fetching standard metric model documents
      * @param {Params} params - {@link params} object
      * @returns {object} with date ids, as {zero:"2017:0", month:"2017:2"}
@@ -973,7 +991,40 @@ export interface Common {
      */
     trimWhitespaceStartEnd: (value: any) => any;
 
+    /**
+     * Apply unique estimation on model data
+     * @param {any} model - model object to apply unique data to
+     * @param {any} uniqueData - unique estimation data
+     * @param {string} prop - property name to apply unique data for
+     * @param {string} segment - segment name if applying for segment
+     */
+    applyUniqueOnModel: (model: any, uniqueData: any, prop: string, segment?: string) => void;
 
+    /**
+     * Shift hourly data by timezone offset
+     * @param {any} data - data object to shift
+     * @param {number} offset - timezone offset in hours
+     * @param {string} field - field name to use for shifting, defaults to "_id"
+     * @returns {any} shifted data
+     */
+    shiftHourlyData: (data: any, offset: number, field?: string) => any;
+
+    /**
+     * Convert model object to array format
+     * @param {any} model - model object to convert
+     * @param {boolean} segmented - if model is segmented
+     * @returns {any[]} converted array
+     */
+    convertModelToArray: (model: any, segmented?: boolean) => any[];
+
+    /**
+     * Convert array to model object format
+     * @param {any[]} arr - array to convert
+     * @param {boolean} segmented - if array is segmented
+     * @param {string[]} props - properties to include in model
+     * @returns {any} converted model object
+     */
+    convertArrayToModel: (arr: any[], segmented?: boolean, props?: string[]) => any;
 
     /** DataTable class for server-side processing */
     DataTable: any;
