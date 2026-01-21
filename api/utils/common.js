@@ -5,6 +5,7 @@
 /**
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
+ * @typedef {import('../../types/common').JSONParseResult} JSONParseResult
  * @typedef {import('mongodb').ObjectId} ObjectId
  * @typedef {import('moment-timezone').Moment} MomentTimezone
  */
@@ -116,10 +117,11 @@ common.decode_html = function(string) {
 /**
  * Check if string is a valid json
  * @param {string} val - string that might be json encoded
- * @returns {{valid: boolean, data?: any}} with property data for parsed data and property valid to check if it was valid json encoded string or not
+ * @returns {JSONParseResult} with property data for parsed data and property valid to check if it was valid json encoded string or not
  **/
 function getJSON(val) {
-    var ret = {valid: false};
+    /** @type {JSONParseResult} */
+    var ret = {/** @type {boolean} */ valid: false};
     try {
         ret.data = JSON.parse(val);
         if (ret.data && typeof ret.data === "object") {
