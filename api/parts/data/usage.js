@@ -16,7 +16,7 @@ var usage = {},
 
 /**
 * Get location either from coordinate to populate country and city, or from country and city to get coordinates
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} loc - location object    
 * @param {number} loc.lat - lattitude    
 * @param {number} loc.lon - longitude 
@@ -172,7 +172,7 @@ usage.setUserLocation = function(params, loc) {
 
 /**
 * Process session_duration calls
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {function} callback - callback when done
 **/
 usage.processSessionDuration = function(params, callback) {
@@ -215,7 +215,7 @@ usage.processSessionDuration = function(params, callback) {
 
 /**
 * Gets metrics to collect from plugins
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} userProps - object where to populate with user properties to set to user document
 * @returns {array} collected metrics
 **/
@@ -413,7 +413,7 @@ usage.returnAllProcessedMetrics = function(params) {
 /**
 * Process session duration ranges for Session duration metric
 * @param {number} totalSessionDuration - duration of session
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {function} done - callback when done
 **/
 usage.processSessionDurationRange = function(totalSessionDuration, params, done) {
@@ -465,7 +465,7 @@ usage.processSessionDurationRange = function(totalSessionDuration, params, done)
 /**
 * Process ending user session and calculate loyalty and frequency range metrics
 * @param {object} dbAppUser - user's document
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {function} done - callback when done
 * @returns {void} void
 **/
@@ -642,7 +642,7 @@ function processUserSession(dbAppUser, params, done) {
 * @param {object} user - user's document
 * @param {array} uniqueLevelsZero - unique properties of zero document
 * @param {array} uniqueLevelsMonth - unique properties of month document
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {function} done - callback when done
 * @returns {boolean} true
 **/

@@ -2581,7 +2581,7 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
 
 /**
 * Get timestamp query range based on request data using period and app's timezone
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {boolean} inSeconds - if true will output result in seconds, else in miliseconds
 * @returns {object} mongodb query object with preset ts field to be queried
 * @example
@@ -2758,7 +2758,7 @@ countlyCommon.decode = function(str) {
 * Get period object in atomic way from params,
 * getting params.qstring.period for period
 * and params.appTimezone for timezone
-* @param {params} params - params object with app timezone and period
+* @param {Params} params - params object with app timezone and period
 * @param {(string|string[]|number[])} defaultPeriod - default period value in case it's not supplied in the params
 * @returns {module:api/lib/countly.common.periodObj} period object
 */
