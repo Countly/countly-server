@@ -461,7 +461,7 @@ const clickCancelButton = () => {
 const verifyAlertSavedNotification = (isUpdated = false) => {
     cy.verifyElement({
         labelElement: alertsPageElements.NOTIFICATION_ALERT_SAVED_MESSAGE,
-        labelText: `Alert has been updated ${isUpdated ? 'updated' : 'created'} successfully`
+        labelText: `Alert has been ${isUpdated ? 'updated' : 'created'} successfully`
     });
 };
 
