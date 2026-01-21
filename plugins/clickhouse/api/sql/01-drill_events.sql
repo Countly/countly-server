@@ -11,7 +11,7 @@ CREATE TABLE {{DATABASE}}.{{TABLE}} {{ON_CLUSTER}}
     uid    String,
     uid_canon Nullable(String),
     did    String,
-    lsid   String,
+    lsid   Nullable(String),
     _id    String,
     ts     DateTime64(3),
     up     JSON(max_dynamic_paths = 32),
