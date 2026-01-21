@@ -332,7 +332,7 @@ function fixTimestampToMilliseconds(ts) {
 
 /**
 * Returns a period object used by all time related data calculation functions
-* @param {string|Array<number>|Record<string, any>} prmPeriod - period to be calculated (optional)
+* @param {string|Array<number>|Record<string, any>} [prmPeriod] - period to be calculated (optional)
 * @param {string} [bucket] - daily or monthly. If bucket is set, period will be modified to fit full months or days
 * @returns {PeriodObject} period object
 **/
@@ -1720,6 +1720,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 
         for (let j = 0; j < rangeArray.length; j++) {
 
+            /** @type {{[key: string]: any}} */
             let tmpPropertyObj = {},
                 tmp_x = {};
 
@@ -2237,8 +2238,9 @@ countlyCommon.extractMetric = function(db, rangeArray, clearFunction, dataProper
 
         for (let j = 0; j < rangeArray.length; j++) {
 
-            let tmpPropertyObj = {},
-                tmp_x = {};
+            /** @type {{[key: string]: any}} */
+            let tmpPropertyObj = {};
+            let tmp_x = {};
 
             for (let i = periodMin; i < periodMax; i++) {
                 dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
@@ -2439,16 +2441,27 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
         return obj;
     }
 
+    /** @type {{[key: string]: any}} */
     var _periodObj = periodObject || countlyCommon.periodObj,
+        /** @type {{[key: string]: any}} */
         dataArr = {},
+        /** @type {{[key: string]: any}} */
         tmp_x,
+        /** @type {{[key: string]: any}} */
         tmp_y,
+        /** @type {{[key: string]: any}} */
         tmpUniqObj,
+        /** @type {{[key: string]: any}} */
         tmpPrevUniqObj,
+        /** @type {{[key: string]: any}} */
         current = {},
+        /** @type {{[key: string]: any}} */
         previous = {},
+        /** @type {{[key: string]: any}} */
         currentCheck = {},
+        /** @type {{[key: string]: any}} */
         previousCheck = {},
+        /** @type {{[key: string]: any}} */
         change = {},
         isEstimate = false;
 
@@ -2720,9 +2733,9 @@ countlyCommon.mergeMetricsByName = function(chartData, metric) {
 
 /**
 * Joined 2 arrays into one removing all duplicated values
-* @param {array} x - first array
-* @param {array} y - second array
-* @returns {array} new array with only unique values from x and y
+* @param {Array<any>} x - first array
+* @param {Array<any>} y - second array
+* @returns {Array<any>} new array with only unique values from x and y
 * @example
 * //outputs [1,2,3]
 * countlyCommon.union([1,2],[2,3]);
@@ -2838,9 +2851,9 @@ countlyCommon.round = function(num, digits) {
 
 /**
  * Function to fix percentage difference
- * @param  {Array} items - All items
+ * @param  {Array<any>} items - All items
  * @param  {Number} totalPercent - Total percentage so far
- * @returns {Array} items
+ * @returns {Array<any>} items
  */
 countlyCommon.fixPercentageDelta = function(items, totalPercent) {
     if (!items.length) {
