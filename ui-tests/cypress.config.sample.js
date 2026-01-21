@@ -134,16 +134,20 @@ module.exports = defineConfig({
                 },
             });
 
+            // Clean up videos for passed specs
             on("after:spec", (spec, results) => {
-                const hasFailures = results?.tests?.some((t) =>
-                    t.attempts.some((a) => a.state === "failed")
-                );
+                if (!results) {
+                    return;
+                }
 
-                if (!hasFailures && results?.video && fs.existsSync(results.video)) {
+                const isFinalFail = results.stats?.failures > 0;
+
+                if (!isFinalFail && results?.video && fs.existsSync(results.video)) {
                     fs.unlinkSync(results.video);
                 }
             });
 
+            // Clean up empty screenshot and video folders after run
             on("after:run", () => {
                 const folders = [config.videosFolder, config.screenshotsFolder];
 
