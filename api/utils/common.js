@@ -198,7 +198,8 @@ common.dbMap = {
     'loyalty': 'l',
     'sum': 's',
     'dur': 'dur',
-    'count': 'c'
+    'count': 'c',
+    'paying': 'p'
 };
 
 common.dbUserMap = {
