@@ -1,14 +1,16 @@
-const { defineConfig } = require("cypress");
-const fs = require("fs");
-const path = require("path");
-const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
-const { PNG } = require("pngjs");
-const sharp = require("sharp");
-
 // Define missing DOMMatrix in Node context (for pdfjs)
 if (typeof global.DOMMatrix === "undefined") {
     global.DOMMatrix = class DOMMatrix { };
 }
+
+const { defineConfig } = require("cypress");
+const fs = require("fs");
+const path = require("path");
+const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.mjs");
+const { PNG } = require("pngjs");
+const sharp = require("sharp");
+
+
 
 module.exports = defineConfig({
     e2e: {
@@ -69,7 +71,15 @@ module.exports = defineConfig({
 
                                 if (doLogoCheck && args[0]) {
                                     const objName = args[0];
-                                    const imgData = await page.objs.get(objName);
+                                    const imgData = await new Promise((resolve) => {
+                                        try {
+                                            page.objs.get(objName, (data) => resolve(data));
+                                        }
+                                        catch (e) {
+                                            resolve(null);
+                                        }
+                                    });
+
                                     if (!imgData) {
                                         continue;
                                     }
@@ -139,7 +149,7 @@ module.exports = defineConfig({
 
                 folders.forEach((folder) => {
                     if (!fs.existsSync(folder)) {
-                        return; // folder yoksa skip
+                        return;
                     }
 
                     fs.readdirSync(folder).forEach((entry) => {
