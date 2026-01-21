@@ -450,7 +450,7 @@ export interface Common {
      *   '2017.2.23.8.u': 1,
      *   '2017.w8.u': 1 }
      */
-    fillTimeObject: (params: Params, object: any, property: string | string[], increment?: number) => void;
+    fillTimeObject: (params: Params, object: any, property: string, increment?: number) => void;
 
     /**
      * Creates a time object from request's milisecond or second timestamp in provided app's timezone
@@ -578,7 +578,7 @@ export interface Common {
      * //outputs
      * { 'd.u': 1, 'd.2.u': 1, 'd.w8.u': 1 }
      */
-    fillTimeObjectZero: (params: Params, object: any, property: string | string[], increment?: number, isUnique?: boolean) => boolean;
+    fillTimeObjectZero: (params: Params, object: any, property: string, increment?: number, isUnique?: boolean) => boolean;
 
     /**
      * Modifies provided object filling properties used in monthly documents in the format object["2012.7.20.property"] = increment. 
@@ -596,7 +596,7 @@ export interface Common {
      * //outputs
      * { 'd.23.u': 1, 'd.23.12.u': 1 }
      */
-    fillTimeObjectMonth: (params: Params, object: any, property: string | string[], increment?: number, forceHour?: boolean) => boolean;
+    fillTimeObjectMonth: (params: Params, object: any, property: string, increment?: number, forceHour?: boolean) => boolean;
 
     /**
      * Record data in Countly standard metric model
