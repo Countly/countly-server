@@ -74,12 +74,15 @@ module.exports = defineConfig({
                                     const imgData = await new Promise((resolve) => {
                                         try {
                                             page.objs.get(objName, (data) => resolve(data));
-                                        } catch (e) {
+                                        }
+                                        catch (e) {
                                             resolve(null);
                                         }
                                     });
 
-                                    if (!imgData) continue;
+                                    if (!imgData) {
+                                        continue;
+                                    }
 
                                     const pdfImg = new PNG({ width: imgData.width, height: imgData.height });
                                     pdfImg.data = imgData.data;
