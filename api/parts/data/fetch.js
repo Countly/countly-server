@@ -186,7 +186,7 @@ fetch.fetchEventData = function(collection, params) {
 
 /**
 * The return the event groups data by _id.
-* @param {Object} params - params object
+* @param {Params} params - params object
 * @param {string} params._id - The id of the event group id.
 **/
 fetch.fetchEventGroupById = function(params) {
@@ -203,7 +203,7 @@ fetch.fetchEventGroupById = function(params) {
 
 /**
 * The return the event groups data by app_id.
-* @param {Object} params - params object
+* @param {Params} params - params object
 * @param {string} params.app_id - The id of the event group of application id.
 **/
 fetch.fetchEventGroups = function(params) {
@@ -220,7 +220,7 @@ fetch.fetchEventGroups = function(params) {
 
 /**
 * The return the merged event data for event groups.
-* @param {Object} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchMergedEventGroups = function(params) {
     const { qstring: { event } } = params;
@@ -1741,7 +1741,7 @@ fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
 /**
  * Caluclates model data from granural data
  * @param {string} collection - collection name 
- * @param {object} params  - request parameters
+ * @param {Params} params  - request parameters
  * @param {object} options  - options of query
  * @param {funtyion} callback  - callback function with result
  */
