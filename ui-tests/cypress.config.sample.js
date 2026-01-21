@@ -71,10 +71,15 @@ module.exports = defineConfig({
 
                                 if (doLogoCheck && args[0]) {
                                     const objName = args[0];
-                                    const imgData = await page.objs.get(objName);
-                                    if (!imgData) {
-                                        continue;
-                                    }
+                                    const imgData = await new Promise((resolve) => {
+                                        try {
+                                            page.objs.get(objName, (data) => resolve(data));
+                                        } catch (e) {
+                                            resolve(null);
+                                        }
+                                    });
+
+                                    if (!imgData) continue;
 
                                     const pdfImg = new PNG({ width: imgData.width, height: imgData.height });
                                     pdfImg.data = imgData.data;
