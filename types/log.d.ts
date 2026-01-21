@@ -4,7 +4,7 @@ export type LogLevelShort = 'd' | 'i' | 'w' | 'e';
 
 /** Logging configuration structure */
 export interface LoggingConfig {
-    [level: string]: string[] | string;
+    [level: string]: string[] | string | LogLevel | undefined;
     default?: LogLevel;
 }
 

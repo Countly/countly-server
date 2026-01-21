@@ -1,3 +1,13 @@
+/**
+ * Module for geographic data operations
+ * @module api/parts/data/geoData
+ */
+
+/**
+ * @typedef {import('../../../types/geoData').LoadCityCoordinatesOptions} LoadCityCoordinatesOptions
+ * @typedef {import('../../../types/geoData').LoadCityCoordinatesCallback} LoadCityCoordinatesCallback
+ * @typedef {import('../../../types/geoData').CityCoordinate} CityCoordinate
+ */
 
 var geoData = {};
 const log = require('../../utils/log.js')("core:geo");
@@ -6,6 +16,11 @@ const common = require('../../utils/common.js');
 
 //City fields
 //country(code), 
+/**
+ * Load city coordinates from the database
+ * @param {LoadCityCoordinatesOptions} options - Options for loading city coordinates
+ * @param {LoadCityCoordinatesCallback} callback - Callback function receiving error and cities array
+ */
 geoData.loadCityCoordiantes = function(options, callback) {
     options.db = options.db || common.db;
     options.query = options.query || {};
@@ -29,7 +44,7 @@ geoData.loadCityCoordiantes = function(options, callback) {
 
     pipeline = [{"$match": options.query}, {"$project": options.projection}];
 
-    options.db.collection("cityCoordinates").aggregate(pipeline).toArray(function(err, cities) {
+    options.db.collection("cityCoordinates").aggregate(pipeline).toArray(function(/** @type {Error | null} */ err, /** @type {CityCoordinate[]} */ cities) {
         if (err) {
             log.e(err);
         }

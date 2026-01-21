@@ -2,7 +2,7 @@ import { Moment } from "moment-timezone";
 import { Collection, Db, ObjectId } from "mongodb";
 import { Params } from "./requestProcessor";
 import { PluginManager, Database } from "./pluginManager";
-import { Logger } from "./log";
+import { Logger, LogModule } from "./log";
 import { CountlyAPIConfig } from "./config";
 import { ClickHouseQueryService } from "../plugins/clickhouse/types/clickhouseQueryService";
 
@@ -285,12 +285,12 @@ export interface Common {
 
     /**
      * Logger object for creating module-specific logging
-     * @type {function(string): Logger}
+     * @type {LogModule}
      * @example
      * const log = common.log('myplugin:api');
      * log.i('myPlugin got a request: %j', params.qstring);
      */
-    log: (module: string) => Logger;
+    log: LogModule;
 
     /**
      * Mapping some common property names from longer understandable to shorter representation stored in database
