@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "cypress": "^15.9.0",
-    "pdfjs-dist": "^3.11.174",
+    "pdfjs-dist": "^5.4.530",
     "pixelmatch": "^7.1.0",
     "pngjs": "^7.0.0",
     "sharp": "^0.34.4"
