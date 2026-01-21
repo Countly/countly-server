@@ -59,7 +59,7 @@
                     parameter: JSON.stringify(parameter)
                 },
                 dataType: "json"
-            });
+            }, { disableAutoCatch: true });
         },
         updateParameter: function(id, parameter) {
             return CV.$.ajax({
@@ -71,7 +71,7 @@
                     parameter: JSON.stringify(parameter)
                 },
                 dataType: "json"
-            });
+            }, { disableAutoCatch: true });
         },
         removeParameter: function(id) {
             return CV.$.ajax({
@@ -82,7 +82,7 @@
                     parameter_id: id
                 },
                 dataType: "json"
-            });
+            }, { disableAutoCatch: true });
         },
         createCondition: function(condition) {
             return CV.$.ajax({

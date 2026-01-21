@@ -14,6 +14,7 @@ const countlyApi = {
     }
 };
 
+var eventsWithDefaultPlatformSegment = ["[CLY]_view", "[CLY]_action", "[CLY]_nps", "[CLY]_survey"];
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 // Initialize unified event sink
 let eventSink = null;
@@ -379,6 +380,13 @@ var processToDrill = async function(params, drill_updates, callback) {
                 dbEventObject.peid = events[i].peid;
             }
 
+
+            if (eventsWithDefaultPlatformSegment.indexOf(eventKey) !== -1) {
+                if (upWithMeta.up && upWithMeta.up.p && !(currEvent.segmentation && currEvent.segmentation.platform)) {
+                    currEvent.segmentation = currEvent.segmentation || {};
+                    currEvent.segmentation.platform = upWithMeta.up.p;
+                }
+            }
             if (eventKey === "[CLY]_view" && currEvent && currEvent.segmentation && currEvent.segmentation._idv) {
                 dbEventObject._id = params.app_id + "_" + dbAppUser.uid + "_" + currEvent.segmentation._idv;
                 if (!events[i].id) {
@@ -750,6 +758,14 @@ const validateAppForWriteAPI = (params, done) => {
             return;
         }
 
+        if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
+            try {
+                params.qstring.metrics = JSON.parse(params.qstring.metrics);
+            }
+            catch (SyntaxError) {
+                console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
+            }
+        }
         plugins.dispatch("/sdk/validate_request", {params: params}, async function() { //validates request if there is no reason to block/cancel it
             if (params.cancelRequest) {
                 if (!params.res.finished && !params.waitForResponse) {

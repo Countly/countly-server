@@ -1,0 +1,439 @@
+services:
+  # Kafka (matching working experiment config)
+  kafka:
+    image: apache/kafka:4.0.0
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://kafka:29093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      # JVM Memory settings for dev
+      KAFKA_HEAP_OPTS: '-Xmx2g -Xms1g'                        # 2GB max heap, 1GB initial
+      # Hard message size limits - block large messages
+      KAFKA_MESSAGE_MAX_BYTES: '52428800'                      # 50MB hard limit
+      KAFKA_REPLICA_FETCH_MAX_BYTES: '52428800'                # 50MB replica fetch
+      KAFKA_SOCKET_REQUEST_MAX_BYTES: '52428800'               # 50MB socket request
+    networks:
+      - kafka-network
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-broker-api-versions.sh", "--bootstrap-server", "kafka:29092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kafka Connect with ClickHouse connector
+  kafka-connect:
+    image: countly/kafka-connect-clickhouse:latest
+    container_name: kafka-connect
+    depends_on:
+      kafka:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    environment:
+      # Connect runtime overrides - modern protocol
+      CONNECT_BOOTSTRAP_SERVERS: "kafka:29092"
+      CONNECT_CONNECT_PROTOCOL: "SESSIONED"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
+      CONNECT_REST_ADVERTISED_PORT: "8083"
+      CONNECT_LISTENERS: "http://0.0.0.0:8083"
+      CONNECT_GROUP_ID: "connect-cluster"
+      CONNECT_CONFIG_STORAGE_TOPIC: "connect_ch_configs"
+      CONNECT_OFFSET_STORAGE_TOPIC: "connect_ch_offsets"
+      CONNECT_STATUS_STORAGE_TOPIC: "connect_ch_status"
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_CONFIG_STORAGE_PARTITIONS: "1"
+      CONNECT_OFFSET_STORAGE_PARTITIONS: "25"
+      CONNECT_STATUS_STORAGE_PARTITIONS: "5"
+      # Coordination tuning
+      CONNECT_REBALANCE_TIMEOUT_MS: "60000"
+      CONNECT_WORKER_SYNC_TIMEOUT_MS: "10000"
+      CONNECT_WORKER_UNSYNC_BACKOFF_MS: "10000"
+      CONNECT_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
+      # Converters
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_PLUGIN_PATH: "/opt/kafka/plugins"
+      CONNECT_REST_PORT: "8083"
+      # Consumer tuning - 50MB hard limits
+      CONNECT_CONSUMER_MAX_POLL_RECORDS: "500"                    # Standard records per poll
+      CONNECT_CONSUMER_FETCH_MIN_BYTES: "1048576"                 # 1MB min fetch
+      CONNECT_CONSUMER_FETCH_MAX_BYTES: "52428800"               # 50MB max fetch
+      CONNECT_CONSUMER_MAX_PARTITION_FETCH_BYTES: "52428800"     # 50MB per partition
+      CONNECT_PRODUCER_MAX_REQUEST_SIZE: "52428800"              # 50MB producer request
+      CONNECT_PRODUCER_BUFFER_MEMORY: "67108864"                 # 64MB producer buffer
+    networks:
+      - kafka-network
+
+  # DLQ topic creation
+  dlq-init:
+    image: apache/kafka:4.0.0
+    container_name: dlq-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - kafka-network
+    command:
+      - sh
+      - -c
+      - |
+        echo 'Creating DLQ topic with 100MB limit...'
+        /opt/kafka/bin/kafka-topics.sh \
+          --bootstrap-server kafka:29092 \
+          --create \
+          --topic drill-events-dlq \
+          --partitions 1 \
+          --replication-factor 1 \
+          --config retention.bytes=104857600 \
+          --config retention.ms=86400000 \
+          --if-not-exists
+        echo 'DLQ topic created successfully!'
+    restart: "no"
+
+  # ClickHouse table creation
+  clickhouse-init:
+    image: curlimages/curl:latest
+    container_name: clickhouse-init
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    networks:
+      - kafka-network
+    volumes:
+      - ../../plugins/clickhouse/api/sql:/sql:ro
+    command:
+      - sh
+      - -c
+      - |
+        echo 'Creating ClickHouse user countly...'
+        curl -X POST 'http://clickhouse:8123/' \
+          --data-binary "CREATE USER IF NOT EXISTS countly IDENTIFIED WITH plaintext_password BY 'countly'" \
+          --header 'Content-Type: text/plain'
+
+        echo 'Granting database operation privileges...'
+        curl -X POST 'http://clickhouse:8123/' \
+          --data-binary "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, TRUNCATE, OPTIMIZE, SHOW ON *.* TO countly" \
+          --header 'Content-Type: text/plain'
+
+        echo 'Granting system database access...'
+        curl -X POST 'http://clickhouse:8123/' \
+          --data-binary "GRANT SELECT ON system.* TO countly" \
+          --header 'Content-Type: text/plain'
+
+        echo 'Granting admin and management privileges...'
+        curl -X POST 'http://clickhouse:8123/' \
+          --data-binary "GRANT ACCESS MANAGEMENT, SYSTEM, INTROSPECTION, SOURCES ON *.* TO countly" \
+          --header 'Content-Type: text/plain'
+
+        echo 'Granting table function privileges...'
+        curl -X POST 'http://clickhouse:8123/' \
+          --data-binary "GRANT dictGet ON *.* TO countly" \
+          --header 'Content-Type: text/plain'
+
+        echo 'Verifying countly user privileges...'
+        curl 'http://countly:countly@clickhouse:8123/' \
+          --data-binary "SHOW GRANTS FOR countly" \
+          --header 'Content-Type: text/plain'
+
+        echo ''
+        echo 'Testing system tables access...'
+        curl 'http://countly:countly@clickhouse:8123/' \
+          --data-binary "SELECT name FROM system.users LIMIT 5" \
+          --header 'Content-Type: text/plain'
+
+        echo ''
+        echo 'User countly created and verified with full admin access!'
+
+        echo 'Setting up ClickHouse schema...'
+        echo 'Available SQL files:'
+        ls -la /sql/
+
+        cd /sql
+        echo "Current directory: $$(pwd)"
+        echo "SQL files found:"
+        ls -1 *.sql 2>/dev/null || echo "No .sql files found"
+
+        # Debug command substitution
+        cmd_output=$$(ls *.sql 2>/dev/null | sort)
+        echo "Command substitution result: '$$cmd_output'"
+        echo "Length: $${#cmd_output}"
+
+        # Use a more robust approach with find and process substitution
+        while IFS= read -r -d '' sql_file; do
+          echo "Processing file: '$$sql_file'"
+          if [ -f "$$sql_file" ]; then
+            echo "Executing $$sql_file..."
+            echo "File contents:"
+            cat "$$sql_file"
+            echo "Running SQL..."
+
+            curl -X POST 'http://clickhouse:8123/' \
+              --data-binary @"$$sql_file" \
+              --header 'Content-Type: text/plain'
+
+            if [ $$? -eq 0 ]; then
+              echo "Successfully executed $$sql_file"
+            else
+              echo "Failed to execute $$sql_file"
+              exit 1
+            fi
+            echo "---"
+          fi
+        done < <(find . -maxdepth 1 -name "*.sql" -type f -print0 | sort -z)
+
+        echo 'ClickHouse setup completed!'
+    restart: "no"
+
+  # Connector initialization
+  connector-init:
+    image: curlimages/curl:latest
+    container_name: connector-init
+    depends_on:
+      kafka-connect:
+        condition: service_started
+      clickhouse-init:
+        condition: service_completed_successfully
+      dlq-init:
+        condition: service_completed_successfully
+    networks:
+      - kafka-network
+    command:
+      - sh
+      - -c
+      - |
+        echo 'Waiting for Connect API...'
+        until curl -s http://kafka-connect:8083/connectors >/dev/null 2>&1; do
+          echo 'Connect not ready, waiting...'
+          sleep 5
+        done
+        echo 'Connect is ready, creating connector...'
+        
+        curl -X PUT -H 'Content-Type: application/json' \
+          -d '{
+            "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
+            "tasks.max": "1",
+            "topics": "drill-events",
+            "hostname": "clickhouse",
+            "port": "8123",
+            "ssl": "false",
+            "database": "countly_drill",
+            "username": "default",
+            "password": "",
+            "topic2TableMap": "drill-events=drill_events",
+            "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+            "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+            "value.converter.schemas.enable": "false",
+            "errors.tolerance": "all",
+            "errors.retry.timeout": "300000",
+            "errors.retry.delay.max.ms": "10000",
+            "errors.deadletterqueue.topic.name": "drill-events-dlq",
+            "errors.deadletterqueue.context.headers.enable": "true",
+            "errors.deadletterqueue.topic.replication.factor": "1"
+          }' \
+          http://kafka-connect:8083/connectors/clickhouse-sink/config
+        
+        if [ $? -eq 0 ]; then
+          echo 'Connector created successfully with DLQ!'
+        else
+          echo 'Failed to create connector'
+          exit 1
+        fi
+    restart: "no"
+
+  # Kafka UI for monitoring
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    depends_on:
+      kafka:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: local
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://kafka-connect:8083
+    networks:
+      - kafka-network
+
+  # MongoDB 8.0 with replica set for change streams
+  mongodb:
+    image: mongo:8.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--wiredTigerCacheSizeGB", "1"]
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - kafka-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB replica set initialization
+  mongodb-init:
+    image: mongo:8.0
+    container_name: mongodb-init
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - kafka-network
+    command:
+      - sh
+      - -c
+      - |
+        echo 'Waiting for MongoDB to be ready...'
+        until mongosh --host mongodb:27017 --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
+          echo 'MongoDB not ready, waiting...'
+          sleep 2
+        done
+        echo 'MongoDB is ready, initializing replica set...'
+        
+        mongosh --host mongodb:27017 --eval '
+          try {
+            rs.status();
+            console.log("Replica set already initialized");
+          } catch (e) {
+            console.log("Initializing replica set...");
+            rs.initiate({
+              _id: "rs0",
+              members: [
+                { _id: 0, host: "mongodb:27017" }
+              ]
+            });
+            console.log("Replica set initialized successfully");
+          }
+        '
+        
+        echo 'Waiting for replica set to be ready...'
+        mongosh --host mongodb:27017 --eval '
+          while (true) {
+            try {
+              const status = rs.status();
+              if (status.members[0].state === 1) {
+                console.log("Replica set is ready!");
+                break;
+              }
+            } catch (e) {
+              console.log("Waiting for replica set...");
+            }
+            sleep(1000);
+          }
+        '
+        echo 'MongoDB replica set setup completed!'
+    restart: "no"
+
+  # ClickHouse for local testing
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8
+    container_name: clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-countly_drill}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-}
+      CLICKHOUSE_SKIP_USER_SETUP: 1  # Enable default user with no password for local dev
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    networks:
+      - kafka-network
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ClickHouse UI for administration
+  ch-ui:
+    image: ghcr.io/caioricciuti/ch-ui:latest
+    container_name: ch-ui
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    ports:
+      - "5521:5521"
+    environment:
+      VITE_CLICKHOUSE_URL: http://localhost:8123
+      VITE_CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
+      VITE_CLICKHOUSE_PASS: ${CLICKHOUSE_PASSWORD:-}
+    networks:
+      - kafka-network
+
+  # SSL certificate generator for local development
+  cert-generator:
+    image: alpine:latest
+    container_name: cert-generator
+    volumes:
+      - nginx-certs:/certs
+    command:
+      - sh
+      - -c
+      - |
+        if [ ! -f /certs/localhost.crt ]; then
+          apk add --no-cache openssl
+          openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /certs/localhost.key -out /certs/localhost.crt -subj '/C=US/ST=State/L=City/O=Countly/CN=localhost' -addext 'subjectAltName=DNS:localhost,DNS:*.localhost,IP:127.0.0.1'
+          chmod 644 /certs/localhost.crt
+          chmod 644 /certs/localhost.key
+          echo 'SSL certificates generated successfully'
+        else
+          echo 'SSL certificates already exist'
+        fi
+    restart: "no"
+
+  # Nginx proxy for Countly services
+  nginx:
+    image: bitnami/nginx:latest
+    container_name: countly-nginx
+    ports:
+      - "80:8080"
+      - "443:8443"
+    volumes:
+      - ./nginx.docker.conf:/opt/bitnami/nginx/conf/server_blocks/countly-http.conf:ro
+      - ./nginx-ssl.docker.conf:/opt/bitnami/nginx/conf/server_blocks/countly-https.conf:ro
+      - nginx-certs:/opt/bitnami/nginx/conf/certs:ro
+    networks:
+      - kafka-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      cert-generator:
+        condition: service_completed_successfully
+
+volumes:
+  mongodb-data:
+  clickhouse-data:
+  nginx-certs:
+
+networks:
+  kafka-network:
+    driver: bridge

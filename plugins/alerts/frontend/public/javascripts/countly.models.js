@@ -316,15 +316,11 @@
                     },
                     dataType: "json",
                     success: function() {
-                        CountlyHelpers.notify({
-                            message:
-                                jQuery.i18n.map["alerts.save-alert-success"],
-                        });
                         context.dispatch("countlyAlerts/table/fetchAll", null, {
                             root: true,
                         });
                     },
-                }).then(function() {});
+                }, { disableAutoCatch: true });
             },
             deleteAlert: function(context, options) {
                 return CV.$.ajax({
@@ -343,7 +339,7 @@
                             root: true,
                         });
                     },
-                });
+                }, { disableAutoCatch: true });
             },
             deleteOnlineUsersAlert: function(context, options) {
                 return CV.$.ajax({

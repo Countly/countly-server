@@ -6,6 +6,7 @@ const initialConsentHelpers = require('../../lib/onboarding/initialConsent');
 const quickstartPopoeverHelpers = require('../../support/components/quickstartPopover');
 
 const wait_L = 4000;
+const wait_H = 8000;
 const user = {
     username: 'test',
     email: 'a@a.com',
@@ -56,11 +57,11 @@ const goToConfigTab = (nopop) => {
     }
     navigationHelpers.goToSdkManagerPage();
     cy.get('.white-bg > :nth-child(4)').click({force: true});
-    cy.wait(2000);
+    cy.wait(wait_H);
     cy.get('.white-bg > :nth-child(1) > a > span').click({force: true});
-    cy.wait(2000);
+    cy.wait(wait_H);
     cy.get('.white-bg > :nth-child(4)').click({force: true});
-    cy.wait(2000);
+    cy.wait(wait_H);
 };
 
 const createRequest = (sdkName, sdkVersion) => {
