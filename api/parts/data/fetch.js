@@ -241,8 +241,8 @@ fetch.fetchMergedEventGroups = function(params) {
 * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} options.levels - describes which metrics to expect on which levels
-* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getMergedEventGroups = function(params, event, options, callback) {
@@ -275,14 +275,14 @@ fetch.fetchMergedEventData = function(params) {
 /**
 * Get merged data from multiple events in standard data model
 * @param {Params} params - params object with app_id and date
-* @param {array} events - array with event keys
+* @param {string[]} events - array with event keys
 * @param {object=} options - additional optional settings
 * @param {object=} options.db - database connection to use, by default will try to use common.db
 * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} options.levels - describes which metrics to expect on which levels
-* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getMergedEventData = function(params, events, options, callback) {
@@ -1043,8 +1043,8 @@ fetch.getMetric = function(params, metric, totalUsersMetric, callback) {
 * @param {string=} fetchTimeOptions.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} fetchTimeOptions.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} fetchTimeOptions.levels - describes which metrics to expect on which levels
-* @param {array=} fetchTimeOptions.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} fetchTimeOptions.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} fetchTimeOptions.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} fetchTimeOptions.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
 * @example <caption>Retrieved data</caption>
 * [
@@ -1123,7 +1123,7 @@ fetch.getMetricWithOptions = function(params, metric, totalUsersMetric, fetchTim
 /**
 * Get collection and metric name from metric string
 * @param {string} metric - metric/segment name
-* @return {Array} array with collection, metric, model object
+* @return {Array<any>} array with collection, metric, model object
 **/
 fetch.metricToCollection = function(metric) {
     switch (metric) {
@@ -1441,8 +1441,8 @@ fetch.fetchEvents = function(params) {
 * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} options.levels - describes which metrics to expect on which levels
-* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 */
 fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
     fetchTimeObj(collection, params, isCustomEvent, options, function(output) {
@@ -1481,8 +1481,8 @@ fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
 * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} options.levels - describes which metrics to expect on which levels
-* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getTimeObj = function(collection, params, options, callback) {
@@ -1498,8 +1498,8 @@ fetch.getTimeObj = function(collection, params, options, callback) {
 * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} options.levels - describes which metrics to expect on which levels
-* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getTimeObjForEvents = function(collection, params, options, callback) {
@@ -1815,8 +1815,8 @@ async function fetchFromGranular(collection, params, options, callback) {
 * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} options.levels - describes which metrics to expect on which levels
-* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - to call when fetch done
 **/
 function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
@@ -2032,11 +2032,11 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
     /**    
     * Merge multiple db documents into one
-    * @param {array} dataObjects - array with db documents
+    * @param {object[]} dataObjects - array with db documents
     * @param {boolean} isRefresh - is it refresh data only for today
     * @param {object=} levels - describes which metrics to expect on which levels
-    * @param {array=} levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-    * @param {array=} levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+    * @param {string[]} levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+    * @param {string[]} levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
     * @param {boolean} truncateEventValuesList - if true, then will limit returned segment value count in meta.
     * @returns {object} merged object
     **/
@@ -2204,9 +2204,9 @@ fetch.getPeriodObj = function(coll, params) {
 
 /**
 * Returns the union of two arrays
-* @param {array} x - array 1
-* @param {array} y - array 2
-* @returns {array} merged array
+* @param {any[]} x - array 1
+* @param {any[]} y - array 2
+* @returns {any[]} merged array
 **/
 function union(x, y) {
     var obj = {};
@@ -2229,7 +2229,7 @@ function union(x, y) {
 /**
  * Fetch data for tops
  * @param {Params} params - params object
- * @param  {Array} allMetrics - All metrics array
+ * @param  {object[]} allMetrics - All metrics array
  * @param  {String} metric - metric to fetch data for
  * @param  {Function} cb - callback function
  */
