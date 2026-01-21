@@ -383,7 +383,7 @@ const clickAddNewAlertButton = () => {
         });
 };
 
-//ALERT DRAWER 
+//ALERT DRAWER
 const typeAlertName = (alertName) => {
     cy.typeInput(alertDrawerPageElements.DRAWER_ALERT_NAME_INPUT, alertName);
 };
@@ -458,10 +458,10 @@ const clickCancelButton = () => {
     cy.clickElement(alertDrawerPageElements.DRAWER_CANCEL_BUTTON);
 };
 
-const verifyAlertSavedNotification = () => {
+const verifyAlertSavedNotification = (isUpdated = false) => {
     cy.verifyElement({
         labelElement: alertsPageElements.NOTIFICATION_ALERT_SAVED_MESSAGE,
-        labelText: "Alert saved"
+        labelText: `Alert has been updated ${isUpdated ? 'updated' : 'created'} successfully`
     });
 };
 
