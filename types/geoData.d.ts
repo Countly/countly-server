@@ -4,13 +4,13 @@ import { Logger } from "./log";
 /** Options for loading city coordinates */
 export interface LoadCityCoordinatesOptions {
     /** Database connection to use, defaults to common.db */
-    db?: Database;
+    db: Database;
     /** MongoDB query object to filter cities */
-    query?: Record<string, any>;
+    query: Record<string, any>;
     /** MongoDB projection object for fields to return */
-    projection?: Record<string, number>;
+    projection: Record<string, number>;
     /** Country code to filter by */
-    country?: string;
+    country: string;
 }
 
 /** City coordinate data returned from database */
