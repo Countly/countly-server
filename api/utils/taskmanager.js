@@ -3,6 +3,10 @@
 * @module api/utils/taskmanager
 */
 
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/utils/taskmanager */
 var taskmanager = {};
 var common = require("./common.js");
@@ -18,7 +22,7 @@ const log = require('./log.js')('core:taskmanager');
 * Monitors DB query or some other potentially long task and switches to long task manager if it exceeds threshold
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
-* @param {params} options.params - params object
+* @param {Params} options.params - params object
 * @param {number} options.threshold - amount of seconds to wait before switching to long running task
 * @param {number} options.force - force to use taskmanager, ignoring threshold
 * @param {string} options.type - type of data, as which module or plugin uses this data
