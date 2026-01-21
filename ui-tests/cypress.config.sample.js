@@ -1,14 +1,16 @@
-const { defineConfig } = require("cypress");
-const fs = require("fs");
-const path = require("path");
-const pdfjsLib = require("pdfjs-dist");
-const { PNG } = require("pngjs");
-const sharp = require("sharp");
-
 // Define missing DOMMatrix in Node context (for pdfjs)
 if (typeof global.DOMMatrix === "undefined") {
     global.DOMMatrix = class DOMMatrix { };
 }
+
+const { defineConfig } = require("cypress");
+const fs = require("fs");
+const path = require("path");
+const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.mjs");
+const { PNG } = require("pngjs");
+const sharp = require("sharp");
+
+
 
 module.exports = defineConfig({
     e2e: {
