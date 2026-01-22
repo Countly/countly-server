@@ -134,7 +134,7 @@ module.exports = defineConfig({
                 },
             });
 
-            // Clean up videos for passed specs
+            // Clean up unneeded videos after each spec
             on("after:spec", (spec, results) => {
                 if (!results) {
                     return;
@@ -142,12 +142,20 @@ module.exports = defineConfig({
 
                 const isFinalFail = results.stats?.failures > 0;
 
-                if (!isFinalFail && results?.video && fs.existsSync(results.video)) {
-                    fs.unlinkSync(results.video);
+                if (!isFinalFail && results?.video) {
+                    const videoPath = results.video;
+                    const compressedPath = videoPath.replace(".mp4", "-compressed.mp4");
+
+                    if (fs.existsSync(videoPath)) {
+                        fs.unlinkSync(videoPath);
+                    }
+                    if (fs.existsSync(compressedPath)) {
+                        fs.unlinkSync(compressedPath);
+                    }
                 }
             });
 
-            // Clean up empty screenshot and video folders after run
+            // Clean up empty folders and folders with only compressed videos after the run
             on("after:run", () => {
                 const folders = [config.videosFolder, config.screenshotsFolder];
 
@@ -158,16 +166,29 @@ module.exports = defineConfig({
 
                     fs.readdirSync(folder).forEach((entry) => {
                         const fullPath = path.join(folder, entry);
-
                         if (!fs.existsSync(fullPath)) {
                             return;
                         }
 
-                        if (fs.statSync(fullPath).isDirectory()) {
-                            const content = fs.readdirSync(fullPath);
-                            if (content.length === 0) {
-                                fs.rmSync(fullPath, { recursive: true, force: true });
-                            }
+                        if (!fs.statSync(fullPath).isDirectory()) {
+                            return;
+                        }
+
+                        const files = fs.readdirSync(fullPath);
+
+                        // Remove empty folders
+                        if (files.length === 0) {
+                            fs.rmSync(fullPath, { recursive: true, force: true });
+                            return;
+                        }
+
+                        // Remove folders that only contain compressed videos
+                        const onlyCompressed = files.every((f) =>
+                            f.endsWith("-compressed.mp4")
+                        );
+
+                        if (onlyCompressed) {
+                            fs.rmSync(fullPath, { recursive: true, force: true });
                         }
                     });
                 });
