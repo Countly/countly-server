@@ -20,7 +20,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         element: resolutionsPageElements.TAB_PLATFORMS,
-        elementText: "ABCDEFG",
+        elementText: "Platforms",
     });
 
     cy.verifyElement({

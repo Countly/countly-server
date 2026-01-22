@@ -14,7 +14,7 @@ const clickLoginButton = () => {
 
 const verifyLoginFailedMessage = () => {
     cy.shouldBeVisible(loginPageElements.NOTIFICATION_IMAGE);
-    cy.shouldContainText(loginPageElements.FAILED_MESSAGE, 'asdfghj');
+    cy.shouldContainText(loginPageElements.FAILED_MESSAGE, 'Login Failed');
 };
 
 const verifyUnvalidUsernameOrEmailMessage = () => {
