@@ -146,17 +146,6 @@ if (require.main === module) {
 
     log.i('Initializing job server process...');
 
-    // TEMPORARY DEBUG LOGGING - JOB SERVER
-    console.log('=== JOB SERVER CONFIG DEBUG ===');
-    console.log('Process ENV:', {
-        NODE_ENV: process.env.NODE_ENV,
-        SERVICE_TYPE: process.env.SERVICE_TYPE,
-        COUNTLY_CONFIG_PATH: process.env.COUNTLY_CONFIG_PATH
-    });
-    console.log('pluginManager available:', !!pluginManager);
-    console.log('common available:', !!common);
-    console.log('=== END JOB SERVER CONFIG DEBUG ===');
-
     /**
      * Initialize configuration and database connections
      * @returns {Promise<{config: Object, dbConnections: Array}>} e.g. { config: {...}, dbConnections: { countlyDb, outDb, fsDb, drillDb } }
@@ -204,11 +193,6 @@ if (require.main === module) {
             console.log('=== INITIALIZING PLUGINS ===');
             pluginManager.init();
             console.log('✓ Plugins initialized');
-
-            // TEMPORARY DEBUG - JOB SERVER CONFIG
-            console.log('=== JOB SERVER LOADED CONFIG ===');
-            console.log('Config loaded:', JSON.stringify(config, null, 2));
-            console.log('=== END JOB SERVER LOADED CONFIG ===');
 
             return {
                 config,
