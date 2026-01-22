@@ -24,7 +24,8 @@ describe('CSV/Array and JSON validation', function() {
             eb: true,
             upb: true,
             sb: true,
-            esb: true
+            esb: true,
+            jte: true
         };
 
         request
@@ -137,6 +138,37 @@ describe('CSV/Array and JSON validation', function() {
                 should.not.exist(err);
                 res.body.should.have.property('result', 'Error parsing parameter');
                 done();
+            });
+    });
+
+    it('4. should save arrays for jte when provided as array', function(done) {
+        const parameter = {
+            jte: ['event1', 'event,2']
+        };
+
+        request
+            .post('/i/sdk-config/update-parameter')
+            .send({ api_key: API_KEY_ADMIN, app_id: APP_ID, parameter: JSON.stringify(parameter) })
+            .expect(200)
+            .end(function(err, res) {
+                should.not.exist(err);
+                res.body.should.have.property('result', 'Success');
+
+                request
+                    .get('/o/sdk')
+                    .query({ method: 'sc', app_key: APP_KEY, device_id: 'test' })
+                    .expect(200)
+                    .end(function(err, res) {
+                        should.not.exist(err);
+                        res.body.should.have.property('c');
+                        const c = res.body.c;
+                        c.should.have.property('jte');
+                        c.jte.should.be.an.Array();
+                        c.jte.should.have.length(2);
+                        c.jte.should.containEql('event1');
+                        c.jte.should.containEql('event,2');
+                        done();
+                    });
             });
     });
 });

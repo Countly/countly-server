@@ -31,6 +31,7 @@ var validOptions = {
     "ltl": false,
     "lt": false,
     "rcz": false,
+    "jte": false,
     "bom": false,
     "bom_at": false,
     "bom_rqp": false,
