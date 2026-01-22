@@ -5,6 +5,9 @@ Fixes:
 - [star-rating] Fix consent fields in drawer
 - [remote-config] Fix searching for parameter in experiment variants
 
+Enterprise Fixes:
+- [cohorts] Correctly regenerate cohorts having $or rule on custom properties
+
 ## Version 25.03.32
 Fixes:
 - [core] Filtering out internal events while calculating top events
