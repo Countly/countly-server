@@ -14,14 +14,20 @@
 const should = require('should');
 const path = require('path');
 
-// Setup module mocking BEFORE requiring MaterializedViewManager
-const { createMockClickHouseClient } = require('./helpers/mockSetup');
+
+const { setupMocking, resetMocking, createMockClickHouseClient } = require('./helpers/mockSetup');
 
 // Direct require of MaterializedViewManager (after mocking is set up)
 const PLUGIN_ROOT = path.resolve(__dirname, '../..');
 const MaterializedViewManager = require(path.join(PLUGIN_ROOT, 'api/managers/MaterializedViewManager'));
 
 describe('MaterializedViewManager Unit Tests', function() {
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
     let mockClient;
     let viewManager;
 

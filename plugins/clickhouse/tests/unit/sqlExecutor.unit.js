@@ -13,9 +13,8 @@
 const should = require('should');
 const path = require('path');
 
-// Setup module mocking BEFORE requiring plugin modules
-// This mocks the log.js dependency from countly core
-require('./helpers/mockSetup');
+
+const { setupMocking, resetMocking } = require('./helpers/mockSetup');
 
 // Direct require of SQLExecutor and ClusterManager (after mocking is set up)
 const PLUGIN_ROOT = path.resolve(__dirname, '../..');
@@ -23,6 +22,12 @@ const { parseMetadata } = require(path.join(PLUGIN_ROOT, 'api/managers/SQLExecut
 const ClusterManager = require(path.join(PLUGIN_ROOT, 'api/managers/ClusterManager'));
 
 describe('SQLExecutor Unit Tests', function() {
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
     // Reset ClusterManager singleton before each test
     beforeEach(function() {
         ClusterManager.resetInstance();

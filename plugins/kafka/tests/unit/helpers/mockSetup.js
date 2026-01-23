@@ -279,7 +279,7 @@ function resetMocking() {
 }
 
 // Setup mocking immediately when this module is loaded
-setupMocking();
+//setupMocking();
 
 /**
  * Create a mock EventSink for testing

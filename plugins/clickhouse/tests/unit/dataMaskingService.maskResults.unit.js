@@ -13,14 +13,21 @@
 const should = require('should');
 const path = require('path');
 
-// Setup module mocking BEFORE requiring DataMaskingService
-require('./helpers/mockSetup');
+
+const { setupMocking, resetMocking } = require('./helpers/mockSetup');
+
 
 // Direct require of DataMaskingService (after mocking is set up)
 const PLUGIN_ROOT = path.resolve(__dirname, '../..');
 const DataMaskingService = require(path.join(PLUGIN_ROOT, 'api/DataMaskingService'));
 
 describe('DataMaskingService - maskResults for drill_snapshots with different bucket_kind formats', function() {
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
     let maskingService;
     let mockPlugins;
 

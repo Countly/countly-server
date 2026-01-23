@@ -10,6 +10,8 @@ const should = require('should');
 
 // Setup mocking before requiring the module
 const {
+    setupMocking,
+    resetMocking,
     createMockLogger,
     createMockKafkaConfig,
     createMockDb,
@@ -21,6 +23,12 @@ const {
 const UnifiedEventSource = require('../../../../api/eventSource/UnifiedEventSource');
 
 describe('UnifiedEventSource', function() {
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
 
     // ========================================================================
     // Constructor Validation

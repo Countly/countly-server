@@ -14,12 +14,12 @@
 const should = require('should');
 const path = require('path');
 
-// Setup module mocking BEFORE requiring health
-const { setMockCommonOverrides, resetMockCommonOverrides } = require('./helpers/mockSetup');
+
+const { setupMocking, resetMocking, setMockCommonOverrides, resetMockCommonOverrides } = require('./helpers/mockSetup');
 
 // Direct require of health (after mocking is set up)
 const PLUGIN_ROOT = path.resolve(__dirname, '../..');
-const health = require(path.join(PLUGIN_ROOT, 'api/health'));
+var health;
 
 describe('Health Unit Tests', function() {
     beforeEach(function() {
@@ -28,6 +28,13 @@ describe('Health Unit Tests', function() {
 
     afterEach(function() {
         resetMockCommonOverrides();
+    });
+    before(function() {
+        setupMocking();
+        health = require(path.join(PLUGIN_ROOT, 'api/health'));
+    });
+    after(function() {
+        resetMocking();
     });
 
     // ========================================================================
