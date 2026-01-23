@@ -12,6 +12,7 @@
        url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.ttf') format('truetype'), /* Safari, Android, iOS */
        url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-300.svg#Inter') format('svg'); /* Legacy iOS */
 }
+
 /* inter-regular - vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic */
 @font-face {
   font-family: 'Inter';
@@ -26,6 +27,7 @@
        url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.ttf') format('truetype'), /* Safari, Android, iOS */
        url('../fonts/Inter/inter-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.svg#Inter') format('svg'); /* Legacy iOS */
 }
+
 /* inter-500 - vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic */
 @font-face {
   font-family: 'Inter';
