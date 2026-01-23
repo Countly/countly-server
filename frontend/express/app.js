@@ -1077,9 +1077,17 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     var actualPath = null;
                     var isSymlink = false;
 
-                    // First check if it exists in core/plugins
+                    // For enterprise plugins, check enterprise location first, then fall back to core
+                    // This ensures enterprise versions take priority over core versions
                     try {
-                        if (fs.existsSync(corePluginDir)) {
+                        if (fs.existsSync(enterprisePluginDir)) {
+                            pluginDir = enterprisePluginDir;
+                            actualPath = enterprisePluginDir;
+                            pluginSource = 'ENTERPRISE (direct from plugins/)';
+                            console.log('[Dashboard] Loading plugin assets:', plugin, '- Source:', pluginSource);
+                            console.log('[Dashboard]   Plugin path:', actualPath);
+                        }
+                        else if (fs.existsSync(corePluginDir)) {
                             var pluginStat = fs.lstatSync(corePluginDir);
                             isSymlink = pluginStat.isSymbolicLink();
                             actualPath = isSymlink ? fs.realpathSync(corePluginDir) : corePluginDir;
@@ -1092,15 +1100,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                 console.log('[Dashboard]   Checking if symlink points to enterprise plugins:', actualPath.indexOf('plugins/') !== -1 ? 'YES' : 'NO');
                             }
                         }
-                        else if (fs.existsSync(enterprisePluginDir)) {
-                            pluginDir = enterprisePluginDir;
-                            actualPath = enterprisePluginDir;
-                            pluginSource = 'ENTERPRISE (direct from plugins/)';
-                            console.log('[Dashboard] Loading plugin assets:', plugin, '- Source:', pluginSource);
-                            console.log('[Dashboard]   Plugin path:', actualPath);
-                        }
                         else {
-                            console.warn('[Dashboard] Plugin not found in core/plugins or enterprise plugins:', plugin);
+                            console.warn('[Dashboard] Plugin not found in enterprise plugins or core/plugins:', plugin);
                             pluginDir = corePluginDir; // Use default for error handling
                         }
                     }

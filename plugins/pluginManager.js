@@ -119,7 +119,22 @@ var pluginManager = function pluginManager() {
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             fullPluginsMap[pluginNames[i]] = true;
             try {
-                pluginsApis[pluginNames[i]] = require("./" + pluginNames[i] + "/api/api");
+                // Check if enterprise version exists and should take priority
+                var enterprisePluginPath = path.resolve(__dirname, '../../plugins/' + pluginNames[i]);
+                var apiPath = path.resolve(__dirname, './' + pluginNames[i] + "/api/api");
+
+                if (fs.existsSync(enterprisePluginPath)) {
+                    var enterpriseStat = fs.lstatSync(enterprisePluginPath);
+                    if (enterpriseStat.isDirectory() || enterpriseStat.isSymbolicLink()) {
+                        var enterpriseApiPath = path.resolve(enterprisePluginPath, "api/api");
+                        if (fs.existsSync(enterpriseApiPath)) {
+                            apiPath = enterpriseApiPath;
+                            console.log('[Plugin Manager] Loading API from enterprise version:', pluginNames[i]);
+                        }
+                    }
+                }
+
+                pluginsApis[pluginNames[i]] = require(apiPath);
 
             }
             catch (ex) {
@@ -171,7 +186,22 @@ var pluginManager = function pluginManager() {
 
     this.initPlugin = function(pluginName) {
         try {
-            pluginsApis[pluginName] = require("./" + pluginName + "/api/api");
+            // Check if enterprise version exists and should take priority
+            var enterprisePluginPath = path.resolve(__dirname, '../../plugins/' + pluginName);
+            var apiPath = path.resolve(__dirname, './' + pluginName + "/api/api");
+
+            if (fs.existsSync(enterprisePluginPath)) {
+                var enterpriseStat = fs.lstatSync(enterprisePluginPath);
+                if (enterpriseStat.isDirectory() || enterpriseStat.isSymbolicLink()) {
+                    var enterpriseApiPath = path.resolve(enterprisePluginPath, "api/api");
+                    if (fs.existsSync(enterpriseApiPath)) {
+                        apiPath = enterpriseApiPath;
+                        console.log('[Plugin Manager] Loading API from enterprise version (initPlugin):', pluginName);
+                    }
+                }
+            }
+
+            pluginsApis[pluginName] = require(apiPath);
             fullPluginsMap[pluginName] = true;
         }
         catch (ex) {
@@ -880,19 +910,37 @@ var pluginManager = function pluginManager() {
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             try {
                 var pluginPath = path.resolve(__dirname, './' + pluginNames[i]);
+                var enterprisePluginPath = path.resolve(__dirname, '../../plugins/' + pluginNames[i]);
                 var pluginStat = fs.lstatSync(pluginPath);
                 var isSymlink = pluginStat.isSymbolicLink();
                 var actualPath = isSymlink ? fs.realpathSync(pluginPath) : pluginPath;
                 var pluginSource = isSymlink ? 'ENTERPRISE (symlink)' : 'CORE (directory)';
 
+                // Check if enterprise version exists and should take priority
+                var useEnterprise = false;
+                var staticPath = __dirname + '/' + pluginNames[i] + "/frontend/public";
+                var frontendAppPath = path.resolve(__dirname, './' + pluginNames[i] + "/frontend/app");
+
+                if (fs.existsSync(enterprisePluginPath)) {
+                    var enterpriseStat = fs.lstatSync(enterprisePluginPath);
+                    if (enterpriseStat.isDirectory() || enterpriseStat.isSymbolicLink()) {
+                        useEnterprise = true;
+                        staticPath = enterprisePluginPath + "/frontend/public";
+                        frontendAppPath = path.resolve(enterprisePluginPath, "frontend/app");
+                        actualPath = enterprisePluginPath;
+                        pluginSource = 'ENTERPRISE (direct from plugins/)';
+                        console.log('[Plugin Loader] Using enterprise version for:', pluginNames[i]);
+                    }
+                }
+
                 console.log('[Plugin Loader] Loading plugin:', pluginNames[i], '- Source:', pluginSource);
-                if (isSymlink) {
+                if (isSymlink && !useEnterprise) {
                     console.log('[Plugin Loader]   Symlink target:', actualPath);
                 }
 
-                var plugin = require("./" + pluginNames[i] + "/frontend/app");
+                var plugin = require(frontendAppPath);
                 plugs.push({'name': pluginNames[i], "plugin": plugin, "source": pluginSource, "isSymlink": isSymlink, "path": actualPath});
-                app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
+                app.use(countlyConfig.path + '/' + pluginNames[i], express.static(staticPath, { maxAge: 31557600000 }));
                 if (plugin.staticPaths) {
                     plugin.staticPaths(app, countlyDb, express);
                 }
