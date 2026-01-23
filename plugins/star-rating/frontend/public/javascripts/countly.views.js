@@ -1336,7 +1336,7 @@
 
                             CountlyHelpers.notify({
                                 type: 'error',
-                                message: CV.i18n('star-rating.widget.delete.fai'),
+                                message: CV.i18n('star-rating.widget.delete.fail'),
                                 width: 'large',
                             });
                         });
