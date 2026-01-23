@@ -10,6 +10,8 @@ const should = require('should');
 
 // Setup mocking before requiring the module
 const {
+    setupMocking,
+    resetMocking,
     createMockLogger,
     createMockKafkaConfig
 } = require('./helpers/mockSetup');
@@ -19,6 +21,12 @@ const {
 const EventSinkFactory = require('../../../../api/eventSink/EventSinkFactory');
 
 describe('EventSinkFactory', function() {
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
 
     // ========================================================================
     // Configuration

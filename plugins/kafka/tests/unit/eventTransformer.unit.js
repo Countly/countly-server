@@ -10,13 +10,22 @@
 const should = require('should');
 
 // Setup mocking before requiring the module
-require('./helpers/mockSetup');
+const {
+    setupMocking,
+    resetMocking
+} = require('./helpers/mockSetup');
 
 // Direct require of the eventTransformer module
 // Path from plugins/kafka/tests/unit/ to api/utils/
 const { transformToKafkaEventFormat } = require('../../../../api/utils/eventTransformer');
 
 describe('transformToKafkaEventFormat', function() {
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
 
     // ========================================================================
     // Required Fields

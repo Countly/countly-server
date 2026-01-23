@@ -12,8 +12,8 @@
 const should = require('should');
 const path = require('path');
 
-// Setup module mocking BEFORE requiring Identity
-const { createMockClickHouseClient, createMockClickHouseConfig } = require('./helpers/mockSetup');
+
+const { setupMocking, resetMocking, createMockClickHouseClient, createMockClickHouseConfig } = require('./helpers/mockSetup');
 
 // Direct require of Identity (after mocking is set up)
 const PLUGIN_ROOT = path.resolve(__dirname, '../..');
@@ -21,6 +21,12 @@ const Identity = require(path.join(PLUGIN_ROOT, 'api/users/Identity'));
 
 describe('Identity Unit Tests', function() {
 
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
     // ========================================================================
     // Static Methods - SQL Expression Helpers
     // ========================================================================

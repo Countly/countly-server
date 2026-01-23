@@ -14,15 +14,20 @@
 const should = require('should');
 const path = require('path');
 
-// Setup module mocking BEFORE requiring ClusterManager
-// This mocks the log.js dependency from countly core
-require('./helpers/mockSetup');
+
+const { setupMocking, resetMocking } = require('./helpers/mockSetup');
 
 // Direct require of ClusterManager (after mocking is set up)
 const PLUGIN_ROOT = path.resolve(__dirname, '../..');
 const ClusterManager = require(path.join(PLUGIN_ROOT, 'api/managers/ClusterManager'));
 
 describe('ClusterManager Unit Tests', function() {
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
     // Reset singleton before each test
     beforeEach(function() {
         ClusterManager.resetInstance();

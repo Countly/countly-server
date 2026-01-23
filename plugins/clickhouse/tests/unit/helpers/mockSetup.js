@@ -156,6 +156,7 @@ function resetMockCommonOverrides() {
  * Must be called before requiring any plugin modules that depend on core.
  */
 function setupMocking() {
+    console.log("setting up mocking");
     if (mockingEnabled) {
         return;
     }
@@ -205,13 +206,15 @@ function setupMocking() {
 /**
  * Reset module mocking
  */
+// Do not setup mocking automatically. Must call setupMocking() manually in test setup/teardown.
 function resetMocking() {
+    console.log("resetting mocking");
     Module._load = originalLoad;
     mockingEnabled = false;
 }
 
 // Setup mocking immediately when this module is loaded
-setupMocking();
+//setupMocking();
 
 module.exports = {
     setupMocking,
