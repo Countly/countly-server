@@ -10,6 +10,7 @@
 FILES=$(find api frontend plugins \
   -type f \
   \( -name '*.js' -o -name '*.html' -o -name '*.css' -o -name '*.scss' \) \
+  ! -name 'config.sample.js' \
   ! -path '*/node_modules/*' \
   ! -path '*/tests/*' \
   ! -path '*/test/*' \
