@@ -8,6 +8,17 @@ Fixes:
 Enterprise Fixes:
 - [cohorts] Correctly regenerate cohorts having $or rule on custom properties
 
+Dependencies:
+- Bump qs from 6.14.0 to 6.14.1
+- Bump express from 4.21.2 to 4.22.1
+- Bump supertest from 7.1.4 to 7.2.2
+- Bump sass from 1.96.0 to 1.97.2
+- Bump nodemailer from 7.0.11 to 7.0.12
+- Bump fs-extra from 11.3.2 to 11.3.3
+- Bump terser from 5.44.1 to 5.46.0
+- Bump body-parser from 2.2.1 to 2.2.2
+- Bump lodash from 4.17.21 to 4.17.23
+
 ## Version 25.03.32
 Fixes:
 - [core] Filtering out internal events while calculating top events
