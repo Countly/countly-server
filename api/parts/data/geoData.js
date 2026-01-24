@@ -9,7 +9,7 @@
  * @typedef {import('../../../types/geoData').CityCoordinate} CityCoordinate
  */
 
-const log = require('../../utils/log.js')("core:geo");
+const log = require('../../utils/log.js')('core:geo');
 const common = require('../../utils/common.js');
 
 /** @type {import('../../../types/geoData').GeoData} */
@@ -17,7 +17,7 @@ var geoData = {
     loadCityCoordiantes: function(options, callback) {
         options.db = options.db || common.db;
         options.query = options.query || {};
-        options.projection = options.projection || {"country": 1, "loc": 1, "name": 1};
+        options.projection = options.projection || {'country': 1, 'loc': 1, 'name': 1};
 
         var pipeline = [];
         if (options.query) {
@@ -35,9 +35,9 @@ var geoData = {
             options.query.country = options.country;
         }
 
-        pipeline = [{"$match": options.query}, {"$project": options.projection}];
+        pipeline = [{'$match': options.query}, {'$project': options.projection}];
 
-        options.db.collection("cityCoordinates").aggregate(pipeline).toArray(function(/** @type {Error | null} */ err, /** @type {CityCoordinate[]} */ cities) {
+        options.db.collection('cityCoordinates').aggregate(pipeline).toArray(function(/** @type {Error | null} */ err, /** @type {CityCoordinate[]} */ cities) {
             if (err) {
                 log.e(err);
             }
