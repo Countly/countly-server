@@ -5,9 +5,10 @@ import { Db } from "mongodb";
 
 export interface TaskManagerParams {
   app_id?: string;
-  qstring?: Record<string, any>;
+  qstring?: {[key: string]: any};
   fullPath?: string;
   member?: { _id: string };
+  app?: { _id: string; name?: string };
 }
 
 export interface TaskManagerOptions {
@@ -23,7 +24,7 @@ export interface TaskManagerOptions {
   type?: string;
   /** Any information about the task */
   meta?: string;
-  /** User friendly task running condition string */
+  /** User friendly task running condition string(Like, "Session (sc > 1024)" shows the report will filter by session count bigger than 1024) */
   name?: string;
   /** Name inputted by user create from report form */
   report_name?: string;
@@ -35,9 +36,9 @@ export interface TaskManagerOptions {
   view?: string;
   /** ID of the app for which data is meant for */
   app_id?: string;
-  /** Function to post process fetched data */
+  /** Function to which to feed fetched data to post process it if needed, should accept err, data and callback to which to feed processed data */
   processData?: (err: any, data: any, callback: (err: any, data: any) => void) => void;
-  /** Function to feed post processed data */
+  /** Function to which to feed post processed data, if task did not exceed threshold */
   outputData?: (err: any, data: any) => void;
   /** The task creator */
   creator?: string;
@@ -103,6 +104,12 @@ export interface TaskManagerOptions {
     sortBy?: string;
     sortSeq?: "desc" | "asc";
   };
+  /** Whether auto update is needed */
+  autoUpdate?: boolean;
+  /** If dirty is true then report should be regenerated fully */
+  dirty?: boolean | number;
+  /** Additional query to merge with the base query */
+  additionalQuery?: {[key: string]: any};
 }
 
 export interface TaskResult {
