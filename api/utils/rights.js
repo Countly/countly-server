@@ -2,6 +2,11 @@
 * Module for validation functions that manage access rights to application data. Divided in parts access for Global Admins, Admins and Users.
 * @module api/utils/rights
 */
+
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ */
+
 var common = require("./common.js"),
     plugins = require('../../plugins/pluginManager.js'),
     Promise = require("bluebird"),
@@ -16,7 +21,7 @@ var cachedSchema = {};
 //check token and return owner id if token valid
 //owner d used later to set all member variables.
 /**Validate if token exists and is not expired(uzing authorize.js)
-* @param {object} params  params
+* @param {Params} params  params
 * @param {string} params.qstring.auth_token  authentication token
 * @param {string}params.req.headers.countly-token {string} authentication token
 * @param {string} params.fullPath current full path
@@ -617,7 +622,7 @@ function loadAndCacheEventsData(apps, callback) {
 /**
 * Get events data
 * A helper function for db access check
-* @param {object} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {array} apps - array with each element being app document
 * @param {function} callback - callback method
 **/
@@ -692,7 +697,7 @@ exports.getCollectionName = function(hashValue) {
 
 /**
 * Check user has access to collection
-* @param {object} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} collection - collection will be checked for access
 * @param {string} app_id - app_id to which to restrict access
 * @param {function} callback - callback method includes boolean variable as argument  

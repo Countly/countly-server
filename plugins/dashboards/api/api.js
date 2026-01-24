@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js'),
@@ -1642,7 +1646,7 @@ var ejs = require("ejs");
 
     /**
      * Function to fetch widget meta
-     * @param  {object} params - params object
+     * @param  {Params} params - params object
      * @param  {Array} widgetIds - widget id array
      * @param  {Boolean} allProps - send all props or not
      * @param  {Function} callback - callback function
@@ -2223,7 +2227,7 @@ var ejs = require("ejs");
     /**
      * @param {String} app_id app id
      * @param {Object<Widget>[]} widgets Widgets
-     * @param {Object} params params object
+     * @param {Params} params params object
      */
     async function extractAndFetchDependencies(app_id, widgets, params) {
         let dependencies = [];
@@ -2302,7 +2306,7 @@ var ejs = require("ejs");
     /**
      * Validation before import
      * 
-     * @param {Object} params params object 
+     * @param {Params} params params object 
      * @param {Object} dashboard formula Object
      * @returns {Promise<Object>} validation result
     */
@@ -2320,7 +2324,7 @@ var ejs = require("ejs");
     /**
      * Insert Dashboard Objects
      * 
-     * @param {Object} params params object
+     * @param {Params} params params object
      * @param {Object} importData iomport data Object
      * @returns {Promise} promise array of all inserts
      */
@@ -2343,7 +2347,7 @@ var ejs = require("ejs");
     /**
      * Insert Widget Objects
      * 
-     * @param {Object} params params object
+     * @param {Params} params params object
      * @param {Object} importData iomport data Object
      * @returns {Promise} promise array of all inserts
      */

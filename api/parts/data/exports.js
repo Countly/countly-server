@@ -3,6 +3,10 @@
 * @module api/parts/data/exports
 */
 
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/parts/data/exports */
 var exports = {},
     common = require('./../../utils/common.js'),

@@ -1,9 +1,15 @@
+/**
+ * @typedef {import('../../../types/taskmanager').TaskManagerStatic} TaskManagerStatic
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 var common = require('../../../api/utils/common.js'),
     log = common.log('dbviewer:api'),
     async = require('async'),
     plugins = require('../../pluginManager.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
+    /** @type {TaskManagerStatic} */
     taskManager = require('../../../api/utils/taskmanager.js'),
     { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight, getBaseAppFilter } = require('../../../api/utils/rights.js'),
     exported = {};
@@ -1140,7 +1146,7 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
 
     /**
   * Function to fetch mongotop data
-  * @param  {Object} params - params object
+  * @param  {Params} params - params object
   */
     function fetchMongoTop(params) {
         var dbParams = plugins.getDbConnectionParams('countly');
@@ -1169,7 +1175,7 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
 
     /**
   * Function to fetch mongostat data
-  * @param  {Object} params - params object
+  * @param  {Params} params - params object
   */
     function fetchMongoStat(params) {
         var dbParams = plugins.getDbConnectionParams('countly');

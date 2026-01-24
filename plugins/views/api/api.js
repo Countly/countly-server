@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 var pluginOb = {},
     crypto = require('crypto'),
     Promise = require("bluebird"),
@@ -278,7 +282,7 @@ const FEATURE_NAME = 'views';
     }
     */
     /** function returns aggregation pipeline
-     * @param {object} params  -  params object(passed from request).
+     * @param {Params} params  -  params object(passed from request).
      * @param {string} params.qstring.app_id - app id
      * @param {string} params.qstring.period - period
      * @param {object} settings - settings for select
@@ -489,7 +493,7 @@ const FEATURE_NAME = 'views';
 
     /** function return calculated totals for given period. Used in table tata
      * @param {string} collectionName - collection name from where to select
-     * @param {object} params  -  params object(passed from request).
+     * @param {Params} params  -  params object(passed from request).
      * @param {string} params.qstring.app_id - app id
      * @param {string} params.qstring.period - period
      * @param {object} settings - settings for select
@@ -659,7 +663,7 @@ const FEATURE_NAME = 'views';
 
     /** 
     * Helper function which users calculatedDataManager to fetch unique values from drill data
-    * @param {object} params - request params
+    * @param {Params} params - request params
     * @param {object} data - information about views to update
     * @param {function} callback - callback function
     **/
@@ -1369,7 +1373,7 @@ const FEATURE_NAME = 'views';
     });
 
     /**
-     * @param  {Object} params - Default parameters object
+     * @param  {Params} params - Default parameters object
      * @returns {undefined} Returns nothing
      */
     async function getHeatmap(params) {
