@@ -9,6 +9,11 @@
  *
  */
 
+/**
+ * @typedef {import('../../../types/authorizer').Authorizer} Authorizer
+ */
+
+/** @type {Authorizer} */
 var authorize = require('./../../../api/utils/authorizer.js'); //for token validations
 var common = require('./../../../api/utils/common.js');
 var plugins = require('./../../../plugins/pluginManager.js');

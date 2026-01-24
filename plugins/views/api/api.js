@@ -1,5 +1,6 @@
 /**
  * @typedef {import('../../../types/requestProcessor').Params} Params
+ * @typedef {import('../../../types/authorizer').Authorizer} Authorizer
  */
 
 var pluginOb = {},
@@ -7,6 +8,7 @@ var pluginOb = {},
     Promise = require("bluebird"),
     common = require('../../../api/utils/common.js'),
     moment = require('moment-timezone'),
+    /** @type {Authorizer} */
     authorize = require('../../../api/utils/authorizer.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),

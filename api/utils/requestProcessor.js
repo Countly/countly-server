@@ -8,6 +8,7 @@
  * @typedef {import('../../types/common').TimeObject} TimeObject
  * @typedef {import('../../types/taskmanager').TaskManagerStatic} TaskManagerStatic
  * @typedef {import('../../types/geoData').GeoData} GeoData
+ * @typedef {import('../../types/authorizer').Authorizer} Authorizer
  */
 
 const Promise = require('bluebird');
@@ -15,6 +16,7 @@ const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
 const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter } = require('./rights.js');
+/** @type {Authorizer} */
 const authorize = require('./authorizer.js');
 /** @type {TaskManagerStatic} */
 const taskmanager = require('./taskmanager.js');

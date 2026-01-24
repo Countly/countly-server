@@ -1,6 +1,11 @@
 'use strict';
 
+/**
+ * @typedef {import('../../types/authorizer').Authorizer} Authorizer
+ */
+
 // const job = require('../parts/jobs/job.js'),
+/** @type {Authorizer} */
 const authorize = require('../utils/authorizer.js');
 const Job = require("../../jobServer/Job");
 

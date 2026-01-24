@@ -5,6 +5,7 @@
 
 /**
  * @typedef {import('../../types/requestProcessor').Params} Params
+ * @typedef {import('../../types/authorizer').Authorizer} Authorizer
  */
 
 var common = require("./common.js"),
@@ -13,6 +14,7 @@ var common = require("./common.js"),
     crypto = require('crypto'),
     log = require('./log.js')('core:rights');
 
+/** @type {Authorizer} */
 var authorize = require('./authorizer.js'); //for token validations
 
 var collectionMap = {};//map to know when data about som collections/events was refreshed

@@ -1,5 +1,6 @@
 /**
  * @typedef {import('../../../types/requestProcessor').Params} Params
+ * @typedef {import('../../../types/authorizer').Authorizer} Authorizer
  */
 
 var pluginOb = {},
@@ -22,6 +23,7 @@ catch (e) {
 
 var Promise = require("bluebird");
 
+/** @type {Authorizer} */
 var authorize = require('../../../api/utils/authorizer.js'); //for token
 
 const request = require('countly-request')(plugins.getConfig("security"));

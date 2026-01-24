@@ -1,5 +1,6 @@
 /**
  * @typedef {import('../../../types/requestProcessor').Params} Params
+ * @typedef {import('../../../types/authorizer').Authorizer} Authorizer
  */
 
 var pluginOb = {},
@@ -9,6 +10,7 @@ var pluginOb = {},
     path = require('path'),
     fs = require('fs'),
     log = common.log('dashboards:api'),
+    /** @type {Authorizer} */
     authorize = require('../../../api/utils/authorizer'),
     render = require('../../../api/utils/render'),
     versionInfo = require('../../../frontend/express/version.info'),
