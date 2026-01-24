@@ -14,14 +14,20 @@
 const should = require('should');
 const path = require('path');
 
-// Setup module mocking BEFORE requiring DictionaryManager
-const { createMockClickHouseClient } = require('./helpers/mockSetup');
+
+const { setupMocking, resetMocking, createMockClickHouseClient } = require('./helpers/mockSetup');
 
 // Direct require of DictionaryManager (after mocking is set up)
 const PLUGIN_ROOT = path.resolve(__dirname, '../..');
 const DictionaryManager = require(path.join(PLUGIN_ROOT, 'api/managers/DictionaryManager'));
 
 describe('DictionaryManager Unit Tests', function() {
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
     let mockClient;
     let dictManager;
 

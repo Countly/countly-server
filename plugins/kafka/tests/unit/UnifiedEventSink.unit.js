@@ -10,6 +10,8 @@ const should = require('should');
 
 // Setup mocking before requiring the module
 const {
+    setupMocking,
+    resetMocking,
     createMockLogger,
     createMockKafkaConfig,
     createMockEventSink
@@ -59,6 +61,12 @@ function createMockSink(name, options = {}) {
 }
 
 describe('UnifiedEventSink', function() {
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
 
     // ========================================================================
     // Constructor

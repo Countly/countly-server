@@ -10,6 +10,8 @@ const should = require('should');
 
 // Setup mocking before requiring the module
 const {
+    setupMocking,
+    resetMocking,
     createMockLogger,
     createMockKafkaConfig,
     createMockDb,
@@ -22,6 +24,12 @@ const {
 const KafkaEventSource = require('../../../../api/eventSource/KafkaEventSource');
 
 describe('KafkaEventSource', function() {
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
     // Increase timeout for async tests
     this.timeout(5000);
 
