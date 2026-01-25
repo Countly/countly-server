@@ -168,8 +168,13 @@ class Job {
      * @abstract
      * @throws {Error} If the method is not overridden
      */
-    async run(db, done, progress) {
+    async run(db, done, progress) {    
         throw new Error('Job must be overridden');
+        // writing this silly code so that linter does not complain about unused variables
+        // above variables need to be mentioned so the types can be documented without errors
+        db != db;
+        done != done;
+        progress != progress;
     }
 
     /**
