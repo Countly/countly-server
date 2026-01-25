@@ -713,7 +713,7 @@
         /**
         * Extract range data from standard countly metric data model
         * @memberof countlyCommon
-        * @param {object} db - countly standard metric data object
+        * @param {Database} db - countly standard metric data object
         * @param {string} propertyName - name of the property to extract
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
         * @param {function} explainRange - function to convert range/bucket index to meaningful label
@@ -809,7 +809,7 @@
         /**
         * Extract single level data without metrics/segments, like total user data from users collection
         * @memberof countlyCommon
-        * @param {object} db - countly standard metric data object
+        * @param {Database} db - countly standard metric data object
         * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {object} chartData - prefill chart data with labels, colors, etc
         * @param {object} dataProperties - describing which properties and how to extract
@@ -1039,7 +1039,7 @@
         /**
         * Extract two level data with metrics/segments, like total user data from carriers collection
         * @memberof countlyCommon
-        * @param {object} db - countly standard metric data object
+        * @param {Database} db - countly standard metric data object
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
         * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {object} dataProperties - describing which properties and how to extract
@@ -1318,7 +1318,7 @@
         /**
         * Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
         * @memberof countlyCommon
-        * @param {object} db - countly standard metric data object
+        * @param {Database} db - countly standard metric data object
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
         * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
@@ -1352,7 +1352,7 @@
         /**
         * Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
         * @memberof countlyCommon
-        * @param {object} db - countly standard metric data object
+        * @param {Database} db - countly standard metric data object
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
         * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}

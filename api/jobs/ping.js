@@ -1,5 +1,9 @@
 'use strict';
 
+/**
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
 const plugins = require('../../plugins/pluginManager.js');
 const tracker = require('../parts/mgmt/tracker.js');
 const Job = require("../../jobServer/Job");
@@ -21,7 +25,7 @@ class PingJob extends Job {
 
     /**
      * Run the ping job
-     * @param {Db} db connection
+     * @param {Database} db connection
      * @param {done} done callback
      */
     run(db, done) {

@@ -8,6 +8,10 @@ const fs = require('fs').promises;
 const JobUtils = require('./JobUtils');
 
 /**
+ * @typedef {import('../types/pluginManager').Database} Database
+ */
+
+/**
  * @typedef {Object} JobConfig
  * @property {string} category - Category of the job (e.g., 'api' or plugin name)
  * @property {string} dir - Directory path containing job files
@@ -79,7 +83,7 @@ class JobScanner {
 
     /**
      * Creates a new JobScanner instance
-     * @param {Object} db - Database connection object
+     * @param {Database} db - Database connection object
      * @param {function} Logger - Logging function
      * @param {pluginManager} pluginManager - Plugin manager instance
      */

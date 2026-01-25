@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
 const job = require("../../jobServer");
 
 /**
@@ -20,7 +24,7 @@ class SimpleExample extends job.Job {
     /**
      * Main job execution method.
      * @required
-     * @param {Db} db Database connection
+     * @param {Database} db Database connection
      * @param {Function} done Callback to signal job completion
      * @param {Function} progress Progress reporting function
      */

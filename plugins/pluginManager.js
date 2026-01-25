@@ -1,3 +1,8 @@
+/**
+ * @typedef {import('mongodb').Db} Db
+ * @typedef {import('../types/pluginManager').Database} Database
+ */
+
 var pluginDependencies = require('./pluginDependencies.js'),
     path = require('path'),
     plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
@@ -270,7 +275,7 @@ var pluginManager = function pluginManager() {
     };
     /**
     * Load configurations from database
-    * @param {object} db - database connection for countly db
+    * @param {Database} db - database connection for countly db
     * @param {function} callback - function to call when configs loaded
     * @param {boolean} api - was the call made from api process
     **/
@@ -567,7 +572,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Check if there are changes in configs ans store the changes
-    * @param {object} db - database connection for countly db
+    * @param {Database} db - database connection for countly db
     * @param {object} current - current configs we have
     * @param {object} provided - provided configs
     * @param {function} callback - function to call when checking finished
@@ -595,7 +600,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Update existing configs, when syncing between servers
-    * @param {object} db - database connection for countly db
+    * @param {Database} db - database connection for countly db
     * @param {string} namespace - namespace of configuration, usually plugin name
     * @param {object} conf - provided config
     * @param {function} callback - function to call when updating finished
@@ -622,7 +627,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Update existing application level configuration
-    * @param {object} db -database connection for countly db
+    * @param {Database} db -database connection for countly db
     * @param {string} appId - id of application
     * @param {string} namespace - name of plugin
     * @param {object} config  - new configuration object for selected plugin 
@@ -673,7 +678,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Update all configs with provided changes
-    * @param {object} db - database connection for countly db
+    * @param {Database} db - database connection for countly db
     * @param {object} changes - provided changes
     * @param {function} callback - function to call when updating finished
     **/
@@ -712,7 +717,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Update user configs with provided changes
-    * @param {object} db - database connection for countly db
+    * @param {Database} db - database connection for countly db
     * @param {object} changes - provided changes
     * @param {string} user_id - user for which to update settings
     * @param {function} callback - function to call when updating finished
@@ -1305,7 +1310,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * We check plugins and sync configuration
-    * @param {object} db - connection to countly database
+    * @param {Database} db - connection to countly database
     * @param {function} callback - when finished checking and syncing
     **/
     this.checkPlugins = function(db, callback) {
@@ -1351,7 +1356,7 @@ var pluginManager = function pluginManager() {
     * Sync plugin states between server
     * @param {object} pluginState - object with plugin names as keys and true/false values to indicate if plugin is enabled or disabled
     * @param {function} callback - when finished checking and syncing
-    * @param {object} db - connection to countly database
+    * @param {Database} db - connection to countly database
     **/
     this.syncPlugins = function(pluginState, callback, db) {
         var self = this;
@@ -1709,7 +1714,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Get single pool connection for database
-    * @returns {object} db connection
+    * @returns {Database} db connection
     **/
     this.singleDefaultConnection = function() {
         if (typeof countlyConfig.mongodb === "string") {
@@ -1936,9 +1941,9 @@ var pluginManager = function pluginManager() {
 
     /**
     * Get database connection with configured pool size
-    * @param {object} config - connection configs
+    * @param {object|string|string[]} config - connection configs
     * @param {boolean} return_original - return original driver connection object(database is not wrapped)
-    * @returns {object} db connection params
+    * @returns {Promise<mongodb.Db|mongodb.Db[]>} db connection instance or array of instances
     **/
     this.dbConnection = async function(config, return_original) {
         var db, maxPoolSize = 100;
@@ -2335,7 +2340,7 @@ var pluginManager = function pluginManager() {
      *  @param {string} dbName - database name
      *  @param {string} dbConnectionString - database connection string
      *  @param {Object} dbOptions - database connection options
-     *  @returns {Db} wrapped database connection
+     *  @returns {Database} wrapped database connection
      */
     this.wrapDatabase = function(countlyDb, client, dbName, dbConnectionString, dbOptions) {
         if (countlyDb._wrapped) {

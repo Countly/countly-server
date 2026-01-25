@@ -3,7 +3,7 @@ import { Db } from "mongodb";
 /** TTL Collection configuration */
 export interface TTLCollection {
     collection: string;
-    db: Db;
+    db: Database;
     property: string;
     expireAfterSeconds: number;
 }

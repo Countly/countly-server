@@ -1,7 +1,7 @@
 // Type definitions for Countly Task Manager
 // Generated from /api/utils/taskmanager.js
 
-import { Db } from "mongodb";
+import { Database } from "../plugins/pluginManager";
 
 export interface TaskManagerParams {
   app_id?: string;
@@ -13,7 +13,7 @@ export interface TaskManagerParams {
 
 export interface TaskManagerOptions {
   /** Database connection */
-  db?: Db;
+  db?: Database;
   /** Parameters object */
   params?: TaskManagerParams;
   /** Amount of seconds to wait before switching to long running task */

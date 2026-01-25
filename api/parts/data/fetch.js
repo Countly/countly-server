@@ -4,6 +4,7 @@
 */
 
 /**
+ * @typedef {import('../../../types/pluginManager').Database} Database
  * @typedef {import('../../../types/requestProcessor').Params} Params
  */
 
@@ -619,7 +620,7 @@ fetch.fetchAllApps = function(params) {
 
         /**
         * Extract chart data from document object
-        * @param {object} db - document object from db
+        * @param {Database} db - document object from db
         * @param {object} props - property object with name and func
         * @returns {object} extracted chart data
         **/

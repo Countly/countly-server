@@ -1,5 +1,6 @@
 /**
  * @typedef {import('../../../../types/requestProcessor').Params} Params
+ * @typedef {import('../../../../types/pluginManager').Database} Database
  */
 
 const moment = require("moment");
@@ -138,7 +139,7 @@ function increaseDataPoints(object, data) {
 
 /**
  * punchCard function
- * @param {db} db - database object
+ * @param {Database} db - database object
  * @param {Object} filter - MongoDB query
  * @param {Object} options - Date object
  * @return {Promise<Array>} - dataPoints
@@ -225,7 +226,7 @@ function punchCard(db, filter, options) {
 }
 /**
  *  Get's datapoint data from database and outputs it to browser
- *  @param {db} db - database object
+ *  @param {Database} db - database object
  *  @param {object} filter - to filter documents
  *  @param {object} options - array with periods
  *  @param {boolean} options.monthlyBreakdown - if true, will calculate monthly data points breakdown for all apps (used to get license metric)
@@ -394,7 +395,7 @@ function fetchDatapoints(db, filter, options, callback) {
 
 /**
  *  Get top apps DP for current hour
- *  @param {db} db - DB object
+ *  @param {Database} db - DB object
  *  @param {Params} params - params object
  *  @param {function} callback - callback
  */

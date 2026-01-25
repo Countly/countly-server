@@ -4,11 +4,15 @@ var plugins = require("../../../plugins/pluginManager.js");
 var {fetchDataForAggregator} = require("../queries/aggregator.js");
 
 /**
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
+/**
  * Class to read/aggregate data in batches from mongodb and pass for processing.
  */
 class DataBatchReader {
     /** 
-    * @param {Object} db - Database object
+    * @param {Database} db - Database object
     * @param {Object} options - Options object
     * @param {function} onData - Finction to call when getting new data from stream
     */

@@ -3,6 +3,10 @@
 * @module "api/parts/data/stats"
 */
 
+/**
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
 /** @lends module:api/parts/data/stats */
 var stats = {},
     async = require('async'),
@@ -12,7 +16,7 @@ var stats = {},
 var countlyDb;
 /**
 * Get overal server data
-* @param {object} db - database connection
+* @param {Database} db - database connection
 * @param {function} callback - function to call when done
 **/
 stats.getOverall = function(db, callback) {
@@ -39,7 +43,7 @@ stats.getOverall = function(db, callback) {
 
 /**
 * Get minimal server data
-* @param {object} db - database connection
+* @param {Database} db - database connection
 * @param {function} callback - function to call when done
 **/
 stats.getServer = function(db, callback) {
@@ -57,7 +61,7 @@ stats.getServer = function(db, callback) {
 
 /**
 * Get overal user data
-* @param {object} db - database connection
+* @param {Database} db - database connection
 * @param {object} user - members document from db
 * @param {function} callback - function to call when done
 **/

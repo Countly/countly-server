@@ -7,6 +7,10 @@ const pluginManager = require('../../../pluginManager.js');
 const serverStats = require('../parts/stats.js');
 const moment = require('moment-timezone');
 
+/**
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
 let drill;
 try {
     drill = require('../../../drill/api/parts/data/drill.js');
@@ -138,7 +142,7 @@ class StatsJob extends Job {
 
     /**
     * Returns a human readable name given application id.
-    * @param {Object} db - Database object, used for querying
+    * @param {Database} db - Database object, used for querying
     * @param {function} done - Completion callback
     * @returns {undefined} Returns nothing, only callback
     **/

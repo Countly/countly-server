@@ -2,6 +2,7 @@
 
 /**
  * @typedef {import('../../types/authorizer').Authorizer} Authorizer
+ * @typedef {import('../../types/pluginManager').Database} Database
  */
 
 // const job = require('../parts/jobs/job.js'),
@@ -25,7 +26,7 @@ class CleanTokensJob extends Job {
 
     /**
      * Run the job
-     * @param {Db} db connection
+     * @param {Database} db connection
      * @param {done} done callback
      */
     run(db, done) {

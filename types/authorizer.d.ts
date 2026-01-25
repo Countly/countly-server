@@ -1,4 +1,4 @@
-import { Db } from 'mongodb';
+import { Database } from '../plugins/pluginManager';
 
 /**
  * Endpoint configuration with params
@@ -28,7 +28,7 @@ export interface AuthToken {
  */
 export interface VerifyTokenOptions {
     /** Database connection */
-    db?: Db;
+    db?: Database;
     /** Token to validate */
     token: string;
     /** params.qstring. If not passed and there is limitation for this token on params - token will not be valid */
@@ -44,7 +44,7 @@ export interface VerifyTokenOptions {
  */
 export interface SaveOptions {
     /** Database connection */
-    db?: Db;
+    db?: Database;
     /** Amount of seconds for token to work, 0 works indefinitely */
     ttl?: number;
     /** If true, can be used many times until expired */
@@ -72,7 +72,7 @@ export interface SaveOptions {
  */
 export interface ReadOptions {
     /** Database connection */
-    db?: Db;
+    db?: Database;
     /** Token to read */
     token: string;
     /** Function called when reading was completed or errored */
@@ -84,7 +84,7 @@ export interface ReadOptions {
  */
 export interface ClearExpiredTokensOptions {
     /** Database connection */
-    db: Db;
+    db: Database;
 }
 
 /**
@@ -92,7 +92,7 @@ export interface ClearExpiredTokensOptions {
  */
 export interface CheckIfExpiredOptions {
     /** Database connection */
-    db?: Db;
+    db?: Database;
     /** Token to validate */
     token: string;
     /** Function called when reading was completed or errored */
@@ -104,7 +104,7 @@ export interface CheckIfExpiredOptions {
  */
 export interface ExtendTokenOptions {
     /** Database connection */
-    db?: Db;
+    db?: Database;
     /** Token to extend */
     token: string;
     /** Extend token by given time (in ms)(optional) You have to provide extedBy or extendTill. extendBy==0 makes it never die */
@@ -120,7 +120,7 @@ export interface ExtendTokenOptions {
  */
 export interface VerifyOptions {
     /** Database connection */
-    db?: Db;
+    db?: Database;
     /** Token to verify */
     token: string;
     /** params.qstring. If not passed and there is limitation for this token on params - token will not be valid */
@@ -136,7 +136,7 @@ export interface VerifyOptions {
  */
 export interface VerifyReturnOptions {
     /** Database connection */
-    db?: Db;
+    db?: Database;
     /** Token to verify */
     token: string;
     /** params.qstring. If not passed and there is limitation for this token on params - token will not be valid */
@@ -154,7 +154,7 @@ export interface VerifyReturnOptions {
  */
 export interface CleanOptions {
     /** Database connection */
-    db?: Db;
+    db?: Database;
     /** Function called when cleaning completed */
     callback?: (error: Error | null, result: any) => void;
 }

@@ -2,6 +2,10 @@ const Logger = require('../api/utils/log.js');
 const { JOB_PRIORITIES } = require('./constants/JobPriorities');
 
 /**
+ * @typedef {import('../types/pluginManager').Database} Database
+ */
+
+/**
  * @typedef {Object} Logger
  * @property {Function} d - Debug logging function
  * @property {Function} w - Warning logging function
@@ -133,7 +137,7 @@ class Job {
     /**
      * Runs the job. This method must be implemented by the child class.
      * 
-     * @param {Db} db The database connection
+     * @param {Database} db The database connection
      * @param {Function} done Callback function to be called when the job is complete
      *                       Call with error as first parameter if job fails
      *                       Call with null and optional result as second parameter if job succeeds
@@ -164,7 +168,7 @@ class Job {
      * @abstract
      * @throws {Error} If the method is not overridden
      */
-    async run(/*db, done, progress*/) {
+    async run(db, done, progress) {
         throw new Error('Job must be overridden');
     }
 
