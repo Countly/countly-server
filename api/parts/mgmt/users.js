@@ -3,6 +3,10 @@
 * @module api/parts/mgmt/users
 */
 
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/parts/mgmt/users */
 var usersApi = {},
     common = require('./../../utils/common.js'),
@@ -365,7 +369,7 @@ usersApi.updateHomeSettings = function(params) {
 
 /**
  * Checks the permission dependencies of features for each app based on the enabled features, enabling the required permission dependencies if necessary.
- * @param {object} params - params object.
+ * @param {Params} params - params object.
 */
 async function depCheck(params) {
     var features = ["core", "events" /* , "global_configurations", "global_applications", "global_users", "global_jobs", "global_upload" */];

@@ -65,6 +65,7 @@ var versionInfo = require('./version.info'),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app'),
     url = require('url'),
+    /** @type {import('../../types/authorizer').Authorizer} */
     authorize = require('../../api/utils/authorizer.js'), //for token validations
     languages = require('../../frontend/express/locale.conf'),
     rateLimit = require("express-rate-limit"),

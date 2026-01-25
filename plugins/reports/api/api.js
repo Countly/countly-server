@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 var common = require('../../../api/utils/common.js'),
     reports = require("./reports"),
     async = require('async'),
@@ -580,7 +584,7 @@ const FEATURE_NAME = 'reports';
 
     /**
      * validation function for verifing user have permission to access infomation or not for core type of report
-     * @param {object} params - request params object
+     * @param {Params} params - request params object
      * @param {object} props  - report related props
      * @param {func} cb - callback function
      * @return {func} cb - callback function
@@ -604,7 +608,7 @@ const FEATURE_NAME = 'reports';
 
     /**
      * validation function for verifing user have permission to access infomation or not for not core type of report
-     * @param {object} params - request params object
+     * @param {Params} params - request params object
      * @param {object} props  - report related props
      * @param {func} cb - callback function
      

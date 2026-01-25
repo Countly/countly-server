@@ -3,6 +3,10 @@
 * @module api/parts/mgmt/date_presets
 */
 
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/parts/mgmt/date_presets */
 var presetsApi = {},
     common = require('../../utils/common.js');

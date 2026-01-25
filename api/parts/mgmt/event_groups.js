@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 const common = require('./../../utils/common.js');
 
 const crypto = require('crypto');
@@ -8,7 +12,7 @@ const ID_PREFIX = "[CLY]_group_";
 
 /**
  * Event Groups CRUD - The function creating to make a new event groups data.
- * @param {Object} params - params
+ * @param {Params} params - params
  * @returns {Object} - 
  */
 const create = (params) => {
@@ -62,7 +66,7 @@ const create = (params) => {
 
 /**
  * Event Groups CRUD - The function updating which created `Event Groups` data by `_id`
- * @param {Object} params - params object containing the query string and other parameters
+ * @param {Params} params - params object containing the query string and other parameters
  * @returns {Boolean} 
  * This function updates the event groups based on the provided parameters.
  * It handles different update scenarios:
@@ -163,7 +167,7 @@ const update = (params) => {
 
 /**
  * Event Groups CRUD - The function deleting which created `Event Groups` data by `_id`
- * @param {Object} params - 
+ * @param {Params} params - 
  */
 const remove = async(params) => {
     if (!params.qstring.args) {

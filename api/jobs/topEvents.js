@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ */
+
 // const job = require("../parts/jobs/job.js");
 const Job = require("../../jobServer/Job");
 const crypto = require("crypto");
@@ -37,7 +41,7 @@ class TopEventsJob extends Job {
 
     /**
      *
-     * @param {object} params  - params object
+     * @param {Params} params  - params object
      * @param {object} data  - object where to collect data
      * @param {boolean} previous  - if fetching for previous period
      * @returns {Promise} promise

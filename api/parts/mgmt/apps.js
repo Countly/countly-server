@@ -3,6 +3,11 @@
 * @module api/parts/mgmt/apps
 */
 
+/**
+ * @typedef {import('../../../types/taskmanager').TaskManagerStatic} TaskManagerStatic
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/parts/mgmt/apps */
 var appsApi = {},
     common = require('./../../utils/common.js'),
@@ -14,6 +19,7 @@ var appsApi = {},
     fs = require('fs'),
     { hasUpdateRight, hasDeleteRight, getUserApps, getAdminApps } = require('./../../utils/rights.js'),
     countlyFs = require('./../../utils/countlyFs.js');
+/** @type {TaskManagerStatic} */
 const taskmanager = require('./../../utils/taskmanager.js');
 const {timezoneValidation} = require('../../utils/timezones.js');
 const FEATURE_NAME = 'global_applications';

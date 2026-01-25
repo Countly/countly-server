@@ -3,12 +3,17 @@
 * @module api/parts/mgmt/mail
 */
 
+/**
+ * @typedef {import('../../../types/authorizer').Authorizer} Authorizer
+ */
+
 /** @lends module:api/parts/mgmt/mail */
 var mail = {},
     nodemailer = require('nodemailer'),
     localize = require('../../utils/localization.js'),
     plugins = require('../../../plugins/pluginManager.js'),
     versionInfo = require('../../../frontend/express/version.info'),
+    /** @type {Authorizer} */
     authorize = require('../../utils/authorizer'),
     config = require('../../config'),
     log = require('../../utils/log.js')('mail'),

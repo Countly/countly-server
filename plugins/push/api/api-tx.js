@@ -2,6 +2,7 @@
  * @typedef {import("./new/types/schedule").AudienceFilter} AudienceFilter
  * @typedef {import("./new/types/message").Message} Message
  * @typedef {import("mongodb").Collection<Message>} MessageCollection
+ * @typedef {import('../../../types/requestProcessor').Params} Params
  */
 
 const { Filter, Content, ValidationError } = require("./send"),
@@ -13,7 +14,7 @@ const { createSchedule } = require("./new/scheduler");
 /**
  * Add notification to API message
  *
- * @param {object} params params object
+ * @param {Params} params params object
  *
  * @api {POST} i/push/message/push Message / API / add users
  * @apiName message push

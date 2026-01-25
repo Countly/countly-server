@@ -3,6 +3,10 @@
 * @module "api/parts/data/events"
 */
 
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/parts/data/events */
 var countlyEvents = {},
     common = require('./../../utils/common.js'),

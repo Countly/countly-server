@@ -6,6 +6,7 @@
  * @typedef {import("mongodb").Db} Db
  * @typedef {import("http").IncomingHttpHeaders} IncomingHttpHeaders
  * @typedef {{ url: string; status?: number; headers: IncomingHttpHeaders; }} MimeInfo
+ * @typedef {import('../../../types/requestProcessor').Params} Params
  */
 const { Message, Result, Creds, Status, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info } = require('./send'),
     crypto = require("crypto"),
@@ -184,7 +185,7 @@ async function validate(args, draft = false) {
 /**
  * Send push notification to test users specified in application plugin configuration
  *
- * @param {object} params params object
+ * @param {Params} params params object
  *
  * @api {POST} i/push/message/test Message / test
  * @apiName message test
@@ -255,7 +256,7 @@ module.exports.test = async params => {
 /**
  * Create push notification
  *
- * @param {object} params params object
+ * @param {Params} params params object
  *
  * @api {POST} i/push/message/create Message / create
  * @apiName message create
@@ -319,7 +320,7 @@ module.exports.create = async params => {
 /**
  * Update push notification
  *
- * @param {object} params params object
+ * @param {Params} params params object
  *
  * @api {POST} i/push/message/update Message / update
  * @apiName message update
@@ -379,7 +380,7 @@ module.exports.update = async params => {
 /**
  * Remove push notification
  *
- * @param {object} params params object
+ * @param {Params} params params object
  *
  * @api {POST} i/push/message/remove Message / remove
  * @apiName message remove
@@ -435,7 +436,7 @@ module.exports.remove = async params => {
 /**
  * Toggle automated message
  *
- * @param {object} params params object
+ * @param {Params} params params object
  *
  * @api {POST} i/push/message/toggle Message / API or Automated / toggle
  * @apiName message toggle
@@ -533,7 +534,7 @@ module.exports.toggle = async params => {
 /**
  * Estimate message audience
  *
- * @param {object} params params object
+ * @param {Params} params params object
  *
  * @api {POST} o/push/message/estimate Message / estimate audience
  * @apiName message estimate
@@ -632,7 +633,7 @@ module.exports.estimate = async params => {
 /**
  * Get mime information of media URL
  *
- * @param {object} params params object
+ * @param {Params} params params object
  *
  * @api {GET} o/push/message/mime Message / attachment MIME
  * @apiName message mime
@@ -699,7 +700,7 @@ module.exports.mime = async params => {
 /**
  * Get one message
  *
- * @param {object} params params object
+ * @param {Params} params params object
  *
  * @api {GET} o/push/message/GET Message / GET
  * @apiName message
@@ -759,7 +760,7 @@ module.exports.one = async params => {
 
 /**
  * Get periodic message stats
- * @param {object} params params object
+ * @param {Params} params params object
  *
  * @api {GET} o/push/message/stats Get periodic message stats
  * @apiName message-stats
@@ -868,7 +869,7 @@ module.exports.periodicStats = async params => {
 /**
  * Get notifications sent to a particular user
  *
- * @param {object} params params
+ * @param {Params} params params
  * @returns {Promise} resolves to true
  *
  * @api {GET} o/push/user User notifications
@@ -952,7 +953,7 @@ module.exports.user = async params => {
 /**
  * Get messages
  *
- * @param {object} params params
+ * @param {Params} params params
  * @returns {Promise} resolves to true
  *
  * @api {GET} o/push/message/all Message / find

@@ -476,7 +476,7 @@ plugins.register("/permissions/features", function(ob) {
 
     /**
      * Function to get all remote configs
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @returns {String} response
      */
     function getSDKConfig(params) {
@@ -493,7 +493,7 @@ plugins.register("/permissions/features", function(ob) {
 
     /**
      * Function to get enforcement info for the given app
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @returns {Promise} response
      */
     function getEnforcement(params) {

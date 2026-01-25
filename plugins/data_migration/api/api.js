@@ -1,3 +1,8 @@
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ * @typedef {import('../../../types/authorizer').Authorizer} Authorizer
+ */
+
 var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     log = common.log('datamigration:api'),
@@ -18,6 +23,7 @@ catch (e) {
 
 var Promise = require("bluebird");
 
+/** @type {Authorizer} */
 var authorize = require('../../../api/utils/authorizer.js'); //for token
 
 const request = require('countly-request')(plugins.getConfig("security"));
@@ -62,7 +68,7 @@ function update_progress(my_exportid, step, status, dif, reason, reset_progress,
 /**
 *Function applies redirect to apps
 * @param {array} apps  - array of app id
-* @param {object} params  - request params
+* @param {Params} params  - request params
 * @param {string} my_redirect_url  -  url to redirect to
 * @param {string} userid  -  user id
 * @param {string} email  -  user email

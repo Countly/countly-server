@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../types/requestProcessor').Params} Params
+ */
+
 const net = require('net');
 const countlyConfig = require('./config', 'dont-enclose');
 const plugins = require('../plugins/pluginManager.js');

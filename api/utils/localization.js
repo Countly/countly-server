@@ -10,15 +10,15 @@ var fs = require('fs'),
     common = require('./common');
 
 var dir = path.resolve(__dirname, '../../frontend/express/public/localization/min');
-var file = "locale";
-var default_lang = "en";
+var file = 'locale';
+var default_lang = 'en';
 /** @type {Record<string, string>} */
 var orig = {};
 /** @type {Record<string, Record<string, string>>} */
 var localized = {};
 
 try {
-    var data = fs.readFileSync(dir + '/' + file + '.properties', "utf8");
+    var data = fs.readFileSync(dir + '/' + file + '.properties', 'utf8');
     orig = parser.parse(data);
 }
 catch (ex) {
@@ -38,7 +38,7 @@ var locale = {
             }
 
             for (var i = 0; i < list.length; i++) {
-                re = new RegExp('\\{' + i + '\\}', "g");
+                re = new RegExp('\\{' + i + '\\}', 'g');
                 value = value.replace(re, list[i]);
             }
             return value;
@@ -51,7 +51,7 @@ var locale = {
 
     getProperty: function(lang, name, callback) {
         if (lang === default_lang) {
-            callback(null, orig[name] || "[" + name + "]");
+            callback(null, orig[name] || '[' + name + ']');
         }
         else if (!localized[lang]) {
             localized[lang] = JSON.parse(JSON.stringify(orig));
@@ -62,11 +62,11 @@ var locale = {
                         localized[lang][i] = local_properties[i];
                     }
                 }
-                callback(null, localized[lang][name] || "[" + name + "]");
+                callback(null, localized[lang][name] || '[' + name + ']');
             });
         }
         else {
-            callback(null, localized[lang][name] || "[" + name + "]");
+            callback(null, localized[lang][name] || '[' + name + ']');
         }
     },
 

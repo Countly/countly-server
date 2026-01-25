@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 var exported = {},
     requestProcessor = require('../../../api/utils/requestProcessor'),
     common = require('../../../api/utils/common.js'),
@@ -1601,7 +1605,7 @@ function uploadFile(myfile, id, callback) {
     /**
      * Validation before import
      * 
-     * @param {Object} params params object 
+     * @param {Params} params params object 
      * @param {Object} widget feedback widget Object
      * @returns {Promise<Object>} validation result
     */
@@ -1619,7 +1623,7 @@ function uploadFile(myfile, id, callback) {
     /**
      * Insert Feedback Objects
      * 
-     * @param {Object} params params object
+     * @param {Params} params params object
      * @param {Object} importData iomport data Object - MUTABLE
      * @returns {Promise} promise array of all inserts
      */
@@ -1755,7 +1759,7 @@ function uploadFile(myfile, id, callback) {
     if (cohortsEnabled) {
         /**
         * Create Cohort with passed arguments
-        * @param {object} params - params
+        * @param {Params} params - params
         * @param {string} type - type
         * @param {object} id - id
         * @param {object} newAtt - newAtt

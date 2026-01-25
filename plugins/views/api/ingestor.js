@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),

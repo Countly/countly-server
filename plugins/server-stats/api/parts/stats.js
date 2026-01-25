@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../../types/requestProcessor').Params} Params
+ */
+
 const moment = require("moment");
 
 const internalEventsEnum =
@@ -391,7 +395,7 @@ function fetchDatapoints(db, filter, options, callback) {
 /**
  *  Get top apps DP for current hour
  *  @param {db} db - DB object
- *  @param {object} params - params object
+ *  @param {Params} params - params object
  *  @param {function} callback - callback
  */
 function getTop(db, params, callback) {

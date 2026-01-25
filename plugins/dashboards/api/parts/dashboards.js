@@ -2,6 +2,12 @@
 * Fetching and processing data for custom dashboard widgets
 * @module api/parts/data/dashboard
 */
+
+/**
+ * @typedef {import('../../../../types/taskmanager').TaskManagerStatic} TaskManagerStatic
+ * @typedef {import('../../../../types/requestProcessor').Params} Params
+ */
+
 var countlyModel = require("../../../../api/lib/countly.model.js"),
     async = require('async'),
     crypto = require('crypto'),
@@ -11,6 +17,7 @@ var countlyModel = require("../../../../api/lib/countly.model.js"),
     log = common.log('dashboards:api'),
     plugins = require("../../../pluginManager.js");
 
+/** @type {TaskManagerStatic} */
 const taskmanager = require('../../../../api/utils/taskmanager.js');
 
 /** @lends module:api/parts/data/dashboard */
@@ -633,7 +640,7 @@ dashboard.fetchNoteData = async function(params, apps, widget) {
 
 /**
  * Remove deleted records from widgets
- * @param {object} params params object
+ * @param {Params} params params object
  * @param {object} matchOperator match operator for aggregation
  * @param {object} db database object - if coming from script
  * @returns {boolean} true if success
@@ -736,7 +743,7 @@ plugins.register("/dashboard/clean-deleted-widgets", async function(ob) {
 
 /**
  * Function to fetch technology analytics data for app
- * @param  {Object} params - params object
+ * @param  {Params} params - params object
  * @param  {Object} apps - all apps object
  * @param  {String} appId - app id
  * @param  {Object} widget - widget object
@@ -801,7 +808,7 @@ async function getAnalyticsTechnologyDataForApp(params, apps, appId, widget) {
 
 /**
  * Function to fetch sessions analytics data for app
- * @param  {Object} params - params object
+ * @param  {Params} params - params object
  * @param  {Object} apps - all apps object
  * @param  {String} appId - app id
  * @param  {Object} widget - widget object
@@ -942,7 +949,7 @@ async function getEventsNames(widget) {
 
 /**
  * Function to fetch events data for app
- * @param  {Object} params - params object
+ * @param  {Params} params - params object
  * @param  {Object} apps - all apps object
  * @param  {String} appId - app id
  * @param  {Object} widget - widget object
@@ -1004,7 +1011,7 @@ async function getEventsDataForApp(params, apps, appId, widget) {
 
 /**
  * Function to fetch push data for app
- * @param  {Object} params - params object
+ * @param  {Params} params - params object
  * @param  {Object} apps - all apps object
  * @param  {String} appId - app id
  * @param  {Object} widget - widget object
@@ -1071,7 +1078,7 @@ async function getPushDataForApp(params, apps, appId, widget) {
 
 /**
  * Function to fetch crash data for app
- * @param  {Object} params - params object
+ * @param  {Params} params - params object
  * @param  {Object} apps - all apps object
  * @param  {String} appId - app id
  * @param  {Object} widget - widget object
@@ -1110,7 +1117,7 @@ async function getCrashDataForApp(params, apps, appId, widget) {
 
 /**
  * Function to get analytics session data type model
- * @param  {Object} params - params object
+ * @param  {Params} params - params object
  * @param  {Object} apps - all apps object
  * @param  {String} appId - app id
  * @param  {String} collection - collection name
@@ -1181,7 +1188,7 @@ function getSessionModel(params, apps, appId, collection, segment, widget) {
 
 /**
  * Function to get events model
- * @param  {Object} params - params object
+ * @param  {Params} params - params object
  * @param  {Object} apps - all apps object
  * @param  {String} appId - app id
  * @param  {String} collection - collection name
@@ -1236,7 +1243,7 @@ function getEventsModel(params, apps, appId, collection, segment, event, widget)
 
 /**
  * Fetch segmented event data from Drill for events widget
- * @param {Object} params - request params
+ * @param {Params} params - request params
  * @param {Object} apps - apps map
  * @param {string} appId - application id
  * @param {string} event - event key
@@ -1300,7 +1307,7 @@ async function fetchSegmentedEventDataForWidget(params, apps, appId, event, segm
 
 /**
  * Function to get push model
- * @param  {Object} params - params object
+ * @param  {Params} params - params object
  * @param  {Object} apps - all apps object
  * @param  {String} appId - app id
  * @param  {String} collection - collection name
@@ -1335,7 +1342,7 @@ function getPushModel(params, apps, appId, collection, segment, widget) {
 
 /**
  * Function to get crash model
- * @param  {Object} params - params object
+ * @param  {Params} params - params object
  * @param  {Object} apps - all apps object
  * @param  {String} appId - app id
  * @param  {String} collection - collection name

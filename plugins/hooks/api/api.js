@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 const Triggers = require('./parts/triggers/index.js');
 const Effects = require('./parts/effects/index.js');
 const asyncLib = require('async');
@@ -364,7 +368,7 @@ function validateEffects(effects) {
 /**
  * build mongodb query for app level permission control
  * @param {objext} query - init mongodb query object
- * @param {object} params - countly params from requested upstream
+ * @param {Params} params - countly params from requested upstream
  * @returns  {object} newQuery - new query object
  */
 function getVisibilityQuery(query, params) {

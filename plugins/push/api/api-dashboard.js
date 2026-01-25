@@ -1,5 +1,6 @@
 /**
  * @typedef {import("./new/types/message").PlatformKey} PlatformKey
+ * @typedef {import('../../../types/requestProcessor').Params} Params
  */
 
 const common = require('../../../api/utils/common'),
@@ -59,7 +60,7 @@ function eventIdFilter(event, app_id, agy, agm, noy, mts, nom) {
 /**
  * Dashboard request handler
  *
- * @param {object} params params object
+ * @param {Params} params params object
  *
  * @api {get} o/push/dashboard Get dashboard data
  * @apiName dashboard

@@ -3,6 +3,10 @@
 * @module api/parts/mgmt/cms
 */
 
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/parts/mgmt/cms */
 var cmsApi = {},
     common = require('./../../utils/common.js'),

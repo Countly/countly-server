@@ -1,7 +1,12 @@
 "use strict";
 
+/**
+ * @typedef {import('../../types/taskmanager').TaskManagerStatic} TaskManagerStatic
+ */
+
 // const job = require("../parts/jobs/job.js");
 const log = require('../utils/log.js')('job:clearAutoTasks');
+/** @type {TaskManagerStatic} */
 const taskManager = require('../utils/taskmanager');
 const Job = require("../../jobServer/Job");
 

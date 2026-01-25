@@ -6,6 +6,9 @@
 /**
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
+ * @typedef {import('../../types/taskmanager').TaskManagerStatic} TaskManagerStatic
+ * @typedef {import('../../types/geoData').GeoData} GeoData
+ * @typedef {import('../../types/authorizer').Authorizer} Authorizer
  */
 
 const Promise = require('bluebird');
@@ -13,7 +16,9 @@ const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
 const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter } = require('./rights.js');
+/** @type {Authorizer} */
 const authorize = require('./authorizer.js');
+/** @type {TaskManagerStatic} */
 const taskmanager = require('./taskmanager.js');
 const calculatedDataManager = require('./calculatedDataManager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -39,6 +44,7 @@ const countlyApi = {
         fetch: require('../parts/data/fetch.js'),
         events: require('../parts/data/events.js'),
         exports: require('../parts/data/exports.js'),
+        /** @type {GeoData} */
         geoData: require('../parts/data/geoData.js')
     },
     mgmt: {

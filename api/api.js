@@ -180,6 +180,7 @@ plugins.connectToAllDatabases().then(function() {
     });
 
     plugins.installMissingPlugins(common.db);
+    /** @type {import('./utils/taskmanager').TaskManagerStatic} */
     const taskManager = require('./utils/taskmanager.js');
     //since process restarted mark running tasks as errored
     taskManager.errorResults({db: common.db});

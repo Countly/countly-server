@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ */
+
 const common = require('./common.js'),
     log = require('./log.js')('api:mutationManager'),
     plugins = require('../../plugins/pluginManager.js'),
@@ -181,7 +185,7 @@ catch {
 
     /**
      * Build Mongo filter object for queue listing from query params
-     * @param {object} params - request params
+     * @param {Params} params - request params
      * @returns {object} mongo query
      */
     function buildQueueFilters(params = {}) {
