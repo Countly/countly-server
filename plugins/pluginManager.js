@@ -1,6 +1,19 @@
 /**
  * @typedef {import('mongodb').Db} Db
  * @typedef {import('../types/pluginManager').Database} Database
+ * @typedef {import('../types/pluginManager').InitOptions} InitOptions
+ * @typedef {import('../types/pluginManager').PluginManager} PluginManager
+ * @typedef {import('../types/pluginManager').EventHandler} EventHandler
+ * @typedef {import('../types/pluginManager').EventsRegistry} EventsRegistry
+ * @typedef {import('../types/pluginManager').PluginsApis} PluginsApis
+ * @typedef {import('../types/pluginManager').Config} Config
+ * @typedef {import('../types/pluginManager').ConfigChanges} ConfigChanges
+ * @typedef {import('../types/pluginManager').PluginState} PluginState
+ * @typedef {import('../types/pluginManager').DatabaseConfig} DatabaseConfig
+ * @typedef {import('../types/pluginManager').DbConnectionParams} DbConnectionParams
+ * @typedef {import('../types/pluginManager').MaskingSettings} MaskingSettings
+ * @typedef {import('../types/pluginManager').AppEventFromHash} AppEventFromHash
+ * @typedef {import('../types/pluginManager').EventHashes} EventHashes
  */
 
 var pluginDependencies = require('./pluginDependencies.js'),
@@ -37,28 +50,43 @@ var pluginConfig = {};
 
 /** @lends module:plugins/pluginManager */
 var pluginManager = function pluginManager() {
+    /** @type {EventsRegistry} */
     var events = {};
+    /** @type {any[]} */
     var plugs = [];
+    /** @type {Record<string, any>} */
     var methodCache = {};
+    /** @type {Record<string, any>} */
     var methodPromiseCache = {};
+    /** @type {Record<string, Config>} */
     var configs = {};
+    /** @type {Record<string, Config>} */
     var defaultConfigs = {};
+    /** @type {Record<string, Function>} */
     var configsOnchanges = {};
+    /** @type {Record<string, boolean>} */
     var excludeFromUI = {plugins: true};
     var finishedSyncing = true;
+    /** @type {string[]} */
     var expireList = [];
+    /** @type {any} */
     var masking = {};
+    /** @type {Record<string, boolean>} */
     var fullPluginsMap = {};
+    /** @type {string[]} */
     var coreList = ["api", "core"];
+    /** @type {any} */
     var dependencyMap = {};
 
 
     /**
      *  Registered app types
+     *  @type {string[]}
      */
     this.appTypes = [];
     /**
      *  Events prefixed with [CLY]_ that should be recorded in core as standard data model
+     *  @type {string[]}
      */
     this.internalEvents = [];
     /**
@@ -107,7 +135,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Initialize api side plugins
-    * @param {object} options - load operations
+    * @param {InitOptions} [options] - load operations
     * options.filename - filename to include (default api)
     **/
     this.init = function(options) {
@@ -191,6 +219,11 @@ var pluginManager = function pluginManager() {
     };
 
 
+    /**
+     * Initialize a specific plugin
+     * @param {string} pluginName - Name of the plugin
+     * @param {string} [filename] - Filename to load (default: "api")
+     */
     this.initPlugin = function(pluginName, filename) {
         try {
             filename = filename || "api";
@@ -821,9 +854,9 @@ var pluginManager = function pluginManager() {
     /**
     * Register listening to new event on api side
     * @param {string} event - event to listen to
-    * @param {function} callback - function to call, when event happens
-    * @param {boolean} unshift - whether to register a high-priority callback (unshift it to the listeners array)
-	* @param {string} featureName -  name of plugin
+    * @param {EventHandler} callback - function to call, when event happens
+    * @param {boolean} [unshift=false] - whether to register a high-priority callback (unshift it to the listeners array)
+	* @param {string} [featureName] -  name of plugin
     **/
     this.register = function(event, callback, unshift = false, featureName) {
         if (!events[event]) {
@@ -853,8 +886,8 @@ var pluginManager = function pluginManager() {
     /**
     * Dispatch specific event on api side
     * @param {string} event - event to dispatch
-    * @param {object} params - object with parameters to pass to event
-    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
+    * @param {any} params - object with parameters to pass to event
+    * @param {Function} [callback] - function to call, when all event handlers that return Promise finished processing
     * @returns {boolean} true if any one responded to event
     **/
     this.dispatch = function(event, params, callback) {
@@ -3251,11 +3284,12 @@ var pluginManager = function pluginManager() {
 /* ************************************************************************
 SINGLETON CLASS DEFINITION
 ************************************************************************ */
+/** @type {PluginManager|null} */
 pluginManager.instance = null;
 
 /**
  * Singleton getInstance definition
- * @returns {object} pluginManager class
+ * @returns {PluginManager} pluginManager instance
  */
 pluginManager.getInstance = function() {
     if (this.instance === null) {
