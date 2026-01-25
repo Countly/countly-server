@@ -107,7 +107,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Initialize api side plugins
-    * @param {object} options - load opetions
+    * @param {object} options - load operations
     * options.filename - filename to include (default api)
     **/
     this.init = function(options) {
