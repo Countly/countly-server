@@ -1,12 +1,19 @@
-## Version 25.03.XX
+## Version 25.03.33
 Fixes:
 - [compliance-hub] Correctly merge user history on user merge
+- [core] Ensured usage of local fonts. 
+- [events] Fixed issue with page reloading on error
+- [push] re-schedule on a message update for auto triggers as well
+- [remote-config] Fix searching for parameter in experiment variants
 - [star-rating] Fix active status checkbox in drawer
 - [star-rating] Fix consent fields in drawer
-- [remote-config] Fix searching for parameter in experiment variants
 
 Enterprise Fixes:
 - [cohorts] Correctly regenerate cohorts having $or rule on custom properties
+- [journey-engine] Update asset file naming to include version from package.json
+
+Enterprise Features:
+- [crash_symbolication] Use countlyfs for js symbolication
 
 Dependencies:
 - Bump qs from 6.14.0 to 6.14.1
@@ -18,6 +25,9 @@ Dependencies:
 - Bump terser from 5.44.1 to 5.46.0
 - Bump body-parser from 2.2.1 to 2.2.2
 - Bump lodash from 4.17.21 to 4.17.23
+- Bump express-session from 1.18.2 to 1.19.0
+- Bump sass from 1.97.2 to 1.97.3
+- Bump puppeteer from 24.35.0 to 24.36.0
 
 ## Version 25.03.32
 Fixes:
