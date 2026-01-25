@@ -147,6 +147,12 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+     * Update plugins state in database
+     * @param {Database} db - database connection
+     * @param {object} params - request parameters
+     * @param {function} callback - callback function
+     */
     this.updatePluginsInDb = function(db, params, callback) {
         try {
             params.qstring.plugin = JSON.parse(params.qstring.plugin);
@@ -200,6 +206,11 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+     * Install missing plugins
+     * @param {Database} db - database connection
+     * @param {function} callback - callback function
+     */
     this.installMissingPlugins = function(db, callback) {
         console.log("Checking if any plugins are missing");
         var self = this;
@@ -253,6 +264,11 @@ var pluginManager = function pluginManager() {
         });
     };
 
+    /**
+     * Reload enabled plugin list from database
+     * @param {Database} db - database connection
+     * @param {function} callback - callback function
+     */
     this.reloadEnabledPluginList = function(db, callback) {
         this.loadDependencyMap();
         db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
@@ -1280,7 +1296,7 @@ var pluginManager = function pluginManager() {
         var self = this;
         if (finishedSyncing) {
             finishedSyncing = false;
-            self.dbConnection().then((db) => {
+            self.dbConnection().then((/** @type {Database} */ db) => {
                 db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
                     if (!err) {
                         configs = res;
@@ -1414,6 +1430,12 @@ var pluginManager = function pluginManager() {
         });
     };
 
+    /**
+     * Process plugin installation
+     * @param {Database} db - database connection
+     * @param {string|object} name - plugin name or object with name and enable properties
+     * @param {function} callback - callback function
+     */
     this.processPluginInstall = function(db, name, callback) {
         var self = this;
         var should_enable = true;
@@ -1638,7 +1660,7 @@ var pluginManager = function pluginManager() {
         var self = this;
 
         // First update database to disable plugin
-        self.singleDefaultConnection().then((db) => {
+        self.singleDefaultConnection().then((/** @type {Database} */ db) => {
             db.collection("plugins").updateOne(
                 {_id: "plugins"},
                 {$set: {[`plugins.${plugin}`]: false}},
@@ -1748,6 +1770,7 @@ var pluginManager = function pluginManager() {
     **/
     this.getDbConnectionParams = function(config) {
         var ob = {};
+        /** @type {string|undefined} */
         var db;
         if (typeof config === "string") {
             db = config;
