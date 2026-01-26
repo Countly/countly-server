@@ -23,11 +23,11 @@ plugins.loadConfigs = plugins.loadConfigsIngestor;
 plugins.connectToAllDatabases(true).then(function() {
     log.i("Db connections done");
     //Write Batcher is used by sdk metrics
-    common.writeBatcher = new WriteBatcher(common.db);
-    common.readBatcher = new Cacher(common.db);
-    //common.insertBatcher = new InsertBatcher(common.db);
+    common.writeBatcher = new WriteBatcher(common.dbUnwrapped);
+    common.readBatcher = new Cacher(common.dbUnwrapped);
+    //common.insertBatcher = new InsertBatcher(common.dbUnwrapped);
     if (common.drillDb) {
-        common.drillReadBatcher = new Cacher(common.drillDb, {configs_db: common.db});
+        common.drillReadBatcher = new Cacher(common.drillDb, {configs_db: common.dbUnwrapped});
     }
     /**
     * Set Max Sockets
@@ -103,7 +103,7 @@ plugins.connectToAllDatabases(true).then(function() {
     plugins.dispatch("/ingestor", {common: common});
     plugins.init({"skipDependencies": true, "filename": "ingestor"});
     console.log("Loading configs");
-    plugins.loadConfigs(common.db, function() {
+    plugins.loadConfigs(common.dbUnwrapped, function() {
         console.log("Configs loaded. Opening server connection");
         console.log(JSON.stringify(common.config.ingestor || {}));
         http.Server((req, res) => {
