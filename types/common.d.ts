@@ -338,9 +338,6 @@ export interface Common {
     /** Database promise wrapper */
     dbPromise: (collection: string, method: string, ...args: any[]) => Promise<any>;
 
-    /** Database reference */
-    db: Database;
-
     /**
      * Fetches nested property values from an obj.
      * @param {object} obj - standard countly metric object
@@ -1040,11 +1037,23 @@ export interface Common {
         add: (collection: string, id: string, update: any) => void;
     };
 
+    /** Database reference */
+    db: Database;
+
     /** Database connection for output */
-    outDb?: Database; 
+    outDb: Database; 
 
     /** Database connection for drill queries */
-    drillDb?: Database;
+    drillDb: Database;
+
+    /** Unwrapped Database reference. Should only used by the aggregator and ingestor. */
+    dbUnwrapped: Db;
+
+    /** Unwrapped Database connection for output. Should only used by the aggregator and ingestor. */
+    outDbUnwrapped: Db; 
+
+    /** Unwrapped Database connection for drill queries. Should only used by the aggregator and ingestor. */
+    drillDbUnwrapped: Db;
 
     /** Request processor function */
     processRequest?: any;

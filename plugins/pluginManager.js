@@ -1975,10 +1975,17 @@ var pluginManager = function pluginManager() {
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
 
         let common = require('../api/utils/common');
-        common.db = dbCountly;
-        common.outDb = dbOut;
         require('../api/utils/countlyFs').setHandler(dbFs);
-        common.drillDb = dbDrill;
+        
+        if(return_original) {
+            common.dbUnwrapped = dbCountly;
+            common.outDbUnwrapped = dbOut;
+            common.drillDbUnwrapped = dbDrill;
+        } else {
+            common.db = dbCountly;
+            common.outDb = dbOut;
+            common.drillDb = dbDrill;
+        }        
 
         try {
             common.db.collection("drill_data_cache").createIndex({lu: 1});
