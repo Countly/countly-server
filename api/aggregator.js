@@ -21,17 +21,17 @@ plugins.loadConfigs = plugins.loadConfigsIngestor;
 
 plugins.connectToAllDatabases(true).then(function() {
     log.i("Db connections done");
-    // common.writeBatcher = new WriteBatcher(common.dbUnwrapped);
+    // common.writeBatcher = new WriteBatcher(common.db);
 
-    common.writeBatcher = new WriteBatcher(common.dbUnwrapped);
-    common.secondaryWriteBatcher = new WriteBatcher(common.dbUnwrapped);//Remove once all plugins are updated
-    common.manualWriteBatcher = new WriteBatcher(common.dbUnwrapped, true); //Manually trigerable batcher
-    common.readBatcher = new Cacher(common.dbUnwrapped); //Used for Apps info
+    common.writeBatcher = new WriteBatcher(common.db);
+    common.secondaryWriteBatcher = new WriteBatcher(common.db);//Remove once all plugins are updated
+    common.manualWriteBatcher = new WriteBatcher(common.db, true); //Manually trigerable batcher
+    common.readBatcher = new Cacher(common.db); //Used for Apps info
     common.queryRunner = new QueryRunner();
 
     // Ensure TTL indexes for Kafka consumer state and health (if Kafka enabled)
     if (countlyConfig.kafka?.enabled && countlyConfig.kafka?.batchDeduplication !== false) {
-        common.dbUnwrapped.collection('kafka_consumer_state').createIndex(
+        common.db.collection('kafka_consumer_state').createIndex(
             { lastProcessedAt: 1 },
             { expireAfterSeconds: 604800, background: true } // 7 days TTL
         ).then(() => {
@@ -42,7 +42,7 @@ plugins.connectToAllDatabases(true).then(function() {
         });
 
         // TTL index for consumer health stats (rebalances, errors, lag)
-        common.dbUnwrapped.collection('kafka_consumer_health').createIndex(
+        common.db.collection('kafka_consumer_health').createIndex(
             { updatedAt: 1 },
             { expireAfterSeconds: 604800, background: true } // 7 days TTL
         ).then(() => {
@@ -54,9 +54,9 @@ plugins.connectToAllDatabases(true).then(function() {
 
         // Create capped collection for lag history (1000 snapshots, ~5MB)
         // Capped collections automatically delete oldest documents when full (FIFO)
-        common.dbUnwrapped.listCollections({ name: 'kafka_lag_history' }).toArray().then((collections) => {
+        common.db.listCollections({ name: 'kafka_lag_history' }).toArray().then((collections) => {
             if (collections.length === 0) {
-                common.dbUnwrapped.createCollection('kafka_lag_history', {
+                common.db.createCollection('kafka_lag_history', {
                     capped: true,
                     size: 5 * 1024 * 1024, // 5MB max size
                     max: 1000 // 1000 documents max
@@ -189,7 +189,7 @@ plugins.connectToAllDatabases(true).then(function() {
 
 
     plugins.init({"skipDependencies": true, "filename": "aggregator"});
-    plugins.loadConfigs(common.dbUnwrapped, async function() {
+    plugins.loadConfigs(common.db, async function() {
         plugins.dispatch("/aggregator", {common: common});
     });
 });

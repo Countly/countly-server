@@ -1,5 +1,5 @@
 import { Moment } from "moment-timezone";
-import { Collection, Db, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { Params } from "./requestProcessor";
 import { PluginManager, Database } from "./pluginManager";
 import { Logger, LogModule } from "./log";
@@ -1045,15 +1045,6 @@ export interface Common {
 
     /** Database connection for drill queries */
     drillDb: Database;
-
-    /** Unwrapped Database reference. Should only used by the aggregator and ingestor. */
-    dbUnwrapped: Db;
-
-    /** Unwrapped Database connection for output. Should only used by the aggregator and ingestor. */
-    outDbUnwrapped: Db; 
-
-    /** Unwrapped Database connection for drill queries. Should only used by the aggregator and ingestor. */
-    drillDbUnwrapped: Db;
 
     /** Request processor function */
     processRequest?: any;

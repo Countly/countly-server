@@ -23,11 +23,11 @@ plugins.loadConfigs = plugins.loadConfigsIngestor;
 plugins.connectToAllDatabases(true).then(function() {
     log.i("Db connections done");
     //Write Batcher is used by sdk metrics
-    common.writeBatcher = new WriteBatcher(common.dbUnwrapped);
-    common.readBatcher = new Cacher(common.dbUnwrapped);
-    //common.insertBatcher = new InsertBatcher(common.dbUnwrapped);
+    common.writeBatcher = new WriteBatcher(common.db);
+    common.readBatcher = new Cacher(common.db);
+    //common.insertBatcher = new InsertBatcher(common.db);
     if (common.drillDb) {
-        common.drillReadBatcher = new Cacher(common.drillDb, {configs_db: common.dbUnwrapped});
+        common.drillReadBatcher = new Cacher(common.drillDb, {configs_db: common.db});
     }
     /**
     * Set Max Sockets
