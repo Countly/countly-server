@@ -19,8 +19,8 @@
 var pluginDependencies = require('./pluginDependencies.js'),
     path = require('path'),
     plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
-        "discoveryStrategy": "disableChildren",
-        "overwrite": path.resolve(__dirname, './plugins.json')
+        'discoveryStrategy': 'disableChildren',
+        'overwrite': path.resolve(__dirname, './plugins.json')
     }),
     /** @type {PluginsApis} */
     pluginsApis = {},
@@ -31,10 +31,10 @@ var pluginDependencies = require('./pluginDependencies.js'),
     fs = require('fs'),
     querystring = require('querystring'),
     cp = require('child_process'),
-    async = require("async"),
+    async = require('async'),
     _ = require('underscore'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
+    Promise = require('bluebird'),
     log = require('../api/utils/log.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
@@ -87,7 +87,7 @@ var preventKillingNumberType = function(configsPointer, changes) {
                 }
             }
             else if (typeof configsPointer[k] === 'string' && typeof changes[k] === 'number') {
-                changes[k] = changes[k] + "";
+                changes[k] = changes[k] + '';
             }
         }
 
@@ -137,7 +137,7 @@ class pluginManager {
     fullPluginsMap = {};
 
     /** @type {string[]} */
-    coreList = ["api", "core"];
+    coreList = ['api', 'core'];
 
     /** @type {any} */
     dependencyMap = {};
@@ -158,7 +158,7 @@ class pluginManager {
     /**
      *  Events prefixed with [CLY]_ that should be recorded in drill
      */
-    internalDrillEvents = ["[CLY]_session_begin", "[CLY]_property_update", "[CLY]_session", "[CLY]_llm_interaction", "[CLY]_llm_interaction_feedback", "[CLY]_llm_tool_used", "[CLY]_llm_tool_usage_parameter"];
+    internalDrillEvents = ['[CLY]_session_begin', '[CLY]_property_update', '[CLY]_session', '[CLY]_llm_interaction', '[CLY]_llm_interaction_feedback', '[CLY]_llm_tool_used', '[CLY]_llm_tool_usage_parameter'];
 
     /**
      *  Segments for events prefixed with [CLY]_ that should be omitted
@@ -169,24 +169,24 @@ class pluginManager {
      *  Custom configuration files for different databases
      */
     dbConfigFiles = {
-        countly_drill: "./drill/config.js",
-        countly_out: "../api/configs/config.db_out.js",
-        countly_fs: "../api/configs/config.db_fs.js"
+        countly_drill: './drill/config.js',
+        countly_out: '../api/configs/config.db_out.js',
+        countly_fs: '../api/configs/config.db_fs.js'
     };
 
     /**
      * TTL collections to clean up periodically
      * @type {{collection: string, db: mongodb.Db, property: string, expireAfterSeconds: number}[]}
      */
-    ttlCollections = [{"db": "countly", "collection": "drill_data_cache", "expireAfterSeconds": 600, "property": "lu"}];
+    ttlCollections = [{'db': 'countly', 'collection': 'drill_data_cache', 'expireAfterSeconds': 600, 'property': 'lu'}];
 
     /**
      *  Custom configuration files for different databases for docker env
      */
     dbConfigEnvs = {
-        countly_drill: "PLUGINDRILL",
-        countly_out: "PLUGINOUT",
-        countly_fs: "PLUGINFS"
+        countly_drill: 'PLUGINDRILL',
+        countly_out: 'PLUGINOUT',
+        countly_fs: 'PLUGINFS'
     };
 
     /**
@@ -232,15 +232,15 @@ class pluginManager {
         if (!options.skipDependencies) {
             this.dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
         }
-        console.log("Loading plugins", pluginNames);
+        console.log('Loading plugins', pluginNames);
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             this.fullPluginsMap[pluginNames[i]] = true;
             try {
                 //If file exists try including
-                var filepath = path.resolve(__dirname, pluginNames[i] + "/api/" + (options.filename || "api") + ".js");
+                var filepath = path.resolve(__dirname, pluginNames[i] + '/api/' + (options.filename || 'api') + '.js');
                 if (fs.existsSync(filepath)) {
                     //Require init_config if it exists
-                    var initConfigPath = path.resolve(__dirname, pluginNames[i] + "/api/init_configs.js");
+                    var initConfigPath = path.resolve(__dirname, pluginNames[i] + '/api/init_configs.js');
                     if (fs.existsSync(initConfigPath)) {
                         require(initConfigPath);
                     }
@@ -250,7 +250,7 @@ class pluginManager {
             catch (ex) {
                 console.log('Skipping plugin ' + pluginNames[i] + ' as we could not load it because of errors.');
                 console.error(ex.stack);
-                console.log("Saving this plugin as disabled in db");
+                console.log('Saving this plugin as disabled in db');
             }
         }
     }
@@ -288,7 +288,7 @@ class pluginManager {
                     console.error(err1);
                 }
                 else {
-                    self.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
+                    self.dispatch('/systemlogs', {params: params, action: 'change_plugins', data: {before: before, update: params.qstring.plugin}});
                     self.loadConfigs(db, function() {
                         callback();
                     });
@@ -306,12 +306,12 @@ class pluginManager {
      */
     initPlugin(pluginName, filename) {
         try {
-            filename = filename || "api";
-            var initConfigPath = path.resolve(__dirname, "./" + pluginName + "/api/init_configs.js");
+            filename = filename || 'api';
+            var initConfigPath = path.resolve(__dirname, './' + pluginName + '/api/init_configs.js');
             if (fs.existsSync(initConfigPath)) {
                 require(initConfigPath);
             }
-            pluginsApis[pluginName] = require(path.resolve(__dirname, "./" + pluginName + "/api/" + filename));
+            pluginsApis[pluginName] = require(path.resolve(__dirname, './' + pluginName + '/api/' + filename));
             this.fullPluginsMap[pluginName] = true;
         }
         catch (ex) {
@@ -325,10 +325,10 @@ class pluginManager {
      * @param {function} callback - callback function
      */
     installMissingPlugins(db, callback) {
-        console.log("Checking if any plugins are missing");
+        console.log('Checking if any plugins are missing');
         var self = this;
         var installPlugins = [];
-        db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+        db.collection('plugins').findOne({_id: 'plugins'}, function(err, res) {
             res = res || {};
             pluginConfig = res.plugins || {}; //currently enabled plugins
             //list of plugin folders
@@ -347,7 +347,7 @@ class pluginManager {
                 }
             }
             if (installPlugins.length > 0) {
-                console.log("Plugins to install: " + JSON.stringify(installPlugins));
+                console.log('Plugins to install: ' + JSON.stringify(installPlugins));
             }
             Promise.each(installPlugins, function(name) {
                 return new Promise(function(resolve) {
@@ -385,7 +385,7 @@ class pluginManager {
     reloadEnabledPluginList(db, callback) {
         var self = this;
         this.loadDependencyMap();
-        db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+        db.collection('plugins').findOne({_id: 'plugins'}, function(err, res) {
             if (err) {
                 console.log(err);
             }
@@ -412,7 +412,7 @@ class pluginManager {
     **/
     loadConfigs(db, callback/*, api*/) {
         var self = this;
-        db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+        db.collection('plugins').findOne({_id: 'plugins'}, function(err, res) {
             if (err) {
                 console.log(err);
             }
@@ -468,8 +468,8 @@ class pluginManager {
 						self.checkPlugins(db);
 					}*/
 
-                    if (self.getConfig("data-manager").enableDataMasking) {
-                        self.fetchMaskingConf({"db": db});
+                    if (self.getConfig('data-manager').enableDataMasking) {
+                        self.fetchMaskingConf({'db': db});
                     }
                 });
 
@@ -489,7 +489,7 @@ class pluginManager {
     */
     async loadConfigsIngestor(db, callback/*, api*/) {
         try {
-            var res = await db.collection("plugins").findOne({_id: "plugins"}, {"api": true, "plugins": true, "drill": true, "aggregator": true});
+            var res = await db.collection('plugins').findOne({_id: 'plugins'}, {'api': true, 'plugins': true, 'drill': true, 'aggregator': true});
             res = res || {};
             delete res._id;
             this.configs = res || {};
@@ -497,7 +497,7 @@ class pluginManager {
 
             var diff = this.getObjectDiff(res, this.defaultConfigs);
             if (Object.keys(diff).length > 0) {
-                var res2 = await db.collection("plugins").findOneAndUpdate({_id: "plugins"}, {$set: this.flattenObject(diff)}, {upsert: true, new: true});
+                var res2 = await db.collection('plugins').findOneAndUpdate({_id: 'plugins'}, {$set: this.flattenObject(diff)}, {upsert: true, new: true});
                 if (res2) {
                     for (var i in diff) {
                         if (res2[i]) {
@@ -602,15 +602,15 @@ class pluginManager {
     /**
     * Get configuration from specific namespace and populate empty values with provided defaults
     * @param {string} namespace - namespace of configuration, usually plugin name
-    * @param {object} userSettings - possible other level configuration like user or app level to overwrite configs
-    * @param {boolean} override - if true, would simply override configs with userSettings, if false, would check if configs should be overridden
+    * @param {object} [userSettings] - possible other level configuration like user or app level to overwrite configs
+    * @param {boolean} [override] - if true, would simply override configs with userSettings, if false, would check if configs should be overridden
     * @returns {object} copy of configs for provided namespace
     **/
     getConfig(namespace, userSettings, override) {
         var ob = {};
         if (this.configs[namespace]) {
             for (let i in this.configs[namespace]) {
-                if (i === "_user") {
+                if (i === '_user') {
                     ob[i] = {};
                     for (let j in this.configs[namespace][i]) {
                         ob[i][j] = this.configs[namespace][i][j];
@@ -623,7 +623,7 @@ class pluginManager {
         }
         else if (this.defaultConfigs[namespace]) {
             for (let i in this.defaultConfigs[namespace]) {
-                if (i === "_user") {
+                if (i === '_user') {
                     ob[i] = {};
                     for (let j in this.defaultConfigs[namespace][i]) {
                         ob[i][j] = this.defaultConfigs[namespace][i][j];
@@ -717,7 +717,7 @@ class pluginManager {
     checkConfigs(db, current, provided, callback) {
         var diff = this.getObjectDiff(current, provided);
         if (Object.keys(diff).length > 0) {
-            db.collection("plugins").findAndModify({_id: "plugins"}, {}, {$set: this.flattenObject(diff)}, {upsert: true, new: true}, function(err, res) {
+            db.collection('plugins').findAndModify({_id: 'plugins'}, {}, {$set: this.flattenObject(diff)}, {upsert: true, new: true}, function(err, res) {
                 if (!err && res && res.value) {
                     for (var i in diff) {
                         if (res.value[i]) {
@@ -744,14 +744,14 @@ class pluginManager {
     **/
     updateConfigs(db, namespace, conf, callback) {
         var update = {};
-        if (namespace === "_id") {
+        if (namespace === '_id') {
             if (callback) {
                 callback();
             }
         }
         else {
             update[namespace] = conf;
-            db.collection("plugins").update({_id: "plugins"}, {$set: this.flattenObject(update)}, {upsert: true}, function(err) {
+            db.collection('plugins').update({_id: 'plugins'}, {$set: this.flattenObject(update)}, {upsert: true}, function(err) {
                 if (err) {
                     console.log(err);
                 }
@@ -819,7 +819,7 @@ class pluginManager {
                 this.configsOnchanges[k](this.configs[k]);
             }
         }
-        db.collection("plugins").update({_id: "plugins"}, {$set: this.flattenObject(this.configs)}, {upsert: true}, function() {
+        db.collection('plugins').update({_id: 'plugins'}, {$set: this.flattenObject(this.configs)}, {upsert: true}, function() {
             if (callback) {
                 callback();
             }
@@ -835,7 +835,7 @@ class pluginManager {
     **/
     updateUserConfigs(db, changes, user_id, callback) {
         var self = this;
-        db.collection("members").findOne({ _id: db.ObjectID(user_id) }, function(err, member) {
+        db.collection('members').findOne({ _id: db.ObjectID(user_id) }, function(err, member) {
             var update = {};
             for (let k in changes) {
                 update[k] = {};
@@ -845,7 +845,7 @@ class pluginManager {
                     _.extend(update[k], member.settings[k], changes[k]);
                 }
             }
-            db.collection("members").update({ _id: db.ObjectID(user_id) }, { $set: self.flattenObject(update, "settings") }, { upsert: true }, function() {
+            db.collection('members').update({ _id: db.ObjectID(user_id) }, { $set: self.flattenObject(update, 'settings') }, { upsert: true }, function() {
                 if (callback) {
                     callback();
                 }
@@ -862,11 +862,11 @@ class pluginManager {
         //plugin specific extend
         for (let i = 0, l = plugins.length; i < l; i++) {
             try {
-                require("./" + plugins[i] + "/extend/" + name)(object);
+                require('./' + plugins[i] + '/extend/' + name)(object);
             }
             catch (ex) {
                 //silent error, not extending or no module
-                if (!ex.code || ex.code !== "MODULE_NOT_FOUND") {
+                if (!ex.code || ex.code !== 'MODULE_NOT_FOUND') {
                     console.log(ex);
                 }
             }
@@ -874,11 +874,11 @@ class pluginManager {
 
         //global extend
         try {
-            require("../extend/" + name)(object);
+            require('../extend/' + name)(object);
         }
         catch (ex) {
             //silent error, not extending or no module
-            if (!ex.code || ex.code !== "MODULE_NOT_FOUND") {
+            if (!ex.code || ex.code !== 'MODULE_NOT_FOUND') {
                 console.log(ex);
             }
         }
@@ -941,7 +941,7 @@ class pluginManager {
             featureName = this.getFeatureName();
             featureName = featureName || 'core';
         }
-        this.events[event][unshift ? 'unshift' : 'push']({"cb": callback, "name": featureName});
+        this.events[event][unshift ? 'unshift' : 'push']({'cb': callback, 'name': featureName});
     }
 
     /**
@@ -1064,26 +1064,26 @@ class pluginManager {
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             try {
                 //Require init_config if it exists
-                var initConfigPath = path.resolve(__dirname, pluginNames[i] + "/api/init_configs.js");
+                var initConfigPath = path.resolve(__dirname, pluginNames[i] + '/api/init_configs.js');
                 if (fs.existsSync(initConfigPath)) {
                     require(initConfigPath);
                 }
-                var appPath = path.resolve(__dirname, pluginNames[i] + "/frontend/app.js");
+                var appPath = path.resolve(__dirname, pluginNames[i] + '/frontend/app.js');
                 let plugin;
                 if (fs.existsSync(appPath)) {
                     plugin = require(appPath);
-                    this.plugs.push({'name': pluginNames[i], "plugin": plugin});
-                    app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
+                    this.plugs.push({'name': pluginNames[i], 'plugin': plugin});
+                    app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + '/frontend/public', { maxAge: 31557600000 }));
                     if (plugin.staticPaths) {
                         plugin.staticPaths(app, countlyDb, express);
                     }
                 }
                 else {
-                    app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
+                    app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + '/frontend/public', { maxAge: 31557600000 }));
                 }
             }
             catch (ex) {
-                console.log("skipping plugin because of errors:" + pluginNames[i]);
+                console.log('skipping plugin because of errors:' + pluginNames[i]);
                 console.error(ex.stack);
             }
         }
@@ -1377,8 +1377,8 @@ class pluginManager {
     reloadPlugins() {
         delete require.cache[require.resolve('./plugins.json', 'dont-enclose')];
         plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
-            "discoveryStrategy": "disableChildren",
-            "overwrite": path.resolve(__dirname, './plugins.json')
+            'discoveryStrategy': 'disableChildren',
+            'overwrite': path.resolve(__dirname, './plugins.json')
         });
     }
 
@@ -1403,7 +1403,7 @@ class pluginManager {
         if (this.finishedSyncing) {
             this.finishedSyncing = false;
             self.dbConnection().then((/** @type {Database} */ db) => {
-                db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+                db.collection('plugins').findOne({_id: 'plugins'}, function(err, res) {
                     if (!err) {
                         self.configs = res;
                         self.checkPlugins(db, function() {
@@ -1436,7 +1436,7 @@ class pluginManager {
     * @param {function} callback - when finished checking and syncing
     **/
     checkPlugins(db, callback) {
-        var plugConf = this.getConfig("plugins");
+        var plugConf = this.getConfig('plugins');
 
         if (Object.keys(plugConf).length === 0) {
             // No plugins inserted yet, initialize by inserting current plugins
@@ -1444,7 +1444,7 @@ class pluginManager {
             for (let i = 0; i < list.length; i++) {
                 plugConf[list[i]] = true;
             }
-            this.updateConfigs(db, "plugins", plugConf, callback);
+            this.updateConfigs(db, 'plugins', plugConf, callback);
         }
         else {
             // Check if we need to sync plugins
@@ -1519,8 +1519,8 @@ class pluginManager {
             }
             else {
                 if (changes > 0) {
-                    if (db && self.getConfig("api").sync_plugins) {
-                        self.updateConfigs(db, "plugins", pluginState);
+                    if (db && self.getConfig('api').sync_plugins) {
+                        self.updateConfigs(db, 'plugins', pluginState);
                     }
                     async.series([fs.writeFile.bind(fs, dir, JSON.stringify(newPluginsList), 'utf8'), self.prepareProduction.bind(self)], function(err) {
                         if (callback) {
@@ -1545,19 +1545,19 @@ class pluginManager {
     processPluginInstall(db, name, callback) {
         var self = this;
         var should_enable = true;
-        if (typeof name !== "string" && name.name) {
+        if (typeof name !== 'string' && name.name) {
             if (name.enable === false || name.enable === true) {
                 should_enable = name.enable;
             }
             name = name.name;
         }
-        db.collection("plugins").remove({'_id': 'install_' + name, 'time': {'$lt': Date.now() - 60 * 1000 * 60}}, function(err) {
+        db.collection('plugins').remove({'_id': 'install_' + name, 'time': {'$lt': Date.now() - 60 * 1000 * 60}}, function(err) {
             if (err) {
                 console.log(err);
                 callback();
             }
             else {
-                db.collection("plugins").insert({'_id': 'install_' + name, 'time': Date.now()}, {ignore_errors: [11000]}, function(err2) {
+                db.collection('plugins').insert({'_id': 'install_' + name, 'time': Date.now()}, {ignore_errors: [11000]}, function(err2) {
                     if (err2) {
                         if (err2.code && err2.code !== 11000) {
                             console.log(err2);
@@ -1567,12 +1567,12 @@ class pluginManager {
                     else {
                         self.installPlugin(name, function(errors) {
                             if (!errors) {
-                                console.log("Install is finished fine. Updating state in database");
-                                var query = {_id: "plugins"};
-                                query["plugins." + name] = {"$ne": !should_enable};
+                                console.log('Install is finished fine. Updating state in database');
+                                var query = {_id: 'plugins'};
+                                query['plugins.' + name] = {'$ne': !should_enable};
                                 var update = {};
-                                update["plugins." + name] = should_enable;
-                                db.collection("plugins").update(query, {"$set": update}, {upsert: true}, function(err3, res) {
+                                update['plugins.' + name] = should_enable;
+                                db.collection('plugins').update(query, {'$set': update}, {upsert: true}, function(err3, res) {
                                     console.log('plugins document updated');
                                     if (err3) {
                                         console.log(err3);
@@ -1581,7 +1581,7 @@ class pluginManager {
                                     if (callback) {
                                         callback();
                                     }
-                                    db.collection("plugins").remove({'_id': 'install_' + name}, function(err5) {
+                                    db.collection('plugins').remove({'_id': 'install_' + name}, function(err5) {
                                         if (err5) {
                                             console.log(err5);
                                         }
@@ -1589,7 +1589,7 @@ class pluginManager {
                                 });
                             }
                             else {
-                                console.log("Install is finished with errors");
+                                console.log('Install is finished with errors');
                                 console.log(JSON.stringify(errors));
                                 callback();
                             }
@@ -1623,13 +1623,13 @@ class pluginManager {
                 console.log('Skipping on docker');
                 resolve(errors);
             }
-            else if (!self.getConfig("api").offline_mode) {
-                var args = ["install"];
+            else if (!self.getConfig('api').offline_mode) {
+                var args = ['install'];
                 if (apiCountlyConfig.symlinked === true) {
-                    args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+                    args.unshift(...['--preserve-symlinks', '--preserve-symlinks-main']);
                 }
                 const cmd = spawn('npm', args, {cwd: cwd});
-                var error2 = "";
+                var error2 = '';
 
                 cmd.stdout.on('data', (data) => {
                     console.log(`${data}`);
@@ -1660,9 +1660,9 @@ class pluginManager {
             var scriptPath = path.join(__dirname, plugin, 'install.js');
             var args = [scriptPath];
             if (apiCountlyConfig.symlinked === true) {
-                args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+                args.unshift(...['--preserve-symlinks', '--preserve-symlinks-main']);
             }
-            var m = cp.spawn("nodejs", args);
+            var m = cp.spawn('nodejs', args);
             m.stdout.on('data', (data) => {
                 console.log(data.toString());
             });
@@ -1699,10 +1699,10 @@ class pluginManager {
                 return resolve(errors);
             }
             var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-            if (!self.getConfig("api").offline_mode) {
+            if (!self.getConfig('api').offline_mode) {
 
-                const cmd = spawn('sudo', ["npm", "install", "--unsafe-perm"], {cwd: cwd});
-                var error2 = "";
+                const cmd = spawn('sudo', ['npm', 'install', '--unsafe-perm'], {cwd: cwd});
+                var error2 = '';
 
                 cmd.stdout.on('data', (data) => {
                     console.log(`${data}`);
@@ -1732,9 +1732,9 @@ class pluginManager {
             var scriptPath = path.join(__dirname, plugin, 'install.js');
             var args = [scriptPath];
             if (apiCountlyConfig.symlinked === true) {
-                args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+                args.unshift(...['--preserve-symlinks', '--preserve-symlinks-main']);
             }
-            var m = cp.spawn("nodejs", args);
+            var m = cp.spawn('nodejs', args);
 
             m.stdout.on('data', (data) => {
                 console.log(data.toString());
@@ -1768,12 +1768,12 @@ class pluginManager {
 
         // First update database to disable plugin
         self.singleDefaultConnection().then((/** @type {Database} */ db) => {
-            db.collection("plugins").updateOne(
-                {_id: "plugins"},
+            db.collection('plugins').updateOne(
+                {_id: 'plugins'},
                 {$set: {[`plugins.${plugin}`]: false}},
                 function(err) {
                     if (err) {
-                        console.log("Error updating plugin state:", err);
+                        console.log('Error updating plugin state:', err);
                     }
 
                     // Then run uninstall script
@@ -1781,9 +1781,9 @@ class pluginManager {
                     var errors = false;
                     var args = [scriptPath];
                     if (apiCountlyConfig.symlinked === true) {
-                        args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+                        args.unshift(...['--preserve-symlinks', '--preserve-symlinks-main']);
                     }
-                    var m = cp.spawn("nodejs", args);
+                    var m = cp.spawn('nodejs', args);
 
                     m.stdout.on('data', (data) => {
                         console.log(data.toString());
@@ -1830,7 +1830,7 @@ class pluginManager {
     **/
     restartCountly() {
         console.log('Restarting Countly ...');
-        exec("sudo countly restart", function(error, stdout, stderr) {
+        exec('sudo countly restart', function(error, stdout, stderr) {
             console.log('Done restarting countly with %j / %j / %j', error, stderr, stdout);
             if (error) {
                 console.log('error: %j', error);
@@ -1846,16 +1846,16 @@ class pluginManager {
     * @returns {Database} db connection
     **/
     singleDefaultConnection() {
-        if (typeof countlyConfig.mongodb === "string") {
+        if (typeof countlyConfig.mongodb === 'string') {
             var query = {};
             var conUrl = countlyConfig.mongodb;
-            if (countlyConfig.mongodb.indexOf("?") !== -1) {
-                var parts = countlyConfig.mongodb.split("?");
+            if (countlyConfig.mongodb.indexOf('?') !== -1) {
+                var parts = countlyConfig.mongodb.split('?');
                 query = querystring.parse(parts.pop());
                 conUrl = parts[0];
             }
             query.maxPoolSize = 3;
-            conUrl += "?" + querystring.stringify(query);
+            conUrl += '?' + querystring.stringify(query);
             return this.dbConnection({mongodb: conUrl});
         }
         else {
@@ -1879,7 +1879,7 @@ class pluginManager {
         var ob = {};
         /** @type {string|undefined} */
         var db;
-        if (typeof config === "string") {
+        if (typeof config === 'string') {
             db = config;
             if (this.dbConfigFiles[config]) {
                 var confDb = config;
@@ -1908,36 +1908,36 @@ class pluginManager {
         if (typeof config.mongodb === 'string') {
             var dbName = this.replaceDatabaseString(config.mongodb, db);
             //remove protocol
-            dbName = dbName.split("://").pop();
-            if (dbName.indexOf("@") !== -1) {
-                var auth = dbName.split("@").shift();
-                dbName = dbName.replace(auth + "@", "");
-                var authParts = auth.split(":");
+            dbName = dbName.split('://').pop();
+            if (dbName.indexOf('@') !== -1) {
+                var auth = dbName.split('@').shift();
+                dbName = dbName.replace(auth + '@', '');
+                var authParts = auth.split(':');
                 ob.username = authParts[0];
                 ob.password = authParts[1];
             }
-            var dbParts = dbName.split("/");
+            var dbParts = dbName.split('/');
             ob.host = dbParts[0];
-            ob.db = dbParts[1] || "countly";
-            if (ob.db.indexOf("?") !== -1) {
-                var parts = ob.db.split("?");
+            ob.db = dbParts[1] || 'countly';
+            if (ob.db.indexOf('?') !== -1) {
+                var parts = ob.db.split('?');
                 ob.db = parts[0];
                 var qstring = parts[1];
                 if (qstring && qstring.length) {
                     qstring = querystring.parse(qstring);
-                    if (qstring.ssl && (qstring.ssl === true || qstring.ssl === "true")) {
-                        ob.ssl = "";
-                        ob.sslAllowInvalidCertificates = "";
-                        ob.sslAllowInvalidHostnames = "";
+                    if (qstring.ssl && (qstring.ssl === true || qstring.ssl === 'true')) {
+                        ob.ssl = '';
+                        ob.sslAllowInvalidCertificates = '';
+                        ob.sslAllowInvalidHostnames = '';
                     }
-                    if (qstring.tls && (qstring.tls === true || qstring.tls === "true")) {
-                        ob.tls = "";
-                        ob.tlsAllowInvalidCertificates = "";
-                        ob.tlsAllowInvalidHostnames = "";
-                        ob.tlsInsecure = "";
+                    if (qstring.tls && (qstring.tls === true || qstring.tls === 'true')) {
+                        ob.tls = '';
+                        ob.tlsAllowInvalidCertificates = '';
+                        ob.tlsAllowInvalidHostnames = '';
+                        ob.tlsInsecure = '';
                     }
                     if (qstring.replicaSet) {
-                        ob.host = qstring.replicaSet + "/" + ob.host;
+                        ob.host = qstring.replicaSet + '/' + ob.host;
                     }
                     if (qstring.authSource) {
                         ob.authenticationDatabase = qstring.authSource;
@@ -1949,25 +1949,25 @@ class pluginManager {
         else {
             ob.db = db || config.mongodb.db || 'countly';
             if (typeof config.mongodb.replSetServers === 'object') {
-                ob.host = "";
+                ob.host = '';
                 if (config.mongodb.replicaName) {
-                    ob.host = config.mongodb.replicaName + "/";
+                    ob.host = config.mongodb.replicaName + '/';
                 }
                 ob.host += config.mongodb.replSetServers.join(',');
             }
             else {
                 ob.host = (config.mongodb.host + ':' + config.mongodb.port);
             }
-            if (config.mongodb.serverOptions && config.mongodb.serverOptions.ssl && (config.mongodb.serverOptions.ssl === true || config.mongodb.serverOptions.ssl === "true")) {
-                ob.ssl = "";
-                ob.sslAllowInvalidCertificates = "";
-                ob.sslAllowInvalidHostnames = "";
+            if (config.mongodb.serverOptions && config.mongodb.serverOptions.ssl && (config.mongodb.serverOptions.ssl === true || config.mongodb.serverOptions.ssl === 'true')) {
+                ob.ssl = '';
+                ob.sslAllowInvalidCertificates = '';
+                ob.sslAllowInvalidHostnames = '';
             }
-            if (config.mongodb.serverOptions && config.mongodb.serverOptions.tls && (config.mongodb.serverOptions.tls === true || config.mongodb.serverOptions.tls === "true")) {
-                ob.tls = "";
-                ob.tlsAllowInvalidCertificates = "";
-                ob.tlsAllowInvalidHostnames = "";
-                ob.tlsInsecure = "";
+            if (config.mongodb.serverOptions && config.mongodb.serverOptions.tls && (config.mongodb.serverOptions.tls === true || config.mongodb.serverOptions.tls === 'true')) {
+                ob.tls = '';
+                ob.tlsAllowInvalidCertificates = '';
+                ob.tlsAllowInvalidHostnames = '';
+                ob.tlsInsecure = '';
             }
             if (config.mongodb.username && config.mongodb.password) {
                 ob.username = config.mongodb.username;
@@ -1992,7 +1992,7 @@ class pluginManager {
     **/
     replaceDatabaseString(str, db) {
         if (!db) {
-            db = "countly";
+            db = 'countly';
         }
 
         // Handle admin database replacement for any target database
@@ -2014,22 +2014,22 @@ class pluginManager {
         var countlyIndex = str.lastIndexOf('/countly');
         var targetDbIndex = str.lastIndexOf('/' + db);
         if (countlyIndex !== targetDbIndex && countlyIndex !== -1 && db) {
-            return str.substr(0, countlyIndex) + "/" + db + str.substr(countlyIndex + ('/countly').length);
+            return str.substr(0, countlyIndex) + '/' + db + str.substr(countlyIndex + ('/countly').length);
         }
         else if (countlyIndex === -1 && targetDbIndex === -1) {
             //no db found in the string, we should insert the needed one
-            var urlParts = str.split("://");
-            if (typeof urlParts[1] === "string") {
-                var pathParts = urlParts[1].split("/");
+            var urlParts = str.split('://');
+            if (typeof urlParts[1] === 'string') {
+                var pathParts = urlParts[1].split('/');
                 if (pathParts.length === 1) {
-                    pathParts[0] += "/" + db;
+                    pathParts[0] += '/' + db;
                 }
                 else {
                     pathParts[pathParts.length - 1] = db + pathParts[pathParts.length - 1];
                 }
-                urlParts[1] = pathParts.join("/");
+                urlParts[1] = pathParts.join('/');
             }
-            return urlParts.join("://");
+            return urlParts.join('://');
         }
         return str;
     }
@@ -2044,11 +2044,11 @@ class pluginManager {
 
         let databases = [];
         if (apiCountlyConfig && apiCountlyConfig.shared_connection) {
-            console.log("using shared connection pool");
+            console.log('using shared connection pool');
             databases = await this.dbConnection(dbs, return_original);
         }
         else {
-            console.log("using separate connection pool");
+            console.log('using separate connection pool');
             databases = await Promise.all(dbs.map((db) => this.dbConnection(db, return_original)));
         }
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
@@ -2061,7 +2061,7 @@ class pluginManager {
         common.drillDb = dbDrill;
 
         try {
-            common.db.collection("drill_data_cache").createIndex({lu: 1});
+            common.db.collection('drill_data_cache').createIndex({lu: 1});
         }
         catch (err) {
             console.log('Plugin Manager: Failed to create index on drill_data_cache collection for lu field:', err);
@@ -2095,7 +2095,7 @@ class pluginManager {
             useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
         }
 
-        if (typeof config === "string") {
+        if (typeof config === 'string') {
             db = config;
             if (this.dbConfigFiles[config]) {
                 var confDb = config;
@@ -2125,7 +2125,7 @@ class pluginManager {
             config = config || useConfig;
         }
 
-        if (config && typeof config.mongodb === "string") {
+        if (config && typeof config.mongodb === 'string') {
             try {
                 const urlObj = new URL(config.mongodb);
                 // mongo connection string with multiple host like 'mongodb://localhost:30000,localhost:30001' will cause an error
@@ -2189,7 +2189,7 @@ class pluginManager {
         }
 
         if (config.mongodb.username && config.mongodb.password) {
-            dbName = encodeURIComponent(config.mongodb.username) + ":" + encodeURIComponent(utils.decrypt(config.mongodb.password)) + "@" + dbName;
+            dbName = encodeURIComponent(config.mongodb.username) + ':' + encodeURIComponent(utils.decrypt(config.mongodb.password)) + '@' + dbName;
         }
 
         if (dbName.indexOf('mongodb://') !== 0 && dbName.indexOf('mongodb+srv://') !== 0) {
@@ -2197,29 +2197,29 @@ class pluginManager {
         }
         if (dbName.indexOf('retryWrites') === -1) {
             if (dbName.indexOf('?') === -1) {
-                dbName = dbName + "?retryWrites=false";
+                dbName = dbName + '?retryWrites=false';
             }
             else {
-                dbName = dbName + "&retryWrites=false";
+                dbName = dbName + '&retryWrites=false';
             }
         }
 
-        var db_name = "countly";
+        var db_name = 'countly';
         try {
-            db_name = dbName.split("/").pop().split("?")[0];
+            db_name = dbName.split('/').pop().split('?')[0];
         }
         catch (ex) {
-            db_name = "countly";
+            db_name = 'countly';
         }
 
         try {
-            dbOptions.appname = process.title + ": " + db_name + "(" + maxPoolSize + ") " + process.pid;
+            dbOptions.appname = process.title + ': ' + db_name + '(' + maxPoolSize + ') ' + process.pid;
         }
         catch (ex) {
             //silent
         }
 
-        mngr.dispatch("/db/pre_connect", {
+        mngr.dispatch('/db/pre_connect', {
             db: db_name,
             connection: dbName,
             options: dbOptions
@@ -2230,16 +2230,16 @@ class pluginManager {
         }
         catch (ex) {
             var safeDbName = dbName;
-            var start = dbName.indexOf("://") + 3;
-            var end = dbName.indexOf("@", start);
+            var start = dbName.indexOf('://') + 3;
+            var end = dbName.indexOf('@', start);
             if (end > -1 && start > 3) {
-                var middle = dbName.indexOf(":", start);
+                var middle = dbName.indexOf(':', start);
                 if (middle > -1 && middle < end) {
-                    safeDbName = dbName.substring(0, middle) + ":*****" + dbName.substring(end);
+                    safeDbName = dbName.substring(0, middle) + ':*****' + dbName.substring(end);
                 }
             }
-            logDbRead.e("Error connecting to database", ex);
-            logDbRead.e("With params %j", {
+            logDbRead.e('Error connecting to database', ex);
+            logDbRead.e('With params %j', {
                 db: db_name,
                 connection: safeDbName,
                 options: dbOptions
@@ -2256,9 +2256,9 @@ class pluginManager {
          * @param {String} logLevel - log level
          */
         function logDriver(eventName, logObject, logLevel) {
-            logLevel = logLevel || "d";
-            if (eventName === "serverHeartbeatFailed" || eventName === "topologyDescriptionChanged" || eventName === "serverDescriptionChanged" || eventName === "serverClosed") {
-                client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));
+            logLevel = logLevel || 'd';
+            if (eventName === 'serverHeartbeatFailed' || eventName === 'topologyDescriptionChanged' || eventName === 'serverDescriptionChanged' || eventName === 'serverClosed') {
+                client.on(eventName, (event) => logObject[logLevel](eventName + ' %j', event));
             }
             else {
                 client.on(eventName, () => logObject[logLevel](eventName));
@@ -2266,33 +2266,33 @@ class pluginManager {
         }
 
         //connection pool
-        logDriver("connectionPoolCreated", logDriverDb);
-        logDriver("connectionPoolReady", logDriverDb);
-        logDriver("connectionPoolClosed", logDriverDb);
-        logDriver("connectionCreated", logDriverDb);
-        logDriver("connectionReady", logDriverDb);
-        logDriver("connectionClosed", logDriverDb);
-        logDriver("connectionCheckOutStarted", logDriverDb);
-        logDriver("connectionCheckOutFailed", logDriverDb);
-        logDriver("connectionCheckedOut", logDriverDb);
-        logDriver("connectionCheckedIn", logDriverDb);
-        logDriver("connectionPoolCleared", logDriverDb);
+        logDriver('connectionPoolCreated', logDriverDb);
+        logDriver('connectionPoolReady', logDriverDb);
+        logDriver('connectionPoolClosed', logDriverDb);
+        logDriver('connectionCreated', logDriverDb);
+        logDriver('connectionReady', logDriverDb);
+        logDriver('connectionClosed', logDriverDb);
+        logDriver('connectionCheckOutStarted', logDriverDb);
+        logDriver('connectionCheckOutFailed', logDriverDb);
+        logDriver('connectionCheckedOut', logDriverDb);
+        logDriver('connectionCheckedIn', logDriverDb);
+        logDriver('connectionPoolCleared', logDriverDb);
 
         //SDAM
-        logDriver("serverOpening", logDriverDb);
-        logDriver("serverClosed", logDriverDb, "i");
-        logDriver("serverDescriptionChanged", logDriverDb, "i");
-        logDriver("topologyOpening", logDriverDb);
-        logDriver("topologyClosed", logDriverDb);
-        logDriver("topologyDescriptionChanged", logDriverDb, "i");
-        logDriver("serverHeartbeatStarted", logDriverDb);
-        logDriver("serverHeartbeatSucceeded", logDriverDb);
-        logDriver("serverHeartbeatFailed", logDriverDb, "e");
+        logDriver('serverOpening', logDriverDb);
+        logDriver('serverClosed', logDriverDb, 'i');
+        logDriver('serverDescriptionChanged', logDriverDb, 'i');
+        logDriver('topologyOpening', logDriverDb);
+        logDriver('topologyClosed', logDriverDb);
+        logDriver('topologyDescriptionChanged', logDriverDb, 'i');
+        logDriver('serverHeartbeatStarted', logDriverDb);
+        logDriver('serverHeartbeatSucceeded', logDriverDb);
+        logDriver('serverHeartbeatFailed', logDriverDb, 'e');
 
         //commands
-        logDriver("commandStarted", logDriverDb);
-        logDriver("commandSucceeded", logDriverDb);
-        logDriver("commandFailed", logDriverDb, "e");
+        logDriver('commandStarted', logDriverDb);
+        logDriver('commandSucceeded', logDriverDb);
+        logDriver('commandFailed', logDriverDb, 'e');
 
 
 
@@ -2310,7 +2310,7 @@ class pluginManager {
                         return new mongodb.ObjectId(id);
                     }
                     catch (ex) {
-                        logDbRead.i("Incorrect Object ID %j", ex);
+                        logDbRead.i('Incorrect Object ID %j', ex);
                         return id;
                     }
                 };
@@ -2342,7 +2342,7 @@ class pluginManager {
     * @returns {Promise<void>} resolves when masking data is loaded
     */
     async fetchMaskingConf(options) {
-        var apps = await options.db.collection("apps").find({}, {"masking": true}).toArray();
+        var apps = await options.db.collection('apps').find({}, {'masking': true}).toArray();
 
         var appObj = {};
 
@@ -2352,25 +2352,25 @@ class pluginManager {
 
         this.masking.apps = appObj;
         var hashMap = {};
-        var eventsDb = await options.db.collection("events").find({}, {"list": true}).toArray();
+        var eventsDb = await options.db.collection('events').find({}, {'list': true}).toArray();
         for (let z = 0; z < eventsDb.length; z++) {
-            eventsDb[z]._id = eventsDb[z]._id + "";
+            eventsDb[z]._id = eventsDb[z]._id + '';
             for (let i = 0; i < eventsDb[z].list.length; i++) {
-                hashMap[crypto.createHash('sha1').update(eventsDb[z].list[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": eventsDb[z].list[i]};
+                hashMap[crypto.createHash('sha1').update(eventsDb[z].list[i] + eventsDb[z]._id + '').digest('hex')] = {'a': eventsDb[z]._id, 'e': eventsDb[z].list[i]};
             }
 
-            var internalDrillEvents = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device", "[CLY]_consent"];
-            var internalEvents = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device", "[CLY]_consent"];
+            var internalDrillEvents = ['[CLY]_session', '[CLY]_crash', '[CLY]_view', '[CLY]_action', '[CLY]_push_action', '[CLY]_push_sent', '[CLY]_star_rating', '[CLY]_nps', '[CLY]_survey', '[CLY]_apm_network', '[CLY]_apm_device', '[CLY]_consent'];
+            var internalEvents = ['[CLY]_session', '[CLY]_crash', '[CLY]_view', '[CLY]_action', '[CLY]_push_action', '[CLY]_push_sent', '[CLY]_star_rating', '[CLY]_nps', '[CLY]_survey', '[CLY]_apm_network', '[CLY]_apm_device', '[CLY]_consent'];
 
             if (internalDrillEvents) {
                 for (let i = 0; i < internalDrillEvents.length; i++) {
-                    hashMap[crypto.createHash('sha1').update(internalDrillEvents[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": internalDrillEvents[i]};
+                    hashMap[crypto.createHash('sha1').update(internalDrillEvents[i] + eventsDb[z]._id + '').digest('hex')] = {'a': eventsDb[z]._id, 'e': internalDrillEvents[i]};
                 }
             }
 
             if (internalEvents) {
                 for (let i = 0; i < internalEvents.length; i++) {
-                    hashMap[crypto.createHash('sha1').update(internalEvents[i] + eventsDb[z]._id + "").digest('hex')] = {"a": eventsDb[z]._id, "e": internalEvents[i]};
+                    hashMap[crypto.createHash('sha1').update(internalEvents[i] + eventsDb[z]._id + '').digest('hex')] = {'a': eventsDb[z]._id, 'e': internalEvents[i]};
                 }
             }
         }
@@ -2516,24 +2516,24 @@ class pluginManager {
             options: dbOptions
         };
 
-        logDbRead.d("New connection %j", countlyDb._cly_debug);
+        logDbRead.d('New connection %j', countlyDb._cly_debug);
         if (!countlyDb.ObjectID) {
             countlyDb.ObjectID = function(id) {
                 try {
                     return new mongodb.ObjectId(id);
                 }
                 catch (ex) {
-                    logDbRead.i("Incorrect Object ID %j", ex);
+                    logDbRead.i('Incorrect Object ID %j', ex);
                     return id;
                 }
             };
         }
         countlyDb.encode = function(str) {
-            return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
+            return str.replace(/^\$/g, '&#36;').replace(/\./g, '&#46;');
         };
 
         countlyDb.decode = function(str) {
-            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
+            return str.replace(/^&#36;/g, '$').replace(/&#46;/g, '.');
         };
         countlyDb.onOpened = function(callback) {
             callback();
@@ -2541,7 +2541,7 @@ class pluginManager {
         countlyDb._native = countlyDb;
         countlyDb.client = client;
         countlyDb.close = client.close.bind(client);
-        mngr.dispatch("/db/connected", {
+        mngr.dispatch('/db/connected', {
             db: dbName,
             instance: countlyDb,
             connection: dbConnectionString,
@@ -2553,25 +2553,25 @@ class pluginManager {
                 countlyDb.build = result;
             }
         }).catch(function(err) {
-            console.log("Cannot get build info", err);
+            console.log('Cannot get build info', err);
         });
 
         //promise compatability
         var overwriteDbPromise = function(obj, name) {
-            obj["_" + name] = obj[name];
+            obj['_' + name] = obj[name];
             obj[name] = function(...args) {
                 var callback;
-                if (typeof args[args.length - 1] === "function") {
+                if (typeof args[args.length - 1] === 'function') {
                     callback = args[args.length - 1];
                     args.pop();
                 }
 
-                var promise = obj["_" + name](...args);
-                if (typeof callback === "function") {
+                var promise = obj['_' + name](...args);
+                if (typeof callback === 'function') {
                     promise = promise.then(function(res) {
                         callback(undefined, res);
                     }).catch(function(err) {
-                        if (typeof callback === "function") {
+                        if (typeof callback === 'function') {
                             callback(err, null);
                         }
                     });
@@ -2579,72 +2579,72 @@ class pluginManager {
                 return promise;
             };
         };
-        overwriteDbPromise(countlyDb, "aggregate");
-        overwriteDbPromise(countlyDb, "collections");
-        overwriteDbPromise(countlyDb, "command");
-        overwriteDbPromise(countlyDb, "createCollection");
-        overwriteDbPromise(countlyDb, "createIndex");
-        overwriteDbPromise(countlyDb, "dropCollection");
-        overwriteDbPromise(countlyDb, "dropDatabase");
-        overwriteDbPromise(countlyDb, "indexInformation");
-        overwriteDbPromise(countlyDb, "profilingLevel");
-        overwriteDbPromise(countlyDb, "removeUser");
-        overwriteDbPromise(countlyDb, "renameCollection");
-        overwriteDbPromise(countlyDb, "setProfilingLevel");
-        overwriteDbPromise(countlyDb, "stats");
+        overwriteDbPromise(countlyDb, 'aggregate');
+        overwriteDbPromise(countlyDb, 'collections');
+        overwriteDbPromise(countlyDb, 'command');
+        overwriteDbPromise(countlyDb, 'createCollection');
+        overwriteDbPromise(countlyDb, 'createIndex');
+        overwriteDbPromise(countlyDb, 'dropCollection');
+        overwriteDbPromise(countlyDb, 'dropDatabase');
+        overwriteDbPromise(countlyDb, 'indexInformation');
+        overwriteDbPromise(countlyDb, 'profilingLevel');
+        overwriteDbPromise(countlyDb, 'removeUser');
+        overwriteDbPromise(countlyDb, 'renameCollection');
+        overwriteDbPromise(countlyDb, 'setProfilingLevel');
+        overwriteDbPromise(countlyDb, 'stats');
 
 
         var findOptions = [
-            "allowDiskUse",
-            "allowPartialResults",
-            "authdb",
-            "awaitData",
-            "batchSize",
-            "bsonRegExp",
-            "checkKeys",
-            "collation",
-            "comment",
-            "dbName",
-            "enableUtf8Validation",
-            "explain",
-            "fieldsAsRaw",
-            "hint",
-            "ignoreUndefined",
-            "let",
-            "limit",
-            "max",
-            "maxAwaitTimeMS",
-            "maxScan",
-            "maxTimeMS",
-            "min",
-            "noCursorTimeout",
-            "noResponse",
-            "omitReadPreference",
-            "oplogReplay",
-            "partial",
-            "projection",
-            "promoteBuffers",
-            "promoteLongs",
-            "promoteValues",
-            "raw",
-            "readConcern",
-            "readPreference",
-            "retryWrites",
-            "returnKey",
-            "serializeFunctions",
-            "session",
-            "showDiskLoc",
-            "showRecordId",
-            "singleBatch",
-            "skip",
-            "snapshot",
-            "sort",
-            "tailable",
-            "timeout",
-            "timeoutMode",
-            "timeoutMS",
-            "useBigInt64",
-            "willRetryWrite"
+            'allowDiskUse',
+            'allowPartialResults',
+            'authdb',
+            'awaitData',
+            'batchSize',
+            'bsonRegExp',
+            'checkKeys',
+            'collation',
+            'comment',
+            'dbName',
+            'enableUtf8Validation',
+            'explain',
+            'fieldsAsRaw',
+            'hint',
+            'ignoreUndefined',
+            'let',
+            'limit',
+            'max',
+            'maxAwaitTimeMS',
+            'maxScan',
+            'maxTimeMS',
+            'min',
+            'noCursorTimeout',
+            'noResponse',
+            'omitReadPreference',
+            'oplogReplay',
+            'partial',
+            'projection',
+            'promoteBuffers',
+            'promoteLongs',
+            'promoteValues',
+            'raw',
+            'readConcern',
+            'readPreference',
+            'retryWrites',
+            'returnKey',
+            'serializeFunctions',
+            'session',
+            'showDiskLoc',
+            'showRecordId',
+            'singleBatch',
+            'skip',
+            'snapshot',
+            'sort',
+            'tailable',
+            'timeout',
+            'timeoutMode',
+            'timeoutMS',
+            'useBigInt64',
+            'willRetryWrite'
         ];
 
         countlyDb._collection_cache = {};
@@ -2682,19 +2682,19 @@ class pluginManager {
              */
             function handlePromiseErrors(promise, e, data, callback, ignore_errors) {
                 if (promise && promise.then) {
-                    if (typeof callback === "function") {
+                    if (typeof callback === 'function') {
                         promise = promise.then(function(res) {
                             callback(undefined, res);
                         });
                     }
                     return promise.catch(function(err) {
-                        if (typeof callback === "function") {
+                        if (typeof callback === 'function') {
                             callback(err, null);
                         }
                         else {
                             if (ignore_errors && ignore_errors.indexOf(err.code) === -1) {
-                                logDbWrite.e("Error in promise from " + collection + " %j %s %j", data, err, err);
-                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                                logDbWrite.e('Error in promise from ' + collection + ' %j %s %j', data, err, err);
+                                logDbWrite.d('From connection %j', countlyDb._cly_debug);
                                 if (e) {
                                     logDbWrite.e(e.stack);
                                 }
@@ -2717,11 +2717,11 @@ class pluginManager {
                 }
                 return function(err, res) {
                     if (res) {
-                        if (!res.value && data && data.name === "findAndModify" && data.args && data.args[3] && data.args[3].remove) {
-                            res = {"value": res};
+                        if (!res.value && data && data.name === 'findAndModify' && data.args && data.args[3] && data.args[3].remove) {
+                            res = {'value': res};
                         }
-                        if (!res.value && data && data.name === "findAOneAndDelete") {
-                            res = {"value": res};
+                        if (!res.value && data && data.name === 'findAOneAndDelete') {
+                            res = {'value': res};
                         }
                         if (!res.result) {
                             res.result = {};
@@ -2735,15 +2735,15 @@ class pluginManager {
                     }
                     if (err) {
                         if (retry && err.code === 11000) {
-                            if (typeof retry === "function") {
-                                logDbWrite.d("Retrying writing " + collection + " %j", data);
-                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                            if (typeof retry === 'function') {
+                                logDbWrite.d('Retrying writing ' + collection + ' %j', data);
+                                logDbWrite.d('From connection %j', countlyDb._cly_debug);
                                 retry();
                             }
                             else {
                                 if (!(data.args && data.args[2] && data.args[2].ignore_errors && data.args[2].ignore_errors.indexOf(err.code) !== -1)) {
-                                    logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
-                                    logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                                    logDbWrite.e('Error writing ' + collection + ' %j %s %j', data, err, err);
+                                    logDbWrite.d('From connection %j', countlyDb._cly_debug);
                                     if (e) {
                                         logDbWrite.e(e.stack);
                                     }
@@ -2755,8 +2755,8 @@ class pluginManager {
                         }
                         else {
                             if (!(data.args && data.args[2] && data.args[2].ignore_errors && data.args[2].ignore_errors.indexOf(err.code) !== -1)) {
-                                logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
-                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                                logDbWrite.e('Error writing ' + collection + ' %j %s %j', data, err, err);
+                                logDbWrite.d('From connection %j', countlyDb._cly_debug);
                                 if (e) {
                                     logDbWrite.e(e.stack);
                                 }
@@ -2774,7 +2774,7 @@ class pluginManager {
 
             ob._findAndModify = ob.findAndModify;
             ob.findAndModify = function(query, sort, doc, options, callback) {
-                if (typeof options === "function") {
+                if (typeof options === 'function') {
                     callback = options;
                     options = {};
                 }
@@ -2782,9 +2782,9 @@ class pluginManager {
                     options = options || {};
                 }
 
-                mngr.dispatch("/db/readAndUpdate", {
+                mngr.dispatch('/db/readAndUpdate', {
                     db: dbName,
-                    operation: "findAndModify",
+                    operation: 'findAndModify',
                     collection: collection,
                     query: query,
                     sort: sort,
@@ -2792,31 +2792,31 @@ class pluginManager {
                     options: options
                 });
                 var e;
-                var at = "";
-                if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                var at = '';
+                if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
                     e = new Error();
-                    at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                    at += e.stack.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                 }
 
-                logDbWrite.d("findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
-                logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                logDbWrite.d('findAndModify ' + collection + ' %j %j %j %j' + at, query, sort, doc, options);
+                logDbWrite.d('From connection %j', countlyDb._cly_debug);
                 if (options.upsert) {
                     var self = this;
-                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, function() {
-                        logDbWrite.d("retrying findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
-                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        return handlePromiseErrors(self._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
-                    }, e, copyArguments(arguments, "findAndModify")));
+                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, 'findAndModify'), retryifNeeded(callback, function() {
+                        logDbWrite.d('retrying findAndModify ' + collection + ' %j %j %j %j' + at, query, sort, doc, options);
+                        logDbWrite.d('From connection %j', countlyDb._cly_debug);
+                        return handlePromiseErrors(self._findAndModify(query, sort, doc, options), e, copyArguments(arguments, 'findAndModify'), retryifNeeded(callback, null, e, copyArguments(arguments, 'findAndModify')));
+                    }, e, copyArguments(arguments, 'findAndModify')));
                 }
                 else {
-                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
+                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, 'findAndModify'), retryifNeeded(callback, null, e, copyArguments(arguments, 'findAndModify')));
                 }
             };
 
             var overwriteRetryWrite = function(obj, name) {
-                obj["_" + name] = obj[name];
+                obj['_' + name] = obj[name];
                 obj[name] = function(selector, doc, options, callback) {
-                    if (typeof options === "function") {
+                    if (typeof options === 'function') {
                         callback = options;
                         options = {};
                     }
@@ -2824,11 +2824,11 @@ class pluginManager {
                         options = options || {};
                     }
 
-                    if (typeof options.includeResultMetadata === "undefined") {
+                    if (typeof options.includeResultMetadata === 'undefined') {
                         options.includeResultMetadata = true;
                     }
 
-                    mngr.dispatch("/db/update", {
+                    mngr.dispatch('/db/update', {
                         db: dbName,
                         operation: name,
                         collection: collection,
@@ -2837,33 +2837,33 @@ class pluginManager {
                         options: options
                     });
                     var e;
-                    var at = "";
-                    if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                    var at = '';
+                    if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
                         e = new Error();
-                        at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                        at += e.stack.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                     }
 
-                    logDbWrite.d(name + " " + collection + " %j %j %j" + at, selector, doc, options);
-                    logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                    logDbWrite.d(name + ' ' + collection + ' %j %j %j' + at, selector, doc, options);
+                    logDbWrite.d('From connection %j', countlyDb._cly_debug);
                     if (options.upsert) {
                         var self = this;
-                        return handlePromiseErrors(this["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, function() {
-                            logDbWrite.d("retrying " + name + " " + collection + " %j %j %j" + at, selector, doc, options);
-                            logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                            return handlePromiseErrors(self["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
+                        return handlePromiseErrors(this['_' + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, function() {
+                            logDbWrite.d('retrying ' + name + ' ' + collection + ' %j %j %j' + at, selector, doc, options);
+                            logDbWrite.d('From connection %j', countlyDb._cly_debug);
+                            return handlePromiseErrors(self['_' + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
                         }, e, copyArguments(arguments, name)));
                     }
                     else {
-                        return handlePromiseErrors(this["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
+                        return handlePromiseErrors(this['_' + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
                     }
                 };
             };
 
-            overwriteRetryWrite(ob, "updateOne");
-            overwriteRetryWrite(ob, "updateMany");
-            overwriteRetryWrite(ob, "replaceOne");
-            overwriteRetryWrite(ob, "findOneAndUpdate");
-            overwriteRetryWrite(ob, "findOneAndReplace");
+            overwriteRetryWrite(ob, 'updateOne');
+            overwriteRetryWrite(ob, 'updateMany');
+            overwriteRetryWrite(ob, 'replaceOne');
+            overwriteRetryWrite(ob, 'findOneAndUpdate');
+            overwriteRetryWrite(ob, 'findOneAndReplace');
 
             //overwrite with write logging
             var logForWrites = function(callback, e, data) {
@@ -2874,8 +2874,8 @@ class pluginManager {
                 return function(err, res) {
                     if (err) {
                         if (!(data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.indexOf(err.code) !== -1)) {
-                            logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
-                            logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                            logDbWrite.e('Error writing ' + collection + ' %j %s %j', data, err, err);
+                            logDbWrite.d('From connection %j', countlyDb._cly_debug);
                             if (e) {
                                 logDbWrite.e(e.stack);
                             }
@@ -2908,9 +2908,9 @@ class pluginManager {
             };
 
             var overwriteDefaultWrite = function(obj, name) {
-                obj["_" + name] = obj[name];
+                obj['_' + name] = obj[name];
                 obj[name] = function(selector, options, callback) {
-                    if (typeof options === "function") {
+                    if (typeof options === 'function') {
                         callback = options;
                         options = {};
                     }
@@ -2918,7 +2918,7 @@ class pluginManager {
                         options = options || {};
                     }
 
-                    mngr.dispatch("/db/write", {
+                    mngr.dispatch('/db/write', {
                         db: dbName,
                         operation: name,
                         collection: collection,
@@ -2926,23 +2926,23 @@ class pluginManager {
                         options: options
                     });
                     var e;
-                    var at = "";
-                    if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                    var at = '';
+                    if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
                         e = new Error();
-                        at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                        at += e.stack.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                     }
 
-                    logDbWrite.d(name + " " + collection + " %j %j" + at, selector, options);
-                    logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                    return handlePromiseErrors(this["_" + name](selector, options), e, copyArguments(arguments, name), logForWrites(callback, e, copyArguments(arguments, name)));
+                    logDbWrite.d(name + ' ' + collection + ' %j %j' + at, selector, options);
+                    logDbWrite.d('From connection %j', countlyDb._cly_debug);
+                    return handlePromiseErrors(this['_' + name](selector, options), e, copyArguments(arguments, name), logForWrites(callback, e, copyArguments(arguments, name)));
                 };
             };
-            overwriteDefaultWrite(ob, "deleteOne");
-            overwriteDefaultWrite(ob, "deleteMany");
-            overwriteDefaultWrite(ob, "insertOne");
-            overwriteDefaultWrite(ob, "insertMany");
-            overwriteDefaultWrite(ob, "bulkWrite");
-            overwriteDefaultWrite(ob, "save");
+            overwriteDefaultWrite(ob, 'deleteOne');
+            overwriteDefaultWrite(ob, 'deleteMany');
+            overwriteDefaultWrite(ob, 'insertOne');
+            overwriteDefaultWrite(ob, 'insertMany');
+            overwriteDefaultWrite(ob, 'bulkWrite');
+            overwriteDefaultWrite(ob, 'save');
 
             //overwrite with read logging
             var logForReads = function(callback, e, data) {
@@ -2953,8 +2953,8 @@ class pluginManager {
                 return function(err, res) {
                     if (err) {
                         if (!(data && data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.indexOf(err.code) !== -1)) {
-                            logDbRead.e("Error reading " + collection + " %j %s %j", data, err, err);
-                            logDbRead.d("From connection %j", countlyDb._cly_debug);
+                            logDbRead.e('Error reading ' + collection + ' %j %s %j', data, err, err);
+                            logDbRead.d('From connection %j', countlyDb._cly_debug);
                             if (e) {
                                 logDbRead.e(e.stack);
                             }
@@ -2967,9 +2967,9 @@ class pluginManager {
             };
 
             var overwriteDefaultRead = function(obj, name) {
-                obj["_" + name] = obj[name];
+                obj['_' + name] = obj[name];
                 obj[name] = function(query, options, callback) {
-                    if (typeof options === "function") {
+                    if (typeof options === 'function') {
                         callback = options;
                         options = {};
                     }
@@ -2977,7 +2977,7 @@ class pluginManager {
                         options = options || {};
                     }
 
-                    mngr.dispatch("/db/read", {
+                    mngr.dispatch('/db/read', {
                         db: dbName,
                         operation: name,
                         collection: collection,
@@ -2985,13 +2985,13 @@ class pluginManager {
                         options: options
                     });
                     var e;
-                    var at = "";
-                    if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                    var at = '';
+                    if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
                         e = new Error();
-                        at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                        at += e.stack.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                     }
 
-                    if (name === "findOne" && options && !options.projection) {
+                    if (name === 'findOne' && options && !options.projection) {
                         if (options.fields) {
                             options.projection = options.fields;
                             delete options.fields;
@@ -3001,25 +3001,25 @@ class pluginManager {
                             options = {projection: options};
                         }
                     }
-                    logDbRead.d(name + " " + collection + " %j %j" + at, query, options);
-                    logDbRead.d("From connection %j", countlyDb._cly_debug);
-                    if (name === "findOneAndDelete" && !options.remove) {
-                        return handlePromiseErrors(this["_" + name](query, options).then(result => ({ value: result })),
+                    logDbRead.d(name + ' ' + collection + ' %j %j' + at, query, options);
+                    logDbRead.d('From connection %j', countlyDb._cly_debug);
+                    if (name === 'findOneAndDelete' && !options.remove) {
+                        return handlePromiseErrors(this['_' + name](query, options).then(result => ({ value: result })),
                             e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name))
                         );
                     }
                     else {
-                        return handlePromiseErrors(this["_" + name](query, options), e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name)));
+                        return handlePromiseErrors(this['_' + name](query, options), e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name)));
                     }
                 };
             };
 
-            overwriteDefaultRead(ob, "findOne");
-            overwriteDefaultRead(ob, "findOneAndDelete");
+            overwriteDefaultRead(ob, 'findOne');
+            overwriteDefaultRead(ob, 'findOneAndDelete');
 
             ob._aggregate = ob.aggregate;
             ob.aggregate = function(query, options, callback) {
-                if (typeof options === "function") {
+                if (typeof options === 'function') {
                     callback = options;
                     options = {};
                 }
@@ -3028,41 +3028,41 @@ class pluginManager {
                 }
                 var e;
                 var args = arguments;
-                var at = "";
-                mngr.dispatch("/db/read", {
+                var at = '';
+                mngr.dispatch('/db/read', {
                     db: dbName,
-                    operation: "aggregate",
+                    operation: 'aggregate',
                     collection: collection,
                     query: query,
                     options: options
                 });
-                if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
                     e = new Error();
-                    at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                    at += e.stack.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                 }
-                logDbRead.d("aggregate " + collection + " %j %j" + at, query, options);
-                logDbRead.d("From connection %j", countlyDb._cly_debug);
+                logDbRead.d('aggregate ' + collection + ' %j %j' + at, query, options);
+                logDbRead.d('From connection %j', countlyDb._cly_debug);
                 var cursor = this._aggregate(query, options);
                 cursor._count = cursor.count;
                 cursor.count = function(...countArgs) {
-                    if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
+                    if (!query || (typeof query === 'object' && Object.keys(query).length === 0)) {
                         return ob.estimatedDocumentCount.call(ob, ...countArgs);
                     }
                     return ob.countDocuments.call(ob, query, ...countArgs);
                 };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(cb) {
-                    return handlePromiseErrors(cursor._toArray(), e, copyArguments(arguments, "aggregate"), logForReads(cb, e, copyArguments(args, "aggregate")));
+                    return handlePromiseErrors(cursor._toArray(), e, copyArguments(arguments, 'aggregate'), logForReads(cb, e, copyArguments(args, 'aggregate')));
                 };
                 cursor._forEach = cursor.forEach;
                 cursor.forEach = function(iterator, cb) {
-                    return handlePromiseErrors(cursor._forEach(iterator), e, copyArguments(arguments, "aggregate"), logForReads(cb, e, copyArguments(args, "aggregate")));
+                    return handlePromiseErrors(cursor._forEach(iterator), e, copyArguments(arguments, 'aggregate'), logForReads(cb, e, copyArguments(args, 'aggregate')));
                 };
                 cursor._close = cursor.close;
                 cursor.close = function(cb) {
-                    return handlePromiseErrors(cursor._close(), e, copyArguments(arguments, "aggregate"), logForReads(cb, e, copyArguments(args, "aggregate")));
+                    return handlePromiseErrors(cursor._close(), e, copyArguments(arguments, 'aggregate'), logForReads(cb, e, copyArguments(args, 'aggregate')));
                 };
-                if (typeof callback === "function") {
+                if (typeof callback === 'function') {
                     return cursor.toArray(callback);
                 }
                 return cursor;
@@ -3072,7 +3072,7 @@ class pluginManager {
             ob.find = function(query, options) {
                 var e;
                 var args = arguments;
-                var at = "";
+                var at = '';
                 //new options instead of projection
                 if (options && !options.projection) {
                     if (options.fields) {
@@ -3086,23 +3086,23 @@ class pluginManager {
                 else {
                     options = options || {};
                 }
-                mngr.dispatch("/db/read", {
+                mngr.dispatch('/db/read', {
                     db: dbName,
-                    operation: "find",
+                    operation: 'find',
                     collection: collection,
                     query: query,
                     options: options
                 });
-                if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
                     e = new Error();
-                    at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                    at += e.stack.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                 }
-                logDbRead.d("find " + collection + " %j %j" + at, query, options);
-                logDbRead.d("From connection %j", countlyDb._cly_debug);
+                logDbRead.d('find ' + collection + ' %j %j' + at, query, options);
+                logDbRead.d('From connection %j', countlyDb._cly_debug);
                 var cursor = this._find(query, options);
                 cursor._count = cursor.count;
                 cursor.count = function(...countArgs) {
-                    if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
+                    if (!query || (typeof query === 'object' && Object.keys(query).length === 0)) {
                         return ob.estimatedDocumentCount.call(ob, ...countArgs);
                     }
                     return ob.countDocuments.call(ob, query, ...countArgs);
@@ -3113,9 +3113,9 @@ class pluginManager {
                     //Fix projection
                     var newOptions = JSON.parse(JSON.stringify(projection));
                     newOptions.projection = projection;
-                    mngr.dispatch("/db/read", {
+                    mngr.dispatch('/db/read', {
                         db: dbName,
-                        operation: "find",
+                        operation: 'find',
                         collection: collection,
                         query: query,
                         options: newOptions
@@ -3124,15 +3124,15 @@ class pluginManager {
                 };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback) {
-                    return handlePromiseErrors(cursor._toArray(), e, copyArguments(arguments, "find"), logForReads(callback, e, copyArguments(args, "find")));
+                    return handlePromiseErrors(cursor._toArray(), e, copyArguments(arguments, 'find'), logForReads(callback, e, copyArguments(args, 'find')));
                 };
                 cursor._forEach = cursor.forEach;
                 cursor.forEach = function(iterator, callback) {
-                    return handlePromiseErrors(cursor._forEach(iterator), e, copyArguments(arguments, "find"), logForReads(callback, e, copyArguments(args, "find")));
+                    return handlePromiseErrors(cursor._forEach(iterator), e, copyArguments(arguments, 'find'), logForReads(callback, e, copyArguments(args, 'find')));
                 };
                 cursor._close = cursor.close;
                 cursor.close = function(cb) {
-                    return handlePromiseErrors(cursor._close(), e, copyArguments(arguments, "find"), logForReads(cb, e, copyArguments(args, "find")));
+                    return handlePromiseErrors(cursor._close(), e, copyArguments(arguments, 'find'), logForReads(cb, e, copyArguments(args, 'find')));
                 };
                 return cursor;
             };
@@ -3146,8 +3146,8 @@ class pluginManager {
                 return function(err, res) {
                     if (err) {
                         if (ignore_errors && ignore_errors.indexOf(err.code) === -1) {
-                            logDbRead.d("Error reading " + collection + " %j %s %j", data, err, err);
-                            logDbRead.d("From connection %j", countlyDb._cly_debug);
+                            logDbRead.d('Error reading ' + collection + ' %j %s %j', data, err, err);
+                            logDbRead.d('From connection %j', countlyDb._cly_debug);
                             if (e) {
                                 logDbRead.e(e.stack);
                             }
@@ -3161,57 +3161,57 @@ class pluginManager {
 
             //promise compatability
             var overwritePromise = function(obj, name, ignore_errors) {
-                obj["_" + name] = obj[name];
+                obj['_' + name] = obj[name];
                 obj[name] = function(...args) {
                     var callback;
-                    if (typeof args[args.length - 1] === "function") {
+                    if (typeof args[args.length - 1] === 'function') {
                         callback = args[args.length - 1];
                         args.pop();
                     }
 
                     var e;
-                    var at = "";
-                    if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                    var at = '';
+                    if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
                         e = new Error();
-                        at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                        at += e.stack.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                     }
 
-                    logDbRead.d(name + " " + collection + " %j" + at, args);
-                    logDbRead.d("From connection %j", countlyDb._cly_debug);
-                    return handlePromiseErrors(this["_" + name](...args), e, copyArguments(arguments, name), logForOps(callback, e, copyArguments(arguments, name), ignore_errors), ignore_errors);
+                    logDbRead.d(name + ' ' + collection + ' %j' + at, args);
+                    logDbRead.d('From connection %j', countlyDb._cly_debug);
+                    return handlePromiseErrors(this['_' + name](...args), e, copyArguments(arguments, name), logForOps(callback, e, copyArguments(arguments, name), ignore_errors), ignore_errors);
                 };
             };
-            overwritePromise(ob, "countDocuments");
-            overwritePromise(ob, "createIndex");
-            overwritePromise(ob, "createIndexes");
-            overwritePromise(ob, "distinct");
-            overwritePromise(ob, "drop", [26]);
-            overwritePromise(ob, "dropIndex");
-            overwritePromise(ob, "dropIndexes");
-            overwritePromise(ob, "estimatedDocumentCount");
-            overwritePromise(ob, "indexExists");
-            overwritePromise(ob, "indexInformation");
-            overwritePromise(ob, "indexes");
-            overwritePromise(ob, "isCapped");
-            overwritePromise(ob, "options");
-            overwritePromise(ob, "rename");
+            overwritePromise(ob, 'countDocuments');
+            overwritePromise(ob, 'createIndex');
+            overwritePromise(ob, 'createIndexes');
+            overwritePromise(ob, 'distinct');
+            overwritePromise(ob, 'drop', [26]);
+            overwritePromise(ob, 'dropIndex');
+            overwritePromise(ob, 'dropIndexes');
+            overwritePromise(ob, 'estimatedDocumentCount');
+            overwritePromise(ob, 'indexExists');
+            overwritePromise(ob, 'indexInformation');
+            overwritePromise(ob, 'indexes');
+            overwritePromise(ob, 'isCapped');
+            overwritePromise(ob, 'options');
+            overwritePromise(ob, 'rename');
 
             var overwriteBulkPromise = function(obj, name) {
-                obj["_" + name] = obj[name];
+                obj['_' + name] = obj[name];
                 obj[name] = function(...args) {
                     var e;
-                    var at = "";
-                    if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                    var at = '';
+                    if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
                         e = new Error();
-                        at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                        at += e.stack.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                     }
 
-                    logDbRead.d(name + " " + collection + " %j" + at, args);
-                    logDbRead.d("From connection %j", countlyDb._cly_debug);
-                    var bulk = this["_" + name](...args);
+                    logDbRead.d(name + ' ' + collection + ' %j' + at, args);
+                    logDbRead.d('From connection %j', countlyDb._cly_debug);
+                    var bulk = this['_' + name](...args);
                     bulk._execute = bulk.execute;
                     bulk.execute = function(options, callback) {
-                        if (typeof options === "function") {
+                        if (typeof options === 'function') {
                             callback = options;
                             options = {};
                         }
@@ -3221,14 +3221,14 @@ class pluginManager {
                 };
             };
 
-            overwriteBulkPromise(ob, "initializeOrderedBulkOp");
-            overwriteBulkPromise(ob, "initializeUnorderedBulkOp");
+            overwriteBulkPromise(ob, 'initializeOrderedBulkOp');
+            overwriteBulkPromise(ob, 'initializeUnorderedBulkOp');
 
             //backwards compatability
 
             ob._count = ob.count;
             ob.count = function(query, ...countArgs) {
-                if (!query || (typeof query === "object" && Object.keys(query).length === 0)) {
+                if (!query || (typeof query === 'object' && Object.keys(query).length === 0)) {
                     return ob.estimatedDocumentCount.call(ob, ...countArgs);
                 }
                 return ob.countDocuments.call(ob, query, ...countArgs);
@@ -3236,7 +3236,7 @@ class pluginManager {
             ob.ensureIndex = ob.createIndex;
 
             ob.update = function(selector, document, options, callback) {
-                if (options && typeof options === "object" && options.multi) {
+                if (options && typeof options === 'object' && options.multi) {
                     return ob.updateMany(selector, document, options, callback);
                 }
                 else {
@@ -3245,7 +3245,7 @@ class pluginManager {
             };
 
             ob.remove = function(selector, options, callback) {
-                if (options && typeof options === "object" && options.single) {
+                if (options && typeof options === 'object' && options.single) {
                     return ob.deleteOne(selector, options, callback);
                 }
                 else {
@@ -3263,9 +3263,9 @@ class pluginManager {
             };
 
             ob._findAndModify = function(query, sort, doc, options, callback) {
-                if (options && typeof options === "object") {
+                if (options && typeof options === 'object') {
                     if (options.new) {
-                        options.returnDocument = "after";
+                        options.returnDocument = 'after';
                     }
                     if (options.remove) {
                         return ob.findOneAndDelete(query, options, callback);
@@ -3284,16 +3284,16 @@ class pluginManager {
             ob._save = ob.save;
             ob.save = function(doc, options, callback) {
                 if (doc._id) {
-                    var selector = {"_id": doc._id};
+                    var selector = {'_id': doc._id};
                     delete doc._id;
                     options = options || {};
-                    if (options && typeof options === "object") {
+                    if (options && typeof options === 'object') {
                         options.upsert = true;
-                        return ob.updateOne(selector, {"$set": doc}, options, callback);
+                        return ob.updateOne(selector, {'$set': doc}, options, callback);
                     }
                     else {
-                        var myoptions = {"upsert": true};
-                        return ob.updateOne(selector, {"$set": doc}, myoptions, options); //we have callback in options param
+                        var myoptions = {'upsert': true};
+                        return ob.updateOne(selector, {'$set': doc}, myoptions, options); //we have callback in options param
                     }
 
 
@@ -3323,7 +3323,7 @@ class pluginManager {
         var toReturn = {};
 
         for (let i in provided) {
-            if (typeof current[i] === "undefined") {
+            if (typeof current[i] === 'undefined') {
                 toReturn[i] = provided[i];
             }
             else if ((typeof provided[i]) === 'object' && provided[i] !== null) {
@@ -3344,10 +3344,10 @@ class pluginManager {
     */
     flattenObject(ob, prefix) {
         if (prefix) {
-            prefix += ".";
+            prefix += '.';
         }
         else {
-            prefix = "";
+            prefix = '';
         }
         var toReturn = {};
 
@@ -3367,7 +3367,7 @@ class pluginManager {
                 }
             }
             else {
-                if (!isNaN(ob[i]) && typeof (ob[i]) === "number" && ob[i] > 2147483647) {
+                if (!isNaN(ob[i]) && typeof (ob[i]) === 'number' && ob[i] > 2147483647) {
                     ob[i] = 2147483647;
                 }
                 toReturn[prefix + i] = ob[i];
