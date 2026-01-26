@@ -20,6 +20,8 @@ import './stylesheets/vue/element-tiptap.css';
 // import.meta.glob('../../../plugins/*/frontend/public/stylesheets/**/*.scss', { eager: true });
 import.meta.glob('../../../plugins/*/frontend/public/stylesheets/**/*.css');
 
+import "./imports.js";
+
 // =============================================================================
 // LEGACY SCRIPT IMPORTS
 // =============================================================================

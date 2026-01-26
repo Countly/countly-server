@@ -11,14 +11,14 @@ const __dirname = path.dirname(__filename);
 // These will be concatenated into a single scope
 const legacyScripts = [
     // === HEAD SECTION (from dashboard.html lines 111-169) ===
-    'javascripts/dom/jquery/jquery.js',
-    'javascripts/utils/polyfills.js',
-    'javascripts/utils/underscore-min.js',
-    'javascripts/utils/lodash.merge.js',
-    'javascripts/utils/lodash.mergeWith.js',
+    // 'javascripts/dom/jquery/jquery.js',                                       - DELETE. IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/utils/polyfills.js',                                         - DELETE. NOT NEEDED ANYMORE.
+    // 'javascripts/utils/underscore-min.js',                                    - DELETE. IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/utils/lodash.merge.js',                                      - DELETE. IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/utils/lodash.mergeWith.js',                                  - DELETE. IMPORTED IN imports.js AS ES MODULE.
     'javascripts/utils/prefixfree.min.js',
     'javascripts/dom/gridstack/gridstack-h5.js',
-    'javascripts/utils/moment/moment-with-locales.min.js',
+    // 'javascripts/utils/moment/moment-with-locales.min.js',                    - DELETE. IMPORTED IN imports.js AS ES MODULE.
     'javascripts/utils/backbone-min.js',
     'javascripts/utils/jquery.i18n.properties.js',
     'javascripts/utils/store+json2.min.js',
@@ -29,7 +29,7 @@ const legacyScripts = [
     'javascripts/utils/webfont.js',
     'javascripts/utils/leaflet.js',
     'javascripts/utils/js-deep-equals.unsorted.min.js',
-    // 'javascripts/utils/polyfill/es6-promise.auto.min.js',
+    // 'javascripts/utils/polyfill/es6-promise.auto.min.js',                     - DELETE. NOT NEEDED ANYMORE.
     'javascripts/utils/polyfill/intersection-observer.js',
     'javascripts/utils/vue/vue.min.js',
     'javascripts/utils/vue/composition-api.min.js',
@@ -55,8 +55,8 @@ const legacyScripts = [
     'javascripts/utils/cronstrue.min.js',
 
     // === BODY SECTION (from dashboard.html lines 187-274) ===
-    'javascripts/countly/countly.analytics.js',
-    'javascripts/countly/countly.common.js',
+    // 'javascripts/countly/countly.analytics.js',                               - DELETE. NOT BEING USED ANYWHERE.
+    // 'javascripts/countly/countly.common.js',                                  - DELETE. IMPORTED IN imports.js AS ES MODULE.
     'javascripts/countly/countly.config.js',
     'javascripts/countly/countly.helpers.js',
     'javascripts/countly/countly.event.js',
@@ -283,6 +283,7 @@ export default defineConfig({
         emptyOutDir: true,
         sourcemap: true,
         manifest: true,
+        // minify: false,
 
         rollupOptions: {
             input: {
