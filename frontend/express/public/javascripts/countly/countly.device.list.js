@@ -22912,7 +22912,7 @@ var countlyDeviceList = {
     "ZA833": "Zyrex  ZA833",
     "ZT216_7": "zyrex"
 };
-/*global module*/
+/*global module*/ // eslint-disable-line
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = countlyDeviceList;
 }

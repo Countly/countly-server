@@ -1,5 +1,6 @@
 **/node_modules/**
 bin/upgrade/**
+frontend/express/public/dist/**
 frontend/express/public/javascripts/dom/**
 frontend/express/public/javascripts/min/**
 frontend/express/public/javascripts/utils/**

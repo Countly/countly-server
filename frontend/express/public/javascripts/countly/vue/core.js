@@ -30,22 +30,22 @@
 
     var _i18n = function() {
         var appType = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
-        arguments = arguments || [];
-        if (arguments.length === 1) { //single arg. use map
-            return _i18nM(arguments[0]);
+        let args = arguments || [];
+        if (args.length === 1) { //single arg. use map
+            return _i18nM(args[0]);
         }
         else if (!appType || appType === "mobile") {
-            return jQuery.i18n.prop.apply(null, arguments);
+            return jQuery.i18n.prop.apply(null, args);
         }
         else {
-            var key = arguments[0];
+            var key = args[0];
             if (!jQuery.i18n.map[appType + "." + key]) {
                 // Key miss
-                return jQuery.i18n.prop.apply(null, arguments);
+                return jQuery.i18n.prop.apply(null, args);
             }
             else {
                 // Key hit
-                var argsCopy = Array.prototype.slice.call(arguments);
+                var argsCopy = Array.prototype.slice.call(args);
                 argsCopy[0] = appType + "." + key;
                 return jQuery.i18n.prop.apply(null, argsCopy);
             }

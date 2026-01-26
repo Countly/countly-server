@@ -4,7 +4,7 @@
 
 .cly-events-breakdown-horizontal-tile {
     &__wrapper {
-        border-right: 1px solid #ECECEC; 
+        border-right: 1px solid #ECECEC;
         border-top: 1px solid c.$table-border-color;
         box-shadow: 0px 2px 0px #EAECEF;
         padding: 24px 24px 0px 24px;
@@ -89,7 +89,7 @@
         &--image {
             width: 242px;
             height: 242px;
-            background-image: url('../../images/dashboard/events-overview-noevents.svg');
+            background-image: url('../../../images/dashboard/events-overview-noevents.svg');
         }
     }
     &--text{
@@ -105,10 +105,10 @@
     border-radius: 4px;
     }
     &--grey {
-      color: #A7AEB8 
+      color: #A7AEB8
     }
     &__heading {
-      padding:8px 0px 16px 0px  
+      padding:8px 0px 16px 0px
     }
     &__configure {
         &--position {
@@ -247,7 +247,7 @@
     &--margin {
         margin-right:32px;
     }
-} 
+}
 
 .cly-vue-events-group {
     color: #FFFFFF;
@@ -259,7 +259,7 @@
     vertical-align: middle;
     padding: 3px 4px;
     border-radius: 4px;
-} 
+}
 
 .cly-vue-events-all-placeholder-text {
     color: map.get(c.$colors, "text-placeholder");
@@ -268,13 +268,13 @@
     font-weight: 500;
     letter-spacing: 0.005em;
     white-space: nowrap;
-} 
+}
 .cly-vue-events-all-date-picker {
     margin-right:26px
-} 
+}
 .cly-vue-events-all-tooltip {
     margin-left:10px
-} 
+}
 .cly-vue-overview-events-header {
     padding-right: 9.5px;
     letter-spacing: .003em;

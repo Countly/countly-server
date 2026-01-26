@@ -89,22 +89,22 @@
     * Display dashboard notification using Amaran JS library
     * @param {object} msg - notification message object
     * @param {string=} msg.title - title of the notification
-    * @deprecated 
+    * @deprecated
     * @param {string=} msg.message - main notification text
     * @param {string=} msg.info - some additional information to display in notification
-    * @deprecated 
+    * @deprecated
     * @param {number=} [msg.delay=10000] - delay time in miliseconds before displaying notification
-    * @deprecated 
+    * @deprecated
     * @param {string=} [msg.type=ok] - message type, accepted values ok, error and warning
     * @param {string=} [msg.position=top right] - message position
-    * @deprecated 
+    * @deprecated
     * @param {string=} [msg.sticky=false] - should message stick until closed
     * @param {string=} [msg.clearAll=false] - clear all previous notifications upon showing this one
-    * @deprecated 
+    * @deprecated
     * @param {string=} [msg.closeOnClick=false] - should notification be automatically closed when clicked on
-    * @deprecated 
+    * @deprecated
     * @param {function=} msg.onClick - on click listener
-    * @deprecated 
+    * @deprecated
     * @param {boolean=} msg.persistent - flag to determine if notification should be displayed persistently or as a toast
     * @example
     * CountlyHelpers.notify({
@@ -173,10 +173,10 @@
     };
 
     /**
-     * 
-     * @param {object} options includes from, title and url properties. from property 
-     * indicates the origin of view. url indicates the new url to navigate to and 
-     * title is the text that will be dispalyed for the backlink url. 
+     *
+     * @param {object} options includes from, title and url properties. from property
+     * indicates the origin of view. url indicates the new url to navigate to and
+     * title is the text that will be dispalyed for the backlink url.
      */
     CountlyHelpers.goTo = function(options) {
         if (options.isExternalLink) {
@@ -196,7 +196,7 @@
     };
 
     /**
-     * 
+     *
      * @returns {object} includes url and title propertes that are set by goTo() method.
      * url indicate the backlink url and title is the text that will be displayed for the backlink url
      */
@@ -1237,7 +1237,7 @@
     /**
      * Gets a random string from given character set string with given length
      * @param {string} charSet - charSet string
-     * @param {number} length - length of the random string. default 1 
+     * @param {number} length - length of the random string. default 1
      * @returns {string} random string from charset
      */
     CountlyHelpers.getRandomValue = function(charSet, length = 1) {
@@ -1332,7 +1332,7 @@
     /**
     * Get currently selected period that can be used in ajax requests
     * @memberof CountlyHelpers
-    * @param {string} period selected date period    
+    * @param {string} period selected date period
     * @returns {string} supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
     */
     CountlyHelpers.getPeriodUrlQueryParameter = function(period) {
@@ -1346,7 +1346,7 @@
     /**
     * Format number to percentage value
     * @memberof CountlyHelpers
-    * @param {number} value number to be converted to percentage    
+    * @param {number} value number to be converted to percentage
     * @param {number} decimalPlaces number of decimal places to keep for percentage, default is two
     * @returns {number} percentage number for given value. Otherwise, returns 0 for falsy or non number values
     */

@@ -1,4 +1,4 @@
-.setup-logo { margin-top: 38px; margin-left: 72px; width:165px; height:50px; background-image:url('../../images/pre-login/countly-logo-dark.svg'); background-repeat: no-repeat; background-size: contain;position: fixed; left: 0px; top: 0px; }
+.setup-logo { margin-top: 38px; margin-left: 72px; width:165px; height:50px; background-image:url('../../../images/pre-login/countly-logo-dark.svg'); background-repeat: no-repeat; background-size: contain;position: fixed; left: 0px; top: 0px; }
 
 .centered-content {
     min-height: 100vh;
@@ -63,23 +63,11 @@
 }
 
 .setup-radio-icon {
-    background-image: url('../../images/dashboard/onboarding/box.svg');
+    background-image: url('../../../images/dashboard/onboarding/box.svg');
     background-position: center;
     background-repeat: no-repeat;
     width: 100%;
     height: 100%;
-}
-
-.setup-radio-icon--app-type-mobile {
-    background-image: url('../../images/dashboard/onboarding/app-type-mobile.svg');
-}
-
-.setup-radio-icon--app-type-web {
-    background-image: url('../../images/dashboard/onboarding/app-type-web.svg');
-}
-
-.setup-radio-icon--app-type-desktop {
-    background-image: url('../../images/dashboard/onboarding/app-type-desktop.svg');
 }
 
 .is-checked .setup-radio-icon {
@@ -120,7 +108,7 @@
 
 .quickstart-link, .quickstart-link:visited {
     color: #0166D6;
-} 
+}
 
 .quickstart-link:hover {
     color: #333c48;

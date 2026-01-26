@@ -1,7 +1,5 @@
 /*global moment, countlyVue, app, countlyLogger, countlyCommon, CV */
 (function() {
-    var isSecondFormat = (Math.round(parseFloat(this.timestamp)) + "").length === 10;
-
     var formatVersion = function(version, eleminateFirstCharacter) {
         return version ? eleminateFirstCharacter ? version.substring(1).replaceAll(':', '.') : version.replaceAll(':', '.') : '';
     };
@@ -18,12 +16,12 @@
         props: ['timestamp'],
         computed: {
             date: function() {
-                return isSecondFormat ?
+                return (Math.round(parseFloat(this.timestamp)) + "").length === 10 ?
                     moment(this.timestamp * 1000).format("MMMM Do YYYY") :
                     moment(this.timestamp).format("MMMM Do YYYY");
             },
             time: function() {
-                return isSecondFormat ?
+                return (Math.round(parseFloat(this.timestamp)) + "").length === 10 ?
                     moment(this.timestamp * 1000).format("HH:mm:ss") :
                     moment(this.timestamp).format("HH:mm:ss");
             },

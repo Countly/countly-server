@@ -47,7 +47,7 @@ var countlyOsMapping = {
     "arch": {short: "l", name: "Linux"}
 };
 
-/*global module*/
+/*global module*/ // eslint-disable-line
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = countlyOsMapping;
 }

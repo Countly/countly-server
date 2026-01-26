@@ -403,6 +403,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.set('view engine', 'html');
     app.set('view options', {layout: false});
 
+    // Load vite-manifest helper for automatic hash resolution
+    const viteManifest = require('./libs/vite-manifest');
+    app.locals.getViteAsset = viteManifest.getAssetPath;
+    app.locals.getViteAssets = viteManifest.getAssets;
+
     app.use('/stylesheets/ionicons/fonts/', function(req, res, next) {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");

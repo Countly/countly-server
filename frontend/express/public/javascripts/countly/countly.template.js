@@ -128,7 +128,7 @@ var AppRouter = Backbone.Router.extend({
                 * node.classes - string with css classes to add to category element
                 * node.style - string with css styling to add to category element
                 * node.html - additional HTML to append after text
-                * node.callback 
+                * node.callback
             */
         });
         this._internalMenuCategories.push(category);
@@ -304,7 +304,7 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     /**
-    * Add first level menu element for all app types and special categories. 
+    * Add first level menu element for all app types and special categories.
     * @memberof app
     * @param {string} category - category under which to add menu: "understand", "explore", "reach", "improve", "utilities", "management", "user"
     * @param {Object} node - object defining menu lement
@@ -1352,6 +1352,7 @@ Backbone.history.checkUrl = function() {
 })();
 
 var app = new AppRouter();
+window.app = app;
 
 /**
 * Navigate to another hash address programmatically, without trigering view route and without leaving trace in history, if possible

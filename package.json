@@ -37,7 +37,12 @@
     "start:ingestor:dev": "COUNTLY_CONFIG__SYMLINKED=true COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings api/ingestor.js",
     "start:jobserver:dev": "COUNTLY_CONFIG__SYMLINKED=true COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings jobServer/index.js",
     "start:all:dev": "npm run start:api:dev & npm run start:frontend:dev & npm run start:ingestor:dev & npm run start:aggregator:dev & npm run start:jobserver:dev & wait",
-    "test:services": "env-cmd -f test/configs/base.env -f test/configs/suite-overrides/core.env sh -c 'npm run start:api:dev & npm run start:frontend:dev & npm run start:ingestor:dev & npm run start:aggregator:dev & npm run start:jobserver:dev & wait'"
+    "test:services": "env-cmd -f test/configs/base.env -f test/configs/suite-overrides/core.env sh -c 'npm run start:api:dev & npm run start:frontend:dev & npm run start:ingestor:dev & npm run start:aggregator:dev & npm run start:jobserver:dev & wait'",
+    "build:vite": "vite build",
+    "build:vite:dev": "vite build --mode development",
+    "build:vite:watch": "vite build --watch",
+    "dev:vite": "vite",
+    "preview:vite": "vite preview"
   },
   "lint-staged": {
     "*.{js,vue}": [
@@ -49,12 +54,14 @@
     "docdash": "^2.0.1",
     "env-cmd": "^10.1.0",
     "eslint": "^8.56.0",
+    "glob": "^13.0.0",
     "grunt-contrib-watch": "1.1.0",
     "grunt-eslint": "24.3.0",
     "grunt-mocha-nyc": "1.0.3",
     "grunt-mocha-test": "0.13.3",
     "husky": "^9.1.7",
     "lint-staged": "^16.0.0",
+    "magic-string": "^0.30.21",
     "mocha": "10.8.2",
     "nyc": "17.1.0",
     "pino-pretty": "^13.1.1",
@@ -148,6 +155,7 @@
     "tslib": "^2.6.3",
     "uglify-js": "3.19.3",
     "underscore": "1.13.7",
+    "vite": "^7.3.1",
     "xlsx-write-stream": "^1.0.0",
     "yauzl": "^3.2.0"
   },

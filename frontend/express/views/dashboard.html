@@ -29,16 +29,16 @@
                 if (savedHash && savedHash.length > 1) {
                     // Clear the saved hash immediately to prevent reuse
                     sessionStorage.removeItem(OAUTH_HASH_KEY);
-                    
+
                     // Validate hash format: must start with # and contain only safe URL characters
                     // Allow: alphanumeric, forward slash, hyphen, underscore, dot, question mark, equals, ampersand, percent
                     var hashPattern = /^#[a-zA-Z0-9\/_\-\.?=&%]+$/;
-                    
+
                     if (hashPattern.test(savedHash)) {
                         // Additional check: ensure no javascript: or data: protocol
                         var lowerHash = savedHash.toLowerCase();
-                        if (lowerHash.indexOf('javascript:') === -1 && 
-                            lowerHash.indexOf('data:') === -1 && 
+                        if (lowerHash.indexOf('javascript:') === -1 &&
+                            lowerHash.indexOf('data:') === -1 &&
                             lowerHash.indexOf('<script') === -1) {
                             // Restore the hash to the current URL
                             if (window.location.hash !== savedHash) {
@@ -51,7 +51,7 @@
                 // Ignore if sessionStorage is not available
             }
         })();
-        
+
         //no one should really need this
         window.eval = function(){
             console.log("eval not available");
@@ -87,11 +87,11 @@
     <link rel="stylesheet" href="<%- cdn %>stylesheets/material/material-icons.css?<%= countlyVersion %>" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/vue/element-ui.css?<%= countlyVersion %>" />
     <% if (production) { %>
-		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.min.css?<%= countlyVersion %>" />
-		<link rel="stylesheet" href="<%- cdn %>stylesheets/plugins.min.css?<%= countlyVersion %>&<%= pluginsSHA %>" />
+		<!--<link rel="stylesheet" href="<%- cdn %>stylesheets/main.min.css?<%= countlyVersion %>" />
+		<link rel="stylesheet" href="<%- cdn %>stylesheets/plugins.min.css?<%= countlyVersion %>&<%= pluginsSHA %>" />-->
     	<!-- PRODUCTION -->
-    	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.dom.js?<%= countlyVersion %>"></script>
-    	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
+    	<!--<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.dom.js?<%= countlyVersion %>"></script>
+    	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>-->
     <% } else { %>
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.css?<%= countlyVersion %>" />
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/vue/clyvue.css?<%= countlyVersion %>" />
@@ -160,21 +160,6 @@
     <script type="text/javascript">
 	window.production = <%= production ? true : false %>;
 
-	function loadMeterialIcons(canRetry) {
-		WebFont.load({
-			custom: {
-				families: ['Material Icons'],
-				urls: ['stylesheets/material/material-icons.css']
-			},
-			fontinactive: function (family, fvd) {
-				if(canRetry){
-					loadMeterialIcons(false); /* only try one more time */
-				}
-			},
-			timeout: 5000
-		})
-	}
-	loadMeterialIcons(true);
     </script>
     <% if (typeof inject_template.css != 'undefined') { %>
 	<style><%- inject_template.css %></style>
@@ -192,10 +177,10 @@
 	<div id="vue-modal-manager"></div>
 <% if (production) { %>
 	    <!-- PRODUCTION -->
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
+	    <!--<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.lib.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.plugins.js?<%= countlyVersion %>&<%= pluginsSHA %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.plugins.js?<%= countlyVersion %>&<%= pluginsSHA %>"></script>-->
     <% } else { %>
 	    <!-- DEVELOPMENT -->
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.analytics.js?<%= countlyVersion %>"></script>
@@ -300,6 +285,9 @@
     		<script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>?<%= countlyVersion %>"></script>
         <% } %>
     <% } %>
+
+    <link rel="stylesheet" href="<%- cdn %><%= getViteAsset('entrypoint.js', 'css') %>" />
+    <script language="javascript" type="text/javascript" src="<%- cdn %><%= getViteAsset('entrypoint.js', 'js') %>"></script>
 
 	<script>Backbone.history.start();</script>
     <!--Countly script-->
@@ -459,11 +447,6 @@
             });
         }
     }
-    </script>
-    <script type='text/javascript'>
-    app.recordEvent = function (event) {
-
-    };
     </script>
 
     <% if (typeof inject_template.html != "undefined") { %>

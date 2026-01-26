@@ -1,11 +1,11 @@
-/* global Vue, CV, $, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon CountlyHelpers*/
+/* global Vue, CV, $, app, countlyEvent, countlyGlobal, countlyAuth, ElementTiptapPlugin, countlyCommon CountlyHelpers*/
 
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
-    Vue.component("vue-json-pretty", VueJsonPretty.default);
+    // Vue.component("vue-json-pretty", VueJsonPretty.default);
     Vue.use(ElementTiptapPlugin);
     Vue.component("cly-back-link", countlyBaseComponent.extend(
         // @vue/component

@@ -62,11 +62,6 @@ module.exports = function(grunt) {
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
             },
-            visualization: {
-                src: [
-                ],
-                dest: 'frontend/express/public/javascripts/min/countly.visualization.concat.js'
-            },
             lib: {
                 src: [
                     'frontend/express/public/javascripts/countly/countly.auth.js',
@@ -173,7 +168,6 @@ module.exports = function(grunt) {
                 files: {
                     'frontend/express/public/javascripts/min/countly.dom.js': 'frontend/express/public/javascripts/min/countly.dom.concat.js',
                     'frontend/express/public/javascripts/min/countly.utils.js': 'frontend/express/public/javascripts/min/countly.utils.concat.js',
-                    'frontend/express/public/javascripts/min/countly.visualization.js': 'frontend/express/public/javascripts/min/countly.visualization.concat.js',
                     'frontend/express/public/javascripts/min/countly.lib.js': 'frontend/express/public/javascripts/min/countly.lib.concat.js'
                 }
             }

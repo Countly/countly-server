@@ -74,7 +74,7 @@
     /**
      * Provides picker with the default input state
      * @param {String} formatter Formatter string e.g. MM/DD/YYYY
-     * @returns {Object} State object, can be merged to component data  
+     * @returns {Object} State object, can be merged to component data
      */
     function getDefaultInputState(formatter) {
         var now = moment(),
@@ -127,7 +127,7 @@
                 parsed: [moment().startOf("days").toDate(), moment().endOf("days").toDate()]
             }
         };
-        state.label = getRangeLabel(state, this.type);
+        state.label = getRangeLabel(state, false);
         return state;
     }
 
@@ -224,7 +224,7 @@
     Object.freeze(globalYearsRange);
 
     /**
-     * Creates an initial state object 
+     * Creates an initial state object
      * @param {Object} instance Instance configuration
      * @returns {Object} Initial state object for datepicker
      */
@@ -260,9 +260,7 @@
             globalRange = instance.isFuture ? globalFutureDaysRange : globalDaysRange;
         }
 
-        if (this.retentionConfiguration) {
-            inputDisable = true;
-        }
+        inputDisable = true;
 
         var state = {
             // Calendar state
@@ -1280,7 +1278,7 @@
                 }
                 else if (availableShortcuts[value]) {
                     /*
-                        Shortcuts values should be mapped to a real date range for the cases shortcuts are disabled. 
+                        Shortcuts values should be mapped to a real date range for the cases shortcuts are disabled.
                     */
                     var effectiveShortcutRange = availableShortcuts[value].getRange();
                     state.rangeMode = 'inBetween';

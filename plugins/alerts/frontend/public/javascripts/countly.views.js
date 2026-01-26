@@ -1068,7 +1068,7 @@
                 document.body.appendChild(tmpEl);
                 const tempSelectWidth = tmpEl.getBoundingClientRect().width;
                 tmpEl.remove();
-                //this.changeColor(this.$refs.alertDataSubTypeSelect.$el); 
+                //this.changeColor(this.$refs.alertDataSubTypeSelect.$el);
                 return tempSelectWidth;
             },
             // Handle the change event of the element
