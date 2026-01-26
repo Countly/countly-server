@@ -160,7 +160,49 @@ export interface PromiseResult<T> {
 /**
  * Plugin Manager - Central orchestrator for Countly's plugin system
  */
-export interface PluginManager {
+export declare class PluginManager {
+    /** Event handlers registry */
+    events: EventsRegistry;
+
+    /** Loaded plugins and their frontend modules */
+    plugs: any[];
+
+    /** Cached sync method lookups */
+    methodCache: Record<string, any>;
+
+    /** Cached async method lookups */
+    methodPromiseCache: Record<string, any>;
+
+    /** Current plugin configurations */
+    configs: Record<string, Config>;
+
+    /** Default plugin configurations */
+    defaultConfigs: Record<string, Config>;
+
+    /** Configuration change callbacks */
+    configsOnchanges: Record<string, Function>;
+
+    /** Namespaces excluded from UI */
+    excludeFromUI: Record<string, boolean>;
+
+    /** Indicates plugin sync state */
+    finishedSyncing: boolean;
+
+    /** Collections queued for TTL cleanup */
+    expireList: string[];
+
+    /** Masking configuration container */
+    masking: any;
+
+    /** Map of all discovered plugins */
+    fullPluginsMap: Record<string, boolean>;
+
+    /** Core plugin list */
+    coreList: string[];
+
+    /** Dependency graph */
+    dependencyMap: any;
+
     /** Registered app types */
     appTypes: string[];
 
@@ -231,6 +273,14 @@ export interface PluginManager {
      * @param api - Optional API flag
      */
     loadConfigs(db: Database, callback: (error?: Error) => void, api?: boolean): void;
+
+    /**
+     * Load configuration for ingestor process and ensure defaults are stored
+     * @param db - Database connection
+     * @param callback - Callback function
+     * @param api - Optional API flag
+     */
+    loadConfigsIngestor(db: Database, callback: (error?: Error) => void, api?: boolean): Promise<void>;
 
     /**
      * Set default configurations
@@ -412,6 +462,11 @@ export interface PluginManager {
     checkPluginsMaster(): void;
 
     /**
+     * Allow external database clients to be registered
+     */
+    registerDatabaseHandler(): void;
+
+    /**
      * Mark that we started syncing plugin states
      */
     startSyncing(): void;
@@ -559,6 +614,14 @@ export interface PluginManager {
      */
     wrapDatabase(countlyDb: Db, client: MongoClient, dbName: string, dbConnectionString: string, dbOptions: object): Database;
 
+    /**
+     * Flatten nested objects into dotted paths
+     * @param ob - Object to flatten
+     * @param prefix - Optional prefix
+     * @returns Flattened object
+     */
+    flattenObject(ob: object, prefix?: string): Record<string, any>;
+
     // Data Masking Methods
     /**
      * Fetch masking configuration from database
@@ -618,16 +681,6 @@ export interface PluginManager {
      * Procedure to restart countly process
      */
     restartCountly(): void;
-
-    /**
-     * Singleton getInstance definition
-     * @returns PluginManager instance
-     */
-    getInstance(): PluginManager;
 }
 
-/**
- * Plugin Manager singleton instance
- */
-declare const pluginManager: PluginManager;
-export default pluginManager;
+export default PluginManager;

@@ -9,6 +9,11 @@
  * @typedef {import('../types/pluginManager').Config} Config
  * @typedef {import('../types/pluginManager').ConfigChanges} ConfigChanges
  * @typedef {import('../types/pluginManager').PluginState} PluginState
+ * @typedef {import('../types/pluginManager').PromiseResult<any>} PromiseResult
+ * @typedef {import('../types/pluginManager').TTLCollection} TTLCollection
+ * @typedef {import('../types/pluginManager').DbConfigFiles} DbConfigFiles
+ * @typedef {import('../types/pluginManager').DbConfigEnvs} DbConfigEnvs
+ * @typedef {import('../types/pluginManager').InternalOmitSegments} InternalOmitSegments
  * @typedef {import('../types/pluginManager').DatabaseConfig} DatabaseConfig
  * @typedef {import('../types/pluginManager').DbConnectionParams} DbConnectionParams
  * @typedef {import('../types/pluginManager').MaskingSettings} MaskingSettings
@@ -48,7 +53,7 @@ var pluginConfig = {};
  * TODO: Remove this function and all it calls when moving to Node 12.
  * Normalize Bluebird's allSettled response to native Promise.allSettled shape.
  * @param {Array<{ isFulfilled: function(): boolean, value: function(): any, reason: function(): any }>} bluebirdResults - Bluebird inspection results with isFulfilled(), value(), and reason() methods
- * @returns {Array<{status: string, value: any, reason: any}>} Native Promise.allSettled compatible settlement descriptors
+ * @returns {PromiseResult[]} Native Promise.allSettled compatible settlement descriptors
  */
 var promiseAllSettledBluebirdToStandard = function(bluebirdResults) {
     return bluebirdResults.map((bluebirdResult) => {
@@ -99,7 +104,9 @@ var preventKillingNumberType = function(configsPointer, changes) {
 * @module "plugins/pluginManager"
 */
 
-/** @lends module:plugins/pluginManager */
+/**
+ * @implements {PluginManager}
+ */
 class pluginManager {
     /** @type {EventsRegistry} */
     events = {};
