@@ -21,7 +21,7 @@ plugins.loadConfigs = plugins.loadConfigsIngestor;
 
 plugins.connectToAllDatabases(true).then(function() {
     log.i("Db connections done");
-    // common.writeBatcher = new WriteBatcher(common.db);
+    // common.writeBatcher = new WriteBatcher(common.dbUnwrapped);
 
     common.writeBatcher = new WriteBatcher(common.dbUnwrapped);
     common.secondaryWriteBatcher = new WriteBatcher(common.dbUnwrapped);//Remove once all plugins are updated
@@ -189,7 +189,7 @@ plugins.connectToAllDatabases(true).then(function() {
 
 
     plugins.init({"skipDependencies": true, "filename": "aggregator"});
-    plugins.loadConfigs(common.db, async function() {
+    plugins.loadConfigs(common.dbUnwrapped, async function() {
         plugins.dispatch("/aggregator", {common: common});
     });
 });
