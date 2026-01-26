@@ -383,15 +383,16 @@ class pluginManager {
      * @param {function} callback - callback function
      */
     reloadEnabledPluginList(db, callback) {
+        var self = this;
         this.loadDependencyMap();
         db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
             if (err) {
                 console.log(err);
             }
             res = res || {};
-            if (Object.keys(this.fullPluginsMap).length > 0) {
+            if (Object.keys(self.fullPluginsMap).length > 0) {
                 for (var pp in res.plugins) {
-                    if (!this.fullPluginsMap[pp]) {
+                    if (!self.fullPluginsMap[pp]) {
                         delete res.plugins[pp];
                     }
                 }
@@ -833,17 +834,18 @@ class pluginManager {
     * @param {function} callback - function to call when updating finished
     **/
     updateUserConfigs(db, changes, user_id, callback) {
+        var self = this;
         db.collection("members").findOne({ _id: db.ObjectID(user_id) }, function(err, member) {
             var update = {};
             for (let k in changes) {
                 update[k] = {};
-                _.extend(update[k], this.configs[k], changes[k]);
+                _.extend(update[k], self.configs[k], changes[k]);
 
                 if (member.settings && member.settings[k]) {
                     _.extend(update[k], member.settings[k], changes[k]);
                 }
             }
-            db.collection("members").update({ _id: db.ObjectID(user_id) }, { $set: this.flattenObject(update, "settings") }, { upsert: true }, function() {
+            db.collection("members").update({ _id: db.ObjectID(user_id) }, { $set: self.flattenObject(update, "settings") }, { upsert: true }, function() {
                 if (callback) {
                     callback();
                 }
@@ -1269,6 +1271,7 @@ class pluginManager {
     * @returns {string[]} dependency-sorted plugin list
     */
     fixOrderBasedOnDependency(plugs_list) {
+        var self = this;
         var map0 = {};
         var new_list = [];
         for (var z = 0; z < plugs_list.length; z++) {
@@ -1281,11 +1284,11 @@ class pluginManager {
          * @returns {void}
          */
         function add_Me(pluginName) {
-            if (this.dependencyMap) {
-                if (this.dependencyMap && this.dependencyMap.dpcs && this.dependencyMap.dpcs[pluginName] && this.dependencyMap.dpcs[pluginName].up) {
-                    for (var z1 = 0; z1 < this.dependencyMap.dpcs[pluginName].up.length; z1++) {
-                        if (map0[this.dependencyMap.dpcs[pluginName].up[z1]]) {
-                            add_Me.call(this, this.dependencyMap.dpcs[pluginName].up[z1]);
+            if (self.dependencyMap) {
+                if (self.dependencyMap && self.dependencyMap.dpcs && self.dependencyMap.dpcs[pluginName] && self.dependencyMap.dpcs[pluginName].up) {
+                    for (var z1 = 0; z1 < self.dependencyMap.dpcs[pluginName].up.length; z1++) {
+                        if (map0[self.dependencyMap.dpcs[pluginName].up[z1]]) {
+                            add_Me.call(self, self.dependencyMap.dpcs[pluginName].up[z1]);
                         }
                     }
                 }
