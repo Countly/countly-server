@@ -1,5 +1,5 @@
 /**
- * @typedef {import("mongodb").Db} Db
+ * @typedef {import("../../../../types/pluginManager").Database} Database
  * @typedef {() => void} DoneCallback
  * @typedef {(i: number, j: number, message: string) => void} ProgressCallback
  * @typedef {{ type: string; value: string; }} ScheduleConfig
@@ -26,7 +26,7 @@ class ClearMessageResultsJob extends Job {
     /**
      * Clears old message results based on TTL configuration.
      *
-     * @param {Db} db - Database connection
+     * @param {Database} db - Database connection
      * @param {DoneCallback} done - Callback to signal job completion
      * @param {ProgressCallback} progress - Progress reporting function
      */

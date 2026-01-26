@@ -1,5 +1,6 @@
 /**
  * @typedef {import('../../types/requestProcessor').Params} Params
+ * @typedef {import('../../types/pluginManager').Database} Database
  */
 
 // const job = require("../parts/jobs/job.js");
@@ -261,7 +262,7 @@ class TopEventsJob extends Job {
 
     /**
      * Run the job
-     * @param {Db} db connection
+     * @param {Database} db connection
      * @param {done} done callback
      */
     async run(db, done) {

@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
 const KafkaEventSource = require('./KafkaEventSource');
 const ChangeStreamEventSource = require('./ChangeStreamEventSource');
 const Log = require('../utils/log.js');
@@ -118,7 +122,7 @@ class EventSourceFactory {
      * @param {string} name - Event source name for logging/identification
      * @param {Object} options - Configuration object with kafka section
      * @param {Object} countlyConfig - Countly configuration
-     * @param {Object} db - Database reference for batch deduplication state
+     * @param {Database} db - Database reference for batch deduplication state
      * @param {Logger} log - Logger instance
      * @returns {KafkaEventSource} The Kafka event source instance
      * @throws {Error} If Kafka modules are not available

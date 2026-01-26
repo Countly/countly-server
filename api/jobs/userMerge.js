@@ -1,4 +1,8 @@
 
+/**
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
 // const job = require('../parts/jobs/job.js');
 const Job = require("../../jobServer/Job");
 const plugins = require('../../plugins/pluginManager.js');
@@ -243,7 +247,7 @@ class UserMergeJob extends Job {
 
     /**
      * Run the job
-     * @param {Db} db connection
+     * @param {Database} db connection
      * @param {done} done callback
      * @param {function} progressJob - callback when progress made
      */

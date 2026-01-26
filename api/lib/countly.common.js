@@ -19,6 +19,7 @@
  * @typedef {import('../../types/countly.common').ClearFunction} ClearFunction
  * @typedef {import('../../types/countly.common').FixBarSegmentDataFunction} FixBarSegmentDataFunction
  * @typedef {import('../../types/countly.common').FetchFunction} FetchFunction
+ * @typedef {import('../../types/pluginManager').Database} Database
  * @typedef {import('../../types/requestProcessor').Params} Params
  */
 
@@ -1084,7 +1085,7 @@ countlyCommon.getDescendantProp = function(obj, desc) {
 
 /**
 * Extract range data from standard countly metric data model
-* @param {object} db - countly standard metric data object
+* @param {Database} db - countly standard metric data object
 * @param {string} propertyName - name of the property to extract
 * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
 * @param {function} explainRange - function to convert range/bucket index to meaningful label
@@ -1173,7 +1174,7 @@ countlyCommon.extractRangeData = function(db, propertyName, rangeArray, explainR
 
 /**
 * Extract single level data without metrics/segments, like total user data from users collection
-* @param {object} db - countly standard metric data object
+* @param {Database} db - countly standard metric data object
 * @param {ClearFunction} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {Array<ChartDataPoint>} chartData - prefill chart data with labels, colors, etc
 * @param {Array<DataProperty>} dataProperties - describing which properties and how to extract
@@ -1326,7 +1327,7 @@ countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProp
 /**
  * Extract single level data without metrics/segments, like total user data from users collection
  * @memberof countlyCommon
- * @param {object} db - countly standard metric data object
+ * @param {Database} db - countly standard metric data object
  * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
  * @param {object} chartData - prefill chart data with labels, colors, etc
  * @param {object} dataProperties - describing which properties and how to extract
@@ -1621,7 +1622,7 @@ countlyCommon.getSparklineData = function(data, props, clearObject, periodObject
 
 /**
 * Extract two level data with metrics/segments, like total user data from carriers collection
-* @param {object} db - countly standard metric data object
+* @param {Database} db - countly standard metric data object
 * @param {Array<string>} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
 * @param {ClearFunction} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {Array<DataProperty>} dataProperties - describing which properties and how to extract
@@ -1849,7 +1850,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 
 /**
 * Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
-* @param {object} db - countly standard metric data object
+* @param {Database} db - countly standard metric data object
 * @param {Array<string>} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
 * @param {ClearFunction} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {FetchFunction} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
@@ -1995,7 +1996,7 @@ countlyCommon.getDateRange = function() {
 
 /**
 * Extract single level data without metrics/segments, like total user data from users collection
-* @param {object} db - countly standard metric data object
+* @param {Database} db - countly standard metric data object
 * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {object} dataProperties - describing which properties and how to extract
 * @param {module:api/lib/countly.common.periodObj} periodObject - period object override to use for extracting data
@@ -2132,7 +2133,7 @@ countlyCommon.extractData = function(db, clearFunction, dataProperties, periodOb
 
 /**
 * Extract metrics data break down by segments, like total user by carriers
-* @param {object} db - countly standard metric data object
+* @param {Database} db - countly standard metric data object
 * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
 * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {object} dataProperties - describing which properties and how to extract

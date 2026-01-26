@@ -5,6 +5,7 @@
 // npx tsc
 {
     "include": [
+        "plugins/pluginManager.js",
         "plugins/push/**/*.ts",
         "plugins/push/**/*.js",
         "plugins/push_approver/**/*.ts",

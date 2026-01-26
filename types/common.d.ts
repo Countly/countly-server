@@ -1,5 +1,5 @@
 import { Moment } from "moment-timezone";
-import { Collection, Db, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { Params } from "./requestProcessor";
 import { PluginManager, Database } from "./pluginManager";
 import { Logger, LogModule } from "./log";
@@ -337,9 +337,6 @@ export interface Common {
 
     /** Database promise wrapper */
     dbPromise: (collection: string, method: string, ...args: any[]) => Promise<any>;
-
-    /** Database reference */
-    db: Database;
 
     /**
      * Fetches nested property values from an obj.
@@ -1040,11 +1037,14 @@ export interface Common {
         add: (collection: string, id: string, update: any) => void;
     };
 
+    /** Database reference */
+    db: Database;
+
     /** Database connection for output */
-    outDb?: Database; 
+    outDb: Database; 
 
     /** Database connection for drill queries */
-    drillDb?: Database;
+    drillDb: Database;
 
     /** Request processor function */
     processRequest?: any;

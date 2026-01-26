@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../types/pluginManager').Database} Database
+ */
+
 const crypto = require('crypto');
 const cluster = require('cluster');
 const plugins = require('../../../plugins/pluginManager.js');
@@ -31,7 +35,7 @@ setInterval(function() {
 class InsertBatcher {
     /**
      *  Create batcher instance
-     *  @param {Db} db - database object
+     *  @param {Database} db - database object
      */
     constructor(db) {
         this.dbs = {countly: db};
@@ -45,7 +49,7 @@ class InsertBatcher {
     /**
      *  Add another database to batch
      *  @param {string} name - name of the database
-     *  @param {Db} connection - MongoDB connection to that database
+     *  @param {Database} connection - MongoDB connection to that database
      */
     addDb(name, connection) {
         this.dbs[name] = connection;
@@ -185,7 +189,7 @@ class InsertBatcher {
 class WriteBatcher {
     /**
      *  Create batcher instance
-     *  @param {Db} db - database object
+     *  @param {Database} db - database object
      *  @param {boolean} preventAutoFlush - if true, then auto flush will not be called
      */
     constructor(db, preventAutoFlush) {
@@ -212,7 +216,7 @@ class WriteBatcher {
     /**
      *  Add another database to batch
      *  @param {string} name - name of the database
-     *  @param {Db} connection - MongoDB connection to that database
+     *  @param {Database} connection - MongoDB connection to that database
      */
     addDb(name, connection) {
         this.dbs[name] = connection;
@@ -421,7 +425,7 @@ class WriteBatcher {
 class ReadBatcher {
     /**
      *  Create batcher instance
-     *  @param {Db} db - database object
+     *  @param {Database} db - database object
      *  @param {object} options - options for the batcher(Optional)
      */
     constructor(db, options) {

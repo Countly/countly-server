@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../../types/pluginManager').Database} Database
+ */
+
 const Job = require('../../../../jobServer/Job');
 const common = require('../../../../api/utils/common.js');
 const { TRIGGERED_BY_EVENT } = require('../parts/common-lib.js');
@@ -32,7 +36,7 @@ class AlertProcessor extends Job {
     }
 
     /**
-     * @param {Db} db The database connection
+     * @param {Database} db The database connection
      * @param {Function} done Callback function to be called when the job is complete
      *                       Call with error as first parameter if job fails
      *                       Call with null and optional result as second parameter if job succeeds

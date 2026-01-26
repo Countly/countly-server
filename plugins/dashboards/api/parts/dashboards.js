@@ -5,6 +5,7 @@
 
 /**
  * @typedef {import('../../../../types/taskmanager').TaskManagerStatic} TaskManagerStatic
+ * @typedef {import('../../../../types/pluginManager').Database} Database
  * @typedef {import('../../../../types/requestProcessor').Params} Params
  */
 
@@ -84,7 +85,7 @@ function toSegment(val) {
 
 /**
  * Triggers widget refresh for drill and formula widgets in dashboards based on refresh rate. 
- * @param {object} db - db Connection, if not passed will use common.db
+ * @param {Database} db - db Connection, if not passed will use common.db
  * @param {object} dashboard_obj - dashboard object
  */
 dashboard.refreshDashboard = async function(db, dashboard_obj) {
@@ -642,7 +643,7 @@ dashboard.fetchNoteData = async function(params, apps, widget) {
  * Remove deleted records from widgets
  * @param {Params} params params object
  * @param {object} matchOperator match operator for aggregation
- * @param {object} db database object - if coming from script
+ * @param {Database} db database object - if coming from script
  * @returns {boolean} true if success
  */
 dashboard.removeDeletedRecordsFromWidgets = async function(params, matchOperator, db) {

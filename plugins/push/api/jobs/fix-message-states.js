@@ -1,5 +1,5 @@
 /**
- * @typedef {import('mongodb').Db} Db
+ * @typedef {import('../../../../types/pluginManager').Database} Database
  * @typedef {import('../new/types/schedule.ts').Schedule} Schedule
  * @typedef {import('../new/types/schedule.ts').ScheduleCollection} ScheduleCollection
  * @typedef {import('../new/types/message.ts').Message} Message
@@ -29,7 +29,7 @@ class ClearMessageResultsJob extends Job {
     /**
      * Fixes message and schedule states in the database.
      *
-     * @param {Db} db - db object
+     * @param {Database} db - db object
      * @param {DoneCallback} done - Callback to signal job completion
      * @param {ProgressCallback} progress - Progress reporting function
      * @returns {Promise<void>} Promise that resolves when the job is complete

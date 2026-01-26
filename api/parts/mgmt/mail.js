@@ -5,6 +5,7 @@
 
 /**
  * @typedef {import('../../../types/authorizer').Authorizer} Authorizer
+ * @typedef {import('../../../plugins/pluginManager').Database} Database
  */
 
 /** @lends module:api/parts/mgmt/mail */

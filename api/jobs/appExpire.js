@@ -5,8 +5,12 @@ const common = require('../utils/common.js');
 const crypto = require('crypto');
 const {Job} = require("../../jobServer");
 
+/**
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
 
-/** Class for the user mergind job **/
+
+/** Class for the user merging job **/
 class AppExpireJob extends Job {
 
     /**
@@ -31,7 +35,7 @@ class AppExpireJob extends Job {
 
     /**
      * Run the job
-     * @param {Db} database connection
+     * @param {Database} database connection
      * @param {done} done callback
      */
     run(database, done) {

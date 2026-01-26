@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../types/pluginManager').Database} Database
+ */
+
 const plugins = require('../../../plugins/pluginManager.js');
 //const log = require('../../utils/log.js')("cacher");
 
@@ -7,7 +11,7 @@ const plugins = require('../../../plugins/pluginManager.js');
 class Cacher {
 /**
      *  Create batcher instance
-     *  @param {Db} db - database object
+     *  @param {Database} db - database object
      *  @param {object} options - options object
      */
     constructor(db, options) {

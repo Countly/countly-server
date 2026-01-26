@@ -10,6 +10,10 @@ var exported = {},
     log = common.log('compare:api'),
     { validateRead, getUserApps } = require('../../../api/utils/rights.js');
 
+/**
+ * @typedef {import('../../../types/pluginManager').Database} Database
+ */
+
 const FEATURE_NAME = 'compare';
 
 (function() {
@@ -178,7 +182,7 @@ const FEATURE_NAME = 'compare';
 
                 /**
                 * Extract data for chart from db
-                * @param {object} db - data object
+                * @param {Database} db - data object
                 * @param {object} props - props for chart
                 * @returns {object} returns chart data object
                 **/

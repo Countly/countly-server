@@ -21,6 +21,10 @@ const ClusterManager = require('../managers/ClusterManager');
 const countlyConfig = require('../../../../api/config');
 const { getIdentityDaysOld } = require('../api');
 
+/**
+ * @typedef {import('../../../../types/pluginManager').Database} Database
+ */
+
 const MAX_PARTS = 10;
 const DICT_FQN = 'identity.uid_map_dict';
 const MUT_SYNC = 0; // 0=async, 1=wait table, 2=wait all
@@ -68,7 +72,7 @@ class ColdPartitionMergingJob extends job.Job {
 
     /**
      * This job will be disabled when created
-     * @param {object} db - database connection object
+     * @param {Database} db - database connection object
      * @param {function} done - function to call when finishing Job
      * @param {function} progress - function to call while running job
      * @returns {boolean} True if job should be enabled by default, false otherwise

@@ -1,3 +1,21 @@
+/**
+ * @typedef {import('mongodb').Db} Db
+ * @typedef {import('../types/pluginManager').Database} Database
+ * @typedef {import('../types/pluginManager').InitOptions} InitOptions
+ * @typedef {import('../types/pluginManager').PluginManager} PluginManager
+ * @typedef {import('../types/pluginManager').EventHandler} EventHandler
+ * @typedef {import('../types/pluginManager').EventsRegistry} EventsRegistry
+ * @typedef {import('../types/pluginManager').PluginsApis} PluginsApis
+ * @typedef {import('../types/pluginManager').Config} Config
+ * @typedef {import('../types/pluginManager').ConfigChanges} ConfigChanges
+ * @typedef {import('../types/pluginManager').PluginState} PluginState
+ * @typedef {import('../types/pluginManager').DatabaseConfig} DatabaseConfig
+ * @typedef {import('../types/pluginManager').DbConnectionParams} DbConnectionParams
+ * @typedef {import('../types/pluginManager').MaskingSettings} MaskingSettings
+ * @typedef {import('../types/pluginManager').AppEventFromHash} AppEventFromHash
+ * @typedef {import('../types/pluginManager').EventHashes} EventHashes
+ */
+
 var pluginDependencies = require('./pluginDependencies.js'),
     path = require('path'),
     plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
@@ -32,28 +50,43 @@ var pluginConfig = {};
 
 /** @lends module:plugins/pluginManager */
 var pluginManager = function pluginManager() {
+    /** @type {EventsRegistry} */
     var events = {};
+    /** @type {any[]} */
     var plugs = [];
+    /** @type {Record<string, any>} */
     var methodCache = {};
+    /** @type {Record<string, any>} */
     var methodPromiseCache = {};
+    /** @type {Record<string, Config>} */
     var configs = {};
+    /** @type {Record<string, Config>} */
     var defaultConfigs = {};
+    /** @type {Record<string, Function>} */
     var configsOnchanges = {};
+    /** @type {Record<string, boolean>} */
     var excludeFromUI = {plugins: true};
     var finishedSyncing = true;
+    /** @type {string[]} */
     var expireList = [];
+    /** @type {any} */
     var masking = {};
+    /** @type {Record<string, boolean>} */
     var fullPluginsMap = {};
+    /** @type {string[]} */
     var coreList = ["api", "core"];
+    /** @type {any} */
     var dependencyMap = {};
 
 
     /**
      *  Registered app types
+     *  @type {string[]}
      */
     this.appTypes = [];
     /**
      *  Events prefixed with [CLY]_ that should be recorded in core as standard data model
+     *  @type {string[]}
      */
     this.internalEvents = [];
     /**
@@ -102,7 +135,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Initialize api side plugins
-    * @param {object} options - load opetions
+    * @param {InitOptions} [options] - load operations
     * options.filename - filename to include (default api)
     **/
     this.init = function(options) {
@@ -142,6 +175,12 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+     * Update plugins state in database
+     * @param {Database} db - database connection
+     * @param {object} params - request parameters
+     * @param {function} callback - callback function
+     */
     this.updatePluginsInDb = function(db, params, callback) {
         try {
             params.qstring.plugin = JSON.parse(params.qstring.plugin);
@@ -180,6 +219,11 @@ var pluginManager = function pluginManager() {
     };
 
 
+    /**
+     * Initialize a specific plugin
+     * @param {string} pluginName - Name of the plugin
+     * @param {string} [filename] - Filename to load (default: "api")
+     */
     this.initPlugin = function(pluginName, filename) {
         try {
             filename = filename || "api";
@@ -195,6 +239,11 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+     * Install missing plugins
+     * @param {Database} db - database connection
+     * @param {function} callback - callback function
+     */
     this.installMissingPlugins = function(db, callback) {
         console.log("Checking if any plugins are missing");
         var self = this;
@@ -248,6 +297,11 @@ var pluginManager = function pluginManager() {
         });
     };
 
+    /**
+     * Reload enabled plugin list from database
+     * @param {Database} db - database connection
+     * @param {function} callback - callback function
+     */
     this.reloadEnabledPluginList = function(db, callback) {
         this.loadDependencyMap();
         db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
@@ -270,7 +324,7 @@ var pluginManager = function pluginManager() {
     };
     /**
     * Load configurations from database
-    * @param {object} db - database connection for countly db
+    * @param {Database} db - database connection for countly db
     * @param {function} callback - function to call when configs loaded
     * @param {boolean} api - was the call made from api process
     **/
@@ -567,7 +621,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Check if there are changes in configs ans store the changes
-    * @param {object} db - database connection for countly db
+    * @param {Database} db - database connection for countly db
     * @param {object} current - current configs we have
     * @param {object} provided - provided configs
     * @param {function} callback - function to call when checking finished
@@ -595,7 +649,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Update existing configs, when syncing between servers
-    * @param {object} db - database connection for countly db
+    * @param {Database} db - database connection for countly db
     * @param {string} namespace - namespace of configuration, usually plugin name
     * @param {object} conf - provided config
     * @param {function} callback - function to call when updating finished
@@ -622,7 +676,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Update existing application level configuration
-    * @param {object} db -database connection for countly db
+    * @param {Database} db -database connection for countly db
     * @param {string} appId - id of application
     * @param {string} namespace - name of plugin
     * @param {object} config  - new configuration object for selected plugin 
@@ -673,7 +727,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Update all configs with provided changes
-    * @param {object} db - database connection for countly db
+    * @param {Database} db - database connection for countly db
     * @param {object} changes - provided changes
     * @param {function} callback - function to call when updating finished
     **/
@@ -712,7 +766,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Update user configs with provided changes
-    * @param {object} db - database connection for countly db
+    * @param {Database} db - database connection for countly db
     * @param {object} changes - provided changes
     * @param {string} user_id - user for which to update settings
     * @param {function} callback - function to call when updating finished
@@ -800,9 +854,9 @@ var pluginManager = function pluginManager() {
     /**
     * Register listening to new event on api side
     * @param {string} event - event to listen to
-    * @param {function} callback - function to call, when event happens
-    * @param {boolean} unshift - whether to register a high-priority callback (unshift it to the listeners array)
-	* @param {string} featureName -  name of plugin
+    * @param {EventHandler} callback - function to call, when event happens
+    * @param {boolean} [unshift=false] - whether to register a high-priority callback (unshift it to the listeners array)
+	* @param {string} [featureName] -  name of plugin
     **/
     this.register = function(event, callback, unshift = false, featureName) {
         if (!events[event]) {
@@ -832,8 +886,8 @@ var pluginManager = function pluginManager() {
     /**
     * Dispatch specific event on api side
     * @param {string} event - event to dispatch
-    * @param {object} params - object with parameters to pass to event
-    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
+    * @param {any} params - object with parameters to pass to event
+    * @param {Function} [callback] - function to call, when all event handlers that return Promise finished processing
     * @returns {boolean} true if any one responded to event
     **/
     this.dispatch = function(event, params, callback) {
@@ -1275,7 +1329,7 @@ var pluginManager = function pluginManager() {
         var self = this;
         if (finishedSyncing) {
             finishedSyncing = false;
-            self.dbConnection().then((db) => {
+            self.dbConnection().then((/** @type {Database} */ db) => {
                 db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
                     if (!err) {
                         configs = res;
@@ -1305,7 +1359,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * We check plugins and sync configuration
-    * @param {object} db - connection to countly database
+    * @param {Database} db - connection to countly database
     * @param {function} callback - when finished checking and syncing
     **/
     this.checkPlugins = function(db, callback) {
@@ -1351,7 +1405,7 @@ var pluginManager = function pluginManager() {
     * Sync plugin states between server
     * @param {object} pluginState - object with plugin names as keys and true/false values to indicate if plugin is enabled or disabled
     * @param {function} callback - when finished checking and syncing
-    * @param {object} db - connection to countly database
+    * @param {Database} db - connection to countly database
     **/
     this.syncPlugins = function(pluginState, callback, db) {
         var self = this;
@@ -1409,6 +1463,12 @@ var pluginManager = function pluginManager() {
         });
     };
 
+    /**
+     * Process plugin installation
+     * @param {Database} db - database connection
+     * @param {string|object} name - plugin name or object with name and enable properties
+     * @param {function} callback - callback function
+     */
     this.processPluginInstall = function(db, name, callback) {
         var self = this;
         var should_enable = true;
@@ -1633,7 +1693,7 @@ var pluginManager = function pluginManager() {
         var self = this;
 
         // First update database to disable plugin
-        self.singleDefaultConnection().then((db) => {
+        self.singleDefaultConnection().then((/** @type {Database} */ db) => {
             db.collection("plugins").updateOne(
                 {_id: "plugins"},
                 {$set: {[`plugins.${plugin}`]: false}},
@@ -1709,7 +1769,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Get single pool connection for database
-    * @returns {object} db connection
+    * @returns {Database} db connection
     **/
     this.singleDefaultConnection = function() {
         if (typeof countlyConfig.mongodb === "string") {
@@ -1743,6 +1803,7 @@ var pluginManager = function pluginManager() {
     **/
     this.getDbConnectionParams = function(config) {
         var ob = {};
+        /** @type {string|undefined} */
         var db;
         if (typeof config === "string") {
             db = config;
@@ -1914,9 +1975,10 @@ var pluginManager = function pluginManager() {
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
 
         let common = require('../api/utils/common');
+        require('../api/utils/countlyFs').setHandler(dbFs);
+
         common.db = dbCountly;
         common.outDb = dbOut;
-        require('../api/utils/countlyFs').setHandler(dbFs);
         common.drillDb = dbDrill;
 
         try {
@@ -1936,9 +1998,9 @@ var pluginManager = function pluginManager() {
 
     /**
     * Get database connection with configured pool size
-    * @param {object} config - connection configs
+    * @param {object|string|string[]} config - connection configs
     * @param {boolean} return_original - return original driver connection object(database is not wrapped)
-    * @returns {object} db connection params
+    * @returns {Promise<mongodb.Db|mongodb.Db[]>} db connection instance or array of instances
     **/
     this.dbConnection = async function(config, return_original) {
         var db, maxPoolSize = 100;
@@ -2335,7 +2397,7 @@ var pluginManager = function pluginManager() {
      *  @param {string} dbName - database name
      *  @param {string} dbConnectionString - database connection string
      *  @param {Object} dbOptions - database connection options
-     *  @returns {Db} wrapped database connection
+     *  @returns {Database} wrapped database connection
      */
     this.wrapDatabase = function(countlyDb, client, dbName, dbConnectionString, dbOptions) {
         if (countlyDb._wrapped) {
@@ -3223,11 +3285,12 @@ var pluginManager = function pluginManager() {
 /* ************************************************************************
 SINGLETON CLASS DEFINITION
 ************************************************************************ */
+/** @type {PluginManager|null} */
 pluginManager.instance = null;
 
 /**
  * Singleton getInstance definition
- * @returns {object} pluginManager class
+ * @returns {PluginManager} pluginManager instance
  */
 pluginManager.getInstance = function() {
     if (this.instance === null) {
