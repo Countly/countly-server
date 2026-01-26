@@ -46,8 +46,11 @@
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^3.1.0",
+    "@types/async": "^3.2.25",
+    "@types/bluebird": "^3.5.42",
     "@types/mocha": "^10.0.10",
     "@types/sinon": "^21.0.0",
+    "@types/underscore": "^1.13.0",
     "docdash": "^2.0.1",
     "env-cmd": "^10.1.0",
     "eslint": "^8.56.0",
