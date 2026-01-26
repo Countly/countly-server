@@ -22,6 +22,7 @@ var pluginDependencies = require('./pluginDependencies.js'),
         "discoveryStrategy": "disableChildren",
         "overwrite": path.resolve(__dirname, './plugins.json')
     }),
+    /** @type {PluginsApis} */
     pluginsApis = {},
     mongodb = require('mongodb'),
     countlyConfig = require('../frontend/express/config', 'dont-enclose'),
@@ -43,7 +44,12 @@ var pluginDependencies = require('./pluginDependencies.js'),
     configextender = require('../api/configextender');
 var pluginConfig = {};
 
-// TODO: Remove this function and all it calls when moving to Node 12.
+/**
+ * TODO: Remove this function and all it calls when moving to Node 12.
+ * Normalize Bluebird's allSettled response to native Promise.allSettled shape.
+ * @param {Array<{ isFulfilled: function(): boolean, value: function(): any, reason: function(): any }>} bluebirdResults - Bluebird inspection results with isFulfilled(), value(), and reason() methods
+ * @returns {Array<{status: string, value: any, reason: any}>} Native Promise.allSettled compatible settlement descriptors
+ */
 var promiseAllSettledBluebirdToStandard = function(bluebirdResults) {
     return bluebirdResults.map((bluebirdResult) => {
         const isFulfilled = bluebirdResult.isFulfilled();
@@ -56,6 +62,12 @@ var promiseAllSettledBluebirdToStandard = function(bluebirdResults) {
     });
 };
 
+/**
+ * Preserve numeric types when applying changes onto existing configs.
+ * @param {object} configsPointer - target config object that will be mutated
+ * @param {object} changes - incoming changes that may overwrite numbers
+ * @returns {void}
+ */
 var preventKillingNumberType = function(configsPointer, changes) {
     for (var k in changes) {
         if (!Object.prototype.hasOwnProperty.call(configsPointer, k) || !Object.prototype.hasOwnProperty.call(changes, k)) {
@@ -91,29 +103,42 @@ var preventKillingNumberType = function(configsPointer, changes) {
 class pluginManager {
     /** @type {EventsRegistry} */
     events = {};
+
     /** @type {any[]} */
     plugs = [];
+
     /** @type {Record<string, any>} */
     methodCache = {};
+
     /** @type {Record<string, any>} */
     methodPromiseCache = {};
+
     /** @type {Record<string, Config>} */
     configs = {};
+
     /** @type {Record<string, Config>} */
     defaultConfigs = {};
+
     /** @type {Record<string, Function>} */
     configsOnchanges = {};
+
     /** @type {Record<string, boolean>} */
     excludeFromUI = {plugins: true};
+
     finishedSyncing = true;
+
     /** @type {string[]} */
     expireList = [];
+
     /** @type {any} */
     masking = {};
+
     /** @type {Record<string, boolean>} */
     fullPluginsMap = {};
+
     /** @type {string[]} */
     coreList = ["api", "core"];
+
     /** @type {any} */
     dependencyMap = {};
 
@@ -123,19 +148,23 @@ class pluginManager {
      *  @type {string[]}
      */
     appTypes = [];
+
     /**
      *  Events prefixed with [CLY]_ that should be recorded in core as standard data model
      *  @type {string[]}
      */
     internalEvents = [];
+
     /**
      *  Events prefixed with [CLY]_ that should be recorded in drill
      */
     internalDrillEvents = ["[CLY]_session_begin", "[CLY]_property_update", "[CLY]_session", "[CLY]_llm_interaction", "[CLY]_llm_interaction_feedback", "[CLY]_llm_tool_used", "[CLY]_llm_tool_usage_parameter"];
+
     /**
      *  Segments for events prefixed with [CLY]_ that should be omitted
      */
     internalOmitSegments = {};
+
     /**
      *  Custom configuration files for different databases
      */
@@ -144,11 +173,13 @@ class pluginManager {
         countly_out: "../api/configs/config.db_out.js",
         countly_fs: "../api/configs/config.db_fs.js"
     };
+
     /**
      * TTL collections to clean up periodically
      * @type {{collection: string, db: mongodb.Db, property: string, expireAfterSeconds: number}[]}
      */
     ttlCollections = [{"db": "countly", "collection": "drill_data_cache", "expireAfterSeconds": 600, "property": "lu"}];
+
     /**
      *  Custom configuration files for different databases for docker env
      */
@@ -158,6 +189,10 @@ class pluginManager {
         countly_fs: "PLUGINFS"
     };
 
+    /**
+     * Build dependency graph for all plugin folders in this directory.
+     * @returns {void}
+     */
     loadDependencyMap() {
         var pluginNames = [];
         var pluginsList = fs.readdirSync(path.resolve(__dirname, './')); //all plugins in folder
@@ -171,6 +206,9 @@ class pluginManager {
         this.dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
     }
 
+    /**
+     * Create plugin manager instance and register database handler.
+     */
     constructor() {
         this.registerDatabaseHandler();
     }
@@ -351,9 +389,9 @@ class pluginManager {
                 console.log(err);
             }
             res = res || {};
-            if (Object.keys(fullPluginsMap).length > 0) {
+            if (Object.keys(this.fullPluginsMap).length > 0) {
                 for (var pp in res.plugins) {
-                    if (!fullPluginsMap[pp]) {
+                    if (!this.fullPluginsMap[pp]) {
                         delete res.plugins[pp];
                     }
                 }
@@ -387,20 +425,20 @@ class pluginManager {
             }
 
             for (let i = 0, l = pluginNames.length; i < l; i++) {
-                fullPluginsMap[pluginNames[i]] = true;
+                self.fullPluginsMap[pluginNames[i]] = true;
             }
             if (!err) {
                 res = res || {};
-                for (let ns in configsOnchanges) {
-                    if (configs && res && (!configs[ns] || !res[ns] || !_.isEqual(configs[ns], res[ns]))) {
-                        configs[ns] = res[ns];
-                        configsOnchanges[ns](configs[ns]);
+                for (let ns in self.configsOnchanges) {
+                    if (self.configs && res && (!self.configs[ns] || !res[ns] || !_.isEqual(self.configs[ns], res[ns]))) {
+                        self.configs[ns] = res[ns];
+                        self.configsOnchanges[ns](self.configs[ns]);
                     }
                 }
-                configs = res;
-                delete configs._id;
+                self.configs = res;
+                delete self.configs._id;
                 pluginConfig = res.plugins || {}; //currently enabled plugins
-                self.checkConfigs(db, configs, defaultConfigs, function() {
+                self.checkConfigs(db, self.configs, self.defaultConfigs, function() {
 
                     var installPlugins = [];
                     for (var z1 = 0; z1 < plugins.length; z1++) {
@@ -442,6 +480,12 @@ class pluginManager {
 
     }
 
+    /**
+    * Load configuration for ingestor process and ensure defaults are stored.
+    * @param {Database} db - connection to Countly database
+    * @param {function} callback - invoked after configs are loaded
+    * @returns {Promise<void>} resolves when loading finishes
+    */
     async loadConfigsIngestor(db, callback/*, api*/) {
         try {
             var res = await db.collection("plugins").findOne({_id: "plugins"}, {"api": true, "plugins": true, "drill": true, "aggregator": true});
@@ -529,7 +573,7 @@ class pluginManager {
 
     /**
      * Get expire list array
-     * @returns {array} expireList - expireList array that created from plugins
+     * @returns {string[]} expireList - expireList array that created from plugins
      **/
     getExpireList() {
         return this.expireList;
@@ -753,7 +797,7 @@ class pluginManager {
             //country data tracking is changed
             if (changes.api.country_data) {
                 //user disabled country data tracking while city data tracking is enabled
-                if (changes.api.country_data === false && configs.api.city_data === true) {
+                if (changes.api.country_data === false && this.configs.api.city_data === true) {
                     //disable city data tracking
                     changes.api.city_data = false;
                 }
@@ -761,7 +805,7 @@ class pluginManager {
             //city data tracking is changed
             if (changes.api.city_data) {
                 //user enabled city data tracking while country data tracking is disabled
-                if (changes.api.city_data === true && configs.api.country_data === false) {
+                if (changes.api.city_data === true && this.configs.api.country_data === false) {
                     //enable country data tracking
                     changes.api.country_data = true;
                 }
@@ -805,7 +849,7 @@ class pluginManager {
                 }
             });
         });
-    };
+    }
 
     /**
     * Allow extending object module is exporting by using extend folders in countly
@@ -836,9 +880,15 @@ class pluginManager {
                 console.log(ex);
             }
         }
-    };
+    }
+
+    /**
+    * Check whether a plugin is enabled (core plugins are always on).
+    * @param {string} name - plugin name
+    * @returns {boolean} true if plugin is active
+    */
     isPluginOn(name) {
-        if (coreList.indexOf(name) === -1) { //is one of plugins
+        if (this.coreList.indexOf(name) === -1) { //is one of plugins
             if (pluginConfig[name]) {
                 return true;
             }
@@ -851,6 +901,10 @@ class pluginManager {
         }
     }
 
+    /**
+    * Infer the calling plugin name from the call stack (fallbacks to undefined).
+    * @returns {string|undefined} feature/plugin name if detected
+    */
     getFeatureName() {
         var stack = new Error('test').stack;
         stack = stack.split('\n');
@@ -868,6 +922,7 @@ class pluginManager {
         }
 
     }
+
     /**
     * Register listening to new event on api side
     * @param {string} event - event to listen to
@@ -948,6 +1003,10 @@ class pluginManager {
         return used;
     }
 
+    /**
+    * Get a deep-cloned snapshot of the current event registry.
+    * @returns {EventsRegistry} cloned events registry
+    */
     returnEventsCopy() {
         return JSON.parse(JSON.stringify(this.events));
     }
@@ -1204,15 +1263,22 @@ class pluginManager {
         }, {});
     }
 
+    /**
+    * Order plugins so that dependencies come before dependents.
+    * @param {string[]} plugs_list - plugins to sort
+    * @returns {string[]} dependency-sorted plugin list
+    */
     fixOrderBasedOnDependency(plugs_list) {
         var map0 = {};
         var new_list = [];
         for (var z = 0; z < plugs_list.length; z++) {
             map0[plugs_list[z]] = true;
         }
+
         /**
-         * 
-         * @param {string} pluginName - pluginName 
+         * Recursively add plugin and its dependencies to the sorted list.
+         * @param {string} pluginName - name of the plugin to add
+         * @returns {void}
          */
         function add_Me(pluginName) {
             if (this.dependencyMap) {
@@ -1239,7 +1305,7 @@ class pluginManager {
     /**
     * Get array of enabled plugin names
 	* @param {boolean} returnFullList  - if true will return all available plugins
-    * @returns {array} with plugin names
+    * @returns {string[]} with plugin names
     **/
     getPlugins(returnFullList) {
         //fix it to return only enabled based on db settings
@@ -1285,7 +1351,7 @@ class pluginManager {
 
     /**
     * Get array with references to plugin's api modules
-    * @returns {array} with references to plugin's api modules
+    * @returns {PluginsApis} plugins api registry
     **/
     getPluginsApis() {
         return pluginsApis;
@@ -1530,6 +1596,7 @@ class pluginManager {
             }
         });
     }
+
     /**
     * Procedure to install plugin
     * @param {string} plugin - plugin name
@@ -1912,7 +1979,7 @@ class pluginManager {
         }
 
         return ob;
-    };
+    }
 
     /**
     * This method accepts MongoDB connection string and new database name and replaces the name in string with provided one
@@ -1964,6 +2031,11 @@ class pluginManager {
         return str;
     }
 
+    /**
+    * Establish connections to all configured databases and initialize common handlers.
+    * @param {boolean} return_original - when true, returns raw driver instances instead of wrapped ones
+    * @returns {Promise<mongodb.Db[]>} Resolves with [countly, out, fs, drill] database connections
+    */
     async connectToAllDatabases(return_original) {
         let dbs = ['countly', 'countly_out', 'countly_fs', 'countly_drill'];
 
@@ -2259,8 +2331,13 @@ class pluginManager {
             }
             return db_instance;
         }
-    };
+    }
 
+    /**
+    * Load masking configuration and event hash map for all applications.
+    * @param {{db: Database}} options - options containing database connection
+    * @returns {Promise<void>} resolves when masking data is loaded
+    */
     async fetchMaskingConf(options) {
         var apps = await options.db.collection("apps").find({}, {"masking": true}).toArray();
 
@@ -2322,6 +2399,10 @@ class pluginManager {
         }
     }
 
+    /**
+    * Check if any masking rule is enabled across applications.
+    * @returns {boolean} true if at least one mask is active
+    */
     isAnyMasked() {
         var result = false;
         if (this.masking && this.masking.apps) {
@@ -2338,6 +2419,11 @@ class pluginManager {
         return result;
     }
 
+    /**
+    * Get masking settings for a specific app or for all apps.
+    * @param {string} appID - application id or 'all'
+    * @returns {MaskingSettings|Object.<string, MaskingSettings>} masking rules
+    */
     getMaskingSettings(appID) {
         if (appID === 'all') {
             if (this.masking && this.masking.apps) {
@@ -2365,6 +2451,11 @@ class pluginManager {
         }
     }
 
+    /**
+    * Resolve hash back to application id and event key.
+    * @param {string} hashValue - hashed event identifier
+    * @returns {AppEventFromHash|object} resolved event data with hash
+    */
     getAppEventFromHash(hashValue) {
         if (this.masking && this.masking.hashMap && this.masking.hashMap[hashValue]) {
             var record = JSON.parse(JSON.stringify(this.masking.hashMap[hashValue]));
@@ -2376,6 +2467,11 @@ class pluginManager {
         }
     }
 
+    /**
+    * Retrieve event hash map for a specific app or all apps.
+    * @param {string} appID - application id or 'all'
+    * @returns {EventHashes} map of event key to hash
+    */
     getEHashes(appID) {
         var map = {};
         if (this.masking && this.masking.hashMap) {
@@ -3214,6 +3310,12 @@ class pluginManager {
         return countlyDb;
     }
 
+    /**
+    * Compute a deep diff of provided config against current config, keeping only new keys.
+    * @param {object} current - current configuration object
+    * @param {object} provided - updated configuration object
+    * @returns {object} diff containing keys present in provided but missing in current
+    */
     getObjectDiff(current, provided) {
         var toReturn = {};
 
@@ -3231,6 +3333,12 @@ class pluginManager {
         return toReturn;
     }
 
+    /**
+    * Flatten nested objects into dot-notation keys for MongoDB updates.
+    * @param {object} ob - object to flatten
+    * @param {string} [prefix] - key prefix for recursion
+    * @returns {object} flattened key/value map
+    */
     flattenObject(ob, prefix) {
         if (prefix) {
             prefix += ".";
@@ -3265,6 +3373,10 @@ class pluginManager {
         return toReturn;
     }
 
+    /**
+    * Register handler that allows external database clients to be attached to the common module.
+    * @returns {void}
+    */
     registerDatabaseHandler() {
         this.register('/database/register', (params) => {
             if (!params || !params.name || !params.client) {
