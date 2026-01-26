@@ -825,7 +825,7 @@
                 //     "noChild": true
                 // }
 
-                return new Promise(function(resolve) {
+                return new Promise((resolve) => {
                     if (this.selectedApp) {
                         self.isLoading = true;
                         countlyEvent.getEventsForApps([this.selectedApp], function(eData) {
