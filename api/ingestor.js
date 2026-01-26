@@ -103,7 +103,7 @@ plugins.connectToAllDatabases(true).then(function() {
     plugins.dispatch("/ingestor", {common: common});
     plugins.init({"skipDependencies": true, "filename": "ingestor"});
     console.log("Loading configs");
-    plugins.loadConfigs(common.dbUnwrapped, function() {
+    plugins.loadConfigs(common.db, function() {
         console.log("Configs loaded. Opening server connection");
         console.log(JSON.stringify(common.config.ingestor || {}));
         http.Server((req, res) => {
