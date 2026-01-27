@@ -60,19 +60,19 @@ const legacyScripts = [
     // 'javascripts/countly/countly.helpers.js',
     // 'javascripts/countly/countly.event.js',
     // 'javascripts/countly/countly.session.js',
-    'javascripts/countly/countly.city.js',
-    'javascripts/countly/countly.location.js',
+    // 'javascripts/countly/countly.city.js',                                    - SEEMS LIKE IT'S NOT BEING USED ANYWHERE. BUT DO NOT DELETE FOR NOW.
+    // 'javascripts/countly/countly.location.js',
     'javascripts/countly/countly.map.helper.js',
-    // 'javascripts/countly/countly.device.list.js',                            - DELETE. IMPORTED IN imports.js AS ES MODULE.
-    // 'javascripts/countly/countly.device.osmapping.js',                       - DELETE. IMPORTED IN imports.js AS ES MODULE.
-    // 'javascripts/countly/countly.device.js',                                 - DELETE. IMPORTED IN imports.js AS ES MODULE.
-    // 'javascripts/countly/countly.device.detail.js',                          - DELETE. IMPORTED IN imports.js AS ES MODULE.
-    // 'javascripts/countly/countly.app.version.js',                            - DELETE. IMPORTED IN imports.js AS ES MODULE.
-    // 'javascripts/countly/countly.carrier.js',                                - DELETE. IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/countly/countly.device.list.js',
+    // 'javascripts/countly/countly.device.osmapping.js',
+    // 'javascripts/countly/countly.device.js',
+    // 'javascripts/countly/countly.device.detail.js',
+    // 'javascripts/countly/countly.app.version.js',
+    // 'javascripts/countly/countly.carrier.js',
     // 'javascripts/countly/countly.total.users.js',
-    // 'javascripts/countly/countly.app.users.js',                              - DELETE. IMPORTED IN imports.js AS ES MODULE.
-    // 'javascripts/countly/countly.token.manager.js',                          - DELETE. IMPORTED IN imports.js AS ES MODULE.
-    // 'javascripts/countly/countly.version.history.js',                        - DELETE. IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/countly/countly.app.users.js',
+    // 'javascripts/countly/countly.token.manager.js',
+    // 'javascripts/countly/countly.version.history.js',
     'javascripts/countly/countly.view.js', // KEEP: Depends on Backbone from legacy bundle
     'javascripts/countly/vue/core.js',
     'javascripts/countly/vue/container.js',

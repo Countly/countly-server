@@ -60,3 +60,7 @@ window.countlyTokenManager = countlyTokenManager;
 
 import countlyVersionHistoryManager from './javascripts/countly/countly.version.history.js';
 window.countlyVersionHistoryManager = countlyVersionHistoryManager;
+
+import countlyLocation, { setup as setupCountlyLocation } from './javascripts/countly/countly.location.js';
+setupCountlyLocation();
+window.countlyLocation = countlyLocation;
