@@ -249,7 +249,10 @@ interface MaskingData {
 }
 
 /**
- * Normalize Bluebird's allSettled response to native BluebirdPromise.allSettled shape.
+ * TODO: Remove this function and all it calls when moving to Node 12.
+ * Normalize Bluebird's allSettled response to native Promise.allSettled shape.
+ * @param bluebirdResults - Bluebird inspection results with isFulfilled(), value(), and reason() methods
+ * @returns Native Promise.allSettled compatible settlement descriptors
  */
 function promiseAllSettledBluebirdToStandard<T>(bluebirdResults: BluebirdInspection<T>[]): PromiseResult<T>[] {
     return bluebirdResults.map((bluebirdResult) => {
@@ -263,6 +266,8 @@ function promiseAllSettledBluebirdToStandard<T>(bluebirdResults: BluebirdInspect
 
 /**
  * Preserve numeric types when applying changes onto existing configs.
+ * @param configsPointer - target config object that will be mutated
+ * @param changes - incoming changes that may overwrite numbers
  */
 function preventKillingNumberType(configsPointer: Record<string, any>, changes: Record<string, any>): void {
     for (const k in changes) {
@@ -293,40 +298,77 @@ function preventKillingNumberType(configsPointer: Record<string, any>, changes: 
  * PluginManager class - Central orchestrator for Countly's plugin system
  */
 class PluginManager {
-    // Class properties with types
+    /** Event handlers registry */
     events: EventsRegistry = {};
+
+    /** Loaded plugins and their frontend modules */
     plugs: PluginInfo[] = [];
+
+    /** Cached sync method lookups */
     methodCache: Record<string, any[]> = {};
+
+    /** Cached async method lookups */
     methodPromiseCache: Record<string, any[]> = {};
+
+    /** Current plugin configurations */
     configs: Record<string, Config> = {};
+
+    /** Default plugin configurations */
     defaultConfigs: Record<string, Config> = {};
+
+    /** Configuration change callbacks */
     configsOnchanges: Record<string, (config: Config) => void> = {};
+
+    /** Namespaces excluded from UI */
     excludeFromUI: Record<string, boolean> = { plugins: true };
+
+    /** Indicates plugin sync state */
     finishedSyncing: boolean = true;
+
+    /** Collections queued for TTL cleanup */
     expireList: string[] = [];
+
+    /** Masking configuration container */
     masking: MaskingData = {};
+
+    /** Map of all discovered plugins */
     fullPluginsMap: Record<string, boolean> = {};
+
+    /** Core plugin list */
     coreList: string[] = ['api', 'core'];
+
+    /** Dependency graph */
     dependencyMap: any = {};
+
+    /** Registered app types */
     appTypes: string[] = [];
+
+    /** Events prefixed with [CLY]_ that should be recorded in core as standard data model */
     internalEvents: string[] = [];
+
+    /** Events prefixed with [CLY]_ that should be recorded in drill */
     internalDrillEvents: string[] = [
         '[CLY]_session_begin', '[CLY]_property_update', '[CLY]_session',
         '[CLY]_llm_interaction', '[CLY]_llm_interaction_feedback',
         '[CLY]_llm_tool_used', '[CLY]_llm_tool_usage_parameter'
     ];
 
+    /** Segments for events prefixed with [CLY]_ that should be omitted */
     internalOmitSegments: InternalOmitSegments = {};
+
+    /** Custom configuration files for different databases */
     dbConfigFiles: Record<string, string> = {
         countly_drill: './drill/config.js',
         countly_out: '../api/configs/config.db_out.js',
         countly_fs: '../api/configs/config.db_fs.js'
     };
 
+    /** TTL collections to clean up periodically */
     ttlCollections: TTLCollection[] = [
         { 'db': 'countly' as any, 'collection': 'drill_data_cache', 'expireAfterSeconds': 600, 'property': 'lu' }
     ];
 
+    /** Custom configuration files for different databases for docker env */
     dbConfigEnvs: Record<string, string> = {
         countly_drill: 'PLUGINDRILL',
         countly_out: 'PLUGINOUT',
@@ -336,6 +378,10 @@ class PluginManager {
     // ============================================================
     // CONSTRUCTOR
     // ============================================================
+
+    /**
+     * Create plugin manager instance and register database handler.
+     */
     constructor() {
         this.registerDatabaseHandler();
     }
@@ -344,7 +390,9 @@ class PluginManager {
     // CORE MANAGEMENT METHODS (1-10)
     // ============================================================
 
-    // 1. loadDependencyMap
+    /**
+     * Build dependency graph for all plugin folders in this directory.
+     */
     loadDependencyMap(): void {
         const pluginNames: string[] = [];
         const pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
@@ -357,7 +405,10 @@ class PluginManager {
         this.dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
     }
 
-    // 2. init
+    /**
+     * Initialize api side plugins
+     * @param options - load operations (filename to include, skip dependencies flag)
+     */
     init(options?: InitOptions): void {
         options = options || {};
         const pluginNames: string[] = [];
@@ -392,7 +443,12 @@ class PluginManager {
         }
     }
 
-    // 3. updatePluginsInDb
+    /**
+     * Update plugins state in database
+     * @param db - database connection
+     * @param params - request parameters
+     * @param callback - callback function
+     */
     updatePluginsInDb(db: Database, params: any, callback: () => void): void {
         try {
             params.qstring.plugin = JSON.parse(params.qstring.plugin);
@@ -429,7 +485,11 @@ class PluginManager {
         }
     }
 
-    // 4. initPlugin
+    /**
+     * Initialize a specific plugin
+     * @param pluginName - Name of the plugin
+     * @param filename - Filename to load (default: "api")
+     */
     initPlugin(pluginName: string, filename?: string): void {
         try {
             filename = filename || 'api';
@@ -445,7 +505,11 @@ class PluginManager {
         }
     }
 
-    // 5. installMissingPlugins
+    /**
+     * Install missing plugins
+     * @param db - database connection
+     * @param callback - callback function
+     */
     installMissingPlugins(db: Database, callback?: () => void): void {
         console.log('Checking if any plugins are missing');
         const self = this;
@@ -495,7 +559,11 @@ class PluginManager {
         });
     }
 
-    // 6. reloadEnabledPluginList
+    /**
+     * Reload the list of enabled plugins
+     * @param db - database connection
+     * @param callback - callback function
+     */
     reloadEnabledPluginList(db: Database, callback?: () => void): void {
         const self = this;
         this.loadDependencyMap();
@@ -518,7 +586,11 @@ class PluginManager {
         });
     }
 
-    // 7. loadConfigs
+    /**
+     * Load configurations from database
+     * @param db - database connection
+     * @param callback - callback function
+     */
     loadConfigs(db: Database, callback?: () => void): void {
         const self = this;
         db.collection('plugins').findOne({ _id: 'plugins' }, function(err: any, res: any) {
@@ -583,7 +655,11 @@ class PluginManager {
         });
     }
 
-    // 8. loadConfigsIngestor (async)
+    /**
+     * Load configuration for ingestor process and ensure defaults are stored
+     * @param db - database connection
+     * @param callback - callback function
+     */
     async loadConfigsIngestor(db: Database, callback: () => void): Promise<void> {
         try {
             let res = await db.collection('plugins').findOne(
@@ -617,7 +693,13 @@ class PluginManager {
         callback();
     }
 
-    // 9. setConfigs
+    /**
+     * Set default configurations
+     * @param namespace - namespace of configuration, usually plugin name
+     * @param conf - object with key/values default configurations
+     * @param exclude - should these configurations be excluded from dashboard UI
+     * @param onchange - function to call when configurations change
+     */
     setConfigs(namespace: string, conf: Config, exclude?: boolean, onchange?: (config: Config) => void): void {
         const processedConf: Config = {};
         for (const key in conf) {
@@ -658,7 +740,10 @@ class PluginManager {
         }
     }
 
-    // 10. addCollectionToExpireList
+    /**
+     * Add collection to expire list
+     * @param collection - collection name
+     */
     addCollectionToExpireList(collection: string): void {
         this.expireList.push(collection);
     }
@@ -667,12 +752,19 @@ class PluginManager {
     // CONFIGURATION METHODS (11-22)
     // ============================================================
 
-    // 11. getExpireList
+    /**
+     * Get expire list array
+     * @returns expireList array that created from plugins
+     */
     getExpireList(): string[] {
         return this.expireList;
     }
 
-    // 12. setUserConfigs
+    /**
+     * Set user level default configurations
+     * @param namespace - namespace of configuration, usually plugin name
+     * @param conf - object with key/values default configurations
+     */
     setUserConfigs(namespace: string, conf: Config): void {
         if (!this.defaultConfigs[namespace]) {
             this.defaultConfigs[namespace] = {};
@@ -685,7 +777,13 @@ class PluginManager {
         }
     }
 
-    // 13. getConfig
+    /**
+     * Get configuration from specific namespace and populate empty values with provided defaults
+     * @param namespace - namespace of configuration, usually plugin name
+     * @param userSettings - possible other level configuration like user or app level to overwrite configs
+     * @param override - if true, would simply override configs with userSettings, if false, would check if configs should be overridden
+     * @returns copy of configs for provided namespace
+     */
     getConfig(namespace: string, userSettings?: Record<string, any>, override?: boolean): Config {
         const ob: Config = {};
         if (this.configs[namespace]) {
@@ -732,7 +830,10 @@ class PluginManager {
         return ob;
     }
 
-    // 14. getAllConfigs
+    /**
+     * Get all configs for all namespaces
+     * @returns copy of all configs
+     */
     getAllConfigs(): Record<string, Config> {
         const a = Object.keys(this.configs);
         const b = Object.keys(this.defaultConfigs);
@@ -748,7 +849,11 @@ class PluginManager {
         return ret;
     }
 
-    // 15. getUserConfigs
+    /**
+     * Get all configs for all namespaces overwritted by user settings
+     * @param userSettings - possible other level configuration like user or app level to overwrite configs
+     * @returns user configurations
+     */
     getUserConfigs(userSettings?: Record<string, any>): Record<string, Config> {
         userSettings = userSettings || {};
         const a = Object.keys(this.configs);
@@ -773,7 +878,13 @@ class PluginManager {
         return ret;
     }
 
-    // 16. checkConfigs
+    /**
+     * Check if there are changes in configs and store the changes
+     * @param db - database connection for countly db
+     * @param current - current configs we have
+     * @param provided - provided configs
+     * @param callback - function to call when checking finished
+     */
     checkConfigs(db: Database, current: Config, provided: Config, callback?: () => void): void {
         const diff = this.getObjectDiff(current, provided);
         if (Object.keys(diff).length > 0) {
@@ -801,7 +912,13 @@ class PluginManager {
         }
     }
 
-    // 17. updateConfigs
+    /**
+     * Update existing configs, when syncing between servers
+     * @param db - database connection for countly db
+     * @param namespace - namespace of configuration, usually plugin name
+     * @param conf - provided config
+     * @param callback - function to call when updating finished
+     */
     updateConfigs(db: Database, namespace: string, conf: Config, callback?: () => void): void {
         const update: Record<string, Config> = {};
         if (namespace === '_id') {
@@ -827,7 +944,14 @@ class PluginManager {
         }
     }
 
-    // 18. updateApplicationConfigs
+    /**
+     * Update existing application level configuration
+     * @param db - database connection for countly db
+     * @param appId - id of application
+     * @param namespace - name of plugin
+     * @param config - new configuration object for selected plugin
+     * @param callback - function that is called when updating has finished
+     */
     updateApplicationConfigs(db: Database, appId: string, namespace: string, config: Config, callback?: (error: any, result: any) => void): void {
         const pluginName = 'plugins.'.concat(namespace);
         db.collection('apps').updateOne(
@@ -849,7 +973,12 @@ class PluginManager {
         );
     }
 
-    // 19. updateAllConfigs
+    /**
+     * Update all configs with provided changes
+     * @param db - database connection for countly db
+     * @param changes - provided changes
+     * @param callback - function to call when updating finished
+     */
     updateAllConfigs(db: Database, changes: ConfigChanges, callback?: () => void): void {
         if (changes.api) {
             if (changes.api.country_data) {
@@ -882,7 +1011,13 @@ class PluginManager {
         );
     }
 
-    // 20. updateUserConfigs
+    /**
+     * Update user configs with provided changes
+     * @param db - database connection for countly db
+     * @param changes - provided changes
+     * @param user_id - user for which to update settings
+     * @param callback - function to call when updating finished
+     */
     updateUserConfigs(db: Database, changes: ConfigChanges, user_id: string, callback?: () => void): void {
         const self = this;
         db.collection('members').findOne({ _id: db.ObjectID(user_id) }, function(err: any, member: any) {
@@ -907,7 +1042,11 @@ class PluginManager {
         });
     }
 
-    // 21. extendModule
+    /**
+     * Allow extending object module by using extend folders
+     * @param name - module name
+     * @param object - object to extend
+     */
     extendModule(name: string, object: any): void {
         for (let i = 0, l = plugins.length; i < l; i++) {
             try {
@@ -929,7 +1068,11 @@ class PluginManager {
         }
     }
 
-    // 22. isPluginOn
+    /**
+     * Check whether a plugin is enabled (core plugins are always on).
+     * @param name - plugin name
+     * @returns true if plugin is active
+     */
     isPluginOn(name: string): boolean {
         if (this.coreList.indexOf(name) === -1) {
             if (pluginConfig[name]) {
@@ -948,7 +1091,10 @@ class PluginManager {
     // EVENT SYSTEM METHODS (23-28)
     // ============================================================
 
-    // 23. getFeatureName
+    /**
+     * Infer the calling plugin name from the call stack (fallbacks to undefined).
+     * @returns feature/plugin name if detected
+     */
     getFeatureName(): string | undefined {
         const stack = new Error('test').stack;
         if (stack) {
@@ -966,7 +1112,13 @@ class PluginManager {
         return undefined;
     }
 
-    // 24. register
+    /**
+     * Register listening to new event on api side
+     * @param event - event to listen to
+     * @param callback - function to call, when event happens
+     * @param unshift - whether to register a high-priority callback (unshift it to the listeners array)
+     * @param featureName - name of plugin
+     */
     register(event: string, callback: EventHandler, unshift: boolean = false, featureName?: string): void {
         if (!this.events[event]) {
             this.events[event] = [];
@@ -984,7 +1136,13 @@ class PluginManager {
         }
     }
 
-    // 25. dispatch
+    /**
+     * Dispatch specific event on api side
+     * @param event - event to dispatch
+     * @param params - object with parameters to pass to event
+     * @param callback - function to call, when all event handlers that return Promise finished processing
+     * @returns true if any one responded to event
+     */
     dispatch(event: string, params: any, callback?: (err: any, results?: PromiseResult<any>[]) => void): boolean {
         let used = false;
         const promises: any[] = [];
@@ -1039,17 +1197,31 @@ class PluginManager {
         return used;
     }
 
-    // 26. returnEventsCopy
+    /**
+     * Get a deep-cloned snapshot of the current event registry.
+     * @returns cloned events registry
+     */
     returnEventsCopy(): EventsRegistry {
         return JSON.parse(JSON.stringify(this.events));
     }
 
-    // 27. dispatchAllSettled
+    /**
+     * Dispatch specific event on api side and wait until all event handlers have processed the event (legacy)
+     * @param event - event to dispatch
+     * @param params - object with parameters to pass to event
+     * @param callback - function to call, when all event handlers that return Promise finished processing
+     * @returns true if any one responded to event
+     */
     dispatchAllSettled(event: string, params: any, callback?: (err: any, results?: PromiseResult<any>[]) => void): boolean {
         return this.dispatch(event, params, callback);
     }
 
-    // 28. dispatchAsPromise
+    /**
+     * Dispatch specific event on api side
+     * @param event - event to dispatch
+     * @param params - object with parameters to pass to event
+     * @returns Promise which resolves to array of objects returned by events if any or error
+     */
     dispatchAsPromise(event: string, params: any): Promise<PromiseResult<any>[]> {
         return new Promise((res, rej) => {
             this.dispatch(event, params, (err, results) => {
@@ -1063,7 +1235,12 @@ class PluginManager {
         });
     }
 
-    // 29. loadAppStatic
+    /**
+     * Load plugins frontend app.js and expose static paths for plugins
+     * @param app - express app
+     * @param countlyDb - connection to countly database
+     * @param express - reference to express js
+     */
     loadAppStatic(app: any, countlyDb: Database, express: any): void {
         const pluginNames: string[] = [];
         const pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
@@ -1101,7 +1278,12 @@ class PluginManager {
         }
     }
 
-    // 30. loadAppPlugins
+    /**
+     * Call init method of plugin's frontend app.js modules
+     * @param app - express app
+     * @param countlyDb - connection to countly database
+     * @param express - reference to express js
+     */
     loadAppPlugins(app: any, countlyDb: Database, express: any): void {
         for (let i = 0; i < this.plugs.length; i++) {
             try {
@@ -1176,7 +1358,12 @@ class PluginManager {
         }
     }
 
-    // 31. callMethod
+    /**
+     * Call specific predefined methods of plugin's frontend app.js modules
+     * @param method - method name
+     * @param params - parameters object
+     * @returns true if method was called
+     */
     callMethod(method: string, params: any): boolean {
         let res = false;
         if (this.methodCache[method]) {
@@ -1212,7 +1399,12 @@ class PluginManager {
         return res;
     }
 
-    // 32. callPromisedAppMethod
+    /**
+     * Call async methods that return promises and merge results
+     * @param method - method name
+     * @param params - parameters object
+     * @returns Promise with merged results
+     */
     async callPromisedAppMethod(method: string, params: any): Promise<Record<string, any>> {
         const promises: Promise<any>[] = [];
         if (this.methodPromiseCache[method]) {
@@ -1258,7 +1450,11 @@ class PluginManager {
         }, {});
     }
 
-    // 33. fixOrderBasedOnDependency
+    /**
+     * Reorder a plugin list based on their dependency graph (dependencies loaded first).
+     * @param plugs_list - list of plugin names
+     * @returns reordered plugin list
+     */
     fixOrderBasedOnDependency(plugs_list: string[]): string[] {
         const self = this;
         const map0: Record<string, boolean> = {};
@@ -1289,7 +1485,11 @@ class PluginManager {
         return new_list;
     }
 
-    // 34. getPlugins
+    /**
+     * Get list of plugins based on whether they are enabled.
+     * @param returnFullList - pass true to include disabled plugins
+     * @returns enabled (or all) plugin names
+     */
     getPlugins(returnFullList?: boolean): string[] {
         const list: string[] = [];
         if (returnFullList) {
@@ -1331,17 +1531,28 @@ class PluginManager {
         }
     }
 
-    // 35. getPluginsApis
+    /**
+     * Get the pluginsApis map.
+     * @returns map of plugin names to API modules
+     */
     getPluginsApis(): PluginsApis {
         return pluginsApis;
     }
 
-    // 36. setPluginApi
+    /**
+     * Set a custom API function for a plugin.
+     * @param plugin - plugin name
+     * @param name - API function name
+     * @param func - function to set
+     * @returns the set function
+     */
     setPluginApi(plugin: string, name: string, func: (...args: any[]) => any): (...args: any[]) => any {
         return pluginsApis[plugin][name] = func;
     }
 
-    // 37. reloadPlugins
+    /**
+     * Reload the plugins.json file.
+     */
     reloadPlugins(): void {
         const pluginsJsonPath = path.resolve(__dirname, './plugins.json');
         delete require.cache[pluginsJsonPath];
@@ -1351,7 +1562,11 @@ class PluginManager {
         });
     }
 
-    // 38. isPluginEnabled
+    /**
+     * Check whether a specific plugin is currently enabled.
+     * @param plugin - plugin name
+     * @returns true if plugin is enabled
+     */
     isPluginEnabled(plugin: string): boolean {
         const enabledPlugins = this.getPlugins();
         if (this.coreList.indexOf(plugin) === -1 && enabledPlugins.indexOf(plugin) === -1) {
@@ -1360,7 +1575,9 @@ class PluginManager {
         return true;
     }
 
-    // 39. checkPluginsMaster
+    /**
+     * Called by master process: connects to DB, reloads config, and triggers sync check.
+     */
     checkPluginsMaster(): void {
         const self = this;
         if (this.finishedSyncing) {
@@ -1379,17 +1596,25 @@ class PluginManager {
         }
     }
 
-    // 40. startSyncing
+    /**
+     * Marks the plugin manager as busy syncing.
+     */
     startSyncing(): void {
         this.finishedSyncing = false;
     }
 
-    // 41. stopSyncing
+    /**
+     * Marks the plugin manager as finished syncing.
+     */
     stopSyncing(): void {
         this.finishedSyncing = true;
     }
 
-    // 42. checkPlugins
+    /**
+     * We check plugins and sync configuration
+     * @param db - connection to countly database
+     * @param callback - when finished checking and syncing
+     */
     checkPlugins(db: Database, callback?: () => void): void {
         const plugConf = this.getConfig('plugins');
 
@@ -1426,7 +1651,12 @@ class PluginManager {
         }
     }
 
-    // 43. syncPlugins
+    /**
+     * Sync enable/disable plugin state to disk and potentially trigger a restart.
+     * @param pluginState - object with plugin names as keys, enabled state as value
+     * @param callback - function called on completion
+     * @param db - optional database connection
+     */
     syncPlugins(pluginState: Record<string, boolean>, callback?: (err?: boolean) => void, db?: Database): void {
         const self = this;
         const dir = path.resolve(__dirname, './plugins.json');
@@ -1484,7 +1714,12 @@ class PluginManager {
         });
     }
 
-    // 44. processPluginInstall
+    /**
+     * Process plugin installation
+     * @param db - database connection
+     * @param name - plugin name or object with name and enable properties
+     * @param callback - callback function
+     */
     processPluginInstall(db: Database, name: string | { name: string; enable?: boolean }, callback?: () => void): void {
         const self = this;
         let should_enable = true;
@@ -1553,7 +1788,11 @@ class PluginManager {
         });
     }
 
-    // 45. installPlugin
+    /**
+     * Procedure to install plugin
+     * @param plugin - plugin name
+     * @param callback - when finished installing plugin
+     */
     installPlugin(plugin: string, callback?: (errors?: boolean) => void): void {
         const self = this;
         console.log('Installing plugin %j...', plugin);
@@ -1630,7 +1869,11 @@ class PluginManager {
         });
     }
 
-    // 46. upgradePlugin
+    /**
+     * Procedure to upgrade plugin
+     * @param plugin - plugin name
+     * @param callback - when finished upgrading plugin
+     */
     upgradePlugin(plugin: string, callback?: (errors?: boolean) => void): void {
         const self = this;
         console.log('Upgrading plugin %j...', plugin);
@@ -1699,7 +1942,12 @@ class PluginManager {
         });
     }
 
-    // 47. uninstallPlugin
+    /**
+     * Procedure to uninstall plugin
+     * Should be used only to hard disabled plugins mainly in dev mode
+     * @param plugin - plugin name
+     * @param callback - when finished uninstalling plugin
+     */
     uninstallPlugin(plugin: string, callback?: (errors?: boolean) => void): void {
         console.log('Uninstalling plugin %j...', plugin);
         callback = callback || function() {};
@@ -1745,7 +1993,10 @@ class PluginManager {
         });
     }
 
-    // 48. prepareProduction
+    /**
+     * Procedure to prepare production file
+     * @param callback - when finished preparing
+     */
     prepareProduction(callback?: (errors?: boolean) => void): void {
         console.log('Preparing production files');
         exec('countly task dist-all', { cwd: path.dirname(process.argv[1]) }, function(error: any, stdout: string) {
@@ -1761,7 +2012,9 @@ class PluginManager {
         });
     }
 
-    // 49. restartCountly
+    /**
+     * Procedure to restart countly process
+     */
     restartCountly(): void {
         console.log('Restarting Countly ...');
         exec('sudo countly restart', function(error: any, stdout: string, stderr: string) {
@@ -1775,7 +2028,10 @@ class PluginManager {
         });
     }
 
-    // 50. singleDefaultConnection
+    /**
+     * Get single pool connection for database
+     * @returns db connection promise
+     */
     singleDefaultConnection(): Promise<Database> {
         if (typeof countlyConfig.mongodb === 'string') {
             let query: Record<string, any> = {};
@@ -1801,7 +2057,11 @@ class PluginManager {
         }
     }
 
-    // 51. getDbConnectionParams
+    /**
+     * Get database connection parameters for command line
+     * @param config - connection configs
+     * @returns db connection params
+     */
     getDbConnectionParams(config: string | Record<string, any>): Record<string, any> {
         const ob: Record<string, any> = {};
         let db: string | undefined;
@@ -1907,7 +2167,12 @@ class PluginManager {
         return ob;
     }
 
-    // 52. replaceDatabaseString
+    /**
+     * This method accepts MongoDB connection string and new database name and replaces the name in string with provided one
+     * @param str - MongoDB connection string
+     * @param db - database name
+     * @returns modified connection string
+     */
     replaceDatabaseString(str: string, db?: string): string {
         if (!db) {
             db = 'countly';
@@ -1950,7 +2215,11 @@ class PluginManager {
         return str;
     }
 
-    // 53. connectToAllDatabases
+    /**
+     * Open connections for all databases required by the API and populate common.db, common.outDb, common.drillDb.
+     * @param return_original - return the original mongodb driver instance instead of wrapped
+     * @returns array of databases
+     */
     async connectToAllDatabases(return_original?: boolean): Promise<Database[]> {
         const dbs = ['countly', 'countly_out', 'countly_fs', 'countly_drill'];
 
@@ -1987,7 +2256,12 @@ class PluginManager {
         return databases;
     }
 
-    // 54. dbConnection
+    /**
+     * Establish a MongoDB connection based on provided config or defaults.
+     * @param config - database name, array of names, or full configuration object
+     * @param return_original - return the original mongodb driver instance instead of wrapped
+     * @returns Promise resolving to database(s)
+     */
     async dbConnection(config?: string | string[] | Record<string, any>, return_original?: boolean): Promise<Database | Database[]> {
         let db: string | undefined;
         let maxPoolSize: number | string = 100;
@@ -2225,7 +2499,10 @@ class PluginManager {
         }
     }
 
-    // 55. fetchMaskingConf
+    /**
+     * Fetch masking configuration from database.
+     * @param options - object containing database connection
+     */
     async fetchMaskingConf(options: { db: Database }): Promise<void> {
         const apps = await options.db.collection('apps').find({}, { 'masking': true }).toArray();
 
@@ -2264,7 +2541,11 @@ class PluginManager {
         return;
     }
 
-    // 56. hasAnyValueTrue
+    /**
+     * Checks if any item in object tree and subtree is true. Recursive.
+     * @param myOb - object to check recursively
+     * @returns true if any value in tree is true
+     */
     hasAnyValueTrue(myOb: any): boolean {
         if (typeof myOb === 'object' && Object.keys(myOb) && Object.keys(myOb).length > 0) {
             let value = false;
@@ -2283,7 +2564,10 @@ class PluginManager {
         }
     }
 
-    // 57. isAnyMasked
+    /**
+     * Check if any app or event key has masking enabled.
+     * @returns true if any masking rules are active
+     */
     isAnyMasked(): boolean {
         let result = false;
         if (this.masking && this.masking.apps) {
@@ -2300,7 +2584,11 @@ class PluginManager {
         return result;
     }
 
-    // 58. getMaskingSettings
+    /**
+     * Get masking settings for a specific app or for all apps.
+     * @param appID - application id or 'all'
+     * @returns masking rules
+     */
     getMaskingSettings(appID: string): Record<string, any> {
         if (appID === 'all') {
             if (this.masking && this.masking.apps) {
@@ -2328,7 +2616,11 @@ class PluginManager {
         }
     }
 
-    // 59. getAppEventFromHash
+    /**
+     * Resolve hash back to application id and event key.
+     * @param hashValue - hashed event identifier
+     * @returns resolved event data with hash
+     */
     getAppEventFromHash(hashValue: string): Record<string, any> {
         if (this.masking && this.masking.hashMap && this.masking.hashMap[hashValue]) {
             const record = JSON.parse(JSON.stringify(this.masking.hashMap[hashValue]));
@@ -2340,7 +2632,11 @@ class PluginManager {
         }
     }
 
-    // 60. getEHashes
+    /**
+     * Retrieve event hash map for a specific app or all apps.
+     * @param appID - application id or 'all'
+     * @returns map of event key to hash
+     */
     getEHashes(appID: string): Record<string, string> {
         const map: Record<string, string> = {};
         if (this.masking && this.masking.hashMap) {
@@ -2360,7 +2656,15 @@ class PluginManager {
         return map;
     }
 
-    // 61. wrapDatabase
+    /**
+     * Wrap a MongoDB Db object with Countly-specific helpers (ObjectID, encode, decode, etc.).
+     * @param countlyDb - the mongodb driver db object
+     * @param client - MongoClient instance
+     * @param dbName - database name
+     * @param dbConnectionString - the full connection string used
+     * @param dbOptions - connection options
+     * @returns wrapped Database
+     */
     wrapDatabase(countlyDb: any, client: MongoClient, dbName: string, dbConnectionString: string, dbOptions: Record<string, any>): Database {
         if (countlyDb._wrapped) {
             return countlyDb;
@@ -3092,7 +3396,12 @@ class PluginManager {
         return countlyDb;
     }
 
-    // 62. getObjectDiff
+    /**
+     * Compute a deep diff of provided config against current config, keeping only new keys.
+     * @param current - current configuration object
+     * @param provided - updated configuration object
+     * @returns diff containing keys present in provided but missing in current
+     */
     getObjectDiff(current: Record<string, any>, provided: Record<string, any>): Record<string, any> {
         const toReturn: Record<string, any> = {};
 
@@ -3110,7 +3419,12 @@ class PluginManager {
         return toReturn;
     }
 
-    // 63. flattenObject
+    /**
+     * Flatten nested objects into dot-notation keys for MongoDB updates.
+     * @param ob - object to flatten
+     * @param prefix - key prefix for recursion
+     * @returns flattened key/value map
+     */
     flattenObject(ob: Record<string, any>, prefix?: string): Record<string, any> {
         if (prefix) {
             prefix += '.';
@@ -3145,7 +3459,9 @@ class PluginManager {
         return toReturn;
     }
 
-    // 64. registerDatabaseHandler
+    /**
+     * Register the /database/register event handler to allow other plugins to register database connections.
+     */
     registerDatabaseHandler(): void {
         this.register('/database/register', (params: any) => {
             if (!params || !params.name || !params.client) {
