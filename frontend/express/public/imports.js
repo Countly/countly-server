@@ -21,4 +21,7 @@ import { countlyCommon, CommonConstructor } from './javascripts/countly/countly.
 window.countlyCommon = countlyCommon;
 window.CommonConstructor = CommonConstructor;
 
+import countlyTotalUsers from './javascripts/countly/countly.total.users.js';
+window.countlyTotalUsers = countlyTotalUsers;
+
 // import from 'javascripts/countly/countly.config.js';

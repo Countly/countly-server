@@ -56,7 +56,7 @@ const legacyScripts = [
 
     // === BODY SECTION (from dashboard.html lines 187-274) ===
     // 'javascripts/countly/countly.analytics.js',                               - DELETE. NOT BEING USED ANYWHERE.
-    // 'javascripts/countly/countly.common.js',                                  - DELETE. IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/countly/countly.common.js',
     'javascripts/countly/countly.config.js',
     'javascripts/countly/countly.helpers.js',
     'javascripts/countly/countly.event.js',
@@ -70,7 +70,7 @@ const legacyScripts = [
     'javascripts/countly/countly.device.detail.js',
     'javascripts/countly/countly.app.version.js',
     'javascripts/countly/countly.carrier.js',
-    'javascripts/countly/countly.total.users.js',
+    // 'javascripts/countly/countly.total.users.js',
     'javascripts/countly/countly.app.users.js',
     'javascripts/countly/countly.token.manager.js',
     'javascripts/countly/countly.version.history.js',

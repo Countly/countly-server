@@ -1,9 +1,10 @@
-/*global CountlyHelpers, countlyGlobal, countlyTotalUsers, filterXSS */
+/*global CountlyHelpers, countlyGlobal, filterXSS */
 import store from "storejs";
 import jQuery from "jquery";
 import moment from "moment";
 import _ from "underscore";
 import { mergeWith } from "lodash";
+import { get as getTotalUsers, isUsable as isTotalUsersUsable } from "./countly.total.users.js";
 
 /**
  * Object with common functions to be used for multiple purposes
@@ -1133,7 +1134,7 @@ var CommonConstructor = function() {
             }
         }
         else {
-            var calculatedObj = (estOverrideMetric) ? countlyTotalUsers.get(estOverrideMetric) : {};
+            var calculatedObj = (estOverrideMetric) ? getTotalUsers(estOverrideMetric) : {};
 
             for (j = 0; j < rangeArray.length; j++) {
 
@@ -1174,7 +1175,7 @@ var CommonConstructor = function() {
                 }
 
                 if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                    if (countlyTotalUsers.isUsable() && estOverrideMetric && typeof calculatedObj[rangeArray[j]] !== "undefined") {
+                    if (isTotalUsersUsable() && estOverrideMetric && typeof calculatedObj[rangeArray[j]] !== "undefined") {
 
                         tmpPropertyObj.u = calculatedObj[rangeArray[j]];
 
@@ -1222,7 +1223,7 @@ var CommonConstructor = function() {
                     }
                     // Total users can't be less than new users
                     if (tmpPropertyObj.u < tmpPropertyObj.n) {
-                        if (countlyTotalUsers.isUsable() && estOverrideMetric && typeof calculatedObj[rangeArray[j]] !== "undefined") {
+                        if (isTotalUsersUsable() && estOverrideMetric && typeof calculatedObj[rangeArray[j]] !== "undefined") {
                             tmpPropertyObj.n = calculatedObj[rangeArray[j]];
                         }
                         else {
@@ -2441,20 +2442,20 @@ var CommonConstructor = function() {
         }
 
         //check if we can correct data using total users correction
-        if (estOverrideMetric && countlyTotalUsers.isUsable()) {
+        if (estOverrideMetric && isTotalUsersUsable()) {
             for (i = 0; i < unique.length; i++) {
-                if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
-                    current[unique[i]] = countlyTotalUsers.get(estOverrideMetric[unique[i]]).users;
+                if (estOverrideMetric[unique[i]] && getTotalUsers(estOverrideMetric[unique[i]]).users) {
+                    current[unique[i]] = getTotalUsers(estOverrideMetric[unique[i]]).users;
                 }
-                if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]], true).users) {
-                    previous[unique[i]] = countlyTotalUsers.get(estOverrideMetric[unique[i]], true).users;
+                if (estOverrideMetric[unique[i]] && getTotalUsers(estOverrideMetric[unique[i]], true).users) {
+                    previous[unique[i]] = getTotalUsers(estOverrideMetric[unique[i]], true).users;
                 }
             }
         }
 
         // Total users can't be less than new users
         if (typeof current.u !== "undefined" && typeof current.n !== "undefined" && current.u < current.n) {
-            if (estOverrideMetric && countlyTotalUsers.isUsable() && estOverrideMetric.u && countlyTotalUsers.get(estOverrideMetric.u).users) {
+            if (estOverrideMetric && isTotalUsersUsable() && estOverrideMetric.u && getTotalUsers(estOverrideMetric.u).users) {
                 current.n = current.u;
             }
             else {
@@ -2481,9 +2482,9 @@ var CommonConstructor = function() {
         }
 
         //check if we can correct data using total users correction
-        if (estOverrideMetric && countlyTotalUsers.isUsable()) {
+        if (estOverrideMetric && isTotalUsersUsable()) {
             for (i = 0; i < unique.length; i++) {
-                if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
+                if (estOverrideMetric[unique[i]] && getTotalUsers(estOverrideMetric[unique[i]]).users) {
                     dataArr[unique[i]].isEstimate = false;
                 }
             }
