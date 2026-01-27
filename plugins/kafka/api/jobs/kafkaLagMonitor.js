@@ -3,6 +3,10 @@ const log = require("../../../../api/utils/log.js")("job:kafkaLagMonitor");
 const countlyConfig = require("../../../../api/config");
 
 /**
+ * @typedef {import('../../../../types/pluginManager').Database} Database
+ */
+
+/**
  * Job for monitoring Kafka consumer lag
  *
  * Periodically fetches high watermarks from Kafka and compares with committed offsets
@@ -30,7 +34,7 @@ class KafkaLagMonitorJob extends Job {
     /**
      * Run the lag monitoring job
      *
-     * @param {Object} db - MongoDB database connection
+     * @param {Database} db - MongoDB database connection
      * @param {Function} done - Callback function to signal completion
      */
     async run(db, done) {

@@ -3,13 +3,17 @@
 * @module api/parts/mgmt/date_presets
 */
 
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/parts/mgmt/date_presets */
 var presetsApi = {},
     common = require('../../utils/common.js');
 
 /**
 * Get presets 
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if successful
 **/
 presetsApi.getAll = async function(params) {
@@ -155,7 +159,7 @@ presetsApi.getAll = async function(params) {
 
 /**
 * Add new preset
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if successful
 **/
 presetsApi.create = function(params) {
@@ -322,7 +326,7 @@ presetsApi.create = function(params) {
 
 /**
 * Update preset
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if successful
 **/
 presetsApi.update = function(params) {
@@ -577,7 +581,7 @@ presetsApi.update = function(params) {
 
 /**
 * Get presets 
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if successful
 **/
 presetsApi.delete = function(params) {

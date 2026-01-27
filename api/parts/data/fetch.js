@@ -3,6 +3,11 @@
 * @module api/parts/data/fetch
 */
 
+/**
+ * @typedef {import('../../../types/pluginManager').Database} Database
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 const { getAdminApps, getUserApps } = require('../../utils/rights.js');
 
 /** @lends module:api/parts/data/fetch */
@@ -69,7 +74,7 @@ fetch.fetchFromGranularData = async function(queryData, callback) {
 /**
 * Prefetch event data, either by provided key or first event all events
 * @param {string} collection - event key
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.prefetchEventData = async function(collection, params) {
     if (!params.qstring.event) {
@@ -151,7 +156,7 @@ fetch.prefetchEventData = async function(collection, params) {
 /**
 * Fetch specific event data and output to browser
 * @param {string} collection - event key
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchEventData = function(collection, params) {
     var fetchFields = {};
@@ -182,7 +187,7 @@ fetch.fetchEventData = function(collection, params) {
 
 /**
 * The return the event groups data by _id.
-* @param {Object} params - params object
+* @param {Params} params - params object
 * @param {string} params._id - The id of the event group id.
 **/
 fetch.fetchEventGroupById = function(params) {
@@ -199,7 +204,7 @@ fetch.fetchEventGroupById = function(params) {
 
 /**
 * The return the event groups data by app_id.
-* @param {Object} params - params object
+* @param {Params} params - params object
 * @param {string} params.app_id - The id of the event group of application id.
 **/
 fetch.fetchEventGroups = function(params) {
@@ -216,7 +221,7 @@ fetch.fetchEventGroups = function(params) {
 
 /**
 * The return the merged event data for event groups.
-* @param {Object} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchMergedEventGroups = function(params) {
     const { qstring: { event } } = params;
@@ -230,15 +235,15 @@ fetch.fetchMergedEventGroups = function(params) {
 
 /**
 * The return the merged event data for event groups.
-* @param {params} params - params object with app_id and date
+* @param {Params} params - params object with app_id and date
 * @param {string} event - id of event group
 * @param {object=} options - additional optional settings
 * @param {object=} options.db - database connection to use, by default will try to use common.db
 * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} options.levels - describes which metrics to expect on which levels
-* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getMergedEventGroups = function(params, event, options, callback) {
@@ -260,7 +265,7 @@ fetch.getMergedEventGroups = function(params, event, options, callback) {
 
 /**
 * Get merged data from multiple events in standard data model and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchMergedEventData = function(params) {
     fetch.getMergedEventData(params, params.qstring.events, {}, function(result) {
@@ -270,15 +275,15 @@ fetch.fetchMergedEventData = function(params) {
 
 /**
 * Get merged data from multiple events in standard data model
-* @param {params} params - params object with app_id and date
-* @param {array} events - array with event keys
+* @param {Params} params - params object with app_id and date
+* @param {string[]} events - array with event keys
 * @param {object=} options - additional optional settings
 * @param {object=} options.db - database connection to use, by default will try to use common.db
 * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} options.levels - describes which metrics to expect on which levels
-* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getMergedEventData = function(params, events, options, callback) {
@@ -430,7 +435,7 @@ fetch.getMergedEventData = function(params, events, options, callback) {
 /**
 * Get collection data for specific app and output to browser
 * @param {string} collection - collection name
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchCollection = function(collection, params) {
     common.db.collection(collection).findOne({ '_id': params.app_id }, function(err, result) {
@@ -466,7 +471,7 @@ fetch.fetchCollection = function(collection, params) {
 /**
 * Get time data for specific metric by collection and output to browser
 * @param {string} collection - collection name
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchTimeData = function(collection, params) {
 
@@ -493,7 +498,7 @@ fetch.fetchTimeData = function(collection, params) {
 
 /**
 * Get data for dashboard api and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchDashboard = function(params) {
     params.qstring.period = params.qstring.period || "30days";
@@ -569,7 +574,7 @@ fetch.fetchDashboard = function(params) {
 
 /**
 * Get data for old all apps api and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchAllApps = function(params) {
     var filter = {};
@@ -615,7 +620,7 @@ fetch.fetchAllApps = function(params) {
 
         /**
         * Extract chart data from document object
-        * @param {object} db - document object from db
+        * @param {Database} db - document object from db
         * @param {object} props - property object with name and func
         * @returns {object} extracted chart data
         **/
@@ -709,7 +714,7 @@ fetch.fetchAllApps = function(params) {
 
 /**
 * Calls aggregation query to calculate top three values based on 't' in given collection
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {string} collection - collection name
 * @param {function} callback - callback function
 **/
@@ -805,7 +810,7 @@ function getDataforTops(params, collection, callback) {
 
 /**
 * Get data for tops api and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchTop = function(params) {
     var obj = {};
@@ -845,7 +850,7 @@ fetch.fetchTop = function(params) {
 
 /**
 * Get data for tops api and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchTops = function(params) {
     if (params.qstring.metric || params.qstring.metrics) {
@@ -877,7 +882,7 @@ fetch.fetchTops = function(params) {
 
 /**
 * Get data for countries api and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchCountries = function(params) {
     params.qstring.period = "30days";
@@ -934,7 +939,7 @@ fetch.fetchCountries = function(params) {
 
 /**
 * Get session data and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchSessions = function(params) {
     fetchTimeObj('users', params, false, function(usersDoc) {
@@ -949,7 +954,7 @@ fetch.fetchSessions = function(params) {
 
 /**
 * Get loyalty ranges data and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchLoyalty = function(params) {
     fetchTimeObj("users", params, false, function(doc) {
@@ -967,7 +972,7 @@ fetch.fetchLoyalty = function(params) {
 
 /**
 * Get frequency ranges data and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchFrequency = function(params) {
     fetchTimeObj("users", params, false, function(doc) {
@@ -985,7 +990,7 @@ fetch.fetchFrequency = function(params) {
 
 /**
 * Get durations ranges data and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchDurations = function(params) {
     fetchTimeObj("users", params, false, function(doc) {
@@ -1003,7 +1008,7 @@ fetch.fetchDurations = function(params) {
 
 /**
 * Get metric segment data from database, merging year and month and splitted docments together and breaking down data by segment
-* @param {params} params - params object with app_id and date
+* @param {Params} params - params object with app_id and date
 * @param {string} metric - name of the collection where to get data from
 * @param {object} totalUsersMetric - data from total users api request to correct unique user values
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
@@ -1031,7 +1036,7 @@ fetch.getMetric = function(params, metric, totalUsersMetric, callback) {
 
 /**
 * Get metric segment data from database with options, merging year and month and splitted docments together and breaking down data by segment
-* @param {params} params - params object with app_id and date
+* @param {Params} params - params object with app_id and date
 * @param {string} metric - name of the collection where to get data from
 * @param {object} totalUsersMetric - data from total users api request to correct unique user values
 * @param {object=} fetchTimeOptions - additional optional settings
@@ -1039,8 +1044,8 @@ fetch.getMetric = function(params, metric, totalUsersMetric, callback) {
 * @param {string=} fetchTimeOptions.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} fetchTimeOptions.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} fetchTimeOptions.levels - describes which metrics to expect on which levels
-* @param {array=} fetchTimeOptions.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} fetchTimeOptions.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} fetchTimeOptions.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} fetchTimeOptions.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
 * @example <caption>Retrieved data</caption>
 * [
@@ -1119,7 +1124,7 @@ fetch.getMetricWithOptions = function(params, metric, totalUsersMetric, fetchTim
 /**
 * Get collection and metric name from metric string
 * @param {string} metric - metric/segment name
-* @return {Array} array with collection, metric, model object
+* @return {Array<any>} array with collection, metric, model object
 **/
 fetch.metricToCollection = function(metric) {
     switch (metric) {
@@ -1191,7 +1196,7 @@ fetch.metricToProperty = function(metric) {
 
 /**
 * Get metric data for metric api and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchMetric = function(params) {
     var output = function(data) {
@@ -1213,7 +1218,7 @@ fetch.fetchMetric = function(params) {
 
 /**
 * Get events overview data for overview api and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.fetchDataEventsOverview = function(params) {
     var ob = {
@@ -1295,7 +1300,7 @@ fetch.fetchDataEventsOverview = function(params) {
 
 /**
 * Get top events data
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 
 fetch.fetchDataTopEvents = function(params) {
@@ -1362,7 +1367,7 @@ fetch.fetchDataTopEvents = function(params) {
 
 /**
 * Get events data for events pi output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {void} void
 **/
 fetch.fetchEvents = function(params) {
@@ -1430,15 +1435,15 @@ fetch.fetchEvents = function(params) {
 /**
 * Get Countly standard data model from database for segments or single level data as users, merging year and month and splitted docments together and output to browser
 * @param {string} collection - name of the collection where to get data from
-* @param {params} params - params object with app_id and date
+* @param {Params} params - params object with app_id and date
 * @param {boolean} isCustomEvent - if value we are fetching for custom event or standard metric
 * @param {object=} options - additional optional settings
 * @param {object=} options.db - database connection to use, by default will try to use common.db
 * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} options.levels - describes which metrics to expect on which levels
-* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 */
 fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
     fetchTimeObj(collection, params, isCustomEvent, options, function(output) {
@@ -1471,14 +1476,14 @@ fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
 /**
 * Get Countly standard data model from database for segments or single level data as users, merging year and month and splitted docments together
 * @param {string} collection - name of the collection where to get data from
-* @param {params} params - params object with app_id and date
+* @param {Params} params - params object with app_id and date
 * @param {object=} options - additional optional settings
 * @param {object=} options.db - database connection to use, by default will try to use common.db
 * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} options.levels - describes which metrics to expect on which levels
-* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getTimeObj = function(collection, params, options, callback) {
@@ -1488,14 +1493,14 @@ fetch.getTimeObj = function(collection, params, options, callback) {
 /**
 * Get Countly standard data model from database for events, merging year and month and splitted docments together
 * @param {string} collection - name of the collection where to get data from
-* @param {params} params - params object with app_id and date
+* @param {Params} params - params object with app_id and date
 * @param {object=} options - additional optional settings
 * @param {object=} options.db - database connection to use, by default will try to use common.db
 * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} options.levels - describes which metrics to expect on which levels
-* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getTimeObjForEvents = function(collection, params, options, callback) {
@@ -1517,7 +1522,7 @@ fetch.getTimeObjForEvents = function(collection, params, options, callback) {
 /**
 * Get data for estimating total users count if period contains today and output to browser
 * @param {string} metric - name of the collection where to get data from
-* @param {params} params - params object with app_id and date
+* @param {Params} params - params object with app_id and date
 */
 fetch.fetchTotalUsersObj = function(metric, params) {
     fetch.getTotalUsersObj(metric, params, function(output) {
@@ -1528,7 +1533,7 @@ fetch.fetchTotalUsersObj = function(metric, params) {
 /**
 * Get data for estimating total users count if period contains today
 * @param {string} metric - name of the collection where to get data from
-* @param {params} params - params object with app_id and date
+* @param {Params} params - params object with app_id and date
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getTotalUsersObj = function(metric, params, callback) {
@@ -1538,7 +1543,7 @@ fetch.getTotalUsersObj = function(metric, params, callback) {
 /**
 * Get data for estimating total users count allowing plugins to add their own data
 * @param {string} metric - name of the collection where to get data from
-* @param {params} params - params object with app_id and date
+* @param {Params} params - params object with app_id and date
 * @param {object=} options - additional optional settings
 * @param {object=} options.db - database connection to use, by default will try to use common.db
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
@@ -1737,7 +1742,7 @@ fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
 /**
  * Caluclates model data from granural data
  * @param {string} collection - collection name 
- * @param {object} params  - request parameters
+ * @param {Params} params  - request parameters
  * @param {object} options  - options of query
  * @param {funtyion} callback  - callback function with result
  */
@@ -1804,15 +1809,15 @@ async function fetchFromGranular(collection, params, options, callback) {
 /**
 * Fetch db data in standard format
 * @param {string} collection - from which collection to fetch
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {boolean} isCustomEvent - if we are fetching custom event or not
 * @param {object=} options - additional optional settings
 * @param {object=} options.db - database connection to use, by default will try to use common.db
 * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
 * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
 * @param {object=} options.levels - describes which metrics to expect on which levels
-* @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-* @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+* @param {string[]} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+* @param {string[]} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - to call when fetch done
 **/
 function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
@@ -2028,11 +2033,11 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
     /**    
     * Merge multiple db documents into one
-    * @param {array} dataObjects - array with db documents
+    * @param {object[]} dataObjects - array with db documents
     * @param {boolean} isRefresh - is it refresh data only for today
     * @param {object=} levels - describes which metrics to expect on which levels
-    * @param {array=} levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
-    * @param {array=} levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+    * @param {string[]} levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+    * @param {string[]} levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
     * @param {boolean} truncateEventValuesList - if true, then will limit returned segment value count in meta.
     * @returns {object} merged object
     **/
@@ -2192,7 +2197,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 /**
 * Get period and out it to browser
 * @param {string} coll - collection, this is not used, but more for compliance with validation functions
-* @param {params} params - params object
+* @param {Params} params - params object
 **/
 fetch.getPeriodObj = function(coll, params) {
     common.returnOutput(params, countlyCommon.getPeriodObj(params, "30days"));
@@ -2200,9 +2205,9 @@ fetch.getPeriodObj = function(coll, params) {
 
 /**
 * Returns the union of two arrays
-* @param {array} x - array 1
-* @param {array} y - array 2
-* @returns {array} merged array
+* @param {any[]} x - array 1
+* @param {any[]} y - array 2
+* @returns {any[]} merged array
 **/
 function union(x, y) {
     var obj = {};
@@ -2224,8 +2229,8 @@ function union(x, y) {
 
 /**
  * Fetch data for tops
- * @param {params} params - params object
- * @param  {Array} allMetrics - All metrics array
+ * @param {Params} params - params object
+ * @param  {object[]} allMetrics - All metrics array
  * @param  {String} metric - metric to fetch data for
  * @param  {Function} cb - callback function
  */

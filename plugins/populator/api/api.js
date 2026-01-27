@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
@@ -846,7 +850,7 @@ const FEATURE_NAME = 'populator';
     /**
      * Validation before import
      * 
-     * @param {Object} params params object 
+     * @param {Params} params params object 
      * @param {Object} template template Object
      * @returns {Promise<Object>} validation result
     */
@@ -864,7 +868,7 @@ const FEATURE_NAME = 'populator';
     /**
      * Insert Template Objects
      * 
-     * @param {Object} params params object
+     * @param {Params} params params object
      * @param {Object} importData iomport data Object
      * @returns {Promise} promise array of all inserts
      */

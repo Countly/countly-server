@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
@@ -406,7 +410,7 @@ var pluginOb = {},
     }
     /**
      * Function to record action
-     * @param  {Object} params -  Default parameters object
+     * @param  {Params} params -  Default parameters object
      * @param  {Object} user - user object
      * @param  {String} action - action
      * @param  {Object} data - data object

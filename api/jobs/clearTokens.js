@@ -1,6 +1,12 @@
 'use strict';
 
+/**
+ * @typedef {import('../../types/authorizer').Authorizer} Authorizer
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
 // const job = require('../parts/jobs/job.js'),
+/** @type {Authorizer} */
 const authorize = require('../utils/authorizer.js');
 const Job = require("../../jobServer/Job");
 
@@ -20,7 +26,7 @@ class CleanTokensJob extends Job {
 
     /**
      * Run the job
-     * @param {Db} db connection
+     * @param {Database} db connection
      * @param {done} done callback
      */
     run(db, done) {

@@ -216,25 +216,47 @@
                 }
 
                 if (this.settings.isEditMode) {
-                    starRatingPlugin.editFeedbackWidget(submitted, function() {
+                    starRatingPlugin.editFeedbackWidget(submitted).then(() => {
                         CountlyHelpers.notify({
                             title: 'Success',
                             message: CV.i18n('star-rating.widget.edit.success'),
-                            type: 'success'
+                            type: 'success',
                         });
+
+                    }).catch(() => {
+                        CountlyHelpers.notify({
+                            message: CV.i18n('star-rating.widget.edit.fail'),
+                            type: 'error',
+                            width: 'large',
+                        });
+
+                    }).then(() => {
+                        // finally refresh even in case of error
                         self.$emit('widgets-refresh');
                         done();
+
                     });
                 }
                 else {
-                    starRatingPlugin.createFeedbackWidget(submitted, function() {
+                    starRatingPlugin.createFeedbackWidget(submitted, function() {}).then(() => {
                         CountlyHelpers.notify({
                             title: 'Success',
                             message: CV.i18n('star-rating.widget.create.success'),
                             type: 'success'
                         });
+
+                    }).catch(() => {
+                        CountlyHelpers.notify({
+                            message: CV.i18n('star-rating.widget.create.fail'),
+                            type: 'error',
+                            width: 'large',
+                        });
+
+                    }).then(() => {
+                        // finally refresh even in case of error
                         self.$emit('widgets-refresh');
                         done();
+
                     });
                 }
             },
@@ -1302,12 +1324,21 @@
                         if (!result) {
                             return true;
                         }
-                        starRatingPlugin.removeFeedbackWidget(self.widget._id, false, function() {
+
+                        starRatingPlugin.removeFeedbackWidget(self.widget._id, false).then(() => {
                             CountlyHelpers.notify({
                                 type: 'success',
-                                message: CV.i18n('feedback.successfully-removed')
+                                message: CV.i18n('star-rating.widget.delete.success')
                             });
                             window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets";
+
+                        }).catch(() => {
+
+                            CountlyHelpers.notify({
+                                type: 'error',
+                                message: CV.i18n('star-rating.widget.delete.fail'),
+                                width: 'large',
+                            });
                         });
                     }, [], { image: 'delete-an-app', title: CV.i18n('feedback.delete-a-widget') }, "ratings-detail");
                     break;

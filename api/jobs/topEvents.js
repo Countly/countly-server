@@ -1,3 +1,8 @@
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
 // const job = require("../parts/jobs/job.js");
 const Job = require("../../jobServer/Job");
 const crypto = require("crypto");
@@ -37,7 +42,7 @@ class TopEventsJob extends Job {
 
     /**
      *
-     * @param {object} params  - params object
+     * @param {Params} params  - params object
      * @param {object} data  - object where to collect data
      * @param {boolean} previous  - if fetching for previous period
      * @returns {Promise} promise
@@ -257,7 +262,7 @@ class TopEventsJob extends Job {
 
     /**
      * Run the job
-     * @param {Db} db connection
+     * @param {Database} db connection
      * @param {done} done callback
      */
     async run(db, done) {

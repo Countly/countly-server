@@ -398,7 +398,8 @@ jobs:
             -e COUNTLY_CONFIG__KAFKA_CONSUMER_REBALANCETIMEOUTMS=30000 \
             -e COUNTLY_CONFIG__KAFKA_CONSUMER_INVALIDJSONBEHAVIOR=skip \
             -e COUNTLY_CONFIG__KAFKA_CONSUMER_INVALIDJSONMETRICS=true \
-            -e COUNTLY_SETTINGS__LOGS__DEBUG='query-runner' \
+            -e COUNTLY_SETTINGS__LOGS__DEBUG='' \
+            -e COUNTLY_SETTINGS__LOGS__DEFAULT='warn' \
             -e COUNTLY_SETTINGS__FUNNELS__FUNNEL_CACHING=false \
             -e COUNTLY_SETTINGS__DRILL__RECORD_META=true \
             -e COUNTLY_SETTINGS__API__BATCH_PROCESSING=false \
@@ -655,7 +656,8 @@ jobs:
             -e COUNTLY_CONFIG__KAFKA_CONSUMER_REBALANCETIMEOUTMS=30000 \
             -e COUNTLY_CONFIG__KAFKA_CONSUMER_INVALIDJSONBEHAVIOR=skip \
             -e COUNTLY_CONFIG__KAFKA_CONSUMER_INVALIDJSONMETRICS=true \
-            -e COUNTLY_SETTINGS__LOGS__DEBUG='query-runner' \
+            -e COUNTLY_SETTINGS__LOGS__DEBUG='' \
+            -e COUNTLY_SETTINGS__LOGS__DEFAULT='warn' \
             -e COUNTLY_SETTINGS__FUNNELS__FUNNEL_CACHING=false \
             -e COUNTLY_SETTINGS__DRILL__RECORD_META=true \
             -e COUNTLY_SETTINGS__API__BATCH_PROCESSING=false \
@@ -924,7 +926,8 @@ jobs:
             -e COUNTLY_CONFIG__KAFKA_CONSUMER_REBALANCETIMEOUTMS=30000 \
             -e COUNTLY_CONFIG__KAFKA_CONSUMER_INVALIDJSONBEHAVIOR=skip \
             -e COUNTLY_CONFIG__KAFKA_CONSUMER_INVALIDJSONMETRICS=true \
-            -e COUNTLY_SETTINGS__LOGS__DEBUG='query-runner' \
+            -e COUNTLY_SETTINGS__LOGS__DEBUG='' \
+            -e COUNTLY_SETTINGS__LOGS__DEFAULT='warn' \
             countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }} \
             sleep infinity
 

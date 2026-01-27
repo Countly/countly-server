@@ -5,14 +5,18 @@
 // npx tsc
 {
     "include": [
+        "plugins/pluginManager.js",
         "plugins/push/**/*.ts",
         "plugins/push/**/*.js",
         "plugins/push_approver/**/*.ts",
         "plugins/push_approver/**/*.js",
+        "api/lib/countly.common.js",
+        "api/parts/data/geoData.js",
         "api/utils/common.js",
         "api/utils/localization.js",
-        "api/lib/countly.common.js",
-        "api/utils/requestProcessor.js"
+        "api/utils/requestProcessor.js",
+        "api/utils/taskmanager.js",
+        "api/utils/authorizer.js"
     ],
     "exclude": [
         "node_modules"

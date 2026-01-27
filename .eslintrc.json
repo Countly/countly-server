@@ -1,6 +1,7 @@
 {
     "extends": "eslint:recommended",
     "ignorePatterns": [
+        "dist/**",
         "**/*.d.ts",
         "types/**/*.d.ts",
         "plugins/*/types/**/*.d.ts"

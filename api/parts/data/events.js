@@ -3,6 +3,10 @@
 * @module "api/parts/data/events"
 */
 
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/parts/data/events */
 var countlyEvents = {},
     common = require('./../../utils/common.js'),
@@ -16,7 +20,7 @@ var countlyEvents = {},
 
 /**
 * Process JSON decoded events data from request
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {Promise} resolved when procesing finished
 **/
 countlyEvents.processEvents = function(params) {
@@ -201,7 +205,7 @@ countlyEvents.processEvents = function(params) {
 * @param {array} appEvents - aray with existing event keys
 * @param {object} appSegments - object with event key as key, and segments as array value
 * @param {object} appSgValues - object in format [collection][document_id][segment] and array of values as value for inserting in database
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {array} omitted_segments - array of segments to omit
 * @param {array} whitelisted_segments - array of segments to keep
 * @param {function} done - callback function to call when done processing

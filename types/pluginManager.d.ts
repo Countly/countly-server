@@ -1,9 +1,15 @@
-import { Db } from "mongodb";
+import { Db, MongoClient } from "mongodb";
+
+/** Init options for plugin manager */
+export interface InitOptions {
+    filename?: string;
+    skipDependencies?: boolean;
+}
 
 /** TTL Collection configuration */
 export interface TTLCollection {
     collection: string;
-    db: Db;
+    db: Database | string;
     property: string;
     expireAfterSeconds: number;
 }
@@ -65,7 +71,7 @@ export interface DbConnectionParams {
 
 /** Database connection configuration */
 export interface DatabaseConfig {
-    mongodb?: {
+    mongodb?: string | {
         host?: string;
         port?: number;
         db?: string;
@@ -73,14 +79,18 @@ export interface DatabaseConfig {
         password?: string;
         max_pool_size?: number;
         ssl?: boolean;
-        replSetServers?: string;
+        replSetServers?: string[] | string;
+        replicaName?: string;
+        dbOptions?: any;
+        serverOptions?: any;
         [key: string]: any;
     };
+    shared_connection?: boolean;
     [key: string]: any;
 }
 
 /** Database wrapper interface */
-export interface Database {
+export interface Database extends Db {
     collection: (name: string) => any;
     admin: () => any;
     close: () => void;
@@ -88,6 +98,15 @@ export interface Database {
     ObjectId: any;
     Binary: any;
     Long: any;
+    _wrapped?: boolean;
+    _cly_debug?: {
+        db: string;
+        connection: string;
+        options: any;
+    };
+    encode?: (str: string) => string;
+    decode?: (str: string) => string;
+    onOpened?: (callback: () => void) => void;
     [key: string]: any;
 }
 
@@ -171,14 +190,16 @@ export interface PluginManager {
 
     /**
      * Initialize api side plugins
+     * @param options - Init options with filename and dependency settings
      */
-    init(): void;
+    init(options?: InitOptions): void;
 
     /**
      * Initialize a specific plugin
      * @param pluginName - Name of the plugin to initialize
+     * @param filename - Optional filename to load (default: "api")
      */
-    initPlugin(pluginName: string): void;
+    initPlugin(pluginName: string, filename?: string): void;
 
     /**
      * Install plugins that are missing from database
@@ -359,10 +380,10 @@ export interface PluginManager {
     /**
      * Process plugin installation
      * @param db - Database connection
-     * @param name - Plugin name
+     * @param name - Plugin name or plugin object with name and enable properties
      * @param callback - Callback function
      */
-    processPluginInstall(db: Database, name: string, callback: (error?: Error) => void): void;
+    processPluginInstall(db: Database, name: string | { name: string; enable?: boolean }, callback: (error?: Error) => void): void;
 
     /**
      * Procedure to install plugin
@@ -499,16 +520,18 @@ export interface PluginManager {
 
     /**
      * Connect to all databases (countly, countly_out, countly_fs, countly_drill)
+     * @param return_original - Return original driver connection object (database is not wrapped)
      * @returns Promise with array of database connections
      */
-    connectToAllDatabases(): Promise<Database[]>;
+    connectToAllDatabases(return_original?: boolean): Promise<Database[]>;
 
     /**
      * Get database connection with configured pool size
-     * @param config - Optional database configuration
-     * @returns Promise with database connection
+     * @param config - Database configuration (string, array of strings, or config object)
+     * @param return_original - Return original driver connection object (database is not wrapped)
+     * @returns Promise with database connection or array of connections
      */
-    dbConnection(config?: DatabaseConfig): Promise<Database>;
+    dbConnection(config?: string | string[] | DatabaseConfig, return_original?: boolean): Promise<Database | Database[]>;
 
     /**
      * Get database connection parameters for command line
@@ -534,7 +557,7 @@ export interface PluginManager {
      * @param dbOptions - Database options
      * @returns Wrapped database object
      */
-    wrapDatabase(countlyDb: any, client: any, dbName: string, dbConnectionString: string, dbOptions: object): Database;
+    wrapDatabase(countlyDb: Db, client: MongoClient, dbName: string, dbConnectionString: string, dbOptions: object): Database;
 
     // Data Masking Methods
     /**

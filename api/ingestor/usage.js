@@ -8,7 +8,7 @@ var usage = {},
 
 /**
 * Get location either from coordinate to populate country and city, or from country and city to get coordinates
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} loc - location object    
 * @param {number} loc.lat - lattitude    
 * @param {number} loc.lon - longitude 
@@ -92,7 +92,7 @@ function locFromGeoip(loc, ip_address) {
 
 /**
  * Set Location information in params but donot update it in users document
- * @param  {params} params - params object
+ * @param  {Params} params - params object
  * @returns {Promise} promise which resolves upon completeing processing
  */
 usage.setLocation = function(params) {
@@ -152,7 +152,7 @@ usage.setLocation = function(params) {
 
 /**
  * Set user location in params
- * @param  {params} params - params object
+ * @param  {Params} params - params object
  * @param  {object} loc - location info
  */
 usage.setUserLocation = function(params, loc) {
@@ -274,7 +274,7 @@ usage;
 
 /**
  * Process all metrics and return
- * @param  {params} params - params object
+ * @param  {Params} params - params object
  * @returns {object} params
  */
 usage.returnRequestMetrics = function(params) {

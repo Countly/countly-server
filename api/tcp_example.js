@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../types/requestProcessor').Params} Params
+ */
+
 const net = require('net');
 const countlyConfig = require('./config', 'dont-enclose');
 const plugins = require('../plugins/pluginManager.js');
@@ -58,7 +62,7 @@ plugins.dbConnection(countlyConfig).then(function(db) {
         * @param {string} message - response string that was usually returned by API
         * @param {object} headers - HTTP headers that would usually be returned by API
         * @param {number} returnCode - HTTP response code that would usually be returned by API
-        * @param {params} paramsOb - params object for processed request
+        * @param {Params} paramsOb - params object for processed request
         **/
         function respond(message, headers, returnCode, paramsOb) {
             console.log(message, headers, returnCode, paramsOb);

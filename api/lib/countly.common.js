@@ -5,8 +5,25 @@
 
 /**
  * @typedef {import('moment-timezone').Moment} MomentTimezone
+ * @typedef {import('../../types/countly.common').PeriodObject} PeriodObject
+ * @typedef {import('../../types/countly.common').CountlyCommon} CountlyCommonType
+ * @typedef {import('../../types/countly.common').PercentChange} PercentChange
+ * @typedef {import('../../types/countly.common').DashboardData} DashboardData
+ * @typedef {import('../../types/countly.common').DataProperty} DataProperty
+ * @typedef {import('../../types/countly.common').ChartDataPoint} ChartDataPoint
+ * @typedef {import('../../types/countly.common').ExtractedChartData} ExtractedChartData
+ * @typedef {import('../../types/countly.common').ExtractedTwoLevelData} ExtractedTwoLevelData
+ * @typedef {import('../../types/countly.common').BarDataItem} BarDataItem
+ * @typedef {import('../../types/countly.common').PeriodRangeQuery} PeriodRangeQuery
+ * @typedef {import('../../types/countly.common').TimestampRangeQuery} TimestampRangeQuery
+ * @typedef {import('../../types/countly.common').ClearFunction} ClearFunction
+ * @typedef {import('../../types/countly.common').FixBarSegmentDataFunction} FixBarSegmentDataFunction
+ * @typedef {import('../../types/countly.common').FetchFunction} FetchFunction
+ * @typedef {import('../../types/pluginManager').Database} Database
+ * @typedef {import('../../types/requestProcessor').Params} Params
  */
 
+/** @type {CountlyCommonType} */
 /** @lends module:api/lib/countly.common */
 var countlyCommon = {},
     /**
@@ -24,8 +41,8 @@ var _period = "hour",
 
 /**
  * Calculates unique values from a hierarchical map structure
- * @param {Object} dbObj - Database object containing hierarchical data (years, months, weeks, days)
- * @param {Object} uniqueMap - Map with hierarchical structure (years, months, weeks, days) used to calculate unique values
+ * @param {Record<String, any>} dbObj - Database object containing hierarchical data (years, months, weeks, days)
+ * @param {Record<String, any>} uniqueMap - Map with hierarchical structure (years, months, weeks, days) used to calculate unique values
  * @returns {number} - Count of unique items
  */
 countlyCommon.calculateUniqueFromMap = function(dbObj, uniqueMap) {
@@ -316,12 +333,13 @@ function fixTimestampToMilliseconds(ts) {
 
 /**
 * Returns a period object used by all time related data calculation functions
-* @param {string|any} prmPeriod period to be calculated (optional) todo:figure this type out
-* @param {string} bucket  - daily or monthly. If bucket is set, period will be modified to fit full months or days
-* @returns {timeObject} time object
+* @param {string|Array<number>|Record<string, any>} [prmPeriod] - period to be calculated (optional)
+* @param {string} [bucket] - daily or monthly. If bucket is set, period will be modified to fit full months or days
+* @returns {PeriodObject} period object
 **/
 function getPeriodObject(prmPeriod, bucket) {
     var startTimestamp, endTimestamp, periodObject, cycleDuration;
+    /** @type {PeriodObject} */
     periodObject = {
         start: 0,
         end: 0,
@@ -856,7 +874,7 @@ countlyCommon.getTimezone = function(params) {
      * @param {object} period  - common period in Countly
      * @param {string} timezone  - app timezone (optional. Pass if not using offset)
      * @param {number} offset  - offset in minutes
-     * @returns {object} - describes period range
+     * @returns {PeriodRangeQuery} - describes period range
      */
 countlyCommon.getPeriodRange = function(period, timezone, offset) {
     //Gets start and end points of period for querying in drill
@@ -1067,7 +1085,7 @@ countlyCommon.getDescendantProp = function(obj, desc) {
 
 /**
 * Extract range data from standard countly metric data model
-* @param {object} db - countly standard metric data object
+* @param {Database} db - countly standard metric data object
 * @param {string} propertyName - name of the property to extract
 * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
 * @param {function} explainRange - function to convert range/bucket index to meaningful label
@@ -1156,11 +1174,11 @@ countlyCommon.extractRangeData = function(db, propertyName, rangeArray, explainR
 
 /**
 * Extract single level data without metrics/segments, like total user data from users collection
-* @param {object} db - countly standard metric data object
-* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
-* @param {object} chartData - prefill chart data with labels, colors, etc
-* @param {object} dataProperties - describing which properties and how to extract
-* @returns {object} object to use in timeline graph with {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents}
+* @param {Database} db - countly standard metric data object
+* @param {ClearFunction} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {Array<ChartDataPoint>} chartData - prefill chart data with labels, colors, etc
+* @param {Array<DataProperty>} dataProperties - describing which properties and how to extract
+* @returns {ExtractedChartData} object to use in timeline graph with {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents}
 * @example <caption>Extracting total users data from users collection</caption>
 * countlyCommon.extractChartData(_sessionDb, countlySession.clearObject, [
 *      { data:[], label:"Total Users" }
@@ -1309,7 +1327,7 @@ countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProp
 /**
  * Extract single level data without metrics/segments, like total user data from users collection
  * @memberof countlyCommon
- * @param {object} db - countly standard metric data object
+ * @param {Database} db - countly standard metric data object
  * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
  * @param {object} chartData - prefill chart data with labels, colors, etc
  * @param {object} dataProperties - describing which properties and how to extract
@@ -1532,8 +1550,8 @@ countlyCommon.extractStackedBarData = function(db, clearFunction, chartData, dat
 * @param {object} data - countly metric model data
 * @param {object} props - object where key is output property name and value could be string as key from data object or function to create new value based on existing ones
 * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
-* @param {object} periodObject - period object override
-* @returns {object} object with sparkleline data for each property
+* @param {PeriodObject} periodObject - period object override
+* @returns {Object<string, string>} object with sparkleline data for each property
 * @example
 * var sparkLines = countlyCommon.getSparklineData(countlySession.getDb(), {
 *     "total-sessions": "t",
@@ -1604,13 +1622,13 @@ countlyCommon.getSparklineData = function(data, props, clearObject, periodObject
 
 /**
 * Extract two level data with metrics/segments, like total user data from carriers collection
-* @param {object} db - countly standard metric data object
-* @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
-* @param {object} dataProperties - describing which properties and how to extract
+* @param {Database} db - countly standard metric data object
+* @param {Array<string>} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
+* @param {ClearFunction} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {Array<DataProperty>} dataProperties - describing which properties and how to extract
 * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
-* @param {string=} period - period to override
-* @returns {object} object to use in bar and pie charts with {"chartData":_.compact(tableData)}
+* @param {PeriodObject=} period - period to override
+* @returns {ExtractedTwoLevelData} object to use in bar and pie charts with {"chartData":_.compact(tableData)}
 * @example <caption>Extracting carriers data from carriers collection</caption>
 * var chartData = countlyCommon.extractTwoLevelData(_carrierDb, ["At&t", "Verizon"], countlyCarrier.clearObject, [
 *      {
@@ -1703,6 +1721,7 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 
         for (let j = 0; j < rangeArray.length; j++) {
 
+            /** @type {{[key: string]: any}} */
             let tmpPropertyObj = {},
                 tmp_x = {};
 
@@ -1831,16 +1850,16 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 
 /**
 * Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
-* @param {object} db - countly standard metric data object
-* @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
-* @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
+* @param {Database} db - countly standard metric data object
+* @param {Array<string>} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
+* @param {ClearFunction} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {FetchFunction} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
 * @param {number} maxItems - amount of items to return, default 3, if -1 return all
 * @param {string=} metric - metric to output and use in sorting, default "t"
 * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
-* @param {function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
-* @param {string} period - period to extract data from
-* @returns {array} array with top 3 values
+* @param {FixBarSegmentDataFunction} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
+* @param {PeriodObject} period - period to extract data from
+* @returns {Array<BarDataItem>} array with top 3 values
 * @example <caption>Return data</caption>
 * [
 *    {"name":"iOS","percent":35},
@@ -1977,7 +1996,7 @@ countlyCommon.getDateRange = function() {
 
 /**
 * Extract single level data without metrics/segments, like total user data from users collection
-* @param {object} db - countly standard metric data object
+* @param {Database} db - countly standard metric data object
 * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {object} dataProperties - describing which properties and how to extract
 * @param {module:api/lib/countly.common.periodObj} periodObject - period object override to use for extracting data
@@ -2114,7 +2133,7 @@ countlyCommon.extractData = function(db, clearFunction, dataProperties, periodOb
 
 /**
 * Extract metrics data break down by segments, like total user by carriers
-* @param {object} db - countly standard metric data object
+* @param {Database} db - countly standard metric data object
 * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
 * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {object} dataProperties - describing which properties and how to extract
@@ -2220,8 +2239,9 @@ countlyCommon.extractMetric = function(db, rangeArray, clearFunction, dataProper
 
         for (let j = 0; j < rangeArray.length; j++) {
 
-            let tmpPropertyObj = {},
-                tmp_x = {};
+            /** @type {{[key: string]: any}} */
+            let tmpPropertyObj = {};
+            let tmp_x = {};
 
             for (let i = periodMin; i < periodMax; i++) {
                 dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
@@ -2379,12 +2399,12 @@ countlyCommon.timeString = function(timespent) {
 /**
 * Get calculated totals for each property, usualy used as main dashboard data timeline data without metric segments
 * @param {object} data - countly metric model data
-* @param {array} properties - array of all properties to extract
-* @param {array} unique - array of all properties that are unique from properties array. We need to apply estimation to them
+* @param {Array<string>} properties - array of all properties to extract
+* @param {Array<string>} unique - array of all properties that are unique from properties array. We need to apply estimation to them
 * @param {object} totalUserOverrideObj - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden
 * @param {object} prevTotalUserOverrideObj - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden for previous period
-* @param {object} periodObject period object override for calculation
-* @returns {object} dashboard data object
+* @param {PeriodObject} periodObject period object override for calculation
+* @returns {DashboardData} dashboard data object
 * @example
 * countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"});
 * //outputs
@@ -2422,16 +2442,27 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
         return obj;
     }
 
+    /** @type {{[key: string]: any}} */
     var _periodObj = periodObject || countlyCommon.periodObj,
+        /** @type {{[key: string]: any}} */
         dataArr = {},
+        /** @type {{[key: string]: any}} */
         tmp_x,
+        /** @type {{[key: string]: any}} */
         tmp_y,
+        /** @type {{[key: string]: any}} */
         tmpUniqObj,
+        /** @type {{[key: string]: any}} */
         tmpPrevUniqObj,
+        /** @type {{[key: string]: any}} */
         current = {},
+        /** @type {{[key: string]: any}} */
         previous = {},
+        /** @type {{[key: string]: any}} */
         currentCheck = {},
+        /** @type {{[key: string]: any}} */
         previousCheck = {},
+        /** @type {{[key: string]: any}} */
         change = {},
         isEstimate = false;
 
@@ -2581,9 +2612,9 @@ countlyCommon.getDashboardData = function(data, properties, unique, totalUserOve
 
 /**
 * Get timestamp query range based on request data using period and app's timezone
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {boolean} inSeconds - if true will output result in seconds, else in miliseconds
-* @returns {object} mongodb query object with preset ts field to be queried
+* @returns {TimestampRangeQuery} mongodb query object with preset ts field to be queried
 * @example
 * countlyCommon.getTimestampRangeQuery(params, true)
 * //outputs
@@ -2703,9 +2734,9 @@ countlyCommon.mergeMetricsByName = function(chartData, metric) {
 
 /**
 * Joined 2 arrays into one removing all duplicated values
-* @param {array} x - first array
-* @param {array} y - second array
-* @returns {array} new array with only unique values from x and y
+* @param {Array<any>} x - first array
+* @param {Array<any>} y - second array
+* @returns {Array<any>} new array with only unique values from x and y
 * @example
 * //outputs [1,2,3]
 * countlyCommon.union([1,2],[2,3]);
@@ -2758,9 +2789,9 @@ countlyCommon.decode = function(str) {
 * Get period object in atomic way from params,
 * getting params.qstring.period for period
 * and params.appTimezone for timezone
-* @param {params} params - params object with app timezone and period
+* @param {Params} params - params object with app timezone and period
 * @param {(string|string[]|number[])} defaultPeriod - default period value in case it's not supplied in the params
-* @returns {module:api/lib/countly.common.periodObj} period object
+* @returns {PeriodObject} period object
 */
 countlyCommon.getPeriodObj = function(params, defaultPeriod = "30days") {
     let appTimezone = params.appTimezone || (params.app && params.app.timezone);
@@ -2821,9 +2852,9 @@ countlyCommon.round = function(num, digits) {
 
 /**
  * Function to fix percentage difference
- * @param  {Array} items - All items
+ * @param  {Array<any>} items - All items
  * @param  {Number} totalPercent - Total percentage so far
- * @returns {Array} items
+ * @returns {Array<any>} items
  */
 countlyCommon.fixPercentageDelta = function(items, totalPercent) {
     if (!items.length) {

@@ -3,11 +3,15 @@ const log = require('../../utils/log.js')("changeStreamReader");
 var Timestamp = require('mongodb').Timestamp;
 
 /**
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
+/**
  * Class to ruse change streams to read from mongodb.
  */
 class changeStreamReader {
     /** 
-    * @param {Object} db - Database object
+    * @param {Database} db - Database object
     * @param {Object} options - Options object
     * @param {function} onData - Finction to call when getting new data from stream
     */

@@ -1,5 +1,11 @@
+/**
+ * @typedef {import('../../../../types/requestProcessor').Params} Params
+ * @typedef {import('../../../../types/pluginManager').Database} Database
+ */
+
 const moment = require("moment");
 
+/** @typedef {Object<string, string>} InternalEventsEnum */
 const internalEventsEnum =
 {
     "[CLY]_session": "s",
@@ -34,13 +40,13 @@ const internalEventsEnum =
    "e" : 1898,
    "s" : 286
 }
-* @param {Object} writeBatcher - writeBatcher instance
+* @param {any} writeBatcher - writeBatcher instance
 * @param {string} appId - Application Id
-* @param {Number} sessionCount - Session Count
-* @param {Number} eventCount - Event Count
+* @param {number} sessionCount - Session Count
+* @param {number|Object<string, number>|null} eventCount - Event Count
 * @param {boolean} consolidated - If data is consolidated
 * @param {string} token - token for writeBatcher
-* @returns {undefined} Returns nothing
+* @returns {void} Returns nothing
 **/
 function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consolidated, token) {
     if (!sessionCount && !eventCount) {
@@ -90,7 +96,7 @@ function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consoli
 
 /**
  *  Check if data should be counted as consolidated
- *  @param {params} params - params object
+ *  @param {Params} params - params object
  *  @returns {boolean} true if consolidated
  */
 function isConsolidated(params) {
@@ -102,9 +108,9 @@ function isConsolidated(params) {
 
 /**
 * Update data-point object with new events and sessions counts
-* @param {object} object - object which will be updated
-* @param {object} data - passed data object which contains events and sessions count
-* @returns {object} Returns manipulated object
+* @param {any} object - object which will be updated
+* @param {any} data - passed data object which contains events and sessions count
+* @returns {any} Returns manipulated object
 **/
 function increaseDataPoints(object, data) {
     object.events += (data.e || 0);
@@ -134,10 +140,10 @@ function increaseDataPoints(object, data) {
 
 /**
  * punchCard function
- * @param {db} db - database object
- * @param {Object} filter - MongoDB query
- * @param {Object} options - Date object
- * @return {Promise<Array>} - dataPoints
+ * @param {Database} db - database object
+ * @param {any} filter - MongoDB query
+ * @param {any} options - Date object
+ * @return {Promise<Array<any>>} - dataPoints
  */
 function punchCard(db, filter, options) {
     var dateObj = options.dateObj;
@@ -221,9 +227,9 @@ function punchCard(db, filter, options) {
 }
 /**
  *  Get's datapoint data from database and outputs it to browser
- *  @param {db} db - database object
- *  @param {object} filter - to filter documents
- *  @param {object} options - array with periods
+ *  @param {Database} db - database object
+ *  @param {any} filter - to filter documents
+ *  @param {any} options - array with periods
  *  @param {boolean} options.monthlyBreakdown - if true, will calculate monthly data points breakdown for all apps (used to get license metric)
  *  @param {string} options.license_hosting - client hosting type, could be countly hosted or self hosted. This will determine how consolidated data points should be added to total data points
  *  @param {boolean} options.dailyDates - array of dates in YYYY:M:D format for daily data points (used to get data points for last 30 days)
@@ -390,8 +396,8 @@ function fetchDatapoints(db, filter, options, callback) {
 
 /**
  *  Get top apps DP for current hour
- *  @param {db} db - DB object
- *  @param {object} params - params object
+ *  @param {Database} db - DB object
+ *  @param {Params} params - params object
  *  @param {function} callback - callback
  */
 function getTop(db, params, callback) {
@@ -431,7 +437,7 @@ function getTop(db, params, callback) {
 /**
 * Returns a human readable name given application id.
 * @param {string} appId - Application Id
-* @param {Object} appNames - app id to app name mapping
+* @param {any} appNames - app id to app name mapping
 * @returns {string} Returns a readable name
 **/
 function getAppName(appId, appNames) {

@@ -5,6 +5,10 @@ const plugins = require('../../../pluginManager.js');
 const log = require('../../../../api/utils/log.js')('hooks:monitor');
 
 /**
+ * @typedef {import('../../../../types/pluginManager').Database} Database
+ */
+
+/**
  * @class
  * @classdesc Class MonitorJob is Hooks Monitor Job extend from Countly Job
  * @extends Job
@@ -24,7 +28,7 @@ class ScheduleJob extends Job {
 
     /**
     * run task
-    * @param {object} db - db object
+    * @param {Database} db - db object
     * @param {function} done - callback function
     */
     run(db, done) {

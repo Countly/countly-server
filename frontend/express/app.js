@@ -65,6 +65,7 @@ var versionInfo = require('./version.info'),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app'),
     url = require('url'),
+    /** @type {import('../../types/authorizer').Authorizer} */
     authorize = require('../../api/utils/authorizer.js'), //for token validations
     languages = require('../../frontend/express/locale.conf'),
     rateLimit = require("express-rate-limit"),
@@ -78,15 +79,6 @@ var versionInfo = require('./version.info'),
 require("../../api/init_configs.js");
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
-// TEMPORARY DEBUG LOGGING - FRONTEND
-console.log('=== FRONTEND CONFIG DEBUG ===');
-console.log('countlyConfig:', JSON.stringify(countlyConfig, null, 2));
-console.log('Process ENV:', {
-    NODE_ENV: process.env.NODE_ENV,
-    SERVICE_TYPE: process.env.SERVICE_TYPE,
-    COUNTLY_CONFIG_PATH: process.env.COUNTLY_CONFIG_PATH
-});
-console.log('=== END FRONTEND CONFIG DEBUG ===');
 
 var COUNTLY_NAMED_TYPE = "Countly Lite v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;

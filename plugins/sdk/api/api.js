@@ -4,6 +4,10 @@ var fetch = require('../../../api/parts/data/fetch.js');
 var countlyModel = require('../../../api/lib/countly.model.js');
 var {validateRead, validateUpdate} = require('../../../api/utils/rights.js');
 
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 const FEATURE_NAME = 'sdk';
 const validOptions = [
     "tracking",
@@ -448,7 +452,7 @@ plugins.register("/permissions/features", function(ob) {
 
     /**
      * Updates SDK config (used internally when configuration is changed in the dashboard)
-     * @param {params} params - request params
+     * @param {Params} params - request params
      * @returns {void}
      */
     function updateParameter(params) {
@@ -472,7 +476,7 @@ plugins.register("/permissions/features", function(ob) {
 
     /**
      * Function to get all remote configs
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @returns {String} response
      */
     function getSDKConfig(params) {
@@ -489,7 +493,7 @@ plugins.register("/permissions/features", function(ob) {
 
     /**
      * Function to get enforcement info for the given app
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @returns {Promise} response
      */
     function getEnforcement(params) {

@@ -1,11 +1,17 @@
 'use strict';
 
+/**
+ * @typedef {import('../../types/taskmanager').TaskManagerStatic} TaskManagerStatic
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
 // const job = require('../parts/jobs/job.js');
 const Job = require("../../jobServer/Job");
 const log = require('../utils/log.js')('api:task');
 const asyncjs = require("async");
 const plugins = require('../../plugins/pluginManager.js');
 const common = require('../utils/common.js');
+/** @type {TaskManagerStatic} */
 const taskmanager = require('../utils/taskmanager.js');
 
 const { processRequest } = require('../utils/requestProcessor');
@@ -30,7 +36,7 @@ class MonitorJob extends Job {
 
     /**
      * Run the job
-     * @param {Db} db connection
+     * @param {Database} db connection
      * @param {done} done callback
      */
     run(db, done) {

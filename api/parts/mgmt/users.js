@@ -3,6 +3,10 @@
 * @module api/parts/mgmt/users
 */
 
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/parts/mgmt/users */
 var usersApi = {},
     common = require('./../../utils/common.js'),
@@ -20,7 +24,7 @@ var argon2 = require('argon2');
 var crypto = require('crypto');
 /**
 * Get data about current user and output to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true
 **/
 usersApi.getCurrentUser = function(params) {
@@ -32,7 +36,7 @@ usersApi.getCurrentUser = function(params) {
 
 /**
 * Get data about specific user by user id, and outputs to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if fetched data from db
 **/
 usersApi.getUserById = function(params) {
@@ -67,7 +71,7 @@ usersApi.getUserById = function(params) {
 
 /**
 * Get list of all users, for global admins only, and outputs to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if fetched data from db
 **/
 usersApi.getAllUsers = function(params) {
@@ -123,7 +127,7 @@ usersApi.getAllUsers = function(params) {
 
 /**
 * Reset timeban for user and output result to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if timeban reseted
 **/
 usersApi.resetTimeBan = function(params) {
@@ -142,7 +146,7 @@ usersApi.resetTimeBan = function(params) {
 
 /**
 * Create new dashboard user and output result to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if user created
 **/
 usersApi.createUser = async function(params) {
@@ -365,7 +369,7 @@ usersApi.updateHomeSettings = function(params) {
 
 /**
  * Checks the permission dependencies of features for each app based on the enabled features, enabling the required permission dependencies if necessary.
- * @param {object} params - params object.
+ * @param {Params} params - params object.
 */
 async function depCheck(params) {
     var features = ["core", "events" /* , "global_configurations", "global_applications", "global_users", "global_jobs", "global_upload" */];
@@ -410,7 +414,7 @@ async function depCheck(params) {
 
 /**
 * Updates dashboard user's data and output result to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if user was updated
 **/
 usersApi.updateUser = async function(params) {
@@ -580,7 +584,7 @@ usersApi.updateUser = async function(params) {
 
 /**
 * Deletes dashboard user and output result to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if user was deleted
 **/
 usersApi.deleteUser = async function(params) {
@@ -844,7 +848,7 @@ usersApi.deleteOwnAccount = function(params) {
 module.exports = usersApi;
 /**
  * Check update or delete note permission.
- *  @param {params} params - params object 
+ *  @param {Params} params - params object 
  *  @returns {boolean} true
  */
 usersApi.checkNoteEditPermission = async function(params) {
@@ -881,7 +885,7 @@ usersApi.checkNoteEditPermission = async function(params) {
 
 /**
 * Create or update note
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true
 **/
 usersApi.saveNote = async function(params) {
@@ -971,7 +975,7 @@ usersApi.saveNote = async function(params) {
 
 /**
 * Delete Note
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true
 **/
 usersApi.deleteNote = async function(params) {
@@ -997,7 +1001,7 @@ usersApi.deleteNote = async function(params) {
 
 /**
 * Delete deleted user note
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true
 **/
 usersApi.deleteUserNotes = async function(params) {
@@ -1013,7 +1017,7 @@ usersApi.deleteUserNotes = async function(params) {
 };
 /**
  * fetch apps id for those user can access;
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {array} app id array
  */
 usersApi.fetchUserAppIds = async function(params) {
@@ -1043,7 +1047,7 @@ usersApi.fetchUserAppIds = async function(params) {
 };
 /**
 * fetch Notes
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true
 **/
 usersApi.fetchNotes = async function(params) {

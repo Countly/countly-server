@@ -3,6 +3,10 @@
 * @module "api/parts/data/usage"
 */
 
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/parts/data/usage */
 var usage = {},
     common = require('./../../utils/common.js'),
@@ -16,7 +20,7 @@ var usage = {},
 
 /**
 * Get location either from coordinate to populate country and city, or from country and city to get coordinates
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} loc - location object    
 * @param {number} loc.lat - lattitude    
 * @param {number} loc.lon - longitude 
@@ -100,7 +104,7 @@ function locFromGeoip(loc, ip_address) {
 
 /**
  * Set Location information in params but donot update it in users document
- * @param  {params} params - params object
+ * @param {Params} params - params object
  * @returns {Promise} promise which resolves upon completeing processing
  */
 usage.setLocation = function(params) {
@@ -160,7 +164,7 @@ usage.setLocation = function(params) {
 
 /**
  * Set user location in params
- * @param  {params} params - params object
+ * @param {Params} params - params object
  * @param  {object} loc - location info
  */
 usage.setUserLocation = function(params, loc) {
@@ -172,7 +176,7 @@ usage.setUserLocation = function(params, loc) {
 
 /**
 * Process session_duration calls
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {function} callback - callback when done
 **/
 usage.processSessionDuration = function(params, callback) {
@@ -215,7 +219,7 @@ usage.processSessionDuration = function(params, callback) {
 
 /**
 * Gets metrics to collect from plugins
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} userProps - object where to populate with user properties to set to user document
 * @returns {array} collected metrics
 **/
@@ -370,7 +374,7 @@ usage.getPredefinedMetrics = function(params, userProps) {
 
 /**
  * Process all metrics and return
- * @param  {params} params - params object
+ * @param {Params} params - params object
  * @returns {object} params
  */
 usage.returnAllProcessedMetrics = function(params) {
@@ -413,7 +417,7 @@ usage.returnAllProcessedMetrics = function(params) {
 /**
 * Process session duration ranges for Session duration metric
 * @param {number} totalSessionDuration - duration of session
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {function} done - callback when done
 **/
 usage.processSessionDurationRange = function(totalSessionDuration, params, done) {
@@ -465,7 +469,7 @@ usage.processSessionDurationRange = function(totalSessionDuration, params, done)
 /**
 * Process ending user session and calculate loyalty and frequency range metrics
 * @param {object} dbAppUser - user's document
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {function} done - callback when done
 * @returns {void} void
 **/
@@ -642,7 +646,7 @@ function processUserSession(dbAppUser, params, done) {
 * @param {object} user - user's document
 * @param {array} uniqueLevelsZero - unique properties of zero document
 * @param {array} uniqueLevelsMonth - unique properties of month document
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {function} done - callback when done
 * @returns {boolean} true
 **/

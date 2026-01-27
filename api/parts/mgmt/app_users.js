@@ -3,6 +3,10 @@
 * @module api/parts/mgmt/app_users
 */
 
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/parts/mgmt/app_users */
 var usersApi = {},
     common = require('./../../utils/common.js'),
@@ -30,7 +34,7 @@ catch (ex) {
 * Create new app_user document. Creates uid if one is not provided
 * @param {string} app_id - _id of the app
 * @param {object} doc - document to insert
-* @param {params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
+* @param {Params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
 * @param {function} callback - called when finished providing error (if any) as first param and insert result as second
 */
 usersApi.create = function(app_id, doc, params, callback) {
@@ -186,7 +190,7 @@ usersApi.createUserDocument = function(params, done) {
 * @param {string} app_id - _id of the app
 * @param {object} query - mongodb query to select which app users to update
 * @param {object} update - mongodb update object
-* @param {params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
+* @param {Params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
 * @param {function} callback - called when finished providing error (if any) as first param and updated user document as second
 */
 usersApi.update = function(app_id, query, update, params, callback) {
@@ -233,7 +237,7 @@ usersApi.update = function(app_id, query, update, params, callback) {
 * Delete existing app_users documents, deletes also all plugin data
 * @param {string} app_id - _id of the app
 * @param {object} query - mongodb query to select which app users to delete
-* @param {params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
+* @param {Params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
 * @param {function} callback - called when finished providing error (if any) as first param and array with uids of removed users as second
 */
 usersApi.delete = function(app_id, query, params, callback) {
@@ -1109,7 +1113,7 @@ var export_safely = function(options) {
 * Exports data about app_users, including plugin data
 * @param {string} app_id - _id of the app
 * @param {object} query - mongodb query to select which app users data to export
-* @param {object} params  - params
+* @param {Params} params  - params
 * @param {function} callback - called when finished providing error (if any) as first param and array with uids of exported users as second
 */
 usersApi.export = function(app_id, query, params, callback) {

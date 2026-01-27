@@ -13,14 +13,20 @@
 const should = require('should');
 const path = require('path');
 
-// Setup module mocking BEFORE requiring CursorPagination
-require('./helpers/mockSetup');
+
+const { setupMocking, resetMocking } = require('./helpers/mockSetup');
 
 // Direct require of CursorPagination (after mocking is set up)
 const PLUGIN_ROOT = path.resolve(__dirname, '../..');
 const CursorPagination = require(path.join(PLUGIN_ROOT, 'api/CursorPagination'));
 
 describe('CursorPagination Unit Tests', function() {
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
 
     // ========================================================================
     // Date Formatting

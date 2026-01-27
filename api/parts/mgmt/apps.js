@@ -3,6 +3,11 @@
 * @module api/parts/mgmt/apps
 */
 
+/**
+ * @typedef {import('../../../types/taskmanager').TaskManagerStatic} TaskManagerStatic
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 /** @lends module:api/parts/mgmt/apps */
 var appsApi = {},
     common = require('./../../utils/common.js'),
@@ -14,12 +19,13 @@ var appsApi = {},
     fs = require('fs'),
     { hasUpdateRight, hasDeleteRight, getUserApps, getAdminApps } = require('./../../utils/rights.js'),
     countlyFs = require('./../../utils/countlyFs.js');
+/** @type {TaskManagerStatic} */
 const taskmanager = require('./../../utils/taskmanager.js');
 const {timezoneValidation} = require('../../utils/timezones.js');
 const FEATURE_NAME = 'global_applications';
 /**
 * Get all apps and outputs to browser, requires global admin permission
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if got data from db, false if did not
 **/
 appsApi.getAllApps = function(params) {
@@ -46,7 +52,7 @@ appsApi.getAllApps = function(params) {
 
 /**
 * Get only apps that current user has access to and outputs to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if got data from db, false if did not
 **/
 appsApi.getCurrentUserApps = function(params) {
@@ -72,7 +78,7 @@ appsApi.getCurrentUserApps = function(params) {
 
 /**
 * Gets app details for specific app and outputs to browser
-* @param {params} params - params object
+* @param {Params} params - params object
 * @returns {boolean} true if got data from db, false if did not
 **/
 appsApi.getAppsDetails = function(params) {
@@ -167,7 +173,7 @@ appsApi.getAppsDetails = function(params) {
 };
 /**
 *  upload app icon function
-*  @param {params} params - params object with args to create app
+*  @param {Params} params - params object with args to create app
 *  @return {object} return promise object;
 **/
 const iconUpload = async function(params) {
@@ -200,7 +206,7 @@ const iconUpload = async function(params) {
 
 /**
 * Creates new app, and outputs result to browser
-* @param {params} params - params object with args to create app
+* @param {Params} params - params object with args to create app
 * @returns {boolean} true if operation successful
 **/
 appsApi.createApp = async function(params) {
@@ -306,7 +312,7 @@ appsApi.createApp = async function(params) {
 
 /**
 * Updates existing app, and outputs result to browser
-* @param {params} params - params object with args to update app with
+* @param {Params} params - params object with args to update app with
 * @returns {boolean} true if operation successful
 **/
 appsApi.updateApp = function(params) {
@@ -421,7 +427,7 @@ appsApi.updateApp = function(params) {
 
 /**
  * Returns application level configurations
- * @param {params} params - params object with query parameters appId and name(optional parameter)
+ * @param {Params} params - params object with query parameters appId and name(optional parameter)
  * @returns {boolean} returns true; 
  */
 appsApi.getAppPlugins = async function(params) {
@@ -461,7 +467,7 @@ appsApi.getAppPlugins = async function(params) {
 
 /**
 * Updates existing app's configurations and outputs result to browser
-* @param {params} params - params object with args to update app with
+* @param {Params} params - params object with args to update app with
 * @returns {boolean} true if operation successful
 **/
 appsApi.updateAppPlugins = function(params) {
@@ -600,7 +606,7 @@ appsApi.updateAppPlugins = function(params) {
 
 /**
 * Deletes existing app's and outputs result to browser
-* @param {params} params - params object with app_id to delete
+* @param {Params} params - params object with app_id to delete
 * @returns {boolean} true if operation successful
 **/
 appsApi.deleteApp = function(params) {
@@ -740,7 +746,7 @@ appsApi.deleteApp = function(params) {
 
 /**
 * Resets app to clean state
-* @param {params} params - params object with app_id to reset
+* @param {Params} params - params object with app_id to reset
 * @returns {boolean} true if operation successful
 **/
 appsApi.resetApp = function(params) {
@@ -792,7 +798,7 @@ appsApi.resetApp = function(params) {
 * Deletes app's data, either all or for specific period, as well as can reset data to clean state
 * @param {string} appId - id of the app for which to delete data
 * @param {boolean} fromAppDelete - true if all document will also be deleted
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} app - app document
 **/
 function deleteAppData(appId, fromAppDelete, params, app) {
@@ -820,7 +826,7 @@ function deleteAppLongTasks(appId) {
 * Deletes all app's data or resets data to clean state
 * @param {string} appId - id of the app for which to delete data
 * @param {boolean} fromAppDelete - true if all document will also be deleted
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} app - app document
 **/
 function deleteAllAppData(appId, fromAppDelete, params, app) {
@@ -886,7 +892,7 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
 * Deletes app's data for specific period
 * @param {string} appId - id of the app for which to delete data
 * @param {boolean} fromAppDelete - true if all document will also be deleted
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} app - app document
 **/
 function deletePeriodAppData(appId, fromAppDelete, params, app) {
@@ -1101,7 +1107,7 @@ function isValidCountry(country) {
 
 /**
 * Check if APP KEY is unique before updating app
-* @param {params} params - params object 
+* @param {Params} params - params object 
 * @param {function} callback - callback to update app
 * @param {boolean} update - true when updating app, false when creating new app
 **/

@@ -1,8 +1,8 @@
 import { Moment } from "moment-timezone";
-import { Collection, Db, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { Params } from "./requestProcessor";
 import { PluginManager, Database } from "./pluginManager";
-import { Logger } from "./log";
+import { Logger, LogModule } from "./log";
 import { CountlyAPIConfig } from "./config";
 import { ClickHouseQueryService } from "../plugins/clickhouse/types/clickhouseQueryService";
 
@@ -174,6 +174,12 @@ export interface ValidationResult {
     obj?: Record<string, any>;
 }
 
+/** Result of JSON parsing attempt */
+export interface JSONParseResult {
+    valid: boolean;
+    data?: object | undefined;
+}
+
 /** Date IDs */
 export interface DateIds {
     zero: string;
@@ -264,20 +270,27 @@ export interface Common {
     decode_html: (string: string) => string;
 
     /**
+     * Encode string for database storage by escaping $ and .
+     * @param {string} str - string to encode
+     * @returns {string} encoded string
+     **/
+    dbEncode: (str: string) => string;
+
+    /**
      * Check if string is a valid json
      * @param {string} val - string that might be json encoded
-     * @returns {object} with property data for parsed data and property valid to check if it was valid json encoded string or not
+     * @returns {JSONParseResult} with property data for parsed data and property valid to check if it was valid json encoded string or not
      **/
-    getJSON: (val: string) => { valid: boolean; data?: any };
+    getJSON: (val: string) => JSONParseResult;
 
     /**
      * Logger object for creating module-specific logging
-     * @type {function(string): Logger}
+     * @type {LogModule}
      * @example
      * const log = common.log('myplugin:api');
      * log.i('myPlugin got a request: %j', params.qstring);
      */
-    log: (module: string) => Logger;
+    log: LogModule;
 
     /**
      * Mapping some common property names from longer understandable to shorter representation stored in database
@@ -324,9 +337,6 @@ export interface Common {
 
     /** Database promise wrapper */
     dbPromise: (collection: string, method: string, ...args: any[]) => Promise<any>;
-
-    /** Database reference */
-    db: Database;
 
     /**
      * Fetches nested property values from an obj.
@@ -443,7 +453,7 @@ export interface Common {
      *   '2017.2.23.8.u': 1,
      *   '2017.w8.u': 1 }
      */
-    fillTimeObject: (params: Params, object: any, property: string | string[], increment?: number) => void;
+    fillTimeObject: (params: Params, object: any, property: string, increment?: number) => void;
 
     /**
      * Creates a time object from request's milisecond or second timestamp in provided app's timezone
@@ -485,8 +495,8 @@ export interface Common {
 
     /**
      * Validates provided arguments
-     * @param {object} args - arguments to validate
-     * @param {object} argProperties - rules for validating each argument
+     * @param {Record<string, any>} args - arguments to validate
+     * @param {ValidationArgProperties} argProperties - rules for validating each argument
      * @param {boolean} argProperties.required - should property be present in args
      * @param {string} argProperties.type - what type should property be, possible values: String, Array, Number, URL, Boolean, Object, Email
      * @param {string} argProperties.max-length - property should not be longer than provided value
@@ -497,9 +507,9 @@ export interface Common {
      * @param {string} argProperties.has-upchar - should string property has any upper cased latin character in it
      * @param {string} argProperties.has-special - should string property has any none latin character in it
      * @param {boolean} returnErrors - return error details as array or only boolean result
-     * @returns {object} validated args in obj property, or false as result property if args do not pass validation and errors array
+     * @returns {ValidationResult | Record<string, any> | boolean} validated args in obj property, or false as result property if args do not pass validation and errors array
      */
-    validateArgs: (args: object, argProperties: ValidationArgProperties, returnErrors: boolean) => ValidationResult | any;
+    validateArgs: (args: Record<string, any>, argProperties: ValidationArgProperties, returnErrors?: boolean) => ValidationResult | Record<string, any> | boolean;
 
     /**
      * Fix event keys before storing in database by removing dots and $ from the string, removing other prefixes and limiting length
@@ -546,7 +556,7 @@ export interface Common {
      * @param {string} noescape - prevent escaping HTML entities
      * @param {object} heads - headers to add to the output
      */
-    returnOutput: (params: Params, output: output, noescape: string, heads: object) => void;
+    returnOutput: (params: Params, output: output, noescape?: string, heads?: object) => void;
 
     /**
      * Get IP address from request object
@@ -571,7 +581,7 @@ export interface Common {
      * //outputs
      * { 'd.u': 1, 'd.2.u': 1, 'd.w8.u': 1 }
      */
-    fillTimeObjectZero: (params: Params, object: any, property: string | string[], increment?: number, isUnique?: boolean) => boolean;
+    fillTimeObjectZero: (params: Params, object: any, property: string, increment?: number, isUnique?: boolean) => boolean;
 
     /**
      * Modifies provided object filling properties used in monthly documents in the format object["2012.7.20.property"] = increment. 
@@ -589,7 +599,7 @@ export interface Common {
      * //outputs
      * { 'd.23.u': 1, 'd.23.12.u': 1 }
      */
-    fillTimeObjectMonth: (params: Params, object: any, property: string | string[], increment?: number, forceHour?: boolean) => boolean;
+    fillTimeObjectMonth: (params: Params, object: any, property: string, increment?: number, forceHour?: boolean) => boolean;
 
     /**
      * Record data in Countly standard metric model
@@ -659,6 +669,17 @@ export interface Common {
      * common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
      */
     recordMetric: (params: Params, props: CustomMetricProps) => void;
+
+    /**
+     * Alias for internal recordMetric function - records specific metric
+     * @param {Params} params - params object
+     * @param {string} metric - metric to record
+     * @param {object} props - properties of a metric defining how to record it
+     * @param {object} tmpSet - object with already set meta properties
+     * @param {object} updateUsersZero - object with already set update for zero docs
+     * @param {object} updateUsersMonth - object with already set update for months docs
+     */
+    collectMetric: (params: Params, metric: string, props: any, tmpSet: any, updateUsersZero: any, updateUsersMonth: any) => void;
 
     /**
      * Get object of date ids that should be used in fetching standard metric model documents
@@ -973,7 +994,40 @@ export interface Common {
      */
     trimWhitespaceStartEnd: (value: any) => any;
 
+    /**
+     * Apply unique estimation on model data
+     * @param {any} model - model object to apply unique data to
+     * @param {any} uniqueData - unique estimation data
+     * @param {string} prop - property name to apply unique data for
+     * @param {string} segment - segment name if applying for segment
+     */
+    applyUniqueOnModel: (model: any, uniqueData: any, prop: string, segment?: string) => void;
 
+    /**
+     * Shift hourly data by timezone offset
+     * @param {any} data - data object to shift
+     * @param {number} offset - timezone offset in hours
+     * @param {string} field - field name to use for shifting, defaults to "_id"
+     * @returns {any} shifted data
+     */
+    shiftHourlyData: (data: any, offset: number, field?: string) => any;
+
+    /**
+     * Convert model object to array format
+     * @param {any} model - model object to convert
+     * @param {boolean} segmented - if model is segmented
+     * @returns {any[]} converted array
+     */
+    convertModelToArray: (model: any, segmented?: boolean) => any[];
+
+    /**
+     * Convert array to model object format
+     * @param {any[]} arr - array to convert
+     * @param {boolean} segmented - if array is segmented
+     * @param {string[]} props - properties to include in model
+     * @returns {any} converted model object
+     */
+    convertArrayToModel: (arr: any[], segmented?: boolean, props?: string[]) => any;
 
     /** DataTable class for server-side processing */
     DataTable: any;
@@ -983,11 +1037,14 @@ export interface Common {
         add: (collection: string, id: string, update: any) => void;
     };
 
+    /** Database reference */
+    db: Database;
+
     /** Database connection for output */
-    outDb?: Database; 
+    outDb: Database; 
 
     /** Database connection for drill queries */
-    drillDb?: Database;
+    drillDb: Database;
 
     /** Request processor function */
     processRequest?: any;

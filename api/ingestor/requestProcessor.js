@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ */
+
 const usage = require('./usage.js'); //special usage file for ingestor
 const common = require('../utils/common.js');
 const url = require('url');
@@ -50,7 +54,7 @@ const reloadConfig = function() {
 
 //Do not restart. If fails to creating, ail request.
 /**
- * @param {object} params - request parameters
+ * @param {Params} params - request parameters
  * @param {function} done - callback function
  */
 function processUser(params, done) {
@@ -905,7 +909,7 @@ const validateAppForWriteAPI = (params, done) => {
 /**
  * 
  * @param {array} requests  - array with requests
- * @param {object} params  - params object
+ * @param {Params} params  - params object
  */
 const processBulkRequest = async function(requests, params) {
     const appKey = params.qstring.app_key;
@@ -960,7 +964,7 @@ const processBulkRequest = async function(requests, params) {
 
 /**
  * Process request function
- * @param {object} params - request parameters
+ * @param {Params} params - request parameters
  * @returns {boolean} - returns false if request is cancelled
  */
 const processRequest = (params) => {

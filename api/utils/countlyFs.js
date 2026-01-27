@@ -3,6 +3,10 @@
 * @module api/utils/countlyFs
 */
 
+/**
+ * @typedef {import('../../plugins/pluginManager').Database} Database
+ */
+
 /** @lends module:api/utils/countlyFs */
 var countlyFs = {};
 
@@ -11,6 +15,7 @@ var Readable = require('stream').Readable;
 var fs = require("fs");
 var path = require("path");
 var config = require("../config.js");
+/** @type {Database} */
 var db;
 var log = require('./log.js')('core:fs');
 
@@ -743,7 +748,7 @@ countlyFs.gridfs = {};
 
     /**
     * Get handler for filesystem, which in case of GridFS is database connection
-    * @returns {object} databse connection
+    * @returns {Database} database connection
     * @example
     * var db = countlyFs.getHandler();
     * db.close();
@@ -754,7 +759,7 @@ countlyFs.gridfs = {};
 
     /**
     * Set handler for filesystem, which in case of GridFS is database connection
-    * @param {object} dbCon - database connection
+    * @param {Database} dbCon - database connection
     */
     ob.setHandler = function(dbCon) {
         db = dbCon;
@@ -1076,7 +1081,7 @@ countlyFs.fs = {};
 
     /**
     * Get handler for filesystem, which in case of GridFS is database connection
-    * @returns {object} databse connection
+    * @returns {Database} database connection
     * @example
     * var db = countlyFs.getHandler();
     * db.close();
@@ -1087,7 +1092,7 @@ countlyFs.fs = {};
 
     /**
     * Set handler for filesystem, which in case of GridFS is database connection
-    * @param {object} dbCon - database connection
+    * @param {Database} dbCon - database connection
     */
     ob.setHandler = function(dbCon) {
         db = dbCon;
@@ -1289,7 +1294,7 @@ countlyFs.getStats = function() {
 
 /**
 * Get handler for connection to close it, for stopping separate scripts
-* @returns {object} databse connection
+* @returns {Database} database connection
 * @example
 * var db = countlyFs.getHandler();
 * db.close();
@@ -1301,7 +1306,7 @@ countlyFs.getHandler = function() {
 
 /**
 * Set handler for connection
-* @param {object} dbCon - database connection
+* @param {Database} dbCon - database connection
 */
 countlyFs.setHandler = function(dbCon) {
     var handler = this[config.fileStorage] || this.fs;

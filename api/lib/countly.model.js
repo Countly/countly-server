@@ -5,6 +5,10 @@ var countlyCommon = require('./countly.common.js'),
 * @module "api/lib/countly.model"
 */
 
+/**
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
 /** @lends module:api/lib/countly.model */
 var countlyModel = {};
 
@@ -117,7 +121,7 @@ countlyModel.create = function(fetchValue) {
     /**
     * Set current data for model, if you need to provide data for model from another resource (as loaded in different model)
     * @memberof module:api/lib/countly.model~countlyMetric
-    * @param {object} db - set new data to be used by model
+    * @param {Database} db - set new data to be used by model
     */
     countlyMetric.setDb = function(db) {
         _Db = db;

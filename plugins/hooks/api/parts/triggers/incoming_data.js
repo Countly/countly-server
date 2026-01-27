@@ -1,3 +1,6 @@
+/**
+ * @typedef {import('../../../../../types/requestProcessor').Params} Params
+ */
 
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
@@ -199,7 +202,7 @@ class IncomingDataTrigger {
 
     /**
      * filter function  like block plugin
-     * @param {object} params - common params obj from dispatcher
+     * @param {Params} params - common params obj from dispatcher
      * @param {object} rule - rule object for testing
      */
     async matchFilter(params, rule) {

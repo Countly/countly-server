@@ -5,6 +5,7 @@
 /**
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
+ * @typedef {import('../../types/common').JSONParseResult} JSONParseResult
  * @typedef {import('mongodb').ObjectId} ObjectId
  * @typedef {import('moment-timezone').Moment} MomentTimezone
  */
@@ -116,10 +117,11 @@ common.decode_html = function(string) {
 /**
  * Check if string is a valid json
  * @param {string} val - string that might be json encoded
- * @returns {object} with property data for parsed data and property valid to check if it was valid json encoded string or not
+ * @returns {JSONParseResult} with property data for parsed data and property valid to check if it was valid json encoded string or not
  **/
 function getJSON(val) {
-    var ret = {valid: false};
+    /** @type {JSONParseResult} */
+    var ret = {/** @type {boolean} */ valid: false};
     try {
         ret.data = JSON.parse(val);
         if (ret.data && typeof ret.data === "object") {
@@ -198,7 +200,8 @@ common.dbMap = {
     'loyalty': 'l',
     'sum': 's',
     'dur': 'dur',
-    'count': 'c'
+    'count': 'c',
+    'paying': 'p'
 };
 
 common.dbUserMap = {
@@ -2379,7 +2382,7 @@ common.clearClashingQueryOperations = function(query) {
 
 /**
 * Single method to update app_users document for specific user for SDK requests
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} update - update query for mongodb, should contain operators on highest level, as $set or $unset
 * @param {boolean} no_meta - if true, won't update some auto meta data, like first api call, last api call, etc.
 * @param {function} callback - function to run when update is done or failes, passing error and result as arguments

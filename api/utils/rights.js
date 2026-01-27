@@ -2,12 +2,19 @@
 * Module for validation functions that manage access rights to application data. Divided in parts access for Global Admins, Admins and Users.
 * @module api/utils/rights
 */
+
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ * @typedef {import('../../types/authorizer').Authorizer} Authorizer
+ */
+
 var common = require("./common.js"),
     plugins = require('../../plugins/pluginManager.js'),
     Promise = require("bluebird"),
     crypto = require('crypto'),
     log = require('./log.js')('core:rights');
 
+/** @type {Authorizer} */
 var authorize = require('./authorizer.js'); //for token validations
 
 var collectionMap = {};//map to know when data about som collections/events was refreshed
@@ -16,7 +23,7 @@ var cachedSchema = {};
 //check token and return owner id if token valid
 //owner d used later to set all member variables.
 /**Validate if token exists and is not expired(uzing authorize.js)
-* @param {object} params  params
+* @param {Params} params  params
 * @param {string} params.qstring.auth_token  authentication token
 * @param {string}params.req.headers.countly-token {string} authentication token
 * @param {string} params.fullPath current full path
@@ -53,7 +60,7 @@ function validate_token_if_exists(params) {
 * User must exist, must not be locked, must pass plugin validation (if any) and have at least user access to the provided app (which also must exist).
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information and app information.
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
@@ -149,7 +156,7 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
 * User must exist, must not be locked, must pass plugin validation (if any) and have at least admin access to the provided app (which also must exist).
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information and app information.
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
@@ -238,7 +245,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
 * User must exist, must not be locked, must pass plugin validation (if any) and have global admin access.
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information.
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
@@ -309,7 +316,7 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
 * User must exist, must not be locked, must pass plugin validation (if any).
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information.
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
@@ -387,7 +394,7 @@ exports.validateAppAdmin = function(params, callback, callbackParam) {
 * User must exist, must not be locked and must pass plugin validation (if any).
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information.
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
@@ -456,7 +463,7 @@ exports.validateUser = function(params, callback, callbackParam) {
 };
 /**
 * Wrap callback using promise
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function
 * @param {function} func - promise function
@@ -617,7 +624,7 @@ function loadAndCacheEventsData(apps, callback) {
 /**
 * Get events data
 * A helper function for db access check
-* @param {object} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {array} apps - array with each element being app document
 * @param {function} callback - callback method
 **/
@@ -692,7 +699,7 @@ exports.getCollectionName = function(hashValue) {
 
 /**
 * Check user has access to collection
-* @param {object} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} collection - collection will be checked for access
 * @param {string} app_id - app_id to which to restrict access
 * @param {function} callback - callback method includes boolean variable as argument  
@@ -791,7 +798,7 @@ exports.dbUserHasAccessToCollection = function(params, collection, app_id, callb
 * User must exist, must not be locked, must pass plugin validation (if any) and have at least read access to the provided app (which also must exist).
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information and app information.
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} feature - feature that trying to access
 * @param {function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
@@ -943,7 +950,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
 * User must exist, must not be locked, must pass plugin validation (if any) and have accessType that passed as accessType parameter to the provided app (which also must exist).
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information and app information.
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} feature - feature that trying to access
 * @param {string} accessType - required access type for related request (c: create, u: update and d: delete)
 * @param {function} callback - function to call only if validation passes
@@ -1111,7 +1118,7 @@ exports.getBaseAppFilter = function(member, dbName, collectionName) {
 };
 /**
 * Validate user for create access by api_key for provided app_id (both required parameters for the request).
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} feature - feature that trying to access
 * @param {function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
@@ -1122,7 +1129,7 @@ exports.validateCreate = function(params, feature, callback, callbackParam) {
 
 /**
 * Validate user for update access by api_key for provided app_id (both required parameters for the request).
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} feature - feature that trying to access
 * @param {function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
@@ -1133,7 +1140,7 @@ exports.validateUpdate = function(params, feature, callback, callbackParam) {
 
 /**
 * Validate user for delete access by api_key for provided app_id (both required parameters for the request).
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} feature - feature that trying to access
 * @param {function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)

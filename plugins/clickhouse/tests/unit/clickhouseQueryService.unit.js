@@ -15,14 +15,20 @@
 const should = require('should');
 const path = require('path');
 
-// Setup module mocking BEFORE requiring ClickhouseQueryService
-const { createMockClickHouseClient, createMockClickHouseConfig } = require('./helpers/mockSetup');
+
+const { setupMocking, resetMocking, createMockClickHouseClient, createMockClickHouseConfig } = require('./helpers/mockSetup');
 
 // Direct require of ClickhouseQueryService (after mocking is set up)
 const PLUGIN_ROOT = path.resolve(__dirname, '../..');
 const ClickhouseQueryService = require(path.join(PLUGIN_ROOT, 'api/ClickhouseQueryService'));
 
 describe('ClickhouseQueryService Unit Tests', function() {
+    before(function() {
+        setupMocking();
+    });
+    after(function() {
+        resetMocking();
+    });
     let mockClient;
     let queryService;
 

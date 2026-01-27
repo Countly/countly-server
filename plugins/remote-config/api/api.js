@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../../types/requestProcessor').Params} Params
+ */
+
 var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js'),
@@ -365,7 +369,7 @@ const FEATURE_NAME = 'remote_config';
      */
     /**
      * Function to add a parameter
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @returns {String} response
      */
     function addParameter(params) {
@@ -478,7 +482,7 @@ const FEATURE_NAME = 'remote_config';
      */
     /**
      * Function to add the complete config including parameter and condition
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @returns {String} response
      */
     function addCompleteConfig(params) {
@@ -672,7 +676,7 @@ const FEATURE_NAME = 'remote_config';
 
     /**
      * Function to get all remote configs
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @returns {String} response
      */
     function getRemoteConfig(params) {
@@ -902,7 +906,7 @@ const FEATURE_NAME = 'remote_config';
      */
     /**
      * Function to update parameter
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @returns {String} response
      */
     function updateParameter(params) {
@@ -1049,7 +1053,7 @@ const FEATURE_NAME = 'remote_config';
 
     /**
      * Function to insert parameter into collection
-     * @param  {Object} params - params
+     * @param  {Params} params - params
      * @param  {Object} collectionName - collection name
      * @param  {Object} parameter - parameters object
      * @param  {Function} callback - callback function
@@ -1078,7 +1082,7 @@ const FEATURE_NAME = 'remote_config';
      */
     /**
      * Function to remote parameter
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      */
     function removeParameter(params) {
         var appId = params.qstring.app_id;
@@ -1114,7 +1118,7 @@ const FEATURE_NAME = 'remote_config';
      */
     /**
      * Function to add condition
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @returns {String} response
      */
     function addCondition(params) {
@@ -1306,7 +1310,7 @@ const FEATURE_NAME = 'remote_config';
      */
     /**
      * Function to update condition
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @returns {String} response
      */
     function updateCondition(params) {
@@ -1393,7 +1397,7 @@ const FEATURE_NAME = 'remote_config';
      *
     /**
      * Function to remove condition
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      */
     function removeCondition(params) {
         var appId = params.qstring.app_id;
@@ -1452,7 +1456,7 @@ const FEATURE_NAME = 'remote_config';
 
     /**
      * Function to fetch parameter from collection
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @param  {Function} callback - callback function
      */
     function fetchParametersFromRCDB(params, callback) {
@@ -1471,7 +1475,7 @@ const FEATURE_NAME = 'remote_config';
 
     /**
      * Function to fetch paramters from AB testing
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @param  {Function} callback - callback function
      */
     function fetchParametersFromAB(params, callback) {
@@ -1483,7 +1487,7 @@ const FEATURE_NAME = 'remote_config';
 
     /**
      * Function to fetch conditions
-     * @param  {Object} params - params object
+     * @param  {Params} params - params object
      * @param  {Function} callback - callback function
      */
     function fetchConditions(params, callback) {
@@ -1571,7 +1575,7 @@ const FEATURE_NAME = 'remote_config';
     /**
      * Validation before import
      * 
-     * @param {Object} params params object 
+     * @param {Params} params params object 
      * @param {Object} config config Object
      * @returns {Promise<Object>} validation result
     */

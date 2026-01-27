@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ */
+
 const common = require('./common.js');
 var plugins = require('../../plugins/pluginManager.js');
 const request = require('countly-request')(plugins.getConfig("security"));
@@ -5,7 +9,7 @@ var log = require('./log.js')("core:api");
 
 /**
  * Ignore possible devices
- * @param {object} params  - params object
+ * @param {Params} params  - params object
  * @returns {boolean} - true if device_id is 00000000-0000-0000-0000-000000000000
  */
 const ignorePossibleDevices = (params) => {

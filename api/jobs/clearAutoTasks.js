@@ -1,7 +1,13 @@
 "use strict";
 
+/**
+ * @typedef {import('../../types/taskmanager').TaskManagerStatic} TaskManagerStatic
+ * @typedef {import('../../types/pluginManager').Database} Database
+ */
+
 // const job = require("../parts/jobs/job.js");
 const log = require('../utils/log.js')('job:clearAutoTasks');
+/** @type {TaskManagerStatic} */
 const taskManager = require('../utils/taskmanager');
 const Job = require("../../jobServer/Job");
 
@@ -36,7 +42,7 @@ class ClearAutoTasks extends Job {
 
     /**
      * Run the job
-     * @param {Db} db connection
+     * @param {Database} db connection
      * @param {done} done callback
      */
     run(db, done) {

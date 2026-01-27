@@ -1,7 +1,6 @@
 // Type definitions for Countly Database Batcher
 // Generated from /api/parts/data/batcher.js
-
-import { Db, Collection, BulkWriteOptions } from "mongodb";
+import { Database } from "../plugins/pluginManager";
 
 /** Global batcher statistics object */
 export interface BatcherStats {
@@ -82,7 +81,7 @@ export interface PromiseResolver {
  */
 declare class InsertBatcher {
   /** Database connections indexed by name */
-  private dbs: Record<string, Db>;
+  private dbs: Record<string, Database>;
   /** Queued documents indexed by database and collection */
   private data: Record<string, Record<string, any[]>>;
   /** Batch period in milliseconds */
@@ -96,14 +95,14 @@ declare class InsertBatcher {
    * Create batcher instance
    * @param db - Primary database object
    */
-  constructor(db: Db);
+  constructor(db: Database);
 
   /**
    * Add another database to batch
    * @param name - Name of the database
    * @param connection - MongoDB connection to that database
    */
-  addDb(name: string, connection: Db): void;
+  addDb(name: string, connection: Database): void;
 
   /**
    * Reloads server configs from plugin manager
@@ -143,7 +142,7 @@ declare class InsertBatcher {
  */
 declare class WriteBatcher {
   /** Database connections indexed by name */
-  private dbs: Record<string, Db>;
+  private dbs: Record<string, Database>;
   /** Queued operations indexed by database, collection, and document ID */
   private data: Record<string, Record<string, Record<string, BatchOperation>>>;
   /** Batch period in milliseconds */
@@ -157,14 +156,14 @@ declare class WriteBatcher {
    * Create batcher instance
    * @param db - Primary database object
    */
-  constructor(db: Db);
+  constructor(db: Database);
 
   /**
    * Add another database to batch
    * @param name - Name of the database
-   * @param connection - MongoDB connection to that database
+   * @param connection - MongoDatabase connection to that database
    */
-  addDb(name: string, connection: Db): void;
+  addDb(name: string, connection: Database): void;
 
   /**
    * Reloads server configs from plugin manager
@@ -215,7 +214,7 @@ declare class WriteBatcher {
  */
 declare class ReadBatcher {
   /** Database connection */
-  private db: Db;
+  private db: Database;
   /** Cached data indexed by collection and cache ID */
   private data: Record<string, Record<string, CachedData>>;
   /** Promise resolvers for worker processes */
@@ -233,7 +232,7 @@ declare class ReadBatcher {
    * Create batcher instance
    * @param db - Database object
    */
-  constructor(db: Db);
+  constructor(db: Database);
 
   /**
    * Reloads server configs from plugin manager
