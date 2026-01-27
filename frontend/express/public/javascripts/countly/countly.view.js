@@ -1,6 +1,6 @@
 /* global countlyCommon, countlyEvent, $, Backbone, app, _ */
 
-var initializeOnce = _.once(function() {
+const initializeOnce = _.once(function() {
     return $.when(countlyEvent.initialize()).then(function() { });
 });
 
@@ -26,7 +26,7 @@ var initializeOnce = _.once(function() {
 *       }
 *   });
 */
-window.countlyView = Backbone.View.extend({
+const countlyView = Backbone.View.extend({
     /**
     * Checking state of view, if it is loaded
     * @type {boolean}
@@ -275,3 +275,5 @@ window.countlyView = Backbone.View.extend({
     */
     destroy: function() { }
 });
+
+export default countlyView;

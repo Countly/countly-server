@@ -19,7 +19,7 @@ const legacyScripts = [
     'javascripts/utils/prefixfree.min.js',
     'javascripts/dom/gridstack/gridstack-h5.js',
     // 'javascripts/utils/moment/moment-with-locales.min.js',                    - DELETE. IMPORTED IN imports.js AS ES MODULE.
-    'javascripts/utils/backbone-min.js',
+    // 'javascripts/utils/backbone-min.js',                                     - DELETE. IMPORTED IN imports.js AS ES MODULE.
     'javascripts/utils/jquery.i18n.properties.js',
     'javascripts/utils/store+json2.min.js',
     'javascripts/utils/jquery.idle-timer.js',
@@ -73,7 +73,7 @@ const legacyScripts = [
     // 'javascripts/countly/countly.app.users.js',
     // 'javascripts/countly/countly.token.manager.js',
     // 'javascripts/countly/countly.version.history.js',
-    'javascripts/countly/countly.view.js', // KEEP: Depends on Backbone from legacy bundle
+    // 'javascripts/countly/countly.view.js',
     'javascripts/countly/vue/core.js',
     'javascripts/countly/vue/container.js',
     'javascripts/countly/countly.template.js',

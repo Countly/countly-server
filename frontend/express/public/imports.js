@@ -17,6 +17,12 @@ window.moment = moment;
 import store from 'storejs';
 window.store = store;
 
+import Backbone from './javascripts/utils/backbone-min.js';
+window.Backbone = Backbone;
+
+import countlyView from './javascripts/countly/countly.view.js';
+window.countlyView = countlyView;
+
 import * as CountlyHelpers from './javascripts/countly/countly.helpers.js';
 window.CountlyHelpers = CountlyHelpers;
 window.T = CountlyHelpers.T;
