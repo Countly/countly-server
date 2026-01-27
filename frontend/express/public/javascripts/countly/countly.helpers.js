@@ -1119,14 +1119,7 @@ export function validatePassword(password) {
  * @param {string|number[]} period - Selected date period
  * @returns {string} Supported values are: 'month', '60days', '30days', '7days', 'yesterday', 'hour' or JSON string of [startMilliseconds, endMilliseconds]
  */
-export function getPeriodUrlQueryParameter(period) {
-    if (Object.prototype.toString.call(period) === '[object Array]') {
-        return JSON.stringify(period);
-    }
-    else {
-        return period;
-    }
-}
+export { getPeriodUrlQueryParameter } from './countly.utils.js';
 
 /**
  * Format number to percentage value.

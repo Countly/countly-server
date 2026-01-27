@@ -1,10 +1,11 @@
-/*global CountlyHelpers, countlyGlobal, filterXSS */
+/*global countlyGlobal, filterXSS */
 import store from "storejs";
 import jQuery from "jquery";
 import moment from "moment";
 import _ from "underscore";
 import { mergeWith } from "lodash";
 import { get as getTotalUsers, isUsable as isTotalUsersUsable } from "./countly.total.users.js";
+import { getPeriodUrlQueryParameter } from "./countly.utils.js";
 
 /**
  * Object with common functions to be used for multiple purposes
@@ -235,7 +236,7 @@ var CommonConstructor = function() {
         return newPeriod;
     };
     countlyCommon.getPeriodForAjax = function() {
-        return CountlyHelpers.getPeriodUrlQueryParameter(countlyCommon.getPeriodWithOffset(_period));
+        return getPeriodUrlQueryParameter(countlyCommon.getPeriodWithOffset(_period));
     };
 
     /**
