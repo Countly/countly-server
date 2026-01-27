@@ -1,4 +1,3 @@
-/* global window */
 import jQuery from 'jquery';
 window.jQuery = jQuery;
 window.$ = jQuery;
@@ -28,5 +27,8 @@ window.CommonConstructor = CommonConstructor;
 
 import countlyTotalUsers from './javascripts/countly/countly.total.users.js';
 window.countlyTotalUsers = countlyTotalUsers;
+
+import * as countlyEvent from './javascripts/countly/countly.event.js';
+window.countlyEvent = countlyEvent;
 
 // import from 'javascripts/countly/countly.config.js';
