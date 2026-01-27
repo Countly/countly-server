@@ -4,7 +4,7 @@
  */
 
 import { Params } from "./requestProcessor";
-import { Database } from "./pluginManager";
+import { Database } from "../plugins/pluginManager";
 
 /** Member/User document from database */
 export interface Member {

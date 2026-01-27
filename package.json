@@ -51,6 +51,8 @@
     "@types/mocha": "^10.0.10",
     "@types/sinon": "^21.0.0",
     "@types/underscore": "^1.13.0",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
     "docdash": "^2.0.1",
     "env-cmd": "^10.1.0",
     "eslint": "^8.56.0",
