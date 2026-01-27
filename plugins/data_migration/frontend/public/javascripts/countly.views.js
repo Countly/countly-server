@@ -86,7 +86,8 @@
             return {
                 list: [],
                 exportsTablePersistKey: 'exports_table_' + countlyCommon.ACTIVE_APP_ID,
-                isLoading: false
+                isLoading: false,
+                isGlobalAdmin: countlyGlobal.member.global_admin
             };
         },
         methods: {

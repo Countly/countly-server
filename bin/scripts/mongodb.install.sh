@@ -354,8 +354,8 @@ gpgkey=https://pgp.mongodb.com/server-8.0.asc" > /etc/yum.repos.d/mongodb-org-8.
         UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
         UBUNTU_RELEASE="$(lsb_release -cs)"
 
-        if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" ]]; then
-            echo "Unsupported OS version, only support Ubuntu 20 and 22."
+        if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" && "$UBUNTU_YEAR" != "24"  ]]; then
+            echo "Unsupported OS version, only support Ubuntu 20, 22 and 24"
             exit 1
         fi
 

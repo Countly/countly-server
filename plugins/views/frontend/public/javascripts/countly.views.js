@@ -362,6 +362,9 @@
             self.$store.dispatch('countlyViews/fetchTotals').then(function() {
                 self.totalCards = self.calculateTotalCards();
             });
+            this.$store.dispatch("countlyViews/fetchViewsMainTable", {"segmentKey": this.$store.state.countlyViews.selectedSegment, "segmentValue": this.$store.state.countlyViews.selectedSegmentValue}).then(function() {
+                self.isTableLoading = false;
+            });
 
         },
         methods: {
