@@ -40,7 +40,6 @@ const legacyScripts = [
     'javascripts/utils/vue/v-tooltip.min.js',
     'javascripts/utils/vue/vee-validate.full.min.js',
     'javascripts/utils/vue/vue-clipboard.min.js',
-    'javascripts/utils/vue/vue-good-table.min.js',
     'javascripts/utils/vue/vue2Dropzone.min.js',
     'javascripts/utils/vue/element-ui.js',
     'javascripts/utils/vue/vue2-leaflet.min.js',
