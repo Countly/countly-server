@@ -33,3 +33,30 @@ window.countlyEvent = countlyEvent;
 
 import countlySession from './javascripts/countly/countly.session.js';
 window.countlySession = countlySession;
+
+import countlyDeviceList from './javascripts/countly/countly.device.list.js';
+window.countlyDeviceList = countlyDeviceList;
+
+import countlyOsMapping from './javascripts/countly/countly.device.osmapping.js';
+window.countlyOsMapping = countlyOsMapping;
+
+import countlyDevice from './javascripts/countly/countly.device.js';
+window.countlyDevice = countlyDevice;
+
+import countlyDeviceDetails from './javascripts/countly/countly.device.detail.js';
+window.countlyDeviceDetails = countlyDeviceDetails;
+
+import countlyAppVersion from './javascripts/countly/countly.app.version.js';
+window.countlyAppVersion = countlyAppVersion;
+
+import countlyCarrier from './javascripts/countly/countly.carrier.js';
+window.countlyCarrier = countlyCarrier;
+
+import countlyAppUsers from './javascripts/countly/countly.app.users.js';
+window.countlyAppUsers = countlyAppUsers;
+
+import countlyTokenManager from './javascripts/countly/countly.token.manager.js';
+window.countlyTokenManager = countlyTokenManager;
+
+import countlyVersionHistoryManager from './javascripts/countly/countly.version.history.js';
+window.countlyVersionHistoryManager = countlyVersionHistoryManager;

@@ -4,7 +4,7 @@
  * @global
  * @namespace countlyDeviceList
  */
-var countlyDeviceList = {
+const countlyDeviceList = {
     "1": "mu 1",
     "562": "TCL 562",
     "716": "TechPad_716",
@@ -22912,7 +22912,9 @@ var countlyDeviceList = {
     "ZA833": "Zyrex  ZA833",
     "ZT216_7": "zyrex"
 };
-/*global module*/ // eslint-disable-line
+
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = countlyDeviceList;
 }
+
+export default countlyDeviceList;
