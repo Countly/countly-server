@@ -62,7 +62,7 @@ const legacyScripts = [
     // 'javascripts/countly/countly.session.js',
     // 'javascripts/countly/countly.city.js',                                    - SEEMS LIKE IT'S NOT BEING USED ANYWHERE. BUT DO NOT DELETE FOR NOW.
     // 'javascripts/countly/countly.location.js',                                - THERE'S A "google" DEPENDENCY INSIDE THAT SEEMS LIKE NOT BEING USED. CLEAN IT UP LATER.
-    'javascripts/countly/countly.map.helper.js',
+    // 'javascripts/countly/countly.map.helper.js',                              - DELETE. NOT BEING USED ANYWHERE.
     // 'javascripts/countly/countly.device.list.js',
     // 'javascripts/countly/countly.device.osmapping.js',
     // 'javascripts/countly/countly.device.js',
