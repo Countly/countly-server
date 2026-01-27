@@ -31,4 +31,5 @@ window.countlyTotalUsers = countlyTotalUsers;
 import * as countlyEvent from './javascripts/countly/countly.event.js';
 window.countlyEvent = countlyEvent;
 
-// import from 'javascripts/countly/countly.config.js';
+import countlySession from './javascripts/countly/countly.session.js';
+window.countlySession = countlySession;

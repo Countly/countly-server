@@ -59,7 +59,7 @@ const legacyScripts = [
     // 'javascripts/countly/countly.config.js',
     // 'javascripts/countly/countly.helpers.js',
     // 'javascripts/countly/countly.event.js',
-    'javascripts/countly/countly.session.js',
+    // 'javascripts/countly/countly.session.js',
     'javascripts/countly/countly.city.js',
     'javascripts/countly/countly.location.js',
     'javascripts/countly/countly.map.helper.js',
