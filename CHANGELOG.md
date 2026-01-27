@@ -1,3 +1,7 @@
+## Version 25.03.X
+Fixes:
+- [core] Fix period calculation
+
 ## Version 25.03.33
 Fixes:
 - [compliance-hub] Correctly merge user history on user merge
