@@ -1,3 +1,4 @@
+/* global window */
 import jQuery from 'jquery';
 window.jQuery = jQuery;
 window.$ = jQuery;
@@ -16,6 +17,10 @@ window.moment = moment;
 
 import store from 'storejs';
 window.store = store;
+
+import * as CountlyHelpers from './javascripts/countly/countly.helpers.js';
+window.CountlyHelpers = CountlyHelpers;
+window.T = CountlyHelpers.T;
 
 import { countlyCommon, CommonConstructor } from './javascripts/countly/countly.common.js';
 window.countlyCommon = countlyCommon;
