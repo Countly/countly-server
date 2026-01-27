@@ -1,4 +1,5 @@
-/* global countlyGlobal, app, countlyDeviceDetails, countlyVue */
+/* global app, countlyDeviceDetails, countlyVue */
+import countlyGlobal from "./countly.global.js";
 import _ from 'underscore';
 import jQuery from 'jquery';
 import { countlyCommon } from './countly.common.js';

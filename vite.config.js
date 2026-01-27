@@ -57,7 +57,8 @@ const legacyScripts = [
     // === BODY SECTION (from dashboard.html lines 187-274) ===
     // 'javascripts/countly/countly.analytics.js',                               - DELETE. NOT BEING USED ANYWHERE.
     // 'javascripts/countly/countly.common.js',
-    'javascripts/countly/countly.config.js',
+    // 'javascripts/countly/countly.config.js',
+    // 'javascripts/countly/countly.helpers.js',
     'javascripts/countly/countly.event.js',
     'javascripts/countly/countly.session.js',
     'javascripts/countly/countly.city.js',

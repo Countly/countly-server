@@ -410,7 +410,7 @@
         },
         {
             "files": [
-                "frontend/express/public/javascripts/countly/*.js",
+                "frontend/express/public/**/*.js",
                 "frontend/express/public/javascripts/countly/vue/*.js",
                 "frontend/express/public/javascripts/countly/vue/components/*.js",
                 "frontend/express/public/javascripts/countly/vue/data/*.js",

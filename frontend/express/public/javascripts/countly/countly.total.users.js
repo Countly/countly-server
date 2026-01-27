@@ -1,4 +1,4 @@
-/* global countlyGlobal */
+import countlyGlobal from "./countly.global.js";
 import jQuery from "jquery";
 import { countlyCommon } from './countly.common.js';
 

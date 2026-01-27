@@ -1,4 +1,5 @@
-/*global countlyGlobal, filterXSS */
+/*global filterXSS */
+import countlyGlobal from "./countly.global.js";
 import store from "storejs";
 import jQuery from "jquery";
 import moment from "moment";
@@ -6,6 +7,7 @@ import _ from "underscore";
 import { mergeWith } from "lodash";
 import { get as getTotalUsers, isUsable as isTotalUsersUsable } from "./countly.total.users.js";
 import { getPeriodUrlQueryParameter } from "./countly.utils.js";
+import * as COUNTLY_CONFIG from "./countly.config.js";
 
 /**
  * Object with common functions to be used for multiple purposes
@@ -16,6 +18,10 @@ import { getPeriodUrlQueryParameter } from "./countly.utils.js";
 var CommonConstructor = function() {
     // Private Properties
     var countlyCommon = this;
+
+    // for backward compatibility:
+    Object.assign(countlyCommon, COUNTLY_CONFIG);
+
     var _period = (store.get("countly_date")) ? store.get("countly_date") : countlyCommon.DEFAULT_PERIOD || "30days";
     var _persistentSettings;
     var htmlEncodeOptions = {
