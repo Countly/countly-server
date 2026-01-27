@@ -5,7 +5,7 @@
  * @namespace countlyOsMapping
  */
 
-var countlyOsMapping = {
+const countlyOsMapping = {
     "webos": {short: "webos", name: "Webos"},
     "brew": {short: "brew", name: "Brew"},
     "unknown": {short: "unk", name: "Unknown"},
@@ -47,7 +47,8 @@ var countlyOsMapping = {
     "arch": {short: "l", name: "Linux"}
 };
 
-/*global module*/ // eslint-disable-line
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = countlyOsMapping;
 }
+
+export default countlyOsMapping;

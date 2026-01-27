@@ -1,18 +1,20 @@
-/*global CountlyHelpers, jQuery, countlyAppVersion, countlyDeviceDetails*/
-(function() {
-    window.countlyAppVersion = window.countlyAppVersion || {};
-    CountlyHelpers.createMetricModel(window.countlyAppVersion, {name: "app_versions", estOverrideMetric: "app_versions"}, jQuery, function(rangeArr) {
-        return rangeArr.replace(/:/g, ".");
-    });
+import jQuery from 'jquery';
+import { createMetricModel } from './countly.helpers.js';
+import countlyDeviceDetails from './countly.device.detail.js';
 
-    //Public Methods
-    countlyAppVersion.initialize = function() {
-        countlyAppVersion.setDb(countlyDeviceDetails.getDb());
-    };
+const countlyAppVersion = {};
+createMetricModel(countlyAppVersion, {name: "app_versions", estOverrideMetric: "app_versions"}, jQuery, function(rangeArr) {
+    return rangeArr.replace(/:/g, ".");
+});
 
-    countlyAppVersion.refresh = function(newJSON) {
-        if (newJSON) {
-            countlyAppVersion.extendDb(newJSON);
-        }
-    };
-}(window.countlyAppVersion = window.countlyAppVersion || {}, jQuery));
+countlyAppVersion.initialize = function() {
+    countlyAppVersion.setDb(countlyDeviceDetails.getDb());
+};
+
+countlyAppVersion.refresh = function(newJSON) {
+    if (newJSON) {
+        countlyAppVersion.extendDb(newJSON);
+    }
+};
+
+export default countlyAppVersion;
