@@ -19,7 +19,7 @@ const legacyScripts = [
     'javascripts/utils/prefixfree.min.js',
     'javascripts/dom/gridstack/gridstack-h5.js',
     // 'javascripts/utils/moment/moment-with-locales.min.js',                    - DELETE. IMPORTED IN imports.js AS ES MODULE.
-    // 'javascripts/utils/backbone-min.js',                                     - DELETE. IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/utils/backbone-min.js',
     'javascripts/utils/jquery.i18n.properties.js',
     'javascripts/utils/store+json2.min.js',
     'javascripts/utils/jquery.idle-timer.js',
@@ -61,7 +61,7 @@ const legacyScripts = [
     // 'javascripts/countly/countly.event.js',
     // 'javascripts/countly/countly.session.js',
     // 'javascripts/countly/countly.city.js',                                    - SEEMS LIKE IT'S NOT BEING USED ANYWHERE. BUT DO NOT DELETE FOR NOW.
-    // 'javascripts/countly/countly.location.js',
+    // 'javascripts/countly/countly.location.js',                                - THERE'S A "google" DEPENDENCY INSIDE THAT SEEMS LIKE NOT BEING USED. CLEAN IT UP LATER.
     'javascripts/countly/countly.map.helper.js',
     // 'javascripts/countly/countly.device.list.js',
     // 'javascripts/countly/countly.device.osmapping.js',

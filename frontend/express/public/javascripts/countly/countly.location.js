@@ -1,4 +1,4 @@
-/* global google, Backbone */
+/* global google */
 
 import countlySession from './countly.session.js';
 import { countlyCommon } from './countly.common.js';
@@ -6,6 +6,7 @@ import { T, createMetricModel } from './countly.helpers.js';
 import _ from 'underscore';
 import jQuery from 'jquery';
 import countlyGlobal from './countly.global.js';
+import Backbone from '../utils/backbone-min.js';
 
 // Private Properties
 let _chart;
