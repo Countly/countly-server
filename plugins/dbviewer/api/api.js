@@ -6,7 +6,7 @@
 var common = require('../../../api/utils/common.js'),
     log = common.log('dbviewer:api'),
     async = require('async'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     /** @type {TaskManagerStatic} */

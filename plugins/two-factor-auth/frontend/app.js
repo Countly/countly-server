@@ -1,7 +1,7 @@
 var pluginObject = {},
     {authenticator: GA} = require("otplib"),
     countlyConfig = require('../../../frontend/express/config'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     apiUtils = require("../../../api/utils/utils.js"),
     members = require("../../../frontend/express/libs/members.js"),
     languages = require('../../../frontend/express/locale.conf'),

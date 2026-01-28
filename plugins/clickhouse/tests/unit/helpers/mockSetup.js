@@ -179,8 +179,8 @@ function setupMocking() {
             return createMockClickHouseConfig();
         }
 
-        // Mock pluginManager.js
-        if (request.includes('pluginManager.js') || request.includes('pluginManager')) {
+        // Mock pluginManager.ts
+        if (request.includes('pluginManager.ts') || request.includes('pluginManager')) {
             return {
                 getPluginsApis: () => ({}),
                 dispatch: () => {},

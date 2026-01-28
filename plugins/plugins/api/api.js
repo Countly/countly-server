@@ -4,7 +4,7 @@ var plugin = {},
     common = require('../../../api/utils/common.js'),
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     log = common.log('plugins:api'),
     { validateUser, validateGlobalAdmin, validateAppAdmin, validateRead } = require('../../../api/utils/rights.js');
 

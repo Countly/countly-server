@@ -1,5 +1,5 @@
 const countlyConfig = require('./config', 'dont-enclose');
-const plugins = require('../plugins/pluginManager.js');
+const plugins = require('../plugins/pluginManager.ts');
 const log = require('./utils/log.js')('aggregator-core:api');
 const common = require('./utils/common.js');
 const {WriteBatcher} = require('./parts/data/batcher.js');

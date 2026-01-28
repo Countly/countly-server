@@ -1,4 +1,4 @@
-const plugins = require("../../../../pluginManager.js");
+const plugins = require("../../../../pluginManager.ts");
 const request = require("countly-request")(plugins.getConfig("security"));
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');

@@ -4,7 +4,7 @@ var plugin = {},
     path = require("path"),
     async = require('async'),
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.ts');
 
 /**
  * Read from end

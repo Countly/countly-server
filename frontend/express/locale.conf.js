@@ -18,7 +18,7 @@ var localeConf = [
     { "code": "ko", "name": "한국어" }
 ];
 try {
-    var plugins = require('../../plugins/pluginManager.js');
+    var plugins = require('../../plugins/pluginManager.ts');
     plugins.extendModule("locale.conf", localeConf);
 }
 catch (_) {

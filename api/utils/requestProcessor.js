@@ -7,8 +7,8 @@
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
  * @typedef {import('../../types/taskmanager').TaskManagerStatic} TaskManagerStatic
- * @typedef {import('../../types/geoData').GeoData} GeoData
  * @typedef {import('../../types/authorizer').Authorizer} Authorizer
+ * @typedef {import('../parts/data/geoData').GeoData} GeoData
  */
 
 const Promise = require('bluebird');
@@ -21,7 +21,7 @@ const authorize = require('./authorizer.js');
 /** @type {TaskManagerStatic} */
 const taskmanager = require('./taskmanager.js');
 const calculatedDataManager = require('./calculatedDataManager.js');
-const plugins = require('../../plugins/pluginManager.js');
+const plugins = require('../../plugins/pluginManager.ts');
 const versionInfo = require('../../frontend/express/version.info');
 const packageJson = require('./../../package.json');
 const log = require('./log.js')('core:api');
@@ -44,8 +44,7 @@ const countlyApi = {
         fetch: require('../parts/data/fetch.js'),
         events: require('../parts/data/events.js'),
         exports: require('../parts/data/exports.js'),
-        /** @type {GeoData} */
-        geoData: require('../parts/data/geoData.js')
+        geoData: require('../parts/data/geoData.ts').default
     },
     mgmt: {
         users: require('../parts/mgmt/users.js'),

@@ -11,7 +11,7 @@
 var exports = {},
     common = require('./../../utils/common.js'),
     moment = require('moment-timezone'),
-    plugin = require('./../../../plugins/pluginManager.js'),
+    plugin = require('./../../../plugins/pluginManager.ts'),
     json2csv = require('json2csv');
 
 const log = require('./../../utils/log.js')('core:export');

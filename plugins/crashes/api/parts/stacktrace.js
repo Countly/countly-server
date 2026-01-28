@@ -3,7 +3,7 @@
 * @module plugins/crashes/api/parts/stacktrace
 */
 var minidump = require("./minidump.js");
-var plugins = require("../../../pluginManager.js");
+var plugins = require("../../../pluginManager.ts");
 
 /** @lends module:plugins/crashes/api/parts/stacktrace */
 var trace = {

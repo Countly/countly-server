@@ -1,7 +1,7 @@
 var exportedPlugin = {},
     countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
     recaptcha = require('express-recaptcha');
-var plugins = require("../../pluginManager.js");
+var plugins = require("../../pluginManager.ts");
 
 (function(plugin) {
     plugin.init = function(app, countlyDb) {

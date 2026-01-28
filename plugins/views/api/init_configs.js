@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 const FEATURE_NAME = 'views';
 
 //This file is included in all processes.(api, ingestor and aggregator)

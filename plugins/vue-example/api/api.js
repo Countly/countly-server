@@ -1,5 +1,5 @@
 var common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     {validateRead, validateCreate, validateUpdate, validateDelete} = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'vue_example';

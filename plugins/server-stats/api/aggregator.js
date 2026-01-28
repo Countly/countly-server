@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js'),
+var plugins = require('../../pluginManager.ts'),
     common = require('../../../api/utils/common.js'),
     stats = require('./parts/stats.js');
 var log = common.log('server-stats:aggregator');

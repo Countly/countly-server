@@ -1,5 +1,5 @@
 const exportedAssistantJob = {};
-const plugins = require('../../pluginManager.js');
+const plugins = require('../../pluginManager.ts');
 const log = require('../../../api/utils/log.js')('assistantJob:module_star-rating');
 const async = require("async");
 const assistant = require("../../assistant/api/assistant.js");

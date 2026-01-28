@@ -1,6 +1,6 @@
 const moment = require('moment-timezone');
 
-const plugins = require('../../pluginManager.js');
+const plugins = require('../../pluginManager.ts');
 const common = require('../../../api/utils/common.js');
 const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.js');
 const { WriteBatcher } = require('../../../api/parts/data/batcher.js');

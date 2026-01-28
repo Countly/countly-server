@@ -9,7 +9,7 @@ The script deletes data for specific segments in aggregated data. It also can se
 
 
 var crypto = require('crypto');
-var pluginManager = require('./../../../plugins/pluginManager.js');
+var pluginManager = require('./../../../plugins/pluginManager.ts');
 var Promise = require("bluebird");
 
 var app_list = []; //leave empty to process all apps or add specific app ids to the array.

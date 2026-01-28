@@ -1,6 +1,6 @@
 const common = require("../../utils/common");
 const log = require('../../utils/log.js')("dataBatchReader");
-var plugins = require("../../../plugins/pluginManager.js");
+var plugins = require("../../../plugins/pluginManager.ts");
 var {fetchDataForAggregator} = require("../queries/aggregator.js");
 
 /**

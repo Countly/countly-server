@@ -1,5 +1,5 @@
 var plugin = {},
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.ts');
 
 (function() {
     plugins.appTypes.push("mobile");

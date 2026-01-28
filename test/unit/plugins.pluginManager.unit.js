@@ -18,10 +18,10 @@ describe('PluginManager setConfigs with environment variables', function() {
         }
 
         // Clear require cache to get fresh pluginManager instance with no state
-        delete require.cache[require.resolve('../../plugins/pluginManager.js')];
+        delete require.cache[require.resolve('../../plugins/pluginManager.ts')];
 
         // Get pluginManager singleton instance
-        pluginManager = require('../../plugins/pluginManager.js');
+        pluginManager = require('../../plugins/pluginManager.ts');
     });
 
     after(function() {

@@ -1,4 +1,4 @@
-var pluginManager = require('../pluginManager.js');
+var pluginManager = require('../pluginManager.ts');
 
 console.log("Installing Consolidate Plugin");
 

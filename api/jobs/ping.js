@@ -4,7 +4,7 @@
  * @typedef {import('../../types/pluginManager').Database} Database
  */
 
-const plugins = require('../../plugins/pluginManager.js');
+const plugins = require('../../plugins/pluginManager.ts');
 const tracker = require('../parts/mgmt/tracker.js');
 const Job = require("../../jobServer/Job");
 

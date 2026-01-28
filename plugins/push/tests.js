@@ -33,7 +33,7 @@
 //     'us_a': {tkap: 'android_us', locale: 'us', tz: -420},
 // };
 
-// const  pluginManager = require('../pluginManager.js'),
+// const  pluginManager = require('../pluginManager.ts'),
 //        db = pluginManager.singleDefaultConnection(),
 //        N = require('./api/parts/note.js'),
 //        Divider = require('./api/parts/divider.js'),

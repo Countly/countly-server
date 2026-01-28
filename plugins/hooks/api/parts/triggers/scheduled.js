@@ -1,4 +1,4 @@
-const plugins = require('../../../../pluginManager.js');
+const plugins = require('../../../../pluginManager.ts');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
 const log = common.log("hooks:api:schedule");

@@ -1,7 +1,7 @@
 const http = require('http');
 const formidable = require('formidable');
 const countlyConfig = require('./config', 'dont-enclose');
-const plugins = require('../plugins/pluginManager.js');
+const plugins = require('../plugins/pluginManager.ts');
 const log = require('./utils/log.js')('ingestor-core:api');
 const {processRequest} = require('./ingestor/requestProcessor');
 const common = require('./utils/common.js');

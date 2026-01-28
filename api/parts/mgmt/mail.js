@@ -12,7 +12,7 @@
 var mail = {},
     nodemailer = require('nodemailer'),
     localize = require('../../utils/localization.js'),
-    plugins = require('../../../plugins/pluginManager.js'),
+    plugins = require('../../../plugins/pluginManager.ts'),
     versionInfo = require('../../../frontend/express/version.info'),
     /** @type {Authorizer} */
     authorize = require('../../utils/authorizer'),

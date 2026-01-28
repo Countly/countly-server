@@ -14,7 +14,7 @@ var usage = {},
     geocoder = require('./../../../bin/offline-geocoder/src/index.js')(),
     log = require('../../utils/log.js')('api:usage'),
     async = require('async'),
-    plugins = require('../../../plugins/pluginManager.js'),
+    plugins = require('../../../plugins/pluginManager.ts'),
     crypto = require('crypto'),
     moment = require('moment-timezone');
 

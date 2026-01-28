@@ -1,7 +1,7 @@
 var plugin = {},
     common = require('../../../api/utils/common.js'),
     //tracker = require('../../../api/parts/mgmt/tracker.js'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     systemUtility = require('./system.utility'),
     log = common.log('system-utility:api');
 

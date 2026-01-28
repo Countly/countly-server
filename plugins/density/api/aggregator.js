@@ -1,5 +1,5 @@
 var exported = {},
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.ts');
 
 (function() {
     plugins.register("/session/metrics", function(ob) {

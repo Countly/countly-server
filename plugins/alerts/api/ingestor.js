@@ -1,7 +1,7 @@
 const exported = {};
 const common = require('../../../api/utils/common.js');
 const log = common.log('alerts:ingestor');
-const plugins = require('../../pluginManager.js');
+const plugins = require('../../pluginManager.ts');
 const commonLib = require("./parts/common-lib.js");
 
 

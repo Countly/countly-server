@@ -3,7 +3,7 @@ const log = require("../utils/log.js")("job:mutationManager");
 const Job = require("../../jobServer/Job.js");
 const mutationManager = require('../utils/mutationManager.js');
 const tracker = require("../parts/mgmt/tracker.js");
-const plugins = require('../../plugins/pluginManager.js');
+const plugins = require('../../plugins/pluginManager.ts');
 
 const DEFAULT_JOB_CONFIG = {
     STALE_MS: 24 * 60 * 60 * 1000, // 24h - consider tasks running longer than this as stale

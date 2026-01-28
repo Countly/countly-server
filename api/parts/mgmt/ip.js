@@ -7,7 +7,7 @@
 
 var ip = {},
     net = require('net'),
-    plugins = require('../../../plugins/pluginManager.js'),
+    plugins = require('../../../plugins/pluginManager.ts'),
     icanhazip = require("icanhazip");
 
 const log = require('../../utils/log.js')('core:api');

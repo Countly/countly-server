@@ -4,7 +4,7 @@ Script renames views for app.
 Please fill correct app id.
 After this script there is need to run fixViews.js to merge views.(In case renaming creates two views with same name)
 **/
-var pluginManager = require('../../pluginManager.js'),
+var pluginManager = require('../../pluginManager.ts'),
     crypto = require('crypto'),
     countlyDb,
     countly_drill,

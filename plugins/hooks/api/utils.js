@@ -94,7 +94,7 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
  * @returns {Boolean} true if rate limit reached
  */
 utils.checkRateLimitReached = function(rule) {
-    const plugins = require('../../pluginManager.js');
+    const plugins = require('../../pluginManager.ts');
 
     if (plugins.getConfig("hooks").requestLimit === 0) {
         return false;
@@ -117,7 +117,7 @@ utils.checkRateLimitReached = function(rule) {
  * @param {Object} rule - hook rule
  */
 utils.addInitialRequestCounter = function(rule) {
-    const plugins = require('../../pluginManager.js');
+    const plugins = require('../../pluginManager.ts');
     let startTime = Date.now();
     let endTime = startTime + plugins.getConfig("hooks").timeWindowForRequestLimit;
     global.triggerRequestCount.push({
@@ -134,7 +134,7 @@ utils.addInitialRequestCounter = function(rule) {
  * @returns {Boolean} true if limit exceeded
  */
 utils.incrementRequestCounter = function(rule) {
-    const plugins = require('../../pluginManager.js');
+    const plugins = require('../../pluginManager.ts');
     const currentTimestamp = Date.now();
 
     // Delete records which are not in time frame

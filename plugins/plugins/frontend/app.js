@@ -1,6 +1,6 @@
 var exportedPlugin = {},
     common = require('../../../api/utils/common'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.ts');
 
 (function(plugin) {
     plugin.init = function(_, countlyDb) {

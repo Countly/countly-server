@@ -1,6 +1,6 @@
 //start db connection
 const { getAdminApps } = require('../../../api/utils/rights.js');
-var plugins = require('../../pluginManager.js'),
+var plugins = require('../../pluginManager.ts'),
     moment = require('moment-timezone'),
     async = require("async");
 /**

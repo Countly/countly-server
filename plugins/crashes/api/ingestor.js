@@ -6,7 +6,7 @@ var plugin = {},
     fs = require("fs"),
     path = require("path"),
     trace = require("./parts/stacktrace.js"),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.ts');
 
 fs.chmod(path.resolve(__dirname + "/../bin/minidump_stackwalk"), 0o744, function(err) {
     if (err && !process.env.COUNTLY_CONTAINER) {

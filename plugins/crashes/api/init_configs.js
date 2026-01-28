@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js'),
+var plugins = require('../../pluginManager.ts'),
     { DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('./parts/custom_field.js');
 const FEATURE_NAME = 'crashes';
 plugins.register("/permissions/features", function(ob) {

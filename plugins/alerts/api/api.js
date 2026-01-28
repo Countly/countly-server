@@ -1,5 +1,5 @@
 const common = require('../../../api/utils/common.js');
-const plugins = require('../../pluginManager.js');
+const plugins = require('../../pluginManager.ts');
 const log = require('../../../api/utils/log.js')('alert:api');
 var Promise = require("bluebird");
 const utils = require('./parts/utils');

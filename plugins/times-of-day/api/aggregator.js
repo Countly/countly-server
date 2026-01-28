@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js'),
+var plugins = require('../../pluginManager.ts'),
     common = require('../../../api/utils/common.js');
 //var moment = require('moment-timezone');
 //const { DataBatchReader } = require('../../../api/parts/data/dataBatchReader');

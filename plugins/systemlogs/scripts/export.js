@@ -1,4 +1,4 @@
-var plugins = require("../../pluginManager.js");
+var plugins = require("../../pluginManager.ts");
 var moment = require("moment");
 var localize = require('../../../api/utils/localization.js');
 var myArgs = process.argv.slice(2);

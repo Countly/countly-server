@@ -1,5 +1,5 @@
 var async = require('async'),
-    pluginManager = require('../pluginManager.js');
+    pluginManager = require('../pluginManager.ts');
 console.log("Installing views plugin");
 pluginManager.dbConnection().then((countlyDb) => {
     countlyDb.collection('apps').find({}).toArray(function(err, apps) {

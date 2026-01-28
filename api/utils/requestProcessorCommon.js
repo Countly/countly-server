@@ -3,7 +3,7 @@
  */
 
 const common = require('./common.js');
-var plugins = require('../../plugins/pluginManager.js');
+var plugins = require('../../plugins/pluginManager.ts');
 const request = require('countly-request')(plugins.getConfig("security"));
 var log = require('./log.js')("core:api");
 

@@ -1,6 +1,6 @@
 var pluginOb = {},
     parser = require('ua-parser-js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.ts');
 
 (function() {
     plugins.appTypes.push("web");

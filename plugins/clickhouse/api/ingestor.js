@@ -1,4 +1,4 @@
-const plugins = require('../../pluginManager.js');
+const plugins = require('../../pluginManager.ts');
 const log = require('../../../api/utils/log.js')('clickhouse:ingestor');
 const {initializeClickHouse, getClient} = require('./api.js');
 const ID = require("./users/Identity");

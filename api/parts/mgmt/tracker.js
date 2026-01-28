@@ -21,7 +21,7 @@ var tracker = {},
     server = "9c28c347849f2c03caf1b091ec7be8def435e85e",
     user = "fa6e9ae7b410cb6d756e8088c5f3936bf1fab5f3",
     url = "https://stats.count.ly",
-    plugins = require('../../../plugins/pluginManager.js');
+    plugins = require('../../../plugins/pluginManager.ts');
 
 var IS_FLEX = false;
 

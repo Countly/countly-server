@@ -4,7 +4,7 @@
 
 var pluginOb = {},
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     log = common.log('views:ingestor');
 
 (function() {

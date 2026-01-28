@@ -1,6 +1,6 @@
 var plugin = {},
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     moment = require('moment'),
     { validateRead } = require('../../../api/utils/rights.js');
 var log = common.log('times-of-day:api');

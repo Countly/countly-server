@@ -1,6 +1,6 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     automaticStateManager = require('./helpers/automaticStateManager'),
     log = require('../../../api/utils/log.js')('logger:api'),
     { validateRead } = require('../../../api/utils/rights.js');

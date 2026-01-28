@@ -1,4 +1,4 @@
-const plugins = require('../../pluginManager.js');
+const plugins = require('../../pluginManager.ts');
 const log = require('../../../api/utils/log.js')('clickhouse');
 const common = require('../../../api/utils/common.js');
 const countlyConfig = require('../../../api/config');

@@ -1,5 +1,5 @@
 const async = require('async');
-const plugins = require('../../plugins/pluginManager.js');
+const plugins = require('../../plugins/pluginManager.ts');
 const log = require('../utils/log.js')('job:appExpire');
 const common = require('../utils/common.js');
 const crypto = require('crypto');

@@ -3,7 +3,7 @@ Path to file: {COUNTLY DIR}/plugins/views/scripts/fixViews.js
 Script fixes indexes for views collections and merges views if there are  views marked to be merged.
 **/
 
-var pluginManager = require('../../pluginManager.js'),
+var pluginManager = require('../../pluginManager.ts'),
     crypto = require('crypto'),
     Promise = require("bluebird"),
     countlyDb;

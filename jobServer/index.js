@@ -4,7 +4,7 @@
  * @author Countly
  *
  * @typedef {import('../api/utils/common.js')} Common
- * @typedef {import('../plugins/pluginManager.js')} PluginManager
+ * @typedef {import('../plugins/pluginManager.ts')} PluginManager
  * @typedef {import('./Job')} JobType
  * @typedef {import('./JobServer')} JobServerType
  *
@@ -50,7 +50,7 @@ const {ReadBatcher, WriteBatcher, InsertBatcher} = require('../api/parts/data/ba
 const common = require('../api/utils/common.js');
 const QueryRunner = require('../api/parts/data/QueryRunner.js');
 var { MongoDbQueryRunner } = require('../api/utils/mongoDbQueryRunner.js');
-const pluginManager = require('../plugins/pluginManager.js');
+const pluginManager = require('../plugins/pluginManager.ts');
 require("../api/init_configs.js");
 
 const {processRequest} = require('./requestProcessor');

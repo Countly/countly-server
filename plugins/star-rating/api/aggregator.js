@@ -1,5 +1,5 @@
 
-var plugins = require('../../pluginManager.js'),
+var plugins = require('../../pluginManager.ts'),
     common = require('../../../api/utils/common.js');
 const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.js');
 const log = require('../../../api/utils/log.js')('star-rating:aggregator');

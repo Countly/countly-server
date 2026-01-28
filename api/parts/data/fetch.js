@@ -25,7 +25,7 @@ var fetch = {},
     _ = require('underscore'),
     crypto = require('crypto'),
     usage = require('./usage.js'),
-    plugins = require('../../../plugins/pluginManager.js');
+    plugins = require('../../../plugins/pluginManager.ts');
 
 
 /**

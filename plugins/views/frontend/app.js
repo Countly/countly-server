@@ -1,5 +1,5 @@
 var exported = {};
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 
 (function(plugin) {
     plugin.init = function() {

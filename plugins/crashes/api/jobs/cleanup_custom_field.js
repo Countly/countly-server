@@ -1,7 +1,7 @@
 // const job = require('../../../../api/parts/jobs/job.js');
 const Job = require('./../../../../jobServer/Job');
 const log = require('../../../../api/utils/log.js')('job:crashes:cleanup_custom_field');
-const pluginManager = require('../../../pluginManager.js');
+const pluginManager = require('../../../pluginManager.ts');
 
 const { cleanupCustomField, DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('../parts/custom_field.js');
 

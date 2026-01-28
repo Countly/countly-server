@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 const FEATURE_NAME = 'reports';
 var countlyApiConfig = require('./../../../api/config');
 plugins.setConfigs("reports", {

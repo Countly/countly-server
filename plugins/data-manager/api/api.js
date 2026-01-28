@@ -3,7 +3,7 @@ const SUB_FEATURE_REDACTION = FEATURE_NAME + '_redaction';
 const SUB_FEATURE_TRANSFORMATIONS = FEATURE_NAME + '_transformations';
 const common = require('../../../api/utils/common.js');
 const { validateRead, validateCreate, validateDelete, validateUpdate } = require('../../../api/utils/rights.js');
-const plugins = require('../../pluginManager.js');
+const plugins = require('../../pluginManager.ts');
 const log = require('./../../../api/utils/log.js')(FEATURE_NAME + ':core-api');
 const auditLog = require('./parts/auditLogs');
 plugins.register("/permissions/features", function(ob) {

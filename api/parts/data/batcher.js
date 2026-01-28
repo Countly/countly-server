@@ -4,7 +4,7 @@
 
 const crypto = require('crypto');
 const cluster = require('cluster');
-const plugins = require('../../../plugins/pluginManager.js');
+const plugins = require('../../../plugins/pluginManager.ts');
 const log = require('../../utils/log.js')("batcher");
 const common = require('../../utils/common.js');
 

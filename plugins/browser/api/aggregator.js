@@ -1,5 +1,5 @@
 
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 
 (function() {
     plugins.register("/session/metrics", function(ob) {

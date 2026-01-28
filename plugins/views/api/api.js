@@ -11,7 +11,7 @@ var pluginOb = {},
     /** @type {Authorizer} */
     authorize = require('../../../api/utils/authorizer.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     fetch = require('../../../api/parts/data/fetch.js'),
     log = common.log('views:api'),
     { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),

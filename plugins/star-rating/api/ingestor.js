@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 var requestProcessor = require('../../../api/ingestor/requestProcessor');
 var common = require('../../../api/utils/common.js');
 

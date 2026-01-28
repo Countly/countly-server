@@ -3,7 +3,7 @@
  */
 
 var pluginOb = {},
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     common = require('../../../api/utils/common.js'),
     log = common.log('remote-config:api'),
     remoteConfig = require('./parts/rc'),

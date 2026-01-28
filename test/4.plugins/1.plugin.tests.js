@@ -1,4 +1,4 @@
-var manager = require('../../plugins/pluginManager.js');
+var manager = require('../../plugins/pluginManager.ts');
 var plugins = manager.getPlugins();
 
 if (plugins.length > 0) {

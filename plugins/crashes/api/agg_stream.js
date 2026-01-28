@@ -1,6 +1,6 @@
 var moment = require('moment-timezone');
 
-var plugins = require('../../pluginManager.js'),
+var plugins = require('../../pluginManager.ts'),
     common = require('../../../api/utils/common.js');
 const { changeStreamReader } = require('../../../api/parts/data/changeStreamReader');
 const log = require('../../../api/utils/log.js')('crashes:aggregator');
