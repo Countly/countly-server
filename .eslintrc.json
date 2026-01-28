@@ -657,7 +657,7 @@
         },
         {
             "files": ["**/*.ts"],
-            "excludedFiles": ["**/*.d.ts"],
+            "excludedFiles": ["**/*.d.ts", "plugins/push/**/*.ts"],
             "parser": "@typescript-eslint/parser",
             "parserOptions": {
                 "ecmaVersion": 2023,
