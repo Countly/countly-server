@@ -280,7 +280,7 @@ function preventKillingNumberType(configsPointer: Record<string, any>, changes: 
             }
             else if (typeof configsPointer[k] === 'number' && typeof changes[k] !== 'number') {
                 try {
-                    changes[k] = parseInt(changes[k], 10);
+                    changes[k] = Number.parseInt(changes[k], 10);
                     changes[k] = changes[k] || 0;
                 }
                 catch (e) {
@@ -396,10 +396,10 @@ class PluginManager {
     loadDependencyMap(): void {
         const pluginNames: string[] = [];
         const pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
-        for (let z = 0; z < pluginsList.length; z++) {
-            const p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+        for (const element of pluginsList) {
+            const p = fs.lstatSync(path.resolve(__dirname, './' + element));
             if (p.isDirectory() || p.isSymbolicLink()) {
-                pluginNames.push(pluginsList[z]);
+                pluginNames.push(element);
             }
         }
         this.dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
@@ -413,10 +413,10 @@ class PluginManager {
         options = options || {};
         const pluginNames: string[] = [];
         const pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
-        for (let z = 0; z < pluginsList.length; z++) {
-            const p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+        for (const element of pluginsList) {
+            const p = fs.lstatSync(path.resolve(__dirname, './' + element));
             if (p.isDirectory() || p.isSymbolicLink()) {
-                pluginNames.push(pluginsList[z]);
+                pluginNames.push(element);
             }
         }
         if (!options.skipDependencies) {
@@ -464,7 +464,7 @@ class PluginManager {
             const arr = self.getPlugins();
             for (const i in params.qstring.plugin) {
                 fordb['plugins.' + i] = params.qstring.plugin[i];
-                if (arr.indexOf(i) === -1) {
+                if (!arr.includes(i)) {
                     before[i] = false;
                 }
                 else {
@@ -519,15 +519,15 @@ class PluginManager {
             pluginConfig = res.plugins || {};
             const pluginNames: string[] = [];
             const pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
-            for (let z = 0; z < pluginsList.length; z++) {
-                const p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+            for (const element of pluginsList) {
+                const p = fs.lstatSync(path.resolve(__dirname, './' + element));
                 if (p.isDirectory() || p.isSymbolicLink()) {
-                    pluginNames.push(pluginsList[z]);
+                    pluginNames.push(element);
                 }
             }
-            for (let zz = 0; zz < pluginNames.length; zz++) {
-                if (typeof pluginConfig[pluginNames[zz]] === 'undefined') {
-                    installPlugins.push(pluginNames[zz]);
+            for (const pluginName of pluginNames) {
+                if (pluginConfig[pluginName] === undefined) {
+                    installPlugins.push(pluginName);
                 }
             }
             if (installPlugins.length > 0) {
@@ -536,7 +536,7 @@ class PluginManager {
             BluebirdPromise.each(installPlugins, function(name: string) {
                 return new Promise(function(resolve: (value?: unknown) => void) {
                     const obb: { name: string; enable?: boolean } = { 'name': name };
-                    if (plugins.indexOf(name) === -1) {
+                    if (!plugins.includes(name)) {
                         obb.enable = false;
                     }
                     else {
@@ -599,10 +599,10 @@ class PluginManager {
             }
             const pluginNames: string[] = [];
             const pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
-            for (let z = 0; z < pluginsList.length; z++) {
-                const p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+            for (const element of pluginsList) {
+                const p = fs.lstatSync(path.resolve(__dirname, './' + element));
                 if (p.isDirectory() || p.isSymbolicLink()) {
-                    pluginNames.push(pluginsList[z]);
+                    pluginNames.push(element);
                 }
             }
 
@@ -622,9 +622,9 @@ class PluginManager {
                 pluginConfig = res.plugins || {};
                 self.checkConfigs(db, self.configs, self.defaultConfigs, function() {
                     const installPlugins: string[] = [];
-                    for (let z1 = 0; z1 < plugins.length; z1++) {
-                        if (typeof pluginConfig[plugins[z1]] === 'undefined') {
-                            pluginConfig[plugins[z1]] = true;
+                    for (const plugin of plugins) {
+                        if (pluginConfig[plugin] === undefined) {
+                            pluginConfig[plugin] = true;
                         }
                     }
                     BluebirdPromise.each(installPlugins, function(name: string) {
@@ -838,12 +838,12 @@ class PluginManager {
         const a = Object.keys(this.configs);
         const b = Object.keys(this.defaultConfigs);
         const c = a.concat(b.filter(function(item) {
-            return a.indexOf(item) < 0;
+            return !a.includes(item);
         }));
         const ret: Record<string, Config> = {};
-        for (let i = 0; i < c.length; i++) {
-            if (!this.excludeFromUI[c[i]] && (plugins.indexOf(c[i]) === -1 || pluginConfig[c[i]])) {
-                ret[c[i]] = this.getConfig(c[i]);
+        for (const element of c) {
+            if (!this.excludeFromUI[element] && (!plugins.includes(element) || pluginConfig[element])) {
+                ret[element] = this.getConfig(element);
             }
         }
         return ret;
@@ -859,18 +859,18 @@ class PluginManager {
         const a = Object.keys(this.configs);
         const b = Object.keys(this.defaultConfigs);
         const c = a.concat(b.filter(function(item) {
-            return a.indexOf(item) < 0;
+            return !a.includes(item);
         }));
         const ret: Record<string, Config> = {};
-        for (let i = 0; i < c.length; i++) {
-            if (!this.excludeFromUI[c[i]]) {
-                const conf = this.getConfig(c[i], userSettings);
+        for (const element of c) {
+            if (!this.excludeFromUI[element]) {
+                const conf = this.getConfig(element, userSettings);
                 for (const name in conf) {
                     if (conf._user && conf._user[name]) {
-                        if (!ret[c[i]]) {
-                            ret[c[i]] = {};
+                        if (!ret[element]) {
+                            ret[element] = {};
                         }
-                        ret[c[i]][name] = conf[name];
+                        ret[element][name] = conf[name];
                     }
                 }
             }
@@ -1074,7 +1074,7 @@ class PluginManager {
      * @returns true if plugin is active
      */
     isPluginOn(name: string): boolean {
-        if (this.coreList.indexOf(name) === -1) {
+        if (!this.coreList.includes(name)) {
             if (pluginConfig[name]) {
                 return true;
             }
@@ -1244,10 +1244,10 @@ class PluginManager {
     loadAppStatic(app: any, countlyDb: Database, express: any): void {
         const pluginNames: string[] = [];
         const pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
-        for (let z = 0; z < pluginsList.length; z++) {
-            const p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+        for (const element of pluginsList) {
+            const p = fs.lstatSync(path.resolve(__dirname, './' + element));
             if (p.isDirectory() || p.isSymbolicLink()) {
-                pluginNames.push(pluginsList[z]);
+                pluginNames.push(element);
             }
         }
 
@@ -1459,8 +1459,8 @@ class PluginManager {
         const self = this;
         const map0: Record<string, boolean> = {};
         const new_list: string[] = [];
-        for (let z = 0; z < plugs_list.length; z++) {
-            map0[plugs_list[z]] = true;
+        for (const element of plugs_list) {
+            map0[element] = true;
         }
 
         function add_Me(this: PluginManager, pluginName: string): void {
@@ -1504,9 +1504,9 @@ class PluginManager {
                 }
             }
             else {
-                for (let kk = 0; kk < plugins.length; kk++) {
-                    if (!this.fullPluginsMap[plugins[kk]]) {
-                        list.push(plugins[kk]);
+                for (const plugin of plugins) {
+                    if (!this.fullPluginsMap[plugin]) {
+                        list.push(plugin);
                     }
                 }
             }
@@ -1521,9 +1521,9 @@ class PluginManager {
                 }
             }
 
-            for (let k = 0; k < plugins.length; k++) {
-                if (typeof pluginConfig[plugins[k]] === 'undefined') {
-                    list.push(plugins[k]);
+            for (const plugin of plugins) {
+                if (pluginConfig[plugin] === undefined) {
+                    list.push(plugin);
                 }
             }
 
@@ -1569,7 +1569,7 @@ class PluginManager {
      */
     isPluginEnabled(plugin: string): boolean {
         const enabledPlugins = this.getPlugins();
-        if (this.coreList.indexOf(plugin) === -1 && enabledPlugins.indexOf(plugin) === -1) {
+        if (!this.coreList.includes(plugin) && !enabledPlugins.includes(plugin)) {
             return false;
         }
         return true;
@@ -1620,8 +1620,8 @@ class PluginManager {
 
         if (Object.keys(plugConf).length === 0) {
             const list = this.getPlugins();
-            for (let i = 0; i < list.length; i++) {
-                plugConf[list[i]] = true;
+            for (const element of list) {
+                plugConf[element] = true;
             }
             this.updateConfigs(db, 'plugins', plugConf, callback);
         }
@@ -1812,7 +1812,7 @@ class PluginManager {
             else if (!self.getConfig('api').offline_mode) {
                 const args = ['install'];
                 if (apiCountlyConfig.symlinked === true) {
-                    args.unshift(...['--preserve-symlinks', '--preserve-symlinks-main']);
+                    args.unshift('--preserve-symlinks', '--preserve-symlinks-main');
                 }
                 const cmd = spawn('npm', args, { cwd: cwd });
                 let error2 = '';
@@ -1846,7 +1846,7 @@ class PluginManager {
             const scriptPath = path.join(__dirname, plugin, 'install.js');
             const args = [scriptPath];
             if (apiCountlyConfig.symlinked === true) {
-                args.unshift(...['--preserve-symlinks', '--preserve-symlinks-main']);
+                args.unshift('--preserve-symlinks', '--preserve-symlinks-main');
             }
             const m = cp.spawn('nodejs', args);
             m.stdout.on('data', (data: Buffer) => {
@@ -1859,7 +1859,7 @@ class PluginManager {
 
             m.on('close', (code: number | null) => {
                 console.log('Done installing plugin %j', code);
-                if (parseInt(String(code), 10) !== 0) {
+                if (Number.parseInt(String(code), 10) !== 0) {
                     errors = true;
                 }
                 if (callback) {
@@ -1918,7 +1918,7 @@ class PluginManager {
             const scriptPath = path.join(__dirname, plugin, 'install.js');
             const args = [scriptPath];
             if (apiCountlyConfig.symlinked === true) {
-                args.unshift(...['--preserve-symlinks', '--preserve-symlinks-main']);
+                args.unshift('--preserve-symlinks', '--preserve-symlinks-main');
             }
             const m = cp.spawn('nodejs', args);
 
@@ -1932,7 +1932,7 @@ class PluginManager {
 
             m.on('close', (code: number | null) => {
                 console.log('Done upgrading plugin %j', code);
-                if (parseInt(String(code), 10) !== 0) {
+                if (Number.parseInt(String(code), 10) !== 0) {
                     errors = true;
                 }
                 if (callback) {
@@ -1966,7 +1966,7 @@ class PluginManager {
                     let errors = false;
                     const args = [scriptPath];
                     if (apiCountlyConfig.symlinked === true) {
-                        args.unshift(...['--preserve-symlinks', '--preserve-symlinks-main']);
+                        args.unshift('--preserve-symlinks', '--preserve-symlinks-main');
                     }
                     const m = cp.spawn('nodejs', args);
 
@@ -1980,7 +1980,7 @@ class PluginManager {
 
                     m.on('close', (code: number | null) => {
                         console.log('Done running uninstall.js with %j', code);
-                        if (parseInt(String(code), 10) !== 0) {
+                        if (Number.parseInt(String(code), 10) !== 0) {
                             errors = true;
                         }
                         db.close();
@@ -2036,7 +2036,7 @@ class PluginManager {
         if (typeof countlyConfig.mongodb === 'string') {
             let query: Record<string, any> = {};
             let conUrl: string = countlyConfig.mongodb;
-            if (countlyConfig.mongodb.indexOf('?') !== -1) {
+            if (countlyConfig.mongodb.includes('?')) {
                 const parts = countlyConfig.mongodb.split('?');
                 query = querystring.parse(parts.pop()!);
                 conUrl = parts[0];
@@ -2092,7 +2092,7 @@ class PluginManager {
         if (typeof configObj.mongodb === 'string') {
             let dbName = this.replaceDatabaseString(configObj.mongodb, db);
             dbName = dbName.split('://').pop()!;
-            if (dbName.indexOf('@') !== -1) {
+            if (dbName.includes('@')) {
                 const auth = dbName.split('@').shift()!;
                 dbName = dbName.replace(auth + '@', '');
                 const authParts = auth.split(':');
@@ -2102,11 +2102,11 @@ class PluginManager {
             const dbParts = dbName.split('/');
             ob.host = dbParts[0];
             ob.db = dbParts[1] || 'countly';
-            if (ob.db.indexOf('?') !== -1) {
+            if (ob.db.includes('?')) {
                 const parts = ob.db.split('?');
                 ob.db = parts[0];
                 const qstring = parts[1];
-                if (qstring && qstring.length) {
+                if (qstring && qstring.length > 0) {
                     const qstringParsed = querystring.parse(qstring) as Record<string, any>;
                     if (qstringParsed.ssl && (qstringParsed.ssl === true || qstringParsed.ssl === 'true')) {
                         ob.ssl = '';
@@ -2178,14 +2178,14 @@ class PluginManager {
             db = 'countly';
         }
 
-        const hasAdminDb = str.indexOf('/admin') !== -1;
+        const hasAdminDb = str.includes('/admin');
 
         if (hasAdminDb) {
             let updatedConnectionString = str.replace('/admin', '/' + db);
-            const hasAuthSource = updatedConnectionString.indexOf('authSource=') !== -1;
+            const hasAuthSource = updatedConnectionString.includes('authSource=');
 
             if (!hasAuthSource) {
-                const hasQueryParams = updatedConnectionString.indexOf('?') !== -1;
+                const hasQueryParams = updatedConnectionString.includes('?');
                 const authSourceParam = hasQueryParams ? '&authSource=admin' : '?authSource=admin';
                 updatedConnectionString += authSourceParam;
             }
@@ -2206,7 +2206,7 @@ class PluginManager {
                     pathParts[0] += '/' + db;
                 }
                 else {
-                    pathParts[pathParts.length - 1] = db + pathParts[pathParts.length - 1];
+                    pathParts[pathParts.length - 1] = db + pathParts.at(-1);
                 }
                 urlParts[1] = pathParts.join('/');
             }
@@ -2371,8 +2371,8 @@ class PluginManager {
         if (dbName.indexOf('mongodb://') !== 0 && dbName.indexOf('mongodb+srv://') !== 0) {
             dbName = 'mongodb://' + dbName;
         }
-        if (dbName.indexOf('retryWrites') === -1) {
-            if (dbName.indexOf('?') === -1) {
+        if (!dbName.includes('retryWrites')) {
+            if (!dbName.includes('?')) {
                 dbName = dbName + '?retryWrites=false';
             }
             else {
@@ -2408,9 +2408,9 @@ class PluginManager {
             let safeDbName = dbName;
             const start = dbName.indexOf('://') + 3;
             const end = dbName.indexOf('@', start);
-            if (end > -1 && start > 3) {
+            if (end !== -1 && start > 3) {
                 const middle = dbName.indexOf(':', start);
-                if (middle > -1 && middle < end) {
+                if (middle !== -1 && middle < end) {
                     safeDbName = dbName.substring(0, middle) + ':*****' + dbName.substring(end);
                 }
             }
@@ -2480,10 +2480,10 @@ class PluginManager {
             }
         }
 
-        if (dbList.length) {
+        if (dbList.length > 0) {
             const ret: Database[] = [];
-            for (let i = 0; i < dbList.length; i++) {
-                ret.push(client.db(dbList[i]) as any);
+            for (const [i, element] of dbList.entries()) {
+                ret.push(client.db(element) as any);
                 if (return_original) {
                     (ret[i] as any).ObjectID = (client.db as any).ObjectID;
                 }
@@ -2508,31 +2508,31 @@ class PluginManager {
 
         const appObj: Record<string, any> = {};
 
-        for (let z = 0; z < apps.length; z++) {
-            appObj[apps[z]._id] = apps[z].masking;
+        for (const app of apps) {
+            appObj[app._id] = app.masking;
         }
 
         this.masking.apps = appObj;
         const hashMap: Record<string, { a: string; e: string }> = {};
         const eventsDb = await options.db.collection('events').find({}, { 'list': true }).toArray();
-        for (let z = 0; z < eventsDb.length; z++) {
-            eventsDb[z]._id = eventsDb[z]._id + '';
-            for (let i = 0; i < eventsDb[z].list.length; i++) {
-                hashMap[crypto.createHash('sha1').update(eventsDb[z].list[i] + eventsDb[z]._id + '').digest('hex')] = { 'a': eventsDb[z]._id, 'e': eventsDb[z].list[i] };
+        for (const element of eventsDb) {
+            element._id = element._id + '';
+            for (let i = 0; i < element.list.length; i++) {
+                hashMap[crypto.createHash('sha1').update(element.list[i] + element._id + '').digest('hex')] = { 'a': element._id, 'e': element.list[i] };
             }
 
             const internalDrillEvents = ['[CLY]_session', '[CLY]_crash', '[CLY]_view', '[CLY]_action', '[CLY]_push_action', '[CLY]_push_sent', '[CLY]_star_rating', '[CLY]_nps', '[CLY]_survey', '[CLY]_apm_network', '[CLY]_apm_device', '[CLY]_consent'];
             const internalEvents = ['[CLY]_session', '[CLY]_crash', '[CLY]_view', '[CLY]_action', '[CLY]_push_action', '[CLY]_push_sent', '[CLY]_star_rating', '[CLY]_nps', '[CLY]_survey', '[CLY]_apm_network', '[CLY]_apm_device', '[CLY]_consent'];
 
             if (internalDrillEvents) {
-                for (let i = 0; i < internalDrillEvents.length; i++) {
-                    hashMap[crypto.createHash('sha1').update(internalDrillEvents[i] + eventsDb[z]._id + '').digest('hex')] = { 'a': eventsDb[z]._id, 'e': internalDrillEvents[i] };
+                for (const internalDrillEvent of internalDrillEvents) {
+                    hashMap[crypto.createHash('sha1').update(internalDrillEvent + element._id + '').digest('hex')] = { 'a': element._id, 'e': internalDrillEvent };
                 }
             }
 
             if (internalEvents) {
-                for (let i = 0; i < internalEvents.length; i++) {
-                    hashMap[crypto.createHash('sha1').update(internalEvents[i] + eventsDb[z]._id + '').digest('hex')] = { 'a': eventsDb[z]._id, 'e': internalEvents[i] };
+                for (const internalEvent of internalEvents) {
+                    hashMap[crypto.createHash('sha1').update(internalEvent + element._id + '').digest('hex')] = { 'a': element._id, 'e': internalEvent };
                 }
             }
         }
@@ -2722,8 +2722,8 @@ class PluginManager {
             obj['_' + name] = obj[name];
             obj[name] = function(...args: any[]): Promise<any> {
                 let callback: ((err: any, res?: any) => void) | undefined;
-                if (typeof args[args.length - 1] === 'function') {
-                    callback = args[args.length - 1] as (err: any, res?: any) => void;
+                if (typeof args.at(-1) === 'function') {
+                    callback = args.at(-1) as (err: any, res?: any) => void;
                     args.pop();
                 }
 
@@ -2778,8 +2778,8 @@ class PluginManager {
                     name: name || arg.callee,
                     args: []
                 };
-                for (let i = 0; i < arg.length; i++) {
-                    data.args.push(arg[i]);
+                for (const element of arg) {
+                    data.args.push(element);
                 }
                 return data;
             }
@@ -2796,7 +2796,7 @@ class PluginManager {
                             callback(err, null);
                         }
                         else {
-                            if (ignore_errors && ignore_errors.indexOf(err.code) === -1) {
+                            if (ignore_errors && !ignore_errors.includes(err.code)) {
                                 logDbWrite.e('Error in promise from ' + collection + ' %j %s %j', data, err, err);
                                 logDbWrite.d('From connection %j', countlyDb._cly_debug);
                                 if (e) {
@@ -2842,7 +2842,7 @@ class PluginManager {
                                 retry();
                             }
                             else {
-                                if (!(data.args && data.args[2] && data.args[2].ignore_errors && data.args[2].ignore_errors.indexOf(err.code) !== -1)) {
+                                if (!(data.args && data.args[2] && data.args[2].ignore_errors && data.args[2].ignore_errors.includes(err.code))) {
                                     logDbWrite.e('Error writing ' + collection + ' %j %s %j', data, err, err);
                                     logDbWrite.d('From connection %j', countlyDb._cly_debug);
                                     if (e) {
@@ -2855,7 +2855,7 @@ class PluginManager {
                             }
                         }
                         else {
-                            if (!(data.args && data.args[2] && data.args[2].ignore_errors && data.args[2].ignore_errors.indexOf(err.code) !== -1)) {
+                            if (!(data.args && data.args[2] && data.args[2].ignore_errors && data.args[2].ignore_errors.includes(err.code))) {
                                 logDbWrite.e('Error writing ' + collection + ' %j %s %j', data, err, err);
                                 logDbWrite.d('From connection %j', countlyDb._cly_debug);
                                 if (e) {
@@ -2895,7 +2895,7 @@ class PluginManager {
                 let e: Error | undefined;
                 let at = '';
                 if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
-                    e = new Error();
+                    e = new Error('Printing additional debug info for a "find and modify"');
                     at += e.stack!.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                 }
 
@@ -2925,7 +2925,7 @@ class PluginManager {
                         options = options || {};
                     }
 
-                    if (typeof options.includeResultMetadata === 'undefined') {
+                    if (options.includeResultMetadata === undefined) {
                         options.includeResultMetadata = true;
                     }
 
@@ -2940,7 +2940,7 @@ class PluginManager {
                     let e: Error | undefined;
                     let at = '';
                     if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
-                        e = new Error();
+                        e = new Error('Printing additional debug info for "overwriteRetryWrite"');
                         at += e.stack!.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                     }
 
@@ -2972,7 +2972,7 @@ class PluginManager {
                 }
                 return function(err: any, res?: any): void {
                     if (err) {
-                        if (!(data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.indexOf(err.code) !== -1)) {
+                        if (!(data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.includes(err.code))) {
                             logDbWrite.e('Error writing ' + collection + ' %j %s %j', data, err, err);
                             logDbWrite.d('From connection %j', countlyDb._cly_debug);
                             if (e) {
@@ -3026,7 +3026,7 @@ class PluginManager {
                     let e: Error | undefined;
                     let at = '';
                     if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
-                        e = new Error();
+                        e = new Error('Printing additional debug info for "overwriteDefaultWrite"');
                         at += e.stack!.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                     }
 
@@ -3048,7 +3048,7 @@ class PluginManager {
                 }
                 return function(err: any, res?: any): void {
                     if (err) {
-                        if (!(data && data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.indexOf(err.code) !== -1)) {
+                        if (!(data && data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.includes(err.code))) {
                             logDbRead.e('Error reading ' + collection + ' %j %s %j', data, err, err);
                             logDbRead.d('From connection %j', countlyDb._cly_debug);
                             if (e) {
@@ -3083,7 +3083,7 @@ class PluginManager {
                     let e: Error | undefined;
                     let at = '';
                     if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
-                        e = new Error();
+                        e = new Error('Printing additional debug info for "overwriteDefaultRead"');
                         at += e.stack!.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                     }
 
@@ -3092,7 +3092,7 @@ class PluginManager {
                             options.projection = options.fields;
                             delete options.fields;
                         }
-                        else if (findOptions.indexOf(Object.keys(options)[0]) === -1) {
+                        else if (!findOptions.has(Object.keys(options)[0])) {
                             options = { projection: options };
                         }
                     }
@@ -3132,7 +3132,7 @@ class PluginManager {
                     options: options
                 });
                 if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
-                    e = new Error();
+                    e = new Error('Printing additional debug info for "aggregate"');
                     at += e.stack!.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                 }
                 logDbRead.d('aggregate ' + collection + ' %j %j' + at, query, options);
@@ -3173,7 +3173,7 @@ class PluginManager {
                         options.projection = options.fields;
                         delete options.fields;
                     }
-                    else if (findOptions.indexOf(Object.keys(options)[0]) === -1) {
+                    else if (!findOptions.has(Object.keys(options)[0])) {
                         options = { projection: options };
                     }
                 }
@@ -3188,7 +3188,7 @@ class PluginManager {
                     options: options
                 });
                 if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
-                    e = new Error();
+                    e = new Error('Printing additional debug info for "find"');
                     at += e.stack!.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                 }
                 logDbRead.d('find ' + collection + ' %j %j' + at, query, options);
@@ -3236,7 +3236,7 @@ class PluginManager {
                 }
                 return function(err: any, res?: any): void {
                     if (err) {
-                        if (ignore_errors && ignore_errors.indexOf(err.code) === -1) {
+                        if (ignore_errors && !ignore_errors.includes(err.code)) {
                             logDbRead.d('Error reading ' + collection + ' %j %s %j', data, err, err);
                             logDbRead.d('From connection %j', countlyDb._cly_debug);
                             if (e) {
@@ -3254,15 +3254,15 @@ class PluginManager {
                 obj['_' + name] = obj[name];
                 obj[name] = function(...args: any[]): Promise<any> {
                     let callback: ((err: any, res?: any) => void) | undefined;
-                    if (typeof args[args.length - 1] === 'function') {
-                        callback = args[args.length - 1] as (err: any, res?: any) => void;
+                    if (typeof args.at(-1) === 'function') {
+                        callback = args.at(-1) as (err: any, res?: any) => void;
                         args.pop();
                     }
 
                     let e: Error | undefined;
                     let at = '';
                     if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
-                        e = new Error();
+                        e = new Error('Printing additional debug info for "overwritePromise"');
                         at += e.stack!.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                     }
 
@@ -3292,7 +3292,7 @@ class PluginManager {
                     let e: Error | undefined;
                     let at = '';
                     if (log.getLevel('db') === 'debug' || log.getLevel('db') === 'info') {
-                        e = new Error();
+                        e = new Error('Printing additional debug info for "overwriteBulkPromise"');
                         at += e.stack!.replace(/\r\n|\r|\n/g, '\n').split('\n')[2];
                     }
 
@@ -3406,7 +3406,7 @@ class PluginManager {
         const toReturn: Record<string, any> = {};
 
         for (const i in provided) {
-            if (typeof current[i] === 'undefined') {
+            if (current[i] === undefined) {
                 toReturn[i] = provided[i];
             }
             else if ((typeof provided[i]) === 'object' && provided[i] !== null) {
@@ -3450,7 +3450,7 @@ class PluginManager {
                 }
             }
             else {
-                if (!isNaN(ob[i]) && typeof (ob[i]) === 'number' && ob[i] > 2147483647) {
+                if (!Number.isNaN(ob[i]) && typeof (ob[i]) === 'number' && ob[i] > 2147483647) {
                     ob[i] = 2147483647;
                 }
                 toReturn[prefix + i] = ob[i];
