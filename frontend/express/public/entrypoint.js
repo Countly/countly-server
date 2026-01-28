@@ -32,7 +32,12 @@ import "./imports.js";
 import 'virtual:legacy-concat';
 
 import ClyStatusBadge from './javascripts/components/cly-status-badge.vue';
+import ClyTabs from './javascripts/components/nav/cly-tabs.vue';
+import ClyDynamicTabs from './javascripts/components/nav/cly-dynamic-tabs.vue';
+
 window.Vue.component('cly-status-badge', ClyStatusBadge);
+window.Vue.component('cly-tabs', ClyTabs);
+window.Vue.component('cly-dynamic-tabs', ClyDynamicTabs);
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW

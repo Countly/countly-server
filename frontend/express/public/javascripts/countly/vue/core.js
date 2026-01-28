@@ -626,6 +626,7 @@
     var BackboneRouteAdapter = function() {};
 
     Vue.prototype.$route = new BackboneRouteAdapter();
+    Vue.prototype.$i18n = _i18n;
 
     var DummyCompAPI = VueCompositionAPI.defineComponent({
         name: "DummyCompAPI",
