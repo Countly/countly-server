@@ -119,6 +119,10 @@ jobs:
          npm install eslint@8.57.0 eslint-plugin-vue@9.31.0 @stylistic/eslint-plugin@2.11.0
          npx eslint .
 
+      - name: Check for any external web resources
+        shell: bash
+        run: bash bin/scripts/check-external-resources.sh
+
       - name: NPM install
         shell: bash
         working-directory: /opt/countly

@@ -385,7 +385,9 @@
         if (countlyGlobal.tracking.server_feedback) {
            //display in app messages
             if (Countly.content && Countly.content.enterContentZone) {
-                Countly.user_details({custom:{content_messages:true}}); // Ensure user is eligible for content messages
+                if (Countly.sdk_version) {
+                    Countly.user_details({custom:{contentEnabled: true, content_messages: ""}}); // Ensure user is eligible for content messages
+                }
                 Countly.content.enterContentZone(function(params){
                     if (params.journeyId && (params.widget_id || params.id)) {
                         try {

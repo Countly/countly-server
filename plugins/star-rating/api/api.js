@@ -26,6 +26,15 @@ if (cohortsEnabled) {
     var cohorts = require('../../cohorts/api/parts/cohorts');
 }
 
+if (!surveysEnabled) {
+    plugins.setConfigs("feedback", {
+        main_color: "#0166D6",
+        font_color: "#FFFFFF",
+        feedback_logo: ""
+
+    });
+}
+
 const FEATURE_NAME = 'star_rating';
 
 const widgetProperties = {

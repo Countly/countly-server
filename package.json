@@ -37,7 +37,8 @@
     "start:ingestor:dev": "COUNTLY_CONFIG__SYMLINKED=true COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings api/ingestor.js",
     "start:jobserver:dev": "COUNTLY_CONFIG__SYMLINKED=true COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings jobServer/index.js",
     "start:all:dev": "npm run start:api:dev & npm run start:frontend:dev & npm run start:ingestor:dev & npm run start:aggregator:dev & npm run start:jobserver:dev & wait",
-    "test:services": "env-cmd -f test/configs/base.env -f test/configs/suite-overrides/core.env sh -c 'npm run start:api:dev & npm run start:frontend:dev & npm run start:ingestor:dev & npm run start:aggregator:dev & npm run start:jobserver:dev & wait'"
+    "test:services": "env-cmd -f test/configs/base.env -f test/configs/suite-overrides/core.env sh -c 'npm run start:api:dev & npm run start:frontend:dev & npm run start:ingestor:dev & npm run start:aggregator:dev & npm run start:jobserver:dev & wait'",
+    "postinstall": "mkdir -p frontend/express/public/sdk/web && cp -rf node_modules/countly-sdk-web/lib/* frontend/express/public/sdk/web/"
   },
   "lint-staged": {
     "*.{js,vue}": [
@@ -68,7 +69,7 @@
     "pino-pretty": "^13.1.1",
     "should": "13.2.3",
     "sinon": "^21.0.0",
-    "supertest": "7.1.4",
+    "supertest": "7.2.2",
     "typescript": "^5.8.2"
   },
   "dependencies": {
@@ -113,14 +114,14 @@
     "cronstrue": "^2.53.0",
     "csurf": "^1.11.0",
     "csvtojson": "2.0.14",
-    "ejs": "3.1.10",
-    "errorhandler": "1.5.1",
-    "express": "^4.22.1",
+    "ejs": "4.0.1",
+    "errorhandler": "1.5.2",
+    "express": "4.22.1",
     "express-rate-limit": "8.2.1",
-    "express-session": "1.18.2",
+    "express-session": "1.19.0",
     "form-data": "^4.0.0",
     "formidable": "^2.1.5",
-    "fs-extra": "11.3.2",
+    "fs-extra": "11.3.3",
     "geoip-lite": "1.4.10",
     "get-random-values": "^4.0.0",
     "grunt": "1.6.1",
@@ -136,7 +137,7 @@
     "json2csv": "5.0.7",
     "jsonwebtoken": "^9.0.1",
     "later": "1.2.0",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "lru-cache": "7.18.3",
     "mcc-mnc-list": "1.1.11",
     "method-override": "3.0.0",
@@ -150,7 +151,7 @@
     "properties-parser": "0.6.0",
     "puppeteer": "^24.6.1",
     "rate-limiter-flexible": "^9.0.1",
-    "sass": "1.96.0",
+    "sass": "1.97.3",
     "semver": "^7.7.1",
     "sharp": "^0.34.2",
     "tslib": "^2.6.3",
