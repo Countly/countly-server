@@ -19,7 +19,11 @@
         "api/utils/authorizer.js"
     ],
     "exclude": [
-        "node_modules"
+        "node_modules/**/*.ts",
+        "node_modules/**/*.js",
+        "frontend/*",
+        "plugins/**/frontend/**/*.ts",
+        "plugins/**/frontend/**/*.js",
     ],
     "compilerOptions": {
         "outDir": "dist", // we're not building the app. but still necessary for, reasons...

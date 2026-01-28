@@ -1,7 +1,7 @@
 import { Moment } from "moment-timezone";
 import { ObjectId } from "mongodb";
 import { Params } from "./requestProcessor";
-import { PluginManager, Database } from "./pluginManager";
+import { PluginManager, Database } from "../plugins/pluginManager";
 import { Logger, LogModule } from "./log";
 import { CountlyAPIConfig } from "./config";
 import { ClickHouseQueryService } from "../plugins/clickhouse/types/clickhouseQueryService";
