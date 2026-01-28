@@ -1,9 +1,18 @@
 /**
  * File contains core data aggregators
  */
+
+/**
+ * @typedef {import('../../types/processing').DrillEvent} DrillEvent
+ * @typedef {import('../../types/processing').EventToken} EventToken
+ * @typedef {import('../../types/processing').DrillMetaUpdate} DrillMetaUpdate
+ * @typedef {import('../../types/aggregatorUsage').AggregatorUsageModule} AggregatorUsageModule
+ */
+
 var common = require('../utils/common.js');
 //const { DataBatchReader } = require('../parts/data/dataBatchReader');
 const plugins = require('../../plugins/pluginManager.ts');
+/** @type {AggregatorUsageModule} */
 var usage = require('./usage.js');
 var moment = require('moment');
 const log = require('../utils/log.js')('aggregator-core:api');
@@ -38,7 +47,7 @@ var crypto = require('crypto');
     /**
      * Determines the type of a value for aggregation purposes.
      * @param {*} value - The value to determine the type of.
-     * @returns {string} - The determined type ('l' for list, 'a' for array, 'n' for number, 'd' for date).
+     * @returns {'l' | 'a' | 'n' | 'd'} - The determined type ('l' for list, 'a' for array, 'n' for number, 'd' for date).
      */
     function determineType(value) {
         var type = "l";
@@ -117,18 +126,23 @@ var crypto = require('crypto');
             }
         });
         try {
-            await eventSource.processWithAutoAck(async(token, events) => {
-                if (events && Array.isArray(events)) {
-                    // Process each event in the batch
-                    for (const currEvent of events) {
-                        if (currEvent && currEvent.a && currEvent.e && currEvent.e === "[CLY]_custom") {
-                            currEvent.e = currEvent.n;
-                            await usage.processEventTotalsFromStream(token, currEvent, common.manualWriteBatcher);
+            await eventSource.processWithAutoAck(
+                /**
+                 * @param {EventToken} token
+                 * @param {DrillEvent[]} events
+                 */
+                async(token, events) => {
+                    if (events && Array.isArray(events)) {
+                        // Process each event in the batch
+                        for (const currEvent of events) {
+                            if (currEvent && currEvent.a && currEvent.e && currEvent.e === "[CLY]_custom") {
+                                currEvent.e = currEvent.n;
+                                await usage.processEventTotalsFromStream(token, currEvent, common.manualWriteBatcher);
+                            }
                         }
+                        await common.manualWriteBatcher.flush("countly", "events_data");
                     }
-                    await common.manualWriteBatcher.flush("countly", "events_data");
-                }
-            });
+                });
         }
         catch (err) {
             log.e('Event processing error:', err);
@@ -153,10 +167,15 @@ var crypto = require('crypto');
             }
         });
         try {
-            await eventSource.processWithAutoAck(async(token, events) => {
-                if (events && Array.isArray(events)) {
-                    for (var k = 0; k < events.length; k++) {
-                        if (events[k].e === "[CLY]_session_begin" && events[k].a) {
+            await eventSource.processWithAutoAck(
+                /**
+                 * @param {EventToken} token
+                 * @param {DrillEvent[]} events
+                 */
+                async(token, events) => {
+                    if (events && Array.isArray(events)) {
+                        for (var k = 0; k < events.length; k++) {
+                            if (events[k].e === "[CLY]_session_begin" && events[k].a) {
                             try {
                                 var app = await common.readBatcher.getOne("apps", common.db.ObjectID(events[k].a));
                                 //record event totals in aggregated data
@@ -196,29 +215,34 @@ var crypto = require('crypto');
             }
         });
         try {
-            await eventSource.processWithAutoAck(async(token, events) => {
-                if (events && Array.isArray(events)) {
-                    for (var k = 0; k < events.length; k++) {
-                        if (events[k].e === "[CLY]_session" && events[k].a) {
-                            try {
-                                var app = await common.readBatcher.getOne("apps", common.db.ObjectID(events[k].a));
-                                //record event totals in aggregated data
-                                if (app) {
-                                    var dur = 0;
-                                    dur = events[k].dur || 0;
-                                    await usage.processSessionDurationRange(writeBatcher, token, dur, events[k].did, {"app_id": events[k].a, "app": app, "time": common.initTimeObj(app.timezone, events[k].ts), "appTimezone": (app.timezone || "UTC")});
-                                    await usage.processViewCount(writeBatcher, token, events[k]?.up_extra?.vc, events[k].did, {"app_id": events[k].a, "app": app, "time": common.initTimeObj(app.timezone, events[k].ts), "appTimezone": (app.timezone || "UTC")});
+            await eventSource.processWithAutoAck(
+                /**
+                 * @param {EventToken} token
+                 * @param {DrillEvent[]} events
+                 */
+                async(token, events) => {
+                    if (events && Array.isArray(events)) {
+                        for (var k = 0; k < events.length; k++) {
+                            if (events[k].e === "[CLY]_session" && events[k].a) {
+                                try {
+                                    var app = await common.readBatcher.getOne("apps", common.db.ObjectID(events[k].a));
+                                    //record event totals in aggregated data
+                                    if (app) {
+                                        var dur = 0;
+                                        dur = events[k].dur || 0;
+                                        await usage.processSessionDurationRange(writeBatcher, token, dur, events[k].did, {"app_id": events[k].a, "app": app, "time": common.initTimeObj(app.timezone, events[k].ts), "appTimezone": (app.timezone || "UTC")});
+                                        await usage.processViewCount(writeBatcher, token, events[k]?.up_extra?.vc, events[k].did, {"app_id": events[k].a, "app": app, "time": common.initTimeObj(app.timezone, events[k].ts), "appTimezone": (app.timezone || "UTC")});
 
+                                    }
+                                }
+                                catch (ex) {
+                                    log.e("Error processing session event", ex);
                                 }
                             }
-                            catch (ex) {
-                                log.e("Error processing session event", ex);
-                            }
                         }
+                        await writeBatcher.flush("countly", "users");
                     }
-                    await writeBatcher.flush("countly", "users");
-                }
-            });
+                });
         }
         catch (err) {
             log.e('Event processing error:', err);
@@ -333,11 +357,17 @@ var crypto = require('crypto');
         });
         try {
             // eslint-disable-next-line no-unused-vars
-            await eventSource.processWithAutoAck(async(token, events) => {
-                if (events && Array.isArray(events)) {
-                    await reloadConfig(); //reloads configs if needed.
-                    // Process each event in the batch
-                    var updates = {};
+            await eventSource.processWithAutoAck(
+                /**
+                 * @param {EventToken} token
+                 * @param {DrillEvent[]} events
+                 */
+                async(token, events) => {
+                    if (events && Array.isArray(events)) {
+                        await reloadConfig(); //reloads configs if needed.
+                        // Process each event in the batch
+                        /** @type {Record<string, DrillMetaUpdate>} */
+                        var updates = {};
                     //Should sort before by event
                     for (var z = 0; z < events.length; z++) {
                         if (events[z].a && events[z].e) {

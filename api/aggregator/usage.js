@@ -1,3 +1,14 @@
+/**
+ * @typedef {import('../../types/aggregatorUsage').StreamToken} StreamToken
+ * @typedef {import('../../types/aggregatorUsage').AggregatorParams} AggregatorParams
+ * @typedef {import('../../types/aggregatorUsage').AggregatedEvent} AggregatedEvent
+ * @typedef {import('../../types/aggregatorUsage').StreamEvent} StreamEvent
+ * @typedef {import('../../types/aggregatorUsage').MetricDefinition} MetricDefinition
+ * @typedef {import('../../types/aggregatorUsage').PredefinedMetricsGroup} PredefinedMetricsGroup
+ * @typedef {import('../../types/aggregatorUsage').UserProperties} UserProperties
+ * @typedef {import('../../types/batcher').WriteBatcher} WriteBatcher
+ */
+
 var usage = {};
 var common = require('./../utils/common.js');
 var plugins = require('./../../plugins/pluginManager.ts');
@@ -5,6 +16,15 @@ var async = require('async');
 var crypto = require('crypto');
 var moment = require('moment-timezone');
 
+/**
+ * Process view count range for session
+ * @param {WriteBatcher} writeBatcher - Write batcher instance
+ * @param {StreamToken} token - Stream token
+ * @param {number|string|undefined} vc - View count
+ * @param {string} did - Device ID
+ * @param {AggregatorParams} params - Aggregator parameters
+ * @returns {Promise<void>}
+ */
 usage.processViewCount = async function(writeBatcher, token, vc, did, params) {
     if (plugins.isPluginEnabled("views") && vc) {
         if (!common.isNumber(vc)) {
@@ -54,6 +74,15 @@ usage.processViewCount = async function(writeBatcher, token, vc, did, params) {
     }
 
 };
+/**
+ * Process session duration range
+ * @param {WriteBatcher} writeBatcher - Write batcher instance
+ * @param {StreamToken} token - Stream token
+ * @param {number} totalSessionDuration - Total session duration in seconds
+ * @param {string} did - Device ID
+ * @param {AggregatorParams} params - Aggregator parameters
+ * @returns {Promise<void>}
+ */
 usage.processSessionDurationRange = async function(writeBatcher, token, totalSessionDuration, did, params) {
     var durationRanges = [
             [0, 10],
@@ -98,6 +127,13 @@ usage.processSessionDurationRange = async function(writeBatcher, token, totalSes
     writeBatcher.add("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, update, "countly", {token: token});
 };
 
+/**
+ * Process session data from stream
+ * @param {StreamToken} token - Stream token
+ * @param {StreamEvent} currEvent - Current session event
+ * @param {AggregatorParams} params - Aggregator parameters
+ * @returns {Promise<void>}
+ */
 usage.processSessionFromStream = async function(token, currEvent, params) {
     currEvent.up = currEvent.up || {};
     var updateUsersZero = {},
@@ -241,6 +277,13 @@ usage.processSessionFromStream = async function(token, currEvent, params) {
     usage.processSessionMetricsFromStream(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params);
 };
 
+/**
+ * Process event totals from aggregation batch
+ * @param {StreamToken} token - Stream token
+ * @param {AggregatedEvent[]} currEventArray - Array of aggregated events
+ * @param {WriteBatcher} writeBatcher - Write batcher instance
+ * @returns {Promise<void>}
+ */
 usage.processEventTotalsFromAggregation = async function(token, currEventArray, writeBatcher) {
     var rootUpdate = {};
     for (var z = 0; z < currEventArray.length; z++) {
@@ -343,6 +386,13 @@ usage.processEventTotalsFromAggregation = async function(token, currEventArray, 
 };
 
 
+/**
+ * Process event totals from stream
+ * @param {StreamToken} token - Stream token
+ * @param {StreamEvent} currEvent - Current event
+ * @param {WriteBatcher} writeBatcher - Write batcher instance
+ * @returns {Promise<void>}
+ */
 usage.processEventTotalsFromStream = async function(token, currEvent, writeBatcher) {
     var rootUpdate = {};
     var eventColl = await common.readBatcher.getOne("events", common.db.ObjectID(currEvent.a), {"transformation": "event_object"});
@@ -444,6 +494,12 @@ usage.processEventTotalsFromStream = async function(token, currEvent, writeBatch
 };
 
 
+/**
+ * Process individual event from stream
+ * @param {StreamToken} token - Stream token
+ * @param {StreamEvent} currEvent - Current event
+ * @param {WriteBatcher} [writeBatcher] - Write batcher instance (optional)
+ */
 usage.processEventFromStream = function(token, currEvent, writeBatcher) {
     writeBatcher = writeBatcher || common.writeBatcher;
     var forbiddenSegValues = [];
@@ -655,6 +711,13 @@ usage.processEventFromStream = function(token, currEvent, writeBatcher) {
     });
 };
 
+/**
+ * Process session metrics from stream
+ * @param {StreamEvent} currEvent - Current session event
+ * @param {string[]} uniqueLevelsZero - Unique levels for zero document
+ * @param {string[]} uniqueLevelsMonth - Unique levels for month document
+ * @param {AggregatorParams} params - Aggregator parameters
+ */
 usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params) {
     /**
          * 
@@ -833,7 +896,14 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
 };
 
 
+/**
+ * Get predefined metrics for user
+ * @param {AggregatorParams} params - Aggregator parameters
+ * @param {UserProperties} userProps - User properties object
+ * @returns {PredefinedMetricsGroup[]} Array of predefined metrics groups
+ */
 usage.getPredefinedMetrics = function(params, userProps) {
+    /** @type {PredefinedMetricsGroup[]} */
     var predefinedMetrics = [
         {
             db: "carriers",

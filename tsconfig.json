@@ -33,6 +33,8 @@
         "resolveJsonModule": true,
         "strict": true,
         "noEmit": true,
-        "allowImportingTsExtensions": true
+        "allowImportingTsExtensions": true,
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext"
     }
 }
