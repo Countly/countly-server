@@ -2754,7 +2754,7 @@ class PluginManager {
         overwriteDbPromise(countlyDb, 'setProfilingLevel');
         overwriteDbPromise(countlyDb, 'stats');
 
-        const findOptions = [
+        const findOptions = new Set([
             'allowDiskUse', 'allowPartialResults', 'authdb', 'awaitData', 'batchSize',
             'bsonRegExp', 'checkKeys', 'collation', 'comment', 'dbName', 'enableUtf8Validation',
             'explain', 'fieldsAsRaw', 'hint', 'ignoreUndefined', 'let', 'limit', 'max',
@@ -2764,7 +2764,7 @@ class PluginManager {
             'retryWrites', 'returnKey', 'serializeFunctions', 'session', 'showDiskLoc',
             'showRecordId', 'singleBatch', 'skip', 'snapshot', 'sort', 'tailable', 'timeout',
             'timeoutMode', 'timeoutMS', 'useBigInt64', 'willRetryWrite'
-        ];
+        ]);
 
         countlyDb._collection_cache = {};
         countlyDb._collection = countlyDb.collection;
