@@ -86,7 +86,7 @@ export interface DatabaseConfig {
 }
 
 /** Database wrapper interface */
-interface Database extends Db {
+export interface Database extends Db {
     collection: (name: string) => any;
     admin: () => any;
     close: () => void;
