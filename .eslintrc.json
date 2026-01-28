@@ -4,7 +4,8 @@
         "dist/**",
         "**/*.d.ts",
         "types/**/*.d.ts",
-        "plugins/*/types/**/*.d.ts"
+        "plugins/*/types/**/*.d.ts",
+        "*.vue"
     ],
     "rules": {
         //        "quotes": ["warn", "single", { "avoidEscape": true }],
