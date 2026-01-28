@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 var exported = {};
 var countlyConfig = require('../../../frontend/express/config', 'dont-enclose');
 var countlyFs = require('../../../api/utils/countlyFs.js');

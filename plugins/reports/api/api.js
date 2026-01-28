@@ -9,7 +9,7 @@ var common = require('../../../api/utils/common.js'),
     log = require('../../../api/utils/log')('reports:api'),
     ejs = require("ejs"),
     fs = require("fs"),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     pdf = require('../../../api/utils/pdf'),
     { validateCreate, validateRead, validateUpdate, validateDelete, getUserApps, } = require('../../../api/utils/rights.js');
 

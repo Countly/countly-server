@@ -5,7 +5,7 @@
 const usage = require('./usage.js'); //special usage file for ingestor
 const common = require('../utils/common.js');
 const url = require('url');
-const plugins = require("../../plugins/pluginManager.js");
+const plugins = require("../../plugins/pluginManager.ts");
 const log = require('../utils/log.js')('core:ingestor');
 const crypto = require('crypto');
 const { ignorePossibleDevices, checksumSaltVerification, validateRedirect} = require('../utils/requestProcessorCommon.js');

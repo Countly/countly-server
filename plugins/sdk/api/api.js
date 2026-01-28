@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 var common = require('../../../api/utils/common.js');
 var fetch = require('../../../api/parts/data/fetch.js');
 var countlyModel = require('../../../api/lib/countly.model.js');

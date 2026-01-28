@@ -15,7 +15,7 @@ var common = require('./common.js');
 var countlyConfig = require('../../frontend/express/config.js');
 var countlyFs = require('./countlyFs.js');
 var crypto = require('crypto');
-var plugins = require('../../plugins/pluginManager.js');
+var plugins = require('../../plugins/pluginManager.ts');
 
 const log = require('./log.js')('core:taskmanager');
 

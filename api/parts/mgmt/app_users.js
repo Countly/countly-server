@@ -10,7 +10,7 @@
 /** @lends module:api/parts/mgmt/app_users */
 var usersApi = {},
     common = require('./../../utils/common.js'),
-    plugins = require('../../../plugins/pluginManager.js'),
+    plugins = require('../../../plugins/pluginManager.ts'),
     { ObjectId } = require('mongodb');
 var path = require('path');
 var config = require("../../config.js");

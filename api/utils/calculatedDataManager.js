@@ -8,7 +8,7 @@ var calculatedDataManager = {};
 var common = require("./common.js");
 var crypto = require("crypto");
 var fetch = require("../parts/data/fetch.js");
-var plugins = require("../../plugins/pluginManager.js");
+var plugins = require("../../plugins/pluginManager.ts");
 
 var collection = "drill_data_cache";
 const log = require('./log.js')('core:calculatedDataManager');

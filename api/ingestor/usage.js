@@ -3,7 +3,7 @@ var usage = {},
     geoip = require('geoip-lite'),
     geocoder = require('./../../bin/offline-geocoder/src/index.js')(),
     log = require('./../utils/log.js')('ingestor:usage'),
-    plugins = require('./../../plugins/pluginManager.js'),
+    plugins = require('./../../plugins/pluginManager.ts'),
     moment = require('moment-timezone');
 
 /**

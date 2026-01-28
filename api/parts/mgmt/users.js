@@ -12,7 +12,7 @@ var usersApi = {},
     common = require('./../../utils/common.js'),
     mail = require('./mail.js'),
     countlyConfig = require('./../../../frontend/express/config.js'),
-    plugins = require('../../../plugins/pluginManager.js'),
+    plugins = require('../../../plugins/pluginManager.ts'),
     { hasAdminAccess, getUserApps, getAdminApps, hasReadRight } = require('./../../utils/rights.js');
 
 const countlyCommon = require('../../lib/countly.common.js');

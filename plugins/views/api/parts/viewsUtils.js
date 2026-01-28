@@ -1,5 +1,5 @@
 var common = require('../../../../api/utils/common.js');
-var plugins = require('../../../pluginManager.js');
+var plugins = require('../../../pluginManager.ts');
 var log = common.log('views:api');
 
 module.exports = {

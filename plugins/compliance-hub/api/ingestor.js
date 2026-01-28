@@ -1,7 +1,7 @@
 var plugin = {},
     common = require('../../../api/utils/common.js'),
     log = common.log('compliance-hub:ingestor'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.ts');
 
 (function() {
 

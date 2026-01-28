@@ -3,7 +3,7 @@
  */
 var common = require('../utils/common.js');
 //const { DataBatchReader } = require('../parts/data/dataBatchReader');
-const plugins = require('../../plugins/pluginManager.js');
+const plugins = require('../../plugins/pluginManager.ts');
 var usage = require('./usage.js');
 var moment = require('moment');
 const log = require('../utils/log.js')('aggregator-core:api');

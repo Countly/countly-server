@@ -1,6 +1,6 @@
 //start db connection
 /*
-var plugins = require('../../pluginManager.js'),
+var plugins = require('../../pluginManager.ts'),
     async = require("async"),
     reports = require("./reports");
 plugins.dbConnection().then((countlyDb) => {

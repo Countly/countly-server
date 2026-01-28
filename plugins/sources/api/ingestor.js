@@ -1,5 +1,5 @@
 var pluginInstance = {};
-const plugins = require('../../pluginManager.js');
+const plugins = require('../../pluginManager.ts');
 const common = require('../../../api/utils/common.js');
 const parseDomain = require('parse-domain');
 

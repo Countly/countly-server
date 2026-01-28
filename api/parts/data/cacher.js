@@ -2,7 +2,7 @@
  * @typedef {import('../../../types/pluginManager').Database} Database
  */
 
-const plugins = require('../../../plugins/pluginManager.js');
+const plugins = require('../../../plugins/pluginManager.ts');
 //const log = require('../../utils/log.js')("cacher");
 
 /**

@@ -3,7 +3,7 @@ var plugin = {},
     {authenticator: GA} = require("otplib"),
     log = common.log('two-factor-auth:api'),
     utils = require("../../../api/utils/utils.js"),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     { validateUser } = require('../../../api/utils/rights.js');
 
 const { generateQRCode } = require('../lib.js');

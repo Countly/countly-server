@@ -6,7 +6,7 @@
 var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     log = common.log('datamigration:api'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     migration_helper = require("./data_migration_helper.js");
 const fs = require('fs');
 const fse = require('fs-extra');

@@ -2,7 +2,7 @@
  * Module contaning functions for basic user operations: login, logout, setup, settings
  * @module frontend/express/libs/members
  * @example
- * var plugins = require('../../plugins/pluginManager.js'); //need for db
+ * var plugins = require('../../plugins/pluginManager.ts'); //need for db
  * var countlyDb = plugins.dbConnection(countlyConfig); //get db connection
  * var membersUtility = require("./libs/members.js");
  * membersUtility.db = countlyDB; //setting db before using any function
@@ -16,7 +16,7 @@
 /** @type {Authorizer} */
 var authorize = require('./../../../api/utils/authorizer.js'); //for token validations
 var common = require('./../../../api/utils/common.js');
-var plugins = require('./../../../plugins/pluginManager.js');
+var plugins = require('./../../../plugins/pluginManager.ts');
 var configs = require('./../config', 'dont-enclose');
 var countlyMail = require('./../../../api/parts/mgmt/mail.js');
 var url = require('url');

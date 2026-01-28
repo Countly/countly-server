@@ -21,7 +21,7 @@ const authorize = require('./authorizer.js');
 /** @type {TaskManagerStatic} */
 const taskmanager = require('./taskmanager.js');
 const calculatedDataManager = require('./calculatedDataManager.js');
-const plugins = require('../../plugins/pluginManager.js');
+const plugins = require('../../plugins/pluginManager.ts');
 const versionInfo = require('../../frontend/express/version.info');
 const packageJson = require('./../../package.json');
 const log = require('./log.js')('core:api');

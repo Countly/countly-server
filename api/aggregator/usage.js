@@ -1,6 +1,6 @@
 var usage = {};
 var common = require('./../utils/common.js');
-var plugins = require('./../../plugins/pluginManager.js');
+var plugins = require('./../../plugins/pluginManager.ts');
 var async = require('async');
 var crypto = require('crypto');
 var moment = require('moment-timezone');

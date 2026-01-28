@@ -2,7 +2,7 @@ const log = require('../../../api/utils/log.js')('clickhouse:query-service');
 const { Transform } = require('stream');
 const { isProgressRow } = require('@clickhouse/client-common');
 const DataMaskingService = require('./DataMaskingService');
-const plugins = require('../../pluginManager.js');
+const plugins = require('../../pluginManager.ts');
 const QueryHelpers = require('./QueryHelpers');
 
 // Query size thresholds for max_query_size override
