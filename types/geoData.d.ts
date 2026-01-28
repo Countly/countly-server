@@ -1,4 +1,4 @@
-import { Database } from "./pluginManager";
+import { Database } from "../plugins/pluginManager";
 import { Logger } from "./log";
 
 /** Options for loading city coordinates */
