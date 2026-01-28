@@ -133,12 +133,7 @@ export const authMixin = function(featureName) {
 };
 
 // @vue/component
-export const i18nMixin = {
-    methods: {
-        i18n: i18n,
-        i18nM: i18nM
-    }
-};
+export const i18nMixin = { methods: { i18n, i18nM } };
 
 // @vue/component
 export const commonFormattersMixin = {
@@ -642,6 +637,7 @@ export const vuex = {
 export const BackboneRouteAdapter = function() {};
 
 Vue.prototype.$route = new BackboneRouteAdapter();
+Vue.prototype.$i18n = i18n;
 
 // export const DummyCompAPI = defineComponent({
 //     name: "DummyCompAPI",

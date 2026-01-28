@@ -82,7 +82,7 @@ const legacyScripts = [
     'javascripts/countly/vue/data/vuex.js',
     'javascripts/countly/countly.task.manager.js',
     'javascripts/countly/vue/imports.js',
-    'javascripts/countly/vue/components/nav.js',
+    // 'javascripts/countly/vue/components/nav.js', // DELETE.
     'javascripts/countly/vue/components/layout.js',
     'javascripts/countly/vue/components/form.js',
     'javascripts/countly/vue/components/date.js',
