@@ -1,4 +1,4 @@
-/* global Vue, ELEMENT, VeeValidate, inViewportMixin, VueCompositionAPI, VueECharts, VueClipboard */
+/* global Vue, ELEMENT, VeeValidate, inViewportMixin, VueClipboard */
 
 (function(countlyVue) {
 
@@ -14,8 +14,6 @@
     Vue.directive("click-outside", ELEMENT.utils.Clickoutside);
     Vue.use(VueClipboard);
     Vue.use(VeeValidate);
-    Vue.use(VueCompositionAPI);
-    Vue.component('echarts', VueECharts);
 
     Vue.component('validation-provider', VeeValidate.ValidationProvider);
     Vue.component('validation-observer', VeeValidate.ValidationObserver);

@@ -1,4 +1,4 @@
-/* global Vue, $, ResizeObserver, _ */
+/* global Vue, $, _ */
 
 (function() {
 
@@ -35,7 +35,7 @@
             checkFn();
 
             el.addEventListener("scroll", checkFn, true);
-            /*  passive = true 
+            /*  passive = true
                 (https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#improving_scrolling_performance_with_passive_listeners)
             */
             var ro = new ResizeObserver(checkFn);

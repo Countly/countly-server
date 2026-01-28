@@ -1,7 +1,16 @@
-/* global countlyCommon, countlyEvent, $, Backbone, app, _ */
+/* global app */
+
+import _ from 'underscore';
+import jQuery from 'jquery';
+import Backbone from '../utils/backbone-min.js';
+import {
+    initialize as initializeEvent,
+    reset as resetEvent
+} from './countly.event.js';
+import countlyCommon from './countly.common.js';
 
 const initializeOnce = _.once(function() {
-    return $.when(countlyEvent.initialize()).then(function() { });
+    return jQuery.when(initializeEvent()).then(function() { });
 });
 
 /**
@@ -54,7 +63,7 @@ const countlyView = Backbone.View.extend({
     * @instance
     * @memberof countlyView
     */
-    el: $('#content'), //jquery element to render view into
+    el: jQuery('#content'), //jquery element to render view into
     _myRequests: {}, //save requests called for this view
     /**
     * Initialize view, overwrite it with at least empty function if you are using some custom remote template
@@ -95,8 +104,8 @@ const countlyView = Backbone.View.extend({
     * @instance
     */
     appChanged: function(callback) { //called when user changes selected app from the sidebar
-        countlyEvent.reset();
-        $.when(countlyEvent.initialize()).always(function() {
+        resetEvent();
+        jQuery.when(initializeEvent()).always(function() {
             if (callback) {
                 callback();
             }
@@ -151,7 +160,7 @@ const countlyView = Backbone.View.extend({
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
-            $.when(this.beforeRender(), initializeOnce()).fail(function(XMLHttpRequest, textStatus, errorThrown) {
+            jQuery.when(this.beforeRender(), initializeOnce()).fail(function(XMLHttpRequest, textStatus, errorThrown) {
                 if (XMLHttpRequest && XMLHttpRequest.status === 0) {
                     // eslint-disable-next-line no-console
                     console.error("Check Your Network Connection");

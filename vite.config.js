@@ -22,7 +22,7 @@ const legacyScripts = [
     // 'javascripts/utils/moment/moment-with-locales.min.js',                    - DELETE. IMPORTED IN imports.js AS ES MODULE.
     // 'javascripts/utils/backbone-min.js',
     'javascripts/utils/jquery.i18n.properties.js',
-    'javascripts/utils/store+json2.min.js',
+    // 'javascripts/utils/store+json2.min.js',
     'javascripts/utils/jquery.idle-timer.js',
     'javascripts/utils/initialAvatar.js',
     'javascripts/utils/highlight/highlight.pack.js',
@@ -32,11 +32,11 @@ const legacyScripts = [
     'javascripts/utils/js-deep-equals.unsorted.min.js',
     // 'javascripts/utils/polyfill/es6-promise.auto.min.js',                     - DELETE. NOT NEEDED ANYMORE.
     'javascripts/utils/polyfill/intersection-observer.js', // might not be needed anymore: https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver
-    'javascripts/utils/vue/vue.min.js',
-    'javascripts/utils/vue/composition-api.min.js',
-    'javascripts/utils/vue/vuex.min.js',
-    'javascripts/utils/echarts.5.min.js',
-    'javascripts/utils/vue/vue-echarts.umd.min.js',
+    // 'javascripts/utils/vue/vue.min.js',                                       - DELETE. IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/utils/vue/composition-api.min.js',                           - DELETE. NOT NEEDED ANYMORE.
+    // 'javascripts/utils/vue/vuex.min.js',                                      - DELETE.
+    // 'javascripts/utils/echarts.5.min.js',                                     - DELETE.
+    // 'javascripts/utils/vue/vue-echarts.umd.min.js',                           - DELETE.
     'javascripts/utils/vue/vue-color.min.js',
     'javascripts/utils/vue/v-tooltip.min.js',
     'javascripts/utils/vue/vee-validate.full.min.js',
@@ -75,7 +75,7 @@ const legacyScripts = [
     // 'javascripts/countly/countly.token.manager.js',
     // 'javascripts/countly/countly.version.history.js',
     // 'javascripts/countly/countly.view.js',
-    'javascripts/countly/vue/core.js',
+    // 'javascripts/countly/vue/core.js',
     'javascripts/countly/vue/container.js',
     'javascripts/countly/countly.template.js',
     'javascripts/countly/vue/helpers.js',
@@ -212,6 +212,7 @@ function legacyConcatPlugin() {
 
         load(id) {
             if (id === resolvedVirtualModuleId) {
+                const addLogs = false;
                 const separator = '\n;\n';
                 const contents = [];
                 const loadedFiles = [];
@@ -227,7 +228,7 @@ function legacyConcatPlugin() {
 /* ============================================================ */
 /* FILE: ${scriptPath} */
 /* ============================================================ */
-console.log('[LegacyBundle] Loading: ${scriptPath}');
+${addLogs ? `console.log('[LegacyBundle] Loading: ${scriptPath}');` : ''}
 ${content}`);
                             loadedFiles.push(scriptPath);
                         }
@@ -254,15 +255,16 @@ ${content}`);
                 return `// Legacy scripts concatenated into a single bundle
 // Total files: ${loadedFiles.length}
 // Missing files: ${missingFiles.length}
-console.log('[LegacyBundle] Starting legacy bundle load...');
-console.log('[LegacyBundle] Total files to load: ${loadedFiles.length}');
+${addLogs ? `console.log('[LegacyBundle] Starting legacy bundle load...');
+console.log('[LegacyBundle] Total files to load: ${loadedFiles.length}');` : ''}
+
 ${missingFiles.length > 0 ? `console.warn('[LegacyBundle] Missing files:', ${JSON.stringify(missingFiles)});` : ''}
 
 (function() {
 ${concatenated}
 })();
 
-console.log('[LegacyBundle] Finished loading legacy bundle');
+window.logLoadedLegacyFiles && console.log('[LegacyBundle] Finished loading legacy bundle');
 export default {};
 `;
             }
@@ -315,6 +317,10 @@ export default defineConfig({
             '@': path.resolve(__dirname, 'frontend/express/public'),
             '@javascripts': path.resolve(__dirname, 'frontend/express/public/javascripts'),
             '@core': path.resolve(__dirname, 'frontend/express/public/core'),
+            // Use the full build of Vue 2.7 that includes the runtime compiler
+            // Required for components that use the `template` option at runtime
+            // REMOVE THIS AFTER SWITCHING TO SINGLE FILE COMPONENTS (.vue)
+            'vue': 'vue/dist/vue.esm.js',
         },
         extensions: ['.js', '.json', '.css']
     },

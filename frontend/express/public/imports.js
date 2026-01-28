@@ -1,3 +1,8 @@
+import Vue from 'vue';
+import Vuex from 'vuex';
+window.Vue = Vue;
+window.Vuex = Vuex;
+
 import jQuery from 'jquery';
 window.jQuery = jQuery;
 window.$ = jQuery;
@@ -70,3 +75,7 @@ window.countlyVersionHistoryManager = countlyVersionHistoryManager;
 import countlyLocation, { setup as setupCountlyLocation } from './javascripts/countly/countly.location.js';
 setupCountlyLocation();
 window.countlyLocation = countlyLocation;
+
+import countlyVue from './javascripts/countly/vue/core.js';
+window.countlyVue = countlyVue;
+window.CV = countlyVue;
