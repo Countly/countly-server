@@ -96,6 +96,7 @@
     "@opentelemetry/semantic-conventions": "^1.36.0",
     "@pulsecron/pulse": "^1.6.8",
     "@pyroscope/nodejs": "^0.4.5",
+    "@vitejs/plugin-vue2": "^2.3.4",
     "all-the-cities": "3.1.0",
     "argon2": "0.41.1",
     "async": "3.2.6",

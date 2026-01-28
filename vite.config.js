@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { globSync } from 'fs';
+import vue from '@vitejs/plugin-vue2';
 
 const __filename = fileURLToPath(import.meta.url); // eslint-disable-line
 const __dirname = path.dirname(__filename);
@@ -16,8 +17,8 @@ const legacyScripts = [
     // 'javascripts/utils/underscore-min.js',                                    - DELETE. IMPORTED IN imports.js AS ES MODULE.
     // 'javascripts/utils/lodash.merge.js',                                      - DELETE. IMPORTED IN imports.js AS ES MODULE.
     // 'javascripts/utils/lodash.mergeWith.js',                                  - DELETE. IMPORTED IN imports.js AS ES MODULE.
-    'javascripts/utils/prefixfree.min.js',
-    'javascripts/dom/gridstack/gridstack-h5.js',
+    // 'javascripts/utils/prefixfree.min.js',                                    - SEEMS LIKE IT'S NOT BEING USED ANYWHERE. BUT DO NOT DELETE FOR NOW.
+    'javascripts/dom/gridstack/gridstack-h5.js', // install this into dashboard plugin (there's also a gridstack.css in entrypoint)
     // 'javascripts/utils/moment/moment-with-locales.min.js',                    - DELETE. IMPORTED IN imports.js AS ES MODULE.
     // 'javascripts/utils/backbone-min.js',
     'javascripts/utils/jquery.i18n.properties.js',
@@ -30,7 +31,7 @@ const legacyScripts = [
     'javascripts/utils/leaflet.js',
     'javascripts/utils/js-deep-equals.unsorted.min.js',
     // 'javascripts/utils/polyfill/es6-promise.auto.min.js',                     - DELETE. NOT NEEDED ANYMORE.
-    'javascripts/utils/polyfill/intersection-observer.js',
+    'javascripts/utils/polyfill/intersection-observer.js', // might not be needed anymore: https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver
     'javascripts/utils/vue/vue.min.js',
     'javascripts/utils/vue/composition-api.min.js',
     'javascripts/utils/vue/vuex.min.js',
@@ -43,7 +44,7 @@ const legacyScripts = [
     'javascripts/utils/vue/vue2Dropzone.min.js',
     'javascripts/utils/vue/element-ui.js',
     'javascripts/utils/vue/vue2-leaflet.min.js',
-    'javascripts/utils/vue/inViewportMixin.js',
+    'javascripts/utils/vue/inViewportMixin.js', // looks like its compatible with both vue2 and 3: https://github.com/BKWLD/vue-in-viewport-mixin. Requires intersection-observer
     'javascripts/utils/vue/vuescroll.min.js',
     // 'javascripts/utils/vue/vue-json-pretty.min.js',
     'javascripts/dom/pace/pace.min.js',
@@ -274,6 +275,7 @@ export default defineConfig({
     base: '/dist/',
 
     plugins: [
+        vue(),
         legacyConcatPlugin(),
     ],
 

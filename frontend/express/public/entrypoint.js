@@ -31,6 +31,9 @@ import "./imports.js";
 // All legacy scripts share the same scope and can access each other's variables
 import 'virtual:legacy-concat';
 
+import ClyStatusBadge from './javascripts/components/cly-status-badge.vue';
+window.Vue.component('cly-status-badge', ClyStatusBadge);
+
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW
 // =============================================================================
