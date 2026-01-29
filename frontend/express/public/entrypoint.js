@@ -54,6 +54,16 @@ import ClyMain from './javascripts/components/layout/cly-main.vue';
 import ClySection from './javascripts/components/layout/cly-section.vue';
 import ClySubSection from './javascripts/components/layout/cly-sub-section.vue';
 
+// Content component imports
+import ClyContentLayout from './javascripts/components/content/cly-content-layout.vue';
+import ClyContentHeader from './javascripts/components/content/cly-content-header.vue';
+import ClyContentBody from './javascripts/components/content/cly-content-body.vue';
+import ClyContentBuilderSidebarStep from './javascripts/components/content/cly-content-builder-sidebar-step.vue';
+import ClyContentBuilderSidebarInput from './javascripts/components/content/cly-content-builder-sidebar-input.vue';
+import ClyContentBlockListInput from './javascripts/components/content/cly-content-block-list-input.vue';
+import ClyOptionSwapper from './javascripts/components/content/cly-option-swapper.vue';
+import ClyDeviceSelector from './javascripts/components/content/cly-device-selector.vue';
+
 // Register components globally
 window.Vue.component('cly-status-badge', ClyStatusBadge);
 window.Vue.component('cly-tabs', ClyTabs);
@@ -76,6 +86,16 @@ window.Vue.component('cly-header', ClyHeader);
 window.Vue.component('cly-main', ClyMain);
 window.Vue.component('cly-section', ClySection);
 window.Vue.component('cly-sub-section', ClySubSection);
+
+// Register content components globally
+window.Vue.component('cly-content-layout', ClyContentLayout);
+window.Vue.component('cly-content-header', ClyContentHeader);
+window.Vue.component('cly-content-body', ClyContentBody);
+window.Vue.component('cly-content-builder-sidebar-step', ClyContentBuilderSidebarStep);
+window.Vue.component('cly-content-builder-sidebar-input', ClyContentBuilderSidebarInput);
+window.Vue.component('cly-content-block-list-input', ClyContentBlockListInput);
+window.Vue.component('cly-option-swapper', ClyOptionSwapper);
+window.Vue.component('cly-device-selector', ClyDeviceSelector);
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW

@@ -1,0 +1,89 @@
+<template>
+    <div class="cly-content-block-list-input">
+        <el-collapse
+            v-for="(block, blockIndex) in mappedBlockInputs"
+            :key="`list-block-${blockIndex}`"
+            class="cly-content-block-list-input__list-block"
+        >
+            <el-collapse-item :icon="{ position: 'right' }" >
+                <template v-slot:title>
+                    <div class="cly-content-block-list-input__list-block-header">
+                        <div class="cly-content-block-list-input__list-block-header-display">
+                            <img
+                                class="cly-content-block-list-input__list-block-header-display-icon"
+                                :data-test-id="'fullscreen-blocks-icon-block-' + blockIndex"
+                                :src="block[0].value"
+                            >
+                            <p
+                                class="cly-content-block-list-input__list-block-header-display-title"
+                                :data-test-id="'fullscreen-blocks-title-label-block-' + blockIndex"
+                            >
+                                {{ block[1].value }}
+                            </p>
+                        </div>
+                        <div class="cly-content-block-list-input__list-block-header-icon">
+                            <i
+                                class="cly-io cly-io-plus cly-content-block-list-input__list-block-header-icon--open"
+                                :data-test-id="'fullscreen-blocks-open-block-' + blockIndex"
+                            />
+                            <i
+                                class="cly-io cly-io-minus cly-content-block-list-input__list-block-header-icon--close"
+                                :data-test-id="'fullscreen-blocks-close-block-' + blockIndex"
+                            />
+                        </div>
+                    </div>
+                </template>
+                <div class="cly-content-block-list-input__list-block-fields">
+                    <cly-content-builder-sidebar-input
+                        v-for="(item, itemIndex) in block"
+                        v-bind="item"
+                        class="cly-content-block-list-input__list-block-field"
+                        :key="`list-block-${blockIndex}-item-${itemIndex}`"
+                        @add-asset="onAddAsset({ id: item.id, key: item.key })"
+                        @delete-asset="onDeleteAsset({ id: item.id, key: item.key })"
+                        @input="onInput({ id: item.id, key: item.key, value: $event })"
+                    />
+                </div>
+            </el-collapse-item>
+        </el-collapse>
+    </div>
+</template>
+
+<script>
+import { BaseComponentMixin } from '../form/mixins.js';
+
+const DEFAULT_LIST_BLOCK_IMAGE_PLACEHOLDER_URL = '/content/images/fullscreenPlaceholderImage.png';
+
+export default {
+    mixins: [BaseComponentMixin],
+    props: {
+        blockInputs: {
+            default: () => [],
+            type: Array
+        }
+    },
+    computed: {
+        mappedBlockInputs() {
+            return this.blockInputs.map(block => {
+                return block.map(blockInput => ({
+                    ...blockInput,
+                    ...(blockInput.id.includes('image') && !blockInput.value) && {
+                        value: DEFAULT_LIST_BLOCK_IMAGE_PLACEHOLDER_URL
+                    }
+                }));
+            });
+        }
+    },
+    methods: {
+        onAddAsset(payload) {
+            this.$emit('add-asset', payload);
+        },
+        onDeleteAsset(payload) {
+            this.$emit('delete-asset', payload);
+        },
+        onInput(payload) {
+            this.$emit('input', payload);
+        }
+    }
+};
+</script>
