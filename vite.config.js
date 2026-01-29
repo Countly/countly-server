@@ -8,6 +8,8 @@ import vue from '@vitejs/plugin-vue2';
 const __filename = fileURLToPath(import.meta.url); // eslint-disable-line
 const __dirname = path.dirname(__filename);
 
+// TODO: a separate build for prelogin files
+
 // List of legacy scripts in exact order from dashboard.html
 // These will be concatenated into a single scope
 const legacyScripts = [
@@ -21,12 +23,12 @@ const legacyScripts = [
     'javascripts/dom/gridstack/gridstack-h5.js', // install this into dashboard plugin (there's also a gridstack.css in entrypoint)
     // 'javascripts/utils/moment/moment-with-locales.min.js',                    - DELETE. IMPORTED IN imports.js AS ES MODULE.
     // 'javascripts/utils/backbone-min.js',
-    'javascripts/utils/jquery.i18n.properties.js',
-    // 'javascripts/utils/store+json2.min.js',
-    'javascripts/utils/jquery.idle-timer.js',
+    // 'javascripts/utils/jquery.i18n.properties.js',
+    // 'javascripts/utils/store+json2.min.js',                                   - storejs IS IMPORTED. CHECK IF json2 IS NEEDED.
+    // 'javascripts/utils/jquery.idle-timer.js',
     'javascripts/utils/initialAvatar.js',
     'javascripts/utils/highlight/highlight.pack.js',
-    'javascripts/utils/jquery.xss.js',
+    // 'javascripts/utils/jquery.xss.js',
     'javascripts/utils/webfont.js',
     'javascripts/utils/leaflet.js',
     'javascripts/utils/js-deep-equals.unsorted.min.js',
@@ -50,7 +52,7 @@ const legacyScripts = [
     'javascripts/dom/pace/pace.min.js',
     'javascripts/utils/Sortable.min.js',
     'javascripts/utils/vue/vuedraggable.umd.min.js',
-    'javascripts/countly/countly.auth.js',
+    // 'javascripts/countly/countly.auth.js',
     'javascripts/utils/element-tiptap.umd.min.js',
     'javascripts/utils/cronstrue.min.js',
 
@@ -76,8 +78,8 @@ const legacyScripts = [
     // 'javascripts/countly/countly.version.history.js',
     // 'javascripts/countly/countly.view.js',
     // 'javascripts/countly/vue/core.js',
-    'javascripts/countly/vue/container.js',
-    'javascripts/countly/countly.template.js',
+    // 'javascripts/countly/vue/container.js',
+    // 'javascripts/countly/countly.template.js',
     'javascripts/countly/vue/helpers.js',
     'javascripts/countly/vue/data/vuex.js',
     'javascripts/countly/countly.task.manager.js',

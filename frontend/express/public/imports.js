@@ -7,6 +7,9 @@ import jQuery from 'jquery';
 window.jQuery = jQuery;
 window.$ = jQuery;
 
+import './javascripts/utils/jquery.i18n.properties.js';
+import './javascripts/utils/jquery.idle-timer.js';
+
 import underscore from 'underscore';
 window._ = underscore;
 
@@ -31,6 +34,9 @@ window.countlyView = countlyView;
 import * as CountlyHelpers from './javascripts/countly/countly.helpers.js';
 window.CountlyHelpers = CountlyHelpers;
 window.T = CountlyHelpers.T;
+
+import * as countlyAuth from './javascripts/countly/countly.auth.js';
+window.countlyAuth = countlyAuth;
 
 import { countlyCommon, CommonConstructor } from './javascripts/countly/countly.common.js';
 window.countlyCommon = countlyCommon;
@@ -79,6 +85,14 @@ window.countlyLocation = countlyLocation;
 import countlyVue from './javascripts/countly/vue/core.js';
 window.countlyVue = countlyVue;
 window.CV = countlyVue;
+
+import * as countlyVueContainer from './javascripts/countly/vue/container.js';
+window.countlyVue.container = countlyVueContainer;
+
+import * as countlyTemplate from './javascripts/countly/countly.template.js';
+window.countlyTemplate = countlyTemplate;
+window.app = countlyTemplate.app;
+window.AppRouter = countlyTemplate.AppRouter;
 
 import countlyCMS from './javascripts/countly/countly.cms.js';
 window.countlyCMS = countlyCMS;

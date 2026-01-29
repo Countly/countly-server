@@ -65,38 +65,6 @@ export function logout(path) {
 }
 
 /**
- * Legacy method for displaying notifications. Use {@link notify} instead.
- * @deprecated Use notify() instead
- * @param {string} msg - Message to display
- * @returns {boolean} true if message is not defined, else returns nothing
- */
-export function parseAndShowMsg(msg) {
-    if (!msg || !msg.length) {
-        return true;
-    }
-
-    if (_.isArray(msg)) {
-        msg = msg[0];
-    }
-
-    var type = "info",
-        message = "",
-        msgArr = msg.split("|");
-
-    if (msgArr.length > 1) {
-        type = msgArr[0];
-        message = msgArr[1];
-    }
-    else {
-        message = msg;
-    }
-
-    notify({type: type, message: message});
-
-    delete countlyGlobal.message;
-}
-
-/**
  * Display dashboard notification using toast or persistent notification.
  * @param {Object|string} msg - Notification message object or string
  * @param {string} [msg.title] - Title of the notification (deprecated)

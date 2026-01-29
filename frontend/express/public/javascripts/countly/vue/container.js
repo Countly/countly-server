@@ -1,234 +1,270 @@
-/* global countlyAuth, CountlyHelpers*/
+import { validateRead, validateGlobalAdmin } from "../countly.auth";
+import { isPluginEnabled } from "../countly.helpers";
 
-(function(countlyVue) {
 
-    /**
-     * Container is a simple class that stores objects
-     */
-    function Container() {
-        this.dict = {};
+// Module-level state
+const dict = {};
+
+/**
+ * Register data to a container by id, with optional priority-based ordering
+ * @param {string} id - the container identifier to register data to
+ * @param {object} value - the data object to register, may include pluginName, permission, and priority properties
+ * @param {string} [type] - optional type, use 'object' to store as object instead of array
+ */
+export function registerData(id, value, type) {
+    if (value && (value.pluginName || value.permission) && !isPluginEnabled(value.pluginName || value.permission)) {
+        return;
     }
 
-    Container.prototype.registerData = function(id, value, type) {
-        if (value && (value.pluginName || value.permission) && !CountlyHelpers.isPluginEnabled(value.pluginName || value.permission)) {
+    if (!Object.prototype.hasOwnProperty.call(dict, id)) {
+        dict[id] = {};
+    }
+
+    // Note: type property is used when registring data value as object type. By default, container keeps array type.
+    if (type === 'object') {
+        dict[id].data = {};
+        Object.assign(dict[id].data, value);
+        return;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(dict[id], "data")) {
+        dict[id].data = [];
+    }
+
+    const _items = dict[id].data;
+
+    if (!Object.prototype.hasOwnProperty.call(value, 'priority')) {
+        _items.push(Object.freeze(value));
+    }
+    else {
+        let found = false;
+        let i = 0;
+        while (!found && i < _items.length) {
+            if (!Object.prototype.hasOwnProperty.call(_items[i], 'priority') || _items[i].priority > value.priority) {
+                found = true;
+            }
+            else {
+                i++;
+            }
+        }
+        _items.splice(i, 0, value);
+    }
+}
+
+/**
+ * Register a tab to a container by id, with priority-based ordering
+ * @param {string} id - the container identifier to register the tab to
+ * @param {object} tab - the tab configuration object with optional pluginName, permission, and priority properties
+ */
+export function registerTab(id, tab) {
+    if (tab) {
+        if ((tab.pluginName || tab.permission) && !isPluginEnabled(tab.pluginName || tab.permission)) {
             return;
         }
-        else {
-            if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
-                this.dict[id] = {};
-            }
-            // Note: type property is used when registring data value as object type. By default, container keeps array type.
-            if (type === 'object') {
-                this.dict[id].data = {};
-                Object.assign(this.dict[id].data, value);
-                return;
-            }
 
-            if (!Object.prototype.hasOwnProperty.call(this.dict[id], "data")) {
-                this.dict[id].data = [];
-            }
+        if (!Object.prototype.hasOwnProperty.call(dict, id)) {
+            dict[id] = {};
+        }
 
-            var _items = this.dict[id].data;
+        if (!Object.prototype.hasOwnProperty.call(dict[id], "tabs")) {
+            dict[id].tabs = [];
+        }
 
-            if (!Object.prototype.hasOwnProperty.call(value, 'priority')) {
-                _items.push(Object.freeze(value));
-            }
-            else {
-                var found = false,
-                    i = 0;
-                while (!found && i < _items.length) {
-                    if (!Object.prototype.hasOwnProperty.call(_items[i], 'priority') || _items[i].priority > value.priority) {
-                        found = true;
-                    }
-                    else {
-                        i++;
-                    }
+        tab.priority = tab.priority || 0;
+        let putAt = dict[id].tabs.length;
+
+        if (tab.priority) {
+            for (let zz = 0; zz < dict[id].tabs.length; zz++) {
+                if (dict[id].tabs[zz].priority && dict[id].tabs[zz].priority > tab.priority) {
+                    putAt = zz;
+                    break;
                 }
-                _items.splice(i, 0, value);
             }
         }
-    };
+        dict[id].tabs.splice(putAt, 0, tab);
+    }
+}
 
-    Container.prototype.registerTab = function(id, tab) {
-        if (tab) {
-            if ((tab.pluginName || tab.permission) && !CountlyHelpers.isPluginEnabled(tab.pluginName || tab.permission)) {
-                return;
-            }
-            else {
-                if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
-                    this.dict[id] = {};
-                }
+/**
+ * Register a Vue mixin to a container by id
+ * @param {string} id - the container identifier to register the mixin to
+ * @param {object} mixin - the Vue mixin object, may include pluginName property for plugin filtering
+ */
+export function registerMixin(id, mixin) {
+    if (mixin && (!mixin.pluginName || isPluginEnabled(mixin.pluginName))) {
+        if (!Object.prototype.hasOwnProperty.call(dict, id)) {
+            dict[id] = {};
+        }
 
-                if (!Object.prototype.hasOwnProperty.call(this.dict[id], "tabs")) {
-                    this.dict[id].tabs = [];
-                }
-                tab.priority = tab.priority || 0;
-                var putAt = this.dict[id].tabs.length;
+        if (!Object.prototype.hasOwnProperty.call(dict[id], "mixins")) {
+            dict[id].mixins = [];
+        }
 
-                if (tab.priority) {
-                    for (var zz = 0; zz < this.dict[id].tabs.length; zz++) {
-                        if (this.dict[id].tabs[zz].priority && this.dict[id].tabs[zz].priority > tab.priority) {
-                            putAt = zz;
-                            break;
+        dict[id].mixins.push(mixin);
+    }
+}
+
+/**
+ * Register template path(s) to a container by id
+ * @param {string} id - the container identifier to register templates to
+ * @param {string|Array<string>} path - single template path or array of template paths
+ */
+export function registerTemplate(id, path) {
+    if (!Object.prototype.hasOwnProperty.call(dict, id)) {
+        dict[id] = {};
+    }
+    if (!Object.prototype.hasOwnProperty.call(dict[id], "templates")) {
+        dict[id].templates = [];
+    }
+    if (Array.isArray(path)) {
+        dict[id].templates = dict[id].templates.concat(path);
+    }
+    else {
+        dict[id].templates.push(path);
+    }
+}
+
+/**
+ * Create a Vue mixin that provides container data as component data properties
+ * @param {object} mapping - object mapping component data property names to container ids
+ * @returns {object} Vue mixin object with data function that returns filtered container data
+ */
+export function dataMixin(mapping) {
+    const mixin = {
+        data: function() {
+            const ob = Object.keys(mapping).reduce(function(acc, val) {
+                const dataOb = dict[mapping[val]] ? dict[mapping[val]].data : [];
+                if (Array.isArray(dataOb)) {
+                    acc[val] = dataOb.filter(function(data) {
+                        if (data && data.permission) {
+                            return validateRead(data.permission);
                         }
-                    }
+                        return true;
+                    });
                 }
-                this.dict[id].tabs.splice(putAt, 0, tab);
-            }
-        }
-    };
-
-    Container.prototype.registerMixin = function(id, mixin) {
-        if (mixin && (!mixin.pluginName || CountlyHelpers.isPluginEnabled(mixin.pluginName))) {
-            if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
-                this.dict[id] = {};
-            }
-
-            if (!Object.prototype.hasOwnProperty.call(this.dict[id], "mixins")) {
-                this.dict[id].mixins = [];
-            }
-
-            this.dict[id].mixins.push(mixin);
-        }
-    };
-
-    Container.prototype.registerTemplate = function(id, path) {
-        if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
-            this.dict[id] = {};
-        }
-        if (!Object.prototype.hasOwnProperty.call(this.dict[id], "templates")) {
-            this.dict[id].templates = [];
-        }
-        if (Array.isArray(path)) {
-            this.dict[id].templates = this.dict[id].templates.concat(path);
-        }
-        else {
-            this.dict[id].templates.push(path);
-        }
-    };
-
-    Container.prototype.dataMixin = function(mapping) {
-        var self = this;
-        var mixin = {
-            data: function() {
-                var ob = Object.keys(mapping).reduce(function(acc, val) {
-                    var dataOb = self.dict[mapping[val]] ? self.dict[mapping[val]].data : [];
-                    if (Array.isArray(dataOb)) {
-                        acc[val] = dataOb.filter(function(data) {
-                            if (data && data.permission) {
-                                return countlyAuth.validateRead(data.permission);
-                            }
-                            return true;
-                        });
-                    }
-                    else {
-                        for (var key in dataOb) {
-                            if (dataOb[key] && dataOb[key].permission) {
-                                if (countlyAuth.validateRead(dataOb[key].permission)) {
-                                    acc[val] = dataOb;
-                                }
-                            }
-                            else {
+                else {
+                    for (const key in dataOb) {
+                        if (dataOb[key] && dataOb[key].permission) {
+                            if (validateRead(dataOb[key].permission)) {
                                 acc[val] = dataOb;
                             }
-                            break;
                         }
-                    }
-                    return acc;
-                }, {});
-                return ob;
-            }
-        };
-        return mixin;
-    };
-
-    Container.prototype.tabsMixin = function(mapping) {
-        var self = this;
-        var mixin = {
-            data: function() {
-                var ob = Object.keys(mapping).reduce(function(acc, val) {
-                    acc[val] = (self.dict[mapping[val]] ? self.dict[mapping[val]].tabs : []).filter(function(tab) {
-                        if (tab.permission) {
-                            return countlyAuth.validateRead(tab.permission);
+                        else {
+                            acc[val] = dataOb;
                         }
-                        return countlyAuth.validateGlobalAdmin();
-                    });
-                    return acc;
-                }, {});
-                return ob;
-            }
-        };
-        return mixin;
-    };
-
-    Container.prototype.getAllRoutes = function() {
-        var routes = [];
-
-        for (var id in this.dict) {
-            if (this.dict[id].data) {
-                for (var j = 0; j < this.dict[id].data.length; j++) {
-                    if (this.dict[id].data[j].url) {
-                        routes.push({url: this.dict[id].data[j].url, app_type: this.dict[id].data[j].app_type});
+                        break;
                     }
                 }
-            }
-            if (this.dict[id].tabs) {
-                for (var k = 0; k < this.dict[id].tabs.length; k++) {
-                    if (this.dict[id].tabs[k].route) {
-                        routes.push({url: this.dict[id].tabs[k].route, app_type: this.dict[id].tabs[k].type});
+                return acc;
+            }, {});
+            return ob;
+        }
+    };
+    return mixin;
+}
+
+/**
+ * Create a Vue mixin that provides container tabs as component data properties
+ * @param {object} mapping - object mapping component data property names to container ids
+ * @returns {object} Vue mixin object with data function that returns permission-filtered tabs
+ */
+export function tabsMixin(mapping) {
+    const mixin = {
+        data: function() {
+            const ob = Object.keys(mapping).reduce(function(acc, val) {
+                acc[val] = (dict[mapping[val]] ? dict[mapping[val]].tabs : []).filter(function(tab) {
+                    if (tab.permission) {
+                        return validateRead(tab.permission);
                     }
+                    return validateGlobalAdmin();
+                });
+                return acc;
+            }, {});
+            return ob;
+        }
+    };
+    return mixin;
+}
+
+/**
+ * Get all registered routes from all containers
+ * @returns {Array<object>} array of route objects with url and app_type properties
+ */
+export function getAllRoutes() {
+    const routes = [];
+
+    for (const id in dict) {
+        if (dict[id].data) {
+            for (let j = 0; j < dict[id].data.length; j++) {
+                if (dict[id].data[j].url) {
+                    routes.push({url: dict[id].data[j].url, app_type: dict[id].data[j].app_type});
                 }
             }
         }
-
-        return routes;
-    };
-
-    Container.prototype.mixins = function(ids) {
-        var self = this;
-        var mixins = [];
-
-        ids.forEach(function(id) {
-            var mix = self.dict[id] ? self.dict[id].mixins : [];
-            mixins = mixins.concat(mix);
-        });
-
-        return mixins;
-    };
-
-    Container.prototype.templates = function(ids) {
-        var self = this;
-        var templates = [];
-        ids.forEach(function(id) {
-            var template = self.dict[id] ? self.dict[id].templates : [];
-            templates = templates.concat(template);
-        });
-        return templates;
-    };
-
-    Container.prototype.tabsVuex = function(ids) {
-        var self = this;
-        var vuex = [];
-
-        ids.forEach(function(id) {
-            var tabs = (self.dict[id] ? self.dict[id].tabs : []).filter(function(tab) {
-                if (tab.permission) {
-                    return countlyAuth.validateRead(tab.permission);
+        if (dict[id].tabs) {
+            for (let k = 0; k < dict[id].tabs.length; k++) {
+                if (dict[id].tabs[k].route) {
+                    routes.push({url: dict[id].tabs[k].route, app_type: dict[id].tabs[k].type});
                 }
-                return countlyAuth.validateGlobalAdmin();
-            });
+            }
+        }
+    }
 
-            tabs.forEach(function(t) {
-                if (t.vuex) {
-                    vuex = vuex.concat(t.vuex);
-                }
-            });
+    return routes;
+}
+
+/**
+ * Get all mixins registered to the specified container ids
+ * @param {Array<string>} ids - array of container identifiers
+ * @returns {Array<object>} concatenated array of all mixins from the specified containers
+ */
+export function mixins(ids) {
+    let result = [];
+
+    ids.forEach(function(id) {
+        const mix = dict[id] ? dict[id].mixins : [];
+        result = result.concat(mix);
+    });
+
+    return result;
+}
+
+/**
+ * Get all templates registered to the specified container ids
+ * @param {Array<string>} ids - array of container identifiers
+ * @returns {Array<string>} concatenated array of all template paths from the specified containers
+ */
+export function templates(ids) {
+    let result = [];
+    ids.forEach(function(id) {
+        const template = dict[id] ? dict[id].templates : [];
+        result = result.concat(template);
+    });
+    return result;
+}
+
+/**
+ * Get all Vuex modules from tabs registered to the specified container ids
+ * @param {Array<string>} ids - array of container identifiers
+ * @returns {Array<object>} concatenated array of Vuex modules from permission-filtered tabs
+ */
+export function tabsVuex(ids) {
+    let vuex = [];
+
+    ids.forEach(function(id) {
+        const tabs = (dict[id] ? dict[id].tabs : []).filter(function(tab) {
+            if (tab.permission) {
+                return validateRead(tab.permission);
+            }
+            return validateGlobalAdmin();
         });
 
+        tabs.forEach(function(t) {
+            if (t.vuex) {
+                vuex = vuex.concat(t.vuex);
+            }
+        });
+    });
 
-        return vuex;
-    };
-
-    countlyVue.container = new Container();
-
-}(window.countlyVue = window.countlyVue || {}));
+    return vuex;
+}

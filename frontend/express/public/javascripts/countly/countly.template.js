@@ -1,11 +1,570 @@
-/* global Backbone, countlyAuth, countlyCommon, countlyGlobal, CountlyHelpers, moment, _, store, jQuery, $, countlyVue*/
+/**
+ * Countly Dashboard Template
+ *
+ * Main orchestration module for the Countly dashboard.
+ * Creates the Backbone router and ties together all app submodules.
+ */
 
-//redefine contains selector for jquery to be case insensitive
+import jQuery from 'jquery';
+import _ from 'underscore';
+import store from 'storejs';
+import Backbone from '../utils/backbone-min.js';
+import countlyCommon from './countly.common.js';
+import countlyGlobal from './countly.global.js';
+import { validateCreate, validateAnyAppAdmin, validateGlobalAdmin } from './countly.auth.js';
+import { notify, logout } from './countly.helpers.js';
+
+// Import from submodules
+import {
+    // State
+    dateToSelected,
+    dateFromSelected,
+    activeAppName,
+    activeAppKey,
+    _isFirstLoad,
+    refreshActiveView,
+    routesHit,
+    origLang,
+    _myRequests,
+    appTypes,
+    pageScripts,
+    dataExports,
+    appSwitchCallbacks,
+    appManagementSwitchCallbacks,
+    appObjectModificators,
+    appManagementViews,
+    appAddTypeCallbacks,
+    userEditCallbacks,
+    refreshScripts,
+    appSettings,
+    widgetCallbacks,
+    setDateToSelected,
+    setDateFromSelected,
+    setActiveAppName,
+    setActiveAppKey,
+    setIsFirstLoad,
+    setRefreshActiveView,
+    setRoutesHit,
+    setOrigLang,
+    // Menu
+    addMenuCategory,
+    addMenuForType,
+    addSubMenuForType,
+    addMenu,
+    addSubMenu,
+    // Callbacks
+    addAppSwitchCallback,
+    addAppManagementSwitchCallback,
+    addAppObjectModificator,
+    addAppManagementView,
+    addAppManagementInput,
+    addAppSetting,
+    addAppAddTypeCallback,
+    addUserEditCallback,
+    addDataExport,
+    addPageScript,
+    addRefreshScript,
+    onAppSwitch,
+    onAppManagementSwitch,
+    onAppAddTypeSwitch,
+    onUserEdit,
+    // Lifecycle
+    setAppInstance,
+    _removeUnfinishedRequests,
+    switchApp,
+    main,
+    dashboard,
+    runRefreshScripts,
+    performRefresh,
+    renderWhenReady,
+    hasRoutingHistory,
+    back,
+    pageScript,
+    noHistory,
+    // Types
+    addAppType,
+    localize
+} from './app/index.js';
+
+const $ = jQuery;
+
+// Redefine contains selector for jQuery to be case insensitive
 $.expr[":"].contains = $.expr.createPseudo(function(arg) {
     return function(elem) {
         return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
     };
 });
+
+// =============================================================================
+// GETTER/SETTER EXPORTS FOR BACKWARDS COMPATIBILITY
+// =============================================================================
+
+/**
+ * Get the currently active view instance
+ * @returns {object|null} the active view instance or null if none
+ */
+export function getActiveView() {
+    return app._activeView;
+}
+
+/**
+ * Set the currently active view instance
+ * @param {object} view - the view instance to set as active
+ */
+export function setActiveView(view) {
+    app._activeView = view;
+}
+
+/**
+ * Get the selected end date timestamp for date range
+ * @returns {number} the end date timestamp
+ */
+export function getDateToSelected() {
+    return dateToSelected;
+}
+export { setDateToSelected };
+
+/**
+ * Get the selected start date timestamp for date range
+ * @returns {number} the start date timestamp
+ */
+export function getDateFromSelected() {
+    return dateFromSelected;
+}
+export { setDateFromSelected };
+
+/**
+ * Get the name of the currently active application
+ * @returns {string} the active application name
+ */
+export function getActiveAppName() {
+    return activeAppName;
+}
+export { setActiveAppName };
+
+/**
+ * Get the API key of the currently active application
+ * @returns {string} the active application API key
+ */
+export function getActiveAppKey() {
+    return activeAppKey;
+}
+export { setActiveAppKey };
+
+/**
+ * Check if this is the first load of the application
+ * @returns {boolean} true if this is the first load, false otherwise
+ */
+export function isFirstLoad() {
+    return _isFirstLoad;
+}
+export { setIsFirstLoad };
+
+/**
+ * Get the registered application types
+ * @returns {object} object containing all registered app types
+ */
+export function getAppTypes() {
+    return appTypes;
+}
+
+/**
+ * Get the registered page scripts
+ * @returns {object} object containing page scripts keyed by path pattern
+ */
+export function getPageScripts() {
+    return pageScripts;
+}
+
+/**
+ * Get the registered data export configurations
+ * @returns {object} object containing data export configurations
+ */
+export function getDataExports() {
+    return dataExports;
+}
+
+/**
+ * Get the registered app switch callback functions
+ * @returns {Array<function>} array of callback functions triggered on app switch
+ */
+export function getAppSwitchCallbacks() {
+    return appSwitchCallbacks;
+}
+
+/**
+ * Get the registered app management switch callback functions
+ * @returns {Array<function>} array of callback functions triggered on app management switch
+ */
+export function getAppManagementSwitchCallbacks() {
+    return appManagementSwitchCallbacks;
+}
+
+/**
+ * Get the registered app object modificator functions
+ * @returns {Array<function>} array of functions that modify app objects
+ */
+export function getAppObjectModificators() {
+    return appObjectModificators;
+}
+
+/**
+ * Get the registered app management views
+ * @returns {object} object containing app management view configurations
+ */
+export function getAppManagementViews() {
+    return appManagementViews;
+}
+
+/**
+ * Get the registered app add type callback functions
+ * @returns {Array<function>} array of callback functions triggered when adding app types
+ */
+export function getAppAddTypeCallbacks() {
+    return appAddTypeCallbacks;
+}
+
+/**
+ * Get the registered user edit callback functions
+ * @returns {Array<function>} array of callback functions triggered on user edit
+ */
+export function getUserEditCallbacks() {
+    return userEditCallbacks;
+}
+
+/**
+ * Get the registered refresh scripts
+ * @returns {object} object containing refresh scripts keyed by path pattern
+ */
+export function getRefreshScripts() {
+    return refreshScripts;
+}
+
+/**
+ * Get the registered app settings configurations
+ * @returns {object} object containing app settings configurations
+ */
+export function getAppSettings() {
+    return appSettings;
+}
+
+/**
+ * Get the registered widget callback functions
+ * @returns {object} object containing widget callbacks
+ */
+export function getWidgetCallbacks() {
+    return widgetCallbacks;
+}
+
+/**
+ * Get the count of routes that have been navigated to
+ * @returns {number} the number of routes hit during this session
+ */
+export function getRoutesHit() {
+    return routesHit;
+}
+export { setRoutesHit };
+
+/**
+ * Get the original language map JSON string
+ * @returns {string} JSON string of the original i18n language map
+ */
+export function getOrigLang() {
+    return origLang;
+}
+export { setOrigLang };
+
+// Re-export all functions from submodules
+export {
+    _removeUnfinishedRequests,
+    switchApp,
+    addMenuCategory,
+    addMenuForType,
+    addSubMenuForType,
+    addMenu,
+    addSubMenu,
+    main,
+    dashboard,
+    runRefreshScripts,
+    performRefresh,
+    renderWhenReady,
+    hasRoutingHistory,
+    back,
+    localize,
+    addAppType,
+    addAppSwitchCallback,
+    addAppManagementSwitchCallback,
+    addAppObjectModificator,
+    addAppManagementView,
+    addAppManagementInput,
+    addAppSetting,
+    addAppAddTypeCallback,
+    addUserEditCallback,
+    addDataExport,
+    addPageScript,
+    addRefreshScript,
+    onAppSwitch,
+    onAppManagementSwitch,
+    onAppAddTypeSwitch,
+    onUserEdit,
+    pageScript,
+    noHistory
+};
+
+// =============================================================================
+// APP INITIALIZATION
+// =============================================================================
+
+/**
+ * Initialize the application with default menus and settings
+ */
+function initializeApp() {
+    // Add default menu categories
+    addMenuCategory("understand", {priority: 10});
+    addMenuCategory("explore", {priority: 20});
+    addMenuCategory("reach", {priority: 30});
+    addMenuCategory("improve", {priority: 40});
+    addMenuCategory("utilities", {priority: 50});
+
+    // Add default menus
+    addMenu("understand", {code: "overview", permission: "core", url: "#/", text: "sidebar.home", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10, bottom: 20});
+    addMenu("understand", {code: "analytics", permission: "core", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
+    addMenu("understand", {code: "events", permission: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
+    addSubMenu("events", {code: "events-overview", permission: "events", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
+    addSubMenu("events", {code: "all-events", permission: "events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
+
+    addMenu("utilities", {
+        code: "management",
+        permission: "core",
+        text: "sidebar.utilities",
+        icon: '<div class="logo management ion-wrench"></div>',
+        priority: 10000000,
+        callback: function(type, category, node, menu) {
+            menu.filter("#management-submenu").append("<span class='help-toggle'></span>");
+        }
+    });
+
+    if (validateCreate('core')) {
+        addSubMenu("management", {code: "longtasks", permission: "core", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
+    }
+
+    var jobsIconSvg = '<svg width="20px" height="16px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><title>list-24px 2</title><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="list-24px-2" fill="#9f9f9f" fill-rule="nonzero"><g id="list-24px"><path d="M0,6 L2,6 L2,4 L0,4 L0,6 Z M0,10 L2,10 L2,8 L0,8 L0,10 Z M0,2 L2,2 L2,0 L0,0 L0,2 Z M3,6 L12,6 L12,4 L3,4 L3,6 Z M3,10 L12,10 L12,8 L3,8 L3,10 Z M3,0 L3,2 L12,2 L12,0 L3,0 Z" id="Shape"></path></g></g></g></svg>';
+
+    if (validateAnyAppAdmin()) {
+        addMenu("management", {code: "applications", permission: "core", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 20});
+    }
+    if (validateGlobalAdmin()) {
+        addMenu("management", {code: "users", permission: "core", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 10});
+    }
+    if (validateGlobalAdmin()) {
+        addMenu("management", {code: "jobs", permission: "core", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon">' + jobsIconSvg + '</div>', priority: 60});
+    }
+
+    // Check URL on document ready
+    $(document).ready(function() {
+        Backbone.history.checkUrl();
+    });
+
+    // Add language class to body
+    $("body").addClass("lang-" + countlyCommon.BROWSER_LANG_SHORT);
+
+    // Load i18n properties
+    jQuery.i18n.properties({
+        name: window.production ? 'localization/min/locale' : ["localization/dashboard/dashboard", "localization/help/help", "localization/mail/mail"].concat(countlyGlobal.plugins.map(function(plugin) {
+            return plugin + "/localization/" + plugin;
+        })),
+        cache: true,
+        language: countlyCommon.BROWSER_LANG_SHORT,
+        countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
+        path: countlyGlobal.cdn,
+        mode: 'map',
+        callback: function() {
+            for (var key in jQuery.i18n.map) {
+                if (countlyGlobal.company) {
+                    jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                }
+                jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(jQuery.i18n.map[key]);
+            }
+            setOrigLang(JSON.stringify(jQuery.i18n.map));
+        }
+    });
+
+    // Document ready handlers
+    $(document).ready(function() {
+        // License notifications
+        if (countlyGlobal.licenseNotification && countlyGlobal.licenseNotification.length && !_.isEmpty(countlyGlobal.apps)) {
+            for (var idx = 0; idx < countlyGlobal.licenseNotification.length; idx++) {
+                countlyGlobal.licenseNotification[idx].id = countlyCommon.generateId();
+                notify(countlyGlobal.licenseNotification[idx]);
+            }
+        }
+
+        // Add version to HTML template requests
+        $.ajaxPrefilter(function(options) {
+            var last5char = options.url.substring(options.url.length - 5, options.url.length);
+            if (last5char === ".html") {
+                var version = countlyGlobal.countlyVersion || "";
+                options.url = options.url + "?v=" + version;
+            }
+        });
+
+        // Session validation
+        var validateSession = function() {
+            $.ajax({
+                url: countlyGlobal.path + "/session",
+                data: {check_session: true},
+                success: function(result) {
+                    if (result === "logout") {
+                        logout("/logout");
+                    }
+                    if (result === "login") {
+                        logout();
+                    }
+                    setTimeout(function() {
+                        validateSession();
+                    }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);
+                }
+            });
+        };
+        setTimeout(function() {
+            validateSession();
+        }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);
+
+        // Session timeout handling
+        if (parseInt(countlyGlobal.config.session_timeout)) {
+            var minTimeout, tenSecondTimeout, logoutTimeout;
+            var shouldRecordAction = false;
+
+            var extendSession = function() {
+                shouldRecordAction = false;
+                $.ajax({
+                    url: countlyGlobal.path + "/session",
+                    success: function(result) {
+                        if (result === "logout") {
+                            logout("/logout");
+                        }
+                        if (result === "login") {
+                            logout();
+                        }
+                        else if (result === "success") {
+                            shouldRecordAction = false;
+                            var myTimeoutValue = parseInt(countlyGlobal.config.session_timeout) * 1000 * 60;
+                            if (myTimeoutValue > 2147483647) {
+                                myTimeoutValue = 1800000;
+                            }
+                            setTimeout(function() {
+                                shouldRecordAction = true;
+                            }, Math.round(myTimeoutValue / 2));
+                            resetSessionTimeouts(myTimeoutValue);
+                        }
+                    },
+                    error: function() {
+                        shouldRecordAction = true;
+                    }
+                });
+            };
+
+            var resetSessionTimeouts = function(timeout) {
+                var minute = timeout - 60 * 1000;
+                if (minTimeout) {
+                    clearTimeout(minTimeout);
+                    minTimeout = null;
+                }
+                if (minute > 0) {
+                    minTimeout = setTimeout(function() {
+                        notify({ title: jQuery.i18n.map["common.session-expiration"], message: jQuery.i18n.map["common.expire-minute"], info: jQuery.i18n.map["common.click-to-login"] });
+                    }, minute);
+                }
+                var tenSeconds = timeout - 10 * 1000;
+                if (tenSecondTimeout) {
+                    clearTimeout(tenSecondTimeout);
+                    tenSecondTimeout = null;
+                }
+                if (tenSeconds > 0) {
+                    tenSecondTimeout = setTimeout(function() {
+                        notify({ title: jQuery.i18n.map["common.session-expiration"], message: jQuery.i18n.map["common.expire-seconds"], info: jQuery.i18n.map["common.click-to-login"] });
+                    }, tenSeconds);
+                }
+                if (logoutTimeout) {
+                    clearTimeout(logoutTimeout);
+                    logoutTimeout = null;
+                }
+                logoutTimeout = setTimeout(function() {
+                    extendSession();
+                }, timeout + 1000);
+            };
+
+            var myTimeoutValue = parseInt(countlyGlobal.config.session_timeout) * 1000 * 60;
+            if (myTimeoutValue > 2147483647) {
+                myTimeoutValue = 1800000;
+            }
+            resetSessionTimeouts(myTimeoutValue);
+            $(document).on("click mousemove extend-dashboard-user-session", function() {
+                if (shouldRecordAction) {
+                    extendSession();
+                }
+            });
+            extendSession();
+        }
+
+        // Initialize date selection from period
+        var periodObj = countlyCommon.getPeriod();
+        if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length === 2) {
+            setDateFromSelected(parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10)));
+            setDateToSelected(parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10)));
+        }
+
+        // Set moment locale
+        try {
+            window.moment.locale(countlyCommon.BROWSER_LANG_SHORT);
+        }
+        catch (e) {
+            window.moment.locale("en");
+        }
+    });
+
+    // Set active app
+    if (!_.isEmpty(countlyGlobal.apps)) {
+        if (!countlyCommon.ACTIVE_APP_ID) {
+            var activeApp = (countlyGlobal.member && countlyGlobal.member.active_app_id && countlyGlobal.apps[countlyGlobal.member.active_app_id])
+                ? countlyGlobal.apps[countlyGlobal.member.active_app_id]
+                : countlyGlobal.defaultApp;
+
+            countlyCommon.setActiveApp(activeApp._id);
+            setActiveAppName(activeApp.name);
+        }
+        else {
+            setActiveAppName(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name);
+        }
+    }
+
+    // Idle timer
+    $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
+
+    $(document).bind("idle.idleTimer", function() {
+        clearInterval(app.refreshActiveView);
+    });
+
+    $(document).bind("active.idleTimer", function() {
+        if (app._activeView && app._activeView.restart) {
+            app._activeView.restart();
+        }
+        app.refreshActiveView = setInterval(function() {
+            performRefresh();
+        }, countlyCommon.DASHBOARD_REFRESH_MS);
+    });
+
+    // Initialize app switch callback
+    $(document).ready(function() {
+        setTimeout(function() {
+            onAppSwitch(countlyCommon.ACTIVE_APP_ID, true, true);
+        }, 1);
+    });
+}
+
+// =============================================================================
+// BACKBONE ROUTER
+// =============================================================================
 
 /**
  * Main app instance of Backbone AppRouter used to control views and view change flow
@@ -14,1263 +573,260 @@ $.expr[":"].contains = $.expr.createPseudo(function(arg) {
  * @instance
  * @namespace app
  */
-var AppRouter = Backbone.Router.extend({
+export const AppRouter = Backbone.Router.extend({
     routes: {
         "/": "dashboard",
         "*path": "main"
     },
-    /**
-    * View that is currently being displayed
-    * @type {countlyView}
-    * @instance
-    * @memberof app
-    */
-    activeView: null, //current view
-    dateToSelected: null, //date to selected from the date picker
-    dateFromSelected: null, //date from selected from the date picker
-    activeAppName: '',
-    activeAppKey: '',
-    _isFirstLoad: false, //to know if we are switching between two apps or just loading page
-    refreshActiveView: 0, //refresh interval function reference
-    _myRequests: {}, //save requests not connected with view to prevent calling the same if previous not finished yet.
-    /**
-    * Navigate to another view programmatically. If you need to change the view without user clicking anything, like redirect. You can do this using this method. This method is not define by countly but is direct method of AppRouter object in Backbone js
-    * @name app#navigate
-    * @function
-    * @instance
-    * @param {string} fragment - url path (hash part) where to redirect user
-    * @param {boolean=} triggerRoute - to trigger route call, like initialize new view, etc. Default is false, so you may want to use false when redirecting to URL for your own same view where you are already, so no need to reload it
-    * @memberof app
-    * @example <caption>Redirect to url of the same view</caption>
-    * //you are at #/manage/systemlogs
-    * app.navigate("#/manage/systemlogs/query/{}");
-    *
-    * @example <caption>Redirect to url of other view</caption>
-    * //you are at #/manage/systemlogs
-    * app.navigate("#/crashes", true);
-    */
-    _removeUnfinishedRequests: function() {
-        for (var url in this._myRequests) {
-            for (var data in this._myRequests[url]) {
-                //4 means done, less still in progress
-                if (parseInt(this._myRequests[url][data].readyState) !== 4) {
-                    this._myRequests[url][data].abort_reason = "view_change";
-                    this._myRequests[url][data].abort();
-                }
-            }
-        }
-        this._myRequests = {};
-        if (this.activeView) {
-            this.activeView._removeMyRequests();//remove requests for view(if not finished)
-        }
-    },
-    switchApp: function(app_id, callback) {
-        countlyCommon.setActiveApp(app_id);
 
-        //removing requests saved in app
-        app._removeUnfinishedRequests();
-        if (app && app.activeView) {
-            if (typeof callback === "function") {
-                app.activeView.appChanged(function() {
-                    app.onAppSwitch(app_id);
-                    callback();
-                });
-            }
-            else {
-                app.activeView.appChanged(function() {
-                    app.onAppSwitch(app_id);
-                });
-            }
-        }
-        else {
-            if (typeof callback === "function") {
-                callback();
-            }
-        }
-    },
-    _menuForTypes: {},
-    _subMenuForTypes: {},
-    _menuForAllTypes: [],
-    _subMenuForAllTypes: [],
-    _subMenuForCodes: {},
-    _subMenus: {},
-    _internalMenuCategories: ["management", "user"],
-    _uniqueMenus: {},
-    /**
-    * Add menu category. Categories will be copied for all app types and its visibility should be controled from the app type plugin
-    * @memberof app
-    * @param {string} category - new menu category
-    * @param {Object} node - object defining category lement
-    * @param {string} node.text - key for localization string which to use as text
-    * @param {number} node.priority - priority order number, the less it is, the more on top category will be
-    * @param {string} node.classes - string with css classes to add to category element
-    * @param {string} node.style - string with css styling to add to category element
-    * @param {string} node.html - additional HTML to append after text
-    * @param {function} node.callback - called when and each time category is added passing same parameters as to this method plus added jquery category element as 3th param
-    **/
-    addMenuCategory: function(category, node) {
-        if (this._internalMenuCategories.indexOf(category) !== -1) {
-            throw "Category already exists with name: " + category;
-        }
-        if (typeof node.priority === "undefined") {
-            throw "Provide priority property for category element";
-        }
+    _removeUnfinishedRequests: _removeUnfinishedRequests,
+    switchApp: switchApp,
+    addMenuCategory: addMenuCategory,
+    addMenuForType: addMenuForType,
+    addSubMenuForType: addSubMenuForType,
+    addMenu: addMenu,
+    addSubMenu: addSubMenu,
+    main: main,
+    dashboard: dashboard,
+    runRefreshScripts: runRefreshScripts,
+    performRefresh: performRefresh,
+    renderWhenReady: renderWhenReady,
+    hasRoutingHistory: hasRoutingHistory,
+    back: back,
+    localize: localize,
+    addAppType: addAppType,
+    addAppSwitchCallback: addAppSwitchCallback,
+    addAppManagementSwitchCallback: addAppManagementSwitchCallback,
+    addAppObjectModificator: addAppObjectModificator,
+    addAppManagementView: addAppManagementView,
+    addAppManagementInput: addAppManagementInput,
+    addAppSetting: addAppSetting,
+    addAppAddTypeCallback: addAppAddTypeCallback,
+    addUserEditCallback: addUserEditCallback,
+    addDataExport: addDataExport,
+    addPageScript: addPageScript,
+    addRefreshScript: addRefreshScript,
+    onAppSwitch: onAppSwitch,
+    onAppManagementSwitch: onAppManagementSwitch,
+    onAppAddTypeSwitch: onAppAddTypeSwitch,
+    onUserEdit: onUserEdit,
+    pageScript: pageScript,
 
-        //New sidebar container hook
-        countlyVue.container.registerData("/sidebar/analytics/menuCategory", {
-            name: category,
-            priority: node.priority,
-            title: node.text || countlyVue.i18n("sidebar.category." + category),
-            node: node
-            /*
-                Following secondary params are simply passed to registry, but not directly used for now:
-
-                * node.classes - string with css classes to add to category element
-                * node.style - string with css styling to add to category element
-                * node.html - additional HTML to append after text
-                * node.callback
-            */
-        });
-        this._internalMenuCategories.push(category);
-        if (typeof node.callback === "function") {
-            node.callback(category, node);
-        }
-    },
-    /**
-    * Add first level menu element for specific app type under specified category. You can only add app type specific menu to categories "understand", "explore", "reach", "improve", "utilities"
-    * @memberof app
-    * @param {string} app_type - type of the app for which to add menu
-    * @param {string} category - category under which to add menu: "understand", "explore", "reach", "improve", "utilities"
-    * @param {Object} node - object defining menu lement
-    * @param {string} node.text - key for localization string which to use as text
-    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
-    * @param {string} node.icon - HTML code for icon to show, usually a div element with font icon classes
-    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
-    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
-    * @param {string} node.classes - string with css classes to add to menu element
-    * @param {string} node.style - string with css styling to add to menu element
-    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
-    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
-    **/
-    addMenuForType: function(app_type, category, node) {
-        if (this._internalMenuCategories.indexOf(category) === -1) {
-            throw "Wrong category for menu: " + category;
-        }
-        if (!node.text || !node.code || typeof node.priority === "undefined") {
-            throw "Provide code, text, icon and priority properties for menu element";
-        }
-
-        if (!this._uniqueMenus[app_type]) {
-            this._uniqueMenus[app_type] = {};
-        }
-
-        if (!this._uniqueMenus[app_type][category]) {
-            this._uniqueMenus[app_type][category] = {};
-        }
-
-        if (!this._uniqueMenus[app_type][category][node.code]) {
-            this._uniqueMenus[app_type][category][node.code] = true;
-        }
-        else {
-            //duplicate menu
-            return;
-        }
-
-        //New sidebar container hook
-        countlyVue.container.registerData("/sidebar/analytics/menu", {
-            app_type: app_type,
-            category: category,
-            name: node.code,
-            priority: node.priority,
-            title: node.text,
-            url: node.url,
-            icon: node.icon,
-            permission: node.permission,
-            tabsPath: node.tabsPath,
-            node: node
-            /*
-                Following secondary params are simply passed to registry, but not directly used for now:
-
-                * node.classes - string with css classes to add to category element
-                * node.style - string with css styling to add to category element
-                * node.html - additional HTML to append after text
-                * node.callback
-            */
-        });
-
-        if (!this.appTypes[app_type] && category !== "management" && category !== "users") {
-            //app type not yet register, queue
-            if (!this._menuForTypes[app_type]) {
-                this._menuForTypes[app_type] = [];
-            }
-            this._menuForTypes[app_type].push({category: category, node: node});
-            return;
-        }
-        if (!node.url && category !== "management" && category !== "users") {
-            this._subMenus[node.code] = true;
-        }
-
-        if (typeof node.callback === "function") {
-            node.callback(app_type, category, node);
-        }
-
-        //run all queued submenus for this parent
-        if (!node.url && category !== "management" && category !== "users" && this._subMenuForCodes[node.code]) {
-            for (i = 0; i < this._subMenuForCodes[node.code].length; i++) {
-                this.addSubMenuForType(this._subMenuForCodes[node.code][i].app_type, node.code, this._subMenuForCodes[node.code][i].node);
-            }
-            this._subMenuForCodes[node.code] = null;
-        }
-    },
-    /**
-    * Add second level menu element for specific app type under specified parent code.
-    * @memberof app
-    * @param {string} app_type - type of the app for which to add menu
-    * @param {string} parent_code - code for parent element under which to add this submenu element
-    * @param {Object} node - object defining menu lement
-    * @param {string} node.text - key for localization string which to use as text
-    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
-    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
-    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
-    * @param {string} node.classes - string with css classes to add to menu element
-    * @param {string} node.style - string with css styling to add to menu element
-    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
-    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
-    **/
-    addSubMenuForType: function(app_type, parent_code, node) {
-        if (!parent_code) {
-            throw "Provide code name for parent category";
-        }
-        if (!node.text || !node.code || !node.url || !node.priority) {
-            throw "Provide text, code, url and priority for sub menu";
-        }
-
-        if (!this._uniqueMenus[app_type]) {
-            this._uniqueMenus[app_type] = {};
-        }
-
-        if (!this._uniqueMenus[app_type][parent_code]) {
-            this._uniqueMenus[app_type][parent_code] = {};
-        }
-
-        if (!this._uniqueMenus[app_type][parent_code][node.code]) {
-            this._uniqueMenus[app_type][parent_code][node.code] = true;
-        }
-        else {
-            //duplicate menu
-            return;
-        }
-
-        //New sidebar container hook
-        countlyVue.container.registerData("/sidebar/analytics/submenu", {
-            app_type: app_type,
-            parent_code: parent_code,
-            name: node.code,
-            priority: node.priority,
-            title: node.text,
-            url: node.url,
-            permission: node.permission,
-            tabsPath: node.tabsPath,
-            node: node
-            /*
-                Following secondary params are simply passed to registry, but not directly used for now:
-
-                * node.classes - string with css classes to add to category element
-                * node.style - string with css styling to add to category element
-                * node.html - additional HTML to append after text
-                * node.callback
-            */
-        });
-
-        if (!this.appTypes[app_type]) {
-            //app type not yet register, queue
-            if (!this._subMenuForTypes[app_type]) {
-                this._subMenuForTypes[app_type] = [];
-            }
-            this._subMenuForTypes[app_type].push({parent_code: parent_code, node: node});
-            return;
-        }
-        if (!this._subMenus[parent_code]) {
-            //parent not yet registered, queue
-            if (!this._subMenuForCodes[parent_code]) {
-                this._subMenuForCodes[parent_code] = [];
-            }
-            this._subMenuForCodes[parent_code].push({app_type: app_type, node: node});
-            return;
-        }
-
-        if (typeof node.callback === "function") {
-            node.callback(app_type, parent_code, node);
-        }
-    },
-    /**
-    * Add first level menu element for all app types and special categories.
-    * @memberof app
-    * @param {string} category - category under which to add menu: "understand", "explore", "reach", "improve", "utilities", "management", "user"
-    * @param {Object} node - object defining menu lement
-    * @param {string} node.text - key for localization string which to use as text
-    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
-    * @param {string} node.icon - HTML code for icon to show, usually a div element with font icon classes
-    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
-    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
-    * @param {string} node.classes - string with css classes to add to menu element
-    * @param {string} node.style - string with css styling to add to menu element
-    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
-    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
-    **/
-    addMenu: function(category, node) {
-        if (node && !node.pluginName && !node.permission) {
-            console.warn('Please add permission to this menu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added');// eslint-disable-line no-console
-        }
-        if (node && (node.pluginName || node.permission) && !CountlyHelpers.isPluginEnabled(node.pluginName || node.permission)) {
-            return;
-        }
-        else {
-            if (category === "management" || category === "users") {
-                this.addMenuForType("default", category, node);
-            }
-            else {
-                for (var type in this.appTypes) {
-                    this.addMenuForType(type, category, node);
-                }
-                //queue for future added app types
-                this._menuForAllTypes.push({category: category, node: node});
-            }
-        }
-    },
-    /**
-    * Add second level sub menu element for all app types (not available for special categories as "management" and "user")
-    * @memberof app
-    * @param {string} parent_code - code for parent element under which to add this submenu element
-    * @param {Object} node - object defining menu lement
-    * @param {string} node.text - key for localization string which to use as text
-    * @param {string} node.code - code name for menu to reference for children, also assigned as id attribute with -menu postfix
-    * @param {string} node.icon - HTML code for icon to show, usually a div element with font icon classes
-    * @param {number} node.priority - priority order number, the less it is, the more on top menu will be
-    * @param {string} node.url - url where menu points. Don't provide this, if it is upper menu and will contain children
-    * @param {string} node.classes - string with css classes to add to menu element
-    * @param {string} node.style - string with css styling to add to menu element
-    * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
-    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
-    **/
-    addSubMenu: function(parent_code, node) {
-        if (node && !node.pluginName && !node.permission) {
-            console.warn('Please add permission to this submenu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added');// eslint-disable-line no-console
-        }
-        if (node && (node.pluginName || node.permission) && !CountlyHelpers.isPluginEnabled(node.pluginName || node.permission)) {
-            return;
-        }
-        else {
-            for (var type in this.appTypes) {
-                this.addSubMenuForType(type, parent_code, node);
-            }
-            //queue for future added app types
-            this._subMenuForAllTypes.push({parent_code: parent_code, node: node});
-        }
-    },
-    main: function(/*forced*/) {
-        var change = true,
-            redirect = false;
-        // detect app switch like
-        //#/app/586e32ddc32cb30a01558cc1/analytics/events
-        if (Backbone.history.fragment.indexOf("/app/") === 0) {
-            var app_id = Backbone.history.fragment.replace("/app/", "");
-            redirect = "#/";
-            if (app_id && app_id.length) {
-                if (app_id.indexOf("/") !== -1) {
-                    var parts = app_id.split("/");
-                    app_id = parts.shift();
-                    redirect = "#/" + parts.join("/");
-                }
-                if (app_id !== countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[app_id]) {
-                    app.switchApp(app_id, function() {
-                        app.navigate(redirect, true);
-                    });
-                    return;
-                }
-            }
-        }
-        else if (Backbone.history.fragment.indexOf("/0/") === 0 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
-            this.navigate("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history.fragment.replace("/0", ""), true);
-            return;
-        }
-        else if (Backbone.history.fragment !== "/" && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
-            var type = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type || "mobile";
-            var urls = countlyVue.container.getAllRoutes();
-            urls.sort(function(a, b) {
-                return b.url.length - a.url.length;
-            });
-            for (var i = 0; i < urls.length; i++) {
-                if (urls[i].url === "#/") {
-                    continue;
-                }
-                if ("#" + Backbone.history.fragment === urls[i].url && (type === urls[i].app_type || !urls[i].app_type)) {
-                    change = false;
-                    break;
-                }
-                else if (("#" + Backbone.history.fragment).indexOf(urls[i].url) === 0 && (type === urls[i].app_type || !urls[i].app_type)) {
-                    redirect = urls[i].url;
-                    break;
-                }
-            }
-        }
-
-        if (redirect) {
-            app.navigate(redirect, true);
-        }
-        else if (change) {
-            if (Backbone.history.fragment !== "/") {
-                this.navigate("#/", true);
-            }
-            else if (countlyCommon.APP_NAMESPACE !== false) {
-                this.navigate("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history.fragment, true);
-            }
-            else {
-                this.dashboard();
-            }
-        }
-        else {
-            if (countlyCommon.APP_NAMESPACE !== false) {
-                this.navigate("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history.fragment, true);
-            }
-            else {
-                this.activeView.render();
-            }
-        }
-    },
-    dashboard: function() {
-        if (countlyGlobal.member.restrict && countlyGlobal.member.restrict.indexOf("#/") !== -1) {
-            return;
-        }
-        if (_.isEmpty(countlyGlobal.apps)) {
-            this.renderWhenReady(this.manageAppsView);
-        }
-        else if (typeof this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type] !== "undefined") {
-            if (this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type] !== null) {
-                this.renderWhenReady(this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]);
-            }
-            else {
-                this.renderWhenReady(app.HomeView);
-            }
-        }
-        else {
-            this.renderWhenReady(this.dashboardView);
-        }
-    },
-    runRefreshScripts: function() {
-        var i = 0;
-        var l = 0;
-        if (this.refreshScripts[Backbone.history.fragment]) {
-            for (i = 0, l = this.refreshScripts[Backbone.history.fragment].length; i < l; i++) {
-                this.refreshScripts[Backbone.history.fragment][i]();
-            }
-        }
-        for (var k in this.refreshScripts) {
-            if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match("^" + k.replace(/#/g, '.*'))) {
-                for (i = 0, l = this.refreshScripts[k].length; i < l; i++) {
-                    this.refreshScripts[k][i]();
-                }
-            }
-        }
-        if (this.refreshScripts["#"]) {
-            for (i = 0, l = this.refreshScripts["#"].length; i < l; i++) {
-                this.refreshScripts["#"][i]();
-            }
-        }
-
-    },
-    performRefresh: function(self) {
-        //refresh only if we are on current period
-        if (countlyCommon.periodObj.periodContainsToday && self.activeView.isLoaded && !countlyCommon.DISABLE_AUTO_REFRESH) {
-            self.activeView.isLoaded = false;
-            $.when(self.activeView.refresh()).always(function() {
-                self.activeView.isLoaded = true;
-                self.runRefreshScripts();
-            });
-        }
-    },
-    renderWhenReady: function(viewName) { //all view renders end up here
-        // If there is an active view call its destroy function to perform cleanups before a new view renders
-        if (this.activeView && this.activeView.destroy) {
-            this.activeView._removeMyRequests && this.activeView._removeMyRequests();
-            this.activeView.destroy();
-        }
-
-        if (window.components && window.components.slider && window.components.slider.instance) {
-            window.components.slider.instance.close();
-        }
-
-        this.activeView = viewName;
-
-        clearInterval(this.refreshActiveView);
-        if (typeof countlyGlobal.member.password_changed === "undefined") {
-            countlyGlobal.member.password_changed = Math.round(new Date().getTime() / 1000);
-        }
-        this.routesHit++;
-
-        if (_.isEmpty(countlyGlobal.apps)) {
-            if (!countlyGlobal.member.global_admin) {
-                if (Backbone.history.fragment !== "/account-settings/no-access") {
-                    this.navigate("/account-settings/no-access", true);
-                }
-                else {
-                    viewName.render();
-                }
-            }
-            else if (Backbone.history.fragment !== "/initial-setup") {
-                this.navigate("/initial-setup", true);
-            }
-            else {
-                viewName.render();
-            }
-            return false;
-        }
-        else if ((countlyGlobal.security.password_expiration > 0) &&
-                (countlyGlobal.member.password_changed + countlyGlobal.security.password_expiration * 24 * 60 * 60 < new Date().getTime() / 1000) &&
-                (!countlyGlobal.ssr)) {
-            if (Backbone.history.fragment !== "/account-settings/reset") {
-                this.navigate("/account-settings/reset", true);
-            }
-            else {
-                viewName.render();
-            }
-            return false;
-        }
-        viewName.render();
-        var self = this;
-        this.refreshActiveView = setInterval(function() {
-            self.performRefresh(self);
-        }, countlyCommon.DASHBOARD_REFRESH_MS);
-
-        if (countlyGlobal && countlyGlobal.message) {
-            CountlyHelpers.parseAndShowMsg(countlyGlobal.message);
-        }
-
-        /**
-         * Identify the actuve sidebar menu item.
-         *
-         * countlyVue.sideBarComponent is null on the initial load.
-         * But don't worry, we identify selected menu items when its mounted aswell.
-         */
-        if (countlyVue.sideBarComponent) {
-            countlyVue.sideBarComponent.$children[0].identifySelected();
-        }
-    },
-    hasRoutingHistory: function() {
-        if (this.routesHit > 1) {
-            return true;
-        }
-        return false;
-    },
-    back: function(fallback_route) {
-        if (this.routesHit > 1) {
-            window.history.back();
-        }
-        else {
-            var fragment = Backbone.history.getFragment();
-            //route not passed, try  to guess from current location
-            if (typeof fallback_route === "undefined" || fallback_route === "") {
-                if (fragment) {
-                    var parts = fragment.split("/");
-                    if (parts.length > 1) {
-                        fallback_route = "/" + parts[1];
-                    }
-                }
-            }
-            if (fallback_route === fragment) {
-                fallback_route = '/';
-            }
-            this.navigate(fallback_route || '/', {trigger: true, replace: true});
-        }
-    },
-    initialize: function() { //initialize the dashboard, register helpers etc.
-
-        this.bind("route", function(name/*, args*/) {
+    initialize: function() {
+        this.bind("route", function(name) {
             $('#content').removeClass(function(index, className) {
                 return (className.match(/(^|\s)routename-\S*/g) || []).join(' ');
             }).addClass("routename-" + name);
         });
 
-        this.appTypes = {};
-        this.pageScripts = {};
-        this.dataExports = {};
-        this.appSwitchCallbacks = [];
-        this.appManagementSwitchCallbacks = [];
-        this.appObjectModificators = [];
-        this.appManagementViews = {};
-        this.appAddTypeCallbacks = [];
-        this.userEditCallbacks = [];
-        this.refreshScripts = {};
-        this.appSettings = {};
-        this.widgetCallbacks = {};
-        var self = this;
-        /**
-            * Add menus
-            **/
-        self.addMenuCategory("understand", {priority: 10});
-        self.addMenuCategory("explore", {priority: 20});
-        self.addMenuCategory("reach", {priority: 30});
-        self.addMenuCategory("improve", {priority: 40});
-        self.addMenuCategory("utilities", {priority: 50});
-        self.addMenu("understand", {code: "overview", permission: "core", url: "#/", text: "sidebar.home", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10, bottom: 20});
-        self.addMenu("understand", {code: "analytics", permission: "core", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
-        self.addMenu("understand", {code: "events", permission: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
-        // self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
-        self.addSubMenu("events", {code: "events-overview", permission: "events", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
-        self.addSubMenu("events", {code: "all-events", permission: "events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
-        // if (countlyAuth.validateUpdate('events') || countlyAuth.validateDelete('events')) {
-        //     self.addSubMenu("events", {code: "manage-events", url: "#/analytics/manage-events", text: "sidebar.events.blueprint", priority: 100});
-        // }
-
-        self.addMenu("utilities", {
-            code: "management",
-            permission: "core",
-            text: "sidebar.utilities",
-            icon: '<div class="logo management ion-wrench"></div>',
-            priority: 10000000,
-            callback: function(type, category, node, menu) {
-                //for backwards compatability of old plugins adding menu to management
-                menu.filter("#management-submenu").append("<span class='help-toggle'></span>");
-            }
-        });
-
-        if (countlyAuth.validateCreate('core')) {
-            self.addSubMenu("management", {code: "longtasks", permission: "core", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
-        }
-
-        //management is also a menu category which goes in default menu i.e. visible to all users
-
-        var jobsIconSvg = '<svg width="20px" height="16px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><title>list-24px 2</title><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="list-24px-2" fill="#9f9f9f" fill-rule="nonzero"><g id="list-24px"><path d="M0,6 L2,6 L2,4 L0,4 L0,6 Z M0,10 L2,10 L2,8 L0,8 L0,10 Z M0,2 L2,2 L2,0 L0,0 L0,2 Z M3,6 L12,6 L12,4 L3,4 L3,6 Z M3,10 L12,10 L12,8 L3,8 L3,10 Z M3,0 L3,2 L12,2 L12,0 L3,0 Z" id="Shape"></path></g></g></g></svg>';
-        if (countlyAuth.validateAnyAppAdmin()) {
-            self.addMenu("management", {code: "applications", permission: "core", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 20});
-        }
-        if (countlyAuth.validateGlobalAdmin()) {
-            self.addMenu("management", {code: "users", permission: "core", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 10});
-        }
-        if (countlyAuth.validateGlobalAdmin()) {
-            self.addMenu("management", {code: "jobs", permission: "core", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon">' + jobsIconSvg + '</div>', priority: 60});
-        }
-
-        // self.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo-icon ion-help help"></div>', classes: "help-toggle", html: '<div class="on-off-switch" id="help-toggle"><input type="checkbox" class="on-off-switch-checkbox" id="help-toggle-cbox"><label class="on-off-switch-label" for="help-toggle-cbox"></label></div>', priority: 10000000});
-
-        // self.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
-        // self.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
-        $(document).ready(function() {
-            Backbone.history.checkUrl();
-        });
-
-        this.routesHit = 0; //keep count of number of routes handled by your application
-
-        $("body").addClass("lang-" + countlyCommon.BROWSER_LANG_SHORT);
-        jQuery.i18n.properties({
-            name: window.production ? 'localization/min/locale' : ["localization/dashboard/dashboard", "localization/help/help", "localization/mail/mail"].concat(countlyGlobal.plugins.map(function(plugin) {
-                return plugin + "/localization/" + plugin;
-            })),
-            cache: true,
-            language: countlyCommon.BROWSER_LANG_SHORT,
-            countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
-            path: countlyGlobal.cdn,
-            mode: 'map',
-            callback: function() {
-                for (var key in jQuery.i18n.map) {
-                    if (countlyGlobal.company) {
-                        jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
-                    }
-                    jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(jQuery.i18n.map[key]);
-                }
-                self.origLang = JSON.stringify(jQuery.i18n.map);
-            }
-        });
-
-        $(document).ready(function() {
-            if (countlyGlobal.licenseNotification && countlyGlobal.licenseNotification.length && !_.isEmpty(countlyGlobal.apps)) {
-                for (var idx = 0; idx < countlyGlobal.licenseNotification.length; idx++) {
-                    countlyGlobal.licenseNotification[idx].id = countlyCommon.generateId();
-                    CountlyHelpers.notify(countlyGlobal.licenseNotification[idx]);
-                }
-            }
-
-            $.ajaxPrefilter(function(options) {
-                var last5char = options.url.substring(options.url.length - 5, options.url.length);
-                if (last5char === ".html") {
-                    var version = countlyGlobal.countlyVersion || "";
-                    options.url = options.url + "?v=" + version;
-                }
-            });
-            var validateSession = function() {
-                $.ajax({
-                    url: countlyGlobal.path + "/session",
-                    data: {check_session: true},
-                    success: function(result) {
-                        if (result === "logout") {
-                            CountlyHelpers.logout("/logout");
-
-                        }
-                        if (result === "login") {
-                            CountlyHelpers.logout();
-                        }
-                        setTimeout(function() {
-                            validateSession();
-                        }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);
-                    }
-                });
-            };
-            setTimeout(function() {
-                validateSession();
-            }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);//validates session each 30 seconds
-            if (parseInt(countlyGlobal.config.session_timeout)) {
-                var minTimeout, tenSecondTimeout, logoutTimeout;
-                var shouldRecordAction = false;
-                var extendSession = function() {
-                    shouldRecordAction = false;
-                    $.ajax({
-                        url: countlyGlobal.path + "/session",
-                        success: function(result) {
-                            if (result === "logout") {
-                                CountlyHelpers.logout("/logout");
-                            }
-                            if (result === "login") {
-                                CountlyHelpers.logout();
-                            }
-                            else if (result === "success") {
-                                shouldRecordAction = false;
-                                var myTimeoutValue = parseInt(countlyGlobal.config.session_timeout) * 1000 * 60;
-                                if (myTimeoutValue > 2147483647) { //max value used by set timeout function
-                                    myTimeoutValue = 1800000;//30 minutes
-                                }
-                                setTimeout(function() {
-                                    shouldRecordAction = true;
-                                }, Math.round(myTimeoutValue / 2));
-                                resetSessionTimeouts(myTimeoutValue);
-                            }
-                        },
-                        error: function() {
-                            shouldRecordAction = true;
-                        }
-                    });
-                };
-
-                var resetSessionTimeouts = function(timeout) {
-                    var minute = timeout - 60 * 1000;
-                    if (minTimeout) {
-                        clearTimeout(minTimeout);
-                        minTimeout = null;
-                    }
-                    if (minute > 0) {
-                        minTimeout = setTimeout(function() {
-                            CountlyHelpers.notify({ title: jQuery.i18n.map["common.session-expiration"], message: jQuery.i18n.map["common.expire-minute"], info: jQuery.i18n.map["common.click-to-login"] });
-                        }, minute);
-                    }
-                    var tenSeconds = timeout - 10 * 1000;
-                    if (tenSecondTimeout) {
-                        clearTimeout(tenSecondTimeout);
-                        tenSecondTimeout = null;
-                    }
-                    if (tenSeconds > 0) {
-                        tenSecondTimeout = setTimeout(function() {
-                            CountlyHelpers.notify({ title: jQuery.i18n.map["common.session-expiration"], message: jQuery.i18n.map["common.expire-seconds"], info: jQuery.i18n.map["common.click-to-login"] });
-                        }, tenSeconds);
-                    }
-                    if (logoutTimeout) {
-                        clearTimeout(logoutTimeout);
-                        logoutTimeout = null;
-                    }
-                    logoutTimeout = setTimeout(function() {
-                        extendSession();
-                    }, timeout + 1000);
-                };
-
-                var myTimeoutValue = parseInt(countlyGlobal.config.session_timeout) * 1000 * 60;
-                //max value used by set timeout function
-                if (myTimeoutValue > 2147483647) {
-                    myTimeoutValue = 1800000;
-                }//30 minutes
-                resetSessionTimeouts(myTimeoutValue);
-                $(document).on("click mousemove extend-dashboard-user-session", function() {
-                    if (shouldRecordAction) {
-                        extendSession();
-                    }
-                });
-                extendSession();
-            }
-
-            // If date range is selected initialize the calendar with these
-            var periodObj = countlyCommon.getPeriod();
-            if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length === 2) {
-                self.dateFromSelected = parseInt(periodObj[0], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[0], 10));
-                self.dateToSelected = parseInt(periodObj[1], 10) + countlyCommon.getOffsetCorrectionForTimestamp(parseInt(periodObj[1], 10));
-            }
-
-            // Initialize localization related stuff
-
-            // Localization test
-            /*
-             $.each(jQuery.i18n.map, function (key, value) {
-             jQuery.i18n.map[key] = key;
-             });
-             */
-
-            try {
-                moment.locale(countlyCommon.BROWSER_LANG_SHORT);
-            }
-            catch (e) {
-                moment.locale("en");
-            }
-        });
-
-        if (!_.isEmpty(countlyGlobal.apps)) {
-            if (!countlyCommon.ACTIVE_APP_ID) {
-                var activeApp = (countlyGlobal.member && countlyGlobal.member.active_app_id && countlyGlobal.apps[countlyGlobal.member.active_app_id])
-                    ? countlyGlobal.apps[countlyGlobal.member.active_app_id]
-                    : countlyGlobal.defaultApp;
-
-                countlyCommon.setActiveApp(activeApp._id);
-                self.activeAppName = activeApp.name;
-            }
-            else {
-                self.activeAppName = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name;
-            }
-        }
-
-        $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
-
-        $(document).bind("idle.idleTimer", function() {
-            clearInterval(self.refreshActiveView);
-        });
-
-        $(document).bind("active.idleTimer", function() {
-            self.activeView.restart();
-            self.refreshActiveView = setInterval(function() {
-                self.performRefresh(self);
-            }, countlyCommon.DASHBOARD_REFRESH_MS);
-        });
-
-        $(document).ready(function() {
-            setTimeout(function() {
-                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID, true, true);
-            }, 1);
-        });
-    },
-    /**
-    * Localize all found html elements with data-localize and data-help-localize attributes
-    * @param {jquery_object} el - jquery reference to parent element which contents to localize, by default all document is localized if not provided
-    * @memberof app
-    */
-    localize: function(el) {
-        var helpers = {
-            onlyFirstUpper: function(str) {
-                return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-            },
-            upper: function(str) {
-                return str.toUpperCase();
-            }
-        };
-
-        // translate help module
-        (el ? el.find('[data-help-localize]') : $("[data-help-localize]")).each(function() {
-            var elem = $(this);
-            if (typeof elem.data("help-localize") !== "undefined") {
-                elem.data("help", jQuery.i18n.map[elem.data("help-localize")]);
-            }
-        });
-
-        // translate dashboard
-        (el ? el.find('[data-localize]') : $("[data-localize]")).each(function() {
-            var elem = $(this),
-                toLocal = elem.data("localize").split("!"),
-                localizedValue = "";
-
-            if (toLocal.length === 2) {
-                if (helpers[toLocal[0]]) {
-                    localizedValue = helpers[toLocal[0]](jQuery.i18n.map[toLocal[1]]);
-                }
-                else {
-                    localizedValue = jQuery.i18n.prop(toLocal[0], (toLocal[1]) ? jQuery.i18n.map[toLocal[1]] : "");
-                }
-            }
-            else {
-                localizedValue = jQuery.i18n.map[elem.data("localize")];
-            }
-
-            if (elem.is("input[type=text]") || elem.is("input[type=password]") || elem.is("textarea")) {
-                elem.attr("placeholder", localizedValue);
-            }
-            else if (elem.is("input[type=button]") || elem.is("input[type=submit]")) {
-                elem.attr("value", localizedValue);
-            }
-            else {
-                elem.html(localizedValue);
-            }
-        });
-    },
-    /**
-    * Register new app type as mobile, web, desktop, etc. You can create new plugin to add new app type with its own dashboard
-    * @param {string} name - name of the app type as mobile, web, desktop etc
-    * @param {countlyView} view - instance of the countlyView to show as main dashboard for provided app type
-    * @memberof app
-    * @instance
-    * @example
-    * app.addAppType("mobile", MobileDashboardView);
-    */
-    addAppType: function(name, view) {
-        if (view) {
-            this.appTypes[name] = new view();
-        }
-        else {
-            this.appTypes[name] = null;
-        }
-        var menu = $("#default-type").clone();
-        menu.attr("id", name + "-type");
-        $("#sidebar-menu").append(menu);
-
-        //run all queued type menus
-        if (this._menuForTypes[name]) {
-            for (var i = 0; i < this._menuForTypes[name].length; i++) {
-                this.addMenuForType(name, this._menuForTypes[name][i].category, this._menuForTypes[name][i].node);
-            }
-            this._menuForTypes[name] = null;
-        }
-
-        //run all queued type submenus
-        if (this._subMenuForTypes[name]) {
-            for (i = 0; i < this._subMenuForTypes[name].length; i++) {
-                this.addSubMenuForType(name, this._subMenuForTypes[name][i].parent_code, this._subMenuForTypes[name][i].node);
-            }
-            this._subMenuForTypes[name] = null;
-        }
-
-        //run all queued all type menus
-        for (i = 0; i < this._menuForAllTypes.length; i++) {
-            this.addMenuForType(name, this._menuForAllTypes[i].category, this._menuForAllTypes[i].node);
-        }
-
-        //run all queued all type submenus
-        for (i = 0; i < this._subMenuForAllTypes.length; i++) {
-            this.addSubMenuForType(name, this._subMenuForAllTypes[i].parent_code, this._subMenuForAllTypes[i].node);
-        }
-    },
-    /**
-    * Add callback to be called when user changes app in dashboard, which can be used globally, outside of the view
-    * @param {function} callback - function receives app_id param which is app id of the new app to which user switched
-	* @param {string} name - Plugin name
-    * @memberof app
-    * @instance
-    * @example
-    * app.addAppSwitchCallback(function(appId){
-    *    countlyCrashes.loadList(appId);
-    * });
-    */
-    addAppSwitchCallback: function(callback, name) {
-        name = name || 'core';
-        this.appSwitchCallbacks.push({"name": name, "fn": callback});
-    },
-    /**
-    * Add callback to be called when user changes app in Managment -> Applications section, useful when providing custom input additions to app editing for different app types
-    * @param {function} callback - function receives app_id param which is app id and type which is app type
-    * @memberof app
-    * @instance
-    * @example
-    * app.addAppManagementSwitchCallback(function(appId, type){
-    *   if (type == "mobile") {
-    *       addPushHTMLIfNeeded(type);
-    *       $("#view-app .appmng-push").show();
-    *   } else {
-    *       $("#view-app .appmng-push").hide();
-    *   }
-    * });
-    */
-    addAppManagementSwitchCallback: function(callback) {
-        this.appManagementSwitchCallbacks.push(callback);
-    },
-    /**
-    * Modify app object on app create/update before submitting it to server
-    * @param {function} callback - function args object with all data that will be submitted to server on app create/update
-    * @memberof app
-    * @instance
-    * @example
-    * app.addAppObjectModificatorfunction(args){
-    *   if (args.type === "mobile") {
-    *       //do something for mobile
-    *   }
-    * });
-    */
-    addAppObjectModificator: function(callback) {
-        this.appObjectModificators.push(callback);
-    },
-    /**
-     * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
-     * @memberof app
-     * @param {string} plugin - plugin name
-     * @param {string} title  - plugin title
-     * @param {object} View - plugin view
-     */
-    addAppManagementView: function(plugin, title, View) {
-        if (CountlyHelpers.isPluginEnabled(plugin)) {
-            this.appManagementViews[plugin] = {title: title, view: View};
-        }
-    },
-    /**
-     * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
-     * @memberof app
-     * @param {string} plugin - plugin name
-     * @param {string} title  - plugin title
-     * @param {Array} inputs - plugin inputs
-     */
-    addAppManagementInput: function(plugin, title, inputs) {
-        if (CountlyHelpers.isPluginEnabled(plugin)) {
-            this.appManagementViews[plugin] = {title: title, inputs: inputs};
-        }
-    },
-    /**
-    * Add additional settings to app management. Allows you to inject html with css classes app-read-settings, app-write-settings and using data-id attribute for the key to store in app collection. And if your value or input needs additional processing, you may add the callbacks here
-    * @param {string} id - the same value on your input data-id attributes
-    * @param {object} options - different callbacks for data modification
-    * @param {function} options.toDisplay - function to be called when data is prepared for displaying, pases reference to html element with app-read-settings css class in which value should be displayed
-    * @param {function} options.toInput - function to be called when data is prepared for input, pases reference to html input element with app-write-settings css class in which value should be placed for editing
-    * @param {function} options.toSave - function to be called when data is prepared for saving, pases reference to object args that will be sent to server ad html input element with app-write-settings css class from which value should be taken and placed in args
-     * @param {function} options.toInject - function to be called when to inject HTML into app management view
-    * @memberof app
-    * @instance
-    * @example
-    * app.addAppSetting("my_setting", {
-    *     toDisplay: function(appId, elem){$(elem).text(process(countlyGlobal['apps'][appId]["my_setting"]));},
-    *     toInput: function(appId, elem){$(elem).val(process(countlyGlobal['apps'][appId]["my_setting"]));},
-    *     toSave: function(appId, args, elem){
-    *         args.my_setting = process($(elem).val());
-    *     },
-    *     toInject: function(){
-    *         var addApp = '<tr class="help-zone-vs" data-help-localize="manage-apps.app-my_setting">'+
-    *             '<td>'+
-    *                 '<span data-localize="management-applications.my_setting"></span>'+
-    *             '</td>'+
-    *             '<td>'+
-    *                 '<input type="text" value="" class="app-write-settings" data-localize="placeholder.my_setting" data-id="my_setting">'+
-    *             '</td>'+
-    *         '</tr>';
-    *
-    *         $("#add-new-app table .table-add").before(addApp);
-    *
-    *         var editApp = '<tr class="help-zone-vs" data-help-localize="manage-apps.app-my_settingt">'+
-    *             '<td>'+
-    *                 '<span data-localize="management-applications.my_setting"></span>'+
-    *             '</td>'+
-    *             '<td>'+
-    *                 '<div class="read app-read-settings" data-id="my_setting"></div>'+
-    *                 '<div class="edit">'+
-    *                     '<input type="text" value="" class="app-write-settings" data-id="my_setting" data-localize="placeholder.my_setting">'+
-    *                 '</div>'+
-    *             '</td>'+
-    *         '</tr>';
-    *
-    *         $(".app-details table .table-edit").before(editApp);
-    *     }
-    * });
-    */
-    addAppSetting: function(id, options) {
-        this.appSettings[id] = options;
-    },
-    /**
-    * Add callback to be called when user changes app type in UI in Managment -> Applications section (even without saving app type, just chaning in UI), useful when providing custom input additions to app editing for different app types
-    * @param {function} callback - function receives type which is app type
-    * @memberof app
-    * @instance
-    * @example
-    * app.addAppAddTypeCallback(function(type){
-    *   if (type == "mobile") {
-    *       $("#view-app .appmng-push").show();
-    *   } else {
-    *       $("#view-app .appmng-push").hide();
-    *   }
-    * });
-    */
-    addAppAddTypeCallback: function(callback) {
-        this.appAddTypeCallbacks.push(callback);
-    },
-    /**
-    * Add callback to be called when user open user edit UI in Managment -> Users section (even without saving, just opening), useful when providing custom input additions to user editing
-    * @param {function} callback - function receives user object and paramm which can be true if saving data, false if opening data, string to modify data
-    * @memberof app
-    * @instance
-    */
-    addUserEditCallback: function(callback) {
-        this.userEditCallbacks.push(callback);
-    },
-    /**
-    * Add custom data export handler from datatables to csv/xls exporter. Provide exporter name and callback function.
-    * Then add the same name as sExport attribute to the first datatables column.
-    * Then when user will want to export data from this table, your callback function will be called to get the data.
-    * You must perpare array of objects all with the same keys, where keys are columns and value are table data and return it from callback
-    * to be processed by exporter.
-    * @param {string} name - name of the export to expect in datatables sExport attribute
-    * @param {function} callback - callback to call when getting data
-    * @memberof app
-    * @instance
-    * @example
-    * app.addDataExport("userinfo", function(){
-    *    var ret = [];
-    *    var elem;
-    *    for(var i = 0; i < tableData.length; i++){
-    *        //use same keys for each array element with different user data
-    *        elem ={
-    *            "fullname": tableData[i].firstname + " " + tableData[i].lastname,
-    *            "job": tableData[i].company + ", " + tableData[i].jobtitle,
-    *            "email": tableData[i].email
-    *        };
-    *        ret.push(elem);
-    *    }
-    *    //return array
-    *    return ret;
-    * });
-    */
-    addDataExport: function(name, callback) {
-        this.dataExports[name] = callback;
-    },
-    /**
-    * Add callback to be called everytime new view/page is loaded, so you can modify view with javascript after it has been loaded
-    * @param {string} view - view url/hash or with possible # as wildcard or simply providing # for any view
-    * @param {function} callback - function to be called when view loaded
-	* @param {string} name - Plugin name
-    * @memberof app
-    * @instance
-    * @example <caption>Adding to single specific view with specific url</caption>
-    * //this will work only for view bind to #/analytics/events
-    * app.addPageScript("/analytics/events", function(){
-    *   $("#event-nav-head").after(
-    *       "<a href='#/analytics/events/compare'>" +
-    *           "<div id='compare-events' class='event-container'>" +
-    *               "<div class='icon'></div>" +
-    *               "<div class='name'>" + jQuery.i18n.map["compare.button"] + "</div>" +
-    *           "</div>" +
-    *       "</a>"
-    *   );
-    * });
-
-    * @example <caption>Add to all view subpages</caption>
-    * //this will work /users/ and users/1 and users/abs etc
-    * app.addPageScript("/users#", modifyUserDetailsForPush);
-
-    * @example <caption>Adding script to any view</caption>
-    * //this will work for any view
-    * app.addPageScript("#", function(){
-    *   alert("I am an annoying popup appearing on each view");
-    * });
-    */
-    addPageScript: function(view, callback, name) {
-        if (!name || CountlyHelpers.isPluginEnabled(name)) {
-            if (!this.pageScripts[view]) {
-                this.pageScripts[view] = [];
-            }
-            this.pageScripts[view].push(callback);
-        }
-    },
-    /**
-    * Add callback to be called everytime view is refreshed, because view may reset some html, and we may want to remodify it again. By default this happens every 10 seconds, so not cpu intensive tasks
-    * @param {string} view - view url/hash or with possible # as wildcard or simply providing # for any view
-    * @param {function} callback - function to be called when view refreshed
-    * @memberof app
-    * @instance
-    * @example <caption>Adding to single specific view with specific url</caption>
-    * //this will work only for view bind to #/analytics/events
-    * app.addPageScript("/analytics/events", function(){
-    *   $("#event-nav-head").after(
-    *       "<a href='#/analytics/events/compare'>" +
-    *           "<div id='compare-events' class='event-container'>" +
-    *               "<div class='icon'></div>" +
-    *               "<div class='name'>" + jQuery.i18n.map["compare.button"] + "</div>" +
-    *           "</div>" +
-    *       "</a>"
-    *   );
-    * });
-
-    * @example <caption>Add to all view subpage refreshed</caption>
-    * //this will work /users/ and users/1 and users/abs etc
-    * app.addRefreshScript("/users#", modifyUserDetailsForPush);
-
-    * @example <caption>Adding script to any view</caption>
-    * //this will work for any view
-    * app.addRefreshScript("#", function(){
-    *   alert("I am an annoying popup appearing on each refresh of any view");
-    * });
-    */
-    addRefreshScript: function(view, callback) {
-        if (!this.refreshScripts[view]) {
-            this.refreshScripts[view] = [];
-        }
-        this.refreshScripts[view].push(callback);
-    },
-    onAppSwitch: function(appId, refresh, firstLoad) {
-        if (appId !== 0) {
-            this._isFirstLoad = firstLoad;
-            jQuery.i18n.map = JSON.parse(app.origLang);
-            if (!refresh) {
-                app.main(true);
-                if (window.components && window.components.slider && window.components.slider.instance) {
-                    window.components.slider.instance.close();
-                }
-            }
-            for (var i = 0; i < this.appSwitchCallbacks.length; i++) {
-                if (CountlyHelpers.isPluginEnabled(this.appSwitchCallbacks[i].name)) {
-                    this.appSwitchCallbacks[i].fn(appId);
-                }
-            }
-            app.localize();
-        }
-    },
-    onAppManagementSwitch: function(appId, type) {
-        for (var i = 0; i < this.appManagementSwitchCallbacks.length; i++) {
-            this.appManagementSwitchCallbacks[i](appId, type || countlyGlobal.apps[appId].type);
-        }
-    },
-    onAppAddTypeSwitch: function(type) {
-        for (var i = 0; i < this.appAddTypeCallbacks.length; i++) {
-            this.appAddTypeCallbacks[i](type);
-        }
-    },
-    onUserEdit: function(user, param) {
-        for (var i = 0; i < this.userEditCallbacks.length; i++) {
-            param = this.userEditCallbacks[i](user, param);
-        }
-        return param;
-    },
-    pageScript: function() { //scripts to be executed on each view change
-
-        var self = this;
-        $(document).ready(function() {
-
-            var selectedDateID = countlyCommon.getPeriod();
-
-            if (Object.prototype.toString.call(selectedDateID) !== '[object Array]') {
-                $("#" + selectedDateID).addClass("active");
-            }
-            var i = 0;
-            var l = 0;
-            if (self.pageScripts[Backbone.history.fragment]) {
-                for (i = 0, l = self.pageScripts[Backbone.history.fragment].length; i < l; i++) {
-                    self.pageScripts[Backbone.history.fragment][i]();
-                }
-            }
-            for (var k in self.pageScripts) {
-                if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match("^" + k.replace(/#/g, '.*'))) {
-                    for (i = 0, l = self.pageScripts[k].length; i < l; i++) {
-                        self.pageScripts[k][i]();
-                    }
-                }
-            }
-            if (self.pageScripts["#"]) {
-                for (i = 0, l = self.pageScripts["#"].length; i < l; i++) {
-                    self.pageScripts["#"][i]();
-                }
-            }
-
-            // Translate all elements with a data-help-localize or data-localize attribute
-            self.localize();
-        });
+        initializeApp();
     }
 });
+
+// Create the global app instance
+export const app = new AppRouter();
+
+// Set the app instance in the lifecycle module
+setAppInstance(app);
+
+// =============================================================================
+// DEFINE GETTERS/SETTERS ON APP INSTANCE
+// =============================================================================
+
+// Define getters/setters using Object.defineProperty because Backbone.extend
+// doesn't preserve ES6 getter/setter syntax - it evaluates them at definition time
+Object.defineProperties(app, {
+    activeView: {
+        get: function() {
+            return this._activeView || null;
+        },
+        set: function(val) {
+            this._activeView = val;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    dateToSelected: {
+        get: function() {
+            return dateToSelected;
+        },
+        set: function(val) {
+            setDateToSelected(val);
+        },
+        enumerable: true,
+        configurable: true
+    },
+    dateFromSelected: {
+        get: function() {
+            return dateFromSelected;
+        },
+        set: function(val) {
+            setDateFromSelected(val);
+        },
+        enumerable: true,
+        configurable: true
+    },
+    activeAppName: {
+        get: function() {
+            return activeAppName;
+        },
+        set: function(val) {
+            setActiveAppName(val);
+        },
+        enumerable: true,
+        configurable: true
+    },
+    activeAppKey: {
+        get: function() {
+            return activeAppKey;
+        },
+        set: function(val) {
+            setActiveAppKey(val);
+        },
+        enumerable: true,
+        configurable: true
+    },
+    _isFirstLoad: {
+        get: function() {
+            return _isFirstLoad;
+        },
+        set: function(val) {
+            setIsFirstLoad(val);
+        },
+        enumerable: true,
+        configurable: true
+    },
+    refreshActiveView: {
+        get: function() {
+            return refreshActiveView;
+        },
+        set: function(val) {
+            setRefreshActiveView(val);
+        },
+        enumerable: true,
+        configurable: true
+    },
+    _myRequests: {
+        get: function() {
+            return _myRequests;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    appTypes: {
+        get: function() {
+            return appTypes;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    pageScripts: {
+        get: function() {
+            return pageScripts;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    dataExports: {
+        get: function() {
+            return dataExports;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    appSwitchCallbacks: {
+        get: function() {
+            return appSwitchCallbacks;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    appManagementSwitchCallbacks: {
+        get: function() {
+            return appManagementSwitchCallbacks;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    appObjectModificators: {
+        get: function() {
+            return appObjectModificators;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    appManagementViews: {
+        get: function() {
+            return appManagementViews;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    appAddTypeCallbacks: {
+        get: function() {
+            return appAddTypeCallbacks;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    userEditCallbacks: {
+        get: function() {
+            return userEditCallbacks;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    refreshScripts: {
+        get: function() {
+            return refreshScripts;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    appSettings: {
+        get: function() {
+            return appSettings;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    widgetCallbacks: {
+        get: function() {
+            return widgetCallbacks;
+        },
+        enumerable: true,
+        configurable: true
+    },
+    routesHit: {
+        get: function() {
+            return routesHit;
+        },
+        set: function(val) {
+            setRoutesHit(val);
+        },
+        enumerable: true,
+        configurable: true
+    },
+    origLang: {
+        get: function() {
+            return origLang;
+        },
+        set: function(val) {
+            setOrigLang(val);
+        },
+        enumerable: true,
+        configurable: true
+    }
+});
+
+// =============================================================================
+// BACKBONE HISTORY EXTENSIONS
+// =============================================================================
 
 Backbone.history || (Backbone.history = new Backbone.History);
 Backbone.history._checkUrl = Backbone.history.checkUrl;
 Backbone.history.urlChecks = [];
+
 Backbone.history.checkOthers = function() {
     var proceed = true;
     for (var i = 0; i < Backbone.history.urlChecks.length; i++) {
@@ -1280,6 +836,7 @@ Backbone.history.checkOthers = function() {
     }
     return proceed;
 };
+
 Backbone.history.checkUrl = function() {
     if (Backbone.history.checkOthers()) {
         Backbone.history._checkUrl();
@@ -1298,9 +855,11 @@ Backbone.history.noHistory = function(hash) {
 Backbone.history.__checkUrl = Backbone.history.checkUrl;
 Backbone.history._getFragment = Backbone.history.getFragment;
 Backbone.history.appIds = [];
-for (var i in countlyGlobal.apps) {
-    Backbone.history.appIds.push(i);
+
+for (var appId in countlyGlobal.apps) {
+    Backbone.history.appIds.push(appId);
 }
+
 Backbone.history.getFragment = function() {
     var fragment = Backbone.history._getFragment();
     if (fragment.indexOf("/" + countlyCommon.ACTIVE_APP_ID) === 0) {
@@ -1308,6 +867,7 @@ Backbone.history.getFragment = function() {
     }
     return fragment;
 };
+
 Backbone.history.checkUrl = function() {
     store.set("countly_fragment_name", Backbone.history._getFragment());
     var app_id = Backbone.history._getFragment().split("/")[1] || "";
@@ -1317,7 +877,7 @@ Backbone.history.checkUrl = function() {
     }
 
     if (countlyCommon.ACTIVE_APP_ID !== 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) !== -1) {
-        app.switchApp(app_id, function() {
+        switchApp(app_id, function() {
             if (Backbone.history.checkOthers()) {
                 Backbone.history.__checkUrl();
             }
@@ -1330,7 +890,7 @@ Backbone.history.checkUrl = function() {
     }
 };
 
-//initial hash check
+// Initial hash check
 (function() {
     if (!Backbone.history.getFragment() && store.get("countly_fragment_name")) {
         Backbone.history.noHistory("#" + store.get("countly_fragment_name"));
@@ -1338,47 +898,24 @@ Backbone.history.checkUrl = function() {
     else {
         var app_id = Backbone.history._getFragment().split("/")[1] || "";
         if (countlyCommon.ACTIVE_APP_ID === app_id || Backbone.history.appIds.indexOf(app_id) !== -1) {
-            //we have app id
             if (app_id !== countlyCommon.ACTIVE_APP_ID) {
-                // but it is not currently selected app, so let' switch
                 countlyCommon.setActiveApp(app_id);
             }
         }
         else if (countlyCommon.APP_NAMESPACE !== false) {
-            //add current app id
             Backbone.history.noHistory("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
         }
     }
 })();
 
-var app = new AppRouter();
-window.app = app;
+// Add noHistory to app instance
+app.noHistory = noHistory;
 
-/**
-* Navigate to another hash address programmatically, without trigering view route and without leaving trace in history, if possible
-* @param {string} hash - url path (hash part) to change
-* @memberof app
-* @example
-* //you are at #/manage/systemlogs
-* app.noHistory("#/manage/systemlogs/query/{}");
-* //now pressing back would not go to #/manage/systemlogs
-*/
-app.noHistory = function(hash) {
-    if (countlyCommon.APP_NAMESPACE !== false) {
-        hash = "#/" + countlyCommon.ACTIVE_APP_ID + hash.substr(1);
-    }
-    if (history && history.replaceState) {
-        history.replaceState(undefined, undefined, hash);
-    }
-    else {
-        location.replace(hash);
-    }
-};
+// =============================================================================
+// AJAX PREFILTER FOR REQUEST TRACKING
+// =============================================================================
 
-//collects requests for active views to dscard them if views changed
 $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
-    //add to options for independent!!!
-
     var myurl = "";
     var mydata = "{}";
     if (originalOptions && originalOptions.url) {
@@ -1387,67 +924,39 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
     if (originalOptions && originalOptions.data) {
         mydata = JSON.stringify(originalOptions.data);
     }
-    //request which is not killed on view change(only on app change)
     jqXHR.my_set_url = myurl;
     jqXHR.my_set_data = mydata;
 
     if (originalOptions && (originalOptions.type === 'GET' || originalOptions.type === 'get') && originalOptions.url.substr(0, 2) === '/o') {
         if (originalOptions.data && originalOptions.data.preventGlobalAbort && originalOptions.data.preventGlobalAbort === true) {
-            return true;
-        }
-
-        if (originalOptions.data && originalOptions.data.preventRequestAbort && originalOptions.data.preventRequestAbort === true) {
-            if (app._myRequests[myurl] && app._myRequests[myurl][mydata]) {
-                jqXHR.abort_reason = "duplicate";
-                jqXHR.abort(); //we already have same working request
+            if (!_myRequests[myurl]) {
+                _myRequests[myurl] = {};
             }
-            else {
-                jqXHR.always(function(data, textStatus, jqXHR1) {
-                    //if success jqxhr object is third, errored jqxhr object is in first parameter.
-                    if (jqXHR1 && jqXHR1.my_set_url && jqXHR1.my_set_data) {
-                        if (app._myRequests[jqXHR1.my_set_url] && app._myRequests[jqXHR1.my_set_url][jqXHR1.my_set_data]) {
-                            delete app._myRequests[jqXHR1.my_set_url][jqXHR1.my_set_data];
-                        }
-                    }
-                    else if (data && data.my_set_url && data.my_set_data) {
-                        if (app._myRequests[data.my_set_url] && app._myRequests[data.my_set_url][data.my_set_data]) {
-                            delete app._myRequests[data.my_set_url][data.my_set_data];
-                        }
-
-                    }
-                });
-                //save request in our object
-                if (!app._myRequests[myurl]) {
-                    app._myRequests[myurl] = {};
-                }
-                app._myRequests[myurl][mydata] = jqXHR;
-            }
+            _myRequests[myurl][mydata] = jqXHR;
         }
         else {
-            if (app.activeView) {
-                if (app.activeView._myRequests && app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata]) {
+            if (app._activeView) {
+                if (app._activeView._myRequests && app._activeView._myRequests[myurl] && app._activeView._myRequests[myurl][mydata]) {
                     jqXHR.abort_reason = "duplicate";
-                    jqXHR.abort(); //we already have same working request
+                    jqXHR.abort();
                 }
                 else {
                     jqXHR.always(function(data, textStatus, jqXHR1) {
-                        //if success jqxhr object is third, errored jqxhr object is in first parameter.
                         if (jqXHR1 && jqXHR1.my_set_url && jqXHR1.my_set_data) {
-                            if (app.activeView._myRequests[jqXHR1.my_set_url] && app.activeView._myRequests[jqXHR1.my_set_url][jqXHR1.my_set_data]) {
-                                delete app.activeView._myRequests[jqXHR1.my_set_url][jqXHR1.my_set_data];
+                            if (app._activeView._myRequests[jqXHR1.my_set_url] && app._activeView._myRequests[jqXHR1.my_set_url][jqXHR1.my_set_data]) {
+                                delete app._activeView._myRequests[jqXHR1.my_set_url][jqXHR1.my_set_data];
                             }
                         }
                         else if (data && data.my_set_url && data.my_set_data) {
-                            if (app.activeView._myRequests[data.my_set_url] && app.activeView._myRequests[data.my_set_url][data.my_set_data]) {
-                                delete app.activeView._myRequests[data.my_set_url][data.my_set_data];
+                            if (app._activeView._myRequests[data.my_set_url] && app._activeView._myRequests[data.my_set_url][data.my_set_data]) {
+                                delete app._activeView._myRequests[data.my_set_url][data.my_set_data];
                             }
                         }
                     });
-                    //save request in our object
-                    if (!app.activeView._myRequests[myurl]) {
-                        app.activeView._myRequests[myurl] = {};
+                    if (!app._activeView._myRequests[myurl]) {
+                        app._activeView._myRequests[myurl] = {};
                     }
-                    app.activeView._myRequests[myurl][mydata] = jqXHR;
+                    app._activeView._myRequests[myurl][mydata] = jqXHR;
                 }
             }
         }
