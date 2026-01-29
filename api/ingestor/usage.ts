@@ -401,7 +401,7 @@ function locFromGeocoder(params: IngestorParams, loc: LocationData): Promise<Loc
                 promise = geocoder.location(loc.city, loc.country);
             }
             else {
-                promise = Promise.resolve(undefined);
+                promise = Promise.resolve();
             }
             promise.then((data: GeocoderData | undefined) => {
                 loc.country = loc.country || (data && data.country && data.country.id);
@@ -464,8 +464,8 @@ const usage: IngestorUsageModule = {
      */
     setLocation: function(params: IngestorParams): Promise<void> {
         if ('tz' in params.qstring) {
-            params.user.tz = parseInt(params.qstring.tz as string);
-            if (isNaN(params.user.tz)) {
+            params.user.tz = Number.parseInt(params.qstring.tz as string);
+            if (Number.isNaN(params.user.tz)) {
                 delete params.user.tz;
             }
         }
@@ -481,10 +481,10 @@ const usage: IngestorUsageModule = {
                 if (params.qstring.location) {
                     const coords = params.qstring.location.split(',');
                     if (coords.length === 2) {
-                        const lat = parseFloat(coords[0]);
-                        const lon = parseFloat(coords[1]);
+                        const lat = Number.parseFloat(coords[0]);
+                        const lon = Number.parseFloat(coords[1]);
 
-                        if (!isNaN(lat) && !isNaN(lon)) {
+                        if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
                             loc.lat = lat;
                             loc.lon = lon;
                         }
@@ -560,7 +560,7 @@ const usage: IngestorUsageModule = {
             }
             if (params.qstring.metrics._app_version) {
                 params.qstring.metrics._app_version += "";
-                if (params.qstring.metrics._app_version.indexOf('.') === -1 && common.isNumber(params.qstring.metrics._app_version)) {
+                if (!params.qstring.metrics._app_version.includes('.') && common.isNumber(params.qstring.metrics._app_version)) {
                     params.qstring.metrics._app_version += ".0";
                 }
                 params.collectedMetrics[common.dbUserMap.app_version] = params.qstring.metrics._app_version;
@@ -707,7 +707,7 @@ const usage: IngestorUsageModule = {
         let lasts = (user.ls || 0) * 1000;
         const idsplit = (user.lsid || '').split("_");
         if (idsplit[3] && idsplit[3].length === 13) {
-            lasts = parseInt(idsplit[3], 10);
+            lasts = Number.parseInt(idsplit[3], 10);
         }
         drill_doc._id = params.app_id + "_" + (user as any).uid + "_" + user.lsid;
         if (lasts) {
@@ -752,8 +752,8 @@ const usage: IngestorUsageModule = {
             if (!params.app_user[common.dbUserMap.has_ongoing_session]) {
                 params.qstring.begin_session = true;
             }
-            session_duration = parseInt(params.qstring.session_duration as string);
-            const session_duration_limit = parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
+            session_duration = Number.parseInt(params.qstring.session_duration as string);
+            const session_duration_limit = Number.parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
             if (session_duration) {
                 if (session_duration_limit && session_duration > session_duration_limit) {
                     session_duration = session_duration_limit;
@@ -820,7 +820,7 @@ const usage: IngestorUsageModule = {
                     userProps[common.dbUserMap.last_seen] = params.time.timestamp;
                 }
                 else {
-                    if (parseInt(params.app_user[common.dbUserMap.last_seen] as string, 10) < (params.time.timestamp || 0)) {
+                    if (Number.parseInt(params.app_user[common.dbUserMap.last_seen] as string, 10) < (params.time.timestamp || 0)) {
                         userProps[common.dbUserMap.last_seen] = params.time.timestamp;
                     }
                 }
@@ -891,11 +891,11 @@ const usage: IngestorUsageModule = {
             }
         }
 
-        if (Object.keys(userProps).length) {
+        if (Object.keys(userProps).length > 0) {
             update.$set = userProps;
         }
 
-        if (Object.keys(update).length) {
+        if (Object.keys(update).length > 0) {
             ob.updates.push(update);
         }
         usage.processCoreMetrics(params); // Collects core metrics
@@ -913,8 +913,8 @@ const usage: IngestorUsageModule = {
         const config = plugins.getConfig("api", params.app && params.app.plugins, true);
 
         if (params.qstring.tz) {
-            const tz = parseInt(params.qstring.tz);
-            if (isNaN(tz)) {
+            const tz = Number.parseInt(params.qstring.tz);
+            if (Number.isNaN(tz)) {
                 userProps.tz = tz;
             }
         }
@@ -934,10 +934,10 @@ const usage: IngestorUsageModule = {
         if (params.qstring.location) {
             const coords = (params.qstring.location + "").split(',');
             if (coords.length === 2) {
-                const lat = parseFloat(coords[0]);
-                const lon = parseFloat(coords[1]);
+                const lat = Number.parseFloat(coords[0]);
+                const lon = Number.parseFloat(coords[1]);
 
-                if (!isNaN(lat) && !isNaN(lon)) {
+                if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
                     (userProps as any).loc = {
                         gps: true,
                         geo: {
@@ -1003,7 +1003,7 @@ const usage: IngestorUsageModule = {
                         userProps.cty = data.city;
                     }
 
-                    if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true && !(userProps as any).loc && typeof data.lat !== "undefined" && typeof data.lon !== "undefined") {
+                    if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true && !(userProps as any).loc && data.lat !== undefined && data.lon !== undefined) {
                         // only override lat/lon if no recent gps location exists in user document
                         if (!params.app_user.loc || (params.app_user.loc.gps && (params.time.mstimestamp || 0) - params.app_user.loc.date > 7 * 24 * 3600)) {
                             (userProps as any).loc = {
@@ -1034,7 +1034,7 @@ const usage: IngestorUsageModule = {
                             userProps.cty = data.city;
                         }
 
-                        if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true && !(userProps as any).loc && data.ll && typeof data.ll[0] !== "undefined" && typeof data.ll[1] !== "undefined") {
+                        if (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === true && !(userProps as any).loc && data.ll && data.ll[0] !== undefined && data.ll[1] !== undefined) {
                             // only override lat/lon if no recent gps location exists in user document
                             if (!params.app_user.loc || (params.app_user.loc.gps && (params.time.mstimestamp || 0) - params.app_user.loc.date > 7 * 24 * 3600)) {
                                 (userProps as any).loc = {
@@ -1080,7 +1080,7 @@ const usage: IngestorUsageModule = {
         if (params.qstring.metrics) {
             // Collect all metrics
             const up = usage.returnRequestMetrics(params);
-            if (Object.keys(up).length) {
+            if (Object.keys(up).length > 0) {
                 for (const key in up) {
                     userProps[key] = up[key];
                 }
@@ -1121,11 +1121,11 @@ const usage: IngestorUsageModule = {
             }
         }
 
-        if (Object.keys(userProps).length) {
+        if (Object.keys(userProps).length > 0) {
             update.$set = userProps;
         }
 
-        if (Object.keys(update).length) {
+        if (Object.keys(update).length > 0) {
             ob.updates.push(update);
         }
     }

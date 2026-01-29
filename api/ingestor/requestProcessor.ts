@@ -26,12 +26,31 @@ const countlyApi = {
     }
 };
 
-const eventsWithDefaultPlatformSegment = ["[CLY]_view", "[CLY]_action", "[CLY]_nps", "[CLY]_survey"];
+const eventsWithDefaultPlatformSegment = new Set(["[CLY]_view", "[CLY]_action", "[CLY]_nps", "[CLY]_survey"]);
 const escapedViewSegments: Record<string, boolean> = {
-    "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true,
-    "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true,
-    "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true,
-    "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true
+    "name": true,
+    "segment": true,
+    "height": true,
+    "width": true,
+    "y": true,
+    "x": true,
+    "visit": true,
+    "uvc": true,
+    "start": true,
+    "bounce": true,
+    "exit": true,
+    "type": true,
+    "view": true,
+    "domain": true,
+    "dur": true,
+    "_id": true,
+    "_idv": true,
+    "utm_source": true,
+    "utm_medium": true,
+    "utm_campaign": true,
+    "utm_term": true,
+    "utm_content": true,
+    "referrer": true
 };
 
 /**
@@ -546,7 +565,7 @@ function fillUserProperties(dbAppUser: AppUserDocument | null | undefined, meta_
             (dbAppUser as any).sdk_version = dbAppUser?.sdk?.version;
         }
 
-        if (typeof dbAppUser[shortRep] !== "undefined") {
+        if (dbAppUser[shortRep] !== undefined) {
             setType = countlyUP[i].type || "";
             if (meta_doc && meta_doc.up && meta_doc.up[i]) {
                 setType = meta_doc.up[i];
@@ -556,7 +575,7 @@ function fillUserProperties(dbAppUser: AppUserDocument | null | undefined, meta_
                 userProperties[i] = userProperties[i] + "";
             }
             else if (setType === 'n' && common.isNumber(userProperties[i])) {
-                userProperties[i] = parseFloat(userProperties[i] as string);
+                userProperties[i] = Number.parseFloat(userProperties[i] as string);
             }
         }
     }
@@ -584,8 +603,8 @@ function fillUserProperties(dbAppUser: AppUserDocument | null | undefined, meta_
                 tmpVal = (dbAppUser.custom as any)[i] + "";
             }
             else if (setType === "n" && common.isNumber((dbAppUser.custom as any)[i])) {
-                if ((dbAppUser.custom as any)[i].length && (dbAppUser.custom as any)[i].length <= 16) {
-                    tmpVal = parseFloat((dbAppUser.custom as any)[i]);
+                if ((dbAppUser.custom as any)[i].length > 0 && (dbAppUser.custom as any)[i].length <= 16) {
+                    tmpVal = Number.parseFloat((dbAppUser.custom as any)[i]);
                 }
                 else {
                     tmpVal = (dbAppUser.custom as any)[i];
@@ -619,8 +638,8 @@ function fillUserProperties(dbAppUser: AppUserDocument | null | undefined, meta_
                 tmpVal = (dbAppUser.cmp as any)[i] + "";
             }
             else if (common.isNumber((dbAppUser.cmp as any)[i])) {
-                if ((dbAppUser.cmp as any)[i].length && (dbAppUser.cmp as any)[i].length <= 16) {
-                    tmpVal = parseFloat((dbAppUser.cmp as any)[i]);
+                if ((dbAppUser.cmp as any)[i].length > 0 && (dbAppUser.cmp as any)[i].length <= 16) {
+                    tmpVal = Number.parseFloat((dbAppUser.cmp as any)[i]);
                 }
                 else {
                     tmpVal = (dbAppUser.cmp as any)[i];
@@ -667,12 +686,11 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
     const viewUpdate: Record<string, ViewUpdate> = {};
 
     if (events.length > 0) {
-        for (let i = 0; i < events.length; i++) {
-            const currEvent = events[i];
+        for (const [i, currEvent] of events.entries()) {
             if (!currEvent.key) {
                 continue;
             }
-            if (!currEvent.key || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalDrillEvents.indexOf(currEvent.key) === -1)) {
+            if (!currEvent.key || (currEvent.key.indexOf('[CLY]_') === 0 && !plugins.internalDrillEvents.includes(currEvent.key))) {
                 continue;
             }
 
@@ -682,19 +700,19 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
 
             const dbEventObject: DrillEventObject = {
                 "a": params.app_id + "",
-                "e": events[i].key,
+                "e": currEvent.key,
                 "cd": new Date(),
-                "ts": events[i].timestamp || Date.now().valueOf(),
+                "ts": currEvent.timestamp || Date.now().valueOf(),
                 "uid": params.app_user!.uid!,
                 "_uid": params.app_user!._id!,
                 "did": params.app_user!.did!
             };
 
             if (currEvent.key.indexOf('[CLY]_') === 0) {
-                dbEventObject.n = events[i].key;
+                dbEventObject.n = currEvent.key;
             }
             else {
-                dbEventObject.n = events[i].key;
+                dbEventObject.n = currEvent.key;
                 dbEventObject.e = "[CLY]_custom";
             }
             if (currEvent.name) {
@@ -706,12 +724,12 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
             }
             const upWithMeta = fillUserProperties(dbAppUser, params.app?.ovveridden_types?.prop as MetaDocument | undefined);
             dbEventObject[common.dbUserMap.device_id] = params.qstring?.device_id;
-            dbEventObject.lsid = events[i].lsid || dbAppUser?.lsid;
+            dbEventObject.lsid = currEvent.lsid || dbAppUser?.lsid;
             dbEventObject[common.dbEventMap.user_properties] = upWithMeta.up;
             dbEventObject.custom = upWithMeta.upCustom;
             dbEventObject.cmp = upWithMeta.upCampaign;
 
-            let eventKey = events[i].key;
+            let eventKey = currEvent.key;
             // Setting params depending on event
             if (eventKey === "[CLY]_session") {
                 dbEventObject._id = params.request_id;
@@ -726,26 +744,26 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
             }
 
             let time = params.time;
-            if (events[i].timestamp) {
-                time = common.initTimeObj(params.appTimezone, events[i].timestamp);
+            if (currEvent.timestamp) {
+                time = common.initTimeObj(params.appTimezone, currEvent.timestamp);
             }
-            if (events[i].cvid) {
-                dbEventObject.cvid = events[i].cvid;
-            }
-
-            if (events[i].pvid) {
-                dbEventObject.pvid = events[i].pvid;
+            if (currEvent.cvid) {
+                dbEventObject.cvid = currEvent.cvid;
             }
 
-            if (events[i].id) {
-                dbEventObject.id = events[i].id;
+            if (currEvent.pvid) {
+                dbEventObject.pvid = currEvent.pvid;
             }
 
-            if (events[i].peid) {
-                dbEventObject.peid = events[i].peid;
+            if (currEvent.id) {
+                dbEventObject.id = currEvent.id;
             }
 
-            if (eventsWithDefaultPlatformSegment.indexOf(eventKey) !== -1) {
+            if (currEvent.peid) {
+                dbEventObject.peid = currEvent.peid;
+            }
+
+            if (eventsWithDefaultPlatformSegment.has(eventKey)) {
                 if (upWithMeta.up && upWithMeta.up.p && !(currEvent.segmentation && (currEvent.segmentation as any).platform)) {
                     currEvent.segmentation = currEvent.segmentation || {};
                     (currEvent.segmentation as any).platform = upWithMeta.up.p;
@@ -753,8 +771,8 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
             }
             if (eventKey === "[CLY]_view" && currEvent && currEvent.segmentation && (currEvent.segmentation as any)._idv) {
                 dbEventObject._id = params.app_id + "_" + dbAppUser!.uid + "_" + (currEvent.segmentation as any)._idv;
-                if (!events[i].id) {
-                    events[i].id = (currEvent.segmentation as any)._idv;
+                if (!currEvent.id) {
+                    currEvent.id = (currEvent.segmentation as any)._idv;
                 }
             }
             if (eventKey === "[CLY]_consent") {
@@ -768,25 +786,25 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
             }
             timestamps[dbEventObject[common.dbEventMap.timestamp] as number] = true;
 
-            events[i].hour = (typeof events[i].hour !== "undefined") ? events[i].hour : params.qstring?.hour;
-            if (typeof events[i].hour !== "undefined") {
-                events[i].hour = parseInt(events[i].hour as unknown as string);
-                if (events[i].hour === 24) {
-                    events[i].hour = 0;
+            currEvent.hour = (currEvent.hour !== undefined) ? currEvent.hour : params.qstring?.hour;
+            if (currEvent.hour !== undefined) {
+                currEvent.hour = Number.parseInt(currEvent.hour as unknown as string);
+                if (currEvent.hour === 24) {
+                    currEvent.hour = 0;
                 }
-                if (events[i].hour! >= 0 && events[i].hour! < 24) {
-                    (upWithMeta.up as any).hour = events[i].hour;
+                if (currEvent.hour! >= 0 && currEvent.hour! < 24) {
+                    (upWithMeta.up as any).hour = currEvent.hour;
                 }
             }
 
-            events[i].dow = (typeof events[i].dow !== "undefined") ? events[i].dow : params.qstring?.dow;
-            if (typeof events[i].dow !== "undefined") {
-                events[i].dow = parseInt(events[i].dow as unknown as string);
-                if (events[i].dow === 0) {
-                    events[i].dow = 7;
+            currEvent.dow = (currEvent.dow !== undefined) ? currEvent.dow : params.qstring?.dow;
+            if (currEvent.dow !== undefined) {
+                currEvent.dow = Number.parseInt(currEvent.dow as unknown as string);
+                if (currEvent.dow === 0) {
+                    currEvent.dow = 7;
                 }
-                if (events[i].dow! > 0 && events[i].dow! <= 7) {
-                    (upWithMeta.up as any).dow = events[i].dow;
+                if (currEvent.dow! > 0 && currEvent.dow! <= 7) {
+                    (upWithMeta.up as any).dow = currEvent.dow;
                 }
             }
 
@@ -796,7 +814,7 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
                 for (const segKey in currEvent.segmentation) {
                     const segKeyAsFieldName = segKey.replace(/^\$|\./g, "");
 
-                    if (segKey === "" || segKeyAsFieldName === "" || (currEvent.segmentation as any)[segKey] === null || typeof (currEvent.segmentation as any)[segKey] === "undefined") {
+                    if (segKey === "" || segKeyAsFieldName === "" || (currEvent.segmentation as any)[segKey] === null || (currEvent.segmentation as any)[segKey] === undefined) {
                         continue;
                     }
                     let setType = "";
@@ -819,7 +837,7 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
                         }
                         else if (setType === "n") {
                             if (common.isNumber((currEvent.segmentation as any)[segKey])) {
-                                tmpSegVal = parseFloat((currEvent.segmentation as any)[segKey]);
+                                tmpSegVal = Number.parseFloat((currEvent.segmentation as any)[segKey]);
                             }
                             else {
                                 tmpSegVal = (currEvent.segmentation as any)[segKey];
@@ -839,15 +857,15 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
                 }
             }
             if (currEvent.sum && common.isNumber(currEvent.sum)) {
-                currEvent.sum = parseFloat(parseFloat(currEvent.sum as unknown as string).toFixed(5));
+                currEvent.sum = Number.parseFloat(Number.parseFloat(currEvent.sum as unknown as string).toFixed(5));
             }
 
             if (currEvent.dur && common.isNumber(currEvent.dur)) {
-                currEvent.dur = parseFloat(currEvent.dur as unknown as string);
+                currEvent.dur = Number.parseFloat(currEvent.dur as unknown as string);
             }
 
             if (currEvent.count && common.isNumber(currEvent.count)) {
-                currEvent.count = parseInt(currEvent.count as unknown as string, 10);
+                currEvent.count = Number.parseInt(currEvent.count as unknown as string, 10);
             }
             else {
                 currEvent.count = 1;
@@ -878,8 +896,8 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
     }
 
     if (drill_updates && drill_updates.length > 0) {
-        for (let z4 = 0; z4 < drill_updates.length; z4++) {
-            eventsToInsert.push(drill_updates[z4]);
+        for (const drill_update of drill_updates) {
+            eventsToInsert.push(drill_update);
         }
     }
 
@@ -918,7 +936,7 @@ plugins.register("/sdk/process_user", async function(ob: UsageObservable) {
  */
 const processRequestData = (ob: RequestObservable, done: () => void): void => {
     let update: Record<string, unknown> = {};
-    if (ob.params.app_user!.last_req !== ob.params.request_hash && ob.updates.length) {
+    if (ob.params.app_user!.last_req !== ob.params.request_hash && ob.updates.length > 0) {
         for (let i = 0; i < ob.updates.length; i++) {
             update = common.mergeQuery(update, ob.updates[i]);
         }
@@ -1021,7 +1039,7 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
             try {
                 params.qstring.metrics = JSON.parse(params.qstring.metrics);
             }
-            catch (SyntaxError) {
+            catch (e) {
                 console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
             }
         }
@@ -1062,7 +1080,7 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
                     try {
                         params.qstring.metrics = JSON.parse(params.qstring.metrics);
                     }
-                    catch (SyntaxError) {
+                    catch (ex) {
                         console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
                     }
                 }
@@ -1149,7 +1167,7 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
                     return;
                 }
             }
-            catch (err2) {
+            catch (error) {
                 common.returnMessage(params, 400, 'Cannot get app user');
                 params.cancelRequest = "Cannot get app user or no Database connection";
                 done();
@@ -1168,22 +1186,22 @@ const processBulkRequest = async function(requests: Record<string, unknown>[], p
     const appKey = params.qstring?.app_key;
     const skippedRequests: Record<string, unknown>[] = [];
 
-    for (let i = 0; i < requests.length; i++) {
-        if (!requests[i] || (!(requests[i] as any).app_key && !appKey) || !(requests[i] as any).device_id) {
+    for (const request of requests) {
+        if (!request || (!(request as any).app_key && !appKey) || !(request as any).device_id) {
             continue;
         }
         else {
-            (requests[i] as any).app_key = (requests[i] as any).app_key || appKey;
-            params.req.body = JSON.stringify(requests[i]);
+            (request as any).app_key = (request as any).app_key || appKey;
+            params.req.body = JSON.stringify(request);
             const tmpParams: RequestParams = {
                 'app_id': '',
                 'app_cc': '',
-                'ip_address': (requests[i] as any).ip_address || common.getIpAddress(params.req),
+                'ip_address': (request as any).ip_address || common.getIpAddress(params.req),
                 'user': {
-                    'country': (requests[i] as any).country_code || 'Unknown',
-                    'city': (requests[i] as any).city || 'Unknown'
+                    'country': (request as any).country_code || 'Unknown',
+                    'city': (request as any).city || 'Unknown'
                 },
-                'qstring': requests[i] as any,
+                'qstring': request as any,
                 'href': "/i",
                 'res': params.res,
                 'req': params.req,
@@ -1309,7 +1327,7 @@ const processRequest = (params: RequestParams): boolean | void => {
                 try {
                     params.qstring.events = JSON.parse(params.qstring.events);
                 }
-                catch (SyntaxError) {
+                catch (err) {
                     console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
                     params.qstring.events = [];
                 }
@@ -1329,7 +1347,7 @@ const processRequest = (params: RequestParams): boolean | void => {
                 try {
                     requests = JSON.parse(requests);
                 }
-                catch (SyntaxError) {
+                catch (err) {
                     console.log('Parse bulk JSON failed', requests, params.req.url, params.req.body);
                     requests = null;
                 }
