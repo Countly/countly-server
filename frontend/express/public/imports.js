@@ -7,6 +7,9 @@ import jQuery from 'jquery';
 window.jQuery = jQuery;
 window.$ = jQuery;
 
+import './javascripts/utils/jquery.i18n.properties.js';
+import './javascripts/utils/jquery.idle-timer.js';
+
 import underscore from 'underscore';
 window._ = underscore;
 

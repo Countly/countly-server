@@ -10,8 +10,7 @@
  *              by Keith Wood (kbwood{at}iinet.com.au) June 2007
  *
  *****************************************************************************/
-
-(function ($) {
+import $ from 'jquery';
   $.i18n = {};
 
   /** Map holding bundle keys (if mode: 'map') */
@@ -538,4 +537,3 @@
     return cbSplit(this, separator, limit);
   };
 
-})(jQuery);
