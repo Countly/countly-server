@@ -58,7 +58,8 @@ check.forEach(function(c) {
     var exceptional = true;
     var db = clyCollections.indexOf(c) === -1 ? drill : cly,
         dbName = clyCollections.indexOf(c) === -1 ? COUNTLY_DRILL : COUNTLY,
-        count = db[c].count(),
+        //count = db[c].count(), -- This is deprecated in mongo version >6
+        count = db[c].countDocuments({});
         capped = db[c].stats()['capped'];
 
     COUNTLY_TO_SHARD.some((e) => {
