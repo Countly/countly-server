@@ -31,13 +31,31 @@ import "./imports.js";
 // All legacy scripts share the same scope and can access each other's variables
 import 'virtual:legacy-concat';
 
+// Component imports
 import ClyStatusBadge from './javascripts/components/cly-status-badge.vue';
 import ClyTabs from './javascripts/components/nav/cly-tabs.vue';
 import ClyDynamicTabs from './javascripts/components/nav/cly-dynamic-tabs.vue';
 
+// Form component imports
+import ClyForm from './javascripts/components/form/cly-form.vue';
+import ClyFormStep from './javascripts/components/form/cly-form-step.vue';
+import ClyFormField from './javascripts/components/form/cly-form-field.vue';
+import ClyFormFieldGroup from './javascripts/components/form/cly-form-field-group.vue';
+import ClyInlineFormField from './javascripts/components/form/cly-inline-form-field.vue';
+import ClyFormFieldChecklistbox from './javascripts/components/form/cly-form-field-checklistbox.vue';
+
+// Register components globally
 window.Vue.component('cly-status-badge', ClyStatusBadge);
 window.Vue.component('cly-tabs', ClyTabs);
 window.Vue.component('cly-dynamic-tabs', ClyDynamicTabs);
+
+// Register form components globally
+window.Vue.component('cly-form', ClyForm);
+window.Vue.component('cly-form-step', ClyFormStep);
+window.Vue.component('cly-form-field', ClyFormField);
+window.Vue.component('cly-form-field-group', ClyFormFieldGroup);
+window.Vue.component('cly-inline-form-field', ClyInlineFormField);
+window.Vue.component('cly-form-field-checklistbox', ClyFormFieldChecklistbox);
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW

@@ -10,6 +10,7 @@ import countlyGlobal from '../countly.global';
 import store from 'storejs';
 import VueECharts from 'vue-echarts';
 import "echarts";
+import { BufferedObjectMixin, MultiStepFormMixin } from '../../components/form/mixins.js'; // TO-DO: remove this dependency when drawer form is modularized.
 
 Vue.use(Vuex);
 Vue.component('echarts', VueECharts);
@@ -369,6 +370,8 @@ export const mixins = {
         widget: DashboardsWidgetMixin,
         global: DashboardsGlobalMixin
     },
+    'BufferedObject': BufferedObjectMixin, // TO-DO: remove this dependency when drawer form is modularized.
+    'MultiStepForm': MultiStepFormMixin, // TO-DO: remove this dependency when drawer form is modularized.
 };
 
 const _globalVuexStore = new Vuex.Store({
