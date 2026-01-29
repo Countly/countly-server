@@ -36,7 +36,8 @@
         "strict": true,
         "noEmit": true,
         "allowImportingTsExtensions": true,
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext"
+        "target": "esnext",
+        "module": "esnext",
+        "moduleResolution": "bundler"
     }
 }
