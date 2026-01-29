@@ -7,7 +7,7 @@ const {Cacher} = require('./parts/data/cacher.js');
 const QueryRunner = require('./parts/data/QueryRunner.js');
 //Core aggregators
 require("./init_configs.js");
-require('./aggregator/processing.js');
+require('./aggregator/processing.ts');
 var t = ["countly:", "aggregator"];
 t.push("node");
 

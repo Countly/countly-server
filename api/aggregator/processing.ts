@@ -2,8 +2,7 @@
  * File contains core data aggregators
  */
 
-import type { DrillEvent, EventToken, DrillMetaUpdate } from '../../types/processing';
-import type { AggregatorUsageModule } from '../../types/aggregatorUsage';
+import type { AggregatorUsageModule } from './usage.ts';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -12,6 +11,73 @@ const common = require('../utils/common.js');
 const plugins = require('../../plugins/pluginManager.ts');
 /** @type {AggregatorUsageModule} */
 const usage: AggregatorUsageModule = require('./usage.ts').default;
+
+/**
+ * Drill event structure from MongoDB change stream
+ */
+export interface DrillEvent {
+    /** Internal document ID */
+    __iid?: string;
+    /** Creation date */
+    cd?: Date;
+    /** App ID */
+    a: string;
+    /** Event type */
+    e: string;
+    /** Event name (for custom events) */
+    n?: string;
+    /** Timestamp */
+    ts: number;
+    /** Count */
+    c?: number;
+    /** Sum */
+    s?: number;
+    /** Duration */
+    dur?: number;
+    /** Device ID */
+    did?: string;
+    /** Segmentation data */
+    sg?: Record<string, unknown>;
+    /** User properties */
+    up?: Record<string, unknown>;
+    /** Extra user properties (e.g., view count) */
+    up_extra?: {
+        vc?: number | string;
+        [key: string]: unknown;
+    };
+    /** Custom properties */
+    custom?: Record<string, unknown>;
+    /** Campaign data */
+    cmp?: Record<string, unknown>;
+}
+
+/**
+ * Token from event source for tracking processing state
+ */
+export interface EventToken {
+    /** Creation date marker */
+    cd?: Date;
+    /** Resume token */
+    resumeToken?: unknown;
+}
+
+/**
+ * Drill meta update structure
+ */
+export interface DrillMetaUpdate {
+    /** Document ID */
+    _id: string;
+    /** App ID */
+    app_id: string;
+    /** Event name */
+    e: string;
+    /** Document type */
+    type: string;
+    /** Last timestamp */
+    lts?: number;
+    /** Segmentation types */
+    [key: string]: unknown;
+}
 const moment = require('moment');
 const log = require('../utils/log.js')('aggregator-core:api');
 const {WriteBatcher} = require('../parts/data/batcher.js');
