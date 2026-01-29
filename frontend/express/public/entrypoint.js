@@ -44,6 +44,9 @@ import ClyFormFieldGroup from './javascripts/components/form/cly-form-field-grou
 import ClyInlineFormField from './javascripts/components/form/cly-inline-form-field.vue';
 import ClyFormFieldChecklistbox from './javascripts/components/form/cly-form-field-checklistbox.vue';
 
+// Drawer component imports
+import ClyDrawer from './javascripts/components/drawer/cly-drawer.vue';
+
 // Register components globally
 window.Vue.component('cly-status-badge', ClyStatusBadge);
 window.Vue.component('cly-tabs', ClyTabs);
@@ -56,6 +59,9 @@ window.Vue.component('cly-form-field', ClyFormField);
 window.Vue.component('cly-form-field-group', ClyFormFieldGroup);
 window.Vue.component('cly-inline-form-field', ClyInlineFormField);
 window.Vue.component('cly-form-field-checklistbox', ClyFormFieldChecklistbox);
+
+// Register drawer components globally
+window.Vue.component('cly-drawer', ClyDrawer);
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW

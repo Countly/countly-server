@@ -91,7 +91,7 @@ const legacyScripts = [
     'javascripts/countly/vue/components/content.js',
     'javascripts/countly/vue/components/datatable.js',
     'javascripts/countly/vue/components/dialog.js',
-    'javascripts/countly/vue/components/drawer.js',
+    // 'javascripts/countly/vue/components/drawer.js', // DELETE.
     'core/notes/javascripts/countly.models.js',
     'core/notes/javascripts/countly.common.notes.js',
     'javascripts/countly/vue/components/vis.js',
