@@ -1,5 +1,3 @@
-/* global  app, countlyAuth */
-
 import jQuery from 'jquery';
 import countlyCommon from '../countly.common';
 import Vue from 'vue';
@@ -12,6 +10,13 @@ import VueECharts from 'vue-echarts';
 import "echarts";
 import { BufferedObjectMixin, MultiStepFormMixin } from '../../components/form/mixins.js'; // TO-DO: remove this dependency when drawer form is modularized.
 import { ModalMixin, hasDrawersMixin, hasDrawersMethodsMixin } from '../../components/drawer/mixins.js'; // TO-DO: remove this dependency when drawer form is modularized in plugins
+import {
+    validateCreate,
+    validateRead,
+    validateUpdate,
+    validateDelete,
+    validateGlobalAdmin
+} from '../countly.auth';
 
 Vue.use(Vuex);
 Vue.component('echarts', VueECharts);
@@ -42,7 +47,11 @@ export const autoRefreshMixin = {
     }
 };
 
-export const i18n = function() {
+/**
+ * i18n - internationalization function that works with multiple arguments
+ * @returns {string} - Translated string or key if translation not found
+ */
+export function i18n() {
     var appType = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
     let args = arguments || [];
     if (args.length === 1) { //single arg. use map
@@ -57,16 +66,19 @@ export const i18n = function() {
             // Key miss
             return jQuery.i18n.prop.apply(null, args);
         }
-        else {
-            // Key hit
-            var argsCopy = Array.prototype.slice.call(args);
-            argsCopy[0] = appType + "." + key;
-            return jQuery.i18n.prop.apply(null, argsCopy);
-        }
+        // Key hit
+        var argsCopy = Array.prototype.slice.call(args);
+        argsCopy[0] = appType + "." + key;
+        return jQuery.i18n.prop.apply(null, argsCopy);
     }
-};
+}
 
-export const i18nM = function(key) {
+/**
+ * i18nM - internationalization function that works with keys only
+ * @param {string} key - i18n key
+ * @returns {string} - Translated string or key if translation not found
+ */
+export function i18nM(key) {
     var appType = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
     if (!appType || appType === "mobile") {
         return jQuery.i18n.map[key] || key;
@@ -74,7 +86,7 @@ export const i18nM = function(key) {
     else {
         return jQuery.i18n.map[appType + "." + key] || jQuery.i18n.map[key] || key;
     }
-};
+}
 
 export const ajax = function(request, options) {
     options = options || {};
@@ -87,7 +99,7 @@ export const ajax = function(request, options) {
                 logout();
             }
             if (jqXHR.abort_reason === "duplicate" || (jqXHR.statusText !== "abort" && jqXHR.statusText !== "canceled")) {
-                app.activeView.onError(jqXHR);
+                window.app.activeView.onError(jqXHR);
             }
         });
     }
@@ -116,19 +128,19 @@ export const authMixin = function(featureName) {
         // using helper function checkAuthArray to act as a 'or' returns true if atleast one feature is validated else false
         computed: {
             canUserCreate: function() {
-                return checkAuthArray(countlyAuth.validateCreate);
+                return checkAuthArray(validateCreate);
             },
             canUserRead: function() {
-                return checkAuthArray(countlyAuth.validateRead);
+                return checkAuthArray(validateRead);
             },
             canUserUpdate: function() {
-                return checkAuthArray(countlyAuth.validateUpdate);
+                return checkAuthArray(validateUpdate);
             },
             canUserDelete: function() {
-                return checkAuthArray(countlyAuth.validateDelete);
+                return checkAuthArray(validateDelete);
             },
             isUserGlobalAdmin: function() {
-                return countlyAuth.validateGlobalAdmin();
+                return validateGlobalAdmin();
             }
         }
     };
@@ -607,7 +619,7 @@ const _globalVuexStore = new Vuex.Store({
 });
 
 jQuery(document).ready(function() {
-    app.addAppSwitchCallback(function(appId) {
+    window.app.addAppSwitchCallback(function(appId) {
         _globalVuexStore.dispatch("countlyCommon/updateActiveApp", appId);
     });
 });

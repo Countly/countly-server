@@ -85,3 +85,11 @@ window.countlyLocation = countlyLocation;
 import countlyVue from './javascripts/countly/vue/core.js';
 window.countlyVue = countlyVue;
 window.CV = countlyVue;
+
+import * as countlyVueContainer from './javascripts/countly/vue/container.js';
+window.countlyVue.container = countlyVueContainer;
+
+import * as countlyTemplate from './javascripts/countly/countly.template.js';
+window.countlyTemplate = countlyTemplate;
+window.app = countlyTemplate.app;
+window.AppRouter = countlyTemplate.AppRouter;

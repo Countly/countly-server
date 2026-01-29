@@ -8,6 +8,8 @@ import vue from '@vitejs/plugin-vue2';
 const __filename = fileURLToPath(import.meta.url); // eslint-disable-line
 const __dirname = path.dirname(__filename);
 
+// TODO: a separate build for prelogin files
+
 // List of legacy scripts in exact order from dashboard.html
 // These will be concatenated into a single scope
 const legacyScripts = [
@@ -76,8 +78,8 @@ const legacyScripts = [
     // 'javascripts/countly/countly.version.history.js',
     // 'javascripts/countly/countly.view.js',
     // 'javascripts/countly/vue/core.js',
-    'javascripts/countly/vue/container.js',
-    'javascripts/countly/countly.template.js',
+    // 'javascripts/countly/vue/container.js',
+    // 'javascripts/countly/countly.template.js',
     'javascripts/countly/vue/helpers.js',
     'javascripts/countly/vue/data/vuex.js',
     'javascripts/countly/countly.task.manager.js',
