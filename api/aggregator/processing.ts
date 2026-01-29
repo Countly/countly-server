@@ -7,12 +7,12 @@ import type { AggregatorUsageModule } from '../../types/aggregatorUsage';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
-var common = require('../utils/common.js');
+const common = require('../utils/common.js');
 //const { DataBatchReader } = require('../parts/data/dataBatchReader');
 const plugins = require('../../plugins/pluginManager.ts');
 /** @type {AggregatorUsageModule} */
-var usage: AggregatorUsageModule = require('./usage.ts').default;
-var moment = require('moment');
+const usage: AggregatorUsageModule = require('./usage.ts').default;
+const moment = require('moment');
 const log = require('../utils/log.js')('aggregator-core:api');
 const {WriteBatcher} = require('../parts/data/batcher.js');
 const {Cacher} = require('../parts/data/cacher.js');
@@ -21,14 +21,14 @@ const {preset} = require('../lib/countly.preset.js');
 const UnifiedEventSource = require('../eventSource/UnifiedEventSource.js');
 //dataviews = require('./parts/data/dataviews.js');
 
-var crypto = require('crypto');
+const crypto = require('crypto');
 
 (function() {
-    var loaded_configs_time = 0;
+    let loaded_configs_time = 0;
     const reloadConfig = function(): Promise<void> {
         return new Promise(function(resolve) {
-            var my_time = Date.now();
-            var reload_configs_after = common.config.reloadConfigAfter || 10000;
+            const my_time = Date.now();
+            const reload_configs_after = common.config.reloadConfigAfter || 10000;
             //once in minute
             if (loaded_configs_time === 0 || (my_time - loaded_configs_time) >= reload_configs_after) {
                 plugins.loadConfigs(common.db, () => {
@@ -48,7 +48,7 @@ var crypto = require('crypto');
      * @returns - The determined type ('l' for list, 'a' for array, 'n' for number, 'd' for date).
      */
     function determineType(value: any): 'l' | 'a' | 'n' | 'd' {
-        var type: 'l' | 'a' | 'n' | 'd' = "l";
+        let type: 'l' | 'a' | 'n' | 'd' = "l";
         if (Array.isArray(value)) {
             type = "a";
         }
@@ -132,13 +132,13 @@ var crypto = require('crypto');
                  */
                 async(token: EventToken, events: DrillEvent[]) => {
                     if (events && Array.isArray(events)) {
-                        for (var k = 0; k < events.length; k++) {
-                            if (events[k].e === "[CLY]_session_begin" && events[k].a) {
+                        for (const event of events) {
+                            if (event.e === "[CLY]_session_begin" && event.a) {
                                 try {
-                                    var app = await common.readBatcher.getOne("apps", common.db.ObjectID(events[k].a));
+                                    const app = await common.readBatcher.getOne("apps", common.db.ObjectID(event.a));
                                     //record event totals in aggregated data
                                     if (app) {
-                                        await usage.processSessionFromStream(token, events[k] as any, {"app_id": events[k].a, "app": app, "time": common.initTimeObj(app.timezone, events[k].ts), "appTimezone": (app.timezone || "UTC")});
+                                        await usage.processSessionFromStream(token, event as any, {"app_id": event.a, "app": app, "time": common.initTimeObj(app.timezone, event.ts), "appTimezone": (app.timezone || "UTC")});
                                     }
                                 }
                                 catch (ex) {
@@ -157,7 +157,7 @@ var crypto = require('crypto');
 
 
     plugins.register("/aggregator", async function() {
-        var writeBatcher = new WriteBatcher(common.db, true);
+        const writeBatcher = new WriteBatcher(common.db, true);
 
         const eventSource = new UnifiedEventSource('session-updates', {
             mongo: {
@@ -181,16 +181,16 @@ var crypto = require('crypto');
                  */
                 async(token: EventToken, events: DrillEvent[]) => {
                     if (events && Array.isArray(events)) {
-                        for (var k = 0; k < events.length; k++) {
-                            if (events[k].e === "[CLY]_session" && events[k].a) {
+                        for (const event of events) {
+                            if (event.e === "[CLY]_session" && event.a) {
                                 try {
-                                    var app = await common.readBatcher.getOne("apps", common.db.ObjectID(events[k].a));
+                                    const app = await common.readBatcher.getOne("apps", common.db.ObjectID(event.a));
                                     //record event totals in aggregated data
                                     if (app) {
-                                        var dur = 0;
-                                        dur = events[k].dur || 0;
-                                        await usage.processSessionDurationRange(writeBatcher, token, dur, events[k].did!, {"app_id": events[k].a, "app": app, "time": common.initTimeObj(app.timezone, events[k].ts), "appTimezone": (app.timezone || "UTC")});
-                                        await usage.processViewCount(writeBatcher, token, events[k]?.up_extra?.vc, events[k].did!, {"app_id": events[k].a, "app": app, "time": common.initTimeObj(app.timezone, events[k].ts), "appTimezone": (app.timezone || "UTC")});
+                                        let dur = 0;
+                                        dur = event.dur || 0;
+                                        await usage.processSessionDurationRange(writeBatcher, token, dur, event.did!, {"app_id": event.a, "app": app, "time": common.initTimeObj(app.timezone, event.ts), "appTimezone": (app.timezone || "UTC")});
+                                        await usage.processViewCount(writeBatcher, token, event?.up_extra?.vc, event.did!, {"app_id": event.a, "app": app, "time": common.initTimeObj(app.timezone, event.ts), "appTimezone": (app.timezone || "UTC")});
 
                                     }
                                 }
@@ -210,7 +210,7 @@ var crypto = require('crypto');
 
     //Processing event meta
     plugins.register("/aggregator", async function() {
-        var drillMetaCache = new Cacher(common.drillDb, {configs_db: common.db}); //Used for Apps info
+        const drillMetaCache = new Cacher(common.drillDb, {configs_db: common.db}); //Used for Apps info
         const eventSource = new UnifiedEventSource('drill-meta', {
             mongo: {
                 db: common.drillDb,
@@ -247,53 +247,53 @@ var crypto = require('crypto');
                     if (events && Array.isArray(events)) {
                         await reloadConfig(); //reloads configs if needed.
                         // Process each event in the batch
-                        var updates: Record<string, DrillMetaUpdate> = {};
+                        const updates: Record<string, DrillMetaUpdate> = {};
                         //Should sort before by event
-                        for (var z = 0; z < events.length; z++) {
-                            if (events[z].a && events[z].e) {
-                                if (events[z].e === "[CLY]_property_update") {
+                        for (const event of events) {
+                            if (event.a && event.e) {
+                                if (event.e === "[CLY]_property_update") {
                                     continue;
                                 }
-                                if (events[z].e === "[CLY]_custom") {
-                                    events[z].e = events[z].n!;
+                                if (event.e === "[CLY]_custom") {
+                                    event.e = event.n!;
                                 }
-                                if (events[z].e === "[CLY]_view_update") {
-                                    events[z].e = "[CLY]_view";
+                                if (event.e === "[CLY]_view_update") {
+                                    event.e = "[CLY]_view";
                                 }
-                                if (events[z].e === "[CLY]_session_begin") {
-                                    events[z].e = "[CLY]_session";
+                                if (event.e === "[CLY]_session_begin") {
+                                    event.e = "[CLY]_session";
                                 }
-                                let event_hash = crypto.createHash("sha1").update(events[z].e + events[z].a).digest("hex");
-                                var meta = await drillMetaCache.getOne("drill_meta", {_id: events[z].a + "_meta_" + event_hash});
-                                var app_id = events[z].a;
+                                const event_hash = crypto.createHash("sha1").update(event.e + event.a).digest("hex");
+                                let meta = await drillMetaCache.getOne("drill_meta", {_id: event.a + "_meta_" + event_hash});
+                                const app_id = event.a;
                                 if ((!meta || !meta._id) && !updates[app_id + "_meta_" + event_hash]) {
-                                    var lts = Date.now();
+                                    const lts = Date.now();
                                     updates[app_id + "_meta_" + event_hash] = {
                                         _id: app_id + "_meta_" + event_hash,
-                                        app_id: events[z].a,
-                                        e: events[z].e,
+                                        app_id: event.a,
+                                        e: event.e,
                                         type: "e",
                                         lts: lts
                                     };
                                     meta = {
                                         _id: app_id + "_meta_" + event_hash,
-                                        app_id: events[z].a,
-                                        e: events[z].e,
+                                        app_id: event.a,
+                                        e: event.e,
                                         type: "e",
                                         lts: lts
                                     };
                                 }
 
                                 if (!meta.lts || moment(Date.now()).isAfter(moment(meta.lts), 'day')) {
-                                    var lts2 = Date.now();
+                                    const lts2 = Date.now();
                                     updates[app_id + "_meta_" + event_hash] = updates[app_id + "_meta_" + event_hash] || {} as DrillMetaUpdate;
                                     updates[app_id + "_meta_" + event_hash].lts = lts2;
                                     meta.lts = lts2;
                                 }
-                                for (var sgk in events[z].sg) {
+                                for (const sgk in event.sg) {
                                     if (!meta.sg || !meta.sg[sgk]) {
                                         meta.sg = meta.sg || {};
-                                        var type = determineType(events[z].sg![sgk]);
+                                        const type = determineType(event.sg![sgk]);
                                         meta.sg[sgk] = {
                                             type: type
                                         };
@@ -302,37 +302,37 @@ var crypto = require('crypto');
                                     }
                                 }
 
-                                if (events[z].e === "[CLY]_session" || events[z].e === "[CLY]_session_begin") {
-                                    var meta_up = await drillMetaCache.getOne("drill_meta", {_id: events[z].a + "_meta_up"});
+                                if (event.e === "[CLY]_session" || event.e === "[CLY]_session_begin") {
+                                    let meta_up = await drillMetaCache.getOne("drill_meta", {_id: event.a + "_meta_up"});
                                     if ((!meta_up || !meta_up._id) && !updates[app_id + "_meta_up"]) {
                                         updates[app_id + "_meta_up"] = {
                                             _id: app_id + "_meta_up",
-                                            app_id: events[z].a,
+                                            app_id: event.a,
                                             e: "up",
                                             type: "up"
                                         };
                                         meta_up = {
                                             _id: app_id + "_meta_up",
-                                            app_id: events[z].a,
+                                            app_id: event.a,
                                             e: "up",
                                             type: "up"
                                         };
                                     }
-                                    var groups: Array<'up' | 'cmp' | 'custom'> = ["up", "cmp", "custom"];
-                                    for (var p = 0; p < groups.length; p++) {
-                                        if (events[z][groups[p]]) {
-                                            for (var key in events[z][groups[p]]) {
-                                                if (!meta_up[groups[p]] || !meta_up[groups[p]][key]) {
-                                                    meta_up[groups[p]] = meta_up[groups[p]] || {};
-                                                    if (preset[groups[p]] && preset[groups[p]][key]) {
-                                                        meta_up[groups[p]][key] = {type: preset[groups[p]][key].type};
+                                    const groups: Array<'up' | 'cmp' | 'custom'> = ["up", "cmp", "custom"];
+                                    for (const group of groups) {
+                                        if (event[group]) {
+                                            for (const key in event[group]) {
+                                                if (!meta_up[group] || !meta_up[group][key]) {
+                                                    meta_up[group] = meta_up[group] || {};
+                                                    if (preset[group] && preset[group][key]) {
+                                                        meta_up[group][key] = {type: preset[group][key].type};
                                                     }
                                                     else {
-                                                        meta_up[groups[p]][key] = {type: determineType(events[z][groups[p]]![key])};
+                                                        meta_up[group][key] = {type: determineType(event[group]![key])};
                                                     }
 
                                                     updates[app_id + "_meta_up"] = updates[app_id + "_meta_up"] || {} as DrillMetaUpdate;
-                                                    updates[app_id + "_meta_up"][groups[p] + "." + key + ".type"] = meta_up[groups[p]][key].type;
+                                                    updates[app_id + "_meta_up"][group + "." + key + ".type"] = meta_up[group][key].type;
                                                 }
                                             }
                                         }

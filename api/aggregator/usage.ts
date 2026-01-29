@@ -5,12 +5,14 @@
 
 import type { StreamToken, AggregatorParams, AggregatedEvent, StreamEvent, MetricDefinition, PredefinedMetricsGroup, UserProperties, AggregatorUsageModule } from '../../types/aggregatorUsage';
 import type { WriteBatcher } from '../../types/batcher';
+import { createRequire } from 'module';
 
-var common = require('./../utils/common.js');
-var plugins = require('./../../plugins/pluginManager.ts');
-var async = require('async');
-var crypto = require('crypto');
-var moment = require('moment-timezone');
+const require = createRequire(import.meta.url);
+const common = require('./../utils/common.js');
+const plugins = require('./../../plugins/pluginManager.ts');
+const async = require('async');
+const crypto = require('crypto');
+const moment = require('moment-timezone');
 
 var usage: AggregatorUsageModule = {
     /**
@@ -26,13 +28,13 @@ var usage: AggregatorUsageModule = {
         if (plugins.isPluginEnabled("views") && vc) {
             if (!common.isNumber(vc)) {
                 try {
-                    vc = parseInt(vc as string, 10);
+                    vc = Number.parseInt(vc as string, 10);
                 }
                 catch (ex) {
                     return;
                 }
             }
-            var ranges = [
+            let ranges = [
                     [0, 2],
                     [3, 5],
                     [6, 10],
@@ -52,8 +54,8 @@ var usage: AggregatorUsageModule = {
                 calculatedRange = (ranges.length) + '';
             }
             else {
-                for (var i = 0; i < ranges.length; i++) {
-                    if ((vc as number) <= ranges[i][1] && (vc as number) >= ranges[i][0]) {
+                for (const [i, range] of ranges.entries()) {
+                    if ((vc as number) <= range[1] && (vc as number) >= range[0]) {
                         calculatedRange = i + '';
                         break;
                     }
@@ -63,9 +65,9 @@ var usage: AggregatorUsageModule = {
             monthObjUpdate.push('vc.' + calculatedRange!);
             common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
             common.fillTimeObjectZero(params, updateUsersZero, 'vc.' + calculatedRange!);
-            var postfix = common.crypto.createHash("md5").update(did).digest('base64')[0];
+            const postfix = common.crypto.createHash("md5").update(did).digest('base64')[0];
             writeBatcher.add('users', params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers}, "countly", {token: token});
-            var update: Record<string, any> = {'$inc': updateUsersZero, '$set': {}};
+            const update: Record<string, any> = {'$inc': updateUsersZero, '$set': {}};
             update.$set['meta_v2.v-ranges.' + calculatedRange!] = true;
             writeBatcher.add('users', params.app_id + "_" + dbDateIds.zero + "_" + postfix, update, "countly", {token: token});
         }
@@ -82,7 +84,7 @@ var usage: AggregatorUsageModule = {
      * @returns Resolves when processing is complete
      */
     processSessionDurationRange: async function(writeBatcher: WriteBatcher, token: StreamToken, totalSessionDuration: number, did: string, params: AggregatorParams): Promise<void> {
-        var durationRanges = [
+        let durationRanges = [
                 [0, 10],
                 [11, 30],
                 [31, 60],
@@ -102,8 +104,8 @@ var usage: AggregatorUsageModule = {
             calculatedDurationRange = (durationRanges.length) + '';
         }
         else {
-            for (var i = 0; i < durationRanges.length; i++) {
-                if (totalSessionDuration <= durationRanges[i][1] && totalSessionDuration >= durationRanges[i][0]) {
+            for (const [i, durationRange] of durationRanges.entries()) {
+                if (totalSessionDuration <= durationRange[1] && totalSessionDuration >= durationRange[0]) {
                     calculatedDurationRange = i + '';
                     break;
                 }
@@ -115,9 +117,9 @@ var usage: AggregatorUsageModule = {
         monthObjUpdate.push(common.dbMap.durations + '.' + calculatedDurationRange!);
         common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
         common.fillTimeObjectZero(params, updateUsersZero, common.dbMap.durations + '.' + calculatedDurationRange!);
-        var postfix = common.crypto.createHash("md5").update(did).digest('base64')[0];
+        const postfix = common.crypto.createHash("md5").update(did).digest('base64')[0];
         writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
-        var update: Record<string, any> = {
+        const update: Record<string, any> = {
             '$inc': updateUsersZero,
             '$set': {"a": params.app_id + "", "m": dbDateIds.zero}
         };
@@ -134,7 +136,7 @@ var usage: AggregatorUsageModule = {
      */
     processSessionFromStream: async function(token: StreamToken, currEvent: StreamEvent, params: AggregatorParams): Promise<void> {
         currEvent.up = currEvent.up || {};
-        var updateUsersZero: Record<string, any> = {},
+        let updateUsersZero: Record<string, any> = {},
             updateUsersMonth: Record<string, any> = {},
             usersMeta: Record<string, any> = {},
             sessionFrequency = [
@@ -165,7 +167,7 @@ var usage: AggregatorUsageModule = {
         if (currEvent.sg && currEvent.sg.prev_session) {
             //user had session before
             if (currEvent.sg.prev_start) {
-                var userLastSeenTimestamp = currEvent.sg.prev_start,
+                const userLastSeenTimestamp = currEvent.sg.prev_start,
                     currDate = common.getDate(currEvent.ts, params.appTimezone),
                     userLastSeenDate = common.getDate(userLastSeenTimestamp, params.appTimezone),
                     secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
@@ -179,14 +181,14 @@ var usage: AggregatorUsageModule = {
             }*/
 
                 // Calculate the frequency range of the user
-                var ts_sec = currEvent.ts / 1000;
+                const ts_sec = currEvent.ts / 1000;
                 if ((ts_sec - userLastSeenTimestamp) >= (sessionFrequencyMax * 60 * 60)) {
                     calculatedFrequency = sessionFrequency.length + '';
                 }
                 else {
-                    for (let i = 0; i < sessionFrequency.length; i++) {
-                        if ((ts_sec - userLastSeenTimestamp) < (sessionFrequency[i][1] * 60 * 60) &&
-                            (ts_sec - userLastSeenTimestamp) >= (sessionFrequency[i][0] * 60 * 60)) {
+                    for (const [i, element] of sessionFrequency.entries()) {
+                        if ((ts_sec - userLastSeenTimestamp) < (element[1] * 60 * 60) &&
+                            (ts_sec - userLastSeenTimestamp) >= (element[0] * 60 * 60)) {
                             calculatedFrequency = (i + 1) + '';
                             break;
                         }
@@ -195,7 +197,7 @@ var usage: AggregatorUsageModule = {
 
                 //if for some reason we received past data lesser than last session timestamp
                 //we can't calculate frequency for that part
-                if (typeof calculatedFrequency !== "undefined") {
+                if (calculatedFrequency !== undefined) {
                     zeroObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
                     monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
                     usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
@@ -252,18 +254,18 @@ var usage: AggregatorUsageModule = {
         common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate);
         common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate);
 
-        var postfix = common.crypto.createHash("md5").update(currEvent.did).digest('base64')[0];
-        if (Object.keys(updateUsersZero).length || Object.keys(usersMeta).length) {
+        const postfix = common.crypto.createHash("md5").update(currEvent.did).digest('base64')[0];
+        if (Object.keys(updateUsersZero).length > 0 || Object.keys(usersMeta).length > 0) {
             usersMeta.m = dbDateIds.zero;
             usersMeta.a = params.app_id + "";
-            var updateObjZero: Record<string, any> = {$set: usersMeta};
+            const updateObjZero: Record<string, any> = {$set: usersMeta};
 
-            if (Object.keys(updateUsersZero).length) {
+            if (Object.keys(updateUsersZero).length > 0) {
                 updateObjZero.$inc = updateUsersZero;
             }
             common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, updateObjZero, "countly", {token: token});
         }
-        if (Object.keys(updateUsersMonth).length) {
+        if (Object.keys(updateUsersMonth).length > 0) {
             common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {
                 $set: {
                     m: dbDateIds.month,
@@ -283,22 +285,22 @@ var usage: AggregatorUsageModule = {
      * @returns Resolves when processing is complete
      */
     processEventTotalsFromAggregation: async function(token: StreamToken, currEventArray: AggregatedEvent[], writeBatcher: WriteBatcher): Promise<void> {
-        var rootUpdate: Record<string, any> = {};
-        for (var z = 0; z < currEventArray.length; z++) {
-            var eventColl = await common.readBatcher.getOne("events", common.db.ObjectID(currEventArray[z].a), {"transformation": "event_object"});
-            var appData = await common.readBatcher.getOne("apps", common.db.ObjectID(currEventArray[z].a), {timezone: 1, plugins: 1});
-            var conff = plugins.getConfig("api", appData.plugins, true);
+        const rootUpdate: Record<string, any> = {};
+        for (const element of currEventArray) {
+            let eventColl = await common.readBatcher.getOne("events", common.db.ObjectID(element.a), {"transformation": "event_object"});
+            const appData = await common.readBatcher.getOne("apps", common.db.ObjectID(element.a), {timezone: 1, plugins: 1});
+            const conff = plugins.getConfig("api", appData.plugins, true);
             //Get timezone offset in hours from timezone name
-            var appTimezone = appData.timezone || "UTC";
+            const appTimezone = appData.timezone || "UTC";
 
-            var d = moment();
+            const d = moment();
             if (appTimezone) {
                 d.tz(appTimezone);
             }
-            var tmpEventObj: Record<string, any> = {};
-            var tmpTotalObj: Record<string, any> = {};
+            const tmpEventObj: Record<string, any> = {};
+            const tmpTotalObj: Record<string, any> = {};
 
-            var shortEventName = currEventArray[z].e;
+            const shortEventName = element.e;
             eventColl = eventColl || {};
             if (!eventColl._list || eventColl._list[shortEventName] !== true) {
                 eventColl._list = eventColl._list || {};
@@ -312,64 +314,64 @@ var usage: AggregatorUsageModule = {
                     return; //do not record this event in aggregated data
                 }
             }
-            var eventCollectionName = crypto.createHash('sha1').update(shortEventName + currEventArray[z].a).digest('hex');
-            common.shiftHourlyData(currEventArray[z], Math.floor(d.utcOffset() / 60), "h");
-            var date = currEventArray[z].h.split(":");
-            var timeObj = {"yearly": date[0], "weekly": 1, "monthly": date[1], "month": date[1], "day": date[2], "hour": date[3]};
-            if (currEventArray[z].s && common.isNumber(currEventArray[z].s)) {
-                common.fillTimeObjectMonth({"time": timeObj}, tmpEventObj, common.dbMap.sum, currEventArray[z].s);
-                common.fillTimeObjectMonth({"time": timeObj}, tmpTotalObj, shortEventName + '.' + common.dbMap.sum, currEventArray[z].s);
+            const eventCollectionName = crypto.createHash('sha1').update(shortEventName + element.a).digest('hex');
+            common.shiftHourlyData(element, Math.floor(d.utcOffset() / 60), "h");
+            const date = element.h.split(":");
+            const timeObj = {"yearly": date[0], "weekly": 1, "monthly": date[1], "month": date[1], "day": date[2], "hour": date[3]};
+            if (element.s && common.isNumber(element.s)) {
+                common.fillTimeObjectMonth({"time": timeObj}, tmpEventObj, common.dbMap.sum, element.s);
+                common.fillTimeObjectMonth({"time": timeObj}, tmpTotalObj, shortEventName + '.' + common.dbMap.sum, element.s);
             }
             else {
-                currEventArray[z].s = 0;
+                element.s = 0;
             }
-            if (currEventArray[z].dur && common.isNumber(currEventArray[z].dur)) {
-                common.fillTimeObjectMonth({"time": timeObj}, tmpEventObj, common.dbMap.dur, currEventArray[z].dur);
-                common.fillTimeObjectMonth({"time": timeObj}, tmpTotalObj, shortEventName + '.' + common.dbMap.dur, currEventArray[z].dur);
+            if (element.dur && common.isNumber(element.dur)) {
+                common.fillTimeObjectMonth({"time": timeObj}, tmpEventObj, common.dbMap.dur, element.dur);
+                common.fillTimeObjectMonth({"time": timeObj}, tmpTotalObj, shortEventName + '.' + common.dbMap.dur, element.dur);
             }
             else {
-                currEventArray[z].dur = 0;
+                element.dur = 0;
             }
-            currEventArray[z].c = currEventArray[z].c || 1;
-            if (currEventArray[z].c && common.isNumber(currEventArray[z].c)) {
-                currEventArray[z].c = parseInt(currEventArray[z].c as unknown as string, 10);
+            element.c = element.c || 1;
+            if (element.c && common.isNumber(element.c)) {
+                element.c = Number.parseInt(element.c as unknown as string, 10);
             }
 
-            common.fillTimeObjectMonth({"time": timeObj}, tmpEventObj, common.dbMap.count, currEventArray[z].c);
-            common.fillTimeObjectMonth({"time": timeObj}, tmpTotalObj, shortEventName + '.' + common.dbMap.count, currEventArray[z].c);
+            common.fillTimeObjectMonth({"time": timeObj}, tmpEventObj, common.dbMap.count, element.c);
+            common.fillTimeObjectMonth({"time": timeObj}, tmpTotalObj, shortEventName + '.' + common.dbMap.count, element.c);
 
-            var postfix2 = common.crypto.createHash("md5").update(shortEventName).digest('base64')[0];
-            var dateIds = common.getDateIds({"time": timeObj});
+            const postfix2 = common.crypto.createHash("md5").update(shortEventName).digest('base64')[0];
+            const dateIds = common.getDateIds({"time": timeObj});
 
-            var _id = currEventArray[z].a + "_" + eventCollectionName + "_no-segment_" + dateIds.month;
+            const _id = element.a + "_" + eventCollectionName + "_no-segment_" + dateIds.month;
             //Current event
             writeBatcher.add("events_data", _id, {
                 "$set": {
                     "m": dateIds.month,
                     "s": "no-segment",
-                    "a": currEventArray[z].a + "",
+                    "a": element.a + "",
                     "e": shortEventName
                 },
                 "$inc": tmpEventObj
             }, "countly");
 
             //Total event
-            writeBatcher.add("events_data", currEventArray[z].a + "_all_key_" + dateIds.month + "_" + postfix2, {
+            writeBatcher.add("events_data", element.a + "_all_key_" + dateIds.month + "_" + postfix2, {
                 "$set": {
                     "m": dateIds.month,
                     "s": "key",
-                    "a": currEventArray[z].a + "",
+                    "a": element.a + "",
                     "e": "all"
                 },
                 "$inc": tmpTotalObj
             }, "countly");
 
             //Meta document for all events:
-            writeBatcher.add("events_data", currEventArray[z].a + "_all_" + "no-segment_" + dateIds.zero + "_" + postfix2, {
+            writeBatcher.add("events_data", element.a + "_all_" + "no-segment_" + dateIds.zero + "_" + postfix2, {
                 $set: {
                     m: dateIds.zero,
                     s: "no-segment",
-                    a: currEventArray[z].a + "",
+                    a: element.a + "",
                     e: "all",
                     ["meta_v2.key." + shortEventName]: true,
                     "meta_v2.segments.key": true
@@ -377,8 +379,8 @@ var usage: AggregatorUsageModule = {
                 }
             }, "countly",
             {token: token});
-            if (Object.keys(rootUpdate).length) {
-                await common.db.collection("events").updateOne({_id: common.db.ObjectID(currEventArray[z].a)}, rootUpdate, {upsert: true});
+            if (Object.keys(rootUpdate).length > 0) {
+                await common.db.collection("events").updateOne({_id: common.db.ObjectID(element.a)}, rootUpdate, {upsert: true});
             }
         }
     },
@@ -391,17 +393,17 @@ var usage: AggregatorUsageModule = {
      * @returns Resolves when processing is complete
      */
     processEventTotalsFromStream: async function(token: StreamToken, currEvent: StreamEvent, writeBatcher: WriteBatcher): Promise<void> {
-        var rootUpdate: Record<string, any> = {};
-        var eventColl = await common.readBatcher.getOne("events", common.db.ObjectID(currEvent.a), {"transformation": "event_object"});
-        var appData = await common.readBatcher.getOne("apps", common.db.ObjectID(currEvent.a), {timezone: 1, plugins: 1});
-        var conff = plugins.getConfig("api", appData.plugins, true);
+        const rootUpdate: Record<string, any> = {};
+        let eventColl = await common.readBatcher.getOne("events", common.db.ObjectID(currEvent.a), {"transformation": "event_object"});
+        const appData = await common.readBatcher.getOne("apps", common.db.ObjectID(currEvent.a), {timezone: 1, plugins: 1});
+        const conff = plugins.getConfig("api", appData.plugins, true);
         //Get timezone offset in hours from timezone name
-        var appTimezone = appData.timezone || "UTC";
+        const appTimezone = appData.timezone || "UTC";
 
-        var tmpEventObj: Record<string, any> = {};
-        var tmpTotalObj: Record<string, any> = {};
+        const tmpEventObj: Record<string, any> = {};
+        const tmpTotalObj: Record<string, any> = {};
 
-        var shortEventName = currEvent.e;
+        const shortEventName = currEvent.e;
         eventColl = eventColl || {};
         if (!eventColl._list || eventColl._list[shortEventName] !== true) {
             eventColl._list = eventColl._list || {};
@@ -415,13 +417,13 @@ var usage: AggregatorUsageModule = {
                 return; //do not record this event in aggregated data
             }
         }
-        var eventCollectionName = crypto.createHash('sha1').update(shortEventName + currEvent.a).digest('hex');
+        const eventCollectionName = crypto.createHash('sha1').update(shortEventName + currEvent.a).digest('hex');
         //Calculate h based on ts and app timezone
-        var momentDate = common.getDate(currEvent.ts, appTimezone);
-        var hValue = momentDate.format("YYYY:MM:DD:HH").replaceAll(":0", ":");
+        const momentDate = common.getDate(currEvent.ts, appTimezone);
+        const hValue = momentDate.format("YYYY:MM:DD:HH").replaceAll(":0", ":");
         currEvent.h = hValue;
-        var date = hValue.split(":");
-        var timeObj = {"yearly": date[0], "weekly": 1, "monthly": date[1], "month": date[1], "day": date[2], "hour": date[3]};
+        const date = hValue.split(":");
+        const timeObj = {"yearly": date[0], "weekly": 1, "monthly": date[1], "month": date[1], "day": date[2], "hour": date[3]};
         if (currEvent.s && common.isNumber(currEvent.s)) {
             common.fillTimeObjectMonth({"time": timeObj}, tmpEventObj, common.dbMap.sum, currEvent.s);
             common.fillTimeObjectMonth({"time": timeObj}, tmpTotalObj, shortEventName + '.' + common.dbMap.sum, currEvent.s);
@@ -438,16 +440,16 @@ var usage: AggregatorUsageModule = {
         }
         currEvent.c = currEvent.c || 1;
         if (currEvent.c && common.isNumber(currEvent.c)) {
-            currEvent.c = parseInt(currEvent.c as unknown as string, 10);
+            currEvent.c = Number.parseInt(currEvent.c as unknown as string, 10);
         }
 
         common.fillTimeObjectMonth({"time": timeObj}, tmpEventObj, common.dbMap.count, currEvent.c);
         common.fillTimeObjectMonth({"time": timeObj}, tmpTotalObj, shortEventName + '.' + common.dbMap.count, currEvent.c);
 
-        var postfix2 = common.crypto.createHash("md5").update(shortEventName).digest('base64')[0];
-        var dateIds = common.getDateIds({"time": timeObj});
+        const postfix2 = common.crypto.createHash("md5").update(shortEventName).digest('base64')[0];
+        const dateIds = common.getDateIds({"time": timeObj});
 
-        var _id = currEvent.a + "_" + eventCollectionName + "_no-segment_" + dateIds.month;
+        const _id = currEvent.a + "_" + eventCollectionName + "_no-segment_" + dateIds.month;
         //Current event
         writeBatcher.add("events_data", _id, {
             "$set": {
@@ -483,7 +485,7 @@ var usage: AggregatorUsageModule = {
             }
         }, "countly",
         {token: token});
-        if (Object.keys(rootUpdate).length) {
+        if (Object.keys(rootUpdate).length > 0) {
             await common.db.collection("events").updateOne({_id: common.db.ObjectID(currEvent.a)}, rootUpdate, {upsert: true});
         }
 
@@ -498,7 +500,7 @@ var usage: AggregatorUsageModule = {
      */
     processEventFromStream: function(token: StreamToken, currEvent: StreamEvent, writeBatcher?: WriteBatcher): void {
         writeBatcher = writeBatcher || common.writeBatcher;
-        var forbiddenSegValues: string[] = [];
+        const forbiddenSegValues: string[] = [];
         for (let i = 1; i < 32; i++) {
             forbiddenSegValues.push(i + "");
         }
@@ -511,19 +513,19 @@ var usage: AggregatorUsageModule = {
             }
             else {
                 common.readBatcher.getOne("events", common.db.ObjectID(currEvent.a), {"transformation": "event_object"}, async function(err2: Error | null, eventColl: any) {
-                    var tmpEventObj: Record<string, any> = {};
-                    var tmpEventColl: Record<string, any> = {};
-                    var tmpTotalObj: Record<string, any> = {};
-                    var pluginsGetConfig = plugins.getConfig("api", app.plugins, true);
+                    const tmpEventObj: Record<string, any> = {};
+                    const tmpEventColl: Record<string, any> = {};
+                    const tmpTotalObj: Record<string, any> = {};
+                    const pluginsGetConfig = plugins.getConfig("api", app.plugins, true);
 
-                    var time = common.initTimeObj(app.timezone, currEvent.ts);
-                    var params = {time: time, app_id: currEvent.a, app: app, appTimezone: app.timezone || "UTC"};
+                    const time = common.initTimeObj(app.timezone, currEvent.ts);
+                    const params = {time: time, app_id: currEvent.a, app: app, appTimezone: app.timezone || "UTC"};
 
-                    var shortEventName: string = currEvent.n || '';
+                    let shortEventName: string = currEvent.n || '';
                     if (currEvent.e !== "[CLY]_custom") {
                         shortEventName = currEvent.e;
                     }
-                    var rootUpdate: Record<string, any> = {};
+                    const rootUpdate: Record<string, any> = {};
                     eventColl = eventColl || {};
                     if (!eventColl._list || eventColl._list[shortEventName] !== true) {
                         eventColl._list = eventColl._list || {};
@@ -538,8 +540,8 @@ var usage: AggregatorUsageModule = {
                         }
                     }
                     eventColl._segments = eventColl._segments || {};
-                    var eventCollectionName = crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
-                    var updates: Array<{id: string, update: Record<string, any>}> = [];
+                    const eventCollectionName = crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
+                    const updates: Array<{id: string, update: Record<string, any>}> = [];
 
                     if (currEvent.s && common.isNumber(currEvent.s)) {
                         common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.sum, currEvent.s);
@@ -558,15 +560,15 @@ var usage: AggregatorUsageModule = {
                     }
                     currEvent.c = currEvent.c || 1;
                     if (currEvent.c && common.isNumber(currEvent.c)) {
-                        (currEvent as any).count = parseInt(currEvent.c as unknown as string, 10);
+                        (currEvent as any).count = Number.parseInt(currEvent.c as unknown as string, 10);
                     }
 
                     common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.count, (currEvent as any).count);
                     common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.count, (currEvent as any).count);
 
 
-                    for (var seg in currEvent.sg) {
-                        if (forbiddenSegValues.indexOf(currEvent.sg[seg] + "") !== -1) {
+                    for (const seg in currEvent.sg) {
+                        if (forbiddenSegValues.includes(currEvent.sg[seg] + "")) {
                             continue;
                         }
                         if (eventColl._omitted_segments && eventColl._omitted_segments[shortEventName]) {
@@ -603,25 +605,25 @@ var usage: AggregatorUsageModule = {
 
                         //load meta for this segment in cacher. Add new value if needed
 
-                        var tmpSegVal = currEvent.sg[seg] + "";
+                        let tmpSegVal = currEvent.sg[seg] + "";
                         tmpSegVal = tmpSegVal.replace(/^\$+/, "").replace(/\./g, ":");
                         tmpSegVal = common.encodeCharacters(tmpSegVal);
 
-                        if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                        if (forbiddenSegValues.includes(tmpSegVal)) {
                             tmpSegVal = "[CLY]" + tmpSegVal;
                         }
 
-                        var postfix_seg = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
-                        var meta = await common.readBatcher.getOne("events_meta", {"_id": eventCollectionName + "no-segment_" + common.getDateIds(params).zero + "_" + postfix_seg});
+                        const postfix_seg = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
+                        const meta = await common.readBatcher.getOne("events_meta", {"_id": eventCollectionName + "no-segment_" + common.getDateIds(params).zero + "_" + postfix_seg});
 
                         if (pluginsGetConfig.event_segmentation_value_limit && meta.meta_v2 &&
                             meta.meta_v2[seg] &&
-                            meta.meta_v2[seg].indexOf(tmpSegVal) === -1 &&
+                            !meta.meta_v2[seg].includes(tmpSegVal) &&
                             meta.meta_v2[seg].length >= pluginsGetConfig.event_segmentation_value_limit) {
                             continue;
                         }
 
-                        if (!meta.meta_v2 || !meta.meta_v2[seg] || meta.meta_v2[seg].indexOf(tmpSegVal) === -1) {
+                        if (!meta.meta_v2 || !meta.meta_v2[seg] || !meta.meta_v2[seg].includes(tmpSegVal)) {
                             meta.meta_v2 = meta.meta_v2 || {};
                             meta.meta_v2[seg] = meta.meta_v2[seg] || [];
                             meta.meta_v2[seg].push(tmpSegVal);
@@ -631,7 +633,7 @@ var usage: AggregatorUsageModule = {
                             });
                         }
                         //record data
-                        var tmpObj: Record<string, any> = {};
+                        const tmpObj: Record<string, any> = {};
 
                         if (currEvent.s) {
                             common.fillTimeObjectMonth(params, tmpObj, tmpSegVal + '.' + common.dbMap.sum, currEvent.s);
@@ -648,17 +650,17 @@ var usage: AggregatorUsageModule = {
                         });
                     }
 
-                    var dateIds = common.getDateIds(params);
-                    var postfix2 = common.crypto.createHash("md5").update(shortEventName).digest('base64')[0];
+                    const dateIds = common.getDateIds(params);
+                    const postfix2 = common.crypto.createHash("md5").update(shortEventName).digest('base64')[0];
 
                     tmpEventColl["no-segment" + "." + dateIds.month] = tmpEventObj;
 
-                    for (var z = 0; z < updates.length; z++) {
-                        writeBatcher!.add("events_data", updates[z].id, updates[z].update, "countly", {token: token});
+                    for (const update of updates) {
+                        writeBatcher!.add("events_data", update.id, update.update, "countly", {token: token});
                     }
                     //ID is - appID_hash_no-segment_month
 
-                    var _id = currEvent.a + "_" + eventCollectionName + "_no-segment_" + dateIds.month;
+                    const _id = currEvent.a + "_" + eventCollectionName + "_no-segment_" + dateIds.month;
                     //Current event
                     writeBatcher!.add("events_data", _id, {
                         "$set": {
@@ -698,7 +700,7 @@ var usage: AggregatorUsageModule = {
                     {token: token});
                     //Total event meta data
 
-                    if (Object.keys(rootUpdate).length) {
+                    if (Object.keys(rootUpdate).length > 0) {
                         common.db.collection("events").updateOne({_id: common.db.ObjectID(currEvent.a)}, rootUpdate, {upsert: true});
                     }
 
@@ -721,14 +723,14 @@ var usage: AggregatorUsageModule = {
          */
         function fetchMeta(id: string, callback: (err: Error | null, result: any) => void): void {
             common.readBatcher.getOne(metaToFetch[id].coll, {'_id': metaToFetch[id].id}, {meta_v2: 1}, (err: Error | null, metaDoc: any) => {
-                var retObj = metaDoc || {};
+                const retObj = metaDoc || {};
                 retObj.coll = metaToFetch[id].coll;
                 callback(null, retObj);
             });
         }
 
-        var isNewUser = true;
-        var userProps: UserProperties = {};
+        let isNewUser = true;
+        const userProps: UserProperties = {};
         if (currEvent.sg && currEvent.sg.prev_session) {
             isNewUser = false;
             //Not a new user
@@ -749,16 +751,16 @@ var usage: AggregatorUsageModule = {
             }
         }
         //We can't do metric changes unless we fetch previous session doc.
-        var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
+        const predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
 
-        var dateIds = common.getDateIds(params);
+        const dateIds = common.getDateIds(params);
         var metaToFetch: Record<string, {coll: string, id: string}> = {};
 
         if ((plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit || 1000) > 0) {
-            var postfix: string | null;
-            for (let i = 0; i < predefinedMetrics.length; i++) {
-                for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {
-                    let tmpMetric = predefinedMetrics[i].metrics[j],
+            let postfix: string | null;
+            for (const predefinedMetric of predefinedMetrics) {
+                for (let j = 0; j < predefinedMetric.metrics.length; j++) {
+                    let tmpMetric = predefinedMetric.metrics[j],
                         recvMetricValue = getMetricValue(tmpMetric, currEvent);
                     postfix = null;
 
@@ -774,31 +776,31 @@ var usage: AggregatorUsageModule = {
                     if (recvMetricValue) {
                         recvMetricValue = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
                         postfix = common.crypto.createHash("md5").update(recvMetricValue).digest('base64')[0];
-                        metaToFetch[predefinedMetrics[i].db + params.app_id + "_" + dateIds.zero + "_" + postfix] = {
-                            coll: predefinedMetrics[i].db,
+                        metaToFetch[predefinedMetric.db + params.app_id + "_" + dateIds.zero + "_" + postfix] = {
+                            coll: predefinedMetric.db,
                             id: params.app_id + "_" + dateIds.zero + "_" + postfix
                         };
                     }
                 }
             }
 
-            var metas: Record<string, any> = {};
+            const metas: Record<string, any> = {};
             async.map(Object.keys(metaToFetch), fetchMeta, function(err: Error | null, metaDocs: any[]) {
-                for (let i = 0; i < metaDocs.length; i++) {
-                    if (metaDocs[i].coll && metaDocs[i].meta_v2) {
-                        metas[metaDocs[i]._id] = metaDocs[i].meta_v2;
+                for (const metaDoc of metaDocs) {
+                    if (metaDoc.coll && metaDoc.meta_v2) {
+                        metas[metaDoc._id] = metaDoc.meta_v2;
                     }
                 }
 
-                for (let i = 0; i < predefinedMetrics.length; i++) {
-                    for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {
+                for (const predefinedMetric of predefinedMetrics) {
+                    for (let j = 0; j < predefinedMetric.metrics.length; j++) {
                         let tmpTimeObjZero: Record<string, any> = {},
                             tmpTimeObjMonth: Record<string, any> = {},
                             tmpSet: Record<string, any> = {},
                             needsUpdate = false,
                             zeroObjUpdate: string[] = [],
                             monthObjUpdate: string[] = [],
-                            tmpMetric = predefinedMetrics[i].metrics[j],
+                            tmpMetric = predefinedMetric.metrics[j],
                             recvMetricValue: string | number | undefined = "",
                             escapedMetricVal = "";
 
@@ -819,13 +821,13 @@ var usage: AggregatorUsageModule = {
                             escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
                             postfix = common.crypto.createHash("md5").update(escapedMetricVal).digest('base64')[0];
 
-                            var tmpZeroId = params.app_id + "_" + dateIds.zero + "_" + postfix;
-                            var ignore = false;
+                            const tmpZeroId = params.app_id + "_" + dateIds.zero + "_" + postfix;
+                            let ignore = false;
                             if (metas[tmpZeroId] &&
                                             metas[tmpZeroId][tmpMetric.set] &&
-                                            Object.keys(metas[tmpZeroId][tmpMetric.set]).length &&
+                                            Object.keys(metas[tmpZeroId][tmpMetric.set]).length > 0 &&
                                             Object.keys(metas[tmpZeroId][tmpMetric.set]).length >= plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit &&
-                                            typeof metas[tmpZeroId][tmpMetric.set][escapedMetricVal] === "undefined") {
+                                            metas[tmpZeroId][tmpMetric.set][escapedMetricVal] === undefined) {
                                 ignore = true;
                             }
 
@@ -843,17 +845,17 @@ var usage: AggregatorUsageModule = {
                                     monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
                                 }
                                 else {
-                                    for (let k = 0; k < uniqueLevelsZero.length; k++) {
-                                        if (uniqueLevelsZero[k] === "Y") {
+                                    for (const element of uniqueLevelsZero) {
+                                        if (element === "Y") {
                                             tmpTimeObjZero['d.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                                         }
                                         else {
-                                            tmpTimeObjZero['d.' + uniqueLevelsZero[k] + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
+                                            tmpTimeObjZero['d.' + element + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                                         }
                                     }
 
-                                    for (let l = 0; l < uniqueLevelsMonth.length; l++) {
-                                        tmpTimeObjMonth['d.' + uniqueLevelsMonth[l] + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
+                                    for (const element of uniqueLevelsMonth) {
+                                        tmpTimeObjMonth['d.' + element + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
                                     }
                                 }
                             }
@@ -864,18 +866,18 @@ var usage: AggregatorUsageModule = {
                             if (needsUpdate) {
                                 tmpSet.m = dateIds.zero;
                                 tmpSet.a = params.app_id + "";
-                                var tmpMonthId = params.app_id + "_" + dateIds.month + "_" + postfix,
+                                const tmpMonthId = params.app_id + "_" + dateIds.month + "_" + postfix,
                                     updateObjZero: Record<string, any> = {$set: tmpSet};
 
-                                if (Object.keys(tmpTimeObjZero).length) {
+                                if (Object.keys(tmpTimeObjZero).length > 0) {
                                     updateObjZero.$inc = tmpTimeObjZero;
                                 }
 
-                                if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
-                                    common.writeBatcher.add(predefinedMetrics[i].db, tmpZeroId, updateObjZero);
+                                if (Object.keys(tmpTimeObjZero).length > 0 || Object.keys(tmpSet).length > 0) {
+                                    common.writeBatcher.add(predefinedMetric.db, tmpZeroId, updateObjZero);
                                 }
 
-                                common.writeBatcher.add(predefinedMetrics[i].db, tmpMonthId, {
+                                common.writeBatcher.add(predefinedMetric.db, tmpMonthId, {
                                     $set: {
                                         m: dateIds.month,
                                         a: params.app_id + ""
@@ -897,7 +899,7 @@ var usage: AggregatorUsageModule = {
      * @returns Array of predefined metrics groups
      */
     getPredefinedMetrics: function(params: AggregatorParams, userProps: UserProperties): PredefinedMetricsGroup[] {
-        var predefinedMetrics: PredefinedMetricsGroup[] = [
+        const predefinedMetrics: PredefinedMetricsGroup[] = [
             {
                 db: "carriers",
                 metrics: [{
@@ -966,7 +968,7 @@ var usage: AggregatorUsageModule = {
                 }]
             }
         ];
-        var isNewUser = (params.app_user && params.app_user[common.dbUserMap.first_seen]) ? false : true;
+        const isNewUser = (params.app_user && params.app_user[common.dbUserMap.first_seen]) ? false : true;
         plugins.dispatch("/session/metrics", {
             params: params,
             predefinedMetrics: predefinedMetrics,
