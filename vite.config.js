@@ -50,7 +50,7 @@ const legacyScripts = [
     'javascripts/dom/pace/pace.min.js',
     'javascripts/utils/Sortable.min.js',
     'javascripts/utils/vue/vuedraggable.umd.min.js',
-    'javascripts/countly/countly.auth.js',
+    // 'javascripts/countly/countly.auth.js',
     'javascripts/utils/element-tiptap.umd.min.js',
     'javascripts/utils/cronstrue.min.js',
 

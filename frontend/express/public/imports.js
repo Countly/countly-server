@@ -35,6 +35,9 @@ import * as CountlyHelpers from './javascripts/countly/countly.helpers.js';
 window.CountlyHelpers = CountlyHelpers;
 window.T = CountlyHelpers.T;
 
+import * as countlyAuth from './javascripts/countly/countly.auth.js';
+window.countlyAuth = countlyAuth;
+
 import { countlyCommon, CommonConstructor } from './javascripts/countly/countly.common.js';
 window.countlyCommon = countlyCommon;
 window.CommonConstructor = CommonConstructor;
