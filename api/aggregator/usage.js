@@ -23,7 +23,7 @@ var moment = require('moment-timezone');
  * @param {number|string|undefined} vc - View count
  * @param {string} did - Device ID
  * @param {AggregatorParams} params - Aggregator parameters
- * @returns {Promise<void>}
+ * @returns {Promise<void>} Resolves when processing is complete
  */
 usage.processViewCount = async function(writeBatcher, token, vc, did, params) {
     if (plugins.isPluginEnabled("views") && vc) {
@@ -81,7 +81,7 @@ usage.processViewCount = async function(writeBatcher, token, vc, did, params) {
  * @param {number} totalSessionDuration - Total session duration in seconds
  * @param {string} did - Device ID
  * @param {AggregatorParams} params - Aggregator parameters
- * @returns {Promise<void>}
+ * @returns {Promise<void>} Resolves when processing is complete
  */
 usage.processSessionDurationRange = async function(writeBatcher, token, totalSessionDuration, did, params) {
     var durationRanges = [
@@ -132,7 +132,7 @@ usage.processSessionDurationRange = async function(writeBatcher, token, totalSes
  * @param {StreamToken} token - Stream token
  * @param {StreamEvent} currEvent - Current session event
  * @param {AggregatorParams} params - Aggregator parameters
- * @returns {Promise<void>}
+ * @returns {Promise<void>} Resolves when processing is complete
  */
 usage.processSessionFromStream = async function(token, currEvent, params) {
     currEvent.up = currEvent.up || {};
@@ -282,7 +282,7 @@ usage.processSessionFromStream = async function(token, currEvent, params) {
  * @param {StreamToken} token - Stream token
  * @param {AggregatedEvent[]} currEventArray - Array of aggregated events
  * @param {WriteBatcher} writeBatcher - Write batcher instance
- * @returns {Promise<void>}
+ * @returns {Promise<void>} Resolves when processing is complete
  */
 usage.processEventTotalsFromAggregation = async function(token, currEventArray, writeBatcher) {
     var rootUpdate = {};
@@ -391,7 +391,7 @@ usage.processEventTotalsFromAggregation = async function(token, currEventArray, 
  * @param {StreamToken} token - Stream token
  * @param {StreamEvent} currEvent - Current event
  * @param {WriteBatcher} writeBatcher - Write batcher instance
- * @returns {Promise<void>}
+ * @returns {Promise<void>} Resolves when processing is complete
  */
 usage.processEventTotalsFromStream = async function(token, currEvent, writeBatcher) {
     var rootUpdate = {};
