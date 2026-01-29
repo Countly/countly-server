@@ -646,12 +646,6 @@ export const BackboneRouteAdapter = function() {};
 Vue.prototype.$route = new BackboneRouteAdapter();
 Vue.prototype.$i18n = i18n;
 
-// export const DummyCompAPI = defineComponent({
-//     name: "DummyCompAPI",
-//     template: '<div></div>',
-//     setup: function() {}
-// });
-
 export const TemplateLoader = function(templates) {
     this.templates = templates;
     this.elementsToBeRendered = [];
@@ -904,16 +898,10 @@ export const countlyVueWrapperView = countlyView.extend({
         if (self.vuex) {
             self.vuexLoader.load();
         }
-        /*
-            Some 3rd party components such as echarts, use Composition API.
-            It is not clear why, but when a view with those components destroyed,
-            they leave some memory leaks. Instantiating DummyCompAPI triggers memory cleanups.
-        */
         self.vm = new Vue({
             el: el,
             store: _globalVuexStore,
             components: {
-                // DummyCompAPI: DummyCompAPI,
                 MainView: self.component,
                 GenericPopups: GenericPopupsView,
                 QuickstartPopover: QuickstartPopoverView
@@ -921,7 +909,6 @@ export const countlyVueWrapperView = countlyView.extend({
             template: '<div>\
                             <MainView></MainView>\
                             <GenericPopups></GenericPopups>\
-                            <!--<DummyCompAPI></DummyCompAPI>-->\
                             <QuickstartPopover></QuickstartPopover>\
                         </div>',
             beforeCreate: function() {
