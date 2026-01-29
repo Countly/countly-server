@@ -16,6 +16,8 @@
         "api/aggregator.ts",
         "api/aggregator/usage.ts",
         "api/aggregator/processing.ts",
+        "api/ingestor/usage.ts",
+        "api/ingestor/requestProcessor.ts",
         "api/utils/common.js",
         "api/utils/localization.js",
         "api/utils/requestProcessor.js",

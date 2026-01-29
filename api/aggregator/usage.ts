@@ -8,7 +8,7 @@ import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
 const common = require('./../utils/common.js');
-const plugins = require('./../../plugins/pluginManager.ts');
+const plugins = require('./../../plugins/pluginManager.js');
 const async = require('async');
 const crypto = require('crypto');
 const moment = require('moment-timezone');

@@ -8,9 +8,9 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const common = require('../utils/common.js');
 //const { DataBatchReader } = require('../parts/data/dataBatchReader');
-const plugins = require('../../plugins/pluginManager.ts');
+const plugins = require('../../plugins/pluginManager.js');
 /** @type {AggregatorUsageModule} */
-const usage: AggregatorUsageModule = require('./usage.ts').default;
+const usage: AggregatorUsageModule = require('./usage.js').default;
 
 /**
  * Drill event structure from MongoDB change stream

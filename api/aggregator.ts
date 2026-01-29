@@ -9,7 +9,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
 const countlyConfig = require('./config');
-const plugins = require('../plugins/pluginManager.ts');
+const plugins = require('../plugins/pluginManager.js');
 const log = require('./utils/log.js')('aggregator-core:api');
 const common = require('./utils/common.js');
 const { WriteBatcher } = require('./parts/data/batcher.js');
@@ -18,7 +18,7 @@ const QueryRunner = require('./parts/data/QueryRunner.js');
 
 // Core aggregators
 require("./init_configs.js");
-require('./aggregator/processing.ts');
+require('./aggregator/processing.js');
 
 /**
  * Event data structure from database

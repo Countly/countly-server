@@ -1,7 +1,7 @@
 /**
- * Usage module for ingestor - handles location, session, and metrics processing
+ * Usage aggregation module for processing session and event data
  * This file proxies to the TypeScript implementation
- * @module api/ingestor/usage
+ * @module api/aggregator/usage
  */
 const tsModule = require('./usage.ts');
 module.exports = tsModule.default || tsModule;
