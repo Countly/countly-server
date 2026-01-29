@@ -4,7 +4,7 @@
 
 const common = require('./common.js'),
     log = require('./log.js')('api:mutationManager'),
-    plugins = require('../../plugins/pluginManager.js'),
+    plugins = require('../../plugins/pluginManager.ts'),
     manager = {};
 
 let chHealth = null;

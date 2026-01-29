@@ -22,6 +22,11 @@ export interface BatcherStats {
 export interface AddOptions {
   /** Whether to upsert the document if it doesnt exist (default: true) */
   upsert?: boolean;
+  /** Stream token for tracking processing state */
+  token?: {
+    cd?: Date;
+    resumeToken?: unknown;
+  };
 }
 
 /** Configuration for batch processing */

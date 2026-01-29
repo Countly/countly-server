@@ -1,6 +1,6 @@
 const { getUserApps } = require('../../../api/utils/rights.js');
 
-var plugins = require('../../pluginManager.js'),
+var plugins = require('../../pluginManager.ts'),
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     { validateUser } = require('../../../api/utils/rights.js'),

@@ -2,7 +2,7 @@ const versionInfo = require("../../frontend/express/version.info");
 const qrcode = require("qrcode");
 const URL = require('url').URL;
 const { authenticator: GA } = require("otplib");
-const plugins = require('../pluginManager.js');
+const plugins = require('../pluginManager.ts');
 
 
 /**

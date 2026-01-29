@@ -5,7 +5,7 @@
 var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     { validateGlobalAdmin, validateUser } = require('../../../api/utils/rights.js');
 
 //const FEATURE_NAME = 'systemlogs';

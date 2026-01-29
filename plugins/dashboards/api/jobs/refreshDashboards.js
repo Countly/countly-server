@@ -1,5 +1,5 @@
 const Job = require('../../../../jobServer/Job.js');
-const pluginManager = require('../../../pluginManager.js');
+const pluginManager = require('../../../pluginManager.ts');
 var customDashboards = require('./../parts/dashboards.js');
 
 

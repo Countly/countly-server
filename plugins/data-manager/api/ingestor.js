@@ -1,5 +1,5 @@
 const FEATURE_NAME = 'data_manager';
-const plugins = require('../../pluginManager.js');
+const plugins = require('../../pluginManager.ts');
 const log = require('./../../../api/utils/log.js')(FEATURE_NAME + ':core-ingestor');
 
 try {

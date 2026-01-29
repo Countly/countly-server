@@ -1,6 +1,6 @@
 var exportedPlugin = {},
     countlyConfig = require('../../../frontend/express/config', 'dont-enclose');
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 
 var config;
 try {

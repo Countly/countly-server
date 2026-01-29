@@ -1,5 +1,5 @@
 var exported = {},
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     countlyModel = require('../../../api/lib/countly.model.js'),
     countlySession = countlyModel.load("users"),
     countlyCommon = require('../../../api/lib/countly.common.js'),

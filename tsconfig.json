@@ -5,13 +5,16 @@
 // npx tsc
 {
     "include": [
+        "plugins/pluginManager.ts",
         "plugins/pluginManager.js",
         "plugins/push/**/*.ts",
         "plugins/push/**/*.js",
         "plugins/push_approver/**/*.ts",
         "plugins/push_approver/**/*.js",
         "api/lib/countly.common.js",
-        "api/parts/data/geoData.js",
+        "api/parts/data/geoData.ts",
+        "api/aggregator/usage.ts",
+        "api/aggregator/processing.ts",
         "api/utils/common.js",
         "api/utils/localization.js",
         "api/utils/requestProcessor.js",
@@ -30,6 +33,10 @@
         "allowJs": true,
         "checkJs": true,
         "resolveJsonModule": true,
-        "strict": true
+        "strict": true,
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext"
     }
 }

@@ -3,7 +3,7 @@
 const Job = require('../../../../jobServer/Job');
 const tracker = require('../../../../api/parts/mgmt/tracker.js');
 const log = require('../../../../api/utils/log.js')('job:stats');
-const pluginManager = require('../../../pluginManager.js');
+const pluginManager = require('../../../pluginManager.ts');
 const serverStats = require('../parts/stats.js');
 const moment = require('moment-timezone');
 
