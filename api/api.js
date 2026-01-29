@@ -266,7 +266,7 @@ function handleRequest(req, res) {
     res.setHeader('Keep-Alive', 'timeout=5, max=1000');
 
     if (req.method.toLowerCase() === 'post') {
-        const formidableOptions = {};
+        const formidableOptions = { multiples: true };
         if (countlyConfig.api.maxUploadFileSize) {
             formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
         }
@@ -294,14 +294,29 @@ function handleRequest(req, res) {
         form.parse(req, (err, fields, files) => {
             //handle bakcwards compatability with formiddble v1
             for (let i in files) {
-                if (files[i].filepath) {
-                    files[i].path = files[i].filepath;
+                if (Array.isArray(files[i])) {
+                    files[i].forEach((file) => {
+                        if (file.filepath) {
+                            file.path = file.filepath;
+                        }
+                        if (file.mimetype) {
+                            file.type = file.mimetype;
+                        }
+                        if (file.originalFilename) {
+                            file.name = file.originalFilename;
+                        }
+                    });
                 }
-                if (files[i].mimetype) {
-                    files[i].type = files[i].mimetype;
-                }
-                if (files[i].originalFilename) {
-                    files[i].name = files[i].originalFilename;
+                else {
+                    if (files[i].filepath) {
+                        files[i].path = files[i].filepath;
+                    }
+                    if (files[i].mimetype) {
+                        files[i].type = files[i].mimetype;
+                    }
+                    if (files[i].originalFilename) {
+                        files[i].name = files[i].originalFilename;
+                    }
                 }
             }
             params.files = files;
