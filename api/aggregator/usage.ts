@@ -14,7 +14,7 @@ const async = require('async');
 const crypto = require('crypto');
 const moment = require('moment-timezone');
 
-var usage: AggregatorUsageModule = {
+const usage: AggregatorUsageModule = {
     /**
      * Process view count range for session
      * @param writeBatcher - Write batcher instance
@@ -34,7 +34,7 @@ var usage: AggregatorUsageModule = {
                     return;
                 }
             }
-            let ranges = [
+            const ranges = [
                     [0, 2],
                     [3, 5],
                     [6, 10],
@@ -44,11 +44,11 @@ var usage: AggregatorUsageModule = {
                     [51, 100]
                 ],
                 rangesMax = 101,
-                calculatedRange: string,
                 updateUsers: Record<string, any> = {},
                 updateUsersZero: Record<string, any> = {},
                 dbDateIds = common.getDateIds(params),
                 monthObjUpdate: string[] = [];
+            let calculatedRange: string;
 
             if ((vc as number) >= rangesMax) {
                 calculatedRange = (ranges.length) + '';
@@ -84,7 +84,7 @@ var usage: AggregatorUsageModule = {
      * @returns Resolves when processing is complete
      */
     processSessionDurationRange: async function(writeBatcher: WriteBatcher, token: StreamToken, totalSessionDuration: number, did: string, params: AggregatorParams): Promise<void> {
-        let durationRanges = [
+        const durationRanges = [
                 [0, 10],
                 [11, 30],
                 [31, 60],
@@ -94,11 +94,11 @@ var usage: AggregatorUsageModule = {
                 [1801, 3600]
             ],
             durationMax = 3601,
-            calculatedDurationRange: string,
             updateUsers: Record<string, any> = {},
             updateUsersZero: Record<string, any> = {},
             dbDateIds = common.getDateIds(params),
             monthObjUpdate: string[] = [];
+        let calculatedDurationRange: string;
 
         if (totalSessionDuration >= durationMax) {
             calculatedDurationRange = (durationRanges.length) + '';
@@ -136,7 +136,7 @@ var usage: AggregatorUsageModule = {
      */
     processSessionFromStream: async function(token: StreamToken, currEvent: StreamEvent, params: AggregatorParams): Promise<void> {
         currEvent.up = currEvent.up || {};
-        let updateUsersZero: Record<string, any> = {},
+        const updateUsersZero: Record<string, any> = {},
             updateUsersMonth: Record<string, any> = {},
             usersMeta: Record<string, any> = {},
             sessionFrequency = [
@@ -152,13 +152,13 @@ var usage: AggregatorUsageModule = {
                 [360, 744]
             ],
             sessionFrequencyMax = 744,
-            calculatedFrequency: string | undefined,
             uniqueLevels: string[] = [],
             uniqueLevelsZero: string[] = [],
             uniqueLevelsMonth: string[] = [],
             zeroObjUpdate: string[] = [],
             monthObjUpdate: string[] = [],
             dbDateIds = common.getDateIds(params);
+        let calculatedFrequency: string | undefined;
 
         monthObjUpdate.push(common.dbMap.total);
         if (currEvent.up.cc) {
@@ -754,14 +754,14 @@ var usage: AggregatorUsageModule = {
         const predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
 
         const dateIds = common.getDateIds(params);
-        var metaToFetch: Record<string, {coll: string, id: string}> = {};
+        const metaToFetch: Record<string, {coll: string, id: string}> = {};
 
         if ((plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit || 1000) > 0) {
             let postfix: string | null;
             for (const predefinedMetric of predefinedMetrics) {
                 for (let j = 0; j < predefinedMetric.metrics.length; j++) {
-                    let tmpMetric = predefinedMetric.metrics[j],
-                        recvMetricValue = getMetricValue(tmpMetric, currEvent);
+                    const tmpMetric = predefinedMetric.metrics[j];
+                    let recvMetricValue = getMetricValue(tmpMetric, currEvent);
                     postfix = null;
 
                     // We check if country data logging is on and user's country is the configured country of the app
@@ -794,14 +794,14 @@ var usage: AggregatorUsageModule = {
 
                 for (const predefinedMetric of predefinedMetrics) {
                     for (let j = 0; j < predefinedMetric.metrics.length; j++) {
-                        let tmpTimeObjZero: Record<string, any> = {},
+                        const tmpTimeObjZero: Record<string, any> = {},
                             tmpTimeObjMonth: Record<string, any> = {},
                             tmpSet: Record<string, any> = {},
-                            needsUpdate = false,
                             zeroObjUpdate: string[] = [],
                             monthObjUpdate: string[] = [],
-                            tmpMetric = predefinedMetric.metrics[j],
-                            recvMetricValue: string | number | undefined = "",
+                            tmpMetric = predefinedMetric.metrics[j];
+                        let recvMetricValue: string | number | undefined = "",
+                            needsUpdate = false,
                             escapedMetricVal = "";
 
                         postfix = "";
