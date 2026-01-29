@@ -1,4 +1,4 @@
-/*global filterXSS */
+import { filterXSS } from '../utils/xss.js';
 import countlyGlobal from "./countly.global.js";
 import store from "storejs";
 import jQuery from "jquery";

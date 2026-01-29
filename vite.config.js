@@ -21,12 +21,12 @@ const legacyScripts = [
     'javascripts/dom/gridstack/gridstack-h5.js', // install this into dashboard plugin (there's also a gridstack.css in entrypoint)
     // 'javascripts/utils/moment/moment-with-locales.min.js',                    - DELETE. IMPORTED IN imports.js AS ES MODULE.
     // 'javascripts/utils/backbone-min.js',
-    'javascripts/utils/jquery.i18n.properties.js',
-    // 'javascripts/utils/store+json2.min.js',
-    'javascripts/utils/jquery.idle-timer.js',
+    // 'javascripts/utils/jquery.i18n.properties.js',
+    // 'javascripts/utils/store+json2.min.js',                                   - storejs IS IMPORTED. CHECK IF json2 IS NEEDED.
+    // 'javascripts/utils/jquery.idle-timer.js',
     'javascripts/utils/initialAvatar.js',
     'javascripts/utils/highlight/highlight.pack.js',
-    'javascripts/utils/jquery.xss.js',
+    // 'javascripts/utils/jquery.xss.js',
     'javascripts/utils/webfont.js',
     'javascripts/utils/leaflet.js',
     'javascripts/utils/js-deep-equals.unsorted.min.js',
