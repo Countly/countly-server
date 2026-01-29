@@ -13,6 +13,8 @@
         "plugins/push_approver/**/*.js",
         "api/lib/countly.common.js",
         "api/parts/data/geoData.ts",
+        "api/aggregator/usage.ts",
+        "api/aggregator/processing.ts",
         "api/utils/common.js",
         "api/utils/localization.js",
         "api/utils/requestProcessor.js",

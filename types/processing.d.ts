@@ -39,6 +39,11 @@ export interface DrillEvent {
     sg?: Record<string, unknown>;
     /** User properties */
     up?: Record<string, unknown>;
+    /** Extra user properties (e.g., view count) */
+    up_extra?: {
+        vc?: number | string;
+        [key: string]: unknown;
+    };
     /** Custom properties */
     custom?: Record<string, unknown>;
     /** Campaign data */

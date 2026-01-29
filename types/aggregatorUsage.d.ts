@@ -41,6 +41,8 @@ export interface AggregatorParams {
         day?: string | number;
         hour?: string | number;
     };
+    /** App user document */
+    app_user?: Record<string, unknown>;
 }
 
 /**
