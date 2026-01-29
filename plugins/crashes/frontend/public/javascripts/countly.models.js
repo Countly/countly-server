@@ -1140,17 +1140,7 @@ function transformAppVersion(inpVersion) {
         };
 
         _crashgroupSubmodule.actions.addComment = function(context, body) {
-            var originalPromise = countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "add_comment", {text: body});
-
-            originalPromise.then(function() {
-                app.recordEvent({
-                    "key": "crash-comment",
-                    "count": 1,
-                    "segmentation": {}
-                });
-            });
-
-            return originalPromise;
+            return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "add_comment", {text: body});
         };
 
         _crashgroupSubmodule.actions.editComment = function(context, payload) {

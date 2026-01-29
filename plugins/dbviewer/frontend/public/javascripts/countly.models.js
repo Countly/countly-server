@@ -1,4 +1,4 @@
-/*global store, countlyCommon, countlyTaskManager, $, jQuery, app*/
+/*global store, countlyCommon, countlyTaskManager, $, jQuery */
 (function(countlyDBviewer) {
 
     //Private Properties
@@ -100,11 +100,6 @@
                 },
                 success: function(json) {
                     if (json.aaData && json.aaData.task_id) {
-                        app.recordEvent({
-                            "key": "move-to-report-manager",
-                            "count": 1,
-                            "segmentation": { type: "dbviewer" }
-                        });
                         countlyTaskManager.monitor(json.aaData.task_id);
                         callback(false, false);
                     }

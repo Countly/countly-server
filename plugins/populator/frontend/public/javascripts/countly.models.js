@@ -1,4 +1,4 @@
-/*global chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, app, moment, CV*/
+/*global chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, moment, CV*/
 (function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_density", "_locale", "_store"],
@@ -161,7 +161,7 @@
     }
 
     /**
-     * 
+     *
      * @param {array} arr - array of objects with probability property
      * @returns {string} returns random key from array
      */
@@ -179,7 +179,7 @@
     }
 
     /**
-     * 
+     *
      * @param {string} jsonString - stringified json
      * @returns {object} returns parsed json or string
      */
@@ -196,9 +196,9 @@
     }
 
     /**
-     * 
+     *
      * @param {Array} array - array of objects with probability property
-     * @returns {string} returns random string from array 
+     * @returns {string} returns random string from array
      */
     function randomSelectByProbability(array) {
         const totalProbability = array.reduce(function(sum, item) {
@@ -346,7 +346,7 @@
         return year + '.' + d.format('M') + '.' + day;
     }
     /**
-     * 
+     *
      * @param {object} userDetails - user details
      * @param {array} conditions - array of conditions
      * @returns {array} - returns null or array of values
@@ -1553,8 +1553,8 @@
     };
 
     /**
-     * 
-     * @param {array} req - request 
+     *
+     * @param {array} req - request
      * @returns {promise} returns promise
      */
     function flushAllRequests(req) {
@@ -2307,7 +2307,7 @@
             }
         }
         /**
-         * Get users from environment 
+         * Get users from environment
         **/
         async function getUsers() {
             let batchSize = getRandomInt(3, 10); //5;
@@ -2315,7 +2315,7 @@
             userAmount = environment.length;
 
             /**
-             * 
+             *
              * @returns {array} - array of users
              */
             async function getUserBatch() {
@@ -2338,7 +2338,7 @@
             }
 
             /**
-             * 
+             *
              * @param {array} userBatch - array of users
              */
             async function processUserBatch(userBatch) {
@@ -2354,8 +2354,8 @@
             }
 
             /**
-             * 
-             * 
+             *
+             *
              */
             async function createAndProcessUsers() {
                 const userBatch = await getUserBatch();
@@ -2382,7 +2382,7 @@
 
         /**
          * @param {boolean} setEnvironmentInformationOnce - set environment information once
-         * Create new user 
+         * Create new user
         **/
         async function createUsers(setEnvironmentInformationOnce) {
             let batchSize = getRandomInt(3, 10); //5;
@@ -2422,7 +2422,7 @@
             }
 
             /**
-             * 
+             *
              * @param {object} user - user object
              * @param {boolean} setEnviromentInformationOnce - set environment information once
              */
@@ -2541,12 +2541,6 @@
         if (template.name) {
             seg.template = template.name;
         }
-
-        app.recordEvent({
-            "key": "populator-execute",
-            "count": 1,
-            "segmentation": seg
-        });
     };
 
     countlyPopulator.stopGenerating = function(ensureJobs, callback) {

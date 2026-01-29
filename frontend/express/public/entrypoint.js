@@ -22,6 +22,8 @@ import.meta.glob('../../../plugins/*/frontend/public/stylesheets/**/*.css');
 
 import "./imports.js";
 
+import { setupCountlyWebSDK } from './javascripts/web-sdk-setup.js';
+
 // =============================================================================
 // LEGACY SCRIPT IMPORTS
 // =============================================================================
@@ -117,5 +119,9 @@ window.Vue.component('cly-device-selector', ClyDeviceSelector);
 //
 // =============================================================================
 
-// Add any new ES module imports here as you modernize the codebase
-window.app.recordEvent = () => {}; // eslint-disable-line
+// Start Backbone history for routing
+import Backbone from './javascripts/utils/backbone-min.js';
+Backbone.history.start();
+
+// Setup Countly Web SDK
+setupCountlyWebSDK();

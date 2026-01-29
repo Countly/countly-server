@@ -1,4 +1,4 @@
-/*global countlyCommon, countlyVue, CV, app, countlyGlobal */
+/*global countlyCommon, countlyVue, CV, countlyGlobal */
 
 (function(countlyRemoteConfig) {
     countlyRemoteConfig.factory = {
@@ -235,14 +235,7 @@
                     context.commit("setConditionDialog", parameter);
                 },
                 create: function(context, parameter) {
-                    return countlyRemoteConfig.service.createParameter(parameter).then(function() {
-                        var hasConditions = parameter && parameter.conditions && Array.isArray(parameter.conditions) && parameter.conditions.length > 0;
-                        app.recordEvent({
-                            "key": "remote-config-create",
-                            "count": 1,
-                            "segmentation": {has_conditions: hasConditions}
-                        });
-                    });
+                    return countlyRemoteConfig.service.createParameter(parameter);
                 },
                 update: function(context, parameter) {
                     var id = parameter._id;
