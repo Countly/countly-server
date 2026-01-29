@@ -51,8 +51,7 @@
 <script>
 import Backbone from '../../utils/backbone-min.js';
 import countlyGlobal from '../../countly/countly.global.js';
-
-const { app } = window; // TO-DO: remove this dependency on global variable 'app' when app is modularized.
+import { app } from '../../countly/countly.template.js';
 
 export default {
     props: {
