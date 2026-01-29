@@ -47,6 +47,13 @@ import ClyFormFieldChecklistbox from './javascripts/components/form/cly-form-fie
 // Drawer component imports
 import ClyDrawer from './javascripts/components/drawer/cly-drawer.vue';
 
+// Layout component imports
+import ClyGuide from './javascripts/components/layout/cly-guide.vue';
+import ClyHeader from './javascripts/components/layout/cly-header.vue';
+import ClyMain from './javascripts/components/layout/cly-main.vue';
+import ClySection from './javascripts/components/layout/cly-section.vue';
+import ClySubSection from './javascripts/components/layout/cly-sub-section.vue';
+
 // Register components globally
 window.Vue.component('cly-status-badge', ClyStatusBadge);
 window.Vue.component('cly-tabs', ClyTabs);
@@ -62,6 +69,13 @@ window.Vue.component('cly-form-field-checklistbox', ClyFormFieldChecklistbox);
 
 // Register drawer components globally
 window.Vue.component('cly-drawer', ClyDrawer);
+
+// Register layout components globally
+window.Vue.component('cly-guide', ClyGuide);
+window.Vue.component('cly-header', ClyHeader);
+window.Vue.component('cly-main', ClyMain);
+window.Vue.component('cly-section', ClySection);
+window.Vue.component('cly-sub-section', ClySubSection);
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW

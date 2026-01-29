@@ -79,3 +79,6 @@ window.countlyLocation = countlyLocation;
 import countlyVue from './javascripts/countly/vue/core.js';
 window.countlyVue = countlyVue;
 window.CV = countlyVue;
+
+import countlyCMS from './javascripts/countly/countly.cms.js';
+window.countlyCMS = countlyCMS;

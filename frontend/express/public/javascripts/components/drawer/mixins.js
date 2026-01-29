@@ -4,19 +4,22 @@
  */
 
 import { BaseComponentMixin, MultiStepFormMixin } from '../form/mixins.js';
+import { getModalManager } from '../layout/modal-manager.js';
 
 
 export const ModalMixin = {
     methods: {
         setModalState: function(state) {
-            if (window.countlyVue && window.countlyVue.ModalManager) {
-                window.countlyVue.ModalManager.setState(this.componentId, state);
+            const modalManager = getModalManager();
+            if (modalManager) {
+                modalManager.setState(this.componentId, state);
             }
         }
     },
     beforeDestroy: function() {
-        if (window.countlyVue && window.countlyVue.ModalManager) {
-            window.countlyVue.ModalManager.setState(this.componentId, false);
+        const modalManager = getModalManager();
+        if (modalManager) {
+            modalManager.setState(this.componentId, false);
         }
     }
 };

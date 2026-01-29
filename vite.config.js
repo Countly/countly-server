@@ -83,7 +83,7 @@ const legacyScripts = [
     'javascripts/countly/countly.task.manager.js',
     'javascripts/countly/vue/imports.js',
     // 'javascripts/countly/vue/components/nav.js', // DELETE.
-    'javascripts/countly/vue/components/layout.js',
+    // 'javascripts/countly/vue/components/layout.js', // Migrated to SFC
     // 'javascripts/countly/vue/components/form.js', // DELETE.
     'javascripts/countly/vue/components/date.js',
     'javascripts/countly/vue/components/dropdown.js',
@@ -100,7 +100,7 @@ const legacyScripts = [
     'javascripts/countly/vue/directives/scroll-shadow.js',
     'javascripts/countly/vue/legacy.js',
     'javascripts/countly/countly.views.js',
-    'javascripts/countly/countly.cms.js',
+    // 'javascripts/countly/countly.cms.js', // ESM - imported in entrypoint.js, exposed as window.countlyCMS
     'core/device-and-type/javascripts/countly.models.js',
     'core/device-and-type/javascripts/countly.views.js',
     'core/app-resolution/javascripts/countly.views.js',
