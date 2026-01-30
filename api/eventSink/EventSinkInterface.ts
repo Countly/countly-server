@@ -148,7 +148,7 @@ abstract class EventSinkInterface {
      */
     protected _validateEvents(events: unknown[]): boolean {
         if (!Array.isArray(events)) {
-            throw new Error('Events must be an array');
+            throw new TypeError('Events must be an array');
         }
         if (events.length === 0) {
             return false; // Empty array is valid but no work to do

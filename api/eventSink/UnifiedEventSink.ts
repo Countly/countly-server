@@ -250,9 +250,8 @@ class UnifiedEventSink {
 
         let hasMongoSuccess = false;
 
-        for (let i = 0; i < results.length; i++) {
+        for (const [i, result] of results.entries()) {
             const sink = this.#sinks[i];
-            const result = results[i];
             const sinkType = sink.getType();
 
             if (result.status === 'fulfilled') {
