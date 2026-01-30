@@ -1,4 +1,5 @@
-import pino, { Logger } from 'pino';
+import pino from 'pino';
+import type { Logger } from 'pino';
 
 // Optional OpenTelemetry imports
 let trace: typeof import('@opentelemetry/api').trace | undefined;
