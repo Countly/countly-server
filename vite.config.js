@@ -96,7 +96,7 @@ const legacyScripts = [
     // 'javascripts/countly/vue/components/drawer.js', // DELETE.
     'core/notes/javascripts/countly.models.js',
     'core/notes/javascripts/countly.common.notes.js',
-    'javascripts/countly/vue/components/vis.js',
+    // 'javascripts/countly/vue/components/vis.js', // Migrated to SFC - echart components
     // 'javascripts/countly/vue/components/helpers.js', // Migrated to SFC
     // 'javascripts/countly/vue/components/progress.js',
     'javascripts/countly/vue/directives/scroll-shadow.js',

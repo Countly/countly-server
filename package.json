@@ -140,6 +140,7 @@
     "json2csv": "5.0.7",
     "jsonwebtoken": "^9.0.1",
     "later": "1.2.0",
+    "leaflet": "^1.9.4",
     "lodash": "^4.17.21",
     "lru-cache": "7.18.3",
     "mcc-mnc-list": "1.1.11",
@@ -166,6 +167,7 @@
     "vue-color": "^2.8.2",
     "vue-echarts": "^6.7.3",
     "vue-in-viewport-mixin": "^2.1.0",
+    "vue2-leaflet": "^2.7.1",
     "vuex": "^3.6.2",
     "xlsx-write-stream": "^1.0.0",
     "yauzl": "^3.2.0"

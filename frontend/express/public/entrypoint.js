@@ -129,6 +129,26 @@ import ClyListDrawer from './javascripts/components/helpers/cly-list-drawer.vue'
 import ClyAutoRefreshToggle from './javascripts/components/helpers/cly-auto-refresh-toggle.vue';
 import ClyDatabaseEngineDebugPanel from './javascripts/components/helpers/cly-database-engine-debug-panel.vue';
 
+// Echart component imports
+import {
+    ClyChartZoom,
+    ClyChartToggle,
+    ClyPrimaryLegend,
+    ClySecondaryLegend,
+    ClyCustomLegend,
+    ClyChartHeader,
+    ClyAnnotationManagement,
+    ClyChartGeneric,
+    ClyChartFlow,
+    ClyChartLine,
+    ClyChartTime,
+    ClyChartBar,
+    ClyChartPie,
+    ClyMapPicker,
+    ClyWorldmap,
+    ExternalZoomMixin
+} from './javascripts/components/echart/index.js';
+
 // Register components globally
 window.Vue.component('cly-status-badge', ClyStatusBadge);
 window.Vue.component('cly-tabs', ClyTabs);
@@ -226,6 +246,26 @@ window.Vue.component('cly-multiplex', ClyMultiplex);
 window.Vue.component('cly-list-drawer', ClyListDrawer);
 window.Vue.component('cly-auto-refresh-toggle', ClyAutoRefreshToggle);
 window.Vue.component('cly-database-engine-debug-panel', ClyDatabaseEngineDebugPanel);
+
+// Register echart components
+window.Vue.component('cly-chart-zoom', ClyChartZoom);
+window.Vue.component('cly-chart-toggle', ClyChartToggle); // only in echart components
+window.Vue.component('cly-primary-legend', ClyPrimaryLegend); // only in echart components
+window.Vue.component('cly-secondary-legend', ClySecondaryLegend); // only in echart components
+window.Vue.component('cly-custom-legend', ClyCustomLegend); // only in echart components
+window.Vue.component('cly-chart-header', ClyChartHeader); // only in echart components
+window.Vue.component('cly-annotation-management', ClyAnnotationManagement); // only in echart components
+window.Vue.component('cly-chart-generic', ClyChartGeneric);
+window.Vue.component('cly-chart-flow', ClyChartFlow);
+window.Vue.component('cly-chart-line', ClyChartLine);
+window.Vue.component('cly-chart-time', ClyChartTime);
+window.Vue.component('cly-chart-bar', ClyChartBar);
+window.Vue.component('cly-chart-pie', ClyChartPie);
+window.Vue.component('cly-map-picker', ClyMapPicker);
+window.Vue.component('cly-worldmap', ClyWorldmap);
+
+// Export zoom mixin for backward compatibility
+window.countlyVue.mixins.zoom = ExternalZoomMixin;
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW
