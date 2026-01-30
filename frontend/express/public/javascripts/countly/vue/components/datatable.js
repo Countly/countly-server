@@ -1,8 +1,7 @@
 /* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge, Sortable */
 
 (function(countlyVue, $) {
-    var countlyBaseComponent = countlyVue.components.BaseComponent,
-        _mixins = countlyVue.mixins;
+    var _mixins = countlyVue.mixins;
 
     var TableExtensionsMixin = {
         // NOTE: since this is a mixin and props are component specific, we should not define props here
@@ -1367,17 +1366,4 @@
             }
         }
     }));
-
-    Vue.component("cly-datatable-undo-row", countlyBaseComponent.extend({
-        props: {
-            delayedAction: {
-                type: Object
-            },
-        },
-        template: '<div @click.stop v-if="delayedAction" class="undo-row">\n' +
-                        '<slot></slot>\n' +
-                        '<a @click.stop="delayedAction.abort()">Undo.</a>\n' +
-                    '</div>\n'
-    }));
-
 }(window.countlyVue = window.countlyVue || {}, jQuery));

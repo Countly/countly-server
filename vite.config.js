@@ -80,8 +80,8 @@ const legacyScripts = [
     // 'javascripts/countly/vue/core.js',
     // 'javascripts/countly/vue/container.js',
     // 'javascripts/countly/countly.template.js',
-    'javascripts/countly/vue/helpers.js',
-    'javascripts/countly/vue/data/vuex.js',
+    // 'javascripts/countly/vue/helpers.js',                                     - DELETE. NOT BEING USED ANYWHERE.
+    // 'javascripts/countly/vue/data/vuex.js',
     'javascripts/countly/countly.task.manager.js',
     'javascripts/countly/vue/imports.js',
     // 'javascripts/countly/vue/components/nav.js', // DELETE.

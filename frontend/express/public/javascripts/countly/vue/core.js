@@ -18,6 +18,7 @@ import {
     validateDelete,
     validateGlobalAdmin
 } from '../countly.auth';
+import * as countlyVuex from './data/vuex.js';
 
 Vue.use(Vuex);
 Vue.component('echarts', VueECharts);
@@ -89,7 +90,14 @@ export function i18nM(key) {
     }
 }
 
-export const ajax = function(request, options) {
+/**
+ * ajax - Wrapper around jQuery.ajax to handle common error cases
+ * @param {object} request - jQuery ajax request object
+ * @param {object} options - Additional options
+ * @param {boolean} options.disableAutoCatch - If true, automatic error handling is disabled
+ * @returns {Promise} - Promise that resolves or rejects based on ajax call
+ */
+export function ajax(request, options) {
     options = options || {};
     var ajaxP = new Promise(function(resolve, reject) {
         jQuery.ajax(request).done(resolve).fail(reject);
@@ -105,7 +113,7 @@ export const ajax = function(request, options) {
         });
     }
     return ajaxP;
-};
+}
 
 /**
 * This function returns an authentication mixin object for a given feature or array of features.
@@ -652,7 +660,8 @@ export const unregister = function(name) {
 export const vuex = {
     getGlobalStore: getGlobalStore,
     registerGlobally: registerGlobally,
-    unregister: unregister
+    unregister: unregister,
+    ...countlyVuex
 };
 
 export const BackboneRouteAdapter = function() {};
@@ -1100,7 +1109,7 @@ const countlyVue = {
     vuex,
     T: templateUtil.stage,
     optionalComponent,
-    $: { ajax }
+    $: { ajax },
 };
 
 export default countlyVue;
