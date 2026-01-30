@@ -64,33 +64,32 @@ class Jsonable {
      */
     get json(): Record<string, unknown> {
         const json: Record<string, unknown> = {};
-        Object.keys(this._data)
-            .filter(k => this._data[k] !== null && this._data[k] !== undefined)
-            .forEach(k => {
-                const v = this._data[k];
-                if (v instanceof Jsonable) {
-                    json[k] = v.json;
-                }
-                else if (Array.isArray(v)) {
-                    json[k] = v.map(x => x instanceof Jsonable ? x.json : x);
-                }
-                else if (typeof v === 'object') {
-                    const ret: Record<string, unknown> = {};
-                    for (const key in v as Record<string, unknown>) {
-                        const val = (v as Record<string, unknown>)[key];
-                        if (val && val instanceof Jsonable) {
-                            ret[key] = val.json;
-                        }
-                        else {
-                            ret[key] = val;
-                        }
+        for (const k of Object.keys(this._data)
+            .filter(fk => this._data[fk] !== null && this._data[fk] !== undefined)) {
+            const v = this._data[k];
+            if (v instanceof Jsonable) {
+                json[k] = v.json;
+            }
+            else if (Array.isArray(v)) {
+                json[k] = v.map(x => x instanceof Jsonable ? x.json : x);
+            }
+            else if (typeof v === 'object') {
+                const ret: Record<string, unknown> = {};
+                for (const key in v as Record<string, unknown>) {
+                    const val = (v as Record<string, unknown>)[key];
+                    if (val && val instanceof Jsonable) {
+                        ret[key] = val.json;
                     }
-                    json[k] = ret;
+                    else {
+                        ret[key] = val;
+                    }
                 }
-                else {
-                    json[k] = v;
-                }
-            });
+                json[k] = ret;
+            }
+            else {
+                json[k] = v;
+            }
+        }
         return json;
     }
 
@@ -133,30 +132,29 @@ class Validatable extends Jsonable {
     get json(): Record<string, unknown> {
         const json: Record<string, unknown> = {};
         const scheme = (this.constructor as typeof Validatable).scheme;
-        Object.keys(scheme)
-            .filter(k => this._data[k] !== null && this._data[k] !== undefined)
-            .forEach(k => {
-                const v = this._data[k];
-                if (v instanceof Validatable) {
-                    json[k] = v.json;
+        for (const k of Object.keys(scheme)
+            .filter(fk => this._data[fk] !== null && this._data[fk] !== undefined)) {
+            const v = this._data[k];
+            if (v instanceof Validatable) {
+                json[k] = v.json;
+            }
+            else if (Array.isArray(v) && v.filter(vv => vv instanceof Validatable).length === v.length) {
+                json[k] = v.map(vv => vv.json);
+            }
+            else if (scheme[k].type === 'Object' && typeof v === 'object' && v !== null && Object.values(v as Record<string, unknown>).filter(vv => vv instanceof Validatable).length === Object.values(v as Record<string, unknown>).length) {
+                json[k] = {};
+                for (const kk in v as Record<string, unknown>) {
+                    (json[k] as Record<string, unknown>)[kk] = ((v as Record<string, unknown>)[kk] as Validatable).json;
                 }
-                else if (Array.isArray(v) && v.filter(vv => vv instanceof Validatable).length === v.length) {
-                    json[k] = v.map(vv => vv.json);
+            }
+            else {
+                const common: CommonModule = require('./common.js');
+                const valid = common.validateArgs({ data: this._data[k] }, { data: scheme[k] });
+                if (valid) {
+                    json[k] = valid.data;
                 }
-                else if (scheme[k].type === 'Object' && typeof v === 'object' && v !== null && Object.values(v as Record<string, unknown>).filter(vv => vv instanceof Validatable).length === Object.values(v as Record<string, unknown>).length) {
-                    json[k] = {};
-                    for (const kk in v as Record<string, unknown>) {
-                        (json[k] as Record<string, unknown>)[kk] = ((v as Record<string, unknown>)[kk] as Validatable).json;
-                    }
-                }
-                else {
-                    const common: CommonModule = require('./common.js');
-                    const valid = common.validateArgs({ data: this._data[k] }, { data: scheme[k] });
-                    if (valid) {
-                        json[k] = valid.data;
-                    }
-                }
-            });
+            }
+        }
         return json;
     }
 
@@ -291,7 +289,7 @@ class Mongoable extends Validatable {
     static async findMany<T extends Mongoable>(this: new (data: Record<string, unknown>) => T, query: Filter<Document>): Promise<T[]> {
         const common: CommonModule = require('./common.js');
         const data = await common.db.collection((this as unknown as typeof Mongoable).collection).find(query).toArray();
-        if (data && data.length) {
+        if (data && data.length > 0) {
             const Constr = this;
             return data.map(dt => new Constr(dt as Record<string, unknown>));
         }
@@ -460,7 +458,7 @@ class Mongoable extends Validatable {
              * @param ignore_codes error codes to ignore
              */
             async flush(ignore_codes: number[] = []): Promise<Record<string, ObjectId> | void> {
-                if (buffer.length) {
+                if (buffer.length > 0) {
                     try {
                         const res = await collection.insertMany(buffer as unknown as Document[]);
                         total -= (buffer.length - res.insertedCount);
@@ -472,7 +470,7 @@ class Mongoable extends Validatable {
                         if (error.result && error.result.result && error.result.result.insertedIds) {
                             total -= (buffer.length - (error.result.insertedCount || 0));
                         }
-                        if (!error.code || ignore_codes.indexOf(error.code) === -1) {
+                        if (!error.code || !ignore_codes.includes(error.code)) {
                             throw e;
                         }
                         else {

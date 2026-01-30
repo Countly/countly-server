@@ -143,7 +143,7 @@ function loadLoggingConfig(): LoggingConfig {
 }
 
 // Initialize configuration with defaults
-let prefs = loadLoggingConfig();
+const prefs = loadLoggingConfig();
 prefs.default = prefs.default || "warn";
 let deflt = (prefs && prefs.default) ? prefs.default : 'error';
 let prettyPrint = prefs.prettyPrint || false;
@@ -251,7 +251,7 @@ function recordMetrics(name: string, level: string): void {
  * @returns The configured log level
  */
 const logLevel = function(name: string): string {
-    if (typeof prefs === 'undefined') {
+    if (prefs === undefined) {
         return 'error';
     }
     else if (typeof prefs === 'string') {
@@ -269,7 +269,7 @@ const logLevel = function(name: string): string {
             if (typeof prefs[level] === 'string' && name.indexOf(prefs[level] as string) === 0) {
                 return level;
             }
-            if (typeof prefs[level] === 'object' && Array.isArray(prefs[level]) && (prefs[level] as string[]).length) {
+            if (typeof prefs[level] === 'object' && Array.isArray(prefs[level]) && (prefs[level] as string[]).length > 0) {
                 const prefLevel = prefs[level] as string[];
                 for (let i = prefLevel.length - 1; i >= 0; i--) {
                     const opt = prefLevel[i];
@@ -301,8 +301,7 @@ const createLogger = (name: string, level?: string): Logger => {
                     const logObj: Record<string, unknown> = {};
                     let messageArg: string | null = null;
 
-                    for (let i = 0; i < args.length; i++) {
-                        const arg = args[i];
+                    for (const [i, arg] of args.entries()) {
                         const key = `arg${i}`;
 
                         if (typeof arg === 'object' && arg !== null) {
@@ -392,7 +391,7 @@ type LogFunction = (...args: unknown[]) => void;
 const createLogFunction = (logger: Logger, name: string, level: LogLevelCode): LogFunction => {
     return function(...args: unknown[]): void {
         const currentLevel = levels[name] || deflt;
-        if (ACCEPTABLE[level].indexOf(currentLevel as LogLevel) !== -1) {
+        if (ACCEPTABLE[level].includes(currentLevel as LogLevel)) {
             const startTime = performance.now();
             const message = args[0];
 
@@ -545,7 +544,7 @@ function createCountlyLogger(name: string): CountlyLogger {
              * @returns True if the function was executed
              */
             f: function(l: LogLevelCode, fn: (log: LogFunction) => void, fl?: LogLevelCode, ...fargs: unknown[]): boolean | void {
-                if (ACCEPTABLE[l].indexOf((levels[full] || deflt) as LogLevel) !== -1) {
+                if (ACCEPTABLE[l].includes((levels[full] || deflt) as LogLevel)) {
                     fn(createLogFunction(subLogger, full, l));
                     return true;
                 }
@@ -605,7 +604,7 @@ function createCountlyLogger(name: string): CountlyLogger {
          * @returns True if the function was executed
          */
         f: function(l: LogLevelCode, fn: (log: LogFunction) => void, fl?: LogLevelCode, ...fargs: unknown[]): boolean | void {
-            if (ACCEPTABLE[l].indexOf((levels[name] || deflt) as LogLevel) !== -1) {
+            if (ACCEPTABLE[l].includes((levels[name] || deflt) as LogLevel)) {
                 fn(createLogFunction(logger, name, l));
                 return true;
             }
@@ -694,7 +693,9 @@ function updateConfig(msg: UpdateConfigMessage): void {
     for (m in levels) {
         let found: string | null = null;
         for (l in msg.config) {
-            if (!msg.config[l]) continue;
+            if (!msg.config[l]) {
+                continue;
+            }
             modules = msg.config[l]!.split(',').map(function(v: string) {
                 return v.trim();
             });
@@ -708,16 +709,18 @@ function updateConfig(msg: UpdateConfigMessage): void {
 
         if (found === null) {
             for (l in msg.config) {
-                if (!msg.config[l]) continue;
+                if (!msg.config[l]) {
+                    continue;
+                }
                 modules = msg.config[l]!.split(',').map(function(v: string) {
                     return v.trim();
                 });
 
                 for (i = 0; i < modules.length; i++) {
-                    if (modules[i].indexOf('*') === -1 && modules[i] === m.split(':')[0]) {
+                    if (!modules[i].includes('*') && modules[i] === m.split(':')[0]) {
                         found = l;
                     }
-                    else if (modules[i].indexOf('*') !== -1 && modules[i].split(':')[1] === '*' && modules[i].split(':')[0] === m.split(':')[0]) {
+                    else if (modules[i].includes('*') && modules[i].split(':')[1] === '*' && modules[i].split(':')[0] === m.split(':')[0]) {
                         found = l;
                     }
                 }

@@ -87,15 +87,15 @@ function decrypt(
     input_encoding?: BufferEncoding,
     output_encoding?: BufferEncoding
 ): string | null | undefined {
-    if (!crypted || !crypted.length || typeof crypted !== "string") {
+    if (!crypted || crypted.length === 0 || typeof crypted !== "string") {
         return crypted;
     }
 
-    if (crypted.indexOf(":") === -1) {
+    if (!crypted.includes(":")) {
         return decrypt_old(crypted, key, iv, algorithm, input_encoding, output_encoding);
     }
 
-    if (crypted.lastIndexOf("[CLY]_true") === -1 || crypted.lastIndexOf("[CLY]_true") !== crypted.length - 10) {
+    if (!crypted.includes("[CLY]_true") || crypted.lastIndexOf("[CLY]_true") !== crypted.length - 10) {
         return crypted;
     }
     else {
@@ -154,10 +154,10 @@ function decrypt_old(
     input_encoding?: BufferEncoding,
     output_encoding?: BufferEncoding
 ): string | null | undefined {
-    if (!crypted || !crypted.length || typeof crypted !== "string") {
+    if (!crypted || crypted.length === 0 || typeof crypted !== "string") {
         return crypted;
     }
-    if (crypted.lastIndexOf("[CLY]_true") === -1 || crypted.lastIndexOf("[CLY]_true") !== crypted.length - 10) {
+    if (!crypted.includes("[CLY]_true") || crypted.lastIndexOf("[CLY]_true") !== crypted.length - 10) {
         return crypted;
     }
     else {
