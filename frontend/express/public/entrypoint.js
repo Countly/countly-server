@@ -100,6 +100,35 @@ import ClyGlobalDatePicker from './javascripts/components/date/global-date-picke
 import ClyTimePicker from './javascripts/components/date/time-picker.vue';
 import { getPeriodLabel } from './javascripts/components/date/mixins.js';
 
+// Helper component imports
+import ClyBackLink from './javascripts/components/helpers/cly-back-link.vue';
+import ClyInPageNotification from './javascripts/components/helpers/cly-in-page-notification.vue';
+import ClyEmptyHome from './javascripts/components/helpers/cly-empty-home.vue';
+import ClyStatusTag from './javascripts/components/helpers/cly-status-tag.vue';
+import ClyDiffHelper from './javascripts/components/helpers/cly-diff-helper.vue';
+import ClyMetricCards from './javascripts/components/helpers/cly-metric-cards.vue';
+import ClyMetricCard from './javascripts/components/helpers/cly-metric-card.vue';
+import ClyMetricBreakdown from './javascripts/components/helpers/cly-metric-breakdown.vue';
+import ClyTooltipIcon from './javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClyRemover from './javascripts/components/helpers/cly-remover.vue';
+import ClyPopover from './javascripts/components/helpers/cly-popover.vue';
+import ClyValue from './javascripts/components/helpers/cly-value.vue';
+import ClyAppSelect from './javascripts/components/helpers/cly-app-select.vue';
+import ClyEventSelect from './javascripts/components/helpers/cly-event-select.vue';
+import ClyPaginate from './javascripts/components/helpers/cly-paginate.vue';
+import ClyColorTag from './javascripts/components/helpers/cly-color-tag.vue';
+import ClyJsonEditor from './javascripts/components/helpers/cly-json-editor.vue';
+import ClyNotification from './javascripts/components/helpers/cly-notification.vue';
+import ClyEmptyView from './javascripts/components/helpers/cly-empty-view.vue';
+import ClyEmptyChart from './javascripts/components/helpers/cly-empty-chart.vue';
+import ClyEmptyDatatable from './javascripts/components/helpers/cly-empty-datatable.vue';
+import ClyBlank from './javascripts/components/helpers/cly-blank.vue';
+import ClyBreadcrumbs from './javascripts/components/helpers/cly-breadcrumbs.vue';
+import ClyMultiplex from './javascripts/components/helpers/cly-multiplex.vue';
+import ClyListDrawer from './javascripts/components/helpers/cly-list-drawer.vue';
+import ClyAutoRefreshToggle from './javascripts/components/helpers/cly-auto-refresh-toggle.vue';
+import ClyDatabaseEngineDebugPanel from './javascripts/components/helpers/cly-database-engine-debug-panel.vue';
+
 // Register components globally
 window.Vue.component('cly-status-badge', ClyStatusBadge);
 window.Vue.component('cly-tabs', ClyTabs);
@@ -168,6 +197,35 @@ window.Vue.component('cly-global-date-selector-w', ClyGlobalDatePicker); // depr
 window.Vue.component('cly-time-picker', ClyTimePicker);
 
 window.countlyVue.getPeriodLabel = getPeriodLabel; // remove this after updating the date-preset plugin
+
+// Register helper components globally
+window.Vue.component('cly-back-link', ClyBackLink);
+window.Vue.component('cly-in-page-notification', ClyInPageNotification);
+window.Vue.component('cly-empty-home', ClyEmptyHome);
+window.Vue.component('cly-status-tag', ClyStatusTag);
+window.Vue.component('cly-diff-helper', ClyDiffHelper);
+window.Vue.component('cly-metric-cards', ClyMetricCards);
+window.Vue.component('cly-metric-card', ClyMetricCard);
+window.Vue.component('cly-metric-breakdown', ClyMetricBreakdown);
+window.Vue.component('cly-tooltip-icon', ClyTooltipIcon);
+window.Vue.component('cly-remover', ClyRemover);
+window.Vue.component('cly-popover', ClyPopover);
+window.Vue.component('cly-value', ClyValue);
+window.Vue.component('cly-app-select', ClyAppSelect);
+window.Vue.component('cly-event-select', ClyEventSelect);
+window.Vue.component('cly-paginate', ClyPaginate);
+window.Vue.component('cly-color-tag', ClyColorTag);
+window.Vue.component('cly-json-editor', ClyJsonEditor);
+window.Vue.component('cly-notification', ClyNotification);
+window.Vue.component('cly-empty-view', ClyEmptyView);
+window.Vue.component('cly-empty-chart', ClyEmptyChart);
+window.Vue.component('cly-empty-datatable', ClyEmptyDatatable);
+window.Vue.component('cly-blank', ClyBlank);
+window.Vue.component('cly-breadcrumbs', ClyBreadcrumbs);
+window.Vue.component('cly-multiplex', ClyMultiplex);
+window.Vue.component('cly-list-drawer', ClyListDrawer);
+window.Vue.component('cly-auto-refresh-toggle', ClyAutoRefreshToggle);
+window.Vue.component('cly-database-engine-debug-panel', ClyDatabaseEngineDebugPanel);
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW
