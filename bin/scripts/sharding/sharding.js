@@ -57,18 +57,17 @@ printjson(check);
 check.forEach(function(c) {
     var exceptional = true;
     var db = clyCollections.indexOf(c) === -1 ? drill : cly,
-        dbName = clyCollections.indexOf(c) === -1 ? COUNTLY_DRILL : COUNTLY,
-        //count = db[c].count(), -- This is deprecated in mongo version >6
-        count = db[c].countDocuments({});
-        capped = db[c].stats()['capped'];
-
+    dbName = clyCollections.indexOf(c) === -1 ? COUNTLY_DRILL : COUNTLY,
+    //count = db[c].count(), -- This is deprecated in mongo version >6
+    count = db[c].countDocuments({});
+    var capped = db[c].stats()['capped'];
     COUNTLY_TO_SHARD.some((e) => {
         if (c.indexOf(e) == 0) {
             exceptional = false;
             return false;
         }
     });
-
+    
     if (!capped && count > COUNT_TO_SHARD && !exceptional) {
         print('Creating hashed index & enabling sharding for collection "' + c + '"... ');
 
