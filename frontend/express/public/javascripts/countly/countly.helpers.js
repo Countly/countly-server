@@ -1372,3 +1372,7 @@ class Template {
  * })).then(function () {});
  */
 export const T = new Template();
+
+// Backward compatibility aliases for legacy code
+export { showConfirm as confirm };
+export { showAlert as alert };
