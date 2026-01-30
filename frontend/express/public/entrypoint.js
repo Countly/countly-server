@@ -79,6 +79,10 @@ import ClyFieldsSelect from './javascripts/components/dropdown/fields-select.vue
 import ClyMultiSelect from './javascripts/components/dropdown/multi-select.vue';
 import ClyMoreOptions from './javascripts/components/dropdown/more-options.vue';
 
+// Progress component imports
+import ClyProgressDonut from './javascripts/components/progress/progress-donut.vue';
+import ClyProgressBar from './javascripts/components/progress/progress-bar.vue';
+
 // Register components globally
 window.Vue.component('cly-status-badge', ClyStatusBadge);
 window.Vue.component('cly-tabs', ClyTabs);
@@ -124,6 +128,10 @@ window.Vue.component('cly-dropdown', ClyDropdown);
 window.Vue.component('cly-fields-select', ClyFieldsSelect);
 window.Vue.component('cly-multi-select', ClyMultiSelect);
 window.Vue.component('cly-more-options', ClyMoreOptions);
+
+// Register progress components globally
+window.Vue.component('cly-progress-donut', ClyProgressDonut);
+window.Vue.component('cly-progress-bar', ClyProgressBar);
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW

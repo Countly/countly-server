@@ -98,7 +98,7 @@ const legacyScripts = [
     'core/notes/javascripts/countly.common.notes.js',
     'javascripts/countly/vue/components/vis.js',
     'javascripts/countly/vue/components/helpers.js',
-    'javascripts/countly/vue/components/progress.js',
+    // 'javascripts/countly/vue/components/progress.js',
     'javascripts/countly/vue/directives/scroll-shadow.js',
     'javascripts/countly/vue/legacy.js',
     'javascripts/countly/countly.views.js',
