@@ -1,5 +1,3 @@
-/* global  */
-
 (function(countlyVue) {
 
     /**
