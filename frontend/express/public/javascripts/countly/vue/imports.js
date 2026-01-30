@@ -1,4 +1,4 @@
-/* global Vue, ELEMENT, VeeValidate, inViewportMixin, VueClipboard */
+/* global Vue, ELEMENT, inViewportMixin, VueClipboard */
 
 (function(countlyVue) {
 
@@ -13,36 +13,36 @@
 
     Vue.directive("click-outside", ELEMENT.utils.Clickoutside);
     Vue.use(VueClipboard);
-    Vue.use(VeeValidate);
+    // Vue.use(VeeValidate);
 
-    Vue.component('validation-provider', VeeValidate.ValidationProvider);
-    Vue.component('validation-observer', VeeValidate.ValidationObserver);
+    // Vue.component('validation-provider', VeeValidate.ValidationProvider);
+    // Vue.component('validation-observer', VeeValidate.ValidationObserver);
 
-    VeeValidate.extend('arrmin', {
-        validate: function(value, args) {
-            return value.length >= args.length;
-        },
-        params: ['length']
-    });
+    // VeeValidate.extend('arrmin', {
+    //     validate: function(value, args) {
+    //         return value.length >= args.length;
+    //     },
+    //     params: ['length']
+    // });
 
-    VeeValidate.extend('arrmax', {
-        validate: function(value, args) {
-            return value.length <= args.length;
-        },
-        params: ['length']
-    });
+    // VeeValidate.extend('arrmax', {
+    //     validate: function(value, args) {
+    //         return value.length <= args.length;
+    //     },
+    //     params: ['length']
+    // });
 
-    VeeValidate.extend('json', {
-        validate: function(value) {
-            try {
-                JSON.parse(value);
-                return true;
-            }
-            catch (error) {
-                return false;
-            }
-        }
-    });
+    // VeeValidate.extend('json', {
+    //     validate: function(value) {
+    //         try {
+    //             JSON.parse(value);
+    //             return true;
+    //         }
+    //         catch (error) {
+    //             return false;
+    //         }
+    //     }
+    // });
 
     countlyVue.mixins.inViewport = inViewportMixin;
 

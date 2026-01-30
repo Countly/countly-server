@@ -3,6 +3,38 @@ import Vuex from 'vuex';
 window.Vue = Vue;
 window.Vuex = Vuex;
 
+// Import and configure VeeValidate
+import * as VeeValidate from 'vee-validate';
+import * as rules from 'vee-validate/dist/rules';
+window.VeeValidate = VeeValidate;
+Vue.use(VeeValidate);
+Vue.component('validation-provider', VeeValidate.ValidationProvider);
+Vue.component('validation-observer', VeeValidate.ValidationObserver);
+Object.keys(rules).forEach(rule => VeeValidate.extend(rule, rules[rule]));
+VeeValidate.extend('arrmin', {
+    validate: function(value, args) {
+        return value.length >= args.length;
+    },
+    params: ['length']
+});
+VeeValidate.extend('arrmax', {
+    validate: function(value, args) {
+        return value.length <= args.length;
+    },
+    params: ['length']
+});
+VeeValidate.extend('json', {
+    validate: function(value) {
+        try {
+            JSON.parse(value);
+            return true;
+        }
+        catch (error) {
+            return false;
+        }
+    }
+});
+
 import jQuery from 'jquery';
 window.jQuery = jQuery;
 window.$ = jQuery;

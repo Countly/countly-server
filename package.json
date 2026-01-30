@@ -163,6 +163,7 @@
     "tslib": "^2.6.3",
     "uglify-js": "3.19.3",
     "underscore": "^1.13.7",
+    "vee-validate": "^3.4.14",
     "vite": "^7.3.1",
     "vue": "^2.7.16",
     "vue-color": "^2.8.2",
