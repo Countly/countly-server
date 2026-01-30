@@ -83,6 +83,17 @@ import ClyMoreOptions from './javascripts/components/dropdown/more-options.vue';
 import ClyProgressDonut from './javascripts/components/progress/progress-donut.vue';
 import ClyProgressBar from './javascripts/components/progress/progress-bar.vue';
 
+// Input component imports
+import ClyColorpicker from './javascripts/components/input/colorpicker.vue';
+import ClyListbox from './javascripts/components/input/listbox.vue';
+import ClyChecklistbox from './javascripts/components/input/checklistbox.vue';
+import ClySelectX from './javascripts/components/input/select-x.vue';
+import ClyCheck from './javascripts/components/input/check.vue';
+import ClyRadioBlock from './javascripts/components/input/radio-block.vue';
+import ClyDynamicTextarea from './javascripts/components/input/dynamic-textarea.vue';
+import ClySelectEmail from './javascripts/components/input/select-email.vue';
+import ClySortableItems from './javascripts/components/input/sortable-items.vue';
+
 // Register components globally
 window.Vue.component('cly-status-badge', ClyStatusBadge);
 window.Vue.component('cly-tabs', ClyTabs);
@@ -132,6 +143,17 @@ window.Vue.component('cly-more-options', ClyMoreOptions);
 // Register progress components globally
 window.Vue.component('cly-progress-donut', ClyProgressDonut);
 window.Vue.component('cly-progress-bar', ClyProgressBar);
+
+// Register input components globally
+window.Vue.component('cly-colorpicker', ClyColorpicker);
+window.Vue.component('cly-listbox', ClyListbox);
+window.Vue.component('cly-checklistbox', ClyChecklistbox);
+window.Vue.component('cly-select-x', ClySelectX);
+window.Vue.component('cly-check', ClyCheck);
+window.Vue.component('cly-radio-block', ClyRadioBlock);
+window.Vue.component('cly-dynamic-textarea', ClyDynamicTextarea);
+window.Vue.component('cly-select-email', ClySelectEmail);
+window.Vue.component('cly-sortable-items', ClySortableItems);
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW
