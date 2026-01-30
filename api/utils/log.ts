@@ -1,10 +1,10 @@
-const pino = require('pino');
+import pino, { Logger } from 'pino';
 
 // Optional OpenTelemetry imports
-let trace;
-let context;
-let metrics;
-let semanticConventions;
+let trace: typeof import('@opentelemetry/api').trace | undefined;
+let context: typeof import('@opentelemetry/api').context | undefined;
+let metrics: typeof import('@opentelemetry/api').metrics | undefined;
+let semanticConventions: typeof import('@opentelemetry/semantic-conventions') | undefined;
 try {
     trace = require('@opentelemetry/api').trace;
     context = require('@opentelemetry/api').context;
@@ -16,11 +16,31 @@ catch (e) {
     // do nothing
 }
 
+type LogLevelCode = 'd' | 'i' | 'w' | 'e';
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+interface LoggingConfig {
+    debug?: string | string[];
+    info?: string | string[];
+    warn?: string | string[];
+    error?: string | string[];
+    default?: string;
+    prettyPrint?: boolean;
+    [key: string]: string | string[] | boolean | undefined;
+}
+
+interface UpdateConfigMessage {
+    cmd?: string;
+    config?: {
+        default?: string;
+        [key: string]: string | undefined;
+    };
+}
+
 /**
  * Mapping of short level codes to full level names
- * @type {Object.<string, string>}
  */
-const LEVELS = {
+const LEVELS: Record<LogLevelCode, LogLevel> = {
     d: 'debug',
     i: 'info',
     w: 'warn',
@@ -29,9 +49,8 @@ const LEVELS = {
 
 /**
  * Mapping of log levels to acceptable log levels
- * @type {Object.<string, string[]>}
  */
-const ACCEPTABLE = {
+const ACCEPTABLE: Record<LogLevelCode, LogLevel[]> = {
     d: ['debug'],
     i: ['debug', 'info'],
     w: ['debug', 'info', 'warn'],
@@ -43,11 +62,12 @@ const ACCEPTABLE = {
  * Load logging configuration from environment variables or config file
  * Environment variables take precedence over config.js values
  * Format: COUNTLY_SETTINGS__LOGS__<KEY> where KEY is DEBUG, INFO, WARN, ERROR, DEFAULT, or PRETTYPRINT
- * @returns {Object} Logging configuration object with debug, info, warn, error, default, and prettyPrint properties
+ * @returns Logging configuration object with debug, info, warn, error, default, and prettyPrint properties
  */
-function loadLoggingConfig() {
+function loadLoggingConfig(): LoggingConfig {
     // Start with config.js values
-    let prefs = require('../config.js', 'dont-enclose').logging || {};
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const prefs: LoggingConfig = (require('../config.js') as { logging?: LoggingConfig }).logging || {};
 
     // Check for environment variable overrides
     const envDebug = process.env.COUNTLY_SETTINGS__LOGS__DEBUG;
@@ -59,10 +79,10 @@ function loadLoggingConfig() {
 
     /**
      * Helper to parse environment variable as array
-     * @param {string} envValue - Environment variable value
-     * @returns {Array} Parsed array of module names
+     * @param envValue - Environment variable value
+     * @returns Parsed array of module names
      */
-    const parseEnvArray = (envValue) => {
+    const parseEnvArray = (envValue: string): string[] => {
         try {
             return JSON.parse(envValue);
         }
@@ -73,14 +93,14 @@ function loadLoggingConfig() {
 
     /**
      * Helper to remove modules from other log levels to avoid conflicts
-     * @param {Array} modules - Array of module names
-     * @param {string} currentLevel - The level being set
+     * @param modules - Array of module names
+     * @param currentLevel - The level being set
      */
-    const removeFromOtherLevels = (modules, currentLevel) => {
+    const removeFromOtherLevels = (modules: string[], currentLevel: string): void => {
         const levels = ['debug', 'info', 'warn', 'error'];
-        for (let level of levels) {
+        for (const level of levels) {
             if (level !== currentLevel && Array.isArray(prefs[level])) {
-                prefs[level] = prefs[level].filter(m => !modules.includes(m));
+                prefs[level] = (prefs[level] as string[]).filter(m => !modules.includes(m));
             }
         }
     };
@@ -129,34 +149,41 @@ let deflt = (prefs && prefs.default) ? prefs.default : 'error';
 let prettyPrint = prefs.prettyPrint || false;
 
 // Singleton transport for pretty-print to avoid memory leaks
-let prettyTransport = null;
+let prettyTransport: pino.DestinationStream | null = null;
 
 /**
  * Current levels for all modules
- * @type {Object.<string, string>}
  */
-const levels = {};
+const levels: Record<string, string> = {};
 
 // Metrics setup if OpenTelemetry is available
-let logCounter;
-let logDurationHistogram;
+interface MetricCounter { add: (value: number, attributes?: Record<string, unknown>) => void }
+interface MetricHistogram { record: (value: number, attributes?: Record<string, unknown>) => void }
+let logCounter: MetricCounter | undefined;
+let logDurationHistogram: MetricHistogram | undefined;
 
 if (metrics) {
     const meter = metrics.getMeter('logger');
     logCounter = meter.createCounter('log_entries_total', {
         description: 'Number of log entries by level and module',
-    });
+    }) as unknown as MetricCounter;
     logDurationHistogram = meter.createHistogram('log_duration_seconds', {
         description: 'Duration of logging operations',
-    });
+    }) as unknown as MetricHistogram;
+}
+
+interface TraceContext {
+    traceId: string;
+    spanId: string;
+    traceFlags: string;
 }
 
 /**
  * Gets the current trace context if OpenTelemetry is available
- * @returns {Object|null} Trace context object or null if unavailable
+ * @returns Trace context object or null if unavailable
  */
-function getTraceContext() {
-    if (!trace) {
+function getTraceContext(): TraceContext | null {
+    if (!trace || !context) {
         return null;
     }
 
@@ -173,35 +200,43 @@ function getTraceContext() {
     };
 }
 
+interface Span {
+    end: () => void;
+}
+
 /**
  * Creates a logging span if OpenTelemetry is available
- * @param {string} name - The module name
- * @param {string} level - The log level
- * @param {string} message - The log message
- * @returns {Span|null} The created span or null if unavailable
+ * @param name - The module name
+ * @param level - The log level
+ * @param message - The log message
+ * @returns The created span or null if unavailable
  */
-function createLoggingSpan(name, level, message) {
-    if (!trace) {
+function createLoggingSpan(name: string, level: string, message: unknown): Span | null {
+    if (!trace || !semanticConventions) {
         return null;
     }
 
     const tracer = trace.getTracer('logger');
+    const semConv = semanticConventions as unknown as Record<string, Record<string, string>>;
+    const codeFunction = semConv.SemanticAttributes?.CODE_FUNCTION || 'code.function';
+    const codeNamespace = semConv.SemanticAttributes?.CODE_NAMESPACE || 'code.namespace';
+
     return tracer.startSpan(`log.${level}`, {
         attributes: {
-            [semanticConventions.SemanticAttributes.CODE_FUNCTION]: name,
-            [semanticConventions.SemanticAttributes.CODE_NAMESPACE]: 'logger',
+            [codeFunction]: name,
+            [codeNamespace]: 'logger',
             'logging.level': level,
-            'logging.message': message
+            'logging.message': String(message)
         }
     });
 }
 
 /**
  * Records metrics for logging operations
- * @param {string} name - The module name
- * @param {string} level - The log level
+ * @param name - The module name
+ * @param level - The log level
  */
-function recordMetrics(name, level) {
+function recordMetrics(name: string, level: string): void {
     if (logCounter) {
         logCounter.add(1, {
             module: name,
@@ -212,10 +247,10 @@ function recordMetrics(name, level) {
 
 /**
  * Looks for logging level in config for a particular module
- * @param {string} name - The module name
- * @returns {string} The configured log level
+ * @param name - The module name
+ * @returns The configured log level
  */
-const logLevel = function(name) {
+const logLevel = function(name: string): string {
     if (typeof prefs === 'undefined') {
         return 'error';
     }
@@ -224,19 +259,20 @@ const logLevel = function(name) {
     }
     else {
         // Check log levels in priority order (most verbose first)
-        const validLevels = ['debug', 'info', 'warn', 'error'];
+        const validLevels: LogLevel[] = ['debug', 'info', 'warn', 'error'];
 
-        for (let level of validLevels) {
+        for (const level of validLevels) {
             if (!prefs[level]) {
                 continue;
             }
 
-            if (typeof prefs[level] === 'string' && name.indexOf(prefs[level]) === 0) {
+            if (typeof prefs[level] === 'string' && name.indexOf(prefs[level] as string) === 0) {
                 return level;
             }
-            if (typeof prefs[level] === 'object' && Array.isArray(prefs[level]) && prefs[level].length) {
-                for (let i = prefs[level].length - 1; i >= 0; i--) {
-                    let opt = prefs[level][i];
+            if (typeof prefs[level] === 'object' && Array.isArray(prefs[level]) && (prefs[level] as string[]).length) {
+                const prefLevel = prefs[level] as string[];
+                for (let i = prefLevel.length - 1; i >= 0; i--) {
+                    const opt = prefLevel[i];
                     if (opt === name || name.indexOf(opt) === 0) {
                         return level;
                     }
@@ -249,21 +285,21 @@ const logLevel = function(name) {
 
 /**
  * Creates a Pino logger instance with the appropriate configuration
- * @param {string} name - The module name
- * @param {string} [level] - The log level
- * @returns {Logger} Configured Pino logger instance
+ * @param name - The module name
+ * @param level - The log level
+ * @returns Configured Pino logger instance
  */
-const createLogger = (name, level) => {
-    const config = {
+const createLogger = (name: string, level?: string): Logger => {
+    const config: pino.LoggerOptions = {
         name,
         level: level || deflt,
         timestamp: pino.stdTimeFunctions.isoTime,
         hooks: {
-            logMethod(args, method) {
+            logMethod(args: unknown[], method: pino.LogFn) {
                 if (args.length > 1) {
                     // Create an object with all arguments in order
-                    const logObj = {};
-                    let messageArg = null;
+                    const logObj: Record<string, unknown> = {};
+                    let messageArg: string | null = null;
 
                     for (let i = 0; i < args.length; i++) {
                         const arg = args[i];
@@ -277,9 +313,9 @@ const createLogger = (name, level) => {
                                     message: arg.message,
                                     stack: arg.stack,
                                     // Include any custom properties
-                                    ...Object.getOwnPropertyNames(arg).reduce((acc, prop) => {
+                                    ...Object.getOwnPropertyNames(arg).reduce((acc: Record<string, unknown>, prop) => {
                                         if (!['name', 'message', 'stack'].includes(prop)) {
-                                            acc[prop] = arg[prop];
+                                            acc[prop] = (arg as unknown as Record<string, unknown>)[prop];
                                         }
                                         return acc;
                                     }, {})
@@ -309,15 +345,15 @@ const createLogger = (name, level) => {
                     method.apply(this, [logObj, messageArg || '']);
                 }
                 else {
-                    method.apply(this, args);
+                    method.apply(this, args as [string]);
                 }
             }
         },
         formatters: {
-            level: (label) => {
+            level: (label: string) => {
                 return { level: label.toUpperCase() };
             },
-            log: (object) => {
+            log: (object: Record<string, unknown>) => {
                 const traceContext = getTraceContext();
                 return traceContext ? { ...object, ...traceContext } : object;
             }
@@ -337,24 +373,26 @@ const createLogger = (name, level) => {
                 }
             });
         }
-        return pino(config, prettyTransport);
+        return pino(config, prettyTransport as pino.DestinationStream);
     }
     else {
         return pino(config);
     }
 };
 
+type LogFunction = (...args: unknown[]) => void;
+
 /**
  * Creates a logging function for a specific level
- * @param {Logger} logger - The Pino logger instance
- * @param {string} name - The module name
- * @param {string} level - The log level code (d, i, w, e)
- * @returns {Function} The logging function
+ * @param logger - The Pino logger instance
+ * @param name - The module name
+ * @param level - The log level code (d, i, w, e)
+ * @returns The logging function
  */
-const createLogFunction = (logger, name, level) => {
-    return function(...args) {
+const createLogFunction = (logger: Logger, name: string, level: LogLevelCode): LogFunction => {
+    return function(...args: unknown[]): void {
         const currentLevel = levels[name] || deflt;
-        if (ACCEPTABLE[level].indexOf(currentLevel) !== -1) {
+        if (ACCEPTABLE[level].indexOf(currentLevel as LogLevel) !== -1) {
             const startTime = performance.now();
             const message = args[0];
 
@@ -363,7 +401,7 @@ const createLogFunction = (logger, name, level) => {
 
             try {
                 // Pass all arguments directly to Pino - the logMethod hook will handle them
-                logger[LEVELS[level]](...args);
+                (logger[LEVELS[level]] as LogFunction)(...args);
 
                 // Record metrics
                 recordMetrics(name, LEVELS[level]);
@@ -388,41 +426,41 @@ const createLogFunction = (logger, name, level) => {
 
 /**
  * Sets current logging level for a module
- * @param {string} module - The module name
- * @param {string} level - The log level
+ * @param module - The module name
+ * @param level - The log level
  */
-const setLevel = function(module, level) {
+const setLevel = function(module: string, level: string): void {
     levels[module] = level;
 };
 
 /**
  * Sets default logging level
- * @param {string} level - The log level
+ * @param level - The log level
  */
-const setDefault = function(level) {
+const setDefault = function(level: string): void {
     deflt = level;
 };
 
 /**
  * Sets pretty-print option
- * @param {boolean} enabled - Whether to enable pretty-print
+ * @param enabled - Whether to enable pretty-print
  */
-const setPrettyPrint = function(enabled) {
+const setPrettyPrint = function(enabled: boolean): void {
     prettyPrint = enabled;
 
     // Reset transport when changing pretty-print setting
     if (prettyTransport) {
-        prettyTransport.end();
+        (prettyTransport as NodeJS.WritableStream).end?.();
         prettyTransport = null;
     }
 };
 
 /**
  * Gets current logging level for a module
- * @param {string} module - The module name
- * @returns {string} The current log level
+ * @param module - The module name
+ * @returns The current log level
  */
-const getLevel = function(module) {
+const getLevel = function(module?: string): string {
     if (module) {
         // If not in cache, compute it from config
         if (!(module in levels)) {
@@ -433,145 +471,161 @@ const getLevel = function(module) {
     return deflt;
 };
 
+interface SubLogger {
+    id: () => string;
+    d: LogFunction;
+    i: LogFunction;
+    w: LogFunction;
+    e: LogFunction;
+    f: (l: LogLevelCode, fn: (log: LogFunction) => void, fl?: LogLevelCode, ...fargs: unknown[]) => boolean | void;
+    sub: (subname: string) => SubLogger;
+}
+
+interface CountlyLogger extends SubLogger {
+    callback: (next?: (...args: unknown[]) => void) => (err?: Error | null, ...args: unknown[]) => void;
+    logdb: (opname: string, next?: (...args: unknown[]) => void, nextError?: (err: Error) => void) => (err?: Error | null, ...args: unknown[]) => void;
+}
+
 /**
  * Creates a new logger instance
- * @param {string} name - The module name
- * @returns {Object} Logger instance with various methods
+ * @param name - The module name
+ * @returns Logger instance with various methods
  */
-module.exports = function(name) {
+function createCountlyLogger(name: string): CountlyLogger {
     setLevel(name, logLevel(name));
     const logger = createLogger(name, levels[name]);
 
     /**
      * Creates a sub-logger with the parent's name as prefix
-     * @param {string} subname - The sub-logger name
-     * @returns {Object} Sub-logger instance
+     * @param subname - The sub-logger name
+     * @returns Sub-logger instance
      */
-    const createSubLogger = (subname) => {
+    const createSubLogger = (subname: string): SubLogger => {
         const full = name + ':' + subname;
         setLevel(full, logLevel(full));
         const subLogger = createLogger(full, levels[full]);
 
-        return {
+        const subLoggerInstance: SubLogger = {
             /**
              * Returns the full identifier of this sub-logger
-             * @returns {string} Full logger identifier
+             * @returns Full logger identifier
              */
             id: () => full,
 
             /**
              * Logs a debug message
-             * @param {...*} args - Message and optional parameters
+             * @param args - Message and optional parameters
              */
             d: createLogFunction(subLogger, full, 'd'),
 
             /**
              * Logs an info message
-             * @param {...*} args - Message and optional parameters
+             * @param args - Message and optional parameters
              */
             i: createLogFunction(subLogger, full, 'i'),
 
             /**
              * Logs a warning message
-             * @param {...*} args - Message and optional parameters
+             * @param args - Message and optional parameters
              */
             w: createLogFunction(subLogger, full, 'w'),
 
             /**
              * Logs an error message
-             * @param {...*} args - Message and optional parameters
+             * @param args - Message and optional parameters
              */
             e: createLogFunction(subLogger, full, 'e'),
 
             /**
              * Conditionally executes a function based on current log level
-             * @param {string} l - Log level code
-             * @param {Function} fn - Function to execute if level is enabled
-             * @param {string} [fl] - Fallback log level
-             * @param {...*} fargs - Arguments for fallback
-             * @returns {boolean} True if the function was executed
+             * @param l - Log level code
+             * @param fn - Function to execute if level is enabled
+             * @param fl - Fallback log level
+             * @param fargs - Arguments for fallback
+             * @returns True if the function was executed
              */
-            f: function(l, fn, fl, ...fargs) {
-                if (ACCEPTABLE[l].indexOf(levels[full] || deflt) !== -1) {
+            f: function(l: LogLevelCode, fn: (log: LogFunction) => void, fl?: LogLevelCode, ...fargs: unknown[]): boolean | void {
+                if (ACCEPTABLE[l].indexOf((levels[full] || deflt) as LogLevel) !== -1) {
                     fn(createLogFunction(subLogger, full, l));
                     return true;
                 }
                 else if (fl) {
-                    this[fl].apply(this, fargs);
+                    (this[fl] as LogFunction).apply(this, fargs);
                 }
             },
 
             /**
              * Creates a nested sub-logger
-             * @param {string} subname - The nested sub-logger name
-             * @returns {Object} Nested sub-logger instance
+             * @param subname - The nested sub-logger name
+             * @returns Nested sub-logger instance
              */
             sub: createSubLogger
         };
+
+        return subLoggerInstance;
     };
 
-    return {
+    const loggerInstance: CountlyLogger = {
         /**
          * Returns the identifier of this logger
-         * @returns {string} Logger identifier
+         * @returns Logger identifier
          */
         id: () => name,
 
         /**
          * Logs a debug message
-         * @param {...*} args - Message and optional parameters
+         * @param args - Message and optional parameters
          */
         d: createLogFunction(logger, name, 'd'),
 
         /**
          * Logs an info message
-         * @param {...*} args - Message and optional parameters
+         * @param args - Message and optional parameters
          */
         i: createLogFunction(logger, name, 'i'),
 
         /**
          * Logs a warning message
-         * @param {...*} args - Message and optional parameters
+         * @param args - Message and optional parameters
          */
         w: createLogFunction(logger, name, 'w'),
 
         /**
          * Logs an error message
-         * @param {...*} args - Message and optional parameters
+         * @param args - Message and optional parameters
          */
         e: createLogFunction(logger, name, 'e'),
 
         /**
          * Conditionally executes a function based on current log level
-         * @param {string} l - Log level code
-         * @param {Function} fn - Function to execute if level is enabled
-         * @param {string} [fl] - Fallback log level
-         * @param {...*} fargs - Arguments for fallback
-         * @returns {boolean} True if the function was executed
+         * @param l - Log level code
+         * @param fn - Function to execute if level is enabled
+         * @param fl - Fallback log level
+         * @param fargs - Arguments for fallback
+         * @returns True if the function was executed
          */
-        f: function(l, fn, fl, ...fargs) {
-            if (ACCEPTABLE[l].indexOf(levels[name] || deflt) !== -1) {
+        f: function(l: LogLevelCode, fn: (log: LogFunction) => void, fl?: LogLevelCode, ...fargs: unknown[]): boolean | void {
+            if (ACCEPTABLE[l].indexOf((levels[name] || deflt) as LogLevel) !== -1) {
                 fn(createLogFunction(logger, name, l));
                 return true;
             }
             else if (fl) {
-                this[fl].apply(this, fargs);
+                (this[fl] as LogFunction).apply(this, fargs);
             }
         },
 
         /**
          * Creates a callback function that logs errors
-         * @param {Function} [next] - Function to call on success
-         * @returns {Function} Callback function
+         * @param next - Function to call on success
+         * @returns Callback function
          */
-        callback: function(next) {
+        callback: function(next?: (...args: unknown[]) => void): (err?: Error | null, ...args: unknown[]) => void {
             const self = this;
-            return function(err) {
+            return function(this: unknown, err?: Error | null, ...args: unknown[]): void {
                 if (err) {
                     self.e(err);
                 }
                 else if (next) {
-                    const args = Array.prototype.slice.call(arguments, 1);
                     next.apply(this, args);
                 }
             };
@@ -579,14 +633,14 @@ module.exports = function(name) {
 
         /**
          * Creates a database operation callback that logs results
-         * @param {string} opname - Operation name
-         * @param {Function} [next] - Function to call on success
-         * @param {Function} [nextError] - Function to call on error
-         * @returns {Function} Database callback function
+         * @param opname - Operation name
+         * @param next - Function to call on success
+         * @param nextError - Function to call on error
+         * @returns Database callback function
          */
-        logdb: function(opname, next, nextError) {
+        logdb: function(opname: string, next?: (...args: unknown[]) => void, nextError?: (err: Error) => void): (err?: Error | null, ...args: unknown[]) => void {
             const self = this;
-            return function(err) {
+            return function(this: unknown, err?: Error | null, ...args: unknown[]): void {
                 if (err) {
                     self.e('Error while %j: %j', opname, err);
                     if (nextError) {
@@ -596,7 +650,7 @@ module.exports = function(name) {
                 else {
                     self.d('Done %j', opname);
                     if (next) {
-                        next.apply(this, Array.prototype.slice.call(arguments, 1));
+                        next.apply(this, args);
                     }
                 }
             };
@@ -604,59 +658,28 @@ module.exports = function(name) {
 
         /**
          * Creates a sub-logger with the current logger's name as prefix
-         * @param {string} subname - The sub-logger name
-         * @returns {Object} Sub-logger instance
+         * @param subname - The sub-logger name
+         * @returns Sub-logger instance
          */
         sub: createSubLogger
     };
-};
 
-// Export static methods
-/**
- * Sets logging level for a specific module
- * @param {string} module - The module name
- * @param {string} level - The log level
- */
-module.exports.setLevel = setLevel;
-
-/**
- * Sets default logging level for all modules without explicit configuration
- * @param {string} level - The log level
- */
-module.exports.setDefault = setDefault;
-
-/**
- * Sets pretty-print option for all loggers
- * @param {boolean} enabled - Whether to enable pretty-print
- */
-module.exports.setPrettyPrint = setPrettyPrint;
-
-/**
- * Gets current logging level for a module
- * @param {string} module - The module name
- * @returns {string} The current log level
- */
-module.exports.getLevel = getLevel;
-
-/**
- * Indicates if OpenTelemetry integration is available
- * @type {boolean}
- */
-module.exports.hasOpenTelemetry = Boolean(trace && metrics);
+    return loggerInstance;
+}
 
 /**
  * Updates the logging configuration for all modules.
- * 
- * @param {Object} msg - The message containing the new logging configuration.
- * @param {string} msg.cmd - The command type, should be 'log' to trigger update.
- * @param {Object} msg.config - The configuration object mapping log levels to module lists.
- * @param {string} [msg.config.default] - The default log level for modules not explicitly listed.
- * 
+ *
+ * @param msg - The message containing the new logging configuration.
+ * @param msg.cmd - The command type, should be 'log' to trigger update.
+ * @param msg.config - The configuration object mapping log levels to module lists.
+ * @param msg.config.default - The default log level for modules not explicitly listed.
+ *
  * This function updates the internal logging levels and preferences based on the provided configuration.
  * It is typically used to dynamically adjust logging settings at runtime.
  */
-module.exports.updateConfig = function(msg) {
-    var m, l, modules, i;
+function updateConfig(msg: UpdateConfigMessage): void {
+    let m: string, l: string, modules: string[], i: number;
 
     if (!msg || msg.cmd !== 'log' || !msg.config) {
         return;
@@ -669,9 +692,10 @@ module.exports.updateConfig = function(msg) {
     }
 
     for (m in levels) {
-        var found = null;
+        let found: string | null = null;
         for (l in msg.config) {
-            modules = msg.config[l].split(',').map(function(v) {
+            if (!msg.config[l]) continue;
+            modules = msg.config[l]!.split(',').map(function(v: string) {
                 return v.trim();
             });
 
@@ -684,7 +708,8 @@ module.exports.updateConfig = function(msg) {
 
         if (found === null) {
             for (l in msg.config) {
-                modules = msg.config[l].split(',').map(function(v) {
+                if (!msg.config[l]) continue;
+                modules = msg.config[l]!.split(',').map(function(v: string) {
                     return v.trim();
                 });
 
@@ -709,12 +734,12 @@ module.exports.updateConfig = function(msg) {
 
     for (l in msg.config) {
         if (msg.config[l] && l !== 'default') {
-            modules = msg.config[l].split(',').map(function(v) {
+            modules = msg.config[l]!.split(',').map(function(v: string) {
                 return v.trim();
             });
             prefs[l] = modules;
 
-            for (i in modules) {
+            for (i = 0; i < modules.length; i++) {
                 m = modules[i];
                 if (!(m in levels)) {
                     levels[m] = l;
@@ -729,4 +754,25 @@ module.exports.updateConfig = function(msg) {
     prefs.default = msg.config.default;
 
     // console.log('%d: Set logging config to %j (now %j)', process.pid, msg.config, levels);
-};
+}
+
+// Create the module export with static methods attached
+interface LogModule {
+    (name: string): CountlyLogger;
+    setLevel: typeof setLevel;
+    setDefault: typeof setDefault;
+    setPrettyPrint: typeof setPrettyPrint;
+    getLevel: typeof getLevel;
+    hasOpenTelemetry: boolean;
+    updateConfig: typeof updateConfig;
+}
+
+const logModule = createCountlyLogger as LogModule;
+logModule.setLevel = setLevel;
+logModule.setDefault = setDefault;
+logModule.setPrettyPrint = setPrettyPrint;
+logModule.getLevel = getLevel;
+logModule.hasOpenTelemetry = Boolean(trace && metrics);
+logModule.updateConfig = updateConfig;
+
+export = logModule;

@@ -27,7 +27,12 @@
         "api/utils/localization.js",
         "api/utils/requestProcessor.js",
         "api/utils/taskmanager.js",
-        "api/utils/authorizer.js"
+        "api/utils/authorizer.js",
+        "api/utils/log.ts",
+        "api/utils/models.ts",
+        "api/utils/random-sfc32.ts",
+        "api/utils/timezones.ts",
+        "api/utils/utils.ts"
     ],
     "exclude": [
         "node_modules/**/*.ts",

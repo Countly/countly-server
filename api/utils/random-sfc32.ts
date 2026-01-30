@@ -1,30 +1,41 @@
 /**
-* Module for 32-bit Random Number Generation between [0, 1)
-* @module api/utils/random-sfc32
-*/
+ * Module for 32-bit Random Number Generation between [0, 1)
+ * @module api/utils/random-sfc32
+ */
 
-var crypto = require('crypto');
+import crypto from 'crypto';
+
+/**
+ * Type for a seeded random number generator function
+ */
+type PRNG = () => number;
+
+/**
+ * Type for a seed scramble function
+ */
+type SeedScrambler = () => number;
 
 /**
  * Function that returns random number generator
- * @param  {String} key - Seed value for the RNG
- * @returns {Function} - Returns prng instance
+ * @param key - Seed value for the RNG
+ * @returns Returns prng instance
  */
-var random = function(key) {
+function random(key?: string): PRNG {
     /**
      * Seed generation using Fowler–Noll–Vo hash function - FNV-1a hash
      * FNV (Fowler/Noll/Vo) is a fast, non-cryptographic hash algorithm with good dispersion.
      * http://papa.bretmulvey.com/post/124027987928/hash-functions
-     * @param  {string} str - Salt value
-     * @returns {Function} - Seed sramble function
+     * @param str - Salt value
+     * @returns Seed scramble function
      */
-    function xfnv1a(str) {
-        for (var i = 0, h = 2166136261 >>> 0; i < str.length; i++) {
+    function xfnv1a(str: string): SeedScrambler {
+        let h = 2166136261 >>> 0;
+        for (let i = 0; i < str.length; i++) {
             // Math.imul() allows for 32-bit integer multiplication with C-like semantics
             h = Math.imul(h ^ str.charCodeAt(i), 16777619);
         }
 
-        return function() {
+        return function(): number {
             h += h << 13;
             h ^= h >>> 7;
             h += h << 3;
@@ -37,16 +48,16 @@ var random = function(key) {
      * PRNG - sfc32 - Recommended by PRACTRAND
      * This comes from the PractRand random number testing suite, of which it passes without issue.
      * https://github.com/MartyMacGyver/PractRand/blob/master/src/RNGs/sfc.cpp
-     * @param  {Number} a - scrambled seed no
-     * @param  {Number} b - scrambled seed no
-     * @param  {Number} c - scrambled seed no
-     * @param  {Number} d - scrambled seed no
-     * @returns {Number} - Random number between 0 - 1
+     * @param a - scrambled seed no
+     * @param b - scrambled seed no
+     * @param c - scrambled seed no
+     * @param d - scrambled seed no
+     * @returns Random number between 0 - 1
      */
-    function sfc32(a, b, c, d) {
-        return function() {
+    function sfc32(a: number, b: number, c: number, d: number): PRNG {
+        return function(): number {
             a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
-            var t = (a + b) | 0;
+            let t = (a + b) | 0;
             a = b ^ b >>> 9;
             b = c + (c << 3) | 0;
             c = (c << 21 | c >>> 11);
@@ -62,9 +73,9 @@ var random = function(key) {
         key = crypto.randomBytes(64).toString("hex");
     }
 
-    var seed = xfnv1a(key);
+    const seed = xfnv1a(key);
 
     return sfc32(seed(), seed(), seed(), seed());
-};
+}
 
-module.exports = random;
+export = random;
