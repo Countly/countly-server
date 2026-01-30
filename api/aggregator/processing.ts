@@ -3,11 +3,16 @@
  */
 
 import type { AggregatorUsageModule } from './usage.ts';
+import { createRequire } from 'module';
 
 import common from '../utils/common.js';
 //const { DataBatchReader } = require('../parts/data/dataBatchReader');
-const plugins = require('../../plugins/pluginManager.js');
 import usage from './usage.js';
+
+// createRequire needed for CJS modules without ES exports
+// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
+const require = createRequire(import.meta.url);
+const plugins = require('../../plugins/pluginManager.js');
 
 /**
  * Drill event structure from MongoDB change stream

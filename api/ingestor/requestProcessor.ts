@@ -5,16 +5,21 @@
 
 import type { IngestorUsageModule, IngestorParams, UsageObservable } from './usage.ts';
 import type { IncomingMessage, ServerResponse } from 'http';
+import { createRequire } from 'module';
 
 import usage from './usage.js';
 import common from '../utils/common.js';
 import url from 'url';
-const plugins = require("../../plugins/pluginManager.js");
 import logModule from '../utils/log.js';
 import crypto from 'crypto';
 import { ignorePossibleDevices, checksumSaltVerification, validateRedirect } from '../utils/requestProcessorCommon.js';
 import { ObjectId } from "mongodb";
 import { preset } from '../lib/countly.preset.js';
+
+// createRequire needed for CJS modules without ES exports
+// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
+const require = createRequire(import.meta.url);
+const plugins = require("../../plugins/pluginManager.js");
 const UnifiedEventSink = require('../eventSink/UnifiedEventSink.js');
 
 const log = logModule('core:ingestor');

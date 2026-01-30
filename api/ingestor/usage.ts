@@ -3,12 +3,17 @@
  * @module api/ingestor/usage
  */
 
+import { createRequire } from 'module';
 import common from './../utils/common.js';
 import geoip from 'geoip-lite';
-const geocoder = require('./../../bin/offline-geocoder/src/index.js')();
 import logModule from './../utils/log.js';
-const plugins = require('./../../plugins/pluginManager.js');
 import moment from 'moment-timezone';
+
+// createRequire needed for CJS modules without ES exports
+// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
+const require = createRequire(import.meta.url);
+const geocoder = require('./../../bin/offline-geocoder/src/index.js')();
+const plugins = require('./../../plugins/pluginManager.js');
 
 const log = logModule('ingestor:usage');
 

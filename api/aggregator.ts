@@ -4,10 +4,15 @@
  */
 
 import type { Db } from 'mongodb';
+import { createRequire } from 'module';
 
 import countlyConfig from './config.js';
-const plugins = require('../plugins/pluginManager.js');
 import logModule from './utils/log.js';
+
+// createRequire needed for CJS modules without ES exports
+// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
+const require = createRequire(import.meta.url);
+const plugins = require('../plugins/pluginManager.js');
 import common from './utils/common.js';
 import { WriteBatcher } from './parts/data/batcher.js';
 import { Cacher } from './parts/data/cacher.js';

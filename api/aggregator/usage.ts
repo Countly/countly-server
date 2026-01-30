@@ -4,12 +4,17 @@
  */
 
 import type { WriteBatcher } from '../../types/batcher';
+import { createRequire } from 'module';
 
 import common from './../utils/common.js';
-const plugins = require('./../../plugins/pluginManager.js');
 import async from 'async';
 import crypto from 'crypto';
 import moment from 'moment-timezone';
+
+// createRequire needed for CJS modules without ES exports
+// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
+const require = createRequire(import.meta.url);
+const plugins = require('./../../plugins/pluginManager.js');
 
 /**
  * Event token for stream processing
