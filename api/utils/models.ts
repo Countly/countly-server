@@ -1,4 +1,8 @@
 import { ObjectId, Collection, Document, Filter, UpdateFilter, FindOneAndUpdateOptions } from 'mongodb';
+import { createRequire } from 'module';
+
+// @ts-expect-error - import.meta is available at runtime with Node's native TypeScript support
+const require = createRequire(import.meta.url);
 
 interface ValidationResult {
     result: boolean;

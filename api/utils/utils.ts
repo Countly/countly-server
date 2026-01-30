@@ -3,6 +3,10 @@
  * @module api/utils/utils
  */
 import crypto from 'crypto';
+import { createRequire } from 'module';
+
+// @ts-expect-error - import.meta is available at runtime with Node's native TypeScript support
+const require = createRequire(import.meta.url);
 
 interface EncryptionConfig {
     key?: string;
@@ -17,7 +21,6 @@ interface CountlyConfig {
     [key: string]: unknown;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const countlyConfig: CountlyConfig = require('./../config.js') as CountlyConfig;
 
 if (!countlyConfig.encryption) {

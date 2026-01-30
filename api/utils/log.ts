@@ -1,5 +1,9 @@
 import pino from 'pino';
 import type { Logger } from 'pino';
+import { createRequire } from 'module';
+
+// @ts-expect-error - import.meta is available at runtime with Node's native TypeScript support
+const require = createRequire(import.meta.url);
 
 // Optional OpenTelemetry imports
 let trace: typeof import('@opentelemetry/api').trace | undefined;
@@ -67,7 +71,6 @@ const ACCEPTABLE: Record<LogLevelCode, LogLevel[]> = {
  */
 function loadLoggingConfig(): LoggingConfig {
     // Start with config.js values
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const prefs: LoggingConfig = (require('../config.js') as { logging?: LoggingConfig }).logging || {};
 
     // Check for environment variable overrides
