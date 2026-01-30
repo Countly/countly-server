@@ -41,6 +41,10 @@
         "allowImportingTsExtensions": true,
         "target": "es2024",
         "module": "nodenext",
-        "moduleResolution": "nodenext"
+        "moduleResolution": "nodenext",
+        "lib": ["es2024"],
+        // These help with CJS → TS interop:
+        "esModuleInterop": true,       // enables default imports from CJS modules
+        "isolatedModules": true         // catches patterns that won't work at runtim
     }
 }
