@@ -3,7 +3,7 @@
  * @module api/ingestor/requestProcessor
  */
 
-import type { IngestorUsageModule, IngestorParams, UsageObservable } from './usage.ts';
+import type { IngestorParams, UsageObservable } from './usage.ts';
 import type { IncomingMessage, ServerResponse } from 'http';
 import { createRequire } from 'module';
 

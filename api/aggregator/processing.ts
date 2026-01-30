@@ -2,7 +2,6 @@
  * File contains core data aggregators
  */
 
-import type { AggregatorUsageModule } from './usage.ts';
 import { createRequire } from 'module';
 
 import common from '../utils/common.js';
