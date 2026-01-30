@@ -778,4 +778,5 @@ logModule.getLevel = getLevel;
 logModule.hasOpenTelemetry = Boolean(trace && metrics);
 logModule.updateConfig = updateConfig;
 
-export = logModule;
+export default logModule;
+export { setLevel, setDefault, setPrettyPrint, getLevel, updateConfig };

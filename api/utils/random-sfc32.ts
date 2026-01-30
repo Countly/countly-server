@@ -78,4 +78,4 @@ function random(key?: string): PRNG {
     return sfc32(seed(), seed(), seed(), seed());
 }
 
-export = random;
+export default random;

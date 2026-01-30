@@ -1,2 +1,2 @@
 // Proxy file - re-exports from TypeScript implementation
-module.exports = require('./log.ts');
+module.exports = require('./log.ts').default;
