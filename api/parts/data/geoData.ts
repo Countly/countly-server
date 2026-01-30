@@ -4,11 +4,11 @@
  */
 
 import type { Database } from '../../../plugins/pluginManager';
-import { createRequire } from 'module';
 
-const require = createRequire(import.meta.url);
-const log = require('../../utils/log.js')('core:geo');
-const common = require('../../utils/common.js');
+import logModule from '../../utils/log.js';
+import common from '../../utils/common.js';
+
+const log = logModule('core:geo');
 
 /** Options for loading city coordinates */
 export interface LoadCityCoordinatesOptions {

@@ -13,8 +13,11 @@
         "plugins/push_approver/**/*.js",
         "api/lib/countly.common.js",
         "api/parts/data/geoData.ts",
+        "api/aggregator.ts",
         "api/aggregator/usage.ts",
         "api/aggregator/processing.ts",
+        "api/ingestor/usage.ts",
+        "api/ingestor/requestProcessor.ts",
         "api/utils/common.js",
         "api/utils/localization.js",
         "api/utils/requestProcessor.js",
@@ -36,7 +39,12 @@
         "strict": true,
         "noEmit": true,
         "allowImportingTsExtensions": true,
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext"
+        "target": "es2024",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "lib": ["es2024"],
+        // These help with CJS → TS interop:
+        "esModuleInterop": true,       // enables default imports from CJS modules
+        "isolatedModules": true         // catches patterns that won't work at runtim
     }
 }
