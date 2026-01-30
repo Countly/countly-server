@@ -3,9 +3,7 @@ import countlyCommon from './countly.common.js';
 import jQuery from 'jquery';
 
 // internal variables
-export let odd = true;
 export const types = ["c", "r", "u", "d"];
-export const typeNames = ["create", "read", "update", "delete"];
 export let features = [];
 
 /**

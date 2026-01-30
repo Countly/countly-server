@@ -157,15 +157,6 @@ var CommonConstructor = function() {
         else {
             countlyCommon.periodObj = calculatePeriodObject(period);
         }
-
-        if (window.countlyCommon === this && window.app && window.app.recordEvent) {
-            window.app.recordEvent({
-                "key": "period-change",
-                "count": 1,
-                "segmentation": {is_custom: Array.isArray(period)}
-            });
-        }
-
         if (noSet) {
             /*
                     Dont update vuex or local storage if noSet is true
