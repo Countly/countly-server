@@ -82,7 +82,7 @@ const legacyScripts = [
     // 'javascripts/countly/countly.template.js',
     // 'javascripts/countly/vue/helpers.js',                                     - DELETE. NOT BEING USED ANYWHERE.
     // 'javascripts/countly/vue/data/vuex.js',
-    'javascripts/countly/countly.task.manager.js',
+    // 'javascripts/countly/countly.task.manager.js',
     'javascripts/countly/vue/imports.js',
     // 'javascripts/countly/vue/components/nav.js', // DELETE.
     // 'javascripts/countly/vue/components/layout.js', // Migrated to SFC

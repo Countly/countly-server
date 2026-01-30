@@ -96,3 +96,6 @@ window.AppRouter = countlyTemplate.AppRouter;
 
 import countlyCMS from './javascripts/countly/countly.cms.js';
 window.countlyCMS = countlyCMS;
+
+import * as countlyTaskManager from './javascripts/countly/countly.task.manager.js';
+window.countlyTaskManager = countlyTaskManager;
