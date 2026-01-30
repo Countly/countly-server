@@ -3,32 +3,9 @@
  * TO-DO: will be turn into composables in future refactorings
  */
 
-import Vue from 'vue';
 // import app from '...sth' TO-DO: import app when app is modularized and remove window.app usage
 
-// It creates elementId for each component - to be able to access form fields
-// Neccessary for modal management like which modal is open? etc.
-let _uniqueComponentId = 0;
-
-export const BaseComponentMixin = {
-    beforeCreate: function() {
-        this.ucid = _uniqueComponentId.toString();
-        _uniqueComponentId += 1;
-    },
-    computed: {
-        componentId: function() {
-            return "cly-cmp-" + this.ucid;
-        }
-    },
-    methods: {
-        optionalComponent: function(componentName) {
-            if (Vue.options.components[componentName]) {
-                return componentName;
-            }
-            return null;
-        }
-    }
-};
+import { getNextComponentId } from '../../mixins/base.js';
 
 export const BufferedObjectMixin = {
     props: {
@@ -284,8 +261,7 @@ export const BaseContentMixin = {
         };
     },
     beforeCreate: function() {
-        this.ucid = _uniqueComponentId.toString();
-        _uniqueComponentId += 1;
+        this.ucid = getNextComponentId();
     },
     computed: {
         componentId: function() {

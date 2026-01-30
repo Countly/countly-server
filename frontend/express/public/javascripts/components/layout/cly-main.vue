@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import { BaseComponentMixin } from '../form/mixins.js';
+import { BaseComponentMixin } from '../../mixins/base.js';
 import { getGlobalStore } from '../../countly/vue/core.js';
 
 const PersistentNotifications = {

@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { BaseComponentMixin } from '../form/mixins.js';
+import { BaseComponentMixin } from '../../mixins/base.js';
 import { isPluginEnabled } from '../../countly/countly.helpers.js';
 import countlyCMS from '../../countly/countly.cms.js';
 

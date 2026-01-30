@@ -72,6 +72,13 @@ import ClyConfirmDialog from './javascripts/components/dialog/cly-confirm-dialog
 import ClyMessageDialog from './javascripts/components/dialog/cly-message-dialog.vue';
 import ClyFormDialog from './javascripts/components/dialog/cly-form-dialog.vue';
 
+// Dropdown component imports
+import ClyInputDropdownTrigger from './javascripts/components/dropdown/input-dropdown-trigger.vue';
+import ClyDropdown from './javascripts/components/dropdown/dropdown.vue';
+import ClyFieldsSelect from './javascripts/components/dropdown/fields-select.vue';
+import ClyMultiSelect from './javascripts/components/dropdown/multi-select.vue';
+import ClyMoreOptions from './javascripts/components/dropdown/more-options.vue';
+
 // Register components globally
 window.Vue.component('cly-status-badge', ClyStatusBadge);
 window.Vue.component('cly-tabs', ClyTabs);
@@ -110,6 +117,13 @@ window.Vue.component('cly-dialog', ClyDialog);
 window.Vue.component('cly-confirm-dialog', ClyConfirmDialog);
 window.Vue.component('cly-message-dialog', ClyMessageDialog);
 window.Vue.component('cly-form-dialog', ClyFormDialog);
+
+// Register dropdown components globally
+window.Vue.component('cly-input-dropdown-trigger', ClyInputDropdownTrigger);
+window.Vue.component('cly-dropdown', ClyDropdown);
+window.Vue.component('cly-fields-select', ClyFieldsSelect);
+window.Vue.component('cly-multi-select', ClyMultiSelect);
+window.Vue.component('cly-more-options', ClyMoreOptions);
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW

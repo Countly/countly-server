@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import { BaseComponentMixin } from './mixins.js';
+import { BaseComponentMixin } from '../../mixins/base.js';
 
 export default {
     mixins: [BaseComponentMixin],

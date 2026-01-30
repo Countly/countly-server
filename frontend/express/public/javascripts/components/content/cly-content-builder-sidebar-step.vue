@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { BaseComponentMixin } from '../form/mixins.js';
+import { BaseComponentMixin } from '../../mixins/base.js';
 
 const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_LIST_BLOCK = 'list-block';
 

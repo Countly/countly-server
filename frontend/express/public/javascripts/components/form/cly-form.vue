@@ -5,7 +5,8 @@
 </template>
 
 <script>
-import { BaseComponentMixin, MultiStepFormMixin } from './mixins.js';
+import { BaseComponentMixin } from '../../mixins/base.js';
+import { MultiStepFormMixin } from './mixins.js';
 
 export default {
     mixins: [BaseComponentMixin, MultiStepFormMixin]

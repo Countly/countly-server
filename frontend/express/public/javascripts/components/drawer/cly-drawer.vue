@@ -119,7 +119,9 @@
 </template>
 
 <script>
-import { BaseComponentMixin, MultiStepFormMixin, ModalMixin } from './mixins.js';
+import { BaseComponentMixin } from '../../mixins/base.js';
+import { MultiStepFormMixin } from '../form/mixins.js';
+import { ModalMixin } from './mixins.js';
 
 export default {
     mixins: [BaseComponentMixin, MultiStepFormMixin, ModalMixin],

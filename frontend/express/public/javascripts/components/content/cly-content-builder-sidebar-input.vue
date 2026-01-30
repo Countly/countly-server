@@ -119,7 +119,7 @@
 </template>
 
 <script>
-import { BaseComponentMixin } from '../form/mixins.js';
+import { BaseComponentMixin } from '../../mixins/base.js';
 import countlyCommon from '../../countly/countly.common.js';
 
 const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER = 'color-picker';

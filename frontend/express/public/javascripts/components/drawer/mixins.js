@@ -3,7 +3,6 @@
  * TO-DO: will be turn into composables in future refactorings
  */
 
-import { BaseComponentMixin, MultiStepFormMixin } from '../form/mixins.js';
 import { getModalManager } from '../layout/modal-manager.js';
 
 
@@ -97,4 +96,3 @@ export const hasDrawersMixin = function(names) {
     return result;
 };
 
-export { BaseComponentMixin, MultiStepFormMixin };

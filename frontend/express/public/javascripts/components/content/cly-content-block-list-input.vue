@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { BaseComponentMixin } from '../form/mixins.js';
+import { BaseComponentMixin } from '../../mixins/base.js';
 
 const DEFAULT_LIST_BLOCK_IMAGE_PLACEHOLDER_URL = '/content/images/fullscreenPlaceholderImage.png';
 

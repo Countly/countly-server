@@ -126,7 +126,7 @@
 </template>
 
 <script>
-import { BaseComponentMixin } from '../form/mixins.js';
+import { BaseComponentMixin } from '../../mixins/base.js';
 import countlyCommon from '../../countly/countly.common.js';
 
 export default {

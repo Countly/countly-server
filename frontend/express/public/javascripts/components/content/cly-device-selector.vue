@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { BaseComponentMixin } from '../form/mixins.js';
+import { BaseComponentMixin } from '../../mixins/base.js';
 
 export default {
     mixins: [BaseComponentMixin],

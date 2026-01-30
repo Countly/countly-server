@@ -35,7 +35,8 @@
 </template>
 
 <script>
-import { MultiStepFormMixin, ModalMixin } from '../drawer/mixins.js';
+import { MultiStepFormMixin } from '../form/mixins.js';
+import { ModalMixin } from '../drawer/mixins.js';
 
 export default {
     inheritAttrs: false,
