@@ -14,7 +14,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 bash "$DIR/scripts/logo.sh";
 
 # prerequisite per release
-sudo dnf install -y wget openssl-devel make git unzip bzip2
+sudo dnf install -y wget curl ca-certificates openssl-devel make git unzip bzip2
 
 sudo dnf install -y python3-pip
 sudo pip3 install pip --upgrade
@@ -60,7 +60,9 @@ sudo dnf install -y alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libX
 sudo dnf update -y nss
 
 #install nodejs
-sudo dnf module install -y nodejs:20/common
+NODE_MAJOR=24
+curl -fsSL "https://rpm.nodesource.com/setup_${NODE_MAJOR}.x" | sudo bash -
+sudo dnf install -y nodejs
 
 set +e
 NODE_JS_CMD=$(which nodejs)
