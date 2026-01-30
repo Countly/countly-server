@@ -1,0 +1,351 @@
+<template>
+    <div class="cly-vue-eldatatable" :class="classes">
+        <div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)">
+            <div v-if="!hideTop" class="bu-level cly-vue-eldatatable__header cly-vue-eldatatable__header--white" @mouseenter="onNoCellMouseEnter">
+                <div class="bu-level-left">
+                    <slot v-bind="commonScope" name="header-left"></slot>
+                </div>
+                <slot v-bind="commonScope" name="header-full"></slot>
+                <div class="bu-level-right">
+                    <slot v-bind="commonScope" name="header-right"></slot>
+                    <div class="bu-level-item">
+                        <cly-select-x
+                            v-if="hasDynamicCols"
+                            search-placeholder="Search in Columns"
+                            placeholder="Edit columns"
+                            title="Edit columns"
+                            mode="multi-check-sortable"
+                            placement="bottom-end"
+                            :test-id="testId + '-edit-columns-container'"
+                            :persistColumnOrderKey="persistKey"
+                            :width="300"
+                            :auto-commit="false"
+                            :hide-default-tabs="true"
+                            :hide-all-options-tab="true"
+                            :show-search="true"
+                            :showSelectedCount="true"
+                            :options="availableDynamicCols"
+                            v-model="controlParams.selectedDynamicCols">
+                            <template v-slot:trigger>
+                                <el-button :data-test-id="testId + '-edit-columns-button'" size="small" icon="ion-navicon-round"></el-button>
+                            </template>
+                        </cly-select-x>
+                    </div>
+                    <div class="bu-level-item" v-if="hasExport">
+                        <cly-dropdown :width="332" placement="bottom-end" ref="exportDropdown">
+                            <template v-slot:trigger="dropdown">
+                                <el-button :data-test-id="testId + '-export-as-button'" size="small" icon="cly-icon-btn cly-icon-download"></el-button>
+                            </template>
+                            <template>
+                                <div class="bu-mx-4 bu-mt-4">
+                                    <p :data-test-id="testId + '-export-as-pop-up-label'" class="bu-mb-4 color-cool-gray-100">{{i18n('export.export-as')}}</p>
+                                    <div  class="cly-vue-eldatatable__export--radio-button bu-mb-5">
+                                        <el-radio-group v-model="selectedExportType">
+                                            <el-radio-button :data-test-id="testId + '-export-as-pop-up-' + exportType.value.toLowerCase() + '-button'" v-for="exportType in availableExportTypes" :key="exportType.value" :label="exportType.value">{{exportType.name}}</el-radio-button>
+                                        </el-radio-group>
+                                    </div>
+                                </div>
+                                <div class="bu-mx-4 bu-mt-4" v-if="showLimitOptions">
+                                    <div class="bu-level-left">
+                                        <el-checkbox v-model="exportAllRows">
+                                            <span class="text-medium">
+                                                 {{i18n('export.export-all-rows')}}
+                                            </span>
+                                        </el-checkbox>
+                                    </div>
+                                    <div v-if="!exportAllRows" class='bu-level-right text-small color-cool-gray-50' :data-test-id="testId + '-export-as-pop-up-rows-selected-count'">
+                                        <p class="text-medium bu-pr-5"> {{i18n('export.limit-rows')}}</p>
+                                        <el-input-number :test-id="testId + '-export-limit-input'"  v-model="exportLimit" controls-position="right" ></el-input-number>
+                                    </div>
+                                </div>
+                                <div v-if="exportColumnSelection" class="cly-vue-eldatatable__export--extended">
+                                    <div class="bu-mx-4 bu-mb-3">
+                                        <div class="bu-level bu-mb-3">
+                                            <div class="bu-level-left">
+                                                <el-checkbox v-model="exportAllColumns">
+                                                    <span class="text-medium">
+                                                        {{i18n('export.export-all-columns')}}
+                                                    </span>
+                                                </el-checkbox>
+                                            </div>
+                                            <div class='bu-level-right text-small color-cool-gray-50' >
+                                                {{i18n('export.export-columns-selected-count',(exportColumns.length || 0 ),availableDynamicCols.length)}}
+                                            </div>
+                                        </div>
+                                        <div class="bu-level">
+                                            <div class="bu-level-item cly-vue-eldatatable__export--search">
+                                                <el-input
+                                                    :test-id="testId + '-export-as-pop-up-search-input'"
+                                                    ref="searchBox"
+                                                    autocomplete="off"
+                                                    v-model="searchQuery"
+                                                    placeholder="Search Columns">
+                                                    <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                                                </el-input>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="bu-mx-2">
+                                        <cly-checklistbox
+                                        v-model="exportColumns"
+                                        :sortable="false"
+                                        :bordered="false"
+                                        :options="getMatching(availableDynamicCols)">
+                                        </cly-checklistbox>
+                                    </div>
+                                </div>
+                                <div v-if="customExportFileName" :class="{'cly-vue-eldatatable__export--fileExport': exportColumnSelection}">
+                                    <div class="bu-my-4 bu-mx-4">
+                                        <p :data-test-id="testId + '-export-as-pop-up-file-name-label'" class="bu-mb-1 text-medium"> {{i18n('export.file-name')}} </p>
+                                        <el-input :test-id="testId + '-export-as-pop-up-file-name-input'" v-model="exportFileName"></el-input>
+                                    </div>
+                                </div>
+                                <slot name="export-config"></slot>
+                                <div class="bu-mx-4 bu-mb-4">
+                                    <el-button :data-test-id="testId + '-export-as-pop-up-export-button'" size="medium" @click="onExportClick" type="success" style="width: 100%">{{i18n('export.export')}}</el-button>
+                                </div>
+                            </template>
+                        </cly-dropdown>
+                    </div>
+                    <div class="bu-level-item" v-if="displaySearch">
+                        <form @keydown.enter.prevent="">
+                            <el-input :test-id="testId + '-datatable-search-input'" autocomplete="off" size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="ion-ios-search-strong" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <el-table
+                :test-id="testId"
+                :preventDefaultSort="preventDefaultSort"
+                :border="border"
+                :row-key="keyFn"
+                :data="mutatedRows"
+                :span-method="tableSpanMethod"
+                :default-sort="defaultSort"
+                v-bind="$attrs"
+                v-on="$listeners"
+                @sort-change="onSortChange"
+                @selection-change="onSelectionChange"
+                @cell-mouse-enter="onCellMouseEnter"
+                ref="elTable">
+                    <template slot="empty">
+                        <cly-empty-datatable :test-id="testId"></cly-empty-datatable>
+                    </template>
+                    <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
+                        <slot :name="name" v-bind="commonScope"/>
+                    </template>
+            </el-table>
+            <div v-if="!hideBottom" class="bu-level cly-vue-eldatatable__footer cly-vue-eldatatable__footer--white" @mouseenter="onNoCellMouseEnter">
+                <div class="bu-level-left">
+                    <div class="bu-level-item text-smallish bu-mr-0" :data-test-id="testId + '-items-per-page-label'">
+                        {{ i18n("common.items-per-page") }}:
+                    </div>
+                    <div class="bu-level-item text-smallish">
+                        <el-select :test-id="testId + '-items-per-page-count'" :borderless="true" style="margin-top: 2px;" :adaptiveLength="true" v-model="controlParams.perPage" size="mini">
+                            <el-option :test-id="testId + '-' + pageSize" v-for="pageSize in availablePageSizes" :key="pageSize" :value="pageSize" :label="pageSize"></el-option>
+                        </el-select>
+                    </div>
+                    <div class="bu-level-item" style="font-size: 11px">
+                        <span :data-test-id="testId + '-items-per-page-count-select'">{{ paginationInfo }}</span>
+                    </div>
+                    <slot v-bind="commonScope" name="footer-left"></slot>
+                </div>
+                <div class="bu-level-right">
+                    <slot v-bind="commonScope" name="footer-right"></slot>
+                    <div class="bu-level-item text-smallish bu-mr-0" v-if="pageSelectionAvailable">
+                        <div class="cly-vue-eldatatable__table-page-selector" style="margin-top: 2px;" >
+                            <el-select :test-id="testId + '-page-number'" :borderless="true" :adaptiveLength="true" v-if="totalPages <= 200" v-model="controlParams.page" size="mini">
+                                <el-option v-for="page in availablePages" :key="page" :value="page" :label="page"></el-option>
+                            </el-select>
+                            <el-input v-else type="number" :min="1" style="width: 160px" class="bu-mr-1" :max="totalPages" v-model="controlParams.page" size="mini"></el-input>
+                        </div>
+                    </div>
+                    <div class="bu-level-item text-smallish" v-if="pageSelectionAvailable">
+                        <span :test-id="testId + '-page-number-of-pages'">of {{formatNumber(totalPages)}} pages</span>
+                    </div>
+                    <div :data-test-id="testId + '-first-page-arrow-button'" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': prevAvailable, 'cool-gray-30': !prevAvailable}">
+                        <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="ion-ios-arrow-back"></i><i class="ion-ios-arrow-back"></i></span>
+                    </div>
+                    <div :data-test-id="testId + '-previous-page-arrow-button'" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': prevAvailable, 'cool-gray-30': !prevAvailable}">
+                        <span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="ion-ios-arrow-back"></i></span>
+                    </div>
+                    <div :data-test-id="testId + '-next-page-arrow-button'" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': nextAvailable, 'cool-gray-30': !nextAvailable}">
+                        <span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="ion-ios-arrow-forward"></i></span>
+                    </div>
+                    <div :data-test-id="testId + '-last-page-arrow-button'" v-if="lastPageAvailable" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': nextAvailable, 'cool-gray-30': !nextAvailable}">
+                        <span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="ion-ios-arrow-forward"></i><i class="ion-ios-arrow-forward"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <slot name="bottomline" v-bind="commonScope"></slot>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import _ from 'lodash';
+import Sortable from 'sortablejs';
+import { i18nMixin, commonFormattersMixin } from '../../countly/vue/core.js';
+import tableExtensionsMixin from './mixins/tableExtensions.js';
+import mutationTrackerMixin from './mixins/mutationTracker.js';
+import overlayRowMixin from './mixins/overlayRow.js';
+import exportHandlerMixin from './mixins/exportHandler.js';
+
+export default {
+    mixins: [
+        commonFormattersMixin,
+        i18nMixin,
+        tableExtensionsMixin,
+        mutationTrackerMixin,
+        overlayRowMixin,
+        exportHandlerMixin
+    ],
+
+    props: {
+        keyFn: {
+            type: Function,
+            default: function(row) {
+                return row._id;
+            }
+        },
+        availablePageSizes: {
+            type: Array,
+            default: function() {
+                return [5, 10, 20, 50, 100, 200, 1000];
+            }
+        },
+        searchPlaceholder: {
+            type: String,
+            default: 'Search'
+        },
+        border: {
+            type: Boolean,
+            default: false
+        },
+        hideTop: {
+            type: Boolean,
+            default: false
+        },
+        hideBottom: {
+            type: Boolean,
+            default: false
+        },
+        forceLoading: {
+            type: Boolean,
+            default: false,
+            required: false
+        },
+        testId: {
+            type: String,
+            default: 'cly-datatable-n-test-id',
+            required: false
+        },
+        sortable: {
+            type: Boolean,
+            default: false
+        },
+        displayMode: {
+            type: String,
+            default: null,
+            validator: function(value) {
+                return ['list'].indexOf(value) !== -1;
+            }
+        }
+    },
+
+    data() {
+        return {
+            slotMapping: {
+                'header-left': 'header-left',
+                'header-right': 'header-right',
+                'footer-left': 'footer-left',
+                'footer-right': 'footer-right',
+                'bottomline': 'bottomline'
+            }
+        };
+    },
+
+    computed: {
+        searchQueryProxy: {
+            get() {
+                if (this.displaySearch) {
+                    return this.controlParams.searchQuery;
+                }
+                return '';
+            },
+            set(query) {
+                if (this.displaySearch) {
+                    _.extend(this.controlParams, { searchQuery: query, page: 1});
+                }
+            }
+        },
+
+        forwardedSlots() {
+            var self = this;
+            return Object.keys(this.$scopedSlots).reduce(function(slots, slotKey) {
+                if (!self.slotMapping[slotKey]) {
+                    slots[slotKey] = self.$scopedSlots[slotKey];
+                }
+                return slots;
+            }, {});
+        },
+
+        isLoading() {
+            if (this.externalParams && this.externalParams.skipLoading) {
+                return false;
+            }
+            if (this.forceLoading === true) {
+                return true;
+            }
+            if (!this.dataSource) {
+                return false;
+            }
+            return this.externalStatus !== 'ready' || (this.externalParams && !this.externalParams.ready);
+        },
+
+        classes() {
+            var classes = [];
+            if (!this.forceLoading && this.dataSource && this.externalStatus === 'silent-pending') {
+                classes.push("silent-loading");
+            }
+            if (this.displayMode) {
+                classes.push("display-mode--" + this.displayMode);
+            }
+            return classes;
+        },
+
+        sourceRows() {
+            return this.dataView.rows;
+        },
+
+        commonScope() {
+            return {
+                diff: this.diff,
+                patch: this.patch,
+                unpatch: this.unpatch,
+                dynamicCols: this.publicDynamicCols
+            };
+        }
+    },
+
+    mounted() {
+        var self = this;
+        this.resetPaginationOnRefresh();
+        if (this.sortable) {
+            const table = document.querySelector('.el-table__body-wrapper tbody');
+            Sortable.create(table, {
+                animation: 150,
+                handle: '.el-table__row',
+                onStart({oldIndex}) {
+                    self.$emit('drag-start', oldIndex);
+                },
+                onEnd({ newIndex, oldIndex }) {
+                    self.$emit('drag-end', { newIndex, oldIndex });
+                }
+            });
+        }
+    }
+};
+</script>

@@ -91,7 +91,7 @@ const legacyScripts = [
     // 'javascripts/countly/vue/components/dropdown.js', // DELETE.
     // 'javascripts/countly/vue/components/input.js', // DELETE
     // 'javascripts/countly/vue/components/content.js', // Migrated to SFC
-    'javascripts/countly/vue/components/datatable.js',
+    // 'javascripts/countly/vue/components/datatable.js', // Migrated to SFC
     // 'javascripts/countly/vue/components/dialog.js', // Migrated to SFC
     // 'javascripts/countly/vue/components/drawer.js', // DELETE.
     'core/notes/javascripts/countly.models.js',

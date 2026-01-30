@@ -129,6 +129,9 @@ import ClyListDrawer from './javascripts/components/helpers/cly-list-drawer.vue'
 import ClyAutoRefreshToggle from './javascripts/components/helpers/cly-auto-refresh-toggle.vue';
 import ClyDatabaseEngineDebugPanel from './javascripts/components/helpers/cly-database-engine-debug-panel.vue';
 
+// Datatable component imports
+import ClyDatatableN from './javascripts/components/datatable/cly-datatable-n.vue';
+
 // Echart component imports
 import {
     ClyChartZoom,
@@ -246,6 +249,9 @@ window.Vue.component('cly-multiplex', ClyMultiplex);
 window.Vue.component('cly-list-drawer', ClyListDrawer);
 window.Vue.component('cly-auto-refresh-toggle', ClyAutoRefreshToggle);
 window.Vue.component('cly-database-engine-debug-panel', ClyDatabaseEngineDebugPanel);
+
+// Register datatable components
+window.Vue.component('cly-datatable-n', ClyDatatableN);
 
 // Register echart components
 window.Vue.component('cly-chart-zoom', ClyChartZoom);
