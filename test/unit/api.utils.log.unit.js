@@ -17,6 +17,7 @@ describe('Log utility tests', function() {
 
         // Clear require cache for log module and config to get fresh instances
         delete require.cache[require.resolve('../../api/utils/log.js')];
+        delete require.cache[require.resolve('../../api/utils/log.ts')];
         delete require.cache[require.resolve('../../api/config.js')];
     });
 
@@ -44,6 +45,7 @@ describe('Log utility tests', function() {
         it('should override default log level with environment variable', function() {
             process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'debug';
             var log = require('../../api/utils/log.js');
+            log._reloadConfig();
 
             log.getLevel().should.equal('debug');
         });
@@ -52,6 +54,7 @@ describe('Log utility tests', function() {
             process.env.COUNTLY_SETTINGS__LOGS__DEBUG = 'api,db,push';
             process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'warn';
             var log = require('../../api/utils/log.js');
+            log._reloadConfig();
 
             log.getLevel('api').should.equal('debug');
             log.getLevel('db').should.equal('debug');
@@ -63,6 +66,7 @@ describe('Log utility tests', function() {
             process.env.COUNTLY_SETTINGS__LOGS__DEBUG = '["api","db","push"]';
             process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'warn';
             var log = require('../../api/utils/log.js');
+            log._reloadConfig();
 
             log.getLevel('api').should.equal('debug');
             log.getLevel('db').should.equal('debug');
@@ -73,6 +77,7 @@ describe('Log utility tests', function() {
             process.env.COUNTLY_SETTINGS__LOGS__INFO = 'api,mail';
             process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'error';
             var log = require('../../api/utils/log.js');
+            log._reloadConfig();
 
             log.getLevel('api').should.equal('info');
             log.getLevel('mail').should.equal('info');
@@ -83,6 +88,7 @@ describe('Log utility tests', function() {
             process.env.COUNTLY_SETTINGS__LOGS__WARN = 'jobs,tasks';
             process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'error';
             var log = require('../../api/utils/log.js');
+            log._reloadConfig();
 
             log.getLevel('jobs').should.equal('warn');
             log.getLevel('tasks').should.equal('warn');
@@ -92,6 +98,7 @@ describe('Log utility tests', function() {
             process.env.COUNTLY_SETTINGS__LOGS__ERROR = 'critical';
             process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'warn';
             var log = require('../../api/utils/log.js');
+            log._reloadConfig();
 
             log.getLevel('critical').should.equal('error');
             log.getLevel('other').should.equal('warn');
@@ -103,6 +110,7 @@ describe('Log utility tests', function() {
             process.env.COUNTLY_SETTINGS__LOGS__WARN = 'jobs';
             process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'error';
             var log = require('../../api/utils/log.js');
+            log._reloadConfig();
 
             log.getLevel('api').should.equal('debug');
             log.getLevel('db').should.equal('info');
@@ -114,6 +122,7 @@ describe('Log utility tests', function() {
             process.env.COUNTLY_SETTINGS__LOGS__DEBUG = '';
             process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'warn';
             var log = require('../../api/utils/log.js');
+            log._reloadConfig();
 
             log.getLevel('api').should.equal('warn');
         });
@@ -122,6 +131,7 @@ describe('Log utility tests', function() {
             process.env.COUNTLY_SETTINGS__LOGS__DEBUG = ' api , db , push ';
             process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'warn';
             var log = require('../../api/utils/log.js');
+            log._reloadConfig();
 
             log.getLevel('api').should.equal('debug');
             log.getLevel('db').should.equal('debug');
@@ -132,6 +142,7 @@ describe('Log utility tests', function() {
             // Even if config.js has default 'warn', env var should override
             process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'info';
             var log = require('../../api/utils/log.js');
+            log._reloadConfig();
 
             log.getLevel().should.equal('info');
         });
@@ -178,6 +189,7 @@ describe('Log utility tests', function() {
             process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'warn';
             process.env.COUNTLY_SETTINGS__LOGS__DEBUG = 'api';
             var log = require('../../api/utils/log.js');
+            log._reloadConfig();
 
             // Initial state from env vars
             log.getLevel('api').should.equal('debug');
@@ -204,6 +216,7 @@ describe('Log utility tests', function() {
 
         it('should update cache for modules queried before updateConfig', function() {
             var log = require('../../api/utils/log.js');
+            log._reloadConfig(); // Reset to defaults
 
             // Query a module before updateConfig - this creates cache entry
             log.getLevel('cache-test').should.equal('warn'); // default level

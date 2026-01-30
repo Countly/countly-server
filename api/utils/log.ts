@@ -147,7 +147,7 @@ function loadLoggingConfig(): LoggingConfig {
 }
 
 // Initialize configuration with defaults
-const prefs = loadLoggingConfig();
+let prefs = loadLoggingConfig();
 prefs.default = prefs.default || "warn";
 let deflt = (prefs && prefs.default) ? prefs.default : 'error';
 let prettyPrint = prefs.prettyPrint || false;
@@ -159,6 +159,23 @@ let prettyTransport: pino.DestinationStream | null = null;
  * Current levels for all modules
  */
 const levels: Record<string, string> = {};
+
+/**
+ * Reloads configuration from environment variables and config file.
+ * Used for testing when environment variables change after module load.
+ * @internal
+ */
+function _reloadConfig(): void {
+    // Clear levels cache
+    for (const key in levels) {
+        delete levels[key];
+    }
+    // Reload configuration from environment
+    prefs = loadLoggingConfig();
+    prefs.default = prefs.default || "warn";
+    deflt = (prefs && prefs.default) ? prefs.default : 'error';
+    prettyPrint = prefs.prettyPrint || false;
+}
 
 // Metrics setup if OpenTelemetry is available
 interface MetricCounter { add: (value: number, attributes?: Record<string, unknown>) => void }
@@ -772,6 +789,7 @@ interface LogModule {
     getLevel: typeof getLevel;
     hasOpenTelemetry: boolean;
     updateConfig: typeof updateConfig;
+    _reloadConfig: typeof _reloadConfig;
 }
 
 const logModule = createCountlyLogger as LogModule;
@@ -781,6 +799,7 @@ logModule.setPrettyPrint = setPrettyPrint;
 logModule.getLevel = getLevel;
 logModule.hasOpenTelemetry = Boolean(trace && metrics);
 logModule.updateConfig = updateConfig;
+logModule._reloadConfig = _reloadConfig;
 
 export default logModule;
-export { setLevel, setDefault, setPrettyPrint, getLevel, updateConfig };
+export { setLevel, setDefault, setPrettyPrint, getLevel, updateConfig, _reloadConfig };
