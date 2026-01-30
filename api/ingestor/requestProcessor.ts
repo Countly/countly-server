@@ -5,20 +5,19 @@
 
 import type { IngestorUsageModule, IngestorParams, UsageObservable } from './usage.ts';
 import type { IncomingMessage, ServerResponse } from 'http';
-import { createRequire } from 'module';
 
-const require = createRequire(import.meta.url);
-
-const usage: IngestorUsageModule = require('./usage.js').default;
-const common = require('../utils/common.js');
-const url = require('url');
+import usage from './usage.js';
+import common from '../utils/common.js';
+import url from 'url';
 const plugins = require("../../plugins/pluginManager.js");
-const log = require('../utils/log.js')('core:ingestor');
-const crypto = require('crypto');
-const { ignorePossibleDevices, checksumSaltVerification, validateRedirect } = require('../utils/requestProcessorCommon.js');
-const { ObjectId } = require("mongodb");
-const { preset } = require('../lib/countly.preset.js');
-const UnifiedEventSink = require('../eventSink/UnifiedEventSink');
+import logModule from '../utils/log.js';
+import crypto from 'crypto';
+import { ignorePossibleDevices, checksumSaltVerification, validateRedirect } from '../utils/requestProcessorCommon.js';
+import { ObjectId } from "mongodb";
+import { preset } from '../lib/countly.preset.js';
+const UnifiedEventSink = require('../eventSink/UnifiedEventSink.js');
+
+const log = logModule('core:ingestor');
 
 const countlyApi = {
     mgmt: {

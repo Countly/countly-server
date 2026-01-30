@@ -4,21 +4,20 @@
  */
 
 import type { Db } from 'mongodb';
-import { createRequire } from 'module';
 
-const require = createRequire(import.meta.url);
-
-const countlyConfig = require('./config');
+import countlyConfig from './config.js';
 const plugins = require('../plugins/pluginManager.js');
-const log = require('./utils/log.js')('aggregator-core:api');
-const common = require('./utils/common.js');
-const { WriteBatcher } = require('./parts/data/batcher.js');
-const { Cacher } = require('./parts/data/cacher.js');
-const QueryRunner = require('./parts/data/QueryRunner.js');
+import logModule from './utils/log.js';
+import common from './utils/common.js';
+import { WriteBatcher } from './parts/data/batcher.js';
+import { Cacher } from './parts/data/cacher.js';
+import QueryRunner from './parts/data/QueryRunner.js';
 
 // Core aggregators
-require("./init_configs.js");
-require('./aggregator/processing.js');
+import './init_configs.js';
+import './aggregator/processing.js';
+
+const log = logModule('aggregator-core:api');
 
 /**
  * Event data structure from database

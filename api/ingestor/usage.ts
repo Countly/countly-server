@@ -3,16 +3,14 @@
  * @module api/ingestor/usage
  */
 
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
-
-const common = require('./../utils/common.js');
-const geoip = require('geoip-lite');
+import common from './../utils/common.js';
+import geoip from 'geoip-lite';
 const geocoder = require('./../../bin/offline-geocoder/src/index.js')();
-const log = require('./../utils/log.js')('ingestor:usage');
+import logModule from './../utils/log.js';
 const plugins = require('./../../plugins/pluginManager.js');
-const moment = require('moment-timezone');
+import moment from 'moment-timezone';
+
+const log = logModule('ingestor:usage');
 
 /**
  * Location object for geocoding

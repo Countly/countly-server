@@ -4,14 +4,12 @@
  */
 
 import type { WriteBatcher } from '../../types/batcher';
-import { createRequire } from 'module';
 
-const require = createRequire(import.meta.url);
-const common = require('./../utils/common.js');
+import common from './../utils/common.js';
 const plugins = require('./../../plugins/pluginManager.js');
-const async = require('async');
-const crypto = require('crypto');
-const moment = require('moment-timezone');
+import async from 'async';
+import crypto from 'crypto';
+import moment from 'moment-timezone';
 
 /**
  * Event token for stream processing
