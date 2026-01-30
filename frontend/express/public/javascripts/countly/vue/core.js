@@ -10,6 +10,7 @@ import VueECharts from 'vue-echarts';
 import "echarts";
 import { BufferedObjectMixin, MultiStepFormMixin } from '../../components/form/mixins.js'; // TO-DO: remove this dependency when drawer form is modularized.
 import { ModalMixin, hasDrawersMixin, hasDrawersMethodsMixin } from '../../components/drawer/mixins.js'; // TO-DO: remove this dependency when drawer form is modularized in plugins
+import { hasFormDialogsMixin } from '../../components/dialog/mixins.js'; // TO-DO: remove this dependency when dialog form is modularized in plugins
 import {
     validateCreate,
     validateRead,
@@ -388,6 +389,7 @@ export const mixins = {
     'Modal': ModalMixin, // TO-DO: remove this dependency when drawer form is modularized.
     'hasDrawers': hasDrawersMixin, // TO-DO: remove this dependency when drawer form is modularized.
     'hasDrawersMethods': hasDrawersMethodsMixin, // TO-DO: remove this dependency when drawer form is modularized.
+    'hasFormDialogs': hasFormDialogsMixin, // TO-DO: remove this dependency when dialog form is modularized in plugins.
 };
 
 const _globalVuexStore = new Vuex.Store({

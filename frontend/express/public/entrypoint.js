@@ -64,6 +64,12 @@ import ClyContentBlockListInput from './javascripts/components/content/cly-conte
 import ClyOptionSwapper from './javascripts/components/content/cly-option-swapper.vue';
 import ClyDeviceSelector from './javascripts/components/content/cly-device-selector.vue';
 
+// Dialog component imports
+import ClyDialog from './javascripts/components/dialog/cly-dialog.vue';
+import ClyConfirmDialog from './javascripts/components/dialog/cly-confirm-dialog.vue';
+import ClyMessageDialog from './javascripts/components/dialog/cly-message-dialog.vue';
+import ClyFormDialog from './javascripts/components/dialog/cly-form-dialog.vue';
+
 // Register components globally
 window.Vue.component('cly-status-badge', ClyStatusBadge);
 window.Vue.component('cly-tabs', ClyTabs);
@@ -96,6 +102,12 @@ window.Vue.component('cly-content-builder-sidebar-input', ClyContentBuilderSideb
 window.Vue.component('cly-content-block-list-input', ClyContentBlockListInput);
 window.Vue.component('cly-option-swapper', ClyOptionSwapper);
 window.Vue.component('cly-device-selector', ClyDeviceSelector);
+
+// Register dialog components globally
+window.Vue.component('cly-dialog', ClyDialog);
+window.Vue.component('cly-confirm-dialog', ClyConfirmDialog);
+window.Vue.component('cly-message-dialog', ClyMessageDialog);
+window.Vue.component('cly-form-dialog', ClyFormDialog);
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW
