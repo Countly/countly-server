@@ -109,100 +109,6 @@ services:
         echo 'DLQ topic created successfully!'
     restart: "no"
 
-  # ClickHouse table creation
-  clickhouse-init:
-    image: curlimages/curl:latest
-    container_name: clickhouse-init
-    depends_on:
-      clickhouse:
-        condition: service_healthy
-    networks:
-      - kafka-network
-    volumes:
-      - ../../plugins/clickhouse/api/sql:/sql:ro
-    command:
-      - sh
-      - -c
-      - |
-        echo 'Creating ClickHouse user countly...'
-        curl -X POST 'http://clickhouse:8123/' \
-          --data-binary "CREATE USER IF NOT EXISTS countly IDENTIFIED WITH plaintext_password BY 'countly'" \
-          --header 'Content-Type: text/plain'
-
-        echo 'Granting database operation privileges...'
-        curl -X POST 'http://clickhouse:8123/' \
-          --data-binary "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, TRUNCATE, OPTIMIZE, SHOW ON *.* TO countly" \
-          --header 'Content-Type: text/plain'
-
-        echo 'Granting system database access...'
-        curl -X POST 'http://clickhouse:8123/' \
-          --data-binary "GRANT SELECT ON system.* TO countly" \
-          --header 'Content-Type: text/plain'
-
-        echo 'Granting admin and management privileges...'
-        curl -X POST 'http://clickhouse:8123/' \
-          --data-binary "GRANT ACCESS MANAGEMENT, SYSTEM, INTROSPECTION, SOURCES ON *.* TO countly" \
-          --header 'Content-Type: text/plain'
-
-        echo 'Granting table function privileges...'
-        curl -X POST 'http://clickhouse:8123/' \
-          --data-binary "GRANT dictGet ON *.* TO countly" \
-          --header 'Content-Type: text/plain'
-
-        echo 'Verifying countly user privileges...'
-        curl 'http://countly:countly@clickhouse:8123/' \
-          --data-binary "SHOW GRANTS FOR countly" \
-          --header 'Content-Type: text/plain'
-
-        echo ''
-        echo 'Testing system tables access...'
-        curl 'http://countly:countly@clickhouse:8123/' \
-          --data-binary "SELECT name FROM system.users LIMIT 5" \
-          --header 'Content-Type: text/plain'
-
-        echo ''
-        echo 'User countly created and verified with full admin access!'
-
-        echo 'Setting up ClickHouse schema...'
-        echo 'Available SQL files:'
-        ls -la /sql/
-
-        cd /sql
-        echo "Current directory: $$(pwd)"
-        echo "SQL files found:"
-        ls -1 *.sql 2>/dev/null || echo "No .sql files found"
-
-        # Debug command substitution
-        cmd_output=$$(ls *.sql 2>/dev/null | sort)
-        echo "Command substitution result: '$$cmd_output'"
-        echo "Length: $${#cmd_output}"
-
-        # Use a more robust approach with find and process substitution
-        while IFS= read -r -d '' sql_file; do
-          echo "Processing file: '$$sql_file'"
-          if [ -f "$$sql_file" ]; then
-            echo "Executing $$sql_file..."
-            echo "File contents:"
-            cat "$$sql_file"
-            echo "Running SQL..."
-
-            curl -X POST 'http://clickhouse:8123/' \
-              --data-binary @"$$sql_file" \
-              --header 'Content-Type: text/plain'
-
-            if [ $$? -eq 0 ]; then
-              echo "Successfully executed $$sql_file"
-            else
-              echo "Failed to execute $$sql_file"
-              exit 1
-            fi
-            echo "---"
-          fi
-        done < <(find . -maxdepth 1 -name "*.sql" -type f -print0 | sort -z)
-
-        echo 'ClickHouse setup completed!'
-    restart: "no"
-
   # Connector initialization
   connector-init:
     image: curlimages/curl:latest
@@ -210,8 +116,6 @@ services:
     depends_on:
       kafka-connect:
         condition: service_started
-      clickhouse-init:
-        condition: service_completed_successfully
       dlq-init:
         condition: service_completed_successfully
     networks:
