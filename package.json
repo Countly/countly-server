@@ -165,6 +165,7 @@
     "vue": "^2.7.16",
     "vue-color": "^2.8.2",
     "vue-echarts": "^6.7.3",
+    "vue-in-viewport-mixin": "^2.1.0",
     "vuex": "^3.6.2",
     "xlsx-write-stream": "^1.0.0",
     "yauzl": "^3.2.0"

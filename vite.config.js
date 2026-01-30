@@ -87,7 +87,7 @@ const legacyScripts = [
     // 'javascripts/countly/vue/components/nav.js', // DELETE.
     // 'javascripts/countly/vue/components/layout.js', // Migrated to SFC
     // 'javascripts/countly/vue/components/form.js', // DELETE.
-    'javascripts/countly/vue/components/date.js',
+    // 'javascripts/countly/vue/components/date.js', // Migrated to SFC DELETE
     // 'javascripts/countly/vue/components/dropdown.js', // DELETE.
     // 'javascripts/countly/vue/components/input.js', // DELETE
     // 'javascripts/countly/vue/components/content.js', // Migrated to SFC

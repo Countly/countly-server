@@ -94,6 +94,12 @@ import ClyDynamicTextarea from './javascripts/components/input/dynamic-textarea.
 import ClySelectEmail from './javascripts/components/input/select-email.vue';
 import ClySortableItems from './javascripts/components/input/sortable-items.vue';
 
+// Date component imports
+import ClyDatePicker from './javascripts/components/date/date-picker.vue';
+import ClyGlobalDatePicker from './javascripts/components/date/global-date-picker.vue';
+import ClyTimePicker from './javascripts/components/date/time-picker.vue';
+import { getPeriodLabel } from './javascripts/components/date/mixins.js';
+
 // Register components globally
 window.Vue.component('cly-status-badge', ClyStatusBadge);
 window.Vue.component('cly-tabs', ClyTabs);
@@ -154,6 +160,14 @@ window.Vue.component('cly-radio-block', ClyRadioBlock);
 window.Vue.component('cly-dynamic-textarea', ClyDynamicTextarea);
 window.Vue.component('cly-select-email', ClySelectEmail);
 window.Vue.component('cly-sortable-items', ClySortableItems);
+
+// Register date components globally
+window.Vue.component('cly-date-picker', ClyDatePicker);
+window.Vue.component('cly-date-picker-g', ClyGlobalDatePicker);
+window.Vue.component('cly-global-date-selector-w', ClyGlobalDatePicker); // deprecated alias?
+window.Vue.component('cly-time-picker', ClyTimePicker);
+
+window.countlyVue.getPeriodLabel = getPeriodLabel; // remove this after updating the date-preset plugin
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW
