@@ -13,6 +13,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 bash "$DIR/scripts/logo.sh";
 
+# test
 # prerequisite per release
 sudo dnf install -y wget curl ca-certificates openssl-devel make git unzip bzip2
 
