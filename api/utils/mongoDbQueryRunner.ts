@@ -82,7 +82,7 @@ class MongoDbQueryRunner {
      */
     fixTimestampToMilliseconds(ts: number): number {
         if ((ts + "").length > 13) {
-            ts = parseInt((ts + '').substring(0, 13), 10);
+            ts = Number.parseInt((ts + '').substring(0, 13), 10);
         }
         return ts;
     }
@@ -99,11 +99,11 @@ class MongoDbQueryRunner {
         let endTimestamp: ReturnType<typeof moment> = 0;
         const _currMoment = moment();
 
-        if (typeof period === 'string' && period.indexOf(",") !== -1) {
+        if (typeof period === 'string' && period.includes(",")) {
             try {
                 period = JSON.parse(period);
             }
-            catch (SyntaxError) {
+            catch (error) {
                 console.log("period JSON parse failed");
                 period = "30days";
             }
@@ -174,27 +174,27 @@ class MongoDbQueryRunner {
             endTimestamp = yesterday.clone().endOf("day");
         }
         else if (/([1-9][0-9]*)minutes/.test(period as string)) {
-            const nMinutes = parseInt(/([1-9][0-9]*)minutes/.exec(period as string)![1]);
+            const nMinutes = Number.parseInt(/([1-9][0-9]*)minutes/.exec(period as string)![1]);
             startTimestamp = _currMoment.clone().startOf("minute").subtract(nMinutes - 1, "minutes");
         }
         else if (/([1-9][0-9]*)hours/.test(period as string)) {
-            const nHours = parseInt(/([1-9][0-9]*)hours/.exec(period as string)![1]);
+            const nHours = Number.parseInt(/([1-9][0-9]*)hours/.exec(period as string)![1]);
             startTimestamp = _currMoment.clone().startOf("hour").subtract(nHours - 1, "hours");
         }
         else if (/([1-9][0-9]*)days/.test(period as string)) {
-            const nDays = parseInt(/([1-9][0-9]*)days/.exec(period as string)![1]);
+            const nDays = Number.parseInt(/([1-9][0-9]*)days/.exec(period as string)![1]);
             startTimestamp = _currMoment.clone().startOf("day").subtract(nDays - 1, "days");
         }
         else if (/([1-9][0-9]*)weeks/.test(period as string)) {
-            const nWeeks = parseInt(/([1-9][0-9]*)weeks/.exec(period as string)![1]);
+            const nWeeks = Number.parseInt(/([1-9][0-9]*)weeks/.exec(period as string)![1]);
             startTimestamp = _currMoment.clone().startOf("week").subtract((nWeeks - 1), "weeks");
         }
         else if (/([1-9][0-9]*)months/.test(period as string)) {
-            const nMonths = parseInt(/([1-9][0-9]*)months/.exec(period as string)![1]);
+            const nMonths = Number.parseInt(/([1-9][0-9]*)months/.exec(period as string)![1]);
             startTimestamp = _currMoment.clone().startOf("month").subtract((nMonths - 1), "months");
         }
         else if (/([1-9][0-9]*)years/.test(period as string)) {
-            const nYears = parseInt(/([1-9][0-9]*)years/.exec(period as string)![1]);
+            const nYears = Number.parseInt(/([1-9][0-9]*)years/.exec(period as string)![1]);
             startTimestamp = _currMoment.clone().startOf("year").subtract((nYears - 1), "years");
         }
         // Incorrect period, defaulting to 30 days
@@ -330,10 +330,10 @@ class MongoDbQueryRunner {
             data = [];
         }
 
-        for (let z = 0; z < data.length; z++) {
-            data[z]._id = data[z]._id.replaceAll(/:0/gi, ":");
-            if (data[z].sg) {
-                data[z].sg = data[z].sg!.replaceAll(/\./gi, ":");
+        for (const datum of data) {
+            datum._id = datum._id.replaceAll(/:0/gi, ":");
+            if (datum.sg) {
+                datum.sg = datum.sg!.replaceAll(/\./gi, ":");
             }
         }
 
@@ -369,9 +369,9 @@ class MongoDbQueryRunner {
         }
         console.log(JSON.stringify(pipeline));
         const data = await this.db.collection("drill_events").aggregate(pipeline).toArray();
-        for (let z = 0; z < data.length; z++) {
-            if (data[z].sg) {
-                data[z].sg = data[z].sg!.replaceAll(/\./gi, ":");
+        for (const datum of data) {
+            if (datum.sg) {
+                datum.sg = datum.sg!.replaceAll(/\./gi, ":");
             }
         }
         return data;
@@ -411,10 +411,10 @@ class MongoDbQueryRunner {
         pipeline.push({"$group": {"_id": {"d": "$d", "id": "$" + field}}});
         pipeline.push({"$group": {"_id": "$_id.d", "u": {"$sum": 1}}});
         const data = await this.db.collection("drill_events").aggregate(pipeline).toArray();
-        for (let z = 0; z < data.length; z++) {
-            data[z]._id = data[z]._id.replaceAll(/:0/gi, ":");
-            if (data[z].sg) {
-                data[z].sg = data[z].sg!.replaceAll(/\./gi, ":");
+        for (const datum of data) {
+            datum._id = datum._id.replaceAll(/:0/gi, ":");
+            if (datum.sg) {
+                datum.sg = datum.sg!.replaceAll(/\./gi, ":");
             }
         }
         return data;
@@ -491,10 +491,10 @@ class MongoDbQueryRunner {
         });
         console.log(JSON.stringify(pipeline));
         const data = await this.db.collection("drill_events").aggregate(pipeline).toArray();
-        for (let z = 0; z < data.length; z++) {
-            data[z]._id = data[z]._id.replaceAll(/:0/gi, ":");
-            if (data[z].sg) {
-                data[z].sg = data[z].sg!.replaceAll(/\./gi, ":");
+        for (const datum of data) {
+            datum._id = datum._id.replaceAll(/:0/gi, ":");
+            if (datum.sg) {
+                datum.sg = datum.sg!.replaceAll(/\./gi, ":");
             }
         }
         return data;

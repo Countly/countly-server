@@ -6,7 +6,7 @@
         "plugins/*/types/**/*.d.ts"
     ],
     "rules": {
-        //        "quotes": ["warn", "single", { "avoidEscape": true }],
+        //"quotes": ["warn", "single", { "avoidEscape": true }],
         "require-atomic-updates": "off",
         "block-spacing": [
             "error",

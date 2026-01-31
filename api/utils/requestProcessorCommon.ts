@@ -77,7 +77,7 @@ const validateRedirect = function(ob: { params: Params; app: App }): boolean {
         let newPath = params.urlParts.path;
 
         // Check if we have query part
-        if (newPath.indexOf('?') === -1) {
+        if (!newPath.includes('?')) {
             newPath += "?";
         }
 
@@ -149,7 +149,7 @@ const validateRedirect = function(ob: { params: Params; app: App }): boolean {
  */
 const checksumSaltVerification = (params: Params): boolean => {
     params.app!.checksum_salt = params.app!.salt || params.app!.checksum_salt;
-    if (params.app!.checksum_salt && params.app!.checksum_salt.length && !params.no_checksum) {
+    if (params.app!.checksum_salt && params.app!.checksum_salt.length > 0 && !params.no_checksum) {
         const payloads: string[] = [];
         payloads.push(params.href.substr(params.fullPath.length + 1));
 
@@ -162,24 +162,24 @@ const checksumSaltVerification = (params: Params): boolean => {
                 payloads.push(params.req.body || '');
             }
         }
-        if (typeof params.qstring.checksum !== "undefined") {
+        if (params.qstring.checksum !== undefined) {
             for (let i = 0; i < payloads.length; i++) {
                 payloads[i] = (payloads[i] + "").replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
                 payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app!.checksum_salt).digest('hex').toUpperCase();
             }
-            if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
+            if (!payloads.includes((params.qstring.checksum + "").toUpperCase())) {
                 common.returnMessage(params, 200, 'Request does not match checksum');
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha1';
                 return false;
             }
         }
-        else if (typeof params.qstring.checksum256 !== "undefined") {
+        else if (params.qstring.checksum256 !== undefined) {
             for (let i = 0; i < payloads.length; i++) {
                 payloads[i] = (payloads[i] + "").replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
                 payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app!.checksum_salt).digest('hex').toUpperCase();
             }
-            if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
+            if (!payloads.includes((params.qstring.checksum256 + "").toUpperCase())) {
                 common.returnMessage(params, 200, 'Request does not match checksum');
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha256';

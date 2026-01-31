@@ -44,11 +44,6 @@ interface CacheDocument {
     duration?: number;
 }
 
-interface DrillConfig {
-    drill_snapshots_cache_time?: string | number;
-    [key: string]: unknown;
-}
-
 const common = require("./common.js");
 const fetch = require("../parts/data/fetch.js");
 const plugins = require("../../plugins/pluginManager.ts");
@@ -70,7 +65,7 @@ const calculatedDataManager: {
         options.id = calculatedDataManager.getId(options.query_data);
         options.db = options.db || common.db;
         let timeout: ReturnType<typeof setTimeout> | undefined;
-        let keep = parseInt(plugins.getConfig("drill").drill_snapshots_cache_time as string, 10) || 60 * 60 * 24;
+        let keep = Number.parseInt(plugins.getConfig("drill").drill_snapshots_cache_time as string, 10) || 60 * 60 * 24;
         keep = keep * 1000;
         if (options.no_cache) {
             keep = 0;
@@ -162,10 +157,10 @@ const calculatedDataManager: {
                    no_cache
                    takes less than 5 seconds and data is 10 seconds old.
                 */
-                if (options.no_cache || ((!data.duration || data.duration < 5000) && data.lu && (new Date().getTime() - data.lu.getTime()) > 10000)) {
+                if (options.no_cache || ((!data.duration || data.duration < 5000) && data.lu && (Date.now() - data.lu.getTime()) > 10000)) {
                     recalculate = true;
                 }
-                if (!recalculate && data.lu && (new Date().getTime() - data.lu.getTime()) < keep && data.data) {
+                if (!recalculate && data.lu && (Date.now() - data.lu.getTime()) < keep && data.data) {
                     options.outputData(null, {"data": data.data, "lu": data.lu, "_id": options.id});
                     clearTimeout(timeout);
                     return;
@@ -180,7 +175,7 @@ const calculatedDataManager: {
                 }
             }
             else if (data.status === "calculating") {
-                if (data.lu && (new Date().getTime() - new Date(data.lu).getTime()) < 1000 * 60 * 60) {
+                if (data.lu && (Date.now() - new Date(data.lu).getTime()) < 1000 * 60 * 60) {
                     // Return current data if there is any and let it know it is calculating
                     if (data.data) {
                         clearTimeout(timeout);
@@ -220,9 +215,9 @@ const calculatedDataManager: {
         // Period should be given as 2 date
         const keys = ["appID", "event", "name", "queryName", "query", "period", "periodOffset", "bucket", "segmentation"] as const;
         let dataString = "";
-        for (let i = 0; i < keys.length; i++) {
-            if (data[keys[i]]) {
-                dataString += JSON.stringify(data[keys[i]]);
+        for (const key of keys) {
+            if (data[key]) {
+                dataString += JSON.stringify(data[key]);
             }
         }
         return crypto.createHash('sha1').update(dataString).digest('hex');
