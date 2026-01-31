@@ -46,7 +46,7 @@ function encrypt(
     output_encoding?: BufferEncoding
 ): string {
     if (key === undefined) {
-        key = countlyConfig.encryption?.key || "dpYheF85";
+        key = countlyConfig.encryption?.key || 'dpYheF85';
     }
 
     // pad or shrink to 32 bytes
@@ -58,18 +58,18 @@ function encrypt(
     if (algorithm === undefined) {
         // The algorithm is dependent on OpenSSL, examples are 'aes192', etc.
         // On recent OpenSSL releases, openssl list-cipher-algorithms will display the available cipher algorithms.
-        algorithm = countlyConfig.encryption?.algorithm || "aes-256-cbc";
+        algorithm = countlyConfig.encryption?.algorithm || 'aes-256-cbc';
     }
     if (input_encoding === undefined) {
-        input_encoding = (countlyConfig.encryption?.input_encoding as BufferEncoding) || "utf-8";
+        input_encoding = (countlyConfig.encryption?.input_encoding as BufferEncoding) || 'utf-8';
     }
     if (output_encoding === undefined) {
-        output_encoding = (countlyConfig.encryption?.output_encoding as BufferEncoding) || "hex";
+        output_encoding = (countlyConfig.encryption?.output_encoding as BufferEncoding) || 'hex';
     }
     const cipher = crypto.createCipheriv(algorithm, keyBuffer, iv);
     let crypted = cipher.update(text, input_encoding, output_encoding);
     crypted += cipher.final(output_encoding);
-    return iv.toString('hex') + ':' + crypted + "[CLY]_true";
+    return iv.toString('hex') + ':' + crypted + '[CLY]_true';
 }
 
 /**
@@ -90,15 +90,15 @@ function decrypt(
     input_encoding?: BufferEncoding,
     output_encoding?: BufferEncoding
 ): string | null | undefined {
-    if (!crypted || crypted.length === 0 || typeof crypted !== "string") {
+    if (!crypted || crypted.length === 0 || typeof crypted !== 'string') {
         return crypted;
     }
 
-    if (!crypted.includes(":")) {
+    if (!crypted.includes(':')) {
         return decrypt_old(crypted, key, iv, algorithm, input_encoding, output_encoding);
     }
 
-    if (!crypted.includes("[CLY]_true") || crypted.lastIndexOf("[CLY]_true") !== crypted.length - 10) {
+    if (!crypted.includes('[CLY]_true') || crypted.lastIndexOf('[CLY]_true') !== crypted.length - 10) {
         return crypted;
     }
     else {
@@ -110,7 +110,7 @@ function decrypt(
     const encryptedText = Buffer.from(parts.join(':'), 'hex');
 
     if (key === undefined) {
-        key = countlyConfig.encryption?.key || "dpYheF85";
+        key = countlyConfig.encryption?.key || 'dpYheF85';
     }
 
     // pad or shrink to 32 bytes
@@ -122,13 +122,13 @@ function decrypt(
     if (algorithm === undefined) {
         // The algorithm is dependent on OpenSSL, examples are 'aes192', etc.
         // On recent OpenSSL releases, openssl list-cipher-algorithms will display the available cipher algorithms.
-        algorithm = countlyConfig.encryption?.algorithm || "aes-256-cbc";
+        algorithm = countlyConfig.encryption?.algorithm || 'aes-256-cbc';
     }
     if (input_encoding === undefined) {
-        input_encoding = (countlyConfig.encryption?.output_encoding as BufferEncoding) || "hex";
+        input_encoding = (countlyConfig.encryption?.output_encoding as BufferEncoding) || 'hex';
     }
     if (output_encoding === undefined) {
-        output_encoding = (countlyConfig.encryption?.input_encoding as BufferEncoding) || "utf-8";
+        output_encoding = (countlyConfig.encryption?.input_encoding as BufferEncoding) || 'utf-8';
     }
 
     const decipher = crypto.createDecipheriv(algorithm, keyBuffer, iv);
@@ -157,10 +157,10 @@ function decrypt_old(
     input_encoding?: BufferEncoding,
     output_encoding?: BufferEncoding
 ): string | null | undefined {
-    if (!crypted || crypted.length === 0 || typeof crypted !== "string") {
+    if (!crypted || crypted.length === 0 || typeof crypted !== 'string') {
         return crypted;
     }
-    if (!crypted.includes("[CLY]_true") || crypted.lastIndexOf("[CLY]_true") !== crypted.length - 10) {
+    if (!crypted.includes('[CLY]_true') || crypted.lastIndexOf('[CLY]_true') !== crypted.length - 10) {
         return crypted;
     }
     else {
@@ -168,7 +168,7 @@ function decrypt_old(
     }
 
     if (key === undefined) {
-        key = countlyConfig.encryption?.key || "dpYheF85";
+        key = countlyConfig.encryption?.key || 'dpYheF85';
     }
     if (iv === undefined) {
         iv = countlyConfig.encryption?.iv;
@@ -176,13 +176,13 @@ function decrypt_old(
     if (algorithm === undefined) {
         // The algorithm is dependent on OpenSSL, examples are 'aes192', etc.
         // On recent OpenSSL releases, openssl list-cipher-algorithms will display the available cipher algorithms.
-        algorithm = countlyConfig.encryption?.algorithm || "aes-256-cbc";
+        algorithm = countlyConfig.encryption?.algorithm || 'aes-256-cbc';
     }
     if (input_encoding === undefined) {
-        input_encoding = (countlyConfig.encryption?.output_encoding as BufferEncoding) || "hex";
+        input_encoding = (countlyConfig.encryption?.output_encoding as BufferEncoding) || 'hex';
     }
     if (output_encoding === undefined) {
-        output_encoding = (countlyConfig.encryption?.input_encoding as BufferEncoding) || "utf-8";
+        output_encoding = (countlyConfig.encryption?.input_encoding as BufferEncoding) || 'utf-8';
     }
 
     let decrypted: string;

@@ -76,11 +76,11 @@ catch {
 }
 
 const MUTATION_STATUS = {
-    QUEUED: "queued",
-    RUNNING: "running",
-    FAILED: "failed",
-    AWAITING_CH_MUTATION_VALIDATION: "awaiting_ch_mutation_validation",
-    COMPLETED: "completed"
+    QUEUED: 'queued',
+    RUNNING: 'running',
+    FAILED: 'failed',
+    AWAITING_CH_MUTATION_VALIDATION: 'awaiting_ch_mutation_validation',
+    COMPLETED: 'completed'
 } as const;
 
 /**
@@ -93,19 +93,19 @@ function isClickhouseEnabled(): boolean {
         && common.queryRunner.isAdapterAvailable('clickhouse'));
 }
 
-plugins.register("/master", function() {
-    common.db.collection('mutation_manager').ensureIndex({"mutation_completion_ts": 1}, {expireAfterSeconds: 30 * 24 * 60 * 60}, function() {});
+plugins.register('/master', function() {
+    common.db.collection('mutation_manager').ensureIndex({'mutation_completion_ts': 1}, {expireAfterSeconds: 30 * 24 * 60 * 60}, function() {});
 });
 
-plugins.register("/core/delete_granular_data", async function(ob: { db: string; query: Record<string, unknown>; collection: string }) {
+plugins.register('/core/delete_granular_data', async function(ob: { db: string; query: Record<string, unknown>; collection: string }) {
     const db = ob.db;
     const query = ob.query;
     const collection = ob.collection;
     const type = 'delete';
-    log.d("Mutation (delete) queued:" + JSON.stringify({ db, collection, query }));
+    log.d('Mutation (delete) queued:' + JSON.stringify({ db, collection, query }));
     const now = Date.now();
 
-    await common.db.collection("mutation_manager").insertOne({
+    await common.db.collection('mutation_manager').insertOne({
         db,
         collection,
         query,
@@ -116,16 +116,16 @@ plugins.register("/core/delete_granular_data", async function(ob: { db: string; 
     });
 });
 
-plugins.register("/core/update_granular_data", async function(ob: { db: string; query: Record<string, unknown>; update: Record<string, unknown>; collection: string }) {
+plugins.register('/core/update_granular_data', async function(ob: { db: string; query: Record<string, unknown>; update: Record<string, unknown>; collection: string }) {
     const db = ob.db;
     const query = ob.query;
     const update = ob.update;
     const collection = ob.collection;
     const type = 'update';
-    log.d("Mutation (update) queued:" + JSON.stringify({ db, collection, query }));
+    log.d('Mutation (update) queued:' + JSON.stringify({ db, collection, query }));
     const now = Date.now();
 
-    await common.db.collection("mutation_manager").insertOne({
+    await common.db.collection('mutation_manager').insertOne({
         db,
         collection,
         query,
@@ -199,11 +199,11 @@ async function getQueueSummary(): Promise<QueueSummary> {
         {
             $group: {
                 _id: null,
-                queued: { $sum: { $cond: [ { $eq: [ "$status", MUTATION_STATUS.QUEUED ] }, 1, 0 ] } },
-                running: { $sum: { $cond: [ { $eq: [ "$status", MUTATION_STATUS.RUNNING ] }, 1, 0 ] } },
-                awaiting_ch_mutation_validation: { $sum: { $cond: [ { $eq: [ "$status", MUTATION_STATUS.AWAITING_CH_MUTATION_VALIDATION ] }, 1, 0 ] } },
-                failed: { $sum: { $cond: [ { $eq: [ "$status", MUTATION_STATUS.FAILED ] }, 1, 0 ] } },
-                completed: { $sum: { $cond: [ { $eq: [ "$status", MUTATION_STATUS.COMPLETED ] }, 1, 0 ] } }
+                queued: { $sum: { $cond: [ { $eq: [ '$status', MUTATION_STATUS.QUEUED ] }, 1, 0 ] } },
+                running: { $sum: { $cond: [ { $eq: [ '$status', MUTATION_STATUS.RUNNING ] }, 1, 0 ] } },
+                awaiting_ch_mutation_validation: { $sum: { $cond: [ { $eq: [ '$status', MUTATION_STATUS.AWAITING_CH_MUTATION_VALIDATION ] }, 1, 0 ] } },
+                failed: { $sum: { $cond: [ { $eq: [ '$status', MUTATION_STATUS.FAILED ] }, 1, 0 ] } },
+                completed: { $sum: { $cond: [ { $eq: [ '$status', MUTATION_STATUS.COMPLETED ] }, 1, 0 ] } }
             }
         },
         { $project: { _id: 0, queued: 1, running: 1, awaiting_ch_mutation_validation: 1, failed: 1, completed: 1 } }

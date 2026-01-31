@@ -63,7 +63,7 @@ function transformToKafkaEventFormat(doc: DrillEventDocument | null | undefined)
     // Required fields
     result.a = doc.a;
     result.e = doc.e;
-    result.n = doc.n || "";
+    result.n = doc.n || '';
     result.uid = doc.uid;
     result.did = doc.did;
     result._id = doc._id;

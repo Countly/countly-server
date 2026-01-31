@@ -44,11 +44,11 @@ interface CacheDocument {
     duration?: number;
 }
 
-const common = require("./common.js");
-const fetch = require("../parts/data/fetch.js");
-const plugins = require("../../plugins/pluginManager.ts");
+const common = require('./common.js');
+const fetch = require('../parts/data/fetch.js');
+const plugins = require('../../plugins/pluginManager.ts');
 
-const collection = "drill_data_cache";
+const collection = 'drill_data_cache';
 const log = require('./log.js')('core:calculatedDataManager');
 
 /** @lends module:api/utils/taskmanager */
@@ -65,7 +65,7 @@ const calculatedDataManager: {
         options.id = calculatedDataManager.getId(options.query_data);
         options.db = options.db || common.db;
         let timeout: ReturnType<typeof setTimeout> | undefined;
-        let keep = Number.parseInt(plugins.getConfig("drill").drill_snapshots_cache_time as string, 10) || 60 * 60 * 24;
+        let keep = Number.parseInt(plugins.getConfig('drill').drill_snapshots_cache_time as string, 10) || 60 * 60 * 24;
         keep = keep * 1000;
         if (options.no_cache) {
             keep = 0;
@@ -78,7 +78,7 @@ const calculatedDataManager: {
         function notifyClient(options5: LongTaskOptions): void {
             if (!options5.returned) {
                 options5.returned = true;
-                options5.outputData(null, {"_id": options5.id, "running": true, "data": options5.current_data || {}});
+                options5.outputData(null, {'_id': options5.id, 'running': true, 'data': options5.current_data || {}});
             }
         }
 
@@ -98,7 +98,7 @@ const calculatedDataManager: {
                     const data = await common.db.collection(collection).findOne({_id: options6.id}) as CacheDocument | null;
                     if (data && data.data) {
                         clearTimeout(timeoutObj);
-                        options6.outputData(null, {"_id": options6.id, "lu": data.lu, "data": data.data || {}});
+                        options6.outputData(null, {'_id': options6.id, 'lu': data.lu, 'data': data.data || {}});
                         return;
                     }
                     else {
@@ -108,7 +108,7 @@ const calculatedDataManager: {
                     }
                 }
                 catch (e) {
-                    log.e("Error while getting calculated data", e);
+                    log.e('Error while getting calculated data', e);
                 }
             }
         }
@@ -122,7 +122,7 @@ const calculatedDataManager: {
                 notifyClient(my_options);
             }, my_options.threshold * 1000);
             try {
-                await common.db.collection(collection).insertOne({_id: my_options.id, status: "calculating", "lu": new Date()});
+                await common.db.collection(collection).insertOne({_id: my_options.id, status: 'calculating', 'lu': new Date()});
             }
             catch (e) {
                 // As could not insert, it might be calculating already
@@ -141,7 +141,7 @@ const calculatedDataManager: {
                 calculatedDataManager.saveResult(my_options, res);
                 clearTimeout(timeout);
                 if (!my_options.returned) {
-                    my_options.outputData(err, {"_id": my_options.id, "data": res, "lu": new Date()});
+                    my_options.outputData(err, {'_id': my_options.id, 'data': res, 'lu': new Date()});
                 }
             });
         }
@@ -150,7 +150,7 @@ const calculatedDataManager: {
 
         if (data) {
             options.current_data = data.data;
-            if (data.status === "done") {
+            if (data.status === 'done') {
                 // Check if it is not too old
                 let recalculate = false;
                 /* Calculate again if:
@@ -161,25 +161,25 @@ const calculatedDataManager: {
                     recalculate = true;
                 }
                 if (!recalculate && data.lu && (Date.now() - data.lu.getTime()) < keep && data.data) {
-                    options.outputData(null, {"data": data.data, "lu": data.lu, "_id": options.id});
+                    options.outputData(null, {'data': data.data, 'lu': data.lu, '_id': options.id});
                     clearTimeout(timeout);
                     return;
                 }
                 else {
                     common.db.collection(collection).deleteOne({_id: options.id}, function(ee: Error | null) {
                         if (ee) {
-                            log.e("Error while deleting calculated data", ee);
+                            log.e('Error while deleting calculated data', ee);
                         }
                         switchToLongTask(options);
                     });
                 }
             }
-            else if (data.status === "calculating") {
+            else if (data.status === 'calculating') {
                 if (data.lu && (Date.now() - new Date(data.lu).getTime()) < 1000 * 60 * 60) {
                     // Return current data if there is any and let it know it is calculating
                     if (data.data) {
                         clearTimeout(timeout);
-                        options.outputData(null, {"_id": options.id, "running": true, data: data.data || {}});
+                        options.outputData(null, {'_id': options.id, 'running': true, data: data.data || {}});
                         return;
                     }
                     else {
@@ -190,7 +190,7 @@ const calculatedDataManager: {
                 else {
                     common.db.collection(collection).deleteOne({_id: options.id}, function(ee: Error | null) {
                         if (ee) {
-                            log.e("Error while deleting calculated data", ee);
+                            log.e('Error while deleting calculated data', ee);
                         }
                         switchToLongTask(options);
                     });
@@ -204,17 +204,17 @@ const calculatedDataManager: {
     },
 
     saveResult: function(options: LongTaskOptions, data: unknown): void {
-        options.db!.collection(collection).updateOne({_id: options.id}, {$set: {status: "done", data: data, lu: new Date(), duration: options.duration}}, {upsert: true}, function(err: Error | null) {
+        options.db!.collection(collection).updateOne({_id: options.id}, {$set: {status: 'done', data: data, lu: new Date(), duration: options.duration}}, {upsert: true}, function(err: Error | null) {
             if (err) {
-                log.e("Error while saving calculated data", err);
+                log.e('Error while saving calculated data', err);
             }
         });
     },
 
     getId: function(data: QueryData): string {
         // Period should be given as 2 date
-        const keys = ["appID", "event", "name", "queryName", "query", "period", "periodOffset", "bucket", "segmentation"] as const;
-        let dataString = "";
+        const keys = ['appID', 'event', 'name', 'queryName', 'query', 'period', 'periodOffset', 'bucket', 'segmentation'] as const;
+        let dataString = '';
         for (const key of keys) {
             if (data[key]) {
                 dataString += JSON.stringify(data[key]);

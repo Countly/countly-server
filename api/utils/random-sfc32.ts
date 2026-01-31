@@ -70,7 +70,7 @@ function random(key?: string): PRNG {
 
     if (!key) {
         // If key not provided, generate key using crypto random bytes
-        key = crypto.randomBytes(64).toString("hex");
+        key = crypto.randomBytes(64).toString('hex');
     }
 
     const seed = xfnv1a(key);

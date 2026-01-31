@@ -9,8 +9,8 @@ const require = createRequire(import.meta.url);
 
 const common = require('./common.js');
 const plugins = require('../../plugins/pluginManager.ts');
-const request = require('countly-request')(plugins.getConfig("security"));
-const log = require('./log.js')("core:api");
+const request = require('countly-request')(plugins.getConfig('security'));
+const log = require('./log.js')('core:api');
 
 interface Params {
     qstring: {
@@ -60,11 +60,11 @@ interface App {
  */
 const ignorePossibleDevices = (params: Params): boolean => {
     // Ignore possible opted out users for ios 10
-    if (params.qstring.device_id === "00000000-0000-0000-0000-000000000000") {
+    if (params.qstring.device_id === '00000000-0000-0000-0000-000000000000') {
         common.returnMessage(params, 200, 'Ignoring device_id');
-        common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
-        params.cancelRequest = "Ignoring zero IDFA device_id";
-        plugins.dispatch("/sdk/cancel", {params: params});
+        common.log('request').i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
+        params.cancelRequest = 'Ignoring zero IDFA device_id';
+        plugins.dispatch('/sdk/cancel', {params: params});
         return true;
     }
     return false;
@@ -78,7 +78,7 @@ const validateRedirect = function(ob: { params: Params; app: App }): boolean {
 
         // Check if we have query part
         if (!newPath.includes('?')) {
-            newPath += "?";
+            newPath += '?';
         }
 
         const opts: {
@@ -93,7 +93,7 @@ const validateRedirect = function(ob: { params: Params; app: App }): boolean {
 
         // Should we send post request
         if (params.req.method.toLowerCase() === 'post') {
-            opts.method = "POST";
+            opts.method = 'POST';
             // Check if we have body from post method
             if (params.req.body) {
                 opts.json = true;
@@ -102,7 +102,7 @@ const validateRedirect = function(ob: { params: Params; app: App }): boolean {
         }
         request(opts, function(error: Error | null, response: { statusCode?: number; body?: string; result?: string }, body: unknown) {
             let code = 400;
-            let message: string = "Redirect error. Tried to redirect to:" + app.redirect_url;
+            let message: string = 'Redirect error. Tried to redirect to:' + app.redirect_url;
 
             if (response && response.statusCode) {
                 code = response.statusCode;
@@ -123,16 +123,16 @@ const validateRedirect = function(ob: { params: Params; app: App }): boolean {
                 }
             }
             if (error) {
-                log.e("Redirect error", error, body, opts, app, params);
+                log.e('Redirect error', error, body, opts, app, params);
             }
 
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
+            if (plugins.getConfig('api', params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
                 common.returnMessage(params, code, message);
             }
         });
-        params.cancelRequest = "Redirected: " + app.redirect_url;
+        params.cancelRequest = 'Redirected: ' + app.redirect_url;
         params.waitForResponse = false;
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
+        if (plugins.getConfig('api', params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
             params.waitForResponse = true;
         }
         return false;
@@ -164,32 +164,32 @@ const checksumSaltVerification = (params: Params): boolean => {
         }
         if (params.qstring.checksum !== undefined) {
             for (let i = 0; i < payloads.length; i++) {
-                payloads[i] = (payloads[i] + "").replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
+                payloads[i] = (payloads[i] + '').replace('&checksum=' + params.qstring.checksum, '').replace('checksum=' + params.qstring.checksum, '');
                 payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app!.checksum_salt).digest('hex').toUpperCase();
             }
-            if (!payloads.includes((params.qstring.checksum + "").toUpperCase())) {
+            if (!payloads.includes((params.qstring.checksum + '').toUpperCase())) {
                 common.returnMessage(params, 200, 'Request does not match checksum');
-                console.log("Checksum did not match", params.href, params.req.body, payloads);
+                console.log('Checksum did not match', params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha1';
                 return false;
             }
         }
         else if (params.qstring.checksum256 !== undefined) {
             for (let i = 0; i < payloads.length; i++) {
-                payloads[i] = (payloads[i] + "").replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
+                payloads[i] = (payloads[i] + '').replace('&checksum256=' + params.qstring.checksum256, '').replace('checksum256=' + params.qstring.checksum256, '');
                 payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app!.checksum_salt).digest('hex').toUpperCase();
             }
-            if (!payloads.includes((params.qstring.checksum256 + "").toUpperCase())) {
+            if (!payloads.includes((params.qstring.checksum256 + '').toUpperCase())) {
                 common.returnMessage(params, 200, 'Request does not match checksum');
-                console.log("Checksum did not match", params.href, params.req.body, payloads);
+                console.log('Checksum did not match', params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha256';
                 return false;
             }
         }
         else {
             common.returnMessage(params, 200, 'Request does not have checksum');
-            console.log("Request does not have checksum", params.href, params.req.body);
-            params.cancelRequest = "Request does not have checksum";
+            console.log('Request does not have checksum', params.href, params.req.body);
+            params.cancelRequest = 'Request does not have checksum';
             return false;
         }
     }
