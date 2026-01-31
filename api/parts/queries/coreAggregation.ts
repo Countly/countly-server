@@ -90,7 +90,7 @@ async function fetchAggregatedSegmentedEventDataMongo(params: FetchParams): Prom
     const { apps, events, segmentation, ts, limit, previous = true } = params;
     try {
         const match: Record<string, unknown> = {};
-        if (apps && apps.length) {
+        if (apps && apps.length > 0) {
             if (apps.length === 1) {
                 match.a = apps[0];
             }
@@ -99,10 +99,10 @@ async function fetchAggregatedSegmentedEventDataMongo(params: FetchParams): Prom
             }
         }
 
-        if (events && events.length) {
+        if (events && events.length > 0) {
             let isSystemEvents = false;
-            for (let i = 0; i < events.length; i++) {
-                if (events[i].startsWith('[CLY]_')) {
+            for (const event of events) {
+                if (event.startsWith('[CLY]_')) {
                     isSystemEvents = true;
                     break;
                 }

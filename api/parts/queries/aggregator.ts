@@ -46,7 +46,8 @@ interface QueryDefinition {
  * @returns Cursor for traversing data
  */
 async function mongodbHandler(params: AggregatorParams): Promise<QueryResult> {
-    let { collection, pipeline } = params;
+    let { collection } = params;
+    const { pipeline } = params;
     collection = collection || 'drill_events';
 
     const db = common.drillDb;

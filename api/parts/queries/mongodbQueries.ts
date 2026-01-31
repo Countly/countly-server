@@ -160,9 +160,9 @@ async function aggregatedSessionData(options: QueryOptions): Promise<QueryResult
     pipeline.push({ '$unionWith': { 'coll': 'drill_events', 'pipeline': copy_pipeline } });
     pipeline.push({ '$group': { '_id': '$_id', 'u': { '$max': '$u' }, 'd': { '$max': '$d' }, 't': { '$max': '$t' }, 'n': { '$max': '$n' } } });
     const data = await common.drillDb.collection('drill_events').aggregate(pipeline).toArray() as AggregatedDataItem[];
-    for (let z = 0; z < data.length; z++) {
-        if (data[z].sg) {
-            data[z].sg = data[z].sg!.replaceAll(/\./gi, ':');
+    for (const datum of data) {
+        if (datum.sg) {
+            datum.sg = datum.sg!.replaceAll(/\./gi, ':');
         }
     }
     return {
@@ -240,10 +240,10 @@ async function getAggregatedData(options: QueryOptions): Promise<QueryResult> {
         data = [];
     }
     data = data || [];
-    for (let z = 0; z < data.length; z++) {
-        data[z]._id = data[z]._id.replaceAll(/:0/gi, ':');
-        if (data[z].sg) {
-            data[z].sg = data[z].sg!.replaceAll(/\./gi, ':');
+    for (const datum of data) {
+        datum._id = datum._id.replaceAll(/:0/gi, ':');
+        if (datum.sg) {
+            datum.sg = datum.sg!.replaceAll(/\./gi, ':');
         }
     }
 
@@ -297,10 +297,10 @@ async function getSegmentedEventModelData(options: QueryOptions): Promise<QueryR
         data = [];
     }
     data = data || [];
-    for (let z = 0; z < data.length; z++) {
-        data[z]._id = data[z]._id.replaceAll(/:0/gi, ':');
-        if (data[z].sg) {
-            data[z].sg = data[z].sg!.replaceAll(/\./gi, ':');
+    for (const datum of data) {
+        datum._id = datum._id.replaceAll(/:0/gi, ':');
+        if (datum.sg) {
+            datum.sg = datum.sg!.replaceAll(/\./gi, ':');
         }
     }
 
@@ -360,10 +360,10 @@ async function getViewsTableData(options: QueryOptions): Promise<QueryResult> {
         }
     });
     const data = await common.drillDb.collection('drill_events').aggregate(pipeline).toArray() as AggregatedDataItem[];
-    for (let z = 0; z < data.length; z++) {
-        data[z]._id = data[z]._id.replaceAll(/:0/gi, ':');
-        if (data[z].sg) {
-            data[z].sg = data[z].sg!.replaceAll(/\./gi, ':');
+    for (const datum of data) {
+        datum._id = datum._id.replaceAll(/:0/gi, ':');
+        if (datum.sg) {
+            datum.sg = datum.sg!.replaceAll(/\./gi, ':');
         }
     }
     return {
