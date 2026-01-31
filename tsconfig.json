@@ -31,12 +31,7 @@
         "api/utils/models.ts",
         "api/utils/random-sfc32.ts",
         "api/utils/timezones.ts",
-        "api/utils/utils.ts",
-        "api/utils/calculatedDataManager.ts",
-        "api/utils/eventTransformer.ts",
-        "api/utils/mongoDbQueryRunner.ts",
-        "api/utils/mutationManager.ts",
-        "api/utils/requestProcessorCommon.ts"
+        "api/utils/utils.ts"
     ],
     "exclude": [
         "node_modules/**/*.ts",
