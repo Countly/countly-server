@@ -190,7 +190,12 @@ const crypto = require('crypto');
 
                                         for (var prop in update) {
                                             common.fillTimeObjectMonth({time: time}, tmpTimeObjMonth, escapedMetricVal + prop, update[prop], true);
-                                            common.fillTimeObjectZero({time: time}, tmpTimeObjZero, escapedMetricVal + prop, update[prop], true);
+                                            if (prop === "u") {
+                                                common.fillTimeObjectZero({time: time}, tmpTimeObjZero, escapedMetricVal + prop, update[prop], true);
+                                            }
+                                            else {
+                                                tmpTimeObjZero["d." + time.month + "." + escapedMetricVal + prop] = update[prop];
+                                            }
                                         }
 
                                         common.manualWriteBatcher.add("app_viewdata", tmpMonthId, {"$inc": tmpTimeObjMonth, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.month}}, "countly", {token: token});
@@ -211,7 +216,6 @@ const crypto = require('crypto');
                                     }
                                     common.manualWriteBatcher.add("app_viewsmeta", next.a + "_" + view_id, {"$set": dd}, "countly");
                                 }
-
                             }
                             catch (err) {
                                 log.e(err);
@@ -304,8 +308,7 @@ const crypto = require('crypto');
 
                                             for (var prop in update) {
                                                 common.fillTimeObjectMonth({time: time}, tmpTimeObjMonth, prop, update[prop], true);
-                                                common.fillTimeObjectZero({time: time}, tmpTimeObjZero, prop, update[prop], true);
-
+                                                tmpTimeObjZero["d." + dateIds.month + "." + prop] = update[prop];
                                             }
                                             common.manualWriteBatcher.add("app_viewdata", tmpMonthId, {"$inc": tmpTimeObjMonth, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.month}}, "countly", {token: token});
                                             common.manualWriteBatcher.add("app_viewdata", tmpZeroId, {"$inc": tmpTimeObjZero, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.zero}}, "countly", {token: token});
