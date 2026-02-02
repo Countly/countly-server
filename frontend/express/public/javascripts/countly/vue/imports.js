@@ -1,4 +1,4 @@
-/* global Vue, ELEMENT, inViewportMixin, VueClipboard */
+/* global Vue, inViewportMixin, VueClipboard */
 
 (function(countlyVue) {
 
@@ -11,7 +11,7 @@
     window.VTooltip.VTooltip.options.popover.defaultInnerClass = 'cly-vue-popover__content';
     window.VTooltip.VTooltip.options.defaultHtml = false;
 
-    Vue.directive("click-outside", ELEMENT.utils.Clickoutside);
+    // Vue.directive("click-outside", ELEMENT.utils.Clickoutside);
     Vue.use(VueClipboard);
     // Vue.use(VeeValidate);
 

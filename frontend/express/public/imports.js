@@ -35,6 +35,16 @@ VeeValidate.extend('json', {
     }
 });
 
+// Element UI
+import ELEMENT from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
+import Clickoutside from 'element-ui/lib/utils/clickoutside.js';
+import Emitter from 'element-ui/lib/mixins/emitter.js';
+ELEMENT.utils = { Clickoutside, Emitter }; // TODO: remove this
+window.ELEMENT = ELEMENT;
+Vue.directive("click-outside", Clickoutside);
+Vue.use(ELEMENT);
+
 import jQuery from 'jquery';
 window.jQuery = jQuery;
 window.$ = jQuery;

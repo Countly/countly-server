@@ -117,6 +117,7 @@
     "csvtojson": "2.0.14",
     "echarts": "^5.6.0",
     "ejs": "3.1.10",
+    "element-ui": "^2.15.14",
     "errorhandler": "1.5.1",
     "express": "^4.22.1",
     "express-rate-limit": "8.2.1",
