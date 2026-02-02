@@ -41,10 +41,10 @@ const legacyScripts = [
     // 'javascripts/utils/vue/vue-echarts.umd.min.js',                           - DELETE.
     'javascripts/utils/vue/vue-color.min.js',
     'javascripts/utils/vue/v-tooltip.min.js',
-    // 'javascripts/utils/vue/vee-validate.full.min.js',
-    'javascripts/utils/vue/vue-clipboard.min.js',
+    // 'javascripts/utils/vue/vee-validate.full.min.js',                         - DELETE.
+    // 'javascripts/utils/vue/vue-clipboard.min.js',                             - DELETE.
     'javascripts/utils/vue/vue2Dropzone.min.js',
-    // 'javascripts/utils/vue/element-ui.js',
+    // 'javascripts/utils/vue/element-ui.js',                                    - DELETE.
     'javascripts/utils/vue/vue2-leaflet.min.js',
     'javascripts/utils/vue/inViewportMixin.js', // looks like its compatible with both vue2 and 3: https://github.com/BKWLD/vue-in-viewport-mixin. Requires intersection-observer
     'javascripts/utils/vue/vuescroll.min.js',

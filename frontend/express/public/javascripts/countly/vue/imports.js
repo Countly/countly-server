@@ -1,4 +1,4 @@
-/* global Vue, inViewportMixin, VueClipboard */
+/* global inViewportMixin */
 
 (function(countlyVue) {
 
@@ -12,7 +12,7 @@
     window.VTooltip.VTooltip.options.defaultHtml = false;
 
     // Vue.directive("click-outside", ELEMENT.utils.Clickoutside);
-    Vue.use(VueClipboard);
+    // Vue.use(VueClipboard);
     // Vue.use(VeeValidate);
 
     // Vue.component('validation-provider', VeeValidate.ValidationProvider);

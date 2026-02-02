@@ -45,6 +45,10 @@ window.ELEMENT = ELEMENT;
 Vue.directive("click-outside", Clickoutside);
 Vue.use(ELEMENT);
 
+// Vue clipboard
+import VueClipboard from 'vue-clipboard2';
+Vue.use(VueClipboard);
+
 import jQuery from 'jquery';
 window.jQuery = jQuery;
 window.$ = jQuery;

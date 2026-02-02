@@ -167,6 +167,7 @@
     "vee-validate": "^3.4.14",
     "vite": "^7.3.1",
     "vue": "^2.7.16",
+    "vue-clipboard2": "^0.3.3",
     "vue-color": "^2.8.2",
     "vue-echarts": "^6.7.3",
     "vue-in-viewport-mixin": "^2.1.0",
