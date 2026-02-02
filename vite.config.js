@@ -28,25 +28,25 @@ const legacyScripts = [
     // 'javascripts/utils/store+json2.min.js',                                   - storejs IS INSTALLED. CHECK IF json2 IS NEEDED.
     // 'javascripts/utils/jquery.idle-timer.js',
     // 'javascripts/utils/initialAvatar.js',                                     - IMPORTED IN imports.js AS ES MODULE.
-    // 'javascripts/utils/highlight/highlight.pack.js',
-    // 'javascripts/utils/jquery.xss.js',
-    'javascripts/utils/webfont.js',
-    'javascripts/utils/leaflet.js',
-    'javascripts/utils/js-deep-equals.unsorted.min.js',
+    // 'javascripts/utils/highlight/highlight.pack.js',                          - DELETE.
+    // 'javascripts/utils/jquery.xss.js',                                        - DELETE. REPLACED WITH ES MODULE VERSION.
+    // 'javascripts/utils/webfont.js',                                           - DELETE. NOT BEING USED ANYWHERE.
+    // 'javascripts/utils/leaflet.js',                                           - DELETE.
+    // 'javascripts/utils/js-deep-equals.unsorted.min.js',                       - DELETE. REPLACED WITH ES MODULE VERSION.
     // 'javascripts/utils/polyfill/es6-promise.auto.min.js',                     - DELETE. NOT NEEDED ANYMORE.
-    'javascripts/utils/polyfill/intersection-observer.js', // might not be needed anymore: https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver
+    // 'javascripts/utils/polyfill/intersection-observer.js',                    - DELETE. NOT NEEDED ANYMORE.
     // 'javascripts/utils/vue/vue.min.js',                                       - DELETE.
     // 'javascripts/utils/vue/composition-api.min.js',                           - DELETE. NOT NEEDED ANYMORE.
     // 'javascripts/utils/vue/vuex.min.js',                                      - DELETE.
     // 'javascripts/utils/echarts.5.min.js',                                     - DELETE.
     // 'javascripts/utils/vue/vue-echarts.umd.min.js',                           - DELETE.
-    'javascripts/utils/vue/vue-color.min.js',
-    // 'javascripts/utils/vue/v-tooltip.min.js',
+    // 'javascripts/utils/vue/vue-color.min.js',                                 - DELETE.
+    // 'javascripts/utils/vue/v-tooltip.min.js',                                 - DELETE.
     // 'javascripts/utils/vue/vee-validate.full.min.js',                         - DELETE.
     // 'javascripts/utils/vue/vue-clipboard.min.js',                             - DELETE.
     'javascripts/utils/vue/vue2Dropzone.min.js',
     // 'javascripts/utils/vue/element-ui.js',                                    - DELETE.
-    'javascripts/utils/vue/vue2-leaflet.min.js',
+    // 'javascripts/utils/vue/vue2-leaflet.min.js',                              - DELETE.
     // 'javascripts/utils/vue/inViewportMixin.js',                               - DELETE.
     'javascripts/utils/vue/vuescroll.min.js',
     // 'javascripts/utils/vue/vue-json-pretty.min.js',

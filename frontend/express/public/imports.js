@@ -69,6 +69,10 @@ window.VTooltip = VTooltip;
 import hljs from 'highlight.js';
 window.hljs = hljs;
 
+// deep equals
+import jsDeepEquals from './javascripts/js-deep-equals.js';
+window.jsDeepEquals = jsDeepEquals;
+
 import jQuery from 'jquery';
 window.jQuery = jQuery;
 window.$ = jQuery;
