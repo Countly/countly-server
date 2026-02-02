@@ -45,6 +45,10 @@ Vue.use(ElementUI);
 import VueClipboard from 'vue-clipboard2';
 Vue.use(VueClipboard);
 
+// initalAvatar
+import InitialAvatar from './javascripts/utils/initialAvatar.js';
+window.InitialAvatar = InitialAvatar;
+
 // VTooltip
 import VTooltip from 'v-tooltip';
 Vue.use(VTooltip, {
@@ -60,6 +64,10 @@ Vue.use(VTooltip, {
     defaultHtml: false,
 });
 window.VTooltip = VTooltip;
+
+// Highlight.js
+import hljs from 'highlight.js';
+window.hljs = hljs;
 
 import jQuery from 'jquery';
 window.jQuery = jQuery;

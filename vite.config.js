@@ -15,27 +15,27 @@ const __dirname = path.dirname(__filename);
 // These will be concatenated into a single scope
 const legacyScripts = [
     // === HEAD SECTION (from dashboard.html lines 111-169) ===
-    // 'javascripts/dom/jquery/jquery.js',                                       - DELETE. IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/dom/jquery/jquery.js',                                       - DELETE.
     // 'javascripts/utils/polyfills.js',                                         - DELETE. NOT NEEDED ANYMORE.
-    // 'javascripts/utils/underscore-min.js',                                    - DELETE. IMPORTED IN imports.js AS ES MODULE.
-    // 'javascripts/utils/lodash.merge.js',                                      - DELETE. IMPORTED IN imports.js AS ES MODULE.
-    // 'javascripts/utils/lodash.mergeWith.js',                                  - DELETE. IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/utils/underscore-min.js',                                    - DELETE.
+    // 'javascripts/utils/lodash.merge.js',                                      - DELETE.
+    // 'javascripts/utils/lodash.mergeWith.js',                                  - DELETE.
     // 'javascripts/utils/prefixfree.min.js',                                    - SEEMS LIKE IT'S NOT BEING USED ANYWHERE. BUT DO NOT DELETE FOR NOW.
     'javascripts/dom/gridstack/gridstack-h5.js', // install this into dashboard plugin (there's also a gridstack.css in entrypoint)
-    // 'javascripts/utils/moment/moment-with-locales.min.js',                    - DELETE. IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/utils/moment/moment-with-locales.min.js',                    - DELETE.
     // 'javascripts/utils/backbone-min.js',
     // 'javascripts/utils/jquery.i18n.properties.js',
-    // 'javascripts/utils/store+json2.min.js',                                   - storejs IS IMPORTED. CHECK IF json2 IS NEEDED.
+    // 'javascripts/utils/store+json2.min.js',                                   - storejs IS INSTALLED. CHECK IF json2 IS NEEDED.
     // 'javascripts/utils/jquery.idle-timer.js',
-    'javascripts/utils/initialAvatar.js',
-    'javascripts/utils/highlight/highlight.pack.js',
+    // 'javascripts/utils/initialAvatar.js',                                     - IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/utils/highlight/highlight.pack.js',
     // 'javascripts/utils/jquery.xss.js',
     'javascripts/utils/webfont.js',
     'javascripts/utils/leaflet.js',
     'javascripts/utils/js-deep-equals.unsorted.min.js',
     // 'javascripts/utils/polyfill/es6-promise.auto.min.js',                     - DELETE. NOT NEEDED ANYMORE.
     'javascripts/utils/polyfill/intersection-observer.js', // might not be needed anymore: https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver
-    // 'javascripts/utils/vue/vue.min.js',                                       - DELETE. IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/utils/vue/vue.min.js',                                       - DELETE.
     // 'javascripts/utils/vue/composition-api.min.js',                           - DELETE. NOT NEEDED ANYMORE.
     // 'javascripts/utils/vue/vuex.min.js',                                      - DELETE.
     // 'javascripts/utils/echarts.5.min.js',                                     - DELETE.
