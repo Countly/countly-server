@@ -4,6 +4,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { globSync } from 'fs';
 import vue from '@vitejs/plugin-vue2';
+import * as babel from '@babel/core';
 
 const __filename = fileURLToPath(import.meta.url); // eslint-disable-line
 const __dirname = path.dirname(__filename);
@@ -40,13 +41,13 @@ const legacyScripts = [
     // 'javascripts/utils/echarts.5.min.js',                                     - DELETE.
     // 'javascripts/utils/vue/vue-echarts.umd.min.js',                           - DELETE.
     'javascripts/utils/vue/vue-color.min.js',
-    'javascripts/utils/vue/v-tooltip.min.js',
+    // 'javascripts/utils/vue/v-tooltip.min.js',
     // 'javascripts/utils/vue/vee-validate.full.min.js',                         - DELETE.
     // 'javascripts/utils/vue/vue-clipboard.min.js',                             - DELETE.
     'javascripts/utils/vue/vue2Dropzone.min.js',
     // 'javascripts/utils/vue/element-ui.js',                                    - DELETE.
     'javascripts/utils/vue/vue2-leaflet.min.js',
-    'javascripts/utils/vue/inViewportMixin.js', // looks like its compatible with both vue2 and 3: https://github.com/BKWLD/vue-in-viewport-mixin. Requires intersection-observer
+    // 'javascripts/utils/vue/inViewportMixin.js',                               - DELETE.
     'javascripts/utils/vue/vuescroll.min.js',
     // 'javascripts/utils/vue/vue-json-pretty.min.js',
     'javascripts/dom/pace/pace.min.js',
@@ -83,7 +84,7 @@ const legacyScripts = [
     // 'javascripts/countly/vue/helpers.js',                                     - DELETE. NOT BEING USED ANYWHERE.
     // 'javascripts/countly/vue/data/vuex.js',
     // 'javascripts/countly/countly.task.manager.js',
-    'javascripts/countly/vue/imports.js',
+    // 'javascripts/countly/vue/imports.js',                                     - DELETE. NOT NEEDED ANYMORE.
     // 'javascripts/countly/vue/components/nav.js', // DELETE.
     // 'javascripts/countly/vue/components/layout.js', // Migrated to SFC
     // 'javascripts/countly/vue/components/form.js', // DELETE.
@@ -274,11 +275,93 @@ export default {};
     };
 }
 
+/**
+ * Custom Vite plugin to handle Vue 2 JSX transformation using Babel.
+ * This replaces @vitejs/plugin-vue2-jsx which doesn't support Vite 7.
+ */
+function vue2JsxPlugin() {
+    // Patterns for files that contain JSX and need transformation
+    const jsxPatterns = [
+        /\.jsx$/,
+        /node_modules\/element-ui\/packages\/.*\.js$/,
+        /node_modules\/element-ui\/packages\/.*\.vue$/,
+    ];
+
+    const shouldTransform = (id) => {
+        return jsxPatterns.some(pattern => pattern.test(id));
+    };
+
+    return {
+        name: 'vue2-jsx-plugin',
+        enforce: 'pre', // Run before vue plugin
+
+        async transform(code, id) {
+            // Handle .vue files - extract and transform script block
+            if (id.endsWith('.vue') && shouldTransform(id)) {
+                // Extract script content
+                const scriptMatch = code.match(/<script[^>]*>([\s\S]*?)<\/script>/);
+                if (!scriptMatch) {
+                    return null;
+                }
+
+                const scriptContent = scriptMatch[1];
+
+                try {
+                    const result = await babel.transformAsync(scriptContent, {
+                        filename: id,
+                        presets: ['@vue/babel-preset-jsx'],
+                        sourceType: 'module',
+                        sourceMaps: true,
+                    });
+
+                    if (result && result.code) {
+                        const newCode = code.replace(scriptMatch[1], result.code);
+                        return {
+                            code: newCode,
+                            map: result.map,
+                        };
+                    }
+                }
+                catch (err) {
+                    console.error(`[vue2-jsx-plugin] Error transforming ${id}:`, err.message);
+                }
+
+                return null;
+            }
+
+            // Handle .jsx and .js files with JSX
+            if ((id.endsWith('.jsx') || id.endsWith('.js')) && shouldTransform(id)) {
+                try {
+                    const result = await babel.transformAsync(code, {
+                        filename: id,
+                        presets: ['@vue/babel-preset-jsx'],
+                        sourceType: 'module',
+                        sourceMaps: true,
+                    });
+
+                    if (result && result.code) {
+                        return {
+                            code: result.code,
+                            map: result.map,
+                        };
+                    }
+                }
+                catch (err) {
+                    console.error(`[vue2-jsx-plugin] Error transforming ${id}:`, err.message);
+                }
+            }
+
+            return null;
+        },
+    };
+}
+
 export default defineConfig({
     root: path.resolve(__dirname, 'frontend/express/public'),
     base: '/dist/',
 
     plugins: [
+        vue2JsxPlugin(),
         vue(),
         legacyConcatPlugin(),
     ],
@@ -316,15 +399,10 @@ export default defineConfig({
 
     resolve: {
         alias: {
-            '@': path.resolve(__dirname, 'frontend/express/public'),
-            '@javascripts': path.resolve(__dirname, 'frontend/express/public/javascripts'),
-            '@core': path.resolve(__dirname, 'frontend/express/public/core'),
-            // Use the full build of Vue 2.7 that includes the runtime compiler
-            // Required for components that use the `template` option at runtime
             // REMOVE THIS AFTER SWITCHING TO SINGLE FILE COMPONENTS (.vue)
             'vue': 'vue/dist/vue.esm.js',
         },
-        extensions: ['.js', '.json', '.css']
+        extensions: ['.vue', '.js', '.json', '.css']
     },
 
     esbuild: {

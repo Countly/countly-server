@@ -36,18 +36,30 @@ VeeValidate.extend('json', {
 });
 
 // Element UI
-import ELEMENT from 'element-ui';
-import 'element-ui/lib/theme-chalk/index.css';
-import Clickoutside from 'element-ui/lib/utils/clickoutside.js';
-import Emitter from 'element-ui/lib/mixins/emitter.js';
-ELEMENT.utils = { Clickoutside, Emitter }; // TODO: remove this
-window.ELEMENT = ELEMENT;
-Vue.directive("click-outside", Clickoutside);
-Vue.use(ELEMENT);
+import ElementUI from 'element-ui/src/index.js';
+window.ELEMENT = ElementUI;
+Vue.directive("click-outside", ElementUI.utils.Clickoutside);
+Vue.use(ElementUI);
 
 // Vue clipboard
 import VueClipboard from 'vue-clipboard2';
 Vue.use(VueClipboard);
+
+// VTooltip
+import VTooltip from 'v-tooltip';
+Vue.use(VTooltip, {
+    defaultClass: 'cly-vue-tooltip',
+    defaultBoundariesElement: 'body',
+    popover: {
+        defaultTrigger: 'hover',
+        defaultOffset: 14,
+        defaultBoundariesElement: 'window',
+        defaultClass: 'cly-vue-popover',
+        defaultInnerClass: 'cly-vue-popover__content',
+    },
+    defaultHtml: false,
+});
+window.VTooltip = VTooltip;
 
 import jQuery from 'jquery';
 window.jQuery = jQuery;
