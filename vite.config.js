@@ -44,7 +44,7 @@ const legacyScripts = [
     // 'javascripts/utils/vue/v-tooltip.min.js',                                 - DELETE.
     // 'javascripts/utils/vue/vee-validate.full.min.js',                         - DELETE.
     // 'javascripts/utils/vue/vue-clipboard.min.js',                             - DELETE.
-    'javascripts/utils/vue/vue2Dropzone.min.js',
+    // 'javascripts/utils/vue/vue2Dropzone.min.js',                              - DELETE.
     // 'javascripts/utils/vue/element-ui.js',                                    - DELETE.
     // 'javascripts/utils/vue/vue2-leaflet.min.js',                              - DELETE.
     // 'javascripts/utils/vue/inViewportMixin.js',                               - DELETE.

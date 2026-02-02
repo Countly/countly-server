@@ -175,6 +175,7 @@
     "vue-color": "^2.8.2",
     "vue-echarts": "^6.7.3",
     "vue-in-viewport-mixin": "^2.1.0",
+    "vue2-dropzone": "^3.6.0",
     "vue2-leaflet": "^2.7.1",
     "vuex": "^3.6.2",
     "xlsx-write-stream": "^1.0.0",

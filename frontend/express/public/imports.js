@@ -73,6 +73,10 @@ window.hljs = hljs;
 import jsDeepEquals from './javascripts/js-deep-equals.js';
 window.jsDeepEquals = jsDeepEquals;
 
+
+import vue2Dropzone from 'vue2-dropzone';
+Vue.component("cly-dropzone", vue2Dropzone);
+
 import jQuery from 'jquery';
 window.jQuery = jQuery;
 window.$ = jQuery;
