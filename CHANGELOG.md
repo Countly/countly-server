@@ -2,6 +2,9 @@
 Fixes:
 - [core] Fix period calculation
 
+Enterprise Fixes:
+- [crash_symbolication] Use countlyfs for JavaScript symbolication
+
 ## Version 25.03.33
 Fixes:
 - [compliance-hub] Correctly merge user history on user merge
