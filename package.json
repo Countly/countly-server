@@ -177,6 +177,7 @@
     "vue-in-viewport-mixin": "^2.1.0",
     "vue2-dropzone": "^3.6.0",
     "vue2-leaflet": "^2.7.1",
+    "vuescroll": "^4.18.1",
     "vuex": "^3.6.2",
     "xlsx-write-stream": "^1.0.0",
     "yauzl": "^3.2.0"

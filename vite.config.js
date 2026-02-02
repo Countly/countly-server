@@ -31,7 +31,7 @@ const legacyScripts = [
     // 'javascripts/utils/highlight/highlight.pack.js',                          - DELETE.
     // 'javascripts/utils/jquery.xss.js',                                        - DELETE. REPLACED WITH ES MODULE VERSION.
     // 'javascripts/utils/webfont.js',                                           - DELETE. NOT BEING USED ANYWHERE.
-    // 'javascripts/utils/leaflet.js',                                           - DELETE.
+    // 'javascripts/utils/leaflet.js',                                           - DELETE. AND REPLACE THE CSS FILE IN entrypoint.js WITH THE ONE FROM NODE_MODULES.
     // 'javascripts/utils/js-deep-equals.unsorted.min.js',                       - DELETE. REPLACED WITH ES MODULE VERSION.
     // 'javascripts/utils/polyfill/es6-promise.auto.min.js',                     - DELETE. NOT NEEDED ANYMORE.
     // 'javascripts/utils/polyfill/intersection-observer.js',                    - DELETE. NOT NEEDED ANYMORE.
@@ -48,7 +48,7 @@ const legacyScripts = [
     // 'javascripts/utils/vue/element-ui.js',                                    - DELETE.
     // 'javascripts/utils/vue/vue2-leaflet.min.js',                              - DELETE.
     // 'javascripts/utils/vue/inViewportMixin.js',                               - DELETE.
-    'javascripts/utils/vue/vuescroll.min.js',
+    // 'javascripts/utils/vue/vuescroll.min.js',                                 - DELETE.
     // 'javascripts/utils/vue/vue-json-pretty.min.js',
     'javascripts/dom/pace/pace.min.js',
     'javascripts/utils/Sortable.min.js',
