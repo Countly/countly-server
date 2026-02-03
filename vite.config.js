@@ -102,7 +102,7 @@ const legacyScripts = [
     // 'javascripts/utils/vue/vuedraggable.umd.min.js',                          - DELETE.
     // 'javascripts/countly/countly.auth.js',
     // 'javascripts/utils/element-tiptap.umd.min.js',                            - DELETE.
-    'javascripts/utils/cronstrue.min.js',
+    // 'javascripts/utils/cronstrue.min.js',
 
     // === BODY SECTION (from dashboard.html lines 187-274) ===
     // 'javascripts/countly/countly.analytics.js',                               - DELETE. NOT BEING USED ANYWHERE.

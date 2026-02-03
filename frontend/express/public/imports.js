@@ -47,6 +47,9 @@ import 'element-tiptap/lib/index.css';
 Vue.use(ElementTiptap.default);
 window.ElementTiptap = ElementTiptap;
 
+import cronstrue from 'cronstrue';
+window.cronstrue = cronstrue;
+
 // Vue clipboard
 import VueClipboard from 'vue-clipboard2';
 Vue.use(VueClipboard);
