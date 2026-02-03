@@ -41,6 +41,12 @@ window.ELEMENT = ElementUI;
 Vue.directive("click-outside", ElementUI.utils.Clickoutside);
 Vue.use(ElementUI);
 
+// Element Tiptap
+import * as ElementTiptap from 'element-tiptap';
+import 'element-tiptap/lib/index.css';
+Vue.use(ElementTiptap.default);
+window.ElementTiptap = ElementTiptap;
+
 // Vue clipboard
 import VueClipboard from 'vue-clipboard2';
 Vue.use(VueClipboard);

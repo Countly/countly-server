@@ -101,7 +101,7 @@ const legacyScripts = [
     // 'javascripts/utils/Sortable.min.js',                                      - DELETE.
     // 'javascripts/utils/vue/vuedraggable.umd.min.js',                          - DELETE.
     // 'javascripts/countly/countly.auth.js',
-    'javascripts/utils/element-tiptap.umd.min.js',
+    // 'javascripts/utils/element-tiptap.umd.min.js',                            - DELETE.
     'javascripts/utils/cronstrue.min.js',
 
     // === BODY SECTION (from dashboard.html lines 187-274) ===
@@ -447,8 +447,12 @@ export default defineConfig({
 
     resolve: {
         alias: {
-            // REMOVE THIS AFTER SWITCHING TO SINGLE FILE COMPONENTS (.vue)
+            // TODO: REMOVE THIS AFTER SWITCHING TO SINGLE FILE COMPONENTS (.vue)
             'vue': 'vue/dist/vue.esm.js',
+            // Redirect element-ui/lib/* to element-ui/packages/* for element-tiptap compatibility
+            // (we use a custom version of element-ui that doesn't have the lib folder)
+            // TODO: REMOVE THIS AFTER SWITCHING TO VUE3
+            'element-ui/lib': 'element-ui/packages',
         },
         extensions: ['.vue', '.js', '.json', '.css']
     },

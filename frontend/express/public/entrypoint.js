@@ -14,7 +14,7 @@ import './javascripts/dom/gridstack/gridstack.css';
 // import './javascripts/dom/pace/pace-theme-flash.css';
 import './stylesheets/bulma/bulma-custom.css';
 import './stylesheets/styles/manifest.scss';
-import './stylesheets/vue/element-tiptap.css';
+// import './stylesheets/vue/element-tiptap.css';
 
 // Plugin stylesheets
 // import.meta.glob('../../../plugins/*/frontend/public/stylesheets/**/*.scss', { eager: true });

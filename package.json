@@ -122,6 +122,7 @@
     "csvtojson": "2.0.14",
     "echarts": "^5.6.0",
     "ejs": "3.1.10",
+    "element-tiptap": "^1.27.1",
     "element-ui": "github:cihadtekin/element",
     "errorhandler": "1.5.1",
     "express": "^4.22.1",
