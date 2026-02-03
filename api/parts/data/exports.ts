@@ -183,7 +183,7 @@ function flattenObject(ob: Record<string, unknown>, fields?: Record<string, bool
 function preventCSVInjection(val: unknown): unknown {
     if (typeof val === 'string') {
         const ch = val[0];
-        if (['@', '=', '+', '-'].indexOf(ch) !== -1) {
+        if (['@', '=', '+', '-'].includes(ch)) {
             val = '`' + val;
         }
     }
@@ -238,7 +238,7 @@ function convertData(data: unknown[], type: string): unknown {
         obj = flattenArray(data);
         return json2csv.parse(obj.data, { fields: obj.fields, excelStrings: false });
     case 'xls':
-    case 'xlsx':
+    case 'xlsx': {
         obj = flattenArray(data);
         const stream = new XLSXTransformStream();
         stream.write(obj.fields);
@@ -251,6 +251,7 @@ function convertData(data: unknown[], type: string): unknown {
         }
         stream.end();
         return stream;
+    }
     default:
         return data;
     }
@@ -404,7 +405,7 @@ function getValues(
     else {
         const docOrig = JSON.parse(JSON.stringify(doc));
         for (let kz = 0; kz < paramList.length; kz++) {
-            let value = common.getDescendantProp(doc, paramList[kz]) || '';
+            const value = common.getDescendantProp(doc, paramList[kz]) || '';
             if (typeof value === 'object' || Array.isArray(value)) {
                 values.push(JSON.stringify(transformValue(value, paramList[kz], options?.mapper, docOrig)));
             }
@@ -433,7 +434,7 @@ function streamExport(
     const transformFunction = options.transformFunction || emptyFun;
     const filename = options.filename || '';
     const type = options.type || 'json';
-    let projection = options.projection;
+    const projection = options.projection;
     const mapper = options.mapper;
     let listAtEnd = true;
     if (type && contents[type]) {
@@ -540,10 +541,10 @@ function streamExport(
  */
 function isObjectId(id: unknown): boolean {
     const checkForHexRegExp = new RegExp('^[0-9a-fA-F]{24}$');
-    if (typeof id === 'undefined' || id === null) {
+    if (id === undefined || id === null) {
         return false;
     }
-    if ((typeof id !== 'undefined' && id !== null) && 'number' !== typeof id && ((id as string).length !== 24)) {
+    if ((id !== undefined && id !== null) && 'number' !== typeof id && ((id as string).length !== 24)) {
         return false;
     }
     else {
@@ -569,7 +570,7 @@ function fromDatabase(options: ExportOptions): void {
     }
 
     if (options.limit && options.limit !== '') {
-        options.limit = parseInt(options.limit as string, 10);
+        options.limit = Number.parseInt(options.limit as string, 10);
         if (options.limit > plugin.getConfig('api').export_limit) {
             options.limit = plugin.getConfig('api').export_limit;
         }
@@ -583,7 +584,7 @@ function fromDatabase(options: ExportOptions): void {
     if (options.skip) {
         alternateName += '_from_' + options.skip;
         if (options.limit) {
-            alternateName += '_to_' + (parseInt(options.skip as string) + parseInt(options.limit as unknown as string));
+            alternateName += '_to_' + (Number.parseInt(options.skip as string) + Number.parseInt(options.limit as unknown as string));
         }
     }
     alternateName += '_exported_on_' + moment().format('DD-MMM-YYYY');
@@ -624,10 +625,10 @@ function fromDatabase(options: ExportOptions): void {
             }
 
             if (options.skip) {
-                cursor.skip(parseInt(options.skip as string));
+                cursor.skip(Number.parseInt(options.skip as string));
             }
             if (options.limit) {
-                cursor.limit(parseInt(options.limit as string));
+                cursor.limit(Number.parseInt(options.limit as string));
             }
             options.streamOptions = {};
             if (options.type === 'stream' || options.type === 'json') {

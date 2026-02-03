@@ -112,7 +112,7 @@ class Cacher {
      */
     checkAll(): void {
         for (const collection in this.data) {
-            if (Object.keys(this.data[collection]).length) {
+            if (Object.keys(this.data[collection]).length > 0) {
                 for (const id in this.data[collection]) {
                     if (this.data[collection][id].last_used < Date.now() - this.ttl) {
                         delete this.data[collection][id];
@@ -143,7 +143,7 @@ class Cacher {
      * @param multi - true if multiple documents
      * @returns promise
      */
-    getData = async (
+    getData = async(
         collection: string,
         id: string,
         query: Record<string, unknown>,
@@ -219,7 +219,7 @@ class Cacher {
         if (this.data[collection][id] && (keysSaved.have_projection || keysNew.have_projection)) {
             if (keysSaved.have_projection) {
                 for (let p = 0; p < keysNew.keys.length; p++) {
-                    if (keysSaved.keys.indexOf(keysNew.keys[p]) === -1) {
+                    if (!keysSaved.keys.includes(keysNew.keys[p])) {
                         good_projection = false;
                         keysSaved.keys.push(keysNew.keys[p]);
                     }
@@ -340,7 +340,7 @@ class Cacher {
      * @returns {keys - list of keys, have_projection - true if projection not empty}
      */
     keysFromProjectionObject(projection?: Record<string, unknown>): ProjectionResult {
-        let keysSaved: string[] = [];
+        const keysSaved: string[] = [];
         let have_projection = false;
         projection = projection || {};
 

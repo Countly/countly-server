@@ -164,7 +164,7 @@ class changeStreamReader {
         if (this.fallback) {
             let cd2 = cd.valueOf() + 60000;
             const now = Date.now().valueOf();
-            cd2 = cd2 > now ? now : cd2;
+            cd2 = Math.min(cd2, now);
 
             const cd2Date = new Date(cd2);
             const pipeline = JSON.parse(JSON.stringify(this.fallback.pipeline)) || [];
@@ -331,7 +331,7 @@ class changeStreamReader {
                     else if (err.code === 40573) { // change stream is not supported
                         log.w(`[${self.name}] Change streams not supported by database, switching to polling mode`);
                         self.keep_closed = true;
-                        let newCD = Date.now();
+                        const newCD = Date.now();
                         if (token && token.cd) {
                             await self.processBadRange({ name: self.name, cd1: token.cd, cd2: new Date(newCD) }, token);
                         }

@@ -205,7 +205,7 @@ function getTotalUsers(callback: (totalUsers: number, totalApps: number) => void
             });
         }
     }
-    if (typeof apps !== 'undefined') {
+    if (apps !== undefined) {
         async.map(apps, function(app: string, done: (err: Error | null, count: number) => void) {
             getUserCountForApp({ _id: app }, done);
         }, function(err: Error | null, results: number[]) {
@@ -239,10 +239,10 @@ function getTotalUsers(callback: (totalUsers: number, totalApps: number) => void
  */
 function getTotalEvents(callback: (total: number) => void, apps?: string[]): void {
     const query: Record<string, unknown> = {};
-    if (typeof apps !== 'undefined') {
+    if (apps !== undefined) {
         const inarray: ObjectId[] = [];
         for (let i = 0; i < apps.length; i++) {
-            if (apps[i] && apps[i].length) {
+            if (apps[i] && apps[i].length > 0) {
                 inarray.push(countlyDb.ObjectID(apps[i]));
             }
         }
@@ -298,10 +298,10 @@ function getTotalMsgCreated(callback: (total: number) => void): void {
  */
 function getTotalMsgSent(callback: (total: number) => void, apps?: string[]): void {
     const query: Record<string, unknown> = {};
-    if (typeof apps !== 'undefined') {
+    if (apps !== undefined) {
         const inarray: ObjectId[] = [];
         for (let i = 0; i < apps.length; i++) {
-            if (apps[i] && apps[i].length) {
+            if (apps[i] && apps[i].length > 0) {
                 inarray.push(countlyDb.ObjectID(apps[i]));
             }
         }
@@ -365,7 +365,7 @@ function getCrashGroupsForApp(app: string, callback: (err: Error | null, count: 
  * @param apps - provide array of apps to fetch data for, else will fetch data for all apps
  */
 function getCrashGroups(callback: (total: number, appCount?: number) => void, apps?: string[]): void {
-    if (typeof apps !== 'undefined') {
+    if (apps !== undefined) {
         async.map(apps, getCrashGroupsForApp, function(err: Error | null, results: number[]) {
             if (err) {
                 callback(0, 0);
@@ -425,7 +425,7 @@ function getAllPlatforms(callback: (platforms: string[]) => void, apps?: string[
             const platforms: Record<string, boolean> = {};
 
             for (let i = 0; i < arr.length; i++) {
-                if (arr[i] && arr[i].meta && arr[i].meta!.os && (typeof apps === 'undefined' || apps.indexOf(arr[i].a!) > -1)) {
+                if (arr[i] && arr[i].meta && arr[i].meta!.os && (apps === undefined || apps.includes(arr[i].a!))) {
                     for (let j = 0; j < arr[i].meta!.os!.length; j++) {
                         platforms[arr[i].meta!.os![j]] = true;
                     }

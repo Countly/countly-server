@@ -133,11 +133,11 @@ const countlyEvents: {
                     }
 
                     // Key fields is required
-                    if (!currEvent.key || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
+                    if (!currEvent.key || (currEvent.key.indexOf('[CLY]_') === 0 && !plugins.internalEvents.includes(currEvent.key))) {
                         continue;
                     }
                     if (currEvent.count && common.isNumber(currEvent.count)) {
-                        currEvent.count = parseInt(currEvent.count as unknown as string, 10);
+                        currEvent.count = Number.parseInt(currEvent.count as unknown as string, 10);
                     }
                     else {
                         currEvent.count = 1;
@@ -145,7 +145,7 @@ const countlyEvents: {
 
                     if (pluginsGetConfig.event_limit &&
                             appEvents.length >= pluginsGetConfig.event_limit &&
-                            appEvents.indexOf(currEvent.key) === -1) {
+                            !appEvents.includes(currEvent.key)) {
                         continue;
                     }
                     shortEventName = common.fixEventKey(currEvent.key);
@@ -158,22 +158,22 @@ const countlyEvents: {
 
                         for (const segKey in currEvent.segmentation) {
                             // check if segment should be omitted
-                            if (plugins.internalOmitSegments[currEvent.key] && Array.isArray(plugins.internalOmitSegments[currEvent.key]) && plugins.internalOmitSegments[currEvent.key].indexOf(segKey) !== -1) {
+                            if (plugins.internalOmitSegments[currEvent.key] && Array.isArray(plugins.internalOmitSegments[currEvent.key]) && plugins.internalOmitSegments[currEvent.key].includes(segKey)) {
                                 continue;
                             }
                             // check if segment should be omitted
-                            if (omitted_segments[currEvent.key] && Array.isArray(omitted_segments[currEvent.key]) && omitted_segments[currEvent.key].indexOf(segKey) !== -1) {
+                            if (omitted_segments[currEvent.key] && Array.isArray(omitted_segments[currEvent.key]) && omitted_segments[currEvent.key].includes(segKey)) {
                                 continue;
                             }
 
                             // check if whitelisted is set and this one not in whitelist
-                            if (whitelisted_segments[currEvent.key] && Array.isArray(whitelisted_segments[currEvent.key]) && whitelisted_segments[currEvent.key].indexOf(segKey) === -1) {
+                            if (whitelisted_segments[currEvent.key] && Array.isArray(whitelisted_segments[currEvent.key]) && !whitelisted_segments[currEvent.key].includes(segKey)) {
                                 continue;
                             }
 
                             if (pluginsGetConfig.event_segmentation_limit &&
                                     appSegments[currEvent.key] &&
-                                    appSegments[currEvent.key].indexOf(segKey) === -1 &&
+                                    !appSegments[currEvent.key].includes(segKey) &&
                                     appSegments[currEvent.key].length >= pluginsGetConfig.event_segmentation_limit) {
                                 continue;
                             }
@@ -193,7 +193,7 @@ const countlyEvents: {
                                     tmpSegVal = tmpSegVal.replace(/^\$+/, '').replace(/\./g, ':');
                                     tmpSegVal = common.encodeCharacters(tmpSegVal);
 
-                                    if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                                    if (forbiddenSegValues.includes(tmpSegVal)) {
                                         tmpSegVal = '[CLY]' + tmpSegVal;
                                     }
 
@@ -294,12 +294,12 @@ function processEvents(
         const tmpTotalObj: Record<string, number> = {};
 
         // Key fields is required
-        if (!currEvent.key || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
+        if (!currEvent.key || (currEvent.key.indexOf('[CLY]_') === 0 && !plugins.internalEvents.includes(currEvent.key))) {
             continue;
         }
 
         if (currEvent.count && common.isNumber(currEvent.count)) {
-            currEvent.count = parseInt(currEvent.count as unknown as string, 10);
+            currEvent.count = Number.parseInt(currEvent.count as unknown as string, 10);
         }
         else {
             currEvent.count = 1;
@@ -307,7 +307,7 @@ function processEvents(
 
         if (pluginsGetConfig.event_limit &&
                 appEvents.length >= pluginsGetConfig.event_limit &&
-                appEvents.indexOf(currEvent.key) === -1) {
+                !appEvents.includes(currEvent.key)) {
             continue;
         }
 
@@ -336,19 +336,19 @@ function processEvents(
         common.arrayAddUniq(events, shortEventName);
 
         if (currEvent.sum && common.isNumber(currEvent.sum)) {
-            currEvent.sum = parseFloat(parseFloat(currEvent.sum as unknown as string).toFixed(5));
+            currEvent.sum = Number.parseFloat(Number.parseFloat(currEvent.sum as unknown as string).toFixed(5));
             common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.sum, currEvent.sum);
             common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.sum, currEvent.sum);
         }
 
         if (currEvent.dur && common.isNumber(currEvent.dur)) {
-            currEvent.dur = parseFloat(currEvent.dur as unknown as string);
+            currEvent.dur = Number.parseFloat(currEvent.dur as unknown as string);
             common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.dur, currEvent.dur);
             common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.dur, currEvent.dur);
         }
 
         if (currEvent.count && common.isNumber(currEvent.count)) {
-            currEvent.count = parseInt(currEvent.count as unknown as string, 10);
+            currEvent.count = Number.parseInt(currEvent.count as unknown as string, 10);
         }
 
         common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.count, currEvent.count);
@@ -369,9 +369,9 @@ function processEvents(
         // fill time object for total event count
 
         if (currEvent.segmentation) {
-            for (let segKey in currEvent.segmentation) {
+            for (const segKey in currEvent.segmentation) {
                 let tmpSegKey = '';
-                if (segKey.indexOf('.') !== -1 || segKey.substr(0, 1) === '$') {
+                if (segKey.includes('.') || segKey.substr(0, 1) === '$') {
                     tmpSegKey = segKey.replace(/^\$+|\./g, '');
                     currEvent.segmentation[tmpSegKey] = currEvent.segmentation[segKey];
                     delete currEvent.segmentation[segKey];
@@ -380,15 +380,15 @@ function processEvents(
 
             for (const segKey in currEvent.segmentation) {
                 // check if segment should be omitted
-                if (plugins.internalOmitSegments[currEvent.key] && Array.isArray(plugins.internalOmitSegments[currEvent.key]) && plugins.internalOmitSegments[currEvent.key].indexOf(segKey) !== -1) {
+                if (plugins.internalOmitSegments[currEvent.key] && Array.isArray(plugins.internalOmitSegments[currEvent.key]) && plugins.internalOmitSegments[currEvent.key].includes(segKey)) {
                     continue;
                 }
                 // check if segment should be omitted
-                if (omitted_segments[currEvent.key] && Array.isArray(omitted_segments[currEvent.key]) && omitted_segments[currEvent.key].indexOf(segKey) !== -1) {
+                if (omitted_segments[currEvent.key] && Array.isArray(omitted_segments[currEvent.key]) && omitted_segments[currEvent.key].includes(segKey)) {
                     continue;
                 }
 
-                if (whitelisted_segments[currEvent.key] && Array.isArray(whitelisted_segments[currEvent.key]) && whitelisted_segments[currEvent.key].indexOf(segKey) === -1) {
+                if (whitelisted_segments[currEvent.key] && Array.isArray(whitelisted_segments[currEvent.key]) && !whitelisted_segments[currEvent.key].includes(segKey)) {
                     continue;
                 }
                 // if segKey is empty
@@ -398,7 +398,7 @@ function processEvents(
 
                 if (pluginsGetConfig.event_segmentation_limit &&
                         appSegments[currEvent.key] &&
-                        appSegments[currEvent.key].indexOf(segKey) === -1 &&
+                        !appSegments[currEvent.key].includes(segKey) &&
                         appSegments[currEvent.key].length >= pluginsGetConfig.event_segmentation_limit) {
                     continue;
                 }
@@ -428,7 +428,7 @@ function processEvents(
                     // Mongodb field names can't start with $ or contain .
                     tmpSegVal = tmpSegVal.replace(/^\$+/, '').replace(/\./g, ':');
 
-                    if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                    if (forbiddenSegValues.includes(tmpSegVal)) {
                         tmpSegVal = '[CLY]' + tmpSegVal;
                     }
 
@@ -440,7 +440,7 @@ function processEvents(
                             appSgValues[eventCollectionName] &&
                             appSgValues[eventCollectionName]['no-segment' + '_' + dateIds.zero + '_' + postfix] &&
                             appSgValues[eventCollectionName]['no-segment' + '_' + dateIds.zero + '_' + postfix][segKey] &&
-                            appSgValues[eventCollectionName]['no-segment' + '_' + dateIds.zero + '_' + postfix][segKey].indexOf(tmpSegVal) === -1 &&
+                            !appSgValues[eventCollectionName]['no-segment' + '_' + dateIds.zero + '_' + postfix][segKey].includes(tmpSegVal) &&
                             appSgValues[eventCollectionName]['no-segment' + '_' + dateIds.zero + '_' + postfix][segKey].length >= pluginsGetConfig.event_segmentation_value_limit) {
                         continue;
                     }
@@ -500,7 +500,7 @@ function processEvents(
 
     if (!pluginsGetConfig.safe && !(params.qstring?.safe_api_response)) {
         for (const collection in eventCollections) {
-            if (eventSegmentsZeroes[collection] && eventSegmentsZeroes[collection].length) {
+            if (eventSegmentsZeroes[collection] && eventSegmentsZeroes[collection].length > 0) {
                 for (let i = 0; i < eventSegmentsZeroes[collection].length; i++) {
                     let zeroId = '';
 
@@ -538,7 +538,7 @@ function processEvents(
     else {
         const eventDocs: Array<{ collection: string; _id: string; updateObj: Record<string, unknown>; rollbackObj?: Record<string, number> }> = [];
         for (const collection in eventCollections) {
-            if (eventSegmentsZeroes[collection] && eventSegmentsZeroes[collection].length) {
+            if (eventSegmentsZeroes[collection] && eventSegmentsZeroes[collection].length > 0) {
                 for (let i = 0; i < eventSegmentsZeroes[collection].length; i++) {
                     let zeroId = '';
 
@@ -588,7 +588,7 @@ function processEvents(
         }
     }
 
-    if (events.length) {
+    if (events.length > 0) {
         const eventSegmentList: { $addToSet: Record<string, unknown> } = { '$addToSet': { 'list': { '$each': events } } };
 
         for (const event in eventSegments) {
