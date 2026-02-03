@@ -12,10 +12,10 @@ import { createRequire } from 'module';
 // @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
 const require = createRequire(import.meta.url);
 const formidable = require('formidable');
-const countlyConfig = require('./config');
+const countlyConfig = require('./config.js');
 const plugins = require('../plugins/pluginManager.js');
 const logModule = require('./utils/log.js');
-const { processRequest } = require('./ingestor/requestProcessor');
+const { processRequest } = require('./ingestor/requestProcessor.js');
 const common = require('./utils/common.js');
 const { Cacher } = require('./parts/data/cacher.js');
 const { WriteBatcher } = require('./parts/data/batcher.js');

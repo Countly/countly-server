@@ -9,8 +9,8 @@ import { createRequire } from 'module';
 // @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
 const require = createRequire(import.meta.url);
 const plugins = require('../plugins/pluginManager.js');
-const countlyConfig = require('./config');
-const countlyConfigApp = require('../frontend/express/config');
+const countlyConfig = require('./config.js');
+const countlyConfigApp = require('../frontend/express/config.js');
 
 /**
  * API configuration interface
