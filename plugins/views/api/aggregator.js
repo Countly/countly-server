@@ -308,7 +308,7 @@ const crypto = require('crypto');
 
                                             for (var prop in update) {
                                                 common.fillTimeObjectMonth({time: time}, tmpTimeObjMonth, prop, update[prop], true);
-                                                tmpTimeObjZero["d." + dateIds.month + "." + prop] = update[prop];
+                                                tmpTimeObjZero["d." + time.month + "." + prop] = update[prop];
                                             }
                                             common.manualWriteBatcher.add("app_viewdata", tmpMonthId, {"$inc": tmpTimeObjMonth, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.month}}, "countly", {token: token});
                                             common.manualWriteBatcher.add("app_viewdata", tmpZeroId, {"$inc": tmpTimeObjZero, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.zero}}, "countly", {token: token});
