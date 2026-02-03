@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 const FEATURE_NAME = 'remote_config';
 plugins.register("/permissions/features", function(ob) {
     ob.features.push(FEATURE_NAME);

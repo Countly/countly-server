@@ -1,6 +1,6 @@
 var pluginInstance = {},
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     stores = require("../stores.json"),
     fetch = require('../../../api/parts/data/fetch.js'),
 

@@ -1,6 +1,7 @@
 <div class="data_migration__main">
     <cly-header
         :title="i18n('data-migration.page-title')"
+        :tooltip="{description: 'Plugin allows migrating full data for application. Full rights are available only for global admin.'}"
     >
         <template v-slot:header-right>
             <cly-more-options v-if="canUserCreate" @command="handleCommand">

@@ -1,4 +1,4 @@
-var plugins = require('../plugins/pluginManager.js');
+var plugins = require('../plugins/pluginManager.ts');
 const countlyConfig = require('./config');
 const countlyConfigApp = require('../frontend/express/config');
 /**

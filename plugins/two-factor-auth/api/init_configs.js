@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 const FEATURE_NAME = 'two_factor_auth';
 
 plugins.register("/permissions/features", function(ob) {

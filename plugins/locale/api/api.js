@@ -2,7 +2,7 @@ var exported = {},
     langs = require('./utils/langs.js'),
     common = require('../../../api/utils/common.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     { validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'locale';

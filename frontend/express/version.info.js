@@ -3,7 +3,7 @@ var versionInfo = {
     type: "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6"
 };
 try {
-    var plugins = require('../../plugins/pluginManager.js');
+    var plugins = require('../../plugins/pluginManager.ts');
     plugins.extendModule("version.info", versionInfo);
 }
 catch (_) {

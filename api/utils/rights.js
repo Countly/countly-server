@@ -9,7 +9,7 @@
  */
 
 var common = require("./common.js"),
-    plugins = require('../../plugins/pluginManager.js'),
+    plugins = require('../../plugins/pluginManager.ts'),
     Promise = require("bluebird"),
     crypto = require('crypto'),
     log = require('./log.js')('core:rights');

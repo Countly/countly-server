@@ -7,6 +7,8 @@ if (process.argv && process.argv.length > 2 && process.argv[2] === '--force') {
     process.env.FORCE_NPM_INSTALL = true;
 }
 
+var skipProduction = process.argv && process.argv.includes('--skip-production');
+
 
 manager.connectToAllDatabases().then((dbs) => {
     manager.loadConfigs(dbs[0], async() => {
@@ -22,6 +24,11 @@ manager.connectToAllDatabases().then((dbs) => {
             console.log("Server is in offline mode, not installing any plugins.");
         }
 
+        if (skipProduction) {
+            console.log("Skipping production build");
+            console.log("Exiting");
+            process.exit(0);
+        }
         //processing plugin files for production mode
         console.log("Processing plugin files for production mode");
         manager.prepareProduction(() => {

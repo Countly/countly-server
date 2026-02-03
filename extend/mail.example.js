@@ -1,7 +1,7 @@
 //file should be placed in countly/extend
 //edit this script and put it in countly/extend/mail.js to overwrite existing email templates and settings
 var nodemailer = require('nodemailer');
-const pluginManager = require('../plugins/pluginManager.js');
+const pluginManager = require('../plugins/pluginManager.ts');
 
 //rename company
 var company = "Company";

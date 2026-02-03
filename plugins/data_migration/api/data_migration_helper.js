@@ -1,7 +1,7 @@
 
 var crypto = require('crypto');
 var Promise = require("bluebird");
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 const fs = require('fs');
 const fse = require('fs-extra');
 var path = require('path');

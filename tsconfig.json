@@ -5,27 +5,66 @@
 // npx tsc
 {
     "include": [
+        "plugins/pluginManager.ts",
         "plugins/pluginManager.js",
         "plugins/push/**/*.ts",
         "plugins/push/**/*.js",
         "plugins/push_approver/**/*.ts",
         "plugins/push_approver/**/*.js",
         "api/lib/countly.common.js",
-        "api/parts/data/geoData.js",
+        "api/parts/data/geoData.ts",
+        "api/aggregator.ts",
+        "api/aggregator/usage.ts",
+        "api/aggregator/processing.ts",
+        "api/ingestor/usage.ts",
+        "api/ingestor/requestProcessor.ts",
+        "api/eventSink/EventSinkInterface.ts",
+        "api/eventSink/MongoEventSink.ts",
+        "api/eventSink/EventSinkFactory.ts",
+        "api/eventSink/UnifiedEventSink.ts",
+        "api/configs/config.db_out.sample.ts",
         "api/utils/common.js",
         "api/utils/localization.js",
         "api/utils/requestProcessor.js",
         "api/utils/taskmanager.js",
-        "api/utils/authorizer.js"
+        "api/utils/authorizer.js",  
+        "api/utils/models.ts",
+        "api/utils/random-sfc32.ts",
+        "api/utils/timezones.ts",
+        "api/utils/utils.ts",
+        "api/utils/calculatedDataManager.ts",
+        "api/utils/eventTransformer.ts",
+        "api/utils/mongoDbQueryRunner.ts",
+        "api/utils/mutationManager.ts",
+        "api/utils/requestProcessorCommon.ts",
+        "api/parts/queries/aggregator.ts",
+        "api/parts/queries/coreAggregation.ts",
+        "api/parts/queries/mongodbQueries.ts",
+        "jobServer/constants/JobPriorities.ts",
+        "jobServer/example/ExampleJob.ts",
+        "jobServer/example/SimpleExample.ts"
     ],
     "exclude": [
-        "node_modules"
+        "node_modules/**/*.ts",
+        "node_modules/**/*.js",
+        "frontend/*",
+        "plugins/**/frontend/**/*.ts",
+        "plugins/**/frontend/**/*.js",
     ],
     "compilerOptions": {
         "outDir": "dist", // we're not building the app. but still necessary for, reasons...
         "allowJs": true,
         "checkJs": true,
         "resolveJsonModule": true,
-        "strict": true
+        "strict": true,
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
+        "target": "es2024",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "lib": ["es2024"],
+        // These help with CJS → TS interop:
+        "esModuleInterop": true,       // enables default imports from CJS modules
+        "isolatedModules": true         // catches patterns that won't work at runtim
     }
 }

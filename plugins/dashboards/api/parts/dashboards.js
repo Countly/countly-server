@@ -16,7 +16,7 @@ var countlyModel = require("../../../../api/lib/countly.model.js"),
     countlyCommon = require('../../../../api/lib/countly.common'),
     fetch = require("../../../../api/parts/data/fetch.js"),
     log = common.log('dashboards:api'),
-    plugins = require("../../../pluginManager.js");
+    plugins = require("../../../pluginManager.ts");
 
 /** @type {TaskManagerStatic} */
 const taskmanager = require('../../../../api/utils/taskmanager.js');

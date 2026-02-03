@@ -1,6 +1,6 @@
 var exported = {},
     langs = require('./utils/langs.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.ts');
 
 (function() {
     plugins.register("/sdk/process_request", function(ob) {

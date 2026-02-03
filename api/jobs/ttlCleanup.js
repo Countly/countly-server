@@ -1,4 +1,4 @@
-const plugins = require("../../plugins/pluginManager.js");
+const plugins = require("../../plugins/pluginManager.ts");
 const common = require('../utils/common');
 // const job = require("../parts/jobs/job.js");
 const log = require("../utils/log.js")("job:ttlCleanup");

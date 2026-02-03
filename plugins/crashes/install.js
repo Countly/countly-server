@@ -1,5 +1,5 @@
 var async = require('async'),
-    pluginManager = require('../pluginManager.js'),
+    pluginManager = require('../pluginManager.ts'),
     fs = require('fs'),
     path = require('path');
 console.log("Installing crash plugin");

@@ -8,7 +8,7 @@ var exported = {},
     crypto = require('crypto'),
     log = common.log('star-rating:api'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    plugins = require('../../pluginManager.js'),
+    plugins = require('../../pluginManager.ts'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
     countlyFs = require('../../../api/utils/countlyFs.js');
 var fetch = require('../../../api/parts/data/fetch.js');
@@ -24,6 +24,15 @@ var surveysEnabled = plugins.getPlugins().indexOf('surveys') > -1;
 
 if (cohortsEnabled) {
     var cohorts = require('../../cohorts/api/parts/cohorts');
+}
+
+if (!surveysEnabled) {
+    plugins.setConfigs("feedback", {
+        main_color: "#0166D6",
+        font_color: "#FFFFFF",
+        feedback_logo: ""
+
+    });
 }
 
 const FEATURE_NAME = 'star_rating';

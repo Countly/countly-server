@@ -1,7 +1,7 @@
 'use strict';
 // const job = require('../../../../api/parts/jobs/job.js'),
 const Job = require('../../../../jobServer/Job');
-const plugins = require('../../../pluginManager.js');
+const plugins = require('../../../pluginManager.ts');
 const log = require('../../../../api/utils/log.js')('hooks:monitor');
 
 /**

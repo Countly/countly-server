@@ -53,7 +53,7 @@ class JobScanner {
 
     /**
      * @private
-     * @type {import('../plugins/pluginManager.js')}
+     * @type {import('../plugins/pluginManager.ts')}
      */
     #pluginManager;
 

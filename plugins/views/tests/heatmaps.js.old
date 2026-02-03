@@ -4,7 +4,7 @@ const moment = require('moment');
 const should = require('should');
 const spt = require('supertest');
 
-const pluginManager = require('../../pluginManager.js');
+const pluginManager = require('../../pluginManager.ts');
 const testUtils = require('../../../test/testUtils.js');
 
 const request = spt(testUtils.url);

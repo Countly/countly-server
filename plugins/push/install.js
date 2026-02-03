@@ -1,4 +1,4 @@
-const pluginManager = require("../pluginManager.js");
+const pluginManager = require("../pluginManager.ts");
 
 console.log("Installing push plugin");
 

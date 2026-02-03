@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 const FEATURE_NAME = 'star_rating';
 var surveysEnabled = plugins.getPlugins().indexOf('surveys') > -1;
 plugins.internalEvents.push('[CLY]_star_rating');

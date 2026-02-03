@@ -65,7 +65,7 @@ describe("Testing Jobs", function() {
 // 	J = require('../../api/parts/jobs/job.js'),
 // 	R = require('../../api/parts/jobs/resource.js'),
 // 	RET = require('../../api/parts/jobs/retry.js'),
-// 	pluginManager = require('../../plugins/pluginManager.js'),
+// 	pluginManager = require('../../plugins/pluginManager.ts'),
 // 	db = pluginManager.singleDefaultConnection(),
 
 // 	HORROR = 'Horrible error',

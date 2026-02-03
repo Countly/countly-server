@@ -1,6 +1,6 @@
 /**
  * @typedef {import('../api/utils/log.js').Logger} Logger
- * @typedef {import('../plugins/pluginManager.js')} PluginManager
+ * @typedef {import('../plugins/pluginManager.ts')} PluginManager
  * @typedef {import('mongodb').Db} MongoDb
  * @typedef {import('mongodb').Collection} MongoCollection
  * @typedef {import('./JobManager')} JobManager

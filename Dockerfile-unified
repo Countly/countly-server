@@ -7,7 +7,7 @@ ARG GEOIP=empty
 ###############################################################################
 # Stage 0 – base toolchain & node_modules (no full source tree)               #
 ###############################################################################
-FROM node:24.5-bookworm-slim AS base
+FROM node:24-bookworm-slim AS base
 ENV HUSKY=0
 
 # 0.1  core build & runtime libs (single APT layer for better cache)
@@ -161,7 +161,7 @@ RUN npm remove -y --no-save mocha nyc should supertest && \
 ###############################################################################
 # Stage 4 – runtime (minimal, no compilers)                                    #
 ###############################################################################
-FROM node:24.5-bookworm-slim AS runtime
+FROM node:24-bookworm-slim AS runtime
 
 # Redeclare ARG to make it available in this stage
 ARG COUNTLY_PLUGINS

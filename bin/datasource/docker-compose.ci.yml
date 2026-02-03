@@ -202,12 +202,12 @@ services:
     restart: "no"
 
   # ------------------------------
-  # MongoDB 8.0 + Replica Set
+  # MongoDB 8.0 (Standalone)
   # ------------------------------
   mongodb:
     image: mongo:8.0
     container_name: mongodb
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--wiredTigerCacheSizeGB", "1"]
+    command: ["mongod", "--bind_ip_all", "--wiredTigerCacheSizeGB", "1"]
     ports:
       - "27017:27017"
     volumes:
@@ -219,21 +219,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  mongodb-init:
-    image: mongo:8.0
-    container_name: mongodb-init
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    command: >
-      sh -c "
-      mongosh --host mongodb:27017 --eval
-      'try{rs.status()}catch(e){rs.initiate({_id:\"rs0\",members:[{_id:0,host:\"mongodb:27017\"}]})}';
-      "
-    networks:
-      - kafka-net
-    restart: "no"
 
   # ------------------------------
   # Connector Initialization (one-shot)

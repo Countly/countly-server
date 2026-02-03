@@ -33,8 +33,8 @@
           <el-table-column width="100">
             <template v-slot="rowScope">
               <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
-                <el-dropdown-item command="download-log">{{i18n('data-migration.download-log')}}</el-dropdown-item>
-                <el-dropdown-item command="download-export">{{i18n('data-migration.download-export')}}</el-dropdown-item>
+                <el-dropdown-item v-if="isGlobalAdmin" command="download-log">{{i18n('data-migration.download-log')}}</el-dropdown-item>
+                <el-dropdown-item v-if="isGlobalAdmin" command="download-export">{{i18n('data-migration.download-export')}}</el-dropdown-item>
                 <el-dropdown-item v-if="canUserCreate && !rowScope.row.only_export" command="resend">{{i18n('data-migration.resend-export')}}</el-dropdown-item>
                 <el-dropdown-item v-if="canUserDelete && rowScope.row.status !== 'progress'" command="delete-export">{{i18n('data-migration.delete-export')}}</el-dropdown-item>
                 <el-dropdown-item v-if="canUserUpdate && rowScope.row.status === 'progress'" command="stop-export">{{i18n('data-migration.stop-export')}}</el-dropdown-item>

@@ -3,7 +3,7 @@ var apps = [];
 var export_crashes = true; //Set to false if you do not want to export crashes.
 var filePath = "./myfolder"; //Path where to output files when export script runs.
 
-var plugins = require('./../../../plugins/pluginManager.js');
+var plugins = require('./../../../plugins/pluginManager.ts');
 var common = require('../../../api/utils/common.js');
 var crypto = require('crypto');
 var db;

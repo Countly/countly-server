@@ -2,13 +2,12 @@
     "extends": "eslint:recommended",
     "ignorePatterns": [
         "dist/**",
-        "**/*.d.ts",
         "types/**/*.d.ts",
         "plugins/*/types/**/*.d.ts",
         "*.vue"
     ],
     "rules": {
-        //        "quotes": ["warn", "single", { "avoidEscape": true }],
+        //"quotes": ["warn", "single", { "avoidEscape": true }],
         "require-atomic-updates": "off",
         "block-spacing": [
             "error",
@@ -659,6 +658,183 @@
                 "no-unused-vars": "off",
                 "no-redeclare": "off"
             }
+        },
+        {
+            "files": ["**/*.ts"],
+            "excludedFiles": ["**/*.d.ts", "plugins/push/**/*.ts"],
+            "parser": "@typescript-eslint/parser",
+            "parserOptions": {
+                "ecmaVersion": 2023,
+                "sourceType": "module",
+                "project": null
+            },
+            "plugins": ["@typescript-eslint", "unicorn"],
+            "extends": [
+                "eslint:recommended",
+                "plugin:@typescript-eslint/recommended"
+            ],
+            "env": {
+                "es2023": true,
+                "node": true
+            },
+            "rules": {
+                // TypeScript-specific rules
+                "@typescript-eslint/no-explicit-any": "off",
+                "@typescript-eslint/no-unused-vars": ["error", {
+                    "argsIgnorePattern": "^_",
+                    "varsIgnorePattern": "^_",
+                    "caughtErrorsIgnorePattern": "^_|^e$|^ex$|^err$|^error$"
+                }],
+                "@typescript-eslint/no-require-imports": "off",
+                "@typescript-eslint/ban-ts-comment": "off",
+                "@typescript-eslint/no-this-alias": "off",
+                "@typescript-eslint/no-unsafe-function-type": "off",
+                "@typescript-eslint/no-namespace": "off",
+                // TypeScript equivalents of JS rules (disable base, enable TS version)
+                "no-shadow": "off",
+                "@typescript-eslint/no-shadow": "error",
+                "no-loop-func": "off",
+                "@typescript-eslint/no-loop-func": "off",
+                "dot-notation": "error",
+                "no-redeclare": "off",
+                "@typescript-eslint/no-redeclare": "error",
+                // Backend JS rules (from api/**/*.js override)
+                "no-console": "off",
+                "for-direction": "off",
+                "no-control-regex": "off",
+                "no-await-in-loop": "off",
+                "eqeqeq": ["error", "always"],
+                "no-alert": "error",
+                "no-caller": "error",
+                "no-eval": "error",
+                "no-extend-native": "error",
+                "no-iterator": "error",
+                "prefer-rest-params": "off",
+                "require-atomic-updates": "off",
+                // Unicorn rules
+                "unicorn/consistent-empty-array-spread": "error",
+                "unicorn/consistent-existence-index-check": "error",
+                "unicorn/consistent-function-scoping": "warn",
+                "unicorn/custom-error-definition": "error",
+                "unicorn/empty-brace-spaces": "error",
+                "unicorn/error-message": "error",
+                //"unicorn/expiring-todo-comments": "error",
+                "unicorn/explicit-length-check": "error",
+                "unicorn/new-for-builtins": "error",
+                "unicorn/no-abusive-eslint-disable": "error",
+                "unicorn/no-anonymous-default-export": "error",
+                //"unicorn/no-array-for-each": "error", //removed because of opinions
+                "unicorn/no-array-method-this-argument": "error",
+                "unicorn/no-await-in-promise-methods": "error",
+                "unicorn/no-console-spaces": "error",
+                "unicorn/no-document-cookie": "error",
+                //"unicorn/no-for-loop": "error", //removed because of opinions
+                "unicorn/no-hex-escape": "error",
+                "unicorn/no-invalid-fetch-options": "error",
+                "unicorn/no-magic-array-flat-depth": "error",
+                "unicorn/no-negation-in-equality-check": "error",
+                "unicorn/no-nested-ternary": "error",
+                "unicorn/no-null": "warn", //later change to error
+                "unicorn/no-object-as-default-parameter": "error",
+                "unicorn/no-single-promise-in-promise-methods": "error",
+                //"unicorn/no-static-only-class": "warn", //removed because of opinions
+                "unicorn/no-thenable": "error",
+                "unicorn/no-typeof-undefined": "error",
+                "unicorn/no-unnecessary-await": "error",
+                "unicorn/no-unreadable-array-destructuring": "error",
+                "unicorn/no-unreadable-iife": "error",
+                "unicorn/no-unused-properties": "error",
+                "unicorn/no-useless-fallback-in-spread": "error",
+                "unicorn/no-useless-length-check": "error",
+                "unicorn/no-useless-promise-resolve-reject": "error",
+                "unicorn/no-useless-spread": "error",
+                "unicorn/no-useless-undefined": "error",
+                "unicorn/no-zero-fractions": "error",
+                "unicorn/number-literal-case": "error",
+                "unicorn/prefer-array-find": "error",
+                "unicorn/prefer-array-flat": "error",
+                "unicorn/prefer-array-flat-map": "error",
+                "unicorn/prefer-array-index-of": "error",
+                "unicorn/prefer-array-some": "error",
+                "unicorn/prefer-at": "error",
+                "unicorn/prefer-date-now": "error",
+                //"unicorn/prefer-default-parameters": "error",
+                "unicorn/prefer-dom-node-append": "error",
+                "unicorn/prefer-dom-node-remove": "error",
+                "unicorn/prefer-includes": "error",
+                "unicorn/prefer-math-min-max": "error",
+                "unicorn/prefer-modern-math-apis": "error",
+                //"unicorn/prefer-module": "error",
+                "unicorn/prefer-number-properties": "error",
+                "unicorn/prefer-prototype-methods": "error",
+                "unicorn/prefer-set-has": "error",
+                "unicorn/prefer-set-size": "error",
+                "unicorn/prefer-string-starts-ends-with": "error",
+                "unicorn/prefer-string-trim-start-end": "error",
+                "unicorn/prefer-top-level-await": "warn",
+                "unicorn/prefer-type-error": "error",
+                "unicorn/require-number-to-fixed-digits-argument": "error",
+                "unicorn/template-indent": "error",
+                
+                // Base style rules (same as JS)
+                "block-spacing": ["error", "always"],
+                "brace-style": ["error", "stroustrup"],
+                "comma-spacing": ["error", { "before": false, "after": true }],
+                "comma-style": ["error", "last"],
+                "computed-property-spacing": ["error", "never"],
+                "curly": ["error", "all"],
+                "eol-last": "off",
+                "func-call-spacing": ["error", "never"],
+                "indent": ["error", 4],
+                "key-spacing": ["error", { "beforeColon": false, "afterColon": true }],
+                "keyword-spacing": ["error", { "before": true, "after": true }],
+                "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
+                "no-multi-spaces": "error",
+                "no-trailing-spaces": ["error", { "ignoreComments": true }],
+                "no-useless-escape": "off",
+                "no-whitespace-before-property": "error",
+                "object-curly-newline": ["error", { "multiline": true, "consistent": true }],
+                "object-property-newline": ["error", { "allowAllPropertiesOnSameLine": true }],
+                "semi": ["error", "always"],
+                "semi-style": ["error", "last"],
+                "space-before-blocks": ["error", "always"],
+                "space-before-function-paren": ["error", "never"],
+                "space-in-parens": ["error", "never"],
+                "space-infix-ops": "error",
+                "space-unary-ops": ["error", { "words": true, "nonwords": false }],
+                "switch-colon-spacing": "error",
+                "unicode-bom": ["error", "never"],
+                // Bluebird migration warnings (same as base)
+                "no-restricted-properties": [
+                    "warn",
+                    { "object": "Promise", "property": "map", "message": "Bluebird-specific method. Use native arrays with Promise.all or p-map." },
+                    { "object": "Promise", "property": "reduce", "message": "Bluebird-specific method. Use Array.reduce with async/await." },
+                    { "object": "Promise", "property": "filter", "message": "Bluebird-specific method. Use Array.filter with async/await." },
+                    { "object": "Promise", "property": "each", "message": "Bluebird-specific method. Use for-loop with async/await." },
+                    { "object": "Promise", "property": "props", "message": "Bluebird-specific method. Use Promise.all with Object.entries." },
+                    { "object": "Promise", "property": "join", "message": "Bluebird-specific method. Use Promise.all with destructuring." },
+                    { "object": "Promise", "property": "try", "message": "Bluebird-specific method. Use try/catch or async function." },
+                    { "object": "Promise", "property": "promisify", "message": "Bluebird-specific method. Use util.promisify." },
+                    { "object": "Promise", "property": "promisifyAll", "message": "Bluebird-specific method. Use util.promisify for each function." },
+                    { "object": "Promise", "property": "fromCallback", "message": "Bluebird-specific method. Use new Promise() or util.promisify." },
+                    { "object": "Promise", "property": "coroutine", "message": "Bluebird-specific method. Use native async/await." },
+                    { "object": "Promise", "property": "settle", "message": "Bluebird-specific method. Use native Promise.allSettled." },
+                    { "object": "Bluebird", "property": "map", "message": "Bluebird-specific method. Use array mapping + Promise.all." },
+                    { "object": "Bluebird", "property": "each", "message": "Bluebird-specific method. Use for-loop with async/await." },
+                    { "object": "Bluebird", "property": "promisify", "message": "Bluebird-specific method. Use util.promisify." }
+                ],
+                "no-restricted-syntax": [
+                    "warn",
+                    { "selector": "CallExpression[callee.property.name='tap']", "message": "Bluebird .tap() detected. Use .then(value => { ...; return value; })." },
+                    { "selector": "CallExpression[callee.property.name='spread']", "message": "Bluebird .spread() detected. Use .then(([a, b]) => ...)." },
+                    { "selector": "CallExpression[callee.property.name='delay']", "message": "Bluebird .delay() detected. Use setTimeout or p-delay." },
+                    { "selector": "CallExpression[callee.property.name='timeout']", "message": "Bluebird .timeout() detected. Use p-timeout." },
+                    { "selector": "CallExpression[callee.property.name='return']", "message": "Bluebird .return() detected. Use .then(() => value)." },
+                    { "selector": "CallExpression[callee.property.name='asCallback']", "message": "Bluebird .asCallback() detected. Use util.callbackify." },
+                    { "selector": "CallExpression[callee.property.name='nodeify']", "message": "Bluebird .nodeify() detected. Use util.callbackify." }
+                ]
+            }
         }
     ]
 }
+

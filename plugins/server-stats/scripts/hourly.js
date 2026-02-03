@@ -1,6 +1,6 @@
 const moment = require("moment");
 const stats = require('../api/parts/stats.js');
-const pluginManager = require('../../pluginManager.js');
+const pluginManager = require('../../pluginManager.ts');
 
 var myArgs = process.argv.slice(2);
 if (myArgs[0] === "help") {

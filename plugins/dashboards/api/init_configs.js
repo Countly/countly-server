@@ -1,4 +1,4 @@
-var plugins = require('../../pluginManager.js');
+var plugins = require('../../pluginManager.ts');
 
 plugins.setConfigs("dashboards", {
     sharing_status: true,
