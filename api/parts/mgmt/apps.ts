@@ -12,7 +12,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const common = require('../../../utils/common.js');
 const moment = require('moment-timezone');
-const plugins = require('../../../../plugins/pluginManager.js');
+const plugins = require('../../../plugins/pluginManager.js');
 const jimp = require('jimp');
 const { hasUpdateRight, hasDeleteRight, getUserApps, getAdminApps } = require('../../../utils/rights.js');
 const countlyFs = require('../../../utils/countlyFs.js');
