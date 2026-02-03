@@ -11,16 +11,19 @@ export interface LoggingConfig {
 /** IPC message for log configuration */
 export interface LogIpcMessage {
     cmd: string;
-    config: any;
+    config: {
+        [level: string]: string;
+        default?: string;
+    };
 }
 
 /**
- * Logger instance for a specific module
+ * Sub-logger instance (without callback/logdb methods)
  */
-export interface Logger {
+export interface SubLogger {
     /**
-     * Returns the logger's module name/identifier
-     * @returns Module name string
+     * Returns the sub-logger's full module name/identifier
+     * @returns Full module name string (parent:child)
      */
     id(): string;
 
@@ -37,30 +40,39 @@ export interface Logger {
     i(...args: any[]): void;
 
     /**
-     * Warning level logging (with yellow styling)
+     * Warning level logging
      * @param args - Arguments to log
      */
     w(...args: any[]): void;
 
     /**
-     * Error level logging (with red styling)
+     * Error level logging
      * @param args - Arguments to log
      */
     e(...args: any[]): void;
-
-    /** Allow any additional properties for legacy compatibility */
-    [key: string]: any;
 
     /**
      * Conditional logging for expensive operations
      * @param level - Log level to check
      * @param fn - Function to execute if logging is enabled
-     * @param fallbackLevel - Fallback log level if function throws
+     * @param fallbackLevel - Fallback log level if primary level not enabled
      * @param fallbackArgs - Arguments for fallback logging
      * @returns True if logging occurred
      */
-    f(level: LogLevelShort, fn: (log: Function) => void, fallbackLevel?: LogLevelShort, ...fallbackArgs: any[]): boolean;
+    f(level: LogLevelShort, fn: (log: (...args: any[]) => void) => void, fallbackLevel?: LogLevelShort, ...fallbackArgs: any[]): boolean | undefined;
 
+    /**
+     * Creates a nested sub-logger with extended name
+     * @param subname - Sub-module name to append
+     * @returns New sub-logger instance
+     */
+    sub(subname: string): SubLogger;
+}
+
+/**
+ * Logger instance for a specific module
+ */
+export interface Logger extends SubLogger {
     /**
      * Creates error-logging callback wrapper
      * @param next - Optional success callback function
@@ -80,9 +92,9 @@ export interface Logger {
     /**
      * Creates a sub-logger with extended name
      * @param subname - Sub-module name to append
-     * @returns New logger instance
+     * @returns New sub-logger instance
      */
-    sub(subname: string): Logger;
+    sub(subname: string): SubLogger;
 }
 
 /**
@@ -111,16 +123,27 @@ export interface LogModule {
 
     /**
      * Gets current logging level for a module
-     * @param module - Module name
+     * @param module - Module name (optional, returns default if not provided)
      * @returns Current log level
      */
-    getLevel(module: string): string;
+    getLevel(module?: string): string;
 
     /**
-     * Handles IPC messages for log configuration
+     * Sets pretty-print option for all loggers
+     * @param enabled - Whether to enable pretty-print
+     */
+    setPrettyPrint(enabled: boolean): void;
+
+    /**
+     * Updates the logging configuration for all modules
      * @param msg - IPC message with log configuration
      */
-    ipcHandler(msg: LogIpcMessage): void;
+    updateConfig(msg: LogIpcMessage): void;
+
+    /**
+     * Indicates if OpenTelemetry integration is available
+     */
+    hasOpenTelemetry: boolean;
 }
 
 /**

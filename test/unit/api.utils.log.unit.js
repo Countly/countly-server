@@ -255,4 +255,504 @@ describe('Log utility tests', function() {
             log.getLevel('other-uncached').should.equal('error'); // default
         });
     });
+
+    describe('Logger factory function', function() {
+        it('should be a function', function() {
+            var log = require('../../api/utils/log.js');
+            (typeof log).should.equal('function');
+        });
+
+        it('should create a logger instance', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('test-module');
+            should.exist(logger);
+            (typeof logger).should.equal('object');
+        });
+
+        it('should create logger with correct module name', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('my-module');
+            logger.id().should.equal('my-module');
+        });
+    });
+
+    describe('Logger instance methods', function() {
+        it('should have id() method', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('test-logger');
+            (typeof logger.id).should.equal('function');
+            logger.id().should.equal('test-logger');
+        });
+
+        it('should have d() method for debug logging', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('test-logger');
+            (typeof logger.d).should.equal('function');
+        });
+
+        it('should have i() method for info logging', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('test-logger');
+            (typeof logger.i).should.equal('function');
+        });
+
+        it('should have w() method for warning logging', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('test-logger');
+            (typeof logger.w).should.equal('function');
+        });
+
+        it('should have e() method for error logging', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('test-logger');
+            (typeof logger.e).should.equal('function');
+        });
+
+        it('should have f() method for conditional logging', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('test-logger');
+            (typeof logger.f).should.equal('function');
+        });
+
+        it('should have callback() method', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('test-logger');
+            (typeof logger.callback).should.equal('function');
+        });
+
+        it('should have logdb() method', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('test-logger');
+            (typeof logger.logdb).should.equal('function');
+        });
+
+        it('should have sub() method', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('test-logger');
+            (typeof logger.sub).should.equal('function');
+        });
+    });
+
+    describe('Logger.callback() method', function() {
+        it('should return a function', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('callback-test');
+            var cb = logger.callback();
+            (typeof cb).should.equal('function');
+        });
+
+        it('should call next function on success (no error)', function(done) {
+            var log = require('../../api/utils/log.js');
+            var logger = log('callback-test');
+            var cb = logger.callback(function(result) {
+                result.should.equal('success-data');
+                done();
+            });
+            cb(null, 'success-data');
+        });
+
+        it('should pass multiple arguments to next function', function(done) {
+            var log = require('../../api/utils/log.js');
+            var logger = log('callback-test');
+            var cb = logger.callback(function(arg1, arg2, arg3) {
+                arg1.should.equal('first');
+                arg2.should.equal('second');
+                arg3.should.equal('third');
+                done();
+            });
+            cb(null, 'first', 'second', 'third');
+        });
+
+        it('should not call next function on error', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('callback-test');
+            var nextCalled = false;
+            var cb = logger.callback(function() {
+                nextCalled = true;
+            });
+            cb(new Error('test error'));
+            nextCalled.should.equal(false);
+        });
+
+        it('should work without next function', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('callback-test');
+            var cb = logger.callback();
+            // Should not throw
+            cb(null, 'data');
+            cb(new Error('error'));
+        });
+    });
+
+    describe('Logger.logdb() method', function() {
+        it('should return a function', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('logdb-test');
+            var cb = logger.logdb('operation');
+            (typeof cb).should.equal('function');
+        });
+
+        it('should call next function on success', function(done) {
+            var log = require('../../api/utils/log.js');
+            var logger = log('logdb-test');
+            var cb = logger.logdb('insertOne', function(result) {
+                result.should.eql({ _id: '123' });
+                done();
+            });
+            cb(null, { _id: '123' });
+        });
+
+        it('should call nextError function on error', function(done) {
+            var log = require('../../api/utils/log.js');
+            var logger = log('logdb-test');
+            var cb = logger.logdb('insertOne', null, function(err) {
+                err.message.should.equal('connection failed');
+                done();
+            });
+            cb(new Error('connection failed'));
+        });
+
+        it('should not call next function on error', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('logdb-test');
+            var nextCalled = false;
+            var cb = logger.logdb('insertOne', function() {
+                nextCalled = true;
+            });
+            cb(new Error('error'));
+            nextCalled.should.equal(false);
+        });
+
+        it('should work without callbacks', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('logdb-test');
+            var cb = logger.logdb('operation');
+            // Should not throw
+            cb(null, 'data');
+            cb(new Error('error'));
+        });
+    });
+
+    describe('SubLogger creation and methods', function() {
+        it('should create sub-logger with correct name', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('parent-module');
+            var subLogger = logger.sub('child');
+            subLogger.id().should.equal('parent-module:child');
+        });
+
+        it('should have d() method', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('parent-module');
+            var subLogger = logger.sub('child');
+            (typeof subLogger.d).should.equal('function');
+        });
+
+        it('should have i() method', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('parent-module');
+            var subLogger = logger.sub('child');
+            (typeof subLogger.i).should.equal('function');
+        });
+
+        it('should have w() method', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('parent-module');
+            var subLogger = logger.sub('child');
+            (typeof subLogger.w).should.equal('function');
+        });
+
+        it('should have e() method', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('parent-module');
+            var subLogger = logger.sub('child');
+            (typeof subLogger.e).should.equal('function');
+        });
+
+        it('should have f() method', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('parent-module');
+            var subLogger = logger.sub('child');
+            (typeof subLogger.f).should.equal('function');
+        });
+
+        it('should have sub() method for nested sub-loggers', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('parent-module');
+            var subLogger = logger.sub('child');
+            (typeof subLogger.sub).should.equal('function');
+        });
+
+        it('should NOT have callback() method', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('parent-module');
+            var subLogger = logger.sub('child');
+            should.not.exist(subLogger.callback);
+        });
+
+        it('should NOT have logdb() method', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('parent-module');
+            var subLogger = logger.sub('child');
+            should.not.exist(subLogger.logdb);
+        });
+
+        it('should create nested sub-loggers with correct name', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('parent-module');
+            var subLogger = logger.sub('child');
+            var nestedSub = subLogger.sub('grandchild');
+            nestedSub.id().should.equal('parent-module:child:grandchild');
+        });
+    });
+
+    describe('Static methods', function() {
+        it('should have setLevel() method', function() {
+            var log = require('../../api/utils/log.js');
+            (typeof log.setLevel).should.equal('function');
+        });
+
+        it('should have setDefault() method', function() {
+            var log = require('../../api/utils/log.js');
+            (typeof log.setDefault).should.equal('function');
+        });
+
+        it('should have getLevel() method', function() {
+            var log = require('../../api/utils/log.js');
+            (typeof log.getLevel).should.equal('function');
+        });
+
+        it('should have setPrettyPrint() method', function() {
+            var log = require('../../api/utils/log.js');
+            (typeof log.setPrettyPrint).should.equal('function');
+        });
+
+        it('should have updateConfig() method', function() {
+            var log = require('../../api/utils/log.js');
+            (typeof log.updateConfig).should.equal('function');
+        });
+
+        it('should have hasOpenTelemetry property', function() {
+            var log = require('../../api/utils/log.js');
+            (typeof log.hasOpenTelemetry).should.equal('boolean');
+        });
+    });
+
+    describe('setLevel() and getLevel()', function() {
+        it('should set and get level for a module', function() {
+            var log = require('../../api/utils/log.js');
+            log.setLevel('test-module', 'debug');
+            log.getLevel('test-module').should.equal('debug');
+        });
+
+        it('should return default level when module not set', function() {
+            var log = require('../../api/utils/log.js');
+            log.setDefault('error');
+            log.getLevel('unknown-module').should.equal('error');
+        });
+
+        it('should return default level when called without module', function() {
+            var log = require('../../api/utils/log.js');
+            log.setDefault('info');
+            log.getLevel().should.equal('info');
+        });
+    });
+
+    describe('setDefault()', function() {
+        it('should change the default log level', function() {
+            var log = require('../../api/utils/log.js');
+            log.setDefault('debug');
+            log.getLevel().should.equal('debug');
+        });
+
+        it('should affect new modules', function() {
+            var log = require('../../api/utils/log.js');
+            log.setDefault('info');
+            log.getLevel('new-module').should.equal('info');
+        });
+    });
+
+    describe('Conditional logging f() method', function() {
+        it('should execute function when level is enabled', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('f-test');
+            log.setLevel('f-test', 'debug');
+            var executed = false;
+            logger.f('d', function() {
+                executed = true;
+            });
+            executed.should.equal(true);
+        });
+
+        it('should return true when function is executed', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('f-test');
+            log.setLevel('f-test', 'debug');
+            var result = logger.f('d', function() {});
+            result.should.equal(true);
+        });
+
+        it('should not execute function when level is disabled', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('f-test');
+            log.setLevel('f-test', 'error');
+            var executed = false;
+            logger.f('d', function() {
+                executed = true;
+            });
+            executed.should.equal(false);
+        });
+
+        it('should call fallback level when primary level is disabled', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('f-test');
+            log.setLevel('f-test', 'warn');
+            var fallbackCalled = false;
+
+            // Spy on the warn method
+            var originalW = logger.w;
+            logger.w = function() {
+                fallbackCalled = true;
+            };
+
+            logger.f('d', function() {}, 'w', 'fallback message');
+            fallbackCalled.should.equal(true);
+
+            // Restore
+            logger.w = originalW;
+        });
+    });
+
+    describe('Logger level filtering', function() {
+        it('should use level set after logger creation', function() {
+            var log = require('../../api/utils/log.js');
+            var logger = log('post-set-module');
+            // Logger is created with default level
+            log.getLevel('post-set-module').should.equal('warn');
+            // Setting level after creation should update it
+            log.setLevel('post-set-module', 'info');
+            log.getLevel('post-set-module').should.equal('info');
+        });
+
+        it('should use config level when creating logger', function() {
+            process.env.COUNTLY_SETTINGS__LOGS__DEBUG = 'configured-module';
+            process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'error';
+            var log = require('../../api/utils/log.js');
+
+            // Before creating logger, getLevel uses config
+            log.getLevel('configured-module').should.equal('debug');
+
+            // Creating logger should also use config level
+            var logger = log('configured-module');
+            log.getLevel('configured-module').should.equal('debug');
+        });
+    });
+
+    describe('Multiple logger instances', function() {
+        it('should create independent logger instances', function() {
+            var log = require('../../api/utils/log.js');
+            var logger1 = log('module-1');
+            var logger2 = log('module-2');
+
+            logger1.id().should.equal('module-1');
+            logger2.id().should.equal('module-2');
+        });
+
+        it('should share level configuration via setLevel', function() {
+            var log = require('../../api/utils/log.js');
+            var logger1 = log('shared-module');
+            var logger2 = log('another-module');
+
+            // Set level for one module
+            log.setLevel('shared-module', 'debug');
+            log.getLevel('shared-module').should.equal('debug');
+
+            // Other module should still have its own level
+            log.getLevel('another-module').should.equal('warn');
+
+            // Set level for second module
+            log.setLevel('another-module', 'info');
+            log.getLevel('another-module').should.equal('info');
+
+            // First module should still have debug
+            log.getLevel('shared-module').should.equal('debug');
+        });
+    });
+
+    describe('Prefix matching for log levels', function() {
+        it('should match module prefixes', function() {
+            process.env.COUNTLY_SETTINGS__LOGS__DEBUG = 'api';
+            process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'error';
+            var log = require('../../api/utils/log.js');
+
+            // 'api' prefix should match 'api:users', 'api:sessions', etc.
+            log.getLevel('api').should.equal('debug');
+            log.getLevel('api:users').should.equal('debug');
+            log.getLevel('api:sessions').should.equal('debug');
+            log.getLevel('other').should.equal('error');
+        });
+    });
+
+    describe('updateConfig edge cases', function() {
+        it('should ignore messages without cmd=log', function() {
+            var log = require('../../api/utils/log.js');
+            log.setDefault('warn');
+            log.updateConfig({ cmd: 'other', config: { default: 'debug' } });
+            log.getLevel().should.equal('warn');
+        });
+
+        it('should ignore messages without config', function() {
+            var log = require('../../api/utils/log.js');
+            log.setDefault('warn');
+            log.updateConfig({ cmd: 'log' });
+            log.getLevel().should.equal('warn');
+        });
+
+        it('should ignore null messages', function() {
+            var log = require('../../api/utils/log.js');
+            log.setDefault('warn');
+            log.updateConfig(null);
+            log.getLevel().should.equal('warn');
+        });
+
+        it('should ignore undefined messages', function() {
+            var log = require('../../api/utils/log.js');
+            log.setDefault('warn');
+            log.updateConfig(undefined);
+            log.getLevel().should.equal('warn');
+        });
+    });
+
+    describe('CI environment behavior', function() {
+        it('should set default to silent when CI=true and no explicit default', function() {
+            process.env.CI = 'true';
+            var log = require('../../api/utils/log.js');
+
+            log.getLevel().should.equal('silent');
+        });
+
+        it('should respect explicit default even when CI=true', function() {
+            process.env.CI = 'true';
+            process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'debug';
+            var log = require('../../api/utils/log.js');
+
+            log.getLevel().should.equal('debug');
+        });
+
+        it('should suppress all logs when level is silent', function() {
+            process.env.CI = 'true';
+            var log = require('../../api/utils/log.js');
+            var logger = log('ci-test');
+
+            // All log methods should exist but not output anything
+            // (since 'silent' is not in any ACCEPTABLE array)
+            (typeof logger.d).should.equal('function');
+            (typeof logger.i).should.equal('function');
+            (typeof logger.w).should.equal('function');
+            (typeof logger.e).should.equal('function');
+
+            // Level should be silent
+            log.getLevel('ci-test').should.equal('silent');
+        });
+    });
 });
