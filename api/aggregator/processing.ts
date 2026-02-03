@@ -115,17 +115,17 @@ const crypto = require('crypto');
      * @returns - The determined type ('l' for list, 'a' for array, 'n' for number, 'd' for date).
      */
     function determineType(value: any): 'l' | 'a' | 'n' | 'd' {
-        let type: 'l' | 'a' | 'n' | 'd' = "l";
+        let type: 'l' | 'a' | 'n' | 'd' = 'l';
         if (Array.isArray(value)) {
-            type = "a";
+            type = 'a';
         }
         else if (common.isNumber(value)) {
-            if ((value + "").length < 16) {
-                if ((value + "").length === 10 || (value + "").length === 13) {
-                    type = "d"; //timestamp
+            if ((value + '').length < 16) {
+                if ((value + '').length === 10 || (value + '').length === 13) {
+                    type = 'd'; //timestamp
                 }
                 else {
-                    type = "n";
+                    type = 'n';
                 }
             }
         }
@@ -133,18 +133,18 @@ const crypto = require('crypto');
     }
 
     //Events processing
-    plugins.register("/aggregator", async function() {
+    plugins.register('/aggregator', async function() {
         const eventSource = new UnifiedEventSource('event-aggregator', {
             mongo: {
                 db: common.drillDb,
                 pipeline: [
-                    {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_custom"}},
-                    {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "ts": "$fullDocument.ts", "c": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
+                    {'$match': {'operationType': 'insert', 'fullDocument.e': '[CLY]_custom'}},
+                    {'$project': {'__iid': '$fullDocument._id', 'cd': '$fullDocument.cd', 'a': '$fullDocument.a', 'e': '$fullDocument.e', 'n': '$fullDocument.n', 'ts': '$fullDocument.ts', 'c': '$fullDocument.c', 's': '$fullDocument.s', 'dur': '$fullDocument.dur'}}
                 ],
                 fallback: {
                     pipeline: [{
-                        "$match": {"e": {"$in": ["[CLY]_custom"]}}
-                    }, {"$project": {"__id": "$_id", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "ts": "$ts", "c": "$c", "s": "$s", "dur": "$dur"}}]
+                        '$match': {'e': {'$in': ['[CLY]_custom']}}
+                    }, {'$project': {'__id': '$_id', 'cd': '$cd', 'a': '$a', 'e': '$e', 'n': '$n', 'ts': '$ts', 'c': '$c', 's': '$s', 'dur': '$dur'}}]
                 }
             }
         });
@@ -159,12 +159,12 @@ const crypto = require('crypto');
                     if (events && Array.isArray(events)) {
                         // Process each event in the batch
                         for (const currEvent of events) {
-                            if (currEvent && currEvent.a && currEvent.e && currEvent.e === "[CLY]_custom") {
+                            if (currEvent && currEvent.a && currEvent.e && currEvent.e === '[CLY]_custom') {
                                 currEvent.e = currEvent.n!;
                                 await usage.processEventTotalsFromStream(token, currEvent as any, common.manualWriteBatcher);
                             }
                         }
-                        await common.manualWriteBatcher.flush("countly", "events_data");
+                        await common.manualWriteBatcher.flush('countly', 'events_data');
                     }
                 });
         }
@@ -176,16 +176,16 @@ const crypto = require('crypto');
 
     //processes session data and updates in aggregated data
     //!!! NOT FULLY AWAITING
-    plugins.register("/aggregator", async function() {
+    plugins.register('/aggregator', async function() {
         const eventSource = new UnifiedEventSource('session-ingestion', {
             mongo: {
                 db: common.drillDb,
                 pipeline: [
-                    {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session_begin"}},
+                    {'$match': {'operationType': 'insert', 'fullDocument.e': '[CLY]_session_begin'}},
                 ],
                 fallback: {
                     pipeline: [{
-                        "$match": {"e": {"$in": ["[CLY]_session_begin"]}}
+                        '$match': {'e': {'$in': ['[CLY]_session_begin']}}
                     }]
                 }
             }
@@ -200,20 +200,20 @@ const crypto = require('crypto');
                 async(token: EventToken, events: DrillEvent[]) => {
                     if (events && Array.isArray(events)) {
                         for (const event of events) {
-                            if (event.e === "[CLY]_session_begin" && event.a) {
+                            if (event.e === '[CLY]_session_begin' && event.a) {
                                 try {
-                                    const app = await common.readBatcher.getOne("apps", common.db.ObjectID(event.a));
+                                    const app = await common.readBatcher.getOne('apps', common.db.ObjectID(event.a));
                                     //record event totals in aggregated data
                                     if (app) {
-                                        await usage.processSessionFromStream(token, event as any, {"app_id": event.a, "app": app, "time": common.initTimeObj(app.timezone, event.ts), "appTimezone": (app.timezone || "UTC")});
+                                        await usage.processSessionFromStream(token, event as any, {'app_id': event.a, 'app': app, 'time': common.initTimeObj(app.timezone, event.ts), 'appTimezone': (app.timezone || 'UTC')});
                                     }
                                 }
                                 catch (ex) {
-                                    log.e("Error processing session event", ex);
+                                    log.e('Error processing session event', ex);
                                 }
                             }
                         }
-                        await common.manualWriteBatcher.flush("countly", "users");
+                        await common.manualWriteBatcher.flush('countly', 'users');
                     }
                 });
         }
@@ -223,18 +223,18 @@ const crypto = require('crypto');
     });
 
 
-    plugins.register("/aggregator", async function() {
+    plugins.register('/aggregator', async function() {
         const writeBatcher = new WriteBatcher(common.db, true);
 
         const eventSource = new UnifiedEventSource('session-updates', {
             mongo: {
                 db: common.drillDb,
                 pipeline: [
-                    {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session"}},
+                    {'$match': {'operationType': 'insert', 'fullDocument.e': '[CLY]_session'}},
                 ],
                 fallback: {
                     pipeline: [{
-                        "$match": {"e": {"$in": ["[CLY]_session"]}}
+                        '$match': {'e': {'$in': ['[CLY]_session']}}
                     }]
                 }
             }
@@ -249,24 +249,24 @@ const crypto = require('crypto');
                 async(token: EventToken, events: DrillEvent[]) => {
                     if (events && Array.isArray(events)) {
                         for (const event of events) {
-                            if (event.e === "[CLY]_session" && event.a) {
+                            if (event.e === '[CLY]_session' && event.a) {
                                 try {
-                                    const app = await common.readBatcher.getOne("apps", common.db.ObjectID(event.a));
+                                    const app = await common.readBatcher.getOne('apps', common.db.ObjectID(event.a));
                                     //record event totals in aggregated data
                                     if (app) {
                                         let dur = 0;
                                         dur = event.dur || 0;
-                                        await usage.processSessionDurationRange(writeBatcher, token, dur, event.did!, {"app_id": event.a, "app": app, "time": common.initTimeObj(app.timezone, event.ts), "appTimezone": (app.timezone || "UTC")});
-                                        await usage.processViewCount(writeBatcher, token, event?.up_extra?.vc, event.did!, {"app_id": event.a, "app": app, "time": common.initTimeObj(app.timezone, event.ts), "appTimezone": (app.timezone || "UTC")});
+                                        await usage.processSessionDurationRange(writeBatcher, token, dur, event.did!, {'app_id': event.a, 'app': app, 'time': common.initTimeObj(app.timezone, event.ts), 'appTimezone': (app.timezone || 'UTC')});
+                                        await usage.processViewCount(writeBatcher, token, event?.up_extra?.vc, event.did!, {'app_id': event.a, 'app': app, 'time': common.initTimeObj(app.timezone, event.ts), 'appTimezone': (app.timezone || 'UTC')});
 
                                     }
                                 }
                                 catch (ex) {
-                                    log.e("Error processing session event", ex);
+                                    log.e('Error processing session event', ex);
                                 }
                             }
                         }
-                        await writeBatcher.flush("countly", "users");
+                        await writeBatcher.flush('countly', 'users');
                     }
                 });
         }
@@ -276,24 +276,24 @@ const crypto = require('crypto');
     });
 
     //Processing event meta
-    plugins.register("/aggregator", async function() {
+    plugins.register('/aggregator', async function() {
         const drillMetaCache = new Cacher(common.drillDb, {configs_db: common.db}); //Used for Apps info
         const eventSource = new UnifiedEventSource('drill-meta', {
             mongo: {
                 db: common.drillDb,
                 pipeline: [
-                    {"$match": {"operationType": "insert"}},
+                    {'$match': {'operationType': 'insert'}},
                     {
-                        "$project": {
-                            "__iid": "$fullDocument._id",
-                            "cd": "$fullDocument.cd",
-                            "a": "$fullDocument.a",
-                            "e": "$fullDocument.e",
-                            "n": "$fullDocument.n",
-                            "sg": "$fullDocument.sg",
-                            "up": "$fullDocument.up",
-                            "custom": "$fullDocument.custom",
-                            "cmp": "$fullDocument.cmp"
+                        '$project': {
+                            '__iid': '$fullDocument._id',
+                            'cd': '$fullDocument.cd',
+                            'a': '$fullDocument.a',
+                            'e': '$fullDocument.e',
+                            'n': '$fullDocument.n',
+                            'sg': '$fullDocument.sg',
+                            'up': '$fullDocument.up',
+                            'custom': '$fullDocument.custom',
+                            'cmp': '$fullDocument.cmp'
                         }
                     }
                 ],
@@ -318,43 +318,43 @@ const crypto = require('crypto');
                         //Should sort before by event
                         for (const event of events) {
                             if (event.a && event.e) {
-                                if (event.e === "[CLY]_property_update") {
+                                if (event.e === '[CLY]_property_update') {
                                     continue;
                                 }
-                                if (event.e === "[CLY]_custom") {
+                                if (event.e === '[CLY]_custom') {
                                     event.e = event.n!;
                                 }
-                                if (event.e === "[CLY]_view_update") {
-                                    event.e = "[CLY]_view";
+                                if (event.e === '[CLY]_view_update') {
+                                    event.e = '[CLY]_view';
                                 }
-                                if (event.e === "[CLY]_session_begin") {
-                                    event.e = "[CLY]_session";
+                                if (event.e === '[CLY]_session_begin') {
+                                    event.e = '[CLY]_session';
                                 }
-                                const event_hash = crypto.createHash("sha1").update(event.e + event.a).digest("hex");
-                                let meta = await drillMetaCache.getOne("drill_meta", {_id: event.a + "_meta_" + event_hash});
+                                const event_hash = crypto.createHash('sha1').update(event.e + event.a).digest('hex');
+                                let meta = await drillMetaCache.getOne('drill_meta', {_id: event.a + '_meta_' + event_hash});
                                 const app_id = event.a;
-                                if ((!meta || !meta._id) && !updates[app_id + "_meta_" + event_hash]) {
+                                if ((!meta || !meta._id) && !updates[app_id + '_meta_' + event_hash]) {
                                     const lts = Date.now();
-                                    updates[app_id + "_meta_" + event_hash] = {
-                                        _id: app_id + "_meta_" + event_hash,
+                                    updates[app_id + '_meta_' + event_hash] = {
+                                        _id: app_id + '_meta_' + event_hash,
                                         app_id: event.a,
                                         e: event.e,
-                                        type: "e",
+                                        type: 'e',
                                         lts: lts
                                     };
                                     meta = {
-                                        _id: app_id + "_meta_" + event_hash,
+                                        _id: app_id + '_meta_' + event_hash,
                                         app_id: event.a,
                                         e: event.e,
-                                        type: "e",
+                                        type: 'e',
                                         lts: lts
                                     };
                                 }
 
                                 if (!meta.lts || moment(Date.now()).isAfter(moment(meta.lts), 'day')) {
                                     const lts2 = Date.now();
-                                    updates[app_id + "_meta_" + event_hash] = updates[app_id + "_meta_" + event_hash] || {} as DrillMetaUpdate;
-                                    updates[app_id + "_meta_" + event_hash].lts = lts2;
+                                    updates[app_id + '_meta_' + event_hash] = updates[app_id + '_meta_' + event_hash] || {} as DrillMetaUpdate;
+                                    updates[app_id + '_meta_' + event_hash].lts = lts2;
                                     meta.lts = lts2;
                                 }
                                 for (const sgk in event.sg) {
@@ -364,28 +364,28 @@ const crypto = require('crypto');
                                         meta.sg[sgk] = {
                                             type: type
                                         };
-                                        updates[app_id + "_meta_" + event_hash] = updates[app_id + "_meta_" + event_hash] || {} as DrillMetaUpdate;
-                                        updates[app_id + "_meta_" + event_hash]["sg." + sgk + ".type"] = type;
+                                        updates[app_id + '_meta_' + event_hash] = updates[app_id + '_meta_' + event_hash] || {} as DrillMetaUpdate;
+                                        updates[app_id + '_meta_' + event_hash]['sg.' + sgk + '.type'] = type;
                                     }
                                 }
 
-                                if (event.e === "[CLY]_session" || event.e === "[CLY]_session_begin") {
-                                    let meta_up = await drillMetaCache.getOne("drill_meta", {_id: event.a + "_meta_up"});
-                                    if ((!meta_up || !meta_up._id) && !updates[app_id + "_meta_up"]) {
-                                        updates[app_id + "_meta_up"] = {
-                                            _id: app_id + "_meta_up",
+                                if (event.e === '[CLY]_session' || event.e === '[CLY]_session_begin') {
+                                    let meta_up = await drillMetaCache.getOne('drill_meta', {_id: event.a + '_meta_up'});
+                                    if ((!meta_up || !meta_up._id) && !updates[app_id + '_meta_up']) {
+                                        updates[app_id + '_meta_up'] = {
+                                            _id: app_id + '_meta_up',
                                             app_id: event.a,
-                                            e: "up",
-                                            type: "up"
+                                            e: 'up',
+                                            type: 'up'
                                         };
                                         meta_up = {
-                                            _id: app_id + "_meta_up",
+                                            _id: app_id + '_meta_up',
                                             app_id: event.a,
-                                            e: "up",
-                                            type: "up"
+                                            e: 'up',
+                                            type: 'up'
                                         };
                                     }
-                                    const groups: Array<'up' | 'cmp' | 'custom'> = ["up", "cmp", "custom"];
+                                    const groups: Array<'up' | 'cmp' | 'custom'> = ['up', 'cmp', 'custom'];
                                     for (const group of groups) {
                                         if (event[group]) {
                                             for (const key in event[group]) {
@@ -398,8 +398,8 @@ const crypto = require('crypto');
                                                         meta_up[group][key] = {type: determineType(event[group]![key])};
                                                     }
 
-                                                    updates[app_id + "_meta_up"] = updates[app_id + "_meta_up"] || {} as DrillMetaUpdate;
-                                                    updates[app_id + "_meta_up"][group + "." + key + ".type"] = meta_up[group][key].type;
+                                                    updates[app_id + '_meta_up'] = updates[app_id + '_meta_up'] || {} as DrillMetaUpdate;
+                                                    updates[app_id + '_meta_up'][group + '.' + key + '.type'] = meta_up[group][key].type;
                                                 }
                                             }
                                         }
@@ -412,13 +412,13 @@ const crypto = require('crypto');
                             const bulkOps = Object.keys(updates).map(u => {
                                 return {
                                     updateOne: {
-                                        filter: {"_id": u},
+                                        filter: {'_id': u},
                                         update: {$set: updates[u]},
                                         upsert: true
                                     }
                                 };
                             });
-                            await common.drillDb.collection("drill_meta").bulkWrite(bulkOps);
+                            await common.drillDb.collection('drill_meta').bulkWrite(bulkOps);
                         }
                     }
                 });
