@@ -114,7 +114,7 @@ plugins.connectToAllDatabases(true).then(function() {
      * Handle before exit for graceful close
      */
     process.on('beforeExit', (code: number) => {
-        console.log('Received exit, trying to save batch state: ', code);
+        console.log('Received exit, trying to save batch state:', code);
         storeBatchedData(code);
     });
 
@@ -149,7 +149,7 @@ plugins.connectToAllDatabases(true).then(function() {
      * Unhandled Rejection Handler
      */
     process.on('unhandledRejection', (reason: unknown, p: Promise<unknown>) => {
-        console.log('Unhandled rejection for %j with reason %j stack ', p, reason, reason && typeof reason === 'object' && 'stack' in reason ? (reason as Error).stack : undefined);
+        console.log('Unhandled rejection for %j with reason %j stack', p, reason, reason && typeof reason === 'object' && 'stack' in reason ? (reason as Error).stack : undefined);
         if (log && log.e) {
             log.e('Logging unhandled rejection');
         }
