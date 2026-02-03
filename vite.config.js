@@ -6,7 +6,54 @@ import { globSync } from 'fs';
 import vue from '@vitejs/plugin-vue2';
 import * as babel from '@babel/core';
 
-const __filename = fileURLToPath(import.meta.url); // eslint-disable-line
+/**
+ * Plugin to selectively clean only main bundle files from dist folder.
+ * This preserves pace bundle files when rebuilding the main bundle.
+ */
+function cleanMainBundlePlugin() {
+    const distDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'frontend/express/public/dist');
+
+    return {
+        name: 'clean-main-bundle-plugin',
+        buildStart() {
+            // Only clean files that belong to the main bundle, not pace bundle
+            const patternsToClean = [
+                // JS files (but not pace.bundle.*)
+                { dir: 'js', pattern: /^countly\.(bundle|chunk)\..*\.js(\.map)?$/ },
+                // CSS files (but not pace.bundle.*)
+                { dir: 'css', pattern: /^countly\.bundle\..*\.css$/ },
+                // Also clean plugin CSS files (main.*, etc.) but not pace.*
+                { dir: 'css', pattern: /^(?!pace\.).*\.css$/ },
+                // Assets folder
+                { dir: 'assets', pattern: /.*/ },
+                // Main manifest
+                { dir: '.vite', pattern: /^manifest\.json$/ },
+            ];
+
+            for (const { dir, pattern } of patternsToClean) {
+                const fullDir = path.join(distDir, dir);
+                if (fs.existsSync(fullDir)) {
+                    try {
+                        const files = fs.readdirSync(fullDir);
+                        for (const file of files) {
+                            if (pattern.test(file)) {
+                                const filePath = path.join(fullDir, file);
+                                fs.rmSync(filePath, { recursive: true, force: true });
+                            }
+                        }
+                    }
+                    catch (err) {
+                        console.warn(`[clean-main-bundle-plugin] Error cleaning ${fullDir}:`, err.message);
+                    }
+                }
+            }
+
+            console.log('[clean-main-bundle-plugin] Cleaned main bundle files from dist');
+        },
+    };
+}
+
+const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // TODO: a separate build for prelogin files
@@ -50,7 +97,7 @@ const legacyScripts = [
     // 'javascripts/utils/vue/inViewportMixin.js',                               - DELETE.
     // 'javascripts/utils/vue/vuescroll.min.js',                                 - DELETE.
     // 'javascripts/utils/vue/vue-json-pretty.min.js',
-    'javascripts/dom/pace/pace.min.js',
+    // 'javascripts/dom/pace/pace.min.js',                                       - DELETE THE WHOLE dom/pace DIRECTORY.
     'javascripts/utils/Sortable.min.js',
     'javascripts/utils/vue/vuedraggable.umd.min.js',
     // 'javascripts/countly/countly.auth.js',
@@ -361,6 +408,7 @@ export default defineConfig({
     base: '/dist/',
 
     plugins: [
+        cleanMainBundlePlugin(),
         vue2JsxPlugin(),
         vue(),
         legacyConcatPlugin(),
@@ -368,7 +416,7 @@ export default defineConfig({
 
     build: {
         outDir: path.resolve(__dirname, 'frontend/express/public/dist'),
-        emptyOutDir: true,
+        emptyOutDir: false,
         sourcemap: true,
         manifest: true,
         // minify: false,

@@ -20,9 +20,11 @@
 const fs = require('fs');
 const path = require('path');
 
-// Cache for the manifest
+// Cache for the manifests
 let manifestCache = null;
 let manifestPath = null;
+let paceManifestCache = null;
+let paceManifestPath = null;
 
 /**
  * Initialize the manifest helper with the path to the manifest file
@@ -39,6 +41,12 @@ function init(customPath) {
     // Try alternate location if default doesn't exist
     if (!fs.existsSync(manifestPath)) {
         manifestPath = path.join(__dirname, '../public/dist/manifest.json');
+    }
+
+    // Initialize pace manifest path
+    paceManifestPath = path.join(__dirname, '../public/dist/.vite/pace-manifest.json');
+    if (!fs.existsSync(paceManifestPath)) {
+        paceManifestPath = path.join(__dirname, '../public/dist/pace-manifest.json');
     }
 }
 
@@ -77,14 +85,48 @@ function loadManifest(forceReload = false) {
 }
 
 /**
+ * Load and parse the pace-manifest.json file
+ * @param {boolean} forceReload - Force reload from disk (useful in development)
+ * @returns {object} The parsed pace manifest object
+ */
+function loadPaceManifest(forceReload = false) {
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+
+    if (!forceReload && !isDevelopment && paceManifestCache) {
+        return paceManifestCache;
+    }
+
+    if (!paceManifestPath) {
+        init();
+    }
+
+    try {
+        if (!fs.existsSync(paceManifestPath)) {
+            console.warn(`[Vite Manifest] Pace manifest file not found at ${paceManifestPath}`);
+            console.warn('[Vite Manifest] Run "npm run build:pace" to generate the pace manifest');
+            return {};
+        }
+
+        const manifestContent = fs.readFileSync(paceManifestPath, 'utf-8');
+        paceManifestCache = JSON.parse(manifestContent);
+        return paceManifestCache;
+    }
+    catch (error) {
+        console.error('[Vite Manifest] Error loading pace manifest:', error);
+        return {};
+    }
+}
+
+/**
  * Get the path to a bundled asset
- * @param {string} entryName - The name of the entry point (e.g., 'entrypoint.js')
+ * @param {string} entryName - The name of the entry point (e.g., 'entrypoint.js' or 'pace.js')
  * @param {string} type - The type of asset: 'js', 'css', or 'file'
  * @param {number} index - For multiple CSS files, which index to return (default: 0)
  * @returns {string} The path to the asset, or empty string if not found
  */
 function getAssetPath(entryName = 'entrypoint.js', type = 'js', index = 0) {
-    const manifest = loadManifest();
+    // Use pace manifest for pace.js entry
+    const manifest = entryName === 'pace.js' ? loadPaceManifest() : loadManifest();
 
     if (!manifest || Object.keys(manifest).length === 0) {
         // Fallback to Grunt paths if Vite manifest doesn't exist
@@ -127,11 +169,11 @@ function getAssetPath(entryName = 'entrypoint.js', type = 'js', index = 0) {
 
 /**
  * Get all assets for an entry point
- * @param {string} entryName - The name of the entry point (e.g., 'entrypoint.js')
+ * @param {string} entryName - The name of the entry point (e.g., 'entrypoint.js' or 'pace.js')
  * @returns {object} Object with 'js' and 'css' arrays
  */
 function getAssets(entryName = 'entrypoint.js') {
-    const manifest = loadManifest();
+    const manifest = entryName === 'pace.js' ? loadPaceManifest() : loadManifest();
 
     if (!manifest || Object.keys(manifest).length === 0) {
         return {
@@ -168,11 +210,11 @@ function getAssets(entryName = 'entrypoint.js') {
 
 /**
  * Get all CSS files for an entry point
- * @param {string} entryName - The name of the entry point
+ * @param {string} entryName - The name of the entry point (e.g., 'entrypoint.js' or 'pace.js')
  * @returns {string[]} Array of CSS file paths
  */
 function getCssFiles(entryName = 'entrypoint.js') {
-    const manifest = loadManifest();
+    const manifest = entryName === 'pace.js' ? loadPaceManifest() : loadManifest();
 
     if (!manifest || Object.keys(manifest).length === 0) {
         return [getFallbackPath('css')];
@@ -280,6 +322,7 @@ function getLinkTags(entryName = 'entrypoint.js') {
  */
 function clearCache() {
     manifestCache = null;
+    paceManifestCache = null;
 }
 
 // Initialize on require
@@ -288,6 +331,7 @@ init();
 module.exports = {
     init,
     loadManifest,
+    loadPaceManifest,
     getAssetPath,
     getAssets,
     getCssFiles,

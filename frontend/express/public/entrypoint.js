@@ -11,7 +11,7 @@ import './stylesheets/vue/clyvue.scss';
 import './stylesheets/leaflet/leaflet.css';
 import './stylesheets/vue/vue-json-pretty.css';
 import './javascripts/dom/gridstack/gridstack.css';
-import './javascripts/dom/pace/pace-theme-flash.css';
+// import './javascripts/dom/pace/pace-theme-flash.css';
 import './stylesheets/bulma/bulma-custom.css';
 import './stylesheets/styles/manifest.scss';
 import './stylesheets/vue/element-tiptap.css';

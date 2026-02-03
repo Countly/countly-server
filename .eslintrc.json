@@ -366,6 +366,7 @@
         {
             "files": [
                 "vite.config.js",
+                "vite.config.pace.js",
                 "frontend/express/public/**/*.js",
                 "plugins/content/frontend/vite.config.js",
                 "plugins/journey_engine/frontend/vite.config.js",

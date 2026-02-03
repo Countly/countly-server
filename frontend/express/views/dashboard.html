@@ -16,6 +16,9 @@
     <meta name="referrer" content="no-referrer">
     <script><%- javascript %></script>
 	<link rel="icon" type="image/png" href="<%- cdn %><%- countlyFavicon %>">
+    <!-- Pace.js - Load early to track page loading progress -->
+    <link rel="stylesheet" href="<%- cdn %><%= getViteAsset('pace.js', 'css') %>" />
+    <script language="javascript" type="text/javascript" src="<%- cdn %><%= getViteAsset('pace.js', 'js') %>"></script>
     <script type="text/javascript">
         // Restore URL hash preserved during OAuth2 authentication flow
         // The hash was saved in sessionStorage on the login page before OAuth2 redirect.
@@ -59,11 +62,11 @@
             Countly.q = Countly.q || [];
             Countly.q.push(['log_error', new Error("eval not available")]);
         };
-        window.paceOptions = {
-            ajax: {
-                ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", "method=get_events", "display_loader=false"]
-            }
-        };
+        // window.paceOptions = {
+        //     ajax: {
+        //         ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", "method=get_events", "display_loader=false"]
+        //     }
+        // };
         window.loadPlugin = function(plugin, callback, args){
             if (typeof plugin !== "string") {
                 console.log("when loading plugin, provided plugin was not a string, but a", plugin);
