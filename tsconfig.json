@@ -43,7 +43,6 @@
         "api/parts/queries/aggregator.ts",
         "api/parts/queries/coreAggregation.ts",
         "api/parts/queries/mongodbQueries.ts",
-        "api/parts/mgmt/apps.ts",
         "api/parts/mgmt/cms.ts",
         "api/parts/mgmt/date_presets.ts",
         "api/parts/mgmt/ip.ts",
