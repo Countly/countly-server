@@ -31,7 +31,18 @@
         "api/utils/models.ts",
         "api/utils/random-sfc32.ts",
         "api/utils/timezones.ts",
-        "api/utils/utils.ts"
+        "api/utils/utils.ts",
+        "api/utils/calculatedDataManager.ts",
+        "api/utils/eventTransformer.ts",
+        "api/utils/mongoDbQueryRunner.ts",
+        "api/utils/mutationManager.ts",
+        "api/utils/requestProcessorCommon.ts",
+        "api/parts/queries/aggregator.ts",
+        "api/parts/queries/coreAggregation.ts",
+        "api/parts/queries/mongodbQueries.ts",
+        "jobServer/constants/JobPriorities.ts",
+        "jobServer/example/ExampleJob.ts",
+        "jobServer/example/SimpleExample.ts"
     ],
     "exclude": [
         "node_modules/**/*.ts",

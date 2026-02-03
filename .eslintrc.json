@@ -6,7 +6,7 @@
         "plugins/*/types/**/*.d.ts"
     ],
     "rules": {
-        //        "quotes": ["warn", "single", { "avoidEscape": true }],
+        //"quotes": ["warn", "single", { "avoidEscape": true }],
         "require-atomic-updates": "off",
         "block-spacing": [
             "error",
@@ -719,21 +719,21 @@
                 "unicorn/new-for-builtins": "error",
                 "unicorn/no-abusive-eslint-disable": "error",
                 "unicorn/no-anonymous-default-export": "error",
-                "unicorn/no-array-for-each": "error",
+                //"unicorn/no-array-for-each": "error", //removed because of opinions
                 "unicorn/no-array-method-this-argument": "error",
                 "unicorn/no-await-in-promise-methods": "error",
                 "unicorn/no-console-spaces": "error",
                 "unicorn/no-document-cookie": "error",
-                "unicorn/no-for-loop": "error",
+                //"unicorn/no-for-loop": "error", //removed because of opinions
                 "unicorn/no-hex-escape": "error",
                 "unicorn/no-invalid-fetch-options": "error",
                 "unicorn/no-magic-array-flat-depth": "error",
                 "unicorn/no-negation-in-equality-check": "error",
                 "unicorn/no-nested-ternary": "error",
-                "unicorn/no-null": "warn",
+                "unicorn/no-null": "warn", //later change to error
                 "unicorn/no-object-as-default-parameter": "error",
                 "unicorn/no-single-promise-in-promise-methods": "error",
-                "unicorn/no-static-only-class": "error",
+                //"unicorn/no-static-only-class": "warn", //removed because of opinions
                 "unicorn/no-thenable": "error",
                 "unicorn/no-typeof-undefined": "error",
                 "unicorn/no-unnecessary-await": "error",
