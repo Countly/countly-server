@@ -215,15 +215,16 @@ jobs:
             sleep 5
           done
 
-      - name: Wait for MongoDB Replica Set
+      - name: Wait for MongoDB
         run: |
-          echo "Waiting for MongoDB RS0..."
-          for i in {1..40}; do
-            if docker logs mongodb-init 2>&1 | grep -q 'Replica set'; then
-              echo "Replica set OK!"
+          echo "Waiting for MongoDB to be ready..."
+          for i in {1..20}; do
+            if docker exec kafka mongosh --host mongodb --eval "db.adminCommand('ping')" &>/dev/null; then
+              echo "MongoDB is ready!"
               break
             fi
-            sleep 5
+            echo "Waiting... (attempt $i/20)"
+            sleep 2
           done
 
       - name: Wait for ClickHouse
@@ -424,7 +425,7 @@ jobs:
       - name: Install plugins
         run: |
           docker exec countly-test bash -c "
-            node /opt/countly/bin/scripts/install_plugins.js --force
+            node /opt/countly/bin/scripts/install_plugins.js --force --skip-production
             cd /opt/countly
             npm install
           "
@@ -491,15 +492,16 @@ jobs:
             sleep 5
           done
 
-      - name: Wait for MongoDB Replica Set
+      - name: Wait for MongoDB
         run: |
-          echo "Waiting for MongoDB RS0..."
-          for i in {1..40}; do
-            if docker logs mongodb-init 2>&1 | grep -q 'Replica set'; then
-              echo "Replica set OK!"
+          echo "Waiting for MongoDB to be ready..."
+          for i in {1..20}; do
+            if docker exec kafka mongosh --host mongodb --eval "db.adminCommand('ping')" &>/dev/null; then
+              echo "MongoDB is ready!"
               break
             fi
-            sleep 5
+            echo "Waiting... (attempt $i/20)"
+            sleep 2
           done
 
       - name: Wait for ClickHouse
@@ -761,15 +763,16 @@ jobs:
             sleep 5
           done
 
-      - name: Wait for MongoDB Replica Set
+      - name: Wait for MongoDB
         run: |
-          echo "Waiting for MongoDB RS0..."
-          for i in {1..40}; do
-            if docker logs mongodb-init 2>&1 | grep -q 'Replica set'; then
-              echo "Replica set OK!"
+          echo "Waiting for MongoDB to be ready..."
+          for i in {1..20}; do
+            if docker exec kafka mongosh --host mongodb --eval "db.adminCommand('ping')" &>/dev/null; then
+              echo "MongoDB is ready!"
               break
             fi
-            sleep 5
+            echo "Waiting... (attempt $i/20)"
+            sleep 2
           done
 
       - name: Wait for ClickHouse
