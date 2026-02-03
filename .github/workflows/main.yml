@@ -251,7 +251,6 @@ jobs:
           
           echo "Creating test database to verify write capability..."
           curl -s "http://localhost:8123/?query=CREATE%20DATABASE%20IF%20NOT%20EXISTS%20countly_drill" || echo "Database creation attempt"
-          sleep 2
           
           echo "Verifying database exists..."
           curl -s "http://localhost:8123/?query=SHOW%20DATABASES" | grep -q "countly_drill" && echo "✓ Database ready" || echo "Database check failed"
@@ -445,18 +444,22 @@ jobs:
 
       - name: Wait for data pipeline stabilization
         run: |
-          echo "Waiting for Kafka Connect and ClickHouse pipeline to stabilize..."
-          sleep 15
-          echo "Checking Kafka Connect status..."
-          curl -s http://localhost:8083/ | head -n 5 || echo "Kafka Connect check"
-          echo "Pipeline should be ready for data flow"
+          echo "Verifying Kafka Connect connector is running..."
+          for i in {1..30}; do
+            CONNECTOR_STATE=$(curl -s http://localhost:8083/connectors/clickhouse-sink/status | grep -o '"state":"[^"]*"' | head -1 | cut -d'"' -f4 || echo "unknown")
+            if [ "$CONNECTOR_STATE" = "RUNNING" ]; then
+              echo "✓ Connector is running, pipeline ready!"
+              break
+            fi
+            echo "Connector state: $CONNECTOR_STATE (attempt $i/30)"
+            sleep 1
+          done
 
       - name: Run tests
         run: |
           docker exec -i countly-test bash -c "
             cd /opt/countly
             /sbin/my_init &
-            sleep 40
             node /opt/countly/bin/scripts/test.connection.js
             npx grunt mochaTest
           "
@@ -686,7 +689,7 @@ jobs:
       - name: Install plugins
         run: |
           docker exec countly-test bash -c "
-            node /opt/countly/bin/scripts/install_plugins.js --force
+            node /opt/countly/bin/scripts/install_plugins.js --force --skip-production
             cd /opt/countly
             npm install
           "
@@ -706,18 +709,22 @@ jobs:
 
       - name: Wait for data pipeline stabilization
         run: |
-          echo "Waiting for Kafka Connect and ClickHouse pipeline to stabilize..."
-          sleep 15
-          echo "Checking Kafka Connect status..."
-          curl -s http://localhost:8083/ | head -n 5 || echo "Kafka Connect check"
-          echo "Pipeline should be ready for data flow"
+          echo "Verifying Kafka Connect connector is running..."
+          for i in {1..30}; do
+            CONNECTOR_STATE=$(curl -s http://localhost:8083/connectors/clickhouse-sink/status | grep -o '"state":"[^"]*"' | head -1 | cut -d'"' -f4 || echo "unknown")
+            if [ "$CONNECTOR_STATE" = "RUNNING" ]; then
+              echo "✓ Connector is running, pipeline ready!"
+              break
+            fi
+            echo "Connector state: $CONNECTOR_STATE (attempt $i/30)"
+            sleep 1
+          done
 
       - name: Run tests
         run: |
           docker exec -i countly-test bash -c "
             cd /opt/countly
             /sbin/my_init &
-            sleep 30
             node /opt/countly/bin/scripts/test.connection.js
             npx grunt mochaTest
           "
@@ -1007,7 +1014,7 @@ jobs:
           docker exec countly-test bash -c "
             cd /opt/countly
             /sbin/my_init &
-            sleep 30
+            node /opt/countly/bin/scripts/test.connection.js
             cd ui-tests
             npm install
             if [ \"${{ matrix.test_type }}\" = \"dashboard\" ]; then
