@@ -203,6 +203,10 @@ jobs:
           docker compose -f docker-compose.ci.yml up -d
           docker compose -f docker-compose.ci.yml ps
 
+      - name: Pull Countly Core image
+        run: |
+          docker pull countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
+
       - name: Wait for Kafka
         run: |
           echo "Waiting for Kafka..."
@@ -337,10 +341,6 @@ jobs:
         run: |
           docker compose -f docker-compose.ci.yml ps
           echo "Backend stack fully operational!"
-
-      - name: Pull Countly Core image
-        run: |
-          docker pull countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
 
       - name: Start Countly test container
         run: |
@@ -483,6 +483,10 @@ jobs:
           docker compose -f docker-compose.ci.yml up -d
           docker compose -f docker-compose.ci.yml ps
 
+      - name: Pull Countly Core image
+        run: |
+          docker pull countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
+
       - name: Wait for Kafka
         run: |
           echo "Waiting for Kafka..."
@@ -600,10 +604,6 @@ jobs:
         run: |
           docker compose -f docker-compose.ci.yml ps
           echo "Backend stack fully operational!"
-
-      - name: Pull Countly Core image
-        run: |
-          docker pull countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
 
       - name: Start Countly test container
         run: |
@@ -758,6 +758,10 @@ jobs:
           docker compose -f docker-compose.ci.yml up -d
           docker compose -f docker-compose.ci.yml ps
 
+      - name: Pull Countly Core image
+        run: |
+          docker pull countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
+
       - name: Wait for Kafka
         run: |
           echo "Waiting for Kafka..."
@@ -875,10 +879,6 @@ jobs:
         run: |
           docker compose -f docker-compose.ci.yml ps
           echo "Backend stack fully operational!"
-
-      - name: Pull Countly Core image
-        run: |
-          docker pull countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
 
       - name: Start Countly UI test container
         run: |
