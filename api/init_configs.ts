@@ -140,7 +140,7 @@ interface FrontendUserConfig {
  * Set Plugins APIs Config
  */
 const apiConfig: ApiConfig = {
-    domain: "",
+    domain: '',
     safe: false,
     session_duration_limit: 86400,
     country_data: true,
@@ -159,7 +159,7 @@ const apiConfig: ApiConfig = {
     metric_changes: true,
     offline_mode: false,
     reports_regenerate_interval: 3600,
-    send_test_email: "",
+    send_test_email: '',
     batch_processing: true,
     batch_period: 10,
     batch_read_processing: true,
@@ -168,17 +168,17 @@ const apiConfig: ApiConfig = {
     user_merge_paralel: 1,
     trim_trailing_ending_spaces: false
 };
-plugins.setConfigs("api", apiConfig);
+plugins.setConfigs('api', apiConfig);
 
 /**
  * Set Plugins APPs Config
  */
 const appsConfig: AppsConfig = {
-    country: "TR",
-    timezone: "Europe/Istanbul",
-    category: "6"
+    country: 'TR',
+    timezone: 'Europe/Istanbul',
+    category: '6'
 };
-plugins.setConfigs("apps", appsConfig);
+plugins.setConfigs('apps', appsConfig);
 
 /**
  * Set Plugins Security Config
@@ -193,20 +193,20 @@ const securityConfig: SecurityConfig = {
     password_expiration: 0,
     password_rotation: 3,
     password_autocomplete: true,
-    robotstxt: "User-agent: *\nDisallow: /",
-    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
+    robotstxt: 'User-agent: *\nDisallow: /',
+    dashboard_additional_headers: 'X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff',
+    api_additional_headers: 'X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*',
     dashboard_rate_limit_window: 60,
     dashboard_rate_limit_requests: 500,
     api_rate_limit_window: 0,
     api_rate_limit_requests: 0,
-    proxy_hostname: "",
-    proxy_port: "",
-    proxy_username: "",
-    proxy_password: "",
-    proxy_type: "https"
+    proxy_hostname: '',
+    proxy_port: '',
+    proxy_username: '',
+    proxy_password: '',
+    proxy_type: 'https'
 };
-plugins.setConfigs("security", securityConfig);
+plugins.setConfigs('security', securityConfig);
 
 /**
  * Set Plugins Logs Config
@@ -236,10 +236,10 @@ plugins.setConfigs('logs',
  * Set tracking config
  */
 const trackingConfig: TrackingConfig = {
-    self_tracking_app: "",
-    self_tracking_url: "",
-    self_tracking_app_key: "",
-    self_tracking_id_policy: "_id",
+    self_tracking_app: '',
+    self_tracking_url: '',
+    self_tracking_app_key: '',
+    self_tracking_id_policy: '_id',
     self_tracking_sessions: true,
     self_tracking_events: true,
     self_tracking_views: true,
@@ -252,20 +252,20 @@ const trackingConfig: TrackingConfig = {
     server_feedback: true,
     server_user_details: true,
 };
-plugins.setConfigs("tracking", trackingConfig);
+plugins.setConfigs('tracking', trackingConfig);
 
 /**
  * Set frontend config
  */
 const frontendConfig: FrontendConfig = {
     production: true,
-    theme: (countlyConfigApp.web && countlyConfigApp.web.theme) ? countlyConfigApp.web.theme : "",
+    theme: (countlyConfigApp.web && countlyConfigApp.web.theme) ? countlyConfigApp.web.theme : '',
     session_timeout: 30,
     use_google: true,
     code: true,
     offline_mode: false
 };
-plugins.setConfigs("frontend", frontendConfig);
+plugins.setConfigs('frontend', frontendConfig);
 
 /**
  * Set user configurable frontend options
@@ -277,7 +277,7 @@ const frontendUserConfig: FrontendUserConfig = {
     use_google: false,
     code: false,
 };
-plugins.setUserConfigs("frontend", frontendUserConfig);
+plugins.setUserConfigs('frontend', frontendUserConfig);
 
 // Export types for use by other modules
 export type {

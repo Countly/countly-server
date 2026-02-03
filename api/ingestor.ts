@@ -62,19 +62,19 @@ interface FormidableOptions {
     maxFileSize?: number;
 }
 
-const t = ["countly:", "ingestor"];
-t.push("node");
+const t = ['countly:', 'ingestor'];
+t.push('node');
 
 // Finally set the visible title
 process.title = t.join(' ');
 
-console.log("Connecting to databases");
+console.log('Connecting to databases');
 
 // Overriding function
 plugins.loadConfigs = plugins.loadConfigsIngestor;
 
 plugins.connectToAllDatabases(true).then(function() {
-    log.i("Db connections done");
+    log.i('Db connections done');
 
     // Write Batcher is used by sdk metrics
     common.writeBatcher = new WriteBatcher(common.db);
@@ -102,12 +102,12 @@ plugins.connectToAllDatabases(true).then(function() {
         try {
             // await common.writeBatcher.flushAll();
             // await common.insertBatcher.flushAll();
-            console.log("Successfully stored batch state");
+            console.log('Successfully stored batch state');
         }
         catch (ex) {
-            console.log("Could not store batch state", ex);
+            console.log('Could not store batch state', ex);
         }
-        process.exit(typeof code === "number" ? code : 1);
+        process.exit(typeof code === 'number' ? code : 1);
     }
 
     /**
@@ -156,16 +156,16 @@ plugins.connectToAllDatabases(true).then(function() {
         console.trace();
     });
 
-    console.log("Starting ingestor", process.pid);
+    console.log('Starting ingestor', process.pid);
 
     // Since process restarted mark running tasks as errored
-    plugins.dispatch("/ingestor", { common: common });
-    plugins.init({ "skipDependencies": true, "filename": "ingestor" });
+    plugins.dispatch('/ingestor', { common: common });
+    plugins.init({ 'skipDependencies': true, 'filename': 'ingestor' });
 
-    console.log("Loading configs");
+    console.log('Loading configs');
 
     plugins.loadConfigs(common.db, function() {
-        console.log("Configs loaded. Opening server connection");
+        console.log('Configs loaded. Opening server connection');
         console.log(JSON.stringify(common.config.ingestor || {}));
 
         const server = http.createServer((req: IngestorRequest, res: ServerResponse) => {
@@ -240,9 +240,9 @@ plugins.connectToAllDatabases(true).then(function() {
             }
             else if (req.method?.toLowerCase() === 'options') {
                 const headers: Record<string, string> = {};
-                headers["Access-Control-Allow-Origin"] = "*";
-                headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
-                headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type";
+                headers['Access-Control-Allow-Origin'] = '*';
+                headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS';
+                headers['Access-Control-Allow-Headers'] = 'countly-token, Content-Type';
                 res.writeHead(200, headers);
                 res.end();
             }
@@ -251,7 +251,7 @@ plugins.connectToAllDatabases(true).then(function() {
                 processRequest(params as any);
             }
             else {
-                common.returnMessage(params as any, 405, "Method not allowed");
+                common.returnMessage(params as any, 405, 'Method not allowed');
             }
         });
 

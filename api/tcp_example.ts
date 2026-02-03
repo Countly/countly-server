@@ -84,7 +84,7 @@ plugins.dbConnection(countlyConfig).then(function(db: typeof common.db) {
     /**
      * Let plugins know process started
      */
-    plugins.dispatch("/worker", { common: common });
+    plugins.dispatch('/worker', { common: common });
 
     /**
      * Preload initial configs
@@ -105,7 +105,7 @@ plugins.dbConnection(countlyConfig).then(function(db: typeof common.db) {
          */
         function respond(message: string, headers?: Record<string, string>, returnCode?: number, paramsOb?: unknown): void {
             console.log(message, headers, returnCode, paramsOb);
-            if (socket.readyState === "open") {
+            if (socket.readyState === 'open') {
                 socket.write(message);
             }
         }
@@ -127,7 +127,7 @@ plugins.dbConnection(countlyConfig).then(function(db: typeof common.db) {
                     'req': {
                         url: data.url,
                         body: data.body,
-                        method: "tcp"
+                        method: 'tcp'
                     },
                     // Adding custom processing for API responses
                     'APICallback': function(err: Error | null, responseData: string, headers: Record<string, string>, returnCode: number, paramsOb: unknown) {
@@ -142,18 +142,18 @@ plugins.dbConnection(countlyConfig).then(function(db: typeof common.db) {
             else {
                 respond('Data cannot be parsed');
             }
-        }).on("error", function(err: Error) {
-            console.log("TCP parse error", err);
+        }).on('error', function(err: Error) {
+            console.log('TCP parse error', err);
         });
 
-        socket.on("error", function(err: Error) {
-            console.log("TCP connection error", err);
+        socket.on('error', function(err: Error) {
+            console.log('TCP connection error', err);
         });
 
-        socket.on("close", function(hadError: boolean) {
-            console.log("TCP connection closed with error", hadError);
+        socket.on('close', function(hadError: boolean) {
+            console.log('TCP connection closed with error', hadError);
         });
-    }).listen(3005, "localhost");
+    }).listen(3005, 'localhost');
 });
 
 // Export types for use by other modules
