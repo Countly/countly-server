@@ -878,7 +878,7 @@ const appsApi: AppsApi = {
                                 common.dbPromise('apps', 'updateOne', { _id: app._id }, { $set: { [`plugins.${k}`]: (params.qstring.args as Record<string, unknown>)[k] } }).then(() => {
                                     plugins.dispatch('/systemlogs', {
                                         params: params,
-                                        action: `app_config_updated`,
+                                        action: 'app_config_updated',
                                         data: {
                                             config: k,
                                             app_id: app._id + '',
@@ -898,7 +898,7 @@ const appsApi: AppsApi = {
                         common.dbPromise('apps', 'updateOne', { _id: app._id }, { $set: { [`plugins.${k}`]: (params.qstring.args as Record<string, unknown>)[k] } }).then(() => {
                             plugins.dispatch('/systemlogs', {
                                 params: params,
-                                action: `app_config_updated`,
+                                action: 'app_config_updated',
                                 data: {
                                     config: k,
                                     app_id: app._id + '',

@@ -95,7 +95,7 @@ function fetchFromCMS(params: CmsParams, callback: (err: Error | null, results: 
         let pageUrl = `${url}?pagination[page]=${pageNumber}&pagination[pageSize]=${pageSize}`;
 
         if (params.qstring.populate) {
-            pageUrl += `&populate=*`;
+            pageUrl += '&populate=*';
         }
 
         fetch(pageUrl, {
