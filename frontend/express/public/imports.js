@@ -79,6 +79,9 @@ Vue.component("cly-dropzone", vue2Dropzone);
 import vuescroll from "vuescroll";
 Vue.use(vuescroll);
 
+import vuedraggable from 'vuedraggable';
+Vue.component("draggable", vuedraggable);
+
 import jQuery from 'jquery';
 window.jQuery = jQuery;
 window.$ = jQuery;

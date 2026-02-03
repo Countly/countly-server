@@ -98,8 +98,8 @@ const legacyScripts = [
     // 'javascripts/utils/vue/vuescroll.min.js',                                 - DELETE.
     // 'javascripts/utils/vue/vue-json-pretty.min.js',                           - DELETE.
     // 'javascripts/dom/pace/pace.min.js',                                       - DELETE THE WHOLE dom/pace DIRECTORY.
-    'javascripts/utils/Sortable.min.js',
-    'javascripts/utils/vue/vuedraggable.umd.min.js',
+    // 'javascripts/utils/Sortable.min.js',                                      - DELETE.
+    // 'javascripts/utils/vue/vuedraggable.umd.min.js',                          - DELETE.
     // 'javascripts/countly/countly.auth.js',
     'javascripts/utils/element-tiptap.umd.min.js',
     'javascripts/utils/cronstrue.min.js',
