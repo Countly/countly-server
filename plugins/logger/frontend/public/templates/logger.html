@@ -1,5 +1,5 @@
 <div v-bind:class="[componentId]" class="logger-home cly-vue-logger">
-    <cly-header 
+    <cly-header
         style="margin-bottom: 24px;"
         :title="i18n('logger.title')"
         :tooltip="{description: getTitleTooltip()}"
@@ -42,10 +42,10 @@
                             <cly-section>
                                 <el-tabs type="card" value="data">
                                     <el-tab-pane name="data" label="Data" data-test-id="datatable-logs-expand-data">
-                                        <vue-json-pretty :data="jsonParser(props.row.q)"/>
-                                    </el-tab-pane>  
+                                        <pre>{{JSON.stringify(jsonParser(props.row.q), null, 2)}}</pre>
+                                    </el-tab-pane>
                                     <el-tab-pane name="header" label="Header" data-test-id="datatable-logs-expand-header">
-                                        <vue-json-pretty :data="props.row.h"/>
+                                        <pre>{{JSON.stringify(props.row.h, null, 2)}}</pre>
                                     </el-tab-pane>
                                 </el-tabs>
                             </cly-section>

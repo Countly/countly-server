@@ -96,7 +96,7 @@ const legacyScripts = [
     // 'javascripts/utils/vue/vue2-leaflet.min.js',                              - DELETE.
     // 'javascripts/utils/vue/inViewportMixin.js',                               - DELETE.
     // 'javascripts/utils/vue/vuescroll.min.js',                                 - DELETE.
-    // 'javascripts/utils/vue/vue-json-pretty.min.js',
+    // 'javascripts/utils/vue/vue-json-pretty.min.js',                           - DELETE.
     // 'javascripts/dom/pace/pace.min.js',                                       - DELETE THE WHOLE dom/pace DIRECTORY.
     'javascripts/utils/Sortable.min.js',
     'javascripts/utils/vue/vuedraggable.umd.min.js',
