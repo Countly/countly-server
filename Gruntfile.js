@@ -348,13 +348,40 @@ module.exports = function(grunt) {
     grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function() {
         var js = [], css = [], img = [], fs = require('fs'), path = require('path');
 
-        var pluginFolderPath = path.join(__dirname, 'plugins');
-        //read all folder names
-        var plugins = fs.readdirSync(pluginFolderPath);
-        //filter out only folders
-        plugins = plugins.filter(function(file) {
-            return fs.statSync(path.join(pluginFolderPath, file)).isDirectory();
-        });
+        // Detect if we're running from core/ directory or flattened root directory
+        // On server, core/ contents are copied to root, so plugins/ is at same level as Gruntfile
+        var isInCoreDirectory = fs.existsSync(path.join(__dirname, 'plugins')) &&
+                                 fs.existsSync(path.join(__dirname, '..', 'plugins'));
+
+        var corePluginFolderPath = path.join(__dirname, 'plugins');
+        var enterprisePluginFolderPath = isInCoreDirectory ? path.join(__dirname, '..', 'plugins') : path.join(__dirname, 'plugins');
+        var plugins = [];
+        var pluginSet = {}; // Use object to avoid duplicates
+
+        // Read core plugins (only if we're in core directory)
+        if (isInCoreDirectory && fs.existsSync(corePluginFolderPath)) {
+            var corePlugins = fs.readdirSync(corePluginFolderPath);
+            corePlugins.forEach(function(file) {
+                var pluginPath = path.join(corePluginFolderPath, file);
+                if (fs.statSync(pluginPath).isDirectory()) {
+                    pluginSet[file] = true;
+                }
+            });
+        }
+
+        // Read enterprise plugins (or all plugins if flattened structure)
+        if (fs.existsSync(enterprisePluginFolderPath)) {
+            var enterprisePlugins = fs.readdirSync(enterprisePluginFolderPath);
+            enterprisePlugins.forEach(function(file) {
+                var pluginPath = path.join(enterprisePluginFolderPath, file);
+                if (fs.statSync(pluginPath).isDirectory()) {
+                    pluginSet[file] = true;
+                }
+            });
+        }
+
+        // Convert set to array
+        plugins = Object.keys(pluginSet);
 
         console.log('Preparing production files for following plugins: %j', plugins);
 
@@ -397,8 +424,24 @@ module.exports = function(grunt) {
 
 
         plugins.forEach(function(plugin) {
-            var files, pluginPath = path.join(__dirname, 'plugins', plugin),
-                javascripts = path.join(pluginPath, 'frontend/public/javascripts'),
+            var files;
+            var pluginPath;
+            var pluginPathPrefix;
+
+            if (isInCoreDirectory) {
+                // Running from core/ directory: check enterprise first, then core
+                var enterprisePluginPath = path.join(__dirname, '..', 'plugins', plugin);
+                var corePluginPath = path.join(__dirname, 'plugins', plugin);
+                pluginPath = fs.existsSync(enterprisePluginPath) ? enterprisePluginPath : corePluginPath;
+                pluginPathPrefix = (pluginPath === enterprisePluginPath) ? '../plugins/' : 'plugins/';
+            }
+            else {
+                // Running from flattened root: plugins are at same level
+                pluginPath = path.join(__dirname, 'plugins', plugin);
+                pluginPathPrefix = 'plugins/';
+            }
+
+            var javascripts = path.join(pluginPath, 'frontend/public/javascripts'),
                 stylesheets = path.join(pluginPath, 'frontend/public/stylesheets'),
                 images = path.join(pluginPath, 'frontend/public/images', plugin);
 
@@ -421,7 +464,7 @@ module.exports = function(grunt) {
                     files.forEach(function(name) {
                         var file = path.join(javascripts, name);
                         if (fs.statSync(file).isFile() && name.indexOf('.') !== 0 && name.endsWith('.js')) {
-                            js.push('plugins/' + plugin + '/frontend/public/javascripts/' + name);
+                            js.push(pluginPathPrefix + plugin + '/frontend/public/javascripts/' + name);
                         }
                     });
                 }
@@ -432,14 +475,15 @@ module.exports = function(grunt) {
                 files.forEach(function(name) {
                     var file = path.join(stylesheets, name);
                     if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0 && name.endsWith('.css')) {
-                        css.push('plugins/' + plugin + '/frontend/public/stylesheets/' + name);
+                        // Use absolute path to ensure cssmin can resolve it correctly
+                        css.push(path.resolve(pluginPath, 'frontend/public/stylesheets', name));
                     }
                 });
             }
 
             try {
                 if (fs.existsSync(images) && fs.statSync(images).isDirectory()) {
-                    img.push({ expand: true, cwd: 'plugins/' + plugin + '/frontend/public/images/' + plugin + '/', filter: 'isFile', src: '**', dest: 'frontend/express/public/images/' + plugin + '/' });
+                    img.push({ expand: true, cwd: pluginPathPrefix + plugin + '/frontend/public/images/' + plugin + '/', filter: 'isFile', src: '**', dest: 'frontend/express/public/images/' + plugin + '/' });
                 }
             }
             catch (err) {
