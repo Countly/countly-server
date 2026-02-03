@@ -8,6 +8,12 @@ describe('Log utility tests', function() {
         originalEnv = Object.assign({}, process.env);
     });
 
+    beforeEach(function() {
+        // Clear CI env var to ensure consistent test behavior
+        // (CI-specific tests will explicitly set CI=true)
+        delete process.env.CI;
+    });
+
     afterEach(function() {
         // Clear all environment variables and restore original
         Object.keys(process.env).forEach(function(key) {
