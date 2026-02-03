@@ -8,8 +8,8 @@ import { createRequire } from 'module';
 // createRequire needed for CJS modules without ES exports
 // @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
 const require = createRequire(import.meta.url);
-const common = require('../../../utils/common.js');
-const config = require('../../../config.js');
+const common = require('../../utils/common.js');
+const config = require('../../config.js');
 
 const log = common.log('core:cms') as { e: (...args: unknown[]) => void };
 

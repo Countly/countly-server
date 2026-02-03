@@ -11,7 +11,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const plugins = require('../../../plugins/pluginManager.js');
 const icanhazip = require('icanhazip');
-const logModule = require('../../../utils/log.js');
+const logModule = require('../../utils/log.js');
 
 const log = logModule('core:api') as { e: (...args: unknown[]) => void };
 
