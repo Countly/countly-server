@@ -174,7 +174,7 @@ function verifySegments(values) {
 }
 
 function verifyTotals(period, order, orderString) {
-    it("Checking against calculating same table from granural data", function(done) {
+    it("Checking against calculating same table from granural data:" + period, function(done) {
         request
             .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&no_cache=true&app_id=' + APP_ID + '&query={"queryName":"viewsTableData"}&period=' + period)
             .expect(200)
@@ -312,7 +312,7 @@ describe('Testing views plugin', function() {
     });
 
     describe('Check adding views', function() {
-        it('adding view in previous year', function(done) {
+        it('adding view in previous year(user 00)', function(done) {
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview0", "visit": 1, "start": 1}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user00" + '&timestamp=' + (myTime - (365 * 24 * 60 * 60 * 1000)) + '&events=' + data)
@@ -322,7 +322,7 @@ describe('Testing views plugin', function() {
                 });
         });
 
-        it('adding view(25 days ago)', function(done) {
+        it('adding view(25 days ago)(user1)', function(done) {
             tableResponse["30days"].iTotalRecords += 1;
             tableResponse["30days"].iTotalDisplayRecords += 1;
             pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "view": "testview0"});
@@ -370,7 +370,7 @@ describe('Testing views plugin', function() {
             if (days_this_year > 1) {
                 tableResponse.month.iTotalRecords = 1;
                 tableResponse.month.iTotalDisplayRecords = 1;
-                if (days_this_month < 25) {
+                if (days_this_year < 25) {
                     pushValues("month", 0, {"u": 1, "t": 1, "s": 1});
                 }
                 else {
