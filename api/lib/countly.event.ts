@@ -42,10 +42,10 @@ export interface CountlyEventMetric extends CountlyMetric {
  */
 function create(): CountlyEventMetric {
     const countlyEvent = countlyModel.create(function(val: string): string {
-        return val.replace(/:/g, ".").replace(/\[CLY\]/g, "").replace(/.\/\//g, "://");
+        return val.replace(/:/g, '.').replace(/\[CLY\]/g, '').replace(/.\/\//g, '://');
     }) as CountlyEventMetric;
 
-    countlyEvent.setMetrics(["c", "s", "dur"]);
+    countlyEvent.setMetrics(['c', 's', 'dur']);
     countlyEvent.setUniqueMetrics([]);
 
     /**
@@ -55,9 +55,9 @@ function create(): CountlyEventMetric {
      */
     countlyEvent.getSubperiodData = function(options?: SubperiodDataOptions): Array<Record<string, unknown>> {
         const dataProps: DataProperty[] = [
-            { name: "c" },
-            { name: "s" },
-            { name: "dur" }
+            { name: 'c' },
+            { name: 's' },
+            { name: 'dur' }
         ];
         options = options || {};
         return countlyCommon.extractData(countlyEvent.getDb(), countlyEvent.clearObject, dataProps, countlyCommon.calculatePeriodObject(null, options.bucket));
@@ -76,9 +76,9 @@ function create(): CountlyEventMetric {
                     return rangeArr;
                 }
             },
-            { "name": "c" },
-            { "name": "s" },
-            { "name": "dur" }
+            { 'name': 'c' },
+            { 'name': 's' },
+            { 'name': 'dur' }
         ]);
     };
 

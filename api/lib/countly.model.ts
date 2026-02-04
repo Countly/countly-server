@@ -217,12 +217,12 @@ const countlyModel: CountlyModelModule = {
         let model: CountlyMetric;
         try {
             // try loading model from core
-            model = require("./countly." + _name + ".js")();
+            model = require('./countly.' + _name + '.js')();
         }
         catch {
             try {
                 // try loading model from plugin
-                model = require("../../plugins/" + _name + "/api/lib/countly.model.js")();
+                model = require('../../plugins/' + _name + '/api/lib/countly.model.js')();
             }
             catch {
                 // just create standard model
@@ -254,8 +254,8 @@ const countlyModel: CountlyModelModule = {
         let _Db: Database = {} as Database;
         let _period: PeriodObject | null = null;
         let _metas: Record<string, string[]> = {};
-        let _uniques: string[] = ["u"];
-        let _metrics: string[] = ["t", "u", "n"];
+        let _uniques: string[] = ['u'];
+        let _metrics: string[] = ['t', 'u', 'n'];
         let _totalUsersObj: TotalUsersObj = {};
         let _prevTotalUsersObj: TotalUsersObj = {};
 
@@ -434,7 +434,7 @@ const countlyModel: CountlyModelModule = {
 
                     // add metrics
                     for (let i = 0; i < _metrics.length; i++) {
-                        dataProps.push({ "name": _metrics[i] });
+                        dataProps.push({ 'name': _metrics[i] });
                     }
                     const chartData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(segment), this.clearObject, dataProps, _totalUsersObj);
                     chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, segment);
@@ -460,8 +460,8 @@ const countlyModel: CountlyModelModule = {
                             chartDP[i].data[namesData.length + 1] = [namesData.length, null];
                         }
 
-                        chartData.chartDP.ticks.push([-1, ""]);
-                        chartData.chartDP.ticks.push([namesData.length, ""]);
+                        chartData.chartDP.ticks.push([-1, '']);
+                        chartData.chartDP.ticks.push([namesData.length, '']);
 
                         for (let i = 0; i < namesData.length; i++) {
                             for (let j = 0; j < _metrics.length; j++) {
@@ -485,8 +485,8 @@ const countlyModel: CountlyModelModule = {
                                 };
                             }
 
-                            chartData["chartDP" + _metrics[j]] = {};
-                            (chartData["chartDP" + _metrics[j]] as { dp: ChartDPItem[] }).dp = chartData2;
+                            chartData['chartDP' + _metrics[j]] = {};
+                            (chartData['chartDP' + _metrics[j]] as { dp: ChartDPItem[] }).dp = chartData2;
                         }
                     }
                     return chartData as GetDataResult;
@@ -559,9 +559,9 @@ const countlyModel: CountlyModelModule = {
                         totalPercent += percent;
 
                         barData[i] = {
-                            "name": topUsers[i].date as string,
+                            'name': topUsers[i].date as string,
                             value: topUsers[i][metric as string] as number,
-                            "percent": percent
+                            'percent': percent
                         };
                     }
 
@@ -586,7 +586,7 @@ const countlyModel: CountlyModelModule = {
              */
             getTableData: function(segment?: string, maxItems?: number): TableDataResult {
                 const cols = _metrics.slice();
-                cols.unshift(segment || "date");
+                cols.unshift(segment || 'date');
                 const ret: TableDataResult = {
                     cols: cols,
                     rows: []
@@ -606,7 +606,7 @@ const countlyModel: CountlyModelModule = {
                 for (let i = 0; i < itemCount; i++) {
                     const ob: Array<string | number> = [];
                     for (let j = 0; j < cols.length; j++) {
-                        if (typeof sortedData[i][cols[j]] === "number") {
+                        if (typeof sortedData[i][cols[j]] === 'number') {
                             sortedData[i][cols[j]] = Math.round((sortedData[i][cols[j]] as number) * 100) / 100;
                         }
                         ob.push(sortedData[i][cols[j]]);
@@ -627,12 +627,12 @@ const countlyModel: CountlyModelModule = {
                 metric = metric || _metrics[0];
                 const metrics = [metric];
                 // include other default metrics for data correction
-                if (metric === "u") {
-                    metrics.push("n");
-                    metrics.push("t");
+                if (metric === 'u') {
+                    metrics.push('n');
+                    metrics.push('t');
                 }
-                if (metric === "n") {
-                    metrics.push("u");
+                if (metric === 'n') {
+                    metrics.push('u');
                 }
                 const data: DashboardData = countlyCommon.getDashboardData(this.getDb(), metrics, _uniques, { u: this.getTotalUsersObj().users }, { u: this.getTotalUsersObj(true).users }, periodObject);
                 if (isSparklineNotRequired) {
@@ -655,7 +655,7 @@ const countlyModel: CountlyModelModule = {
                 }, periodObject);
                 for (const i in data) {
                     if (sparkLines[i]) {
-                        (data[i] as NumberMetricResult).sparkline = sparkLines[i].split(",").map(function(item: string) {
+                        (data[i] as NumberMetricResult).sparkline = sparkLines[i].split(',').map(function(item: string) {
                             return Number.parseInt(item);
                         });
                     }
@@ -692,9 +692,9 @@ const countlyModel: CountlyModelModule = {
             getStackedBarData: function(segment: string, maxItems?: number, metric?: string, displayType?: string): StackedBarDataResult {
                 metric = metric || _metrics[0];
                 if (!metric) {
-                    metric = "u";
+                    metric = 'u';
                 }
-                const isPercentage = displayType === "percentage";
+                const isPercentage = displayType === 'percentage';
                 const data = this.getData(segment, true, true).chartData;
                 const chartData: Array<{ data: unknown[]; label: string }> = [];
                 const dataProps: DataProperty[] = [];
@@ -705,7 +705,7 @@ const countlyModel: CountlyModelModule = {
                         dataProps.push({ name: data[i][segment] as string });
                     }
                 }
-                const dd = countlyCommon.extractStackedBarData(this.getDb(), this.clearObject, chartData, dataProps, "", true);
+                const dd = countlyCommon.extractStackedBarData(this.getDb(), this.clearObject, chartData, dataProps, '', true);
                 let series = dd.chartDP as unknown as StackedBarSeriesItem[];
                 const totals: number[] = [];
                 const percent: number[] = [];
@@ -717,8 +717,8 @@ const countlyModel: CountlyModelModule = {
 
                 // lets sort series
                 series = series.sort(function(a, b) {
-                    const v1 = a.label.split(".");
-                    const v2 = b.label.split(".");
+                    const v1 = a.label.split('.');
+                    const v2 = b.label.split('.');
                     const longest = Math.max(v1.length, v2.length);
 
                     for (let z = 0; z < longest; z++) {
@@ -771,7 +771,7 @@ const countlyModel: CountlyModelModule = {
 
                 for (let i = 0; i < series.length; i++) {
                     series[i].name = series[i].label;
-                    series[i].stack = "default";
+                    series[i].stack = 'default';
 
                     for (let j = 0; j < series[i].data.length; j++) {
                         if (isPercentage) {
@@ -830,7 +830,7 @@ const countlyModel: CountlyModelModule = {
                 chartData.chartData = countlyCommon.extractRangeData(_Db, metric, this.getMeta(meta), explain);
 
                 const frequencies = _.pluck(chartData.chartData, metric) as string[];
-                const frequencyTotals = _.pluck(chartData.chartData, "t") as number[];
+                const frequencyTotals = _.pluck(chartData.chartData, 't') as number[];
                 const chartDP = [
                     { data: [] as Array<[number, number | null]> }
                 ];
@@ -838,8 +838,8 @@ const countlyModel: CountlyModelModule = {
                 chartDP[0].data[0] = [-1, null];
                 chartDP[0].data[frequencies.length + 1] = [frequencies.length, null];
 
-                chartData.chartDP.ticks.push([-1, ""]);
-                chartData.chartDP.ticks.push([frequencies.length, ""]);
+                chartData.chartDP.ticks.push([-1, '']);
+                chartData.chartDP.ticks.push([frequencies.length, '']);
 
                 for (let i = 0; i < frequencies.length; i++) {
                     chartDP[0].data[i + 1] = [i, frequencyTotals[i]];
@@ -850,7 +850,7 @@ const countlyModel: CountlyModelModule = {
 
                 for (let i = 0; i < chartData.chartData.length; i++) {
                     const item = chartData.chartData[i] as Record<string, unknown>;
-                    item.percent = "<div class='percent-bar' style='width:" + (2 * (item.percent as number)) + "px;'></div>" + (item.percent as number) + "%";
+                    item.percent = "<div class='percent-bar' style='width:" + (2 * (item.percent as number)) + "px;'></div>" + (item.percent as number) + '%';
                 }
 
                 return chartData;

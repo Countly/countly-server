@@ -54,7 +54,7 @@ export interface CountlyDeviceDetailsMetric extends CountlyMetric {
  */
 function create(): CountlyDeviceDetailsMetric {
     const countlyDeviceDetails = countlyModel.create(function(rangeArr: string): string {
-        return rangeArr.replace(/:/g, ".");
+        return rangeArr.replace(/:/g, '.');
     }) as CountlyDeviceDetailsMetric;
 
     /**
@@ -64,7 +64,7 @@ function create(): CountlyDeviceDetailsMetric {
      * @returns metric data object
      */
     countlyDeviceDetails.fixBarSegmentData = function(segment: string, rangeData: ExtractedTwoLevelData): ExtractedTwoLevelData {
-        if (segment === "os") {
+        if (segment === 'os') {
             let chartData = rangeData.chartData as ChartDataItem[];
             const osMapping = countlyOsMapping as OsMapping;
 
@@ -74,7 +74,7 @@ function create(): CountlyDeviceDetailsMetric {
                 }
             }
 
-            chartData = countlyCommon.mergeMetricsByName(chartData, "os") as ChartDataItem[];
+            chartData = countlyCommon.mergeMetricsByName(chartData, 'os') as ChartDataItem[];
             rangeData.chartData = chartData;
         }
 

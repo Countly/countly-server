@@ -63,8 +63,8 @@ export interface CountlyUsersMetric extends CountlyMetric {
  */
 function create(): CountlyUsersMetric {
     const countlySession = countlyModel.create() as CountlyUsersMetric;
-    countlySession.setMetrics(["t", "n", "u", "d", "e", "m", "p"]);
-    countlySession.setUniqueMetrics(["u", "m", "p"]);
+    countlySession.setMetrics(['t', 'n', 'u', 'd', 'e', 'm', 'p']);
+    countlySession.setUniqueMetrics(['u', 'm', 'p']);
 
     /**
      * Get main dashboard data, which is displayed on main dashboard
@@ -72,17 +72,17 @@ function create(): CountlyUsersMetric {
      */
     countlySession.getSessionData = function(): SessionData {
         const map: Record<string, string> = {
-            t: "total_sessions",
-            n: "new_users",
-            u: "total_users",
-            d: "total_time",
-            e: "events"
+            t: 'total_sessions',
+            n: 'new_users',
+            u: 'total_users',
+            d: 'total_time',
+            e: 'events'
         };
         const ret: Record<string, TimeData> = {};
         const data = countlyCommon.getDashboardData(
             countlySession.getDb(),
-            ["t", "n", "u", "d", "e"],
-            ["u"],
+            ['t', 'n', 'u', 'd', 'e'],
+            ['u'],
             { u: countlySession.getTotalUsersObj().users },
             { u: countlySession.getTotalUsersObj(true).users }
         );
@@ -93,45 +93,45 @@ function create(): CountlyUsersMetric {
 
         // convert duration to minutes
         (ret.total_time.total as number) /= 60;
-        (ret.total_time["prev-total"] as number) /= 60;
+        (ret.total_time['prev-total'] as number) /= 60;
 
         // calculate average duration
         const changeAvgDuration = countlyCommon.getPercentChange(
-            (ret.total_sessions["prev-total"] as number === 0) ? 0 : (ret.total_time["prev-total"] as number) / (ret.total_sessions["prev-total"] as number),
+            (ret.total_sessions['prev-total'] as number === 0) ? 0 : (ret.total_time['prev-total'] as number) / (ret.total_sessions['prev-total'] as number),
             (ret.total_sessions.total as number === 0) ? 0 : (ret.total_time.total as number) / (ret.total_sessions.total as number)
         );
         ret.avg_time = {
-            "prev-total": (ret.total_sessions["prev-total"] as number === 0) ? 0 : (ret.total_time["prev-total"] as number) / (ret.total_sessions["prev-total"] as number),
-            "total": (ret.total_sessions.total as number === 0) ? 0 : (ret.total_time.total as number) / (ret.total_sessions.total as number),
-            "change": changeAvgDuration.percent,
-            "trend": changeAvgDuration.trend
+            'prev-total': (ret.total_sessions['prev-total'] as number === 0) ? 0 : (ret.total_time['prev-total'] as number) / (ret.total_sessions['prev-total'] as number),
+            'total': (ret.total_sessions.total as number === 0) ? 0 : (ret.total_time.total as number) / (ret.total_sessions.total as number),
+            'change': changeAvgDuration.percent,
+            'trend': changeAvgDuration.trend
         };
 
         ret.total_time.total = countlyCommon.timeString(ret.total_time.total as number);
-        ret.total_time["prev-total"] = countlyCommon.timeString(ret.total_time["prev-total"] as number);
+        ret.total_time['prev-total'] = countlyCommon.timeString(ret.total_time['prev-total'] as number);
         ret.avg_time.total = countlyCommon.timeString(ret.avg_time.total as number);
-        ret.avg_time["prev-total"] = countlyCommon.timeString(ret.avg_time["prev-total"] as number);
+        ret.avg_time['prev-total'] = countlyCommon.timeString(ret.avg_time['prev-total'] as number);
 
         // calculate average events
         const changeAvgEvents = countlyCommon.getPercentChange(
-            (ret.total_users["prev-total"] as number === 0) ? 0 : (ret.events["prev-total"] as number) / (ret.total_users["prev-total"] as number),
+            (ret.total_users['prev-total'] as number === 0) ? 0 : (ret.events['prev-total'] as number) / (ret.total_users['prev-total'] as number),
             (ret.total_users.total as number === 0) ? 0 : (ret.events.total as number) / (ret.total_users.total as number)
         );
         ret.avg_requests = {
-            "prev-total": (ret.total_users["prev-total"] as number === 0) ? 0 : (ret.events["prev-total"] as number) / (ret.total_users["prev-total"] as number),
-            "total": (ret.total_users.total as number === 0) ? 0 : (ret.events.total as number) / (ret.total_users.total as number),
-            "change": changeAvgEvents.percent,
-            "trend": changeAvgEvents.trend
+            'prev-total': (ret.total_users['prev-total'] as number === 0) ? 0 : (ret.events['prev-total'] as number) / (ret.total_users['prev-total'] as number),
+            'total': (ret.total_users.total as number === 0) ? 0 : (ret.events.total as number) / (ret.total_users.total as number),
+            'change': changeAvgEvents.percent,
+            'trend': changeAvgEvents.trend
         };
 
         ret.avg_requests.total = (ret.avg_requests.total as number).toFixed(1);
-        ret.avg_requests["prev-total"] = (ret.avg_requests["prev-total"] as number).toFixed(1);
+        ret.avg_requests['prev-total'] = (ret.avg_requests['prev-total'] as number).toFixed(1);
 
         delete ret.events;
 
         // delete previous period data
         for (const i in ret) {
-            delete (ret[i] as unknown as Record<string, unknown>)["prev-total"];
+            delete (ret[i] as unknown as Record<string, unknown>)['prev-total'];
         }
         return ret as unknown as SessionData;
     };
@@ -143,11 +143,11 @@ function create(): CountlyUsersMetric {
      */
     countlySession.getSubperiodData = function(options?: SubperiodDataOptions): Array<Record<string, unknown>> {
         const dataProps: DataProperty[] = [
-            { name: "t" },
-            { name: "n" },
-            { name: "u" },
-            { name: "d" },
-            { name: "e" }
+            { name: 't' },
+            { name: 'n' },
+            { name: 'u' },
+            { name: 'd' },
+            { name: 'e' }
         ];
         options = options || {};
         return countlyCommon.extractData(countlySession.getDb(), countlySession.clearObject, dataProps, countlyCommon.calculatePeriodObject(null, options.bucket));
