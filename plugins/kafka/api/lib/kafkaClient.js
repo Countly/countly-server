@@ -1,6 +1,7 @@
 const { Kafka } = require('kafkajs');
 const log = require('../../../../api/utils/log.js')('kafka:client');
 const countlyConfig = require('../../../../api/config');
+const kafkaRequestQueueFix = require('./kafkaRequestQueueFix');
 
 /**
  * @typedef {Object} ConnectionConfig
@@ -87,6 +88,14 @@ class KafkaClient {
             connectionTimeout,
         });
 
+        // Assert patch is applied before creating any Kafka instance
+        if (!kafkaRequestQueueFix.isPatched()) {
+            throw new Error(
+                'KafkaJS RequestQueue patch not applied. ' +
+                'Ensure kafkaRequestQueueFix.js is imported before any KafkaJS usage.'
+            );
+        }
+
         this.#kafka = new Kafka({
             clientId,
             brokers,
@@ -94,9 +103,9 @@ class KafkaClient {
             sasl,
             requestTimeout,
             connectionTimeout,
-            // Disable request timeout enforcement to prevent negative timeout warnings
-            // See: https://github.com/tulios/kafkajs/blob/master/docs/MigrationGuide-2-0-0.md#request-timeouts-enabled
-            enforceRequestTimeout: false,
+            // Request timeout enforcement enabled - RequestQueue patch prevents negative timeout issues
+            // See: kafkaRequestQueueFix.js, https://github.com/tulios/kafkajs/issues/1704
+            enforceRequestTimeout: true,
             // Use config values for retry settings
             retry: {
                 initialRetryTime: rdkafkaConfig.initialRetryTime || 100,
