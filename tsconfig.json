@@ -5,6 +5,9 @@
 // npx tsc
 {
     "include": [
+        "plugins/ai-assistants/**/*.ts",
+        "plugins/ai-assistants/**/*.js",
+        //core
         "plugins/pluginManager.ts",
         "plugins/pluginManager.js",
         "plugins/push/**/*.ts",
@@ -12,6 +15,12 @@
         "plugins/push_approver/**/*.ts",
         "plugins/push_approver/**/*.js",
         "api/lib/countly.common.js",
+        "api/lib/countly.model.ts",
+        "api/lib/countly.device_details.ts",
+        "api/lib/countly.devices.ts",
+        "api/lib/countly.event.ts",
+        "api/lib/countly.users.ts",
+        "api/lib/countly.preset.ts",
         "api/parts/data/geoData.ts",
         "api/parts/data/cache.ts",
         "api/parts/data/cacher.ts",
@@ -66,8 +75,7 @@
         "api/jobs/mutationManagerJob.ts"
     ],
     "exclude": [
-        "node_modules/**/*.ts",
-        "node_modules/**/*.js",
+        "node_modules/",
         "frontend/*",
         "plugins/**/frontend/**/*.ts",
         "plugins/**/frontend/**/*.js",
@@ -86,6 +94,6 @@
         "lib": ["es2024"],
         // These help with CJS → TS interop:
         "esModuleInterop": true,       // enables default imports from CJS modules
-        "isolatedModules": true         // catches patterns that won't work at runtim
+        "isolatedModules": true         // catches patterns that won't work at runtime
     }
 }
