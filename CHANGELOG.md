@@ -4,6 +4,7 @@ Fixes:
 
 Enterprise Fixes:
 - [crash_symbolication] Use countlyfs for JavaScript symbolication
+- [funnels] Fix funnel name tooltip content
 
 ## Version 25.03.33
 Fixes:
