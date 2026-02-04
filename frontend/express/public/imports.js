@@ -126,9 +126,11 @@ window.T = CountlyHelpers.T;
 import * as countlyAuth from './javascripts/countly/countly.auth.js';
 window.countlyAuth = countlyAuth;
 
-import { countlyCommon, CommonConstructor } from './javascripts/countly/countly.common.js';
+import { countlyCommon } from './javascripts/countly/countly.common.js';
 window.countlyCommon = countlyCommon;
-window.CommonConstructor = CommonConstructor;
+
+import { PeriodCalculator } from './javascripts/countly/countly.period.calculator.js';
+window.PeriodCalculator = PeriodCalculator;
 
 import countlyTotalUsers from './javascripts/countly/countly.total.users.js';
 window.countlyTotalUsers = countlyTotalUsers;

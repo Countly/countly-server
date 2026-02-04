@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, countlyLocation, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon, countlyAuth */
+/* global Vue, countlyCommon, countlyLocation, _mergeWith, PeriodCalculator, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon, countlyAuth */
 // _mergeWith is Lodash mergeWith - /frontend/express/public/javascripts/utils/lodash.mergeWith.js
 
 (function(countlyVue) {
@@ -2674,14 +2674,14 @@
 
                     var period = (this.period && this.period.length) ? this.period : countlyCommon.getPeriod();
 
-                    var chartsCommon = new CommonConstructor();
+                    var periodCalculator = new PeriodCalculator();
                     //We wont change the global period state
-                    chartsCommon.setPeriod(period, undefined, true);
+                    periodCalculator.setPeriod(period);
 
                     var tickObj = {};
 
                     if (period === "month" && this.category !== "active-users" && !this.bucket) {
-                        tickObj = chartsCommon.getTickObj("monthly", false, true);
+                        tickObj = periodCalculator.getTickObj("monthly", false, true);
                     }
                     else if (countlyCommon.periodObj.numberOfDays === 1 && this.noHourly) {
                         tickObj = {
@@ -2690,7 +2690,7 @@
                         };
                     }
                     else {
-                        tickObj = chartsCommon.getTickObj(this.bucket, false, true);
+                        tickObj = periodCalculator.getTickObj(this.bucket, false, true);
                     }
 
                     var ticks = tickObj.ticks;

@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon, CommonConstructor, $, countlySession,countlyTotalUsers,app, jQuery, countlyGraphNotesCommon*/
+/* global countlyVue,CV,countlyCommon, PeriodCalculator, $, countlySession,countlyTotalUsers,app, jQuery, countlyGraphNotesCommon*/
 var UserAnalyticsOverview = countlyVue.views.create({
     template: CV.T("/core/user-analytics-overview/templates/overview.html"),
     data: function() {
@@ -270,9 +270,9 @@ var GridComponent = countlyVue.views.create({
                 var period = countlyCommon && countlyCommon.getPeriod();
                 var tickPeriod = period === 'month' ? 'monthly' : '';
 
-                var chartsCommon = new CommonConstructor();
-                chartsCommon.setPeriod(period, undefined, true);
-                var tickObj = chartsCommon.getTickObj(tickPeriod, false, true);
+                var periodCalculator = new PeriodCalculator();
+                periodCalculator.setPeriod(period);
+                var tickObj = periodCalculator.getTickObj(tickPeriod, false, true);
                 var ticks = tickObj.ticks;
                 for (var i = 0; i < ticks.length; i++) {
                     var tick = ticks[i];
