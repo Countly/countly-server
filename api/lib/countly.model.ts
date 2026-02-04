@@ -598,6 +598,7 @@ const countlyModel: CountlyModelModule = {
                     return -obj[cols[1]];
                 }) as Array<Record<string, number | string>>;
 
+                // eslint-disable-next-line unicorn/explicit-length-check
                 let itemCount = maxItems || sortedData.length;
                 if (sortedData.length < itemCount) {
                     itemCount = sortedData.length;
@@ -655,7 +656,7 @@ const countlyModel: CountlyModelModule = {
                 for (const i in data) {
                     if (sparkLines[i]) {
                         (data[i] as NumberMetricResult).sparkline = sparkLines[i].split(",").map(function(item: string) {
-                            return parseInt(item);
+                            return Number.parseInt(item);
                         });
                     }
                 }
@@ -724,10 +725,10 @@ const countlyModel: CountlyModelModule = {
                         let i1 = 0;
                         let i2 = 0;
                         if (v1[z]) {
-                            i1 = parseInt(v1[z], 10);
+                            i1 = Number.parseInt(v1[z], 10);
                         }
                         if (v2[z]) {
-                            i2 = parseInt(v2[z], 10);
+                            i2 = Number.parseInt(v2[z], 10);
                         }
                         if (i1 !== i2) {
                             if (i2 > i1) {
