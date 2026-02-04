@@ -144,6 +144,12 @@ export interface LogModule {
      * Indicates if OpenTelemetry integration is available
      */
     hasOpenTelemetry: boolean;
+
+    /**
+     * Shuts down the LogManager, closing any open transports and resetting the singleton.
+     * Primarily used for testing to ensure clean module reloads.
+     */
+    shutdown(): void;
 }
 
 /**

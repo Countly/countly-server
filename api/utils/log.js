@@ -558,6 +558,19 @@ class LogManager {
             return pino(config);
         }
     }
+
+    /**
+     * Shuts down the LogManager, closing any open transports and resetting the singleton.
+     * Primarily used for testing to ensure clean module reloads.
+     */
+    shutdown() {
+        if (this.#prettyTransport) {
+            this.#prettyTransport.end();
+            this.#prettyTransport = null;
+        }
+        this.#levels = {};
+        LogManager.#instance = null;
+    }
 }
 
 /**
@@ -930,5 +943,12 @@ logFactory.hasOpenTelemetry = Boolean(trace && metrics);
  * @returns {void}
  */
 logFactory.updateConfig = (msg) => manager.updateConfig(msg);
+
+/**
+ * Shuts down the LogManager, closing any open transports and resetting the singleton.
+ * Primarily used for testing to ensure clean module reloads.
+ * @returns {void}
+ */
+logFactory.shutdown = () => manager.shutdown();
 
 module.exports = logFactory;

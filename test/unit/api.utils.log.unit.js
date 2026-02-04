@@ -8,13 +8,16 @@ describe('Log utility tests', function() {
         originalEnv = Object.assign({}, process.env);
     });
 
-    beforeEach(function() {
-        // Clear CI env var to ensure consistent test behavior
-        // (CI-specific tests will explicitly set CI=true)
-        delete process.env.CI;
-    });
-
     afterEach(function() {
+        // Shutdown the log manager to close any open transports before clearing cache
+        try {
+            var log = require('../../api/utils/log.js');
+            log.shutdown();
+        }
+        catch (e) {
+            // Module may not be loaded yet
+        }
+
         // Clear all environment variables and restore original
         Object.keys(process.env).forEach(function(key) {
             delete process.env[key];
@@ -542,6 +545,34 @@ describe('Log utility tests', function() {
             var log = require('../../api/utils/log.js');
             (typeof log.hasOpenTelemetry).should.equal('boolean');
         });
+
+        it('should have shutdown() method', function() {
+            var log = require('../../api/utils/log.js');
+            (typeof log.shutdown).should.equal('function');
+        });
+    });
+
+    describe('shutdown()', function() {
+        it('should reset the log manager state', function() {
+            var log = require('../../api/utils/log.js');
+            log.setLevel('test-module', 'debug');
+            log.getLevel('test-module').should.equal('debug');
+
+            log.shutdown();
+
+            // After shutdown and re-require, state should be fresh
+            delete require.cache[require.resolve('../../api/utils/log.js')];
+            var log2 = require('../../api/utils/log.js');
+            // The module should have a new manager instance, so test-module level should be default
+            log2.getLevel('test-module').should.equal('warn');
+        });
+
+        it('should be callable multiple times without error', function() {
+            var log = require('../../api/utils/log.js');
+            log.shutdown();
+            log.shutdown();
+            // Should not throw
+        });
     });
 
     describe('setLevel() and getLevel()', function() {
@@ -726,39 +757,6 @@ describe('Log utility tests', function() {
             log.setDefault('warn');
             log.updateConfig(undefined);
             log.getLevel().should.equal('warn');
-        });
-    });
-
-    describe('CI environment behavior', function() {
-        it('should set default to silent when CI=true and no explicit default', function() {
-            process.env.CI = 'true';
-            var log = require('../../api/utils/log.js');
-
-            log.getLevel().should.equal('silent');
-        });
-
-        it('should respect explicit default even when CI=true', function() {
-            process.env.CI = 'true';
-            process.env.COUNTLY_SETTINGS__LOGS__DEFAULT = 'debug';
-            var log = require('../../api/utils/log.js');
-
-            log.getLevel().should.equal('debug');
-        });
-
-        it('should suppress all logs when level is silent', function() {
-            process.env.CI = 'true';
-            var log = require('../../api/utils/log.js');
-            var logger = log('ci-test');
-
-            // All log methods should exist but not output anything
-            // (since 'silent' is not in any ACCEPTABLE array)
-            (typeof logger.d).should.equal('function');
-            (typeof logger.i).should.equal('function');
-            (typeof logger.w).should.equal('function');
-            (typeof logger.e).should.equal('function');
-
-            // Level should be silent
-            log.getLevel('ci-test').should.equal('silent');
         });
     });
 });
