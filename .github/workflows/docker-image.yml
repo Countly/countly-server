@@ -43,7 +43,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: countly/countly-server:latest,countly/countly-server:${{ steps.vars.outputs.tag }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/countly-server:latest,${{ secrets.DOCKERHUB_USERNAME }}/countly-server:${{ steps.vars.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           
@@ -84,7 +84,7 @@ jobs:
           file: ./Dockerfile-api
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: countly/api:latest,countly/api:${{ steps.vars.outputs.tag }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/api:latest,${{ secrets.DOCKERHUB_USERNAME }}/api:${{ steps.vars.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -125,7 +125,7 @@ jobs:
           file: ./Dockerfile-frontend
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: countly/frontend:latest,countly/frontend:${{ steps.vars.outputs.tag }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest,${{ secrets.DOCKERHUB_USERNAME }}/frontend:${{ steps.vars.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           
@@ -166,6 +166,6 @@ jobs:
           file: ./Dockerfile-core
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: countly/countly-core:latest,countly/countly-core:${{ steps.vars.outputs.tag }},countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/countly-core:latest,${{ secrets.DOCKERHUB_USERNAME }}/countly-core:${{ steps.vars.outputs.tag }},${{ secrets.DOCKERHUB_USERNAME }}/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
