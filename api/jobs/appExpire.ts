@@ -14,7 +14,7 @@ const plugins = require('../../plugins/pluginManager.ts');
 const log = require('../utils/log.js')('job:appExpire');
 const common = require('../utils/common.js');
 const crypto = require('crypto');
-const { Job } = require("../../jobServer");
+const { Job } = require('../../jobServer');
 
 interface Database extends Db {
     ObjectID(id: string): ObjectId;
@@ -85,28 +85,28 @@ class AppExpireJob extends Job {
          */
         function clearExpiredData(app: AppDocument, callback: () => void): void {
             // convert day value to second
-            const EXPIRE_AFTER: number = Number.parseInt(plugins.getConfig("api", app.plugins, true).data_retention_period) * 86400;
-            const INDEX_NAME = "cd_1";
+            const EXPIRE_AFTER: number = Number.parseInt(plugins.getConfig('api', app.plugins, true).data_retention_period) * 86400;
+            const INDEX_NAME = 'cd_1';
 
             const collections: string[] = [];
-            const events: string[] = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_consent"];
+            const events: string[] = ['[CLY]_session', '[CLY]_crash', '[CLY]_view', '[CLY]_action', '[CLY]_push_action', '[CLY]_push_sent', '[CLY]_star_rating', '[CLY]_nps', '[CLY]_survey', '[CLY]_consent'];
             const fromPlugins: string[] = plugins.getExpireList();
 
             // predefined drill events
             events.forEach(function(event: string) {
-                collections.push("drill_events" + crypto.createHash('sha1').update(event + app._id).digest('hex'));
+                collections.push('drill_events' + crypto.createHash('sha1').update(event + app._id).digest('hex'));
             });
             // collection list that exported from plugins
             fromPlugins.forEach(function(collection: string) {
                 collections.push(collection + app._id);
             });
 
-            const eventsCollection = database.collection("events") as unknown as LegacyCollection;
+            const eventsCollection = database.collection('events') as unknown as LegacyCollection;
             eventsCollection.findOne({ '_id': database.ObjectID(app._id as string) }, { projection: { list: 1 } }, function(err: Error | null, eventData: unknown) {
                 const eventDoc = eventData as EventDocument | null;
                 if (eventDoc && eventDoc.list) {
                     for (let i = 0; i < eventDoc.list.length; i++) {
-                        collections.push("drill_events" + crypto.createHash('sha1').update(eventDoc.list[i] + app._id).digest('hex'));
+                        collections.push('drill_events' + crypto.createHash('sha1').update(eventDoc.list[i] + app._id).digest('hex'));
                     }
                 }
                 /**
@@ -115,7 +115,7 @@ class AppExpireJob extends Job {
                 * @param next - iteration callback
                 */
                 function eventIterator(collectionName: string, next: () => void): void {
-                    log.d("processing", collectionName);
+                    log.d('processing', collectionName);
                     const drillCol = drillDatabase.collection(collectionName) as unknown as LegacyCollection;
                     drillCol.indexes(function(drillIndexErr: Error | null, indexes: IndexDescription[]) {
                         if (!drillIndexErr && indexes) {
@@ -135,22 +135,22 @@ class AppExpireJob extends Job {
                                 }
                             }
                             if (EXPIRE_AFTER === 0 || dropIndex) {
-                                log.d("dropping index", collectionName);
+                                log.d('dropping index', collectionName);
                                 drillCol.dropIndex(INDEX_NAME, function() {
                                     if (EXPIRE_AFTER === 0) {
                                         next();
                                     }
                                     else {
-                                        log.d("creating index", collectionName);
-                                        drillCol.createIndex({ "cd": 1 }, { expireAfterSeconds: EXPIRE_AFTER, "background": true }, function() {
+                                        log.d('creating index', collectionName);
+                                        drillCol.createIndex({ 'cd': 1 }, { expireAfterSeconds: EXPIRE_AFTER, 'background': true }, function() {
                                             next();
                                         });
                                     }
                                 });
                             }
                             else if (!hasIndex) {
-                                log.d("creating index", collectionName);
-                                drillCol.createIndex({ "cd": 1 }, { expireAfterSeconds: EXPIRE_AFTER, "background": true }, function() {
+                                log.d('creating index', collectionName);
+                                drillCol.createIndex({ 'cd': 1 }, { expireAfterSeconds: EXPIRE_AFTER, 'background': true }, function() {
                                     next();
                                 });
                             }

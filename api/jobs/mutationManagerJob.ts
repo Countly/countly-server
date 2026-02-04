@@ -10,10 +10,10 @@ const require = createRequire(import.meta.url);
 import type { Db, ObjectId, Document } from 'mongodb';
 
 const common = require('../utils/common.js');
-const log = require("../utils/log.js")("job:mutationManager");
-const Job = require("../../jobServer/Job.js");
+const log = require('../utils/log.js')('job:mutationManager');
+const Job = require('../../jobServer/Job.js');
 const mutationManager = require('../utils/mutationManager.js');
-const tracker = require("../parts/mgmt/tracker.js");
+const tracker = require('../parts/mgmt/tracker.js');
 const plugins = require('../../plugins/pluginManager.ts');
 
 interface JobConfig {
@@ -179,7 +179,7 @@ async function loadMutationManagerJobConfig(): Promise<JobConfig> {
         return buildJobConfig(cfg);
     }
     catch (e) {
-        log.e("Failed to load mutation manager job config; using defaults", (e as Error)?.message || e);
+        log.e('Failed to load mutation manager job config; using defaults', (e as Error)?.message || e);
         return { ...DEFAULT_JOB_CONFIG };
     }
 }
@@ -192,8 +192,8 @@ class MutationManagerJob extends Job {
      */
     getSchedule(): GetScheduleConfig {
         return {
-            type: "schedule",
-            value: "* * * * *" // Every minute
+            type: 'schedule',
+            value: '* * * * *' // Every minute
         };
     }
 
@@ -219,7 +219,7 @@ class MutationManagerJob extends Job {
         await this.resetStaleTasks();
 
         // Reserve a batch of records to process
-        await common.db.collection("mutation_manager").aggregate([
+        await common.db.collection('mutation_manager').aggregate([
             {
                 $match: {
                     running: false,
@@ -232,16 +232,16 @@ class MutationManagerJob extends Job {
             { $set: { running: true, status: mutationManager.MUTATION_STATUS.RUNNING, hb: now, error: null, batch_id: batchId } },
             {
                 $merge: {
-                    into: "mutation_manager",
-                    on: "_id",
-                    whenMatched: "merge",
-                    whenNotMatched: "discard"
+                    into: 'mutation_manager',
+                    on: '_id',
+                    whenMatched: 'merge',
+                    whenNotMatched: 'discard'
                 }
             }
         ]).toArray();
 
         // Fetch and process the reserved batch
-        const toProcess: MutationTask[] = await common.db.collection("mutation_manager")
+        const toProcess: MutationTask[] = await common.db.collection('mutation_manager')
             .find({ batch_id: batchId, running: true, status: mutationManager.MUTATION_STATUS.RUNNING })
             .sort({ ts: 1 })
             .toArray();
@@ -252,8 +252,8 @@ class MutationManagerJob extends Job {
             }
             catch (e) {
                 await this.markFailedOrRetry(task, ((e as Error) && (e as Error).message) || String(e));
-                summary.push({ task: task.query, status: "error", error: ((e as Error) && (e as Error).message) || String(e) });
-                log.e("Mutation task failed", task._id, e);
+                summary.push({ task: task.query, status: 'error', error: ((e as Error) && (e as Error).message) || String(e) });
+                log.e('Mutation task failed', task._id, e);
             }
         }
 
@@ -273,14 +273,14 @@ class MutationManagerJob extends Job {
     async processTask(task: MutationTask, summary: SummaryEntry[], jobConfig: JobConfig = jobConfigState || DEFAULT_JOB_CONFIG): Promise<void> {
         const type = task.type;
         if (type !== 'delete' && type !== 'update') {
-            await common.db.collection("mutation_manager").updateOne(
+            await common.db.collection('mutation_manager').updateOne(
                 { _id: task._id },
                 {
-                    $set: { running: false, status: mutationManager.MUTATION_STATUS.FAILED, hb: Date.now(), error: "invalid_type" },
-                    $unset: { batch_id: "" }
+                    $set: { running: false, status: mutationManager.MUTATION_STATUS.FAILED, hb: Date.now(), error: 'invalid_type' },
+                    $unset: { batch_id: '' }
                 }
             );
-            summary.push({ query: task.query, status: "failed", error: "invalid_type" });
+            summary.push({ query: task.query, status: 'failed', error: 'invalid_type' });
             return;
         }
 
@@ -292,9 +292,9 @@ class MutationManagerJob extends Job {
 
         if (!mongoDb && !hasClickhouse) {
             const reason = `mongo_db_unavailable:${task.db || 'missing'}`;
-            log.e("Mutation task failed; Mongo database unavailable and ClickHouse disabled", { taskId: task._id, db: task.db });
+            log.e('Mutation task failed; Mongo database unavailable and ClickHouse disabled', { taskId: task._id, db: task.db });
             await this.markFailedOrRetry(task, reason);
-            summary.push({ query: task.query, status: "failed", error: reason });
+            summary.push({ query: task.query, status: 'failed', error: reason });
             return;
         }
 
@@ -312,7 +312,7 @@ class MutationManagerJob extends Job {
                 }
             }
             catch (e) {
-                log.e('Per-task CH precheck failed; proceeding', ((e as Error)?.message || e + ""));
+                log.e('Per-task CH precheck failed; proceeding', ((e as Error)?.message || e + ''));
             }
         }
 
@@ -326,7 +326,7 @@ class MutationManagerJob extends Job {
             }
         }
         else {
-            log.i("Mongo mutation skipped (unavailable database); continuing with ClickHouse only", { taskId: task._id, db: task.db });
+            log.i('Mongo mutation skipped (unavailable database); continuing with ClickHouse only', { taskId: task._id, db: task.db });
         }
 
         let chScheduledOk = true;
@@ -338,7 +338,7 @@ class MutationManagerJob extends Job {
         }
 
         if (mongoOk && hasClickhouse && chScheduledOk) {
-            await common.db.collection("mutation_manager").updateOne(
+            await common.db.collection('mutation_manager').updateOne(
                 { _id: task._id },
                 {
                     $set: {
@@ -347,13 +347,13 @@ class MutationManagerJob extends Job {
                         hb: Date.now(),
                         retry_at: Date.now() + jobConfig.VALIDATION_INTERVAL_MS
                     },
-                    $unset: { batch_id: "" }
+                    $unset: { batch_id: '' }
                 }
             );
-            summary.push({ query: task.query, status: "awaiting_validation" });
+            summary.push({ query: task.query, status: 'awaiting_validation' });
         }
         else if (mongoOk && !hasClickhouse) {
-            await common.db.collection("mutation_manager").updateOne(
+            await common.db.collection('mutation_manager').updateOne(
                 { _id: task._id },
                 {
                     $set: {
@@ -362,13 +362,13 @@ class MutationManagerJob extends Job {
                         hb: Date.now(),
                         mutation_completion_ts: new Date()
                     },
-                    $unset: { batch_id: "" }
+                    $unset: { batch_id: '' }
                 }
             );
-            summary.push({ query: task.query, status: type === 'update' ? "updated" : "deleted" });
+            summary.push({ query: task.query, status: type === 'update' ? 'updated' : 'deleted' });
         }
         else {
-            summary.push({ query: task.query, status: "error" });
+            summary.push({ query: task.query, status: 'error' });
         }
     }
 
@@ -382,7 +382,7 @@ class MutationManagerJob extends Job {
     async processAwaitingValidation(summary: SummaryEntry[], jobConfig: JobConfig = jobConfigState || DEFAULT_JOB_CONFIG): Promise<void> {
         const validationBatchId = common.db.ObjectID() + '';
         const nowTs = Date.now();
-        await common.db.collection("mutation_manager").aggregate([
+        await common.db.collection('mutation_manager').aggregate([
             {
                 $match: {
                     running: false,
@@ -395,15 +395,15 @@ class MutationManagerJob extends Job {
             { $set: { running: true, hb: nowTs, batch_id: validationBatchId } },
             {
                 $merge: {
-                    into: "mutation_manager",
-                    on: "_id",
-                    whenMatched: "merge",
-                    whenNotMatched: "discard"
+                    into: 'mutation_manager',
+                    on: '_id',
+                    whenMatched: 'merge',
+                    whenNotMatched: 'discard'
                 }
             }
         ]).toArray();
 
-        const awaiting: MutationTask[] = await common.db.collection("mutation_manager")
+        const awaiting: MutationTask[] = await common.db.collection('mutation_manager')
             .find({ batch_id: validationBatchId, running: true, status: mutationManager.MUTATION_STATUS.AWAITING_CH_MUTATION_VALIDATION })
             .sort({ ts: 1 })
             .toArray();
@@ -426,7 +426,7 @@ class MutationManagerJob extends Job {
                     const validationTable = isClusterMode ? task.collection + '_local' : task.collection;
                     const status = await chHealth.getMutationStatus({ validation_command_id: task.validation_command_id, table: validationTable, database: task.db });
                     if (status && status.is_done) {
-                        await common.db.collection("mutation_manager").updateOne(
+                        await common.db.collection('mutation_manager').updateOne(
                             { _id: task._id },
                             {
                                 $set: {
@@ -435,36 +435,36 @@ class MutationManagerJob extends Job {
                                     hb: Date.now(),
                                     mutation_completion_ts: new Date()
                                 },
-                                $unset: { batch_id: "" }
+                                $unset: { batch_id: '' }
                             }
                         );
-                        summary.push({ query: task.query, status: "validated_completed_marked" });
+                        summary.push({ query: task.query, status: 'validated_completed_marked' });
                     }
                     else if (status && (status.is_killed || status.latest_fail_reason)) {
-                        await common.db.collection("mutation_manager").updateOne(
+                        await common.db.collection('mutation_manager').updateOne(
                             { _id: task._id },
                             {
-                                $set: { running: false, status: mutationManager.MUTATION_STATUS.FAILED, hb: Date.now(), error: status.latest_fail_reason || "mutation_killed" },
-                                $unset: { batch_id: "" }
+                                $set: { running: false, status: mutationManager.MUTATION_STATUS.FAILED, hb: Date.now(), error: status.latest_fail_reason || 'mutation_killed' },
+                                $unset: { batch_id: '' }
                             }
                         );
-                        summary.push({ query: task.query, status: "failed", error: status.latest_fail_reason || "mutation_killed" });
+                        summary.push({ query: task.query, status: 'failed', error: status.latest_fail_reason || 'mutation_killed' });
                     }
                     else {
-                        await common.db.collection("mutation_manager").updateOne(
+                        await common.db.collection('mutation_manager').updateOne(
                             { _id: task._id },
                             {
                                 $set: { running: false, status: mutationManager.MUTATION_STATUS.AWAITING_CH_MUTATION_VALIDATION, hb: Date.now(), retry_at: Date.now() + jobConfig.VALIDATION_INTERVAL_MS },
-                                $unset: { batch_id: "" }
+                                $unset: { batch_id: '' }
                             }
                         );
-                        summary.push({ query: task.query, status: "mutation_pending_recheck_scheduled" });
+                        summary.push({ query: task.query, status: 'mutation_pending_recheck_scheduled' });
                     }
                 }
             }
             catch (e) {
-                log.e("Validation step failed", task._id, (e as Error)?.message || e + "");
-                await this.markFailedOrRetry(task, "ch_process_awating_validation: " + ((e as Error)?.message || e + ""));
+                log.e('Validation step failed', task._id, (e as Error)?.message || e + '');
+                await this.markFailedOrRetry(task, 'ch_process_awating_validation: ' + ((e as Error)?.message || e + ''));
             }
         }
     }
@@ -476,19 +476,19 @@ class MutationManagerJob extends Job {
     async resetStaleTasks(jobConfig: JobConfig = jobConfigState || DEFAULT_JOB_CONFIG): Promise<void> {
         try {
             const now = Date.now();
-            await common.db.collection("mutation_manager").updateMany(
+            await common.db.collection('mutation_manager').updateMany(
                 {
                     running: true,
-                    $expr: { $lt: [{ $ifNull: ["$hb", "$ts"] }, now - jobConfig.STALE_MS] }
+                    $expr: { $lt: [{ $ifNull: ['$hb', '$ts'] }, now - jobConfig.STALE_MS] }
                 },
                 {
-                    $set: { running: false, status: mutationManager.MUTATION_STATUS.QUEUED, hb: now, error: "stale_reset" },
-                    $unset: { batch_id: "" }
+                    $set: { running: false, status: mutationManager.MUTATION_STATUS.QUEUED, hb: now, error: 'stale_reset' },
+                    $unset: { batch_id: '' }
                 }
             );
         }
         catch (e) {
-            log.e("resetStaleTasks failed", (e as Error)?.message || String(e));
+            log.e('resetStaleTasks failed', (e as Error)?.message || String(e));
         }
     }
 
@@ -499,14 +499,14 @@ class MutationManagerJob extends Job {
      */
     async deleteMongo(task: MutationTask, mongoDb?: Db | null): Promise<boolean> {
         if (!task.query || Object.keys(task.query).length === 0) {
-            await this.markFailedOrRetry(task, "empty_mongo_query");
+            await this.markFailedOrRetry(task, 'empty_mongo_query');
             return false;
         }
 
         const targetDb = mongoDb || getMongoDbInstance(task.db);
         if (!targetDb) {
             const reason = `mongo_db_unavailable:${task.db || 'missing'}`;
-            log.e("Mongo deletion skipped (database unavailable)", { taskId: task._id, db: task.db });
+            log.e('Mongo deletion skipped (database unavailable)', { taskId: task._id, db: task.db });
             await this.markFailedOrRetry(task, reason);
             return false;
         }
@@ -518,13 +518,13 @@ class MutationManagerJob extends Job {
         }
         catch (err) {
             const duration = Date.now() - start;
-            log.e("Mongo deletion failed", { taskId: task._id, durationMs: duration, error: ((err as Error)?.message || err + "") });
-            await this.markFailedOrRetry(task, "mongo_delete_error: " + ((err as Error)?.message || err + ""));
+            log.e('Mongo deletion failed', { taskId: task._id, durationMs: duration, error: ((err as Error)?.message || err + '') });
+            await this.markFailedOrRetry(task, 'mongo_delete_error: ' + ((err as Error)?.message || err + ''));
             return false;
         }
 
         const duration = Date.now() - start;
-        log.d("Mongo deletion done", { taskId: task._id, deletedCount: res?.deletedCount || 0, durationMs: duration });
+        log.d('Mongo deletion done', { taskId: task._id, deletedCount: res?.deletedCount || 0, durationMs: duration });
         return true;
     }
 
@@ -535,18 +535,18 @@ class MutationManagerJob extends Job {
      */
     async updateMongo(task: MutationTask, mongoDb?: Db | null): Promise<boolean> {
         if (!task.query || Object.keys(task.query).length === 0) {
-            await this.markFailedOrRetry(task, "empty_mongo_query");
+            await this.markFailedOrRetry(task, 'empty_mongo_query');
             return false;
         }
         if (!task.update || Object.keys(task.update).length === 0) {
-            await this.markFailedOrRetry(task, "empty_mongo_update");
+            await this.markFailedOrRetry(task, 'empty_mongo_update');
             return false;
         }
 
         const targetDb = mongoDb || getMongoDbInstance(task.db);
         if (!targetDb) {
             const reason = `mongo_db_unavailable:${task.db || 'missing'}`;
-            log.e("Mongo update skipped (database unavailable)", { taskId: task._id, db: task.db });
+            log.e('Mongo update skipped (database unavailable)', { taskId: task._id, db: task.db });
             await this.markFailedOrRetry(task, reason);
             return false;
         }
@@ -558,12 +558,12 @@ class MutationManagerJob extends Job {
         }
         catch (err) {
             const duration = Date.now() - start;
-            log.e("Mongo update failed", { taskId: task._id, durationMs: duration, error: ((err as Error)?.message || err + "") });
-            await this.markFailedOrRetry(task, "mongo_update_error: " + ((err as Error)?.message || err + ""));
+            log.e('Mongo update failed', { taskId: task._id, durationMs: duration, error: ((err as Error)?.message || err + '') });
+            await this.markFailedOrRetry(task, 'mongo_update_error: ' + ((err as Error)?.message || err + ''));
             return false;
         }
         const duration = Date.now() - start;
-        log.d("Mongo update done", { taskId: task._id, modifiedCount: res?.modifiedCount || 0, durationMs: duration });
+        log.d('Mongo update done', { taskId: task._id, modifiedCount: res?.modifiedCount || 0, durationMs: duration });
         return true;
     }
 
@@ -574,14 +574,14 @@ class MutationManagerJob extends Job {
      */
     async deleteClickhouse(task: MutationTask): Promise<boolean> {
         if (!common.queryRunner) {
-            log.e("queryRunner not available, skipping ClickHouse delete", { taskId: task._id });
-            await this.markFailedOrRetry(task, "queryRunner_unavailable");
+            log.e('queryRunner not available, skipping ClickHouse delete', { taskId: task._id });
+            await this.markFailedOrRetry(task, 'queryRunner_unavailable');
             return false;
         }
 
         if (!task.query || Object.keys(task.query).length === 0) {
-            log.e("Skipping ClickHouse delete (empty query)", { taskId: task._id });
-            await this.markFailedOrRetry(task, "empty_ch_query");
+            log.e('Skipping ClickHouse delete (empty query)', { taskId: task._id });
+            await this.markFailedOrRetry(task, 'empty_ch_query');
             return false;
         }
 
@@ -603,19 +603,19 @@ class MutationManagerJob extends Job {
                 { queryObj: task.query, targetTable: task.collection, db: task.db, validation_command_id: commandId },
                 {}
             );
-            await common.db.collection("mutation_manager").updateOne(
+            await common.db.collection('mutation_manager').updateOne(
                 { _id: task._id },
                 { $set: { validation_command_id: commandId } }
             );
-            log.d("ClickHouse deletion scheduled (runner)", { taskId: task._id, commandId });
+            log.d('ClickHouse deletion scheduled (runner)', { taskId: task._id, commandId });
             return true;
         }
         catch (err) {
-            log.e("ClickHouse deletion failed (runner)", {
+            log.e('ClickHouse deletion failed (runner)', {
                 taskId: task._id,
                 error: (err as Error) && (err as Error).message ? (err as Error).message : String(err)
             });
-            await this.markFailedOrRetry(task, "clickhouse_delete_error: " + ((err as Error)?.message || err + ""));
+            await this.markFailedOrRetry(task, 'clickhouse_delete_error: ' + ((err as Error)?.message || err + ''));
             return false;
         }
     }
@@ -626,22 +626,22 @@ class MutationManagerJob extends Job {
      */
     async updateClickhouse(task: MutationTask): Promise<boolean> {
         if (!common.queryRunner) {
-            log.e("queryRunner not available, skipping ClickHouse update", { taskId: task._id });
-            await this.markFailedOrRetry(task, "queryRunner_unavailable");
+            log.e('queryRunner not available, skipping ClickHouse update', { taskId: task._id });
+            await this.markFailedOrRetry(task, 'queryRunner_unavailable');
             return false;
         }
         if (!task.query || Object.keys(task.query).length === 0) {
-            log.e("Skipping ClickHouse update (empty query)", { taskId: task._id });
-            await this.markFailedOrRetry(task, "empty_ch_query");
+            log.e('Skipping ClickHouse update (empty query)', { taskId: task._id });
+            await this.markFailedOrRetry(task, 'empty_ch_query');
             return false;
         }
         if (!task.update || Object.keys(task.update).length === 0) {
-            log.e("Skipping ClickHouse update (empty update)", { taskId: task._id });
-            await this.markFailedOrRetry(task, "empty_ch_update");
+            log.e('Skipping ClickHouse update (empty update)', { taskId: task._id });
+            await this.markFailedOrRetry(task, 'empty_ch_update');
             return false;
         }
         if (!clickHouseRunner || typeof clickHouseRunner.updateGranularDataByQuery !== 'function') {
-            log.e("ClickHouse update handler not available; skipping CH update", { taskId: task._id });
+            log.e('ClickHouse update handler not available; skipping CH update', { taskId: task._id });
             return false;
         }
         const queryDef = {
@@ -660,19 +660,19 @@ class MutationManagerJob extends Job {
                 { queryObj: task.query, updateObj: task.update, targetTable: task.collection, db: task.db, validation_command_id: commandId },
                 {}
             );
-            await common.db.collection("mutation_manager").updateOne(
+            await common.db.collection('mutation_manager').updateOne(
                 { _id: task._id },
                 { $set: { validation_command_id: commandId } }
             );
-            log.d("ClickHouse update scheduled (runner)", { taskId: task._id, commandId });
+            log.d('ClickHouse update scheduled (runner)', { taskId: task._id, commandId });
             return true;
         }
         catch (err) {
-            log.e("ClickHouse update failed (runner)", {
+            log.e('ClickHouse update failed (runner)', {
                 taskId: task._id,
                 error: (err as Error) && (err as Error).message ? (err as Error).message : String(err)
             });
-            await this.markFailedOrRetry(task, "clickhouse_update_error: " + ((err as Error)?.message || err + ""));
+            await this.markFailedOrRetry(task, 'clickhouse_update_error: ' + ((err as Error)?.message || err + ''));
             return false;
         }
     }
@@ -688,11 +688,11 @@ class MutationManagerJob extends Job {
             const now = Date.now();
             const failCount = (task.fail_count || 0) + 1;
             if (failCount >= jobConfig.MAX_RETRIES) {
-                await common.db.collection("mutation_manager").updateOne(
+                await common.db.collection('mutation_manager').updateOne(
                     { _id: task._id },
                     {
                         $set: { running: false, status: mutationManager.MUTATION_STATUS.FAILED, fail_count: failCount, error: message, hb: now },
-                        $unset: { batch_id: "" }
+                        $unset: { batch_id: '' }
                     }
                 );
                 await this.reportFailureToStats(
@@ -705,22 +705,22 @@ class MutationManagerJob extends Job {
                 );
             }
             else {
-                await common.db.collection("mutation_manager").updateOne(
+                await common.db.collection('mutation_manager').updateOne(
                     { _id: task._id },
                     {
                         $set: { running: false, status: mutationManager.MUTATION_STATUS.QUEUED, fail_count: failCount, error: message, retry_at: now + jobConfig.RETRY_DELAY_MS, hb: now },
-                        $unset: { batch_id: "" }
+                        $unset: { batch_id: '' }
                     }
                 );
             }
         }
         catch (e) {
-            log.e("markFailedOrRetry fallback", { taskId: task._id, err: ((e as Error) && (e as Error).message) || e });
-            await common.db.collection("mutation_manager").updateOne(
+            log.e('markFailedOrRetry fallback', { taskId: task._id, err: ((e as Error) && (e as Error).message) || e });
+            await common.db.collection('mutation_manager').updateOne(
                 { _id: task._id },
                 {
                     $set: { running: false, status: mutationManager.MUTATION_STATUS.FAILED, error: message, hb: Date.now() },
-                    $unset: { batch_id: "" }
+                    $unset: { batch_id: '' }
                 }
             );
         }
@@ -743,7 +743,7 @@ class MutationManagerJob extends Job {
             } : null;
         }
         catch (e) {
-            log.e('CH health metrics fetch failed', (e as Error)?.message || e + "");
+            log.e('CH health metrics fetch failed', (e as Error)?.message || e + '');
             return null;
         }
     }
@@ -775,7 +775,7 @@ class MutationManagerJob extends Job {
                 };
             }
             catch (e) {
-                log.e('Backpressure snapshot failed.', (e as Error)?.message || e + "");
+                log.e('Backpressure snapshot failed.', (e as Error)?.message || e + '');
             }
         }
         return { defer: false };
@@ -806,7 +806,7 @@ class MutationManagerJob extends Job {
             return tracker.isEnabled();
         }
         catch (e) {
-            log.e('ensureTracker failed', (e as Error)?.message || e + "");
+            log.e('ensureTracker failed', (e as Error)?.message || e + '');
             return false;
         }
     }
@@ -846,7 +846,7 @@ class MutationManagerJob extends Job {
             }
         }
         catch (e) {
-            log.e("reportFailureToStats failed", (e as Error)?.message || e + "");
+            log.e('reportFailureToStats failed', (e as Error)?.message || e + '');
         }
     }
 }

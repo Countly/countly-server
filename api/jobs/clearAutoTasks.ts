@@ -11,7 +11,7 @@ import type { Db, Document, Collection } from 'mongodb';
 
 const log = require('../utils/log.js')('job:clearAutoTasks');
 const taskManager = require('../utils/taskmanager');
-const Job = require("../../jobServer/Job");
+const Job = require('../../jobServer/Job');
 
 interface TaskDocument extends Document {
     _id: string;
@@ -55,8 +55,8 @@ class ClearAutoTasks extends Job {
      */
     getSchedule(): GetScheduleConfig {
         return {
-            type: "schedule",
-            value: "0 2 * * *" // Every day at 2:00 AM
+            type: 'schedule',
+            value: '0 2 * * *' // Every day at 2:00 AM
         };
     }
 
@@ -71,11 +71,11 @@ class ClearAutoTasks extends Job {
             manually_create: { $ne: true },
             ts: { $lt: beforeTime }
         };
-        const tasksCollection = db.collection("long_tasks") as unknown as LegacyCollection;
+        const tasksCollection = db.collection('long_tasks') as unknown as LegacyCollection;
         tasksCollection.find(query).toArray(async function(err: Error | null, tasks: unknown[]) {
             const taskDocs = tasks as TaskDocument[];
             if (err) {
-                log.e("Error deleting auto tasks.");
+                log.e('Error deleting auto tasks.');
             }
             try {
                 if (taskDocs) {
@@ -85,7 +85,7 @@ class ClearAutoTasks extends Job {
                 }
             }
             catch (e) {
-                log.d("error while deleting auto task record: %j", e);
+                log.d('error while deleting auto task record: %j', e);
             }
             done();
         });

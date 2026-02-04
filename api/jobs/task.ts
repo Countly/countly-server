@@ -9,9 +9,9 @@ const require = createRequire(import.meta.url);
 
 import type { Db, Document } from 'mongodb';
 
-const Job = require("../../jobServer/Job");
+const Job = require('../../jobServer/Job');
 const log = require('../utils/log.js')('api:task');
-const asyncjs = require("async");
+const asyncjs = require('async');
 const plugins = require('../../plugins/pluginManager.ts');
 const common = require('../utils/common.js');
 const taskmanager = require('../utils/taskmanager.js');
@@ -54,8 +54,8 @@ class MonitorJob extends Job {
      */
     getSchedule(): GetScheduleConfig {
         return {
-            type: "schedule",
-            value: "*/5 * * * *" // Every 5 minutes
+            type: 'schedule',
+            value: '*/5 * * * *' // Every 5 minutes
         };
     }
 
@@ -94,7 +94,7 @@ class MonitorJob extends Job {
             const now = Date.now();
             const duration = lastEnd - lastStart;
 
-            let interval = plugins.getConfig("api").reports_regenerate_interval;
+            let interval = plugins.getConfig('api').reports_regenerate_interval;
             interval = Number.parseInt(interval, 10) || 3600; //in seconds. If there is no int - then using 1 hour
             if (task.start === 0) { //never started
                 return true;
@@ -111,11 +111,11 @@ class MonitorJob extends Job {
         }
 
         plugins.loadConfigs(common.db, function() {
-            common.db.collection("long_tasks").find({
+            common.db.collection('long_tasks').find({
                 autoRefresh: true,
             }).toArray(function(err: Error | null, tasks: TaskDocument[] | null) {
                 log.d('Running Task Monitor Job ....');
-                log.d("job info:", self._json, tasks);
+                log.d('job info:', self._json, tasks);
                 if (tasks) {
                     const filteredTasks = tasks.filter(tasksFilter);
                     asyncjs.eachSeries(filteredTasks, function(task: TaskDocument, next: () => void) {

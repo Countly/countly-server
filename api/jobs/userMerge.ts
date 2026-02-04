@@ -9,10 +9,10 @@ const require = createRequire(import.meta.url);
 
 import type { Db, Document, Collection } from 'mongodb';
 
-const Job = require("../../jobServer/Job");
+const Job = require('../../jobServer/Job');
 const plugins = require('../../plugins/pluginManager.ts');
 const log = require('../utils/log.js')('job:userMerge');
-const Promise = require("bluebird");
+const Promise = require('bluebird');
 const usersApi = require('../parts/mgmt/app_users.js');
 
 interface MergeDocument extends Document {
@@ -64,7 +64,7 @@ const getMergeDoc = function(data: DataObj): MergeDocument | null {
 
 const handleMerges = function(db: Db, callback: (err?: Error | null) => void): void {
     log.d('looking for unfinished merges ...');
-    let paralel_cn = plugins.getConfig("api").user_merge_paralel;
+    let paralel_cn = plugins.getConfig('api').user_merge_paralel;
     try {
         paralel_cn = Number.parseInt(paralel_cn);
     }
@@ -102,23 +102,23 @@ const handleMerges = function(db: Db, callback: (err?: Error | null) => void): v
      * @param resolve - callback
      */
     function mergeUserData(user: MergeDocument, resolve: () => void): void {
-        const dd = user._id.split("_");
+        const dd = user._id.split('_');
         const mergesCollection = db.collection('app_user_merges') as unknown as LegacyCollection;
         if (dd.length !== 3) {
-            log.e("deleting unexpected document in merges with bad _id: " + user._id);
-            mergesCollection.deleteOne({ "_id": user._id as unknown }, (err2: Error | null) => {
+            log.e('deleting unexpected document in merges with bad _id: ' + user._id);
+            mergesCollection.deleteOne({ '_id': user._id as unknown }, (err2: Error | null) => {
                 if (err2) {
-                    log.e("error deleting document in merges with bad _id: " + user._id);
+                    log.e('error deleting document in merges with bad _id: ' + user._id);
                     log.e(err2);
                 }
                 resolve();
             });
         }
         else if (user.t && user.t > 100) {
-            log.e("deleting document in merges with too many retries: " + user._id);
-            mergesCollection.deleteOne({ "_id": user._id as unknown }, (err2: Error | null) => {
+            log.e('deleting document in merges with too many retries: ' + user._id);
+            mergesCollection.deleteOne({ '_id': user._id as unknown }, (err2: Error | null) => {
                 if (err2) {
-                    log.e("error deleting document in merges with _id: " + user._id);
+                    log.e('error deleting document in merges with _id: ' + user._id);
                     log.e(err2);
                 }
                 resolve();
@@ -130,12 +130,12 @@ const handleMerges = function(db: Db, callback: (err?: Error | null) => void): v
             //user document is not saved merged - try merging it at first
             if (user.merged_to) {
                 if (!user.u) { //user documents are not merged. Could be just failed state.
-                    log.e("user doc not saved as merged. Processing it.");
+                    log.e('user doc not saved as merged. Processing it.');
                     const usersCollection = db.collection('app_users' + app_id) as unknown as LegacyCollection;
-                    (usersCollection as unknown as { find: (filter: object) => { toArray: (cb: (err: Error | null, docs: unknown[]) => void) => void } }).find({ "uid": { "$in": [olduid, user.merged_to] } }).toArray((err5: Error | null, docs: unknown[]) => {
+                    (usersCollection as unknown as { find: (filter: object) => { toArray: (cb: (err: Error | null, docs: unknown[]) => void) => void } }).find({ 'uid': { '$in': [olduid, user.merged_to] } }).toArray((err5: Error | null, docs: unknown[]) => {
                         const userDocs = docs as AppUserDocument[];
                         if (err5) {
-                            log.e("error fetching users for merge", err5);
+                            log.e('error fetching users for merge', err5);
                             resolve();
                             return;
                         }
@@ -153,25 +153,25 @@ const handleMerges = function(db: Db, callback: (err?: Error | null) => void): v
                         }
                         if (!oldAppUser && newAppUser) {
                             //old user was merged to new user, but state update failed - we can mark it as merged and process other plugins
-                            usersApi.mergeOtherPlugins({ db: db, app_id: app_id, newAppUser: { uid: user.merged_to }, oldAppUser: { uid: olduid }, updateFields: { "mc": true, "cc": true, "u": true }, mergeDoc: user }, resolve);
+                            usersApi.mergeOtherPlugins({ db: db, app_id: app_id, newAppUser: { uid: user.merged_to }, oldAppUser: { uid: olduid }, updateFields: { 'mc': true, 'cc': true, 'u': true }, mergeDoc: user }, resolve);
                         }
                         if (!newAppUser) {
                             //new user do not exists - we can delete merging record
-                            mergesCollection.deleteOne({ "_id": user._id as unknown }, (err4: Error | null) => {
+                            mergesCollection.deleteOne({ '_id': user._id as unknown }, (err4: Error | null) => {
                                 if (err4) {
-                                    log.e("error deleting document in merges with bad _id: " + user._id);
+                                    log.e('error deleting document in merges with bad _id: ' + user._id);
                                     log.e(err4);
                                 }
                                 resolve();
                             });
                         }
                         else if (oldAppUser && newAppUser) {
-                            mergesCollection.updateOne({ "_id": user._id as unknown }, { "$inc": { "t": 1 } }, { upsert: false }, function(err0: Error | null) {
+                            mergesCollection.updateOne({ '_id': user._id as unknown }, { '$inc': { 't': 1 } }, { upsert: false }, function(err0: Error | null) {
                                 if (err0) {
                                     log.e(err0);
                                 }
                                 //Both documents exists. We can assume that documents were not merged
-                                plugins.dispatch("/i/user_merge", {
+                                plugins.dispatch('/i/user_merge', {
                                     app_id: app_id,
                                     newAppUser: newAppUser,
                                     oldAppUser: oldAppUser
@@ -184,19 +184,19 @@ const handleMerges = function(db: Db, callback: (err?: Error | null) => void): v
                                         //Dispatch to other plugins only after callback.
                                         if (!err6) {
                                             //update metric changes document
-                                            const metricCol = db.collection("metric_changes" + app_id) as unknown as LegacyCollection;
+                                            const metricCol = db.collection('metric_changes' + app_id) as unknown as LegacyCollection;
                                             metricCol.updateMany({ uid: oldAppUser!.uid }, { '$set': { uid: newAppUser!.uid } }, function(err7: Error | null) {
                                                 if (err7) {
-                                                    log.e("Failed metric changes update in app_users merge", err7);
+                                                    log.e('Failed metric changes update in app_users merge', err7);
                                                 }
                                             });
                                             //delete old app users document
                                             usersCollection.deleteOne({ _id: oldAppUser!._id as unknown }, function(errRemoving: Error | null) {
                                                 if (errRemoving) {
-                                                    log.e("Failed to remove merged user from database", errRemoving);
+                                                    log.e('Failed to remove merged user from database', errRemoving);
                                                 }
                                                 else {
-                                                    usersApi.mergeOtherPlugins({ db: db, app_id: app_id, newAppUser: { uid: user.merged_to }, oldAppUser: { uid: olduid }, updateFields: { "cc": true, "u": true }, mergeDoc: user }, resolve);
+                                                    usersApi.mergeOtherPlugins({ db: db, app_id: app_id, newAppUser: { uid: user.merged_to }, oldAppUser: { uid: olduid }, updateFields: { 'cc': true, 'u': true }, mergeDoc: user }, resolve);
                                                 }
                                             });
                                         }
@@ -210,28 +210,28 @@ const handleMerges = function(db: Db, callback: (err?: Error | null) => void): v
                     });
                 }
                 else if (!user.mc) { //documents are merged, but metric changes and other plugins are not yet
-                    mergesCollection.updateOne({ "_id": user._id as unknown }, { "$inc": { "t": 1 } }, { upsert: false }, function(err0: Error | null) {
+                    mergesCollection.updateOne({ '_id': user._id as unknown }, { '$inc': { 't': 1 } }, { upsert: false }, function(err0: Error | null) {
                         if (err0) {
                             log.e(err0);
                         }
-                        const metricCol = db.collection("metric_changes" + app_id) as unknown as LegacyCollection;
+                        const metricCol = db.collection('metric_changes' + app_id) as unknown as LegacyCollection;
                         metricCol.updateMany({ uid: olduid }, { '$set': { uid: user.merged_to } }, function(err7: Error | null) {
                             if (err7) {
-                                log.e("Failed metric changes update in app_users merge", err7);
+                                log.e('Failed metric changes update in app_users merge', err7);
                             }
                             else {
-                                usersApi.mergeOtherPlugins({ db: db, app_id: app_id, newAppUser: { uid: user.merged_to }, oldAppUser: { uid: olduid }, updateFields: { "cc": true, "mc": true }, mergeDoc: user }, resolve);
+                                usersApi.mergeOtherPlugins({ db: db, app_id: app_id, newAppUser: { uid: user.merged_to }, oldAppUser: { uid: olduid }, updateFields: { 'cc': true, 'mc': true }, mergeDoc: user }, resolve);
                             }
                         });
                     });
                 }
                 else {
-                    usersApi.mergeOtherPlugins({ db: db, app_id: app_id, newAppUser: { uid: user.merged_to }, oldAppUser: { uid: olduid }, updateFields: { "cc": true }, mergeDoc: user }, resolve);
+                    usersApi.mergeOtherPlugins({ db: db, app_id: app_id, newAppUser: { uid: user.merged_to }, oldAppUser: { uid: olduid }, updateFields: { 'cc': true }, mergeDoc: user }, resolve);
                 }
             }
             else {
                 //delete invalid document
-                mergesCollection.deleteOne({ "_id": user._id as unknown }, function(err5: Error | null) {
+                mergesCollection.deleteOne({ '_id': user._id as unknown }, function(err5: Error | null) {
                     if (err5) {
                         log.e(err5);
                     }
@@ -242,7 +242,7 @@ const handleMerges = function(db: Db, callback: (err?: Error | null) => void): v
     }
 
     const mergesCollection = db.collection('app_user_merges') as unknown as LegacyCollection;
-    (mergesCollection as unknown as { find: (filter: object) => { limit: (n: number) => { toArray: (cb: (err: Error | null, docs: unknown[]) => void) => void } } }).find({ "lu": { "$lt": date } }).limit(limit).toArray(function(err: Error | null, mergedocs: unknown[]) {
+    (mergesCollection as unknown as { find: (filter: object) => { limit: (n: number) => { toArray: (cb: (err: Error | null, docs: unknown[]) => void) => void } } }).find({ 'lu': { '$lt': date } }).limit(limit).toArray(function(err: Error | null, mergedocs: unknown[]) {
         const mergeDocs = mergedocs as MergeDocument[];
         if (err) {
             callback(err);
@@ -268,7 +268,7 @@ const handleMerges = function(db: Db, callback: (err?: Error | null) => void): v
                     callback();
                 }
             }).catch((errThrown: Error) => {
-                log.e("finished with errors");
+                log.e('finished with errors');
                 log.e(errThrown);
                 callback(errThrown);
             });
@@ -289,8 +289,8 @@ class UserMergeJob extends Job {
      */
     getSchedule(): GetScheduleConfig {
         return {
-            type: "schedule",
-            value: "*/5 * * * *" // Every 5 minutes
+            type: 'schedule',
+            value: '*/5 * * * *' // Every 5 minutes
         };
     }
 
@@ -303,7 +303,7 @@ class UserMergeJob extends Job {
     run(db: Db, done: DoneCallback, progressJob: ProgressCallback): void {
         const total = 0;
         const current = 0;
-        const bookmark = "";
+        const bookmark = '';
 
         let timeout: ReturnType<typeof setTimeout> | number = 0;
 

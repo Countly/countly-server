@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 import type { Db } from 'mongodb';
 
 const authorize = require('../utils/authorizer.js');
-const Job = require("../../jobServer/Job");
+const Job = require('../../jobServer/Job');
 
 interface GetScheduleConfig {
     type: 'once' | 'schedule' | 'now' | 'manual';
@@ -28,8 +28,8 @@ class CleanTokensJob extends Job {
      */
     getSchedule(): GetScheduleConfig {
         return {
-            type: "schedule",
-            value: "30 2 * * *" // Every day at 2:30 AM
+            type: 'schedule',
+            value: '30 2 * * *' // Every day at 2:30 AM
         };
     }
 
