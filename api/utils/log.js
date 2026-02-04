@@ -108,10 +108,6 @@ function loadLoggingConfig() {
     if (envDefault !== undefined) {
         prefs.default = envDefault;
     }
-    else if (process.env.CI === 'true') {
-        // In CI environment with no explicit COUNTLY_SETTINGS__LOGS__DEFAULT, suppress all logs
-        prefs.default = 'silent';
-    }
 
     if (envPrettyPrint !== undefined) {
         try {
