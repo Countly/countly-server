@@ -273,8 +273,6 @@ class KafkaConsumer {
             throw new Error('KafkaConsumer.start(handler): handler must be a function');
         }
 
-        await this.#initConsumer();
-
         const runOptions = {
             // hard-disable auto commit & auto-resolve; we will commit manually
             autoCommit: false,
@@ -449,15 +447,27 @@ class KafkaConsumer {
         this.#_runLoopActive = true;
         (async() => {
             let backoff = 1000; // 1s initial
-            while (this.#_shouldRun && this.#consumer) {
+            while (this.#_shouldRun) {
                 try {
-                    // run() resolves on stop/disconnect/crash
+                    await this.#initConsumer();
                     await this.#consumer.run(runOptions);
                     break; // normal stop/disconnect
                 }
                 catch (err) {
                     log.e(`[group=${this.#config.groupId}] Consumer crashed; restarting in ${backoff}ms`, err);
                     this.#recordHealthStat('error', { message: err.message, type: 'CRASH' });
+
+                    // Tear down the consumer instance for full recreation
+                    if (this.#consumer) {
+                        try {
+                            await this.#consumer.disconnect();
+                        }
+                        catch (disconnectErr) {
+                            log.w(`[group=${this.#config.groupId}] Disconnect error during recovery: ${disconnectErr.message}`);
+                        }
+                        this.#consumer = null;
+                    }
+
                     if (!this.#_shouldRun) {
                         break;
                     }
