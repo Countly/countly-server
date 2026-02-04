@@ -25,6 +25,7 @@ const crypto = require('crypto');
         "visit": true,
         "uvc": true,
         "start": true,
+        "scr": true,
         "bounce": true,
         "exit": true,
         "type": true,
@@ -93,6 +94,9 @@ const crypto = require('crypto');
                                                 if (docc) {
                                                     view_id = docc._id.replace(next.a + "_", "");
                                                     next.n = docc.view;
+                                                }
+                                                else {
+                                                    view_id = crypto.createHash('md5').update(next.n).digest('hex');
                                                 }
                                             }
                                             catch (e) {
@@ -305,11 +309,26 @@ const crypto = require('crypto');
 
                                             var tmpZeroId = next.a + "_" + segments[i] + "_" + dateIds.zero + "_" + view_id; //view_year
                                             var tmpMonthId = next.a + "_" + segments[i] + "_" + dateIds.month + "_" + view_id; //view_year
+                                            var escapedMetricVal = "";
+                                            if (segments[i] !== "no-segment") {
+                                                escapedMetricVal = common.dbEncode(next.sg[segments[i]] + "");
+                                                escapedMetricVal = escapedMetricVal.replace(/^\$/, "").replace(/\./g, ":");
 
-                                            for (var prop in update) {
-                                                common.fillTimeObjectMonth({time: time}, tmpTimeObjMonth, prop, update[prop], true);
-                                                tmpTimeObjZero["d." + time.month + "." + prop] = update[prop];
+                                                if (forbiddenSegValues.indexOf(escapedMetricVal) !== -1) {
+                                                    escapedMetricVal = "[CLY]" + escapedMetricVal;
+                                                }
+
+                                                if (viewMeta.segments[segments[i]] && (!viewMeta.segments[segments[i]][escapedMetricVal] && Object.keys(viewMeta.segments[segments[i]]).length > plugins.getConfig("views").segment_value_limit)) {
+                                                    continue;
+                                                }
+
+                                                escapedMetricVal = escapedMetricVal + ".";
                                             }
+                                            for (var prop in update) {
+                                                common.fillTimeObjectMonth({time: time}, tmpTimeObjMonth, escapedMetricVal + prop, update[prop], true);
+                                                tmpTimeObjZero["d." + time.month + "." + escapedMetricVal + prop] = update[prop];
+                                            }
+
                                             common.manualWriteBatcher.add("app_viewdata", tmpMonthId, {"$inc": tmpTimeObjMonth, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.month}}, "countly", {token: token});
                                             common.manualWriteBatcher.add("app_viewdata", tmpZeroId, {"$inc": tmpTimeObjZero, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.zero}}, "countly", {token: token});
                                         }
