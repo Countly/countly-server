@@ -60,60 +60,23 @@ const __dirname = path.dirname(__filename);
 
 // List of legacy scripts in exact order from dashboard.html
 // These will be concatenated into a single scope
+// COMMIT HASH BEFORE REMOVALS: d1167224987671af19c576fbd4c6d7ab56515dde
 const legacyScripts = [
     // === HEAD SECTION (from dashboard.html lines 111-169) ===
-    // 'javascripts/dom/jquery/jquery.js',                                       - DELETE.
-    // 'javascripts/utils/polyfills.js',                                         - DELETE. NOT NEEDED ANYMORE.
-    // 'javascripts/utils/underscore-min.js',                                    - DELETE.
-    // 'javascripts/utils/lodash.merge.js',                                      - DELETE.
-    // 'javascripts/utils/lodash.mergeWith.js',                                  - DELETE.
-    // 'javascripts/utils/prefixfree.min.js',                                    - SEEMS LIKE IT'S NOT BEING USED ANYWHERE. BUT DO NOT DELETE FOR NOW.
     'javascripts/dom/gridstack/gridstack-h5.js', // install this into dashboard plugin (there's also a gridstack.css in entrypoint)
-    // 'javascripts/utils/moment/moment-with-locales.min.js',                    - DELETE.
     // 'javascripts/utils/backbone-min.js',
     // 'javascripts/utils/jquery.i18n.properties.js',
     // 'javascripts/utils/store+json2.min.js',                                   - storejs IS INSTALLED. CHECK IF json2 IS NEEDED.
     // 'javascripts/utils/jquery.idle-timer.js',
     // 'javascripts/utils/initialAvatar.js',                                     - IMPORTED IN imports.js AS ES MODULE.
-    // 'javascripts/utils/highlight/highlight.pack.js',                          - DELETE.
-    // 'javascripts/utils/jquery.xss.js',                                        - DELETE. REPLACED WITH ES MODULE VERSION.
-    // 'javascripts/utils/webfont.js',                                           - DELETE. NOT BEING USED ANYWHERE.
-    // 'javascripts/utils/leaflet.js',                                           - DELETE. AND REPLACE THE CSS FILE IN entrypoint.js WITH THE ONE FROM NODE_MODULES.
-    // 'javascripts/utils/js-deep-equals.unsorted.min.js',                       - DELETE. REPLACED WITH ES MODULE VERSION.
-    // 'javascripts/utils/polyfill/es6-promise.auto.min.js',                     - DELETE. NOT NEEDED ANYMORE.
-    // 'javascripts/utils/polyfill/intersection-observer.js',                    - DELETE. NOT NEEDED ANYMORE.
-    // 'javascripts/utils/vue/vue.min.js',                                       - DELETE.
-    // 'javascripts/utils/vue/composition-api.min.js',                           - DELETE. NOT NEEDED ANYMORE.
-    // 'javascripts/utils/vue/vuex.min.js',                                      - DELETE.
-    // 'javascripts/utils/echarts.5.min.js',                                     - DELETE.
-    // 'javascripts/utils/vue/vue-echarts.umd.min.js',                           - DELETE.
-    // 'javascripts/utils/vue/vue-color.min.js',                                 - DELETE.
-    // 'javascripts/utils/vue/v-tooltip.min.js',                                 - DELETE.
-    // 'javascripts/utils/vue/vee-validate.full.min.js',                         - DELETE.
-    // 'javascripts/utils/vue/vue-clipboard.min.js',                             - DELETE.
-    // 'javascripts/utils/vue/vue2Dropzone.min.js',                              - DELETE.
-    // 'javascripts/utils/vue/element-ui.js',                                    - DELETE.
-    // 'javascripts/utils/vue/vue2-leaflet.min.js',                              - DELETE.
-    // 'javascripts/utils/vue/inViewportMixin.js',                               - DELETE.
-    // 'javascripts/utils/vue/vuescroll.min.js',                                 - DELETE.
-    // 'javascripts/utils/vue/vue-json-pretty.min.js',                           - DELETE.
-    // 'javascripts/dom/pace/pace.min.js',                                       - DELETE THE WHOLE dom/pace DIRECTORY.
-    // 'javascripts/utils/Sortable.min.js',                                      - DELETE.
-    // 'javascripts/utils/vue/vuedraggable.umd.min.js',                          - DELETE.
-    // 'javascripts/countly/countly.auth.js',
-    // 'javascripts/utils/element-tiptap.umd.min.js',                            - DELETE.
-    // 'javascripts/utils/cronstrue.min.js',                                     - DELETE.
 
-    // === BODY SECTION (from dashboard.html lines 187-274) ===
-    // 'javascripts/countly/countly.analytics.js',                               - DELETE. NOT BEING USED ANYWHERE.
+    // 'javascripts/countly/countly.auth.js',
     // 'javascripts/countly/countly.common.js',
     // 'javascripts/countly/countly.config.js',
     // 'javascripts/countly/countly.helpers.js',
     // 'javascripts/countly/countly.event.js',
     // 'javascripts/countly/countly.session.js',
-    // 'javascripts/countly/countly.city.js',                                    - SEEMS LIKE IT'S NOT BEING USED ANYWHERE. BUT DO NOT DELETE FOR NOW.
     // 'javascripts/countly/countly.location.js',
-    // 'javascripts/countly/countly.map.helper.js',                              - DELETE. NOT BEING USED ANYWHERE.
     // 'javascripts/countly/countly.device.list.js',
     // 'javascripts/countly/countly.device.osmapping.js',
     // 'javascripts/countly/countly.device.js',
@@ -128,10 +91,8 @@ const legacyScripts = [
     // 'javascripts/countly/vue/core.js',
     // 'javascripts/countly/vue/container.js',
     // 'javascripts/countly/countly.template.js',
-    // 'javascripts/countly/vue/helpers.js',                                     - DELETE. NOT BEING USED ANYWHERE.
     // 'javascripts/countly/vue/data/vuex.js',
     // 'javascripts/countly/countly.task.manager.js',
-    // 'javascripts/countly/vue/imports.js',                                     - DELETE. NOT NEEDED ANYMORE.
     // 'javascripts/countly/vue/components/nav.js',
     // 'javascripts/countly/vue/components/layout.js',
     // 'javascripts/countly/vue/components/form.js',
