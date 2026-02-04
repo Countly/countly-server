@@ -1,42 +1,7 @@
-'use strict';
-
 /**
- * @typedef {import('../../types/authorizer').Authorizer} Authorizer
- * @typedef {import('../../types/pluginManager').Database} Database
+ * Clear Tokens Job
+ * Cleans expired tokens
+ * This file proxies to the TypeScript implementation
+ * @module api/jobs/clearTokens
  */
-
-// const job = require('../parts/jobs/job.js'),
-/** @type {Authorizer} */
-const authorize = require('../utils/authorizer.js');
-const Job = require("../../jobServer/Job");
-
-/** Class for job of clearing tokens **/
-class CleanTokensJob extends Job {
-
-    /**
-     * Get the schedule configuration for this job
-     * @returns {GetScheduleConfig} schedule configuration
-     */
-    getSchedule() {
-        return {
-            type: "schedule",
-            value: "30 2 * * *" // Every day at 2:30 AM
-        };
-    }
-
-    /**
-     * Run the job
-     * @param {Database} db connection
-     * @param {done} done callback
-     */
-    run(db, done) {
-        authorize.clean({
-            db: db,
-            callback: function() {
-                done();
-            }
-        });
-    }
-}
-
-module.exports = CleanTokensJob;
+module.exports = require('./clearTokens.ts').default;
