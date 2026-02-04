@@ -231,6 +231,7 @@ const legacyScripts = [
     // ].map(platform => globSync(`plugins/${platform}/frontend/public/javascripts/*.js`)).flat().map(f => "../../../" + f),
 
     "../../../plugins/drill/frontend/public/javascripts/countly.query.builder.core.js",
+    "../../../plugins/drill/frontend/public/javascripts/countly.query.builder.views.js",
     // nodejs doesn't pick up glob patterns when * is used for both directories and symlinks
     // ...globSync("./plugins/*/frontend/public/javascripts/*.js").map(f => "../../../" + f),
     ...globSync("./plugins/*")
