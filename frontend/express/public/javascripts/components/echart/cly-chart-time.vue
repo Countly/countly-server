@@ -47,7 +47,8 @@
 <script>
 import { mergeWith as _mergeWith } from 'lodash';
 import moment from 'moment';
-import { countlyCommon, CommonConstructor } from '../../countly/countly.common.js';
+import { countlyCommon } from '../../countly/countly.common.js';
+import { PeriodCalculator } from '../../countly/countly.period.calculator.js';
 import countlyVue from '../../countly/vue/core.js';
 import { LegendMixin, ZoomMixin, UpdateOptionsMixin, EventsMixin, GraphNotesMixin, mergeWithCustomizer } from './mixins.js';
 import { BaseChartMixin } from './chart-options.js';
@@ -178,13 +179,13 @@ export default {
             if (!opt.xAxis.data) {
                 var period = (this.period && this.period.length) ? this.period : countlyCommon.getPeriod();
 
-                var chartsCommon = new CommonConstructor();
-                chartsCommon.setPeriod(period, undefined, true);
+                var chartsPeriodCalculator = new PeriodCalculator();
+                chartsPeriodCalculator.setPeriod(period);
 
                 var tickObj = {};
 
                 if (period === "month" && this.category !== "active-users" && !this.bucket) {
-                    tickObj = chartsCommon.getTickObj("monthly", false, true);
+                    tickObj = chartsPeriodCalculator.getTickObj("monthly", false, true);
                 }
                 else if (countlyCommon.periodObj.numberOfDays === 1 && this.noHourly) {
                     tickObj = {
@@ -193,7 +194,7 @@ export default {
                     };
                 }
                 else {
-                    tickObj = chartsCommon.getTickObj(this.bucket, false, true);
+                    tickObj = chartsPeriodCalculator.getTickObj(this.bucket, false, true);
                 }
 
                 var ticks = tickObj.ticks;
