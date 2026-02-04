@@ -57,9 +57,9 @@ class TTLCleanup extends Job {
             } = ttlCollections[i];
             let dbInstance: Db | undefined;
             switch (db) {
-                case "countly": dbInstance = common.db; break;
-                case "countly_drill": dbInstance = common.drillDb; break;
-                case "countly_out": dbInstance = common.outDb; break;
+            case "countly": dbInstance = common.db; break;
+            case "countly_drill": dbInstance = common.drillDb; break;
+            case "countly_out": dbInstance = common.outDb; break;
             }
             if (!dbInstance) {
                 log.e("Invalid db selection:", db);

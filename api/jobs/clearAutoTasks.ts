@@ -66,7 +66,7 @@ class ClearAutoTasks extends Job {
      * @param done - callback
      */
     run(db: Db, done: DoneCallback): void {
-        const beforeTime = new Date().getTime() - 1000 * 60 * 60 * 24 * 90; //90 days ago
+        const beforeTime = Date.now() - 1000 * 60 * 60 * 24 * 90; //90 days ago
         const query = {
             manually_create: { $ne: true },
             ts: { $lt: beforeTime }

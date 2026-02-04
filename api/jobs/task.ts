@@ -95,7 +95,7 @@ class MonitorJob extends Job {
             const duration = lastEnd - lastStart;
 
             let interval = plugins.getConfig("api").reports_regenerate_interval;
-            interval = parseInt(interval, 10) || 3600; //in seconds. If there is no int - then using 1 hour
+            interval = Number.parseInt(interval, 10) || 3600; //in seconds. If there is no int - then using 1 hour
             if (task.start === 0) { //never started
                 return true;
             }

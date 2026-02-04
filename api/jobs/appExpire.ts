@@ -85,7 +85,7 @@ class AppExpireJob extends Job {
          */
         function clearExpiredData(app: AppDocument, callback: () => void): void {
             // convert day value to second
-            const EXPIRE_AFTER: number = parseInt(plugins.getConfig("api", app.plugins, true).data_retention_period) * 86400;
+            const EXPIRE_AFTER: number = Number.parseInt(plugins.getConfig("api", app.plugins, true).data_retention_period) * 86400;
             const INDEX_NAME = "cd_1";
 
             const collections: string[] = [];
@@ -172,7 +172,7 @@ class AppExpireJob extends Job {
         const appsCollection = database.collection('apps') as unknown as LegacyCollection;
         (appsCollection.find as (filter: object, options: object) => { toArray: (callback: (err: Error | null, docs: unknown[]) => void) => void })({}, { projection: { _id: 1, plugins: 1 } }).toArray(function(appsErr: Error | null, apps: unknown[]) {
             const appDocs = apps as AppDocument[];
-            if (!appsErr && appDocs && appDocs.length) {
+            if (!appsErr && appDocs && appDocs.length > 0) {
                 async.eachSeries(appDocs, clearExpiredData, function() {
                     log.d('Clearing data finished ...');
                     done();

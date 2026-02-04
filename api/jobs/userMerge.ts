@@ -66,14 +66,14 @@ const handleMerges = function(db: Db, callback: (err?: Error | null) => void): v
     log.d('looking for unfinished merges ...');
     let paralel_cn = plugins.getConfig("api").user_merge_paralel;
     try {
-        paralel_cn = parseInt(paralel_cn);
+        paralel_cn = Number.parseInt(paralel_cn);
     }
     catch {
         paralel_cn = 1;
     }
     paralel_cn = Math.max(1, paralel_cn);
 
-    const date = Math.round(new Date().getTime() / 1000) - 1;//at least one second old merges
+    const date = Math.round(Date.now() / 1000) - 1;//at least one second old merges
     let limit = 100;
     if (paralel_cn && paralel_cn > limit) {
         limit = paralel_cn;

@@ -117,7 +117,7 @@ const MONGO_DATABASES: Record<string, () => Db | undefined> = {
  * @returns MongoDB database instance
  */
 function getMongoDbInstance(name: string): Db | null {
-    return name && typeof MONGO_DATABASES[name] !== 'undefined' ? MONGO_DATABASES[name]() || null : null;
+    return name && MONGO_DATABASES[name] !== undefined ? MONGO_DATABASES[name]() || null : null;
 }
 
 let clickHouseRunner: ClickhouseRunner | undefined;
@@ -498,7 +498,7 @@ class MutationManagerJob extends Job {
      * @param mongoDb - MongoDB database instance
      */
     async deleteMongo(task: MutationTask, mongoDb?: Db | null): Promise<boolean> {
-        if (!task.query || !Object.keys(task.query).length) {
+        if (!task.query || Object.keys(task.query).length === 0) {
             await this.markFailedOrRetry(task, "empty_mongo_query");
             return false;
         }
@@ -534,11 +534,11 @@ class MutationManagerJob extends Job {
      * @param mongoDb - MongoDB database instance
      */
     async updateMongo(task: MutationTask, mongoDb?: Db | null): Promise<boolean> {
-        if (!task.query || !Object.keys(task.query).length) {
+        if (!task.query || Object.keys(task.query).length === 0) {
             await this.markFailedOrRetry(task, "empty_mongo_query");
             return false;
         }
-        if (!task.update || !Object.keys(task.update).length) {
+        if (!task.update || Object.keys(task.update).length === 0) {
             await this.markFailedOrRetry(task, "empty_mongo_update");
             return false;
         }
@@ -579,7 +579,7 @@ class MutationManagerJob extends Job {
             return false;
         }
 
-        if (!task.query || !Object.keys(task.query).length) {
+        if (!task.query || Object.keys(task.query).length === 0) {
             log.e("Skipping ClickHouse delete (empty query)", { taskId: task._id });
             await this.markFailedOrRetry(task, "empty_ch_query");
             return false;
@@ -630,12 +630,12 @@ class MutationManagerJob extends Job {
             await this.markFailedOrRetry(task, "queryRunner_unavailable");
             return false;
         }
-        if (!task.query || !Object.keys(task.query).length) {
+        if (!task.query || Object.keys(task.query).length === 0) {
             log.e("Skipping ClickHouse update (empty query)", { taskId: task._id });
             await this.markFailedOrRetry(task, "empty_ch_query");
             return false;
         }
-        if (!task.update || !Object.keys(task.update).length) {
+        if (!task.update || Object.keys(task.update).length === 0) {
             log.e("Skipping ClickHouse update (empty update)", { taskId: task._id });
             await this.markFailedOrRetry(task, "empty_ch_update");
             return false;
@@ -787,7 +787,7 @@ class MutationManagerJob extends Job {
      */
     ensureTracker(): boolean {
         try {
-            if (!tracker || typeof tracker.isEnabled === 'undefined') {
+            if (!tracker || tracker.isEnabled === undefined) {
                 return false;
             }
 
@@ -800,7 +800,7 @@ class MutationManagerJob extends Job {
                 return true;
             }
 
-            if (typeof tracker.enable !== 'undefined') {
+            if (tracker.enable !== undefined) {
                 tracker.enable();
             }
             return tracker.isEnabled();
@@ -841,7 +841,7 @@ class MutationManagerJob extends Job {
                     payload.query = '[unserializable_query]';
                 }
             }
-            if (Countly && typeof Countly.log_error !== 'undefined') {
+            if (Countly && Countly.log_error !== undefined) {
                 Countly.log_error(new Error(`mutation_manager_job_failed: ${payload.message || 'unknown'}`), payload);
             }
         }
