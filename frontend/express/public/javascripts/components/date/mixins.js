@@ -336,8 +336,6 @@ export function getInitialState(instance) {
         globalRange = instance.isFuture ? globalFutureDaysRange : globalDaysRange;
     }
 
-    inputDisable = true;
-
     var state = {
         rangeState: {
             endDate: null,
