@@ -33,6 +33,14 @@ import { setupCountlyWebSDK } from './javascripts/web-sdk-setup.js';
 // All legacy scripts share the same scope and can access each other's variables
 import 'virtual:legacy-concat';
 
+// =============================================================================
+// CORE PLUGIN IMPORTS
+// TO-DO:
+// These static imports will be replaced with dynamic imports (lazy-loading)
+// once vue-router is integrated, enabling route-based code-splitting.
+// =============================================================================
+import './core/session-durations/index.js';
+
 // Component imports
 import ClyStatusBadge from './javascripts/components/cly-status-badge.vue';
 import ClyTabs from './javascripts/components/nav/cly-tabs.vue';

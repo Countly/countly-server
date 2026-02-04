@@ -142,8 +142,8 @@ const legacyScripts = [
     // 'javascripts/countly/vue/components/datatable.js',
     // 'javascripts/countly/vue/components/dialog.js',
     // 'javascripts/countly/vue/components/drawer.js',
-    'core/notes/javascripts/countly.models.js',
-    'core/notes/javascripts/countly.common.notes.js',
+    'core/notes/javascripts/countly.models.js', // TO-DO: will be moved to notes plugin, but for now it has to stay here because it's used in multiple places and too complicated for now
+    'core/notes/javascripts/countly.common.notes.js', // TO-DO: same
     // 'javascripts/countly/vue/components/vis.js',
     // 'javascripts/countly/vue/components/helpers.js',
     // 'javascripts/countly/vue/components/progress.js',
@@ -166,8 +166,8 @@ const legacyScripts = [
     'core/user-activity/javascripts/countly.views.js',
     'core/session-overview/javascripts/countly.models.js',
     'core/session-overview/javascripts/countly.views.js',
-    'core/session-durations/javascripts/countly.models.js',
-    'core/session-durations/javascripts/countly.views.js',
+    // 'core/session-durations/javascripts/countly.models.js',
+    // 'core/session-durations/javascripts/countly.views.js',
     'core/session-frequency/javascripts/countly.models.js',
     'core/session-frequency/javascripts/countly.views.js',
     'core/events/javascripts/countly.details.models.js',
