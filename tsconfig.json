@@ -21,6 +21,7 @@
         "api/lib/countly.event.ts",
         "api/lib/countly.users.ts",
         "api/lib/countly.preset.ts",
+        "api/lib/countly.countries.ts",
         "api/parts/data/geoData.ts",
         "api/parts/data/cache.ts",
         "api/parts/data/cacher.ts",
