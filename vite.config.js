@@ -132,20 +132,20 @@ const legacyScripts = [
     // 'javascripts/countly/vue/data/vuex.js',
     // 'javascripts/countly/countly.task.manager.js',
     // 'javascripts/countly/vue/imports.js',                                     - DELETE. NOT NEEDED ANYMORE.
-    // 'javascripts/countly/vue/components/nav.js', // DELETE.
-    // 'javascripts/countly/vue/components/layout.js', // Migrated to SFC
-    // 'javascripts/countly/vue/components/form.js', // DELETE.
-    // 'javascripts/countly/vue/components/date.js', // Migrated to SFC DELETE
-    // 'javascripts/countly/vue/components/dropdown.js', // DELETE.
-    // 'javascripts/countly/vue/components/input.js', // DELETE
-    // 'javascripts/countly/vue/components/content.js', // Migrated to SFC
-    // 'javascripts/countly/vue/components/datatable.js', // Migrated to SFC
-    // 'javascripts/countly/vue/components/dialog.js', // Migrated to SFC
-    // 'javascripts/countly/vue/components/drawer.js', // DELETE.
+    // 'javascripts/countly/vue/components/nav.js',
+    // 'javascripts/countly/vue/components/layout.js',
+    // 'javascripts/countly/vue/components/form.js',
+    // 'javascripts/countly/vue/components/date.js',
+    // 'javascripts/countly/vue/components/dropdown.js',
+    // 'javascripts/countly/vue/components/input.js',
+    // 'javascripts/countly/vue/components/content.js',
+    // 'javascripts/countly/vue/components/datatable.js',
+    // 'javascripts/countly/vue/components/dialog.js',
+    // 'javascripts/countly/vue/components/drawer.js',
     'core/notes/javascripts/countly.models.js',
     'core/notes/javascripts/countly.common.notes.js',
-    // 'javascripts/countly/vue/components/vis.js', // Migrated to SFC - echart components
-    // 'javascripts/countly/vue/components/helpers.js', // Migrated to SFC
+    // 'javascripts/countly/vue/components/vis.js',
+    // 'javascripts/countly/vue/components/helpers.js',
     // 'javascripts/countly/vue/components/progress.js',
     'javascripts/countly/vue/directives/scroll-shadow.js',
     'javascripts/countly/vue/legacy.js',
@@ -230,8 +230,14 @@ const legacyScripts = [
     //     "groups"
     // ].map(platform => globSync(`plugins/${platform}/frontend/public/javascripts/*.js`)).flat().map(f => "../../../" + f),
 
-    "../../../plugins/drill/frontend/public/javascripts/countly.query.builder.core.js",
-    "../../../plugins/drill/frontend/public/javascripts/countly.query.builder.views.js",
+    // Only include if drill plugin exists (EE only)
+    ...(fs.existsSync('./plugins/drill/frontend/public/javascripts/countly.query.builder.core.js')
+        ? [
+            "../../../plugins/drill/frontend/public/javascripts/countly.query.builder.core.js",
+            "../../../plugins/drill/frontend/public/javascripts/countly.query.builder.views.js",
+        ]
+        : []),
+
     // nodejs doesn't pick up glob patterns when * is used for both directories and symlinks
     // ...globSync("./plugins/*/frontend/public/javascripts/*.js").map(f => "../../../" + f),
     ...globSync("./plugins/*")
