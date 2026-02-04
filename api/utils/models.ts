@@ -1,8 +1,10 @@
-import { ObjectId, Collection, Document, Filter, UpdateFilter, FindOneAndUpdateOptions } from 'mongodb';
+import type { ObjectId, Collection, Document, Filter, UpdateFilter, FindOneAndUpdateOptions } from 'mongodb';
 import { createRequire } from 'module';
 
 // @ts-expect-error - import.meta is available at runtime with Node's native TypeScript support
 const require = createRequire(import.meta.url);
+const mongodb = require('mongodb');
+const ObjectIdClass = mongodb.ObjectId as typeof ObjectId;
 
 interface ValidationResult {
     result: boolean;
@@ -251,7 +253,7 @@ class Mongoable extends Validatable {
         if (typeof query === 'string') {
             finalQuery = { _id: common.db.ObjectID(query) };
         }
-        else if (query instanceof ObjectId) {
+        else if (query instanceof ObjectIdClass) {
             finalQuery = { _id: query };
         }
         else {
