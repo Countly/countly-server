@@ -56,7 +56,14 @@
         "api/parts/mgmt/ip.ts",
         "jobServer/constants/JobPriorities.ts",
         "jobServer/example/ExampleJob.ts",
-        "jobServer/example/SimpleExample.ts"
+        "jobServer/example/SimpleExample.ts",
+        "api/jobs/appExpire.ts",
+        "api/jobs/clearAutoTasks.ts",
+        "api/jobs/clearTokens.ts",
+        "api/jobs/task.ts",
+        "api/jobs/ttlCleanup.ts",
+        "api/jobs/userMerge.ts",
+        "api/jobs/mutationManagerJob.ts"
     ],
     "exclude": [
         "node_modules/**/*.ts",
