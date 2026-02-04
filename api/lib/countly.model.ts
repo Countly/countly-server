@@ -15,7 +15,10 @@ import type {
 
 import type { Database } from '../../plugins/pluginManager.js';
 
-// Use require for CommonJS modules
+import { createRequire } from 'module';
+// @ts-expect-error - import.meta is available at runtime with Node's native TypeScript support
+const require = createRequire(import.meta.url);
+
 const countlyCommon = require('./countly.common.js');
 const _ = require('underscore');
 

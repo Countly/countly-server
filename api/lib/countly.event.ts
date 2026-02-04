@@ -7,6 +7,10 @@
 import type { CountlyMetric } from './countly.model.js';
 import type { DataProperty } from '../../types/countly.common.js';
 
+import { createRequire } from 'module';
+// @ts-expect-error - import.meta is available at runtime with Node's native TypeScript support
+const require = createRequire(import.meta.url);
+
 const countlyModel = require('./countly.model.js');
 const countlyCommon = require('./countly.common.js');
 

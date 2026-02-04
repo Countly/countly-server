@@ -7,6 +7,10 @@
 import type { CountlyMetric } from './countly.model.js';
 import type { ExtractedTwoLevelData } from '../../types/countly.common.js';
 
+import { createRequire } from 'module';
+// @ts-expect-error - import.meta is available at runtime with Node's native TypeScript support
+const require = createRequire(import.meta.url);
+
 const countlyModel = require('./countly.model.js');
 const countlyCommon = require('./countly.common.js');
 const countlyOsMapping = require('../../frontend/express/public/javascripts/countly/countly.device.osmapping.js');

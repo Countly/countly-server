@@ -6,5 +6,7 @@
  */
 
 const presetModule = require('./countly.preset.ts').default;
+const { preset } = require('./countly.preset.ts');
 
 module.exports = presetModule;
+module.exports.preset = preset;
