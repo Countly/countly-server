@@ -44,6 +44,7 @@
         "api/eventSink/MongoEventSink.ts",
         "api/eventSink/EventSinkFactory.ts",
         "api/eventSink/UnifiedEventSink.ts",
+        "api/eventSink/KafkaEventSink.ts",
         "api/configs/config.db_out.sample.ts",
         "api/utils/common.js",
         "api/utils/localization.js",
