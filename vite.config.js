@@ -73,7 +73,7 @@ const legacyScripts = [
     // 'javascripts/utils/jquery.i18n.properties.js',
     // 'javascripts/utils/store+json2.min.js',                                   - storejs IS INSTALLED. CHECK IF json2 IS NEEDED.
     // 'javascripts/utils/jquery.idle-timer.js',
-    // 'javascripts/utils/initialAvatar.js',                                     - IMPORTED IN imports.js AS ES MODULE.
+    // 'javascripts/utils/initialAvatar.js',
 
     // 'javascripts/countly/countly.auth.js',
     // 'javascripts/countly/countly.common.js',
@@ -115,7 +115,7 @@ const legacyScripts = [
     // 'javascripts/countly/vue/components/progress.js',
     'javascripts/countly/vue/directives/scroll-shadow.js',
     'javascripts/countly/vue/legacy.js',
-    'javascripts/countly/countly.views.js',
+    // 'javascripts/countly/countly.views.js',
     // 'javascripts/countly/countly.cms.js', // ESM - imported in entrypoint.js, exposed as window.countlyCMS
     'core/device-and-type/javascripts/countly.models.js',
     'core/device-and-type/javascripts/countly.views.js',

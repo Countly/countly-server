@@ -195,3 +195,12 @@ window.countlyCMS = countlyCMS;
 
 import * as countlyTaskManager from './javascripts/countly/countly.task.manager.js';
 window.countlyTaskManager = countlyTaskManager;
+
+import {
+    // DashboardView,
+    DownloadView,
+    initialize as initializeCountlyViews,
+} from './javascripts/countly/countly.views.js';
+// window.DashboardView = DashboardView; this seems unused
+window.DownloadView = DownloadView;
+initializeCountlyViews();
