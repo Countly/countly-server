@@ -5,13 +5,15 @@
 // npx tsc
 {
     "include": [
+        //"**/*.ts",
+        //"**/*.js",
         "plugins/ai-assistants/**/*.ts",
         "plugins/ai-assistants/**/*.js",
         //core
         "plugins/pluginManager.ts",
         "plugins/pluginManager.js",
         "plugins/push/**/*.ts",
-        "plugins/push/**/*.js",
+        "plugins/push/**/*.js",        
         "plugins/push_approver/**/*.ts",
         "plugins/push_approver/**/*.js",
         "api/lib/countly.common.js",
@@ -81,7 +83,13 @@
         "api/jobs/mutationManagerJob.ts"
     ],
     "exclude": [
-        "node_modules/",
+        "node_modules/*",
+        "ui-tests/*",
+        "test/*",
+        "dist/*",
+        "bin/*",
+        "observability/*",
+        "scripts/",
         "frontend/*",
         "plugins/**/frontend/**/*.ts",
         "plugins/**/frontend/**/*.js",
@@ -94,6 +102,7 @@
         "strict": true,
         "noEmit": true,
         "allowImportingTsExtensions": true,
+        "skipLibCheck": true,
         "target": "es2024",
         "module": "nodenext",
         "moduleResolution": "nodenext",
