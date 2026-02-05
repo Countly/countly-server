@@ -15,6 +15,12 @@
     var v2_web = "25.4.1";
     var v2_flutter = "25.4.1";
     var v2_react_native = "25.4.0";
+    // Initial SDKs that support Journey Trigger Events
+    var v3_android = "26.1.0";
+    var v3_ios = "26.1.0";
+    var v3_web = "26.1.0";
+    var v3_flutter = "26.1.0";
+    var v3_react_native = "26.1.0";
     // dart sdk placeholder version to indicate experimental support
     var v0_dart = "25.0.0";
     // Supporting SDK Versions for the SC options
@@ -41,6 +47,7 @@
         ltl: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
         lt: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
         rcz: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        jte: { android: v3_android, ios: v3_ios, web: v3_web, flutter: v3_flutter, react_native: v3_react_native },
         bom_preset: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
         bom: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
         bom_at: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
@@ -59,7 +66,7 @@
         esw: { dart: v0_dart }
     };
 
-    var nonJSONExperimentalKeys = ['eb', 'upb', 'sb', 'ew', 'upw', 'sw'];
+    var nonJSONExperimentalKeys = ['eb', 'upb', 'sb', 'ew', 'upw', 'sw', 'jte'];
     var jsonExperimentalKeys = ['esb', 'esw'];
     var shouldShowExperimental = true;
     var experimentalKeys = ['upcl', 'filter_preset'].concat(nonJSONExperimentalKeys, jsonExperimentalKeys);
@@ -222,7 +229,7 @@
                     },
                     experimental: {
                         label: "Experimental",
-                        list: ["upcl", "filter_preset", "eb", "upb", "sb", "esb", "ew", "upw", "sw", "esw"]
+                        list: ["upcl", "filter_preset", "jte", "eb", "upb", "sb", "esb", "ew", "upw", "sw", "esw"]
                     },
                 },
                 configs: {
@@ -474,6 +481,15 @@
                         default: 100,
                         enforced: false,
                         value: null
+                    },
+                    jte: {
+                        type: "text",
+                        name: "Journey Trigger Events",
+                        description: "CSV* list of event keys that should trigger a Journey<br>* Use double quotes for values with commas",
+                        default: "",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'event1,event2 or "event3"' }
                     },
                     filter_preset: {
                         type: "preset",
@@ -1131,7 +1147,7 @@
                 for (var key in this.configs) {
                     this.configs[key].experimental = false;
                     this.configs[key].tooltipMessage = "No SDK data present. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this option.";
-                    if (key === 'upcl' || key === 'eb' || key === 'upb' || key === 'sb' || key === 'esb' || key === 'ew' || key === 'upw' || key === 'sw' || key === 'esw' || key === 'filter_preset') {
+                    if (key === 'upcl' || key === 'eb' || key === 'upb' || key === 'sb' || key === 'esb' || key === 'ew' || key === 'upw' || key === 'sw' || key === 'esw' || key === 'filter_preset' || key === 'jte') {
                         this.configs[key].experimental = true;
                         this.configs[key].tooltipMessage = "This is an experimental option. SDK support for this option may be limited or unavailable.";
                     }
