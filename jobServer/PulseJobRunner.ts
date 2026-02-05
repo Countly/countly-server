@@ -382,7 +382,7 @@ class PulseJobRunner {
 
             case 'once':
                 if (!(scheduleConfig.value instanceof Date)) {
-                    throw new Error('Invalid date for one-time schedule');
+                    throw new TypeError('Invalid date for one-time schedule');
                 }
                 await this.#pulseRunner.schedule(scheduleConfig.value, name, data);
                 break;
@@ -447,7 +447,7 @@ class PulseJobRunner {
 
             case 'once': {
                 if (!(schedule.value instanceof Date)) {
-                    throw new Error('Invalid date for one-time schedule');
+                    throw new TypeError('Invalid date for one-time schedule');
                 }
                 // For one time job, schedule a new one
                 await this.#pulseRunner.schedule(schedule.value, jobName, data);
