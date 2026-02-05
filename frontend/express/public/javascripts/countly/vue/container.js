@@ -222,7 +222,7 @@ export function mixins(ids) {
     let result = [];
 
     ids.forEach(function(id) {
-        const mix = dict[id] ? dict[id].mixins : [];
+        const mix = (dict[id] && dict[id].mixins) ? dict[id].mixins : [];
         result = result.concat(mix);
     });
 
