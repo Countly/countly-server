@@ -111,7 +111,7 @@ describe('Testing views plugin with dots in names and segments', function() {
 
         it('should verify view data in 30days period', function(done) {
             request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable&period=30days')
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable&period=30days&no_cache=true')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -163,7 +163,6 @@ describe('Testing views plugin with dots in names and segments', function() {
                         return done(err);
                     }
                     var resDecoded = JSON.parse(res.text);
-                    console.log(res.text);
                     resDecoded.should.have.property('segments');
                     resDecoded.segments.should.have.property('platform');
                     resDecoded.segments.platform.should.be.an.Array();
