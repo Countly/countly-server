@@ -17,6 +17,41 @@
     <script><%- javascript %></script>
 	<link rel="icon" type="image/png" href="<%- cdn %><%- countlyFavicon %>">
     <script type="text/javascript">
+        // Restore URL hash preserved during OAuth2 authentication flow
+        // The hash was saved in sessionStorage on the login page before OAuth2 redirect.
+        // After successful authentication and redirect back to the dashboard, we restore it here
+        // so users land on the page they originally intended to visit (e.g., #/analytics/sessions).
+        // NOTE: The key 'countly_oauth_return_hash' must match the key used in login.html
+        (function() {
+            var OAUTH_HASH_KEY = 'countly_oauth_return_hash';
+            try {
+                var savedHash = sessionStorage.getItem(OAUTH_HASH_KEY);
+                if (savedHash && savedHash.length > 1) {
+                    // Clear the saved hash immediately to prevent reuse
+                    sessionStorage.removeItem(OAUTH_HASH_KEY);
+                    
+                    // Validate hash format: must start with # and contain only safe URL characters
+                    // Allow: alphanumeric, forward slash, hyphen, underscore, dot, question mark, equals, ampersand, percent
+                    var hashPattern = /^#[a-zA-Z0-9\/_\-\.?=&%]+$/;
+                    
+                    if (hashPattern.test(savedHash)) {
+                        // Additional check: ensure no javascript: or data: protocol
+                        var lowerHash = savedHash.toLowerCase();
+                        if (lowerHash.indexOf('javascript:') === -1 && 
+                            lowerHash.indexOf('data:') === -1 && 
+                            lowerHash.indexOf('<script') === -1) {
+                            // Restore the hash to the current URL
+                            if (window.location.hash !== savedHash) {
+                                window.location.hash = savedHash;
+                            }
+                        }
+                    }
+                }
+            } catch(e) {
+                // Ignore if sessionStorage is not available
+            }
+        })();
+        
         //no one should really need this
         window.eval = function(){
             console.log("eval not available");
@@ -1970,7 +2005,38 @@
         if (countlyGlobal.tracking.server_feedback) {
            //display in app messages
             if (Countly.content && Countly.content.enterContentZone) {
-                Countly.content.enterContentZone();
+                if (Countly.sdk_version) {
+                    Countly.user_details({custom:{contentEnabled: true, content_messages: ""}}); // Ensure user is eligible for content messages
+                }
+                Countly.content.enterContentZone(function(params){
+                    if (params.journeyId && (params.widget_id || params.id)) {
+                        try {
+                            var check = params.journeyId + "_";
+                            if  (params.widget_id) {
+                                check += "widget_" + params.widget_id;
+                            }
+                            else {
+                                check += "content_" + params.id;
+                            }
+                            var key = "cly_seenJourneyIds_c2VlbkpvdXJuZXlJZHM"; // Base64 for 'seenJourneyIds' to avoid potential key conflicts
+                            var seen = JSON.parse(localStorage.getItem(key) || "[]");
+
+                            if (seen.includes(check)) {
+                                return false;
+                            }
+
+                            seen.push(check);
+                            localStorage.setItem(key, JSON.stringify(seen));
+                            return true;
+                        }
+                        catch (e) {
+                            // Handle localStorage errors (disabled, full, security exceptions in private browsing)
+                            // Fail open - allow content to be shown if we can't track it
+                            return false;
+                        }
+                    }
+                    return false;
+                });
             }
         }
     }

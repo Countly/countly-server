@@ -1,3 +1,93 @@
+## Version 25.03.X
+Fixes:
+- [core] Fix period calculation
+
+Enterprise Fixes:
+- [crash_symbolication] Use countlyfs for JavaScript symbolication
+- [funnels] Fix funnel name tooltip content
+
+## Version 25.03.33
+Fixes:
+- [compliance-hub] Correctly merge user history on user merge
+- [core] Ensured usage of local fonts. 
+- [events] Fixed issue with page reloading on error
+- [push] re-schedule on a message update for auto triggers as well
+- [remote-config] Fix searching for parameter in experiment variants
+- [star-rating] Fix active status checkbox in drawer
+- [star-rating] Fix consent fields in drawer
+
+Enterprise Fixes:
+- [cohorts] Correctly regenerate cohorts having $or rule on custom properties
+- [journey-engine] Update asset file naming to include version from package.json
+
+Enterprise Features:
+- [crash_symbolication] Use countlyfs for js symbolication
+
+Dependencies:
+- Bump qs from 6.14.0 to 6.14.1
+- Bump express from 4.21.2 to 4.22.1
+- Bump supertest from 7.1.4 to 7.2.2
+- Bump sass from 1.96.0 to 1.97.2
+- Bump nodemailer from 7.0.11 to 7.0.12
+- Bump fs-extra from 11.3.2 to 11.3.3
+- Bump terser from 5.44.1 to 5.46.0
+- Bump body-parser from 2.2.1 to 2.2.2
+- Bump lodash from 4.17.21 to 4.17.23
+- Bump express-session from 1.18.2 to 1.19.0
+- Bump sass from 1.97.2 to 1.97.3
+- Bump puppeteer from 24.35.0 to 24.36.0
+
+## Version 25.03.32
+Fixes:
+- [core] Filtering out internal events while calculating top events
+- [fix] Data Regeneration Error
+- [onboarding] Fix redirection to newsletter page
+- [push] Message cancellation doesn't work on cohort exit
+
+## Version 25.03.31
+Fixes:
+- [core] Add null checking for user permission when opening the dashboard
+- [core] fixes for changeOwner script
+- [core] Preserve URL hash during oauth
+- [core] Rate limiting for api endpoints
+- [2fa] Removed the secret and qr code from the dashboard response
+
+Enterprise Fixes:
+- [data-masking] Correctly dealing with unexpected filter on event_data collection while masking
+- [profile-groups] Error handling on missing list on failed profile group report download
+- [retention_segments] Adding null check for breakdown filtering
+
+Dependencies:
+- Bump @vitejs/plugin-vue from 6.0.1 to 6.0.2
+- Bump @vitejs/plugin-vue from 6.0.1 to 6.0.2
+- Bump @vue-flow/core from 1.47.0 to 1.48.0
+- Bump body-parser from 2.2.0 to 2.2.1
+- Bump countly-sdk-web from 25.4.1 to 25.4.2
+- Bump glob from 10.3.12 to 10.5.0
+- Bump js-yaml from 3.14.1 to 3.14.2
+- Bump js-yaml from 3.14.1 to 3.14.2
+- Bump js-yaml from 4.1.0 to 4.1.1
+- Bump jsonwebtoken from 9.0.2 to 9.0.3
+- Bump jsonwebtoken from 9.0.2 to 9.0.3
+- Bump jws from 3.2.2 to 3.2.3
+- Bump mocha from 11.7.4 to 11.7.5
+- Bump node-forge from 1.3.1 to 1.3.3
+- Bump nodemailer from 7.0.10 to 7.0.11
+- Bump sass from 1.93.3 to 1.94.2
+- Bump sass from 1.93.3 to 1.96.0
+- Bump sass-embedded from 1.93.3 to 1.96.0
+- Bump sharp from 0.34.4 to 0.34.5
+- Bump sharp from 0.34.4 to 0.34.5
+- Bump swiper from 11.2.10 to 12.0.3
+- Bump terser from 5.44.0 to 5.44.1
+- Bump vite from 7.1.12 to 7.2.7
+- Bump vue-i18n from 11.1.12 to 11.2.2
+
+## Version 25.03.30
+Fixes:
+- [journeys] Save to profiile block implemented
+- [push] Better FCM error handling
+
 ## Version 25.03.29
 Fixes:
 - [core] Do not output password in logs on mongodb connection initialisation error

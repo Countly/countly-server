@@ -1196,8 +1196,16 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                 });
                             }
                             else {
-                                var writableAppIds = member.permission._.a;
-                                var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
+                                var writableAppIds = [];
+                                if (Array.isArray(member.permission._?.a)) {
+                                    writableAppIds = member.permission._.a;
+                                }
+
+                                var readableAppIds = [];
+                                if (member.permission.r) {
+                                    readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
+                                }
+
                                 var preparedReadableIds = [];
                                 var preparedWritableIds = [];
 

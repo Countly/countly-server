@@ -756,16 +756,22 @@ class Popper extends PusherPopper {
      */
     async run() {
         this.audience.log.i('popping %d uids from %s', this.uids.length, this.audience.message._id);
+        return this.clear(this.uids);
     }
 
     /**
-     * Remove all message pushes
-     * 
+     * Remove all message pushes or those for specified uids
+     *
+     * @param {string[]} uids optional array of uids to remove pushes for
      * @returns {number} number of records removed
      */
-    async clear() {
+    async clear(uids) {
         let deleted = await Promise.all(this.audience.platformsWithVirtuals().map(async p => {
-            let res = await common.db.collection('push').deleteMany({m: this.audience.message._id, p});
+            const query = {m: this.audience.message._id, p};
+            if (uids) {
+                query.u = { $in: uids };
+            }
+            let res = await common.db.collection('push').deleteMany(query);
             return {p, deleted: res.deletedCount};
         }));
         let update;
@@ -775,7 +781,9 @@ class Popper extends PusherPopper {
             }
             update.$inc['result.processed'] = (update.$inc['result.processed'] || 0) + obj.deleted;
             update.$inc['result.errored'] = (update.$inc['result.errored'] || 0) + obj.deleted;
-            update.$inc[`result.errors.${obj.p}.cancelled`] = (update.$inc[`result.errors.${obj.p}.cancelled`] || 0) + obj.deleted;
+            update.$inc[`result.errors.cancelled`] = (update.$inc[`result.errors.cancelled`] || 0) + obj.deleted;
+            update.$inc[`result.subs.${obj.p}.errors.cancelled`] = (update.$inc[`result.subs.${obj.p}.errors.cancelled`] || 0) + obj.deleted;
+            update.$inc[`result.subs.${obj.p}.errored`] = (update.$inc[`result.subs.${obj.p}.errored`] || 0) + obj.deleted;
         }
         if (update) {
             await this.audience.message.update(update, () => {

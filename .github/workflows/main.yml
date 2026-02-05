@@ -26,7 +26,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Copy code
         shell: bash
@@ -96,7 +96,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Copy code
         shell: bash
@@ -118,6 +118,10 @@ jobs:
         run: |
          npm install eslint@8.57.0 eslint-plugin-vue@9.31.0 @stylistic/eslint-plugin@2.11.0
          npx eslint .
+
+      - name: Check for any external web resources
+        shell: bash
+        run: bash bin/scripts/check-external-resources.sh
 
       - name: NPM install
         shell: bash
@@ -153,7 +157,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Prepare tests
         shell: bash
@@ -205,7 +209,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Copy code
         shell: bash
@@ -269,7 +273,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install Chrome
         shell: bash
