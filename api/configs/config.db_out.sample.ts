@@ -48,8 +48,8 @@ export interface CountlyDbOutConfig {
 
 const countlyConfig: CountlyDbOutConfig = {
     mongodb: {
-        host: "localhost",
-        db: "countly_out",
+        host: 'localhost',
+        db: 'countly_out',
         port: 27017,
         max_pool_size: 500
         // username: "test",

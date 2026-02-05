@@ -13,13 +13,13 @@ import url from 'url';
 import logModule from '../utils/log.js';
 import crypto from 'crypto';
 import { ignorePossibleDevices, checksumSaltVerification, validateRedirect } from '../utils/requestProcessorCommon.js';
-import { ObjectId } from "mongodb";
+import { ObjectId } from 'mongodb';
 import { preset } from '../lib/countly.preset.js';
 
 // createRequire needed for CJS modules without ES exports
 // @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
 const require = createRequire(import.meta.url);
-const plugins = require("../../plugins/pluginManager.js");
+const plugins = require('../../plugins/pluginManager.js');
 const UnifiedEventSink = require('../eventSink/UnifiedEventSink.js');
 
 const log = logModule('core:ingestor');
@@ -30,31 +30,31 @@ const countlyApi = {
     }
 };
 
-const eventsWithDefaultPlatformSegment = new Set(["[CLY]_view", "[CLY]_action", "[CLY]_nps", "[CLY]_survey"]);
+const eventsWithDefaultPlatformSegment = new Set(['[CLY]_view', '[CLY]_action', '[CLY]_nps', '[CLY]_survey']);
 const escapedViewSegments: Record<string, boolean> = {
-    "name": true,
-    "segment": true,
-    "height": true,
-    "width": true,
-    "y": true,
-    "x": true,
-    "visit": true,
-    "uvc": true,
-    "start": true,
-    "bounce": true,
-    "exit": true,
-    "type": true,
-    "view": true,
-    "domain": true,
-    "dur": true,
-    "_id": true,
-    "_idv": true,
-    "utm_source": true,
-    "utm_medium": true,
-    "utm_campaign": true,
-    "utm_term": true,
-    "utm_content": true,
-    "referrer": true
+    'name': true,
+    'segment': true,
+    'height': true,
+    'width': true,
+    'y': true,
+    'x': true,
+    'visit': true,
+    'uvc': true,
+    'start': true,
+    'bounce': true,
+    'exit': true,
+    'type': true,
+    'view': true,
+    'domain': true,
+    'dur': true,
+    '_id': true,
+    '_idv': true,
+    'utm_source': true,
+    'utm_medium': true,
+    'utm_campaign': true,
+    'utm_term': true,
+    'utm_content': true,
+    'referrer': true
 };
 
 /**
@@ -483,7 +483,7 @@ const reloadConfig = function(): Promise<void> {
 function processUser(params: RequestParams, done: (err?: string) => void): void {
     if (params && params.qstring && params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
         const old_id = common.crypto.createHash('sha1')
-            .update(params.qstring.app_key + params.qstring.old_device_id + "")
+            .update(params.qstring.app_key + params.qstring.old_device_id + '')
             .digest('hex');
 
         countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function(err0: Error | null, userdoc: AppUserDocument | null) {
@@ -528,7 +528,7 @@ function processUser(params: RequestParams, done: (err?: string) => void): void 
                 done();
             }
             else {
-                done("User creation failed");
+                done('User creation failed');
             }
         });
     }
@@ -547,7 +547,7 @@ function fillUserProperties(dbAppUser: AppUserDocument | null | undefined, meta_
     const userProperties: Record<string, unknown> = {};
     const userCustom: Record<string, unknown> = {};
     const userCampaign: Record<string, unknown> = {};
-    let setType = "";
+    let setType = '';
 
     if (!dbAppUser) {
         return { up: userProperties, upCustom: userCustom, upCampaign: userCampaign };
@@ -556,27 +556,27 @@ function fillUserProperties(dbAppUser: AppUserDocument | null | undefined, meta_
     for (const i in countlyUP) {
         const shortRep = common.dbUserMap[countlyUP[i].name] || countlyUP[i].name;
 
-        if (shortRep === "fs") {
+        if (shortRep === 'fs') {
             (dbAppUser as any).fs = (dbAppUser.fac) ? dbAppUser.fac : dbAppUser.fs;
         }
-        else if (shortRep === "ls") {
+        else if (shortRep === 'ls') {
             (dbAppUser as any).ls = (dbAppUser.lac) ? dbAppUser.lac : dbAppUser.ls;
         }
-        else if (shortRep === "sdk_name") {
+        else if (shortRep === 'sdk_name') {
             (dbAppUser as any).sdk_name = dbAppUser?.sdk?.name;
         }
-        else if (shortRep === "sdk_version") {
+        else if (shortRep === 'sdk_version') {
             (dbAppUser as any).sdk_version = dbAppUser?.sdk?.version;
         }
 
         if (dbAppUser[shortRep] !== undefined) {
-            setType = countlyUP[i].type || "";
+            setType = countlyUP[i].type || '';
             if (meta_doc && meta_doc.up && meta_doc.up[i]) {
                 setType = meta_doc.up[i];
             }
             userProperties[i] = dbAppUser[shortRep];
             if (setType === 's') {
-                userProperties[i] = userProperties[i] + "";
+                userProperties[i] = userProperties[i] + '';
             }
             else if (setType === 'n' && common.isNumber(userProperties[i])) {
                 userProperties[i] = Number.parseFloat(userProperties[i] as string);
@@ -591,7 +591,7 @@ function fillUserProperties(dbAppUser: AppUserDocument | null | undefined, meta_
             if (!key) {
                 continue;
             }
-            setType = "";
+            setType = '';
             if (meta_doc && meta_doc.custom && meta_doc.custom[key]) {
                 setType = meta_doc.custom[key];
             }
@@ -599,14 +599,14 @@ function fillUserProperties(dbAppUser: AppUserDocument | null | undefined, meta_
 
             if (Array.isArray((dbAppUser.custom as any)[i])) {
                 for (let z = 0; z < (dbAppUser.custom as any)[i].length; z++) {
-                    (dbAppUser.custom as any)[i][z] = (dbAppUser.custom as any)[i][z] + "";
+                    (dbAppUser.custom as any)[i][z] = (dbAppUser.custom as any)[i][z] + '';
                 }
                 tmpVal = (dbAppUser.custom as any)[i];
             }
-            else if (setType === "s") {
-                tmpVal = (dbAppUser.custom as any)[i] + "";
+            else if (setType === 's') {
+                tmpVal = (dbAppUser.custom as any)[i] + '';
             }
-            else if (setType === "n" && common.isNumber((dbAppUser.custom as any)[i])) {
+            else if (setType === 'n' && common.isNumber((dbAppUser.custom as any)[i])) {
                 if ((dbAppUser.custom as any)[i].length > 0 && (dbAppUser.custom as any)[i].length <= 16) {
                     tmpVal = Number.parseFloat((dbAppUser.custom as any)[i]);
                 }
@@ -628,18 +628,18 @@ function fillUserProperties(dbAppUser: AppUserDocument | null | undefined, meta_
         for (const i in dbAppUser.cmp) {
             key = common.fixEventKey(i);
 
-            if (!key || key === "_id" || key === "did" || key === "bv" || key === "ip" || key === "os" || key === "r" || key === "cty" || key === "last_click") {
+            if (!key || key === '_id' || key === 'did' || key === 'bv' || key === 'ip' || key === 'os' || key === 'r' || key === 'cty' || key === 'last_click') {
                 continue;
             }
 
-            setType = "";
+            setType = '';
             if (meta_doc && meta_doc.cmp && meta_doc.cmp[key]) {
                 setType = meta_doc.cmp[key];
             }
 
             let tmpVal;
             if (setType && setType === 's') {
-                tmpVal = (dbAppUser.cmp as any)[i] + "";
+                tmpVal = (dbAppUser.cmp as any)[i] + '';
             }
             else if (common.isNumber((dbAppUser.cmp as any)[i])) {
                 if ((dbAppUser.cmp as any)[i].length > 0 && (dbAppUser.cmp as any)[i].length <= 16) {
@@ -660,7 +660,7 @@ function fillUserProperties(dbAppUser: AppUserDocument | null | undefined, meta_
         }
     }
     else {
-        userCampaign.c = "Organic";
+        userCampaign.c = 'Organic';
     }
 
     return {
@@ -679,7 +679,7 @@ function fillUserProperties(dbAppUser: AppUserDocument | null | undefined, meta_
 const processToDrill = async function(params: RequestParams, drill_updates: DrillBulkOperation[], callback: (error?: Error | null) => void): Promise<void> {
     const events = params.qstring?.events || [];
     if (!Array.isArray(events)) {
-        log.w("invalid events passed for recording" + JSON.stringify(events));
+        log.w('invalid events passed for recording' + JSON.stringify(events));
         callback();
         return;
     }
@@ -698,18 +698,18 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
                 continue;
             }
 
-            if (currEvent.key === "[CLY]_view" && !(currEvent.segmentation && (currEvent.segmentation as any).visit)) {
-                currEvent.key = "[CLY]_view_update";
+            if (currEvent.key === '[CLY]_view' && !(currEvent.segmentation && (currEvent.segmentation as any).visit)) {
+                currEvent.key = '[CLY]_view_update';
             }
 
             const dbEventObject: DrillEventObject = {
-                "a": params.app_id + "",
-                "e": currEvent.key,
-                "cd": new Date(),
-                "ts": currEvent.timestamp || Date.now().valueOf(),
-                "uid": params.app_user!.uid!,
-                "_uid": params.app_user!._id!,
-                "did": params.app_user!.did!
+                'a': params.app_id + '',
+                'e': currEvent.key,
+                'cd': new Date(),
+                'ts': currEvent.timestamp || Date.now().valueOf(),
+                'uid': params.app_user!.uid!,
+                '_uid': params.app_user!._id!,
+                'did': params.app_user!.did!
             };
 
             if (currEvent.key.indexOf('[CLY]_') === 0) {
@@ -717,7 +717,7 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
             }
             else {
                 dbEventObject.n = currEvent.key;
-                dbEventObject.e = "[CLY]_custom";
+                dbEventObject.e = '[CLY]_custom';
             }
             if (currEvent.name) {
                 dbEventObject.n = currEvent.name;
@@ -735,11 +735,11 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
 
             let eventKey = currEvent.key;
             // Setting params depending on event
-            if (eventKey === "[CLY]_session") {
+            if (eventKey === '[CLY]_session') {
                 dbEventObject._id = params.request_id;
             }
             else {
-                dbEventObject._id = params.request_hash + "_" + params.app_user!.uid + "_" + Date.now().valueOf() + "_" + i;
+                dbEventObject._id = params.request_hash + '_' + params.app_user!.uid + '_' + Date.now().valueOf() + '_' + i;
             }
             eventKey = currEvent.key;
 
@@ -773,13 +773,13 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
                     (currEvent.segmentation as any).platform = upWithMeta.up.p;
                 }
             }
-            if (eventKey === "[CLY]_view" && currEvent && currEvent.segmentation && (currEvent.segmentation as any)._idv) {
-                dbEventObject._id = params.app_id + "_" + dbAppUser!.uid + "_" + (currEvent.segmentation as any)._idv;
+            if (eventKey === '[CLY]_view' && currEvent && currEvent.segmentation && (currEvent.segmentation as any)._idv) {
+                dbEventObject._id = params.app_id + '_' + dbAppUser!.uid + '_' + (currEvent.segmentation as any)._idv;
                 if (!currEvent.id) {
                     currEvent.id = (currEvent.segmentation as any)._idv;
                 }
             }
-            if (eventKey === "[CLY]_consent") {
+            if (eventKey === '[CLY]_consent') {
                 dbEventObject.after = dbAppUser?.consent;
             }
 
@@ -816,30 +816,30 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
                 let tmpSegVal;
                 const meta_doc = params.app?.ovveridden_types?.events;
                 for (const segKey in currEvent.segmentation) {
-                    const segKeyAsFieldName = segKey.replace(/^\$|\./g, "");
+                    const segKeyAsFieldName = segKey.replace(/^\$|\./g, '');
 
-                    if (segKey === "" || segKeyAsFieldName === "" || (currEvent.segmentation as any)[segKey] === null || (currEvent.segmentation as any)[segKey] === undefined) {
+                    if (segKey === '' || segKeyAsFieldName === '' || (currEvent.segmentation as any)[segKey] === null || (currEvent.segmentation as any)[segKey] === undefined) {
                         continue;
                     }
-                    let setType = "";
+                    let setType = '';
                     if (meta_doc && meta_doc[eventKey] && meta_doc[eventKey][segKey]) {
                         setType = meta_doc[eventKey][segKey];
                     }
 
                     if (Array.isArray((currEvent.segmentation as any)[segKey])) {
-                        const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
+                        const pluginsGetConfig = plugins.getConfig('api', params.app && params.app.plugins, true);
                         (currEvent.segmentation as any)[segKey] = (currEvent.segmentation as any)[segKey].splice(0, (pluginsGetConfig.array_list_limit || 10));
                         for (let z = 0; z < (currEvent.segmentation as any)[segKey].length; z++) {
-                            (currEvent.segmentation as any)[segKey][z] = (currEvent.segmentation as any)[segKey][z] + "";
+                            (currEvent.segmentation as any)[segKey][z] = (currEvent.segmentation as any)[segKey][z] + '';
                             (currEvent.segmentation as any)[segKey][z] = common.encodeCharacters((currEvent.segmentation as any)[segKey][z]);
                         }
                     }
                     if (setType) {
-                        if (setType === "s" || setType === "l" || setType === "bl" || setType === "a") {
-                            tmpSegVal = (currEvent.segmentation as any)[segKey] + "";
+                        if (setType === 's' || setType === 'l' || setType === 'bl' || setType === 'a') {
+                            tmpSegVal = (currEvent.segmentation as any)[segKey] + '';
                             tmpSegVal = common.encodeCharacters(tmpSegVal);
                         }
-                        else if (setType === "n") {
+                        else if (setType === 'n') {
                             if (common.isNumber((currEvent.segmentation as any)[segKey])) {
                                 tmpSegVal = Number.parseFloat((currEvent.segmentation as any)[segKey]);
                             }
@@ -849,8 +849,8 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
                         }
                     }
                     else {
-                        if (typeof (currEvent.segmentation as any)[segKey] === "string") {
-                            tmpSegVal = common.encodeCharacters((currEvent.segmentation as any)[segKey] + "");
+                        if (typeof (currEvent.segmentation as any)[segKey] === 'string') {
+                            tmpSegVal = common.encodeCharacters((currEvent.segmentation as any)[segKey] + '');
                         }
                         else {
                             tmpSegVal = (currEvent.segmentation as any)[segKey];
@@ -877,11 +877,11 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
             dbEventObject.s = currEvent.sum || 0;
             dbEventObject.dur = currEvent.dur || 0;
             dbEventObject.c = currEvent.count || 1;
-            eventsToInsert.push({ "insertOne": { "document": dbEventObject } });
+            eventsToInsert.push({ 'insertOne': { 'document': dbEventObject } });
 
-            if (eventKey === "[CLY]_view") {
+            if (eventKey === '[CLY]_view') {
                 const view_id = crypto.createHash('md5').update((currEvent.segmentation as any).name).digest('hex');
-                viewUpdate[view_id] = { "lvid": dbEventObject._id!, "ts": dbEventObject.ts, "a": params.app_id + "" };
+                viewUpdate[view_id] = { 'lvid': dbEventObject._id!, 'ts': dbEventObject.ts, 'a': params.app_id + '' };
                 if (currEvent.segmentation) {
                     const sgm: Record<string, unknown> = {};
                     let have_sgm = false;
@@ -929,7 +929,7 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
     }
 };
 
-plugins.register("/sdk/process_user", async function(ob: UsageObservable) {
+plugins.register('/sdk/process_user', async function(ob: UsageObservable) {
     await usage.processUserProperties(ob);
 });
 
@@ -946,7 +946,7 @@ const processRequestData = (ob: RequestObservable, done: () => void): void => {
         }
         ob.params.qstring!.events = ob.params.qstring!.events || [];
         if (ob.params.qstring!.events!.length === 0) {
-            ob.params.qstring!.events!.push({ "key": "[CLY]_property_update" });
+            ob.params.qstring!.events!.push({ 'key': '[CLY]_property_update' });
         }
     }
 
@@ -963,7 +963,7 @@ const processRequestData = (ob: RequestObservable, done: () => void): void => {
     });
 };
 
-plugins.register("/sdk/process_request", async function(ob: UsageObservable) {
+plugins.register('/sdk/process_request', async function(ob: UsageObservable) {
     await usage.setLocation(ob.params as unknown as IngestorParams);
     usage.processSession(ob);
 });
@@ -975,34 +975,34 @@ plugins.register("/sdk/process_request", async function(ob: UsageObservable) {
  */
 const validateAppForWriteAPI = (params: RequestParams, done: () => void): void => {
     if (ignorePossibleDevices(params)) {
-        common.returnMessage(params, 400, "Device ignored");
+        common.returnMessage(params, 400, 'Device ignored');
         done();
         return;
     }
 
-    common.readBatcher.getOne("apps", { 'key': params.qstring?.app_key + "" }, {}, (err: Error | null, app: AppDocument | null) => {
+    common.readBatcher.getOne('apps', { 'key': params.qstring?.app_key + '' }, {}, (err: Error | null, app: AppDocument | null) => {
         if (err) {
             log.e(err);
         }
         if (!app || !app._id) {
             common.returnMessage(params, 400, 'App does not exist');
-            params.cancelRequest = "App not found or no Database connection";
+            params.cancelRequest = 'App not found or no Database connection';
             done();
             return;
         }
 
         if (app.paused) {
             common.returnMessage(params, 400, 'App is currently not accepting data');
-            params.cancelRequest = "App is currently not accepting data";
-            plugins.dispatch("/sdk/cancel", { params: params });
+            params.cancelRequest = 'App is currently not accepting data';
+            plugins.dispatch('/sdk/cancel', { params: params });
             done();
             return;
         }
 
         if ((params.populator || params.qstring?.populator) && app.locked) {
-            common.returnMessage(params, 403, "App is locked");
-            params.cancelRequest = "App is locked";
-            plugins.dispatch("/sdk/cancel", { params: params });
+            common.returnMessage(params, 403, 'App is locked');
+            params.cancelRequest = 'App is locked';
+            plugins.dispatch('/sdk/cancel', { params: params });
             done();
             return;
         }
@@ -1014,7 +1014,7 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
             return;
         }
 
-        params.app_id = app._id + "";
+        params.app_id = app._id + '';
         params.app_cc = app.country;
         params.app_name = app.name;
         params.appTimezone = app.timezone;
@@ -1024,9 +1024,9 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
         let time = Date.now().valueOf();
         time = Math.round((time || 0) / 1000);
         if (params.app && (!params.app.last_data || params.app.last_data < time - 60 * 60 * 24) && !params.populator && !params.qstring?.populator) {
-            common.readBatcher.updateCacheOne("apps", { 'key': params.qstring?.app_key + "" }, { "last_data": time });
+            common.readBatcher.updateCacheOne('apps', { 'key': params.qstring?.app_key + '' }, { 'last_data': time });
             try {
-                common.db.collection("apps").findOneAndUpdate({ "_id": new ObjectId(params.app._id) }, { "$set": { "last_data": time } });
+                common.db.collection('apps').findOneAndUpdate({ '_id': new ObjectId(params.app._id) }, { '$set': { 'last_data': time } });
                 params.app.last_data = time;
             }
             catch (err3) {
@@ -1039,7 +1039,7 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
             return;
         }
 
-        if (params.qstring?.metrics && typeof params.qstring.metrics === "string") {
+        if (params.qstring?.metrics && typeof params.qstring.metrics === 'string') {
             try {
                 params.qstring.metrics = JSON.parse(params.qstring.metrics);
             }
@@ -1048,12 +1048,12 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
             }
         }
 
-        plugins.dispatch("/sdk/validate_request", { params: params }, async function() {
+        plugins.dispatch('/sdk/validate_request', { params: params }, async function() {
             if (params.cancelRequest) {
                 if (!params.res.finished && !params.waitForResponse) {
                     common.returnOutput(params, { result: 'Success', info: 'Request ignored: ' + params.cancelRequest });
                 }
-                common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
+                common.log('request').i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                 done();
                 return;
             }
@@ -1062,25 +1062,25 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
                 params.app_user = user || {};
                 params.collectedMetrics = {};
 
-                let payload = (params.href?.substr(3) || "");
+                let payload = (params.href?.substr(3) || '');
                 if (params.req && params.req.method && params.req.method.toLowerCase() === 'post') {
-                    payload += "&" + params.req.body;
+                    payload += '&' + params.req.body;
                 }
                 else if (params.bulk) {
-                    payload += "&" + params.req.body;
+                    payload += '&' + params.req.body;
                 }
-                payload = payload.replace(new RegExp("[?&]?(rr=[^&\n]+)", "gm"), "");
-                payload = payload.replace(new RegExp("[?&]?(checksum=[^&\n]+)", "gm"), "");
-                payload = payload.replace(new RegExp("[?&]?(checksum256=[^&\n]+)", "gm"), "");
+                payload = payload.replace(new RegExp('[?&]?(rr=[^&\n]+)', 'gm'), '');
+                payload = payload.replace(new RegExp('[?&]?(checksum=[^&\n]+)', 'gm'), '');
+                payload = payload.replace(new RegExp('[?&]?(checksum256=[^&\n]+)', 'gm'), '');
                 params.request_hash = common.crypto.createHash('sha1').update(payload).digest('hex') + (params.qstring?.timestamp || params.time?.mstimestamp);
 
-                if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
+                if (plugins.getConfig('api', params.app && params.app.plugins, true).prevent_duplicate_requests) {
                     if (params.app_user?.last_req === params.request_hash) {
-                        params.cancelRequest = "Duplicate request";
+                        params.cancelRequest = 'Duplicate request';
                     }
                 }
 
-                if (params.qstring?.metrics && typeof params.qstring.metrics === "string") {
+                if (params.qstring?.metrics && typeof params.qstring.metrics === 'string') {
                     try {
                         params.qstring.metrics = JSON.parse(params.qstring.metrics);
                     }
@@ -1098,14 +1098,14 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
                         }
                         else {
                             const ob: RequestObservable = { params: params, app: app!, updates: [], drill_updates: [] };
-                            ob.params.request_id = ob.params.request_hash + "_" + ob.params.app_user!.uid + "_" + ob.params.time!.mstimestamp;
-                            plugins.dispatch("/sdk/process_request", ob, function() {
-                                plugins.dispatch("/sdk/validate_user", ob, function() {
+                            ob.params.request_id = ob.params.request_hash + '_' + ob.params.app_user!.uid + '_' + ob.params.time!.mstimestamp;
+                            plugins.dispatch('/sdk/process_request', ob, function() {
+                                plugins.dispatch('/sdk/validate_user', ob, function() {
                                     if (params.cancelRequest) {
                                         if (!params.res.finished && !params.waitForResponse) {
                                             common.returnOutput(params, { result: 'Success', info: 'Request ignored: ' + params.cancelRequest });
                                         }
-                                        common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
+                                        common.log('request').i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                                         done();
                                         return;
                                     }
@@ -1118,13 +1118,13 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
                                                 request_id: params.request_id,
                                                 prev_session: params.previous_session,
                                                 prev_start: params.previous_session_start,
-                                                postfix: crypto.createHash('md5').update(params.app_user!.did + "").digest('base64')[0],
-                                                ended: "false"
+                                                postfix: crypto.createHash('md5').update(params.app_user!.did + '').digest('base64')[0],
+                                                ended: 'false'
                                             };
 
                                             params.qstring!.events = params.qstring!.events || [];
 
-                                            ob.updates.push({ "$set": { "lsparams": ob.params.app_user!.lsparams } });
+                                            ob.updates.push({ '$set': { 'lsparams': ob.params.app_user!.lsparams } });
                                             const up_extra: Record<string, unknown> = { av_prev: params.app_user!.av, p_prev: params.app_user!.p };
                                             if (params.app_user!.hadFatalCrash) {
                                                 up_extra.hadFatalCrash = params.app_user!.hadFatalCrash;
@@ -1139,7 +1139,7 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
                                                 up_extra.hadAnyNonfatalCrash = params.app_user!.hadAnyNonfatalCrash;
                                             }
                                             params.qstring!.events!.unshift({
-                                                key: "[CLY]_session_begin",
+                                                key: '[CLY]_session_begin',
                                                 dur: 0,
                                                 count: 1,
                                                 timestamp: params.time!.mstimestamp,
@@ -1147,13 +1147,13 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
                                                     request_id: params.request_id,
                                                     prev_session: params.previous_session,
                                                     prev_start: params.previous_session_start,
-                                                    postfix: crypto.createHash('md5').update(params.app_user!.did + "").digest('base64')[0],
-                                                    ended: "false"
+                                                    postfix: crypto.createHash('md5').update(params.app_user!.did + '').digest('base64')[0],
+                                                    ended: 'false'
                                                 },
                                                 up_extra
                                             });
                                         }
-                                        plugins.dispatch("/sdk/process_user", ob, function() {
+                                        plugins.dispatch('/sdk/process_user', ob, function() {
                                             processRequestData(ob, done);
                                         });
                                     }
@@ -1166,14 +1166,14 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
                     if (!params.res.finished && !params.waitForResponse) {
                         common.returnOutput(params, { result: 'Success', info: 'Request ignored: ' + params.cancelRequest });
                     }
-                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
+                    common.log('request').i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                     done();
                     return;
                 }
             }
             catch (error) {
                 common.returnMessage(params, 400, 'Cannot get app user');
-                params.cancelRequest = "Cannot get app user or no Database connection";
+                params.cancelRequest = 'Cannot get app user or no Database connection';
                 done();
                 return;
             }
@@ -1206,7 +1206,7 @@ const processBulkRequest = async function(requests: Record<string, unknown>[], p
                     'city': (request as any).city || 'Unknown'
                 },
                 'qstring': request as any,
-                'href': "/i",
+                'href': '/i',
                 'res': params.res,
                 'req': params.req,
                 'promises': [],
@@ -1215,9 +1215,9 @@ const processBulkRequest = async function(requests: Record<string, unknown>[], p
                 'blockResponses': true
             };
 
-            tmpParams.qstring!.device_id += "";
+            tmpParams.qstring!.device_id += '';
             tmpParams.app_user_id = common.crypto.createHash('sha1')
-                .update(tmpParams.qstring!.app_key + tmpParams.qstring!.device_id + "")
+                .update(tmpParams.qstring!.app_key + tmpParams.qstring!.device_id + '')
                 .digest('hex');
 
             await new Promise<void>((resolve) => {
@@ -1225,7 +1225,7 @@ const processBulkRequest = async function(requests: Record<string, unknown>[], p
                     if (tmpParams.cancelRequest) {
                         skippedRequests.push(tmpParams.qstring!);
                     }
-                    plugins.dispatch("/sdk/log", { params: tmpParams });
+                    plugins.dispatch('/sdk/log', { params: tmpParams });
                     resolve();
                 });
             });
@@ -1242,13 +1242,13 @@ const processBulkRequest = async function(requests: Record<string, unknown>[], p
  */
 const processRequest = (params: RequestParams): boolean | void => {
     if (!params.req || !params.req.url) {
-        return common.returnMessage(params, 400, "Please provide request data");
+        return common.returnMessage(params, 400, 'Please provide request data');
     }
 
     params.tt = Date.now().valueOf();
     const urlParts = url.parse(params.req.url, true);
     const queryString = urlParts.query;
-    const paths = urlParts.pathname.split("/");
+    const paths = urlParts.pathname.split('/');
 
     params.href = urlParts.href;
     params.qstring = params.qstring || {};
@@ -1266,7 +1266,7 @@ const processRequest = (params: RequestParams): boolean | void => {
         }
     }
 
-    if (params.req.body && typeof params.req.body === "object") {
+    if (params.req.body && typeof params.req.body === 'object') {
         for (const i in params.req.body) {
             (params.qstring as any)[i] = (params.req.body as any)[i];
         }
@@ -1282,7 +1282,7 @@ const processRequest = (params: RequestParams): boolean | void => {
         return false;
     }
 
-    if (common.config.path === "/" + paths[1]) {
+    if (common.config.path === '/' + paths[1]) {
         paths.splice(1, 1);
     }
 
@@ -1292,16 +1292,16 @@ const processRequest = (params: RequestParams): boolean | void => {
         if (i > 2) {
             break;
         }
-        apiPath += "/" + paths[i];
+        apiPath += '/' + paths[i];
     }
 
     params.apiPath = apiPath;
-    params.fullPath = paths.join("/");
+    params.fullPath = paths.join('/');
 
     reloadConfig().then(function() {
         switch (apiPath) {
         case '/o/ping': {
-            common.db.collection("plugins").findOne({ _id: "plugins" }, { _id: 1 }).then(() => {
+            common.db.collection('plugins').findOne({ _id: 'plugins' }, { _id: 1 }).then(() => {
                 common.returnMessage(params, 200, 'Success');
             }).catch(() => {
                 common.returnMessage(params, 404, 'DB Error');
@@ -1309,7 +1309,7 @@ const processRequest = (params: RequestParams): boolean | void => {
             return;
         }
         case '/i': {
-            if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
+            if ([true, 'true'].includes(plugins.getConfig('api', params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
                 params.qstring = common.trimWhitespaceStartEnd(params.qstring);
             }
             params.ip_address = params.qstring?.ip_address as string || common.getIpAddress(params.req);
@@ -1320,14 +1320,14 @@ const processRequest = (params: RequestParams): boolean | void => {
                 return false;
             }
             else {
-                params.qstring.device_id += "";
-                params.qstring.app_key += "";
+                params.qstring.device_id += '';
+                params.qstring.app_key += '';
                 params.app_user_id = common.crypto.createHash('sha1')
-                    .update(params.qstring.app_key + params.qstring.device_id + "")
+                    .update(params.qstring.app_key + params.qstring.device_id + '')
                     .digest('hex');
             }
 
-            if (params.qstring?.events && typeof params.qstring.events === "string") {
+            if (params.qstring?.events && typeof params.qstring.events === 'string') {
                 try {
                     params.qstring.events = JSON.parse(params.qstring.events);
                 }
@@ -1341,13 +1341,13 @@ const processRequest = (params: RequestParams): boolean | void => {
                 params.qstring!.events = [];
             }
             validateAppForWriteAPI(params, () => {
-                plugins.dispatch("/sdk/log", { params: params });
+                plugins.dispatch('/sdk/log', { params: params });
             });
             break;
         }
         case '/i/bulk': {
             let requests = params.qstring?.requests;
-            if (requests && typeof requests === "string") {
+            if (requests && typeof requests === 'string') {
                 try {
                     requests = JSON.parse(requests);
                 }
@@ -1361,7 +1361,7 @@ const processRequest = (params: RequestParams): boolean | void => {
                 return false;
             }
             if (!Array.isArray(requests)) {
-                console.log("Passed invalid param for request. Expected Array, got " + typeof requests);
+                console.log('Passed invalid param for request. Expected Array, got ' + typeof requests);
                 common.returnMessage(params, 400, 'Invalid parameter "requests"');
                 return false;
             }

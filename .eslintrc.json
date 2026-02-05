@@ -720,7 +720,7 @@
                 "unicorn/no-abusive-eslint-disable": "error",
                 "unicorn/no-anonymous-default-export": "error",
                 //"unicorn/no-array-for-each": "error", //removed because of opinions
-                "unicorn/no-array-method-this-argument": "error",
+                "unicorn/no-array-method-this-argument": "warn",
                 "unicorn/no-await-in-promise-methods": "error",
                 "unicorn/no-console-spaces": "error",
                 "unicorn/no-document-cookie": "error",

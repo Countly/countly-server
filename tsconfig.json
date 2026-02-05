@@ -5,6 +5,9 @@
 // npx tsc
 {
     "include": [
+        "plugins/ai-assistants/**/*.ts",
+        "plugins/ai-assistants/**/*.js",
+        //core
         "plugins/pluginManager.ts",
         "plugins/pluginManager.js",
         "plugins/push/**/*.ts",
@@ -12,8 +15,25 @@
         "plugins/push_approver/**/*.ts",
         "plugins/push_approver/**/*.js",
         "api/lib/countly.common.js",
+        "api/lib/countly.model.ts",
+        "api/lib/countly.device_details.ts",
+        "api/lib/countly.devices.ts",
+        "api/lib/countly.event.ts",
+        "api/lib/countly.users.ts",
+        "api/lib/countly.preset.ts",
         "api/parts/data/geoData.ts",
+        "api/parts/data/cache.ts",
+        "api/parts/data/cacher.ts",
+        "api/parts/data/changeStreamReader.ts",
+        "api/parts/data/dataBatchReader.ts",
+        "api/parts/data/events.ts",
+        "api/parts/data/exports.ts",
+        "api/parts/data/QueryRunner.ts",
+        "api/parts/data/stats.ts",
         "api/aggregator.ts",
+        "api/init_configs.ts",
+        "api/tcp_example.ts",
+        "api/ingestor.ts",
         "api/aggregator/usage.ts",
         "api/aggregator/processing.ts",
         "api/ingestor/usage.ts",
@@ -40,13 +60,22 @@
         "api/parts/queries/aggregator.ts",
         "api/parts/queries/coreAggregation.ts",
         "api/parts/queries/mongodbQueries.ts",
+        "api/parts/mgmt/cms.ts",
+        "api/parts/mgmt/date_presets.ts",
+        "api/parts/mgmt/ip.ts",
         "jobServer/constants/JobPriorities.ts",
         "jobServer/example/ExampleJob.ts",
-        "jobServer/example/SimpleExample.ts"
+        "jobServer/example/SimpleExample.ts",
+        "api/jobs/appExpire.ts",
+        "api/jobs/clearAutoTasks.ts",
+        "api/jobs/clearTokens.ts",
+        "api/jobs/task.ts",
+        "api/jobs/ttlCleanup.ts",
+        "api/jobs/userMerge.ts",
+        "api/jobs/mutationManagerJob.ts"
     ],
     "exclude": [
-        "node_modules/**/*.ts",
-        "node_modules/**/*.js",
+        "node_modules/",
         "frontend/*",
         "plugins/**/frontend/**/*.ts",
         "plugins/**/frontend/**/*.js",
@@ -65,6 +94,6 @@
         "lib": ["es2024"],
         // These help with CJS → TS interop:
         "esModuleInterop": true,       // enables default imports from CJS modules
-        "isolatedModules": true         // catches patterns that won't work at runtim
+        "isolatedModules": true         // catches patterns that won't work at runtime
     }
 }
