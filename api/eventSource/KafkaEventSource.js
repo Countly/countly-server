@@ -168,17 +168,31 @@ class KafkaEventSource extends EventSourceInterface {
                 return null; // No overlap after reset
             }
 
-            const savedOffset = state?.partitions?.[token.partition]?.offset;
+            let savedOffset = state?.partitions?.[token.partition]?.offset;
+
+            // Validate offsets are numeric before BigInt conversion
+            // If invalid, use default values instead of skipping dedup check
+            // eslint-disable-next-line require-jsdoc
+            const isValidOffset = (val) => val !== null && val !== undefined && /^\d+$/.test(String(val));
+            if (savedOffset && !isValidOffset(savedOffset)) {
+                this.#log.w(`[${this.#name}] Invalid saved offset format: ${savedOffset}, using 0 as fallback`);
+                savedOffset = '0';
+            }
+            let incomingOffset = token.firstOffset;
+            if (incomingOffset && !isValidOffset(incomingOffset)) {
+                this.#log.w(`[${this.#name}] Invalid incoming offset format: ${incomingOffset}, using 0 as fallback`);
+                incomingOffset = '0';
+            }
 
             // Check for offset going backwards (topic recreation scenario)
             // A significant backward jump suggests topic was recreated (threshold is configurable)
-            if (savedOffset && BigInt(token.firstOffset) < BigInt(savedOffset) - this.#offsetBackwardThreshold) {
-                this.#log.w(`[${this.#name}] Offset backward detected: saved=${savedOffset}, incoming=${token.firstOffset}`);
+            if (savedOffset && BigInt(incomingOffset) < BigInt(savedOffset) - this.#offsetBackwardThreshold) {
+                this.#log.w(`[${this.#name}] Offset backward detected: saved=${savedOffset}, incoming=${incomingOffset}`);
                 await this.#recordConsumerEvent('OFFSET_BACKWARD', token, {
                     message: 'Offset went backwards significantly - possible topic recreation',
                     expectedOffset: savedOffset,
-                    actualOffset: token.firstOffset,
-                    gap: (BigInt(savedOffset) - BigInt(token.firstOffset)).toString(),
+                    actualOffset: incomingOffset,
+                    gap: (BigInt(savedOffset) - BigInt(incomingOffset)).toString(),
                     actionTaken: 'RESET_PARTITION'
                 });
                 await this.#resetPartitionState(stateKey, token.partition);
@@ -186,9 +200,9 @@ class KafkaEventSource extends EventSourceInterface {
             }
 
             // Normal overlap detection
-            if (savedOffset && BigInt(savedOffset) >= BigInt(token.firstOffset)) {
+            if (savedOffset && BigInt(savedOffset) >= BigInt(incomingOffset)) {
                 const commitOffset = (BigInt(savedOffset) + 1n).toString();
-                this.#log.w(`[${this.#name}] Overlap detected: saved=${savedOffset} >= first=${token.firstOffset}, recovering to ${commitOffset}`);
+                this.#log.w(`[${this.#name}] Overlap detected: saved=${savedOffset} >= first=${incomingOffset}, recovering to ${commitOffset}`);
                 this.#recordDuplicateSkipped(stateKey, token);
                 return commitOffset;
             }

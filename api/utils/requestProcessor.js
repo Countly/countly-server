@@ -2019,31 +2019,44 @@ const processRequest = (params) => {
                                         query.clusterId = params.qstring.clusterId;
                                     }
 
-                                    const total = await common.db.collection('kafka_consumer_events').estimatedDocumentCount();
+                                    // Get accurate counts
+                                    const [total, filteredCount] = await Promise.all([
+                                        common.db.collection('kafka_consumer_events').countDocuments({}),
+                                        common.db.collection('kafka_consumer_events').countDocuments(query)
+                                    ]);
                                     let cursor = common.db.collection('kafka_consumer_events').find(query);
-                                    const filteredCount = await common.db.collection('kafka_consumer_events').countDocuments(query);
 
-                                    // Sorting
+                                    // Sorting with validated column index
                                     const columns = ['_id', 'ts', 'type', 'groupId', 'topic', 'partition', 'clusterId'];
-                                    if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[parseInt(params.qstring.iSortCol_0, 10)]) {
+                                    const sortColIndex = parseInt(params.qstring.iSortCol_0, 10);
+                                    if (params.qstring.iSortCol_0 &&
+                                        params.qstring.sSortDir_0 &&
+                                        Number.isInteger(sortColIndex) &&
+                                        sortColIndex >= 0 &&
+                                        sortColIndex < columns.length) {
                                         const sortObj = {};
-                                        sortObj[columns[parseInt(params.qstring.iSortCol_0, 10)]] = params.qstring.sSortDir_0 === 'asc' ? 1 : -1;
+                                        sortObj[columns[sortColIndex]] = params.qstring.sSortDir_0 === 'asc' ? 1 : -1;
                                         cursor = cursor.sort(sortObj);
                                     }
                                     else {
                                         cursor = cursor.sort({ ts: -1 });
                                     }
 
-                                    // Pagination
-                                    if (params.qstring.iDisplayStart) {
-                                        cursor = cursor.skip(parseInt(params.qstring.iDisplayStart, 10));
+                                    // Pagination with validated parameters
+                                    const MAX_DISPLAY_LENGTH = 1000;
+                                    let displayStart = parseInt(params.qstring.iDisplayStart, 10);
+                                    if (Number.isNaN(displayStart) || displayStart < 0) {
+                                        displayStart = 0;
                                     }
-                                    if (params.qstring.iDisplayLength && parseInt(params.qstring.iDisplayLength, 10) !== -1) {
-                                        cursor = cursor.limit(parseInt(params.qstring.iDisplayLength, 10));
+                                    if (displayStart > 0) {
+                                        cursor = cursor.skip(displayStart);
                                     }
-                                    else {
-                                        cursor = cursor.limit(50);
+
+                                    let displayLength = parseInt(params.qstring.iDisplayLength, 10);
+                                    if (Number.isNaN(displayLength) || displayLength < 1 || displayLength > MAX_DISPLAY_LENGTH) {
+                                        displayLength = 50;
                                     }
+                                    cursor = cursor.limit(displayLength);
 
                                     const events = await cursor.toArray();
 

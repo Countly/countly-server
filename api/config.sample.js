@@ -300,7 +300,12 @@ var countlyConfig = {
             // - string: Enable static membership with explicit ID (not recommended for HPA)
             // Dynamic membership = rebalance on restart, but no fencing issues
             // WARNING: Hostname fallback is UNSAFE - pod names change on restart in Deployments
-            groupInstanceId: null
+            groupInstanceId: null,
+
+            // Offset backward detection threshold for topic recreation detection
+            // When the incoming offset is more than this value behind the saved offset,
+            // it triggers a state reset assuming the topic was recreated (default: 10000)
+            offsetBackwardThreshold: 10000
         }
     },
 
