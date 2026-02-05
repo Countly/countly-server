@@ -37,6 +37,7 @@ import 'virtual:legacy-concat';
 // once vue-router is integrated, enabling route-based code-splitting.
 // =============================================================================
 import './core/session-durations/index.js';
+import './core/session-frequency/index.js';
 
 // Component imports
 import ClyStatusBadge from './javascripts/components/cly-status-badge.vue';
