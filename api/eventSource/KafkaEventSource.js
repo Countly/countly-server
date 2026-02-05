@@ -52,6 +52,8 @@ class KafkaEventSource extends EventSourceInterface {
 
     #clusterId = null; // Kafka cluster ID from admin API for state versioning
 
+    #offsetBackwardThreshold = 10000n; // Default threshold for detecting topic recreation (configurable)
+
     /**
      * Create a KafkaEventSource instance with consistent dependency injection
      *
@@ -100,7 +102,14 @@ class KafkaEventSource extends EventSourceInterface {
         this.#batchDedupEnabled = dependencies.countlyConfig?.kafka?.batchDeduplication ?? true;
         this.#batchDedupDb = dependencies.db || null;
 
-        this.#log.d(`KafkaEventSource created: ${name} (will create consumer on initialize, batchDedup=${this.#batchDedupEnabled})`);
+        // Offset backward threshold for detecting topic recreation (default 10000)
+        // A backward jump larger than this threshold suggests the topic was recreated
+        const configuredThreshold = dependencies.countlyConfig?.kafka?.offsetBackwardThreshold;
+        if (configuredThreshold && configuredThreshold > 0) {
+            this.#offsetBackwardThreshold = BigInt(configuredThreshold);
+        }
+
+        this.#log.d(`KafkaEventSource created: ${name} (will create consumer on initialize, batchDedup=${this.#batchDedupEnabled}, offsetBackwardThreshold=${this.#offsetBackwardThreshold})`);
     }
 
     /**
@@ -162,8 +171,8 @@ class KafkaEventSource extends EventSourceInterface {
             const savedOffset = state?.partitions?.[token.partition]?.offset;
 
             // Check for offset going backwards (topic recreation scenario)
-            // A significant backward jump (>1000 offsets) suggests topic was recreated
-            if (savedOffset && BigInt(token.firstOffset) < BigInt(savedOffset) - 1000n) {
+            // A significant backward jump suggests topic was recreated (threshold is configurable)
+            if (savedOffset && BigInt(token.firstOffset) < BigInt(savedOffset) - this.#offsetBackwardThreshold) {
                 this.#log.w(`[${this.#name}] Offset backward detected: saved=${savedOffset}, incoming=${token.firstOffset}`);
                 await this.#recordConsumerEvent('OFFSET_BACKWARD', token, {
                     message: 'Offset went backwards significantly - possible topic recreation',

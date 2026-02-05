@@ -969,13 +969,20 @@ var KafkaEventsView = countlyVue.views.create({
         },
         fetchMeta: function() {
             var self = this;
-            countlyHealthManager.fetchKafkaEventsMeta().then(function(meta) {
-                self.filterOptions.eventTypes = meta.eventTypes || [];
-                self.filterOptions.groupIds = meta.groupIds || [];
-                self.filterOptions.topics = meta.topics || [];
-                self.filterOptions.clusterIds = meta.clusterIds || [];
+            if (countlyHealthManager && typeof countlyHealthManager.fetchKafkaEventsMeta === "function") {
+                countlyHealthManager.fetchKafkaEventsMeta().then(function(meta) {
+                    meta = meta || {};
+                    self.filterOptions.eventTypes = meta.eventTypes || [];
+                    self.filterOptions.groupIds = meta.groupIds || [];
+                    self.filterOptions.topics = meta.topics || [];
+                    self.filterOptions.clusterIds = meta.clusterIds || [];
+                }).finally(function() {
+                    self.hasFetched = true;
+                });
+            }
+            else {
                 self.hasFetched = true;
-            });
+            }
         },
         getSeverityClass: function(type) {
             switch (type) {

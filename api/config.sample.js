@@ -335,7 +335,7 @@ var countlyConfig = {
     */
     api: {
         port: 3001,
-        host: "0.0.0.0",
+        host: "localhost", // Use "0.0.0.0" for containerized deployments behind a reverse proxy
         max_sockets: 1024,
         timeout: 120000,
         maxUploadFileSize: 200 * 1024 * 1024, // 200MB
@@ -358,7 +358,7 @@ var countlyConfig = {
     */
     ingestor: {
         port: 3010,
-        host: "0.0.0.0",
+        host: "localhost", // Use "0.0.0.0" for containerized deployments behind a reverse proxy
         max_sockets: 1024,
         timeout: 120000,
         maxUploadFileSize: 200 * 1024 * 1024, // 200MB
@@ -374,7 +374,7 @@ var countlyConfig = {
     */
     jobServer: {
         port: 3020,
-        host: "0.0.0.0",
+        host: "localhost", // Use "0.0.0.0" for containerized deployments behind a reverse proxy
         max_sockets: 1024,
         timeout: 120000,
         maxUploadFileSize: 200 * 1024 * 1024, // 200MB

@@ -75,7 +75,7 @@ var countlyConfig = {
     */
     web: {
         port: 6001,
-        host: "0.0.0.0",
+        host: "localhost", // Use "0.0.0.0" for containerized deployments behind a reverse proxy
         use_intercom: true,
         secure_cookies: false,
         track: "all",
