@@ -18,13 +18,13 @@ const kafkaRequestQueueFix = require('./kafkaRequestQueueFix');
 
 /**
  * KafkaClient - Thin wrapper around KafkaJS for connection management
- * 
+ *
  * Provides:
  * - Configuration mapping from librdkafka to KafkaJS format
  * - Connection timeout bounds to prevent negative timeout warnings
  * - SSL/SASL security protocol mapping
  * - Shared KafkaJS instance for producers, consumers, and admin
- * 
+ *
  * @example
  * const client = new KafkaClient();
  * const kafka = client.createKafkaInstance();
@@ -41,7 +41,7 @@ class KafkaClient {
 
     /**
      * Create a new KafkaClient instance with configuration from countlyConfig
-     * 
+     *
      * Maps librdkafka-style configuration to KafkaJS:
      * - rdkafka.brokers → brokers
      * - rdkafka.clientId → clientId
@@ -118,9 +118,9 @@ class KafkaClient {
 
     /**
      * Get the connection configuration used by this client
-     * 
+     *
      * @returns {ConnectionConfig} Frozen connection configuration object
-     * 
+     *
      * @example
      * const config = client.getConnectionConfig();
      * console.log('Brokers:', config.brokers);
@@ -132,15 +132,15 @@ class KafkaClient {
 
     /**
      * Create a KafkaJS admin client for cluster management operations
-     * 
+     *
      * Use for:
      * - Creating/deleting topics
      * - Listing topics and metadata
      * - Managing consumer groups
      * - Cluster health checks
-     * 
+     *
      * @returns {Admin} KafkaJS admin client instance
-     * 
+     *
      * @example
      * const admin = client.createAdmin();
      * await admin.connect();
@@ -153,13 +153,13 @@ class KafkaClient {
 
     /**
      * Get the shared KafkaJS client instance
-     * 
+     *
      * Returns the same Kafka instance used by all producers, consumers, and admin clients
      * created from this KafkaClient. This ensures connection pooling and consistent
      * configuration across all Kafka operations.
-     * 
+     *
      * @returns {Kafka} Shared KafkaJS client instance
-     * 
+     *
      * @example
      * const kafka = client.createKafkaInstance();
      * const producer = kafka.producer();
@@ -167,6 +167,66 @@ class KafkaClient {
      */
     createKafkaInstance() {
         return this.#kafka;
+    }
+
+    /**
+     * Fetch cluster metadata from Kafka Admin API
+     *
+     * Retrieves the actual Kafka cluster ID assigned by the cluster itself.
+     * This is used for state versioning to detect cluster migrations.
+     *
+     * @returns {Promise<{clusterId: string, brokers: Array<{nodeId: number, host: string, port: number}>}>} returns cluster metadata
+     * @throws {Error} If unable to connect to cluster or fetch metadata
+     *
+     * @example
+     * const metadata = await client.getClusterMetadata();
+     * console.log('Cluster ID:', metadata.clusterId);
+     * console.log('Brokers:', metadata.brokers);
+     */
+    async getClusterMetadata() {
+        const admin = this.createAdmin();
+        try {
+            await admin.connect();
+            const cluster = await admin.describeCluster();
+            log.d(`Fetched cluster metadata: clusterId=${cluster.clusterId}, brokers=${cluster.brokers.length}`);
+            return {
+                clusterId: cluster.clusterId,
+                brokers: cluster.brokers
+            };
+        }
+        finally {
+            await admin.disconnect();
+        }
+    }
+
+    /**
+     * Fetch topic metadata including partition count and replication factor
+     *
+     * @param {string} topic - Topic name to fetch metadata for
+     * @returns {Promise<{partitions: number, replicationFactor: number}>} returns topic metadata
+     * @throws {Error} If topic doesn't exist or unable to fetch metadata
+     *
+     * @example
+     * const metadata = await client.getTopicMetadata('drill-events');
+     * console.log('Partitions:', metadata.partitions);
+     */
+    async getTopicMetadata(topic) {
+        const admin = this.createAdmin();
+        try {
+            await admin.connect();
+            const metadata = await admin.fetchTopicMetadata({ topics: [topic] });
+            const topicMeta = metadata.topics[0];
+            if (!topicMeta || topicMeta.name !== topic) {
+                throw new Error(`Topic '${topic}' not found`);
+            }
+            return {
+                partitions: topicMeta.partitions.length,
+                replicationFactor: topicMeta.partitions[0]?.replicas?.length || 1
+            };
+        }
+        finally {
+            await admin.disconnect();
+        }
     }
 }
 

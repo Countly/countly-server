@@ -1,0 +1,159 @@
+// Health Manager styles
+
+// Kafka Events view styling
+.kafka-events-view {
+    // Expanded row container
+    .el-table__expanded-cell {
+        padding: 0 !important;
+
+        > .cell {
+            padding: 0 !important;
+        }
+    }
+
+    .el-table__expand-column .cell {
+        padding: 0 10px;
+    }
+
+    // Event type severity badges
+    .kafka-event-type {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 500;
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        white-space: nowrap;
+
+        i {
+            font-size: 12px;
+        }
+
+        &--error {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        &--warning {
+            background: rgba(255, 193, 7, 0.15);
+            color: #b8860b;
+        }
+
+        &--info {
+            background: rgba(108, 117, 125, 0.1);
+            color: #6c757d;
+        }
+
+        &--success {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+    }
+}
+
+// Kafka event expanded details panel
+.kafka-event-details {
+    &__header {
+        margin: 0 0 12px 0;
+        padding-top: 16px;
+        font-weight: 600;
+        font-size: 13px;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        &::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background: #0d6efd;
+            border-radius: 2px;
+        }
+    }
+
+    &__list {
+        padding-bottom: 16px;
+    }
+
+    &__row {
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        align-items: flex-start;
+        padding: 10px 0;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    &__label {
+        font-weight: 600;
+        color: #6c757d;
+        width: 160px;
+        min-width: 160px;
+        font-size: 13px;
+        padding-right: 24px;
+    }
+
+    &__value {
+        color: #212529;
+        font-size: 13px;
+        flex: 1;
+
+        &--mono {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 12px;
+        }
+
+        &--danger {
+            color: #dc3545;
+            font-weight: 700;
+        }
+
+        &--code {
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            word-break: break-all;
+            display: inline-block;
+            max-width: 100%;
+        }
+    }
+
+    &__badge {
+        display: inline-block;
+        padding: 5px 14px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+
+        &--primary {
+            background: #0d6efd;
+            color: white;
+        }
+
+        &--warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        &--danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        &--success {
+            background: #28a745;
+            color: white;
+        }
+    }
+}

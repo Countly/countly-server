@@ -75,7 +75,7 @@ var countlyConfig = {
     */
     web: {
         port: 6001,
-        host: "localhost",
+        host: "0.0.0.0",
         use_intercom: true,
         secure_cookies: false,
         track: "all",
