@@ -5,6 +5,8 @@ Fixes:
 Enterprise Fixes:
 - [crash_symbolication] Use countlyfs for JavaScript symbolication
 - [funnels] Fix funnel name tooltip content
+- [surveys] Allow surveys to resize and reposition when user rotates devices or adjust browser window
+- [nps] Allow nps to resize and reposition when user rotates devices or adjust browser window
 
 ## Version 25.03.33
 Fixes:
