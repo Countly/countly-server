@@ -41,6 +41,8 @@ import './core/session-frequency/index.js';
 import './core/session-overview/index.js';
 import './core/logs/index.js';
 import './core/app-resolution/index.js';
+import './core/app-version/index.js';
+import './core/platform/index.js';
 
 // Component imports
 import ClyStatusBadge from './javascripts/components/cly-status-badge.vue';

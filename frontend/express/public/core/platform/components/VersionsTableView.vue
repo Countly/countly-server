@@ -1,0 +1,105 @@
+<template>
+    <cly-section>
+        <cly-datatable-n test-id="versions" :rows="appPlatformVersionRows" :resizable="true" :force-loading="isLoading">
+            <template v-slot="scope">
+                <el-table-column sortable="custom" prop="os_versions" :label="i18n('platforms.versions')">
+                    <template v-slot="rowScope">
+                        <div :data-test-id="'datatable-versions-versions-' + rowScope.$index">
+                            {{ rowScope.row.os_versions }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')">
+                    <template v-slot="rowScope">
+                        <div :data-test-id="'datatable-versions-total-sessions-' + rowScope.$index">
+                            {{ rowScope.row.t }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')">
+                    <template v-slot="rowScope">
+                        <div :data-test-id="'datatable-versions-total-users-' + rowScope.$index">
+                            {{ rowScope.row.u }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')">
+                    <template v-slot="rowScope">
+                        <div :data-test-id="'datatable-versions-new-users-' + rowScope.$index">
+                            {{ rowScope.row.n }}
+                        </div>
+                    </template>
+                </el-table-column>
+            </template>
+            <template v-slot:header-left>
+                <el-select v-model="selectedPlatform" test-id="platforms">
+                    <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in choosePlatform"></el-option>
+                </el-select>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
+</template>
+
+<script>
+import countlyVue from '../../../javascripts/countly/vue/core.js';
+import countlyCommon from '../../../javascripts/countly/countly.common.js';
+
+export default {
+    mixins: [countlyVue.mixins.i18n],
+    computed: {
+        appPlatform: function() {
+            return this.$store.state.countlyDevicesAndTypes.appPlatform;
+        },
+        appPlatformVersionRows: function() {
+            var platforms = this.appPlatform.versions;
+
+            if (!this.selectedPlatform && platforms.length) {
+                this.selectedPlatform = platforms[0].label;
+                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedPlatform', this.selectedPlatform);
+            }
+
+            for (var k = 0; k < platforms.length; k++) {
+                if (platforms[k].label === this.selectedPlatform) {
+                    return platforms[k].data || [];
+                }
+            }
+
+            return [];
+        },
+        choosePlatform: function() {
+            var display = [];
+            var platforms = this.appPlatform.versions;
+
+            for (var k = 0; k < platforms.length; k++) {
+                display.push({
+                    name: platforms[k].label,
+                    value: platforms[k].label
+                });
+            }
+
+            if (!this.selectedPlatform && display.length) {
+                this.selectedPlatform = display[0].value;
+                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedPlatform', this.selectedPlatform);
+            }
+
+            return display;
+        },
+        isLoading: function() {
+            return this.$store.state.countlyDevicesAndTypes.isLoading;
+        },
+        selectedPlatform: {
+            get: function() {
+                return this.$store.state.countlyDevicesAndTypes.selectedPlatform;
+            },
+            set: function(value) {
+                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedPlatform', value);
+            }
+        }
+    },
+    methods: {
+        numberFormatter: function(row, col, value) {
+            return countlyCommon.formatNumber(value, 0);
+        }
+    }
+};
+</script>
