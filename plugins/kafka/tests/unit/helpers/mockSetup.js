@@ -113,17 +113,59 @@ function createMockCollection(name) {
             const existing = documents.find(d => d._id === filter._id);
             if (existing) {
                 if (update.$set) {
-                    Object.assign(existing, update.$set);
+                    // Handle nested paths like 'partitions.0.offset'
+                    for (const [key, val] of Object.entries(update.$set)) {
+                        if (key.includes('.')) {
+                            const parts = key.split('.');
+                            let obj = existing;
+                            for (let i = 0; i < parts.length - 1; i++) {
+                                if (!obj[parts[i]]) {
+                                    obj[parts[i]] = {};
+                                }
+                                obj = obj[parts[i]];
+                            }
+                            obj[parts[parts.length - 1]] = val;
+                        }
+                        else {
+                            existing[key] = val;
+                        }
+                    }
                 }
                 if (update.$inc) {
                     for (const [key, val] of Object.entries(update.$inc)) {
                         existing[key] = (existing[key] || 0) + val;
                     }
                 }
+                if (update.$unset) {
+                    for (const key of Object.keys(update.$unset)) {
+                        if (key.includes('.')) {
+                            const parts = key.split('.');
+                            let obj = existing;
+                            for (let i = 0; i < parts.length - 1; i++) {
+                                if (!obj[parts[i]]) {
+                                    break;
+                                }
+                                obj = obj[parts[i]];
+                            }
+                            if (obj) {
+                                delete obj[parts[parts.length - 1]];
+                            }
+                        }
+                        else {
+                            delete existing[key];
+                        }
+                    }
+                }
                 return { modifiedCount: 1, matchedCount: 1 };
             }
             else if (options.upsert) {
-                const newDoc = { _id: filter._id, ...update.$set };
+                const newDoc = { _id: filter._id };
+                if (update.$set) {
+                    Object.assign(newDoc, update.$set);
+                }
+                if (update.$setOnInsert) {
+                    Object.assign(newDoc, update.$setOnInsert);
+                }
                 documents.push(newDoc);
                 return { upsertedCount: 1, upsertedId: filter._id };
             }
@@ -148,6 +190,29 @@ function createMockCollection(name) {
             }
             return { insertedCount };
         },
+        distinct: async(field) => {
+            const values = new Set();
+            for (const doc of documents) {
+                if (doc[field] !== undefined && doc[field] !== null) {
+                    values.add(doc[field]);
+                }
+            }
+            return Array.from(values);
+        },
+        countDocuments: async(query = {}) => {
+            if (Object.keys(query).length === 0) {
+                return documents.length;
+            }
+            return documents.filter(doc => {
+                for (const [key, value] of Object.entries(query)) {
+                    if (doc[key] !== value) {
+                        return false;
+                    }
+                }
+                return true;
+            }).length;
+        },
+        estimatedDocumentCount: async() => documents.length,
         _reset: () => {
             documents.length = 0;
         }
@@ -213,9 +278,14 @@ function createMockKafkaProducer() {
 
 /**
  * Create a mock KafkaClient class for testing
+ * @param {Object} options - Options for the mock
+ * @param {string} options.clusterId - Mock cluster ID to return
+ * @param {boolean} options.clusterMetadataError - If true, getClusterMetadata will throw
  * @returns {Function} Mock KafkaClient constructor
  */
-function createMockKafkaClient() {
+function createMockKafkaClient(options = {}) {
+    const { clusterId = 'mock-cluster-id-12345', clusterMetadataError = false } = options;
+
     return class MockKafkaClient {
         constructor() {
             this.isConnected = false;
@@ -228,6 +298,16 @@ function createMockKafkaClient() {
                     disconnect: async() => {},
                     listTopics: async() => []
                 })
+            };
+        }
+
+        async getClusterMetadata() {
+            if (clusterMetadataError) {
+                throw new Error('Failed to fetch cluster metadata');
+            }
+            return {
+                clusterId: clusterId,
+                brokers: [{ nodeId: 1, host: 'localhost', port: 9092 }]
             };
         }
     };

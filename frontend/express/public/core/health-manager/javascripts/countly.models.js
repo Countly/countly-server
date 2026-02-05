@@ -60,6 +60,17 @@
         });
     };
 
+    var fetchKafkaEventsMeta = function() {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r + '/system/kafka/events/meta',
+            dataType: "json",
+            data: {
+                "preventRequestAbort": true
+            }
+        });
+    };
+
     countlyHealthManager.fetchMutationStatus = function(filters) {
         return fetchMutationStatus(filters);
     };
@@ -70,6 +81,10 @@
 
     countlyHealthManager.fetchKafkaStatus = function() {
         return fetchKafkaStatus();
+    };
+
+    countlyHealthManager.fetchKafkaEventsMeta = function() {
+        return fetchKafkaEventsMeta();
     };
 
     countlyHealthManager.getAggregatorVuex = function() {
