@@ -38,6 +38,7 @@ import 'virtual:legacy-concat';
 // =============================================================================
 import './core/session-durations/index.js';
 import './core/session-frequency/index.js';
+import './core/session-overview/index.js';
 
 // Component imports
 import ClyStatusBadge from './javascripts/components/cly-status-badge.vue';
