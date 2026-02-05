@@ -10,7 +10,7 @@ import { createRequire } from 'module';
 // @ts-expect-error - import.meta is available at runtime with Node's native TypeScript support
 const require = createRequire(import.meta.url);
 
-const EventSinkInterface = require('./EventSinkInterface').default;
+const EventSinkInterface = require('./EventSinkInterface.ts').default;
 const { transformToKafkaEventFormat } = require('../utils/eventTransformer');
 const Log = require('../utils/log.js');
 
