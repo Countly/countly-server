@@ -136,6 +136,27 @@ plugins.connectToAllDatabases(true).then(function() {
         }).catch((e: Error) => {
             log.d('Kafka lag history collection check:', e.message);
         });
+
+        // TTL index for consumer events (cluster mismatch, offset backward, state reset, etc.)
+        // Events auto-expire after 30 days
+        common.db.collection('kafka_consumer_events').createIndex(
+            { ts: 1 },
+            { expireAfterSeconds: 2592000, background: true } // 30 days TTL
+        ).then(() => {
+            log.i('Kafka consumer events TTL index ensured');
+        }).catch((e: Error) => {
+            log.d('Kafka consumer events TTL index creation:', e.message);
+        });
+
+        // Query index for efficient filtering by type, groupId, and timestamp
+        common.db.collection('kafka_consumer_events').createIndex(
+            { type: 1, groupId: 1, ts: -1 },
+            { background: true }
+        ).then(() => {
+            log.i('Kafka consumer events query index ensured');
+        }).catch((e: Error) => {
+            log.d('Kafka consumer events query index creation:', e.message);
+        });
     }
 
     common.readBatcher.transformationFunctions = {

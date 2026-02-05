@@ -1973,6 +1973,97 @@ const processRequest = (params) => {
                     }, params);
                     break;
                 case 'kafka':
+                    // Handle sub-routes: /o/system/kafka/events and /o/system/kafka/events/meta
+                    if (paths[4] === 'events') {
+                        if (paths[5] === 'meta') {
+                            // /o/system/kafka/events/meta - Get filter options
+                            validateUserForMgmtReadAPI(async() => {
+                                try {
+                                    const [eventTypes, groupIds, topics, clusterIds] = await Promise.all([
+                                        common.db.collection('kafka_consumer_events').distinct('type'),
+                                        common.db.collection('kafka_consumer_events').distinct('groupId'),
+                                        common.db.collection('kafka_consumer_events').distinct('topic'),
+                                        common.db.collection('kafka_consumer_events').distinct('clusterId')
+                                    ]);
+
+                                    common.returnOutput(params, {
+                                        eventTypes: eventTypes.filter(Boolean).sort(),
+                                        groupIds: groupIds.filter(Boolean).sort(),
+                                        topics: topics.filter(Boolean).sort(),
+                                        clusterIds: clusterIds.filter(Boolean).sort()
+                                    });
+                                }
+                                catch (err) {
+                                    log.e('Error fetching Kafka events meta:', err);
+                                    common.returnMessage(params, 500, 'Error fetching Kafka events meta');
+                                }
+                            }, params);
+                        }
+                        else {
+                            // /o/system/kafka/events - Get events list
+                            validateUserForMgmtReadAPI(async() => {
+                                try {
+                                    // Build query from filters
+                                    const query = {};
+
+                                    if (params.qstring.eventType && params.qstring.eventType !== 'all') {
+                                        query.type = params.qstring.eventType;
+                                    }
+                                    if (params.qstring.groupId && params.qstring.groupId !== 'all') {
+                                        query.groupId = params.qstring.groupId;
+                                    }
+                                    if (params.qstring.topic && params.qstring.topic !== 'all') {
+                                        query.topic = params.qstring.topic;
+                                    }
+                                    if (params.qstring.clusterId && params.qstring.clusterId !== 'all') {
+                                        query.clusterId = params.qstring.clusterId;
+                                    }
+
+                                    const total = await common.db.collection('kafka_consumer_events').estimatedDocumentCount();
+                                    let cursor = common.db.collection('kafka_consumer_events').find(query);
+                                    const filteredCount = await common.db.collection('kafka_consumer_events').countDocuments(query);
+
+                                    // Sorting
+                                    const columns = ['_id', 'ts', 'type', 'groupId', 'topic', 'partition', 'clusterId'];
+                                    if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[parseInt(params.qstring.iSortCol_0, 10)]) {
+                                        const sortObj = {};
+                                        sortObj[columns[parseInt(params.qstring.iSortCol_0, 10)]] = params.qstring.sSortDir_0 === 'asc' ? 1 : -1;
+                                        cursor = cursor.sort(sortObj);
+                                    }
+                                    else {
+                                        cursor = cursor.sort({ ts: -1 });
+                                    }
+
+                                    // Pagination
+                                    if (params.qstring.iDisplayStart) {
+                                        cursor = cursor.skip(parseInt(params.qstring.iDisplayStart, 10));
+                                    }
+                                    if (params.qstring.iDisplayLength && parseInt(params.qstring.iDisplayLength, 10) !== -1) {
+                                        cursor = cursor.limit(parseInt(params.qstring.iDisplayLength, 10));
+                                    }
+                                    else {
+                                        cursor = cursor.limit(50);
+                                    }
+
+                                    const events = await cursor.toArray();
+
+                                    common.returnOutput(params, {
+                                        sEcho: params.qstring.sEcho,
+                                        iTotalRecords: Math.max(total, 0),
+                                        iTotalDisplayRecords: filteredCount,
+                                        aaData: events
+                                    });
+                                }
+                                catch (err) {
+                                    log.e('Error fetching Kafka consumer events:', err);
+                                    common.returnMessage(params, 500, 'Error fetching Kafka consumer events');
+                                }
+                            }, params);
+                        }
+                        break;
+                    }
+
+                    // Default: /o/system/kafka - Get Kafka status overview
                     validateUserForMgmtReadAPI(async() => {
                         try {
                             // Fetch Kafka consumer state (per-partition stats)

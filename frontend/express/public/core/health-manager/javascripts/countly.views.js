@@ -898,6 +898,147 @@ var HealthManagerView = countlyVue.views.create({
     }
 });
 
+var KafkaEventsExpandedRow = countlyVue.views.create({
+    template: CV.T('/core/health-manager/templates/kafka-events-expanded.html'),
+    props: {
+        row: {
+            type: Object,
+            default: function() {
+                return {};
+            }
+        }
+    }
+});
+
+var KafkaEventsView = countlyVue.views.create({
+    template: CV.T('/core/health-manager/templates/kafka-events.html'),
+    components: {
+        "expand-row": KafkaEventsExpandedRow
+    },
+    data: function() {
+        var self = this;
+        var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("kafkaEventsTable", {
+            columns: ['_id', 'ts', 'type', 'groupId', 'topic', 'partition', 'clusterId'],
+            onRequest: function() {
+                return {
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + "/system/kafka/events",
+                    data: {
+                        eventType: self.filters.eventType,
+                        groupId: self.filters.groupId,
+                        topic: self.filters.topic,
+                        clusterId: self.filters.clusterId
+                    }
+                };
+            },
+            onReady: function(context, rows) {
+                return rows.map(function(row) {
+                    row.displayTs = moment(new Date(row.ts)).format("DD MMM YYYY HH:mm:ss");
+                    return row;
+                });
+            }
+        }));
+
+        return {
+            isLoading: false,
+            hasFetched: false,
+            tableStore: tableStore,
+            remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "kafkaEventsTable"),
+            filters: {
+                eventType: 'all',
+                groupId: 'all',
+                topic: 'all',
+                clusterId: 'all'
+            },
+            filterOptions: {
+                eventTypes: [],
+                groupIds: [],
+                topics: [],
+                clusterIds: []
+            }
+        };
+    },
+    mounted: function() {
+        this.fetchMeta();
+    },
+    methods: {
+        refresh: function(force) {
+            if (!this.isLoading || force) {
+                this.tableStore.dispatch("fetchKafkaEventsTable", {_silent: !force});
+            }
+        },
+        fetchMeta: function() {
+            var self = this;
+            countlyHealthManager.fetchKafkaEventsMeta().then(function(meta) {
+                self.filterOptions.eventTypes = meta.eventTypes || [];
+                self.filterOptions.groupIds = meta.groupIds || [];
+                self.filterOptions.topics = meta.topics || [];
+                self.filterOptions.clusterIds = meta.clusterIds || [];
+                self.hasFetched = true;
+            });
+        },
+        getSeverityClass: function(type) {
+            switch (type) {
+            case 'CLUSTER_MISMATCH':
+            case 'OFFSET_BACKWARD':
+                return 'color-red-100';
+            case 'STATE_RESET':
+                return 'color-yellow-100';
+            case 'STATE_MIGRATED':
+                return 'color-cool-gray-100';
+            default:
+                return 'color-cool-gray-100';
+            }
+        },
+        getSeverityBadgeClass: function(type) {
+            switch (type) {
+            case 'CLUSTER_MISMATCH':
+            case 'OFFSET_BACKWARD':
+                return 'kafka-event-type--error';
+            case 'STATE_RESET':
+                return 'kafka-event-type--warning';
+            case 'STATE_MIGRATED':
+                return 'kafka-event-type--success';
+            default:
+                return 'kafka-event-type--info';
+            }
+        },
+        getSeverityIcon: function(type) {
+            switch (type) {
+            case 'CLUSTER_MISMATCH':
+            case 'OFFSET_BACKWARD':
+                return 'cly-icon-warning';
+            case 'STATE_RESET':
+                return 'cly-icon-info';
+            case 'STATE_MIGRATED':
+                return 'cly-icon-check';
+            default:
+                return 'cly-icon-info';
+            }
+        },
+        handleTableRowClick: function(row) {
+            if (window.getSelection().toString().length === 0) {
+                this.$refs.table.$refs.elTable.toggleRowExpansion(row);
+            }
+        },
+        onFilterChange: function() {
+            this.refresh(true);
+        },
+        formatDate: function(val) {
+            if (!val) {
+                return 'N/A';
+            }
+            return moment(val).format('DD-MM-YYYY HH:mm:ss');
+        },
+        formatType: function(type) {
+            if (!type) {
+                return '-';
+            }
+            return type.replace(/_/g, ' ');
+        }
+    }
+});
+
 var getHealthManagerView = function() {
     var tabsVuex = countlyVue.container.tabsVuex(["/manage/health"]);
     return new countlyVue.views.BackboneWrapper({
@@ -938,6 +1079,17 @@ countlyVue.container.registerTab("/manage/health", {
     dataTestId: "health-manager-ingestion-status",
     component: IngestionStatusView,
     tooltip: 'Monitor Kafka producer and ClickHouse sink health'
+});
+
+countlyVue.container.registerTab("/manage/health", {
+    priority: 4,
+    name: "kafka-events",
+    permission: "core",
+    title: 'Kafka Events',
+    route: "#/manage/health/kafka-events",
+    dataTestId: "health-manager-kafka-events",
+    component: KafkaEventsView,
+    tooltip: 'View Kafka consumer events: cluster mismatches, offset anomalies, and state resets'
 });
 
 app.route("/manage/health", "health-manager", function() {
