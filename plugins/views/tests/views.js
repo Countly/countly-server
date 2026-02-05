@@ -30,7 +30,6 @@ tableResponse["30days"] = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaDat
 tableResponse["7days"] = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "scr-calc": 0, "scr": 0}]};
 tableResponse.month = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "scr-calc": 0, "scr": 0}]}; //this year
 
-
 graphResponse.hour = {};
 graphResponse.yesterday = {};
 graphResponse["30days"] = {};
@@ -175,6 +174,11 @@ function verifySegments(values) {
 
 function verifyTotals(period, order, orderString) {
     it("Checking against calculating same table from granural data:" + period, function(done) {
+        var segment = "";
+        if (period.indexOf("_") > 0) {
+            segment = period.split("_")[0];
+            period = period.split("_")[1];
+        }
         request
             .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&no_cache=true&app_id=' + APP_ID + '&query={"queryName":"viewsTableData"}&period=' + period)
             .expect(200)
@@ -456,9 +460,12 @@ describe('Testing views plugin', function() {
     describe('Adding some scrolling', function() {
         it('adding 2 days ago(calling with visit, shouldnt record visit)', function(done) {
             pushValues("30days", 0, {"scr": 60, "scr-calc": 20});
+            if (days_this_year > 2) {
+                pushValues("month", 0, { "scr": 60, "scr-calc": 30});
+            }
             var data = JSON.stringify([{"key": "[CLY]_action", "count": 1, "segmentation": {"name": "testview0", "type": "scroll", "height": 1000, "y": 600, "visit": 1, "start": 1}}]);
             request
-                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 26 * 60 * 60 * 1000 * 2) + '&events=' + data)
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 2 * 24 * 60 * 60 * 1000) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -469,6 +476,9 @@ describe('Testing views plugin', function() {
         });
         it('adding 2 days ago(without visit)', function(done) {
             pushValues("30days", 0, {"scr": 60, "scr-calc": 10});
+            if (days_this_year > 2) {
+                pushValues("month", 0, { "scr": 60, "scr-calc": 30});
+            }
             var data = JSON.stringify([{"key": "[CLY]_action", "count": 1, "segmentation": {"name": "testview0", "type": "scroll", "height": 1000, "y": 600}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 24 * 60 * 60 * 1000 * 2) + '&events=' + data)
@@ -483,6 +493,10 @@ describe('Testing views plugin', function() {
         it('adding 1 day ago', function(done) {
             pushValues("30days", 0, { "scr": 60, "scr-calc": 6});
             pushValues("yesterday", 0, { "scr": 60, "scr-calc": 30});
+            if (days_this_year > 1) {
+                pushValues("month", 0, { "scr": 60, "scr-calc": 30});
+            }
+
             var data = JSON.stringify([{"key": "[CLY]_action", "count": 1, "segmentation": {"name": "testview0", "type": "scroll", "height": 1000, "y": 600}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 24 * 60 * 60 * 1000) + '&events=' + data)
@@ -499,12 +513,17 @@ describe('Testing views plugin', function() {
         verifyTotals("hour");
         verifyTotals("yesterday");
         verifyTotals("30days");
+        verifyTotals("month");
     });
     describe('Adding some segments', function() {
         it('Adding platform(as segment)', function(done) {
             tableResponse["30days"].iTotalRecords += 1;
             tableResponse["30days"].iTotalDisplayRecords += 1;
             pushValues("30days", 2, {"u": 1, "t": 1, "s": 1, "view": "testview2"});
+
+            tableResponse.month.iTotalRecords += 1;
+            tableResponse.month.iTotalDisplayRecords += 1;
+            pushValues("month", 2, {"u": 1, "t": 1, "s": 1, "view": "testview2"});
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview2", "segment": "Android", "visit": 1, "start": 1}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime + 1) + '&events=' + data)
@@ -521,6 +540,7 @@ describe('Testing views plugin', function() {
 
         it('Adding platform(as platform)', function(done) {
             pushValues("30days", 2, {"t": 1, "s": 1});
+            pushValues("month", 2, {"t": 1, "s": 1});
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview2", "platform": "IOS", "visit": 1, "start": 1}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime + 2) + '&events=' + data)
@@ -535,6 +555,7 @@ describe('Testing views plugin', function() {
 
         });
         verifyTotals("30days");
+        verifyTotals("month");
         verifySegments({"segments": { "platform": ["Android", "IOS"] }, "domains": []});
     });
 
@@ -621,6 +642,11 @@ describe('Testing views plugin', function() {
             tableResponse["30days"].iTotalRecords -= 1;
             tableResponse["30days"].iTotalDisplayRecords -= 1;
             tableResponse["30days"].aaData.splice(0, 1);
+
+
+            tableResponse["month"].iTotalRecords -= 1;
+            tableResponse["month"].iTotalDisplayRecords -= 1;
+            tableResponse["month"].aaData.splice(0, 1);
             request
                 .get('/i/views?method=delete_view&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&view_id=' + iid)
                 .expect(200)
@@ -640,6 +666,7 @@ describe('Testing views plugin', function() {
             });
         });
         verifyTotals("30days");
+        verifyTotals("month");
     });
 
     var check_if_merges_finished = function(tries, done) {
@@ -661,177 +688,18 @@ describe('Testing views plugin', function() {
         }
     };
 
-    /*describe('Validating user merging', function() {
-        it('getting Info about users', function(done) {
-            testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
-                for (var k = 0; k < res.length; k++) {
-                    if (res[k].userinfo && res[k].userinfo[0]) {
-                        userObject[res[k].userinfo[0].did] = res[k];
-                        delete res[k].userinfo;
-                    }
-                }
-                done();
-
-            });
-        });
-
-        it('merging two users', function(done) {
-            merge_into('user0', 'user00');
-            request
-                .get('/i?device_id=user00&old_device_id=user0&app_key=' + APP_KEY)
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Success');
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
-                });
-
-        });
-        it('making sure merge is finished', function(done) {
-            check_if_merges_finished(0, done);
-        });
-
-        it('validating result', function(done) {
-            testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
-                var userObject2 = {};
-                for (var k = 0; k < res.length; k++) {
-                    if (res[k].userinfo && res[k].userinfo[0]) {
-                        userObject2[res[k].userinfo[0].did] = res[k];
-                        delete res[k].userinfo;
-                    }
-                }
-                if (compareObjects(userObject2, userObject)) {
-                    done();
-
-                }
-                else {
-                    done("Invalid merging users ");
-                }
-            });
-        });
-
-        it('merging two users', function(done) {
-            merge_into('user1', 'user00');
-            request
-                .get('/i?device_id=user00&old_device_id=user1&app_key=' + APP_KEY)
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Success');
-                    setTimeout(done, 3000 * testUtils.testScalingFactor);
-                });
-
-        });
-        it('making sure merge is finished', function(done) {
-            check_if_merges_finished(0, done);
-        });
-
-        it('validating result', function(done) {
-            testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
-                var userObject2 = {};
-                for (var k = 0; k < res.length; k++) {
-                    if (res[k].userinfo && res[k].userinfo[0]) {
-                        userObject2[res[k].userinfo[0].did] = res[k];
-                        delete res[k].userinfo;
-                    }
-                }
-                if (compareObjects(userObject2, userObject)) {
-                    done();
-
-                }
-                else {
-                    done("Invalid merging users ");
-                }
-            });
-        });
-
-        it('merging info new user', function(done) {
-            userObject['userNew'] = userObject['user00'];
-            delete userObject['user00'];
-            request
-                .get('/i?device_id=userNew&old_device_id=user00&app_key=' + APP_KEY)
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Success');
-                    setTimeout(done, 3000 * testUtils.testScalingFactor);
-                });
-
-        });
-        it('making sure merge is finished', function(done) {
-            check_if_merges_finished(0, done);
-        });
-
-        it('validating result', function(done) {
-            testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
-                var userObject2 = {};
-                for (var k = 0; k < res.length; k++) {
-                    if (res[k].userinfo && res[k].userinfo[0]) {
-                        userObject2[res[k].userinfo[0].did] = res[k];
-                        delete res[k].userinfo;
-                    }
-                }
-                if (Object.keys(userObject2).length === 0) {
-                    console.log('refetching...');
-                    //try refetching in few seconds
-                    setTimeout(function() {
-                        testUtils.db.collection("app_userviews" + APP_ID).aggregate([
-                            { $replaceRoot: { newRoot: { _id: "$_id", "data": "$$ROOT"}}},
-                            {"$unionWith": {"coll": "app_users" + APP_ID, "pipeline": [{"$project": {"_id": "$uid", "userinfo": "$$ROOT"}}]}},
-                            {"$group": {"_id": "$_id", "userinfo": {"$addToSet": "$userinfo"}, "data": {"$addToSet": "$data"}}},
-                            {"$project": {"_id": 1, "userinfo": "$userinfo", "data": {"$first": "$data"}}}
-                        ], function(err, res) {
-                            var userObject2 = {};
-                            console.log(JSON.stringify(res));
-                            for (var k = 0; k < res.length; k++) {
-                                if (res[k].userinfo && res[k].userinfo[0]) {
-                                    userObject2[res[k].userinfo[0].did] = res[k].data;
-                                    delete res[k].userinfo;
-                                }
-                            }
-                            if (compareObjects(userObject2, userObject)) {
-                                done();
-
-                            }
-                            else {
-                                console.log(JSON.stringify(userObject2));
-                                console.log(JSON.stringify(userObject));
-                                done("Invalid merging users ");
-                            }
-                        });
-                    }, 20000);
-
-                }
-                else {
-                    if (compareObjects(userObject2, userObject)) {
-                        done();
-
-                    }
-                    else {
-                        console.log(JSON.stringify(userObject2));
-                        console.log(JSON.stringify(userObject));
-                        done("Invalid merging users ");
-                    }
-                }
-            });
-        });
-    });*/
-
     describe('test adding other meta information', function() {
         it('Adding view url', function(done) {
             tableResponse["30days"].iTotalRecords += 1;
             tableResponse["30days"].iTotalDisplayRecords += 1;
             pushValues("30days", 2, { "u": 1, "t": 1, "s": 1});
             tableResponse['30days'].aaData[2]["url"] = "/mypage.html";
+
+            tableResponse.month.iTotalRecords += 1;
+            tableResponse.month.iTotalDisplayRecords += 1;
+            pushValues("month", 2, { "u": 1, "t": 1, "s": 1});
+            tableResponse['month'].aaData[2]["url"] = "/mypage.html";
+
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview9Me", "visit": 1, "start": 1, "view": "/mypage.html"}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 10) + '&events=' + data)
@@ -867,6 +735,11 @@ describe('Testing views plugin', function() {
             tableResponse["30days"].iTotalRecords += 1;
             tableResponse["30days"].iTotalDisplayRecords += 1;
             pushValues("30days", 3, {"u": 1, "t": 1, "s": 1});
+
+            tableResponse.month.iTotalRecords += 1;
+            tableResponse.month.iTotalDisplayRecords += 1;
+            pushValues("month", 3, {"u": 1, "t": 1, "s": 1});
+
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview9Ze", "visit": 1, "start": 1, "domain": "www.kakis.lv"}}]);
 
             request
@@ -912,11 +785,13 @@ describe('Testing views plugin', function() {
                 });
         });*/
         verifyTotals("30days");
+        verifyTotals("month");
     });
 
     describe('Having multiple cly view events in same request', function() {
         it('Adding view and duration in seperate events', function(done) {
             pushValues("30days", 3, { "u": 1, "t": 1, "s": 1, "d": 100});
+            pushValues("month", 3, { "u": 1, "t": 1, "s": 1, "d": 100});
 
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview9Ze", "visit": 1, "start": 1, "domain": "www.kakis.lv"}}, {"key": "[CLY]_view", "count": 1, "dur": 100, "segmentation": {"name": "testview9Ze"}}]);
             request
@@ -927,12 +802,14 @@ describe('Testing views plugin', function() {
                 });
         });
         verifyTotals("30days");
+        verifyTotals("month");
     });
 
 
     describe('Having multiple cly view events in same request with different duration', function() {
         it('Adding view and duration in seperate events', function(done) {
             pushValues("30days", 3, { "u": 1, "t": 1, "s": 1, "d": 600});
+            pushValues("month", 3, { "u": 1, "t": 1, "s": 1, "d": 600});
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "dur": 500, "segmentation": {"name": "testview9Ze", "visit": 1, "start": 1, "domain": "www.kakis.lv"}}, {"key": "[CLY]_view", "count": 1, "dur": 100, "segmentation": {"name": "testview9Ze"}}]);
 
             request
@@ -943,6 +820,7 @@ describe('Testing views plugin', function() {
                 });
         });
         verifyTotals("30days");
+        verifyTotals("month");
     });
 
     describe("test setting bounce and exit", function() {
@@ -950,6 +828,11 @@ describe('Testing views plugin', function() {
             tableResponse["30days"].iTotalRecords += 1;
             tableResponse["30days"].iTotalDisplayRecords += 1;
             pushValues("30days", 4, {"u": 1, "t": 1, "s": 1, "d": 155});
+
+            tableResponse.month.iTotalRecords += 1;
+            tableResponse.month.iTotalDisplayRecords += 1;
+            pushValues("month", 4, {"u": 1, "t": 1, "s": 1, "d": 155});
+
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "dur": 155, "segmentation": {"name": "testviewBounceExit", "visit": 1, "start": 1}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "userBounceExit" + '&begin_session=1&timestamp=' + (myTime - 10) + '&events=' + data)
@@ -962,6 +845,7 @@ describe('Testing views plugin', function() {
                 });
         });
         verifyTotals("30days");
+        verifyTotals("month");
         it("Sending end event for view(duration should not appear yet)", function(done) {
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "dur": 200, "segmentation": {"name": "testviewBounceExit"}}]);
             //pushValues("30days", 4, {"d":200});
@@ -976,8 +860,10 @@ describe('Testing views plugin', function() {
                 });
         });
         verifyTotals("30days");
+        verifyTotals("month");
         it("Sending end session event for user(bounce and exit should be set)", function(done) {
             pushValues("30days", 4, {"e": 1, "b": 1, "d": 200});
+            pushValues("month", 4, {"e": 1, "b": 1, "d": 200});
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "userBounceExit" + '&timestamp=' + (myTime - 1) + '&end_session=1&ignore_cooldown=1')
                 .expect(200)
@@ -990,6 +876,7 @@ describe('Testing views plugin', function() {
 
         });
         verifyTotals("30days");
+        verifyTotals("month");
 
     });
 
@@ -998,6 +885,11 @@ describe('Testing views plugin', function() {
             tableResponse["30days"].iTotalRecords += 1;
             tableResponse["30days"].iTotalDisplayRecords += 1;
             pushValues("30days", 5, {"u": 1, "t": 1, "s": 1, "d": 50});
+
+            tableResponse.month.iTotalRecords += 1;
+            tableResponse.month.iTotalDisplayRecords += 1;
+            pushValues("month", 5, {"u": 1, "t": 1, "s": 1, "d": 50});
+
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "dur": 50, "segmentation": {"name": "testviewFirst", "visit": 1, "start": 1}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "userBounceExit" + '&begin_session=1&timestamp=' + (myTime - 10) + '&events=' + data)
@@ -1009,6 +901,7 @@ describe('Testing views plugin', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
                 });
         });
+        verifyTotals("month");
         verifyTotals("30days");
         it("End the first view(should not flush yet)", function(done) {
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "dur": 100, "segmentation": {"name": "testviewFirst"}}]);
@@ -1023,11 +916,17 @@ describe('Testing views plugin', function() {
                 });
         });
         verifyTotals("30days");
+        verifyTotals("month");
         it("Starting second view(should flush first view)", function(done) {
             pushValues("30days", 5, {"d": 100});
             tableResponse["30days"].iTotalRecords += 1;
             tableResponse["30days"].iTotalDisplayRecords += 1;
             pushValues("30days", 6, {"u": 1, "t": 1, "d": 100});
+
+            tableResponse.month.iTotalRecords += 1;
+            tableResponse.month.iTotalDisplayRecords += 1;
+            pushValues("month", 6, {"u": 1, "t": 1, "d": 100});
+            pushValues("month", 5, {"d": 100});
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testviewSecond", "visit": 1, "dur": 100}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "userBounceExit" + '&timestamp=' + (myTime - 3) + '&events=' + data)
@@ -1039,9 +938,11 @@ describe('Testing views plugin', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
                 });
         });
+        verifyTotals("month");
         verifyTotals("30days");
         it("Ending session(should flush second view without end view event)", function(done) {
             pushValues("30days", 6, {"e": 1, "b": 0});
+            pushValues("month", 6, {"e": 1, "b": 0});
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "userBounceExit" + '&timestamp=' + (myTime - 1) + '&end_session=1&ignore_cooldown=1')
                 .expect(200)
@@ -1053,6 +954,7 @@ describe('Testing views plugin', function() {
                 });
         });
         verifyTotals("30days");
+        verifyTotals("month");
     });
 
     describe('reset app', function() {
@@ -1095,195 +997,6 @@ describe('Testing views plugin', function() {
         });
     });
 
-
-    /*describe('Testing metric - uve', function() {
-        describe('Check adding view(yesterday)+starting session', function() {
-            it('adding view', function(done) {
-                pushValues("yesterday", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
-
-                pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "n": 1});
-
-                pushValues("7days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
-                tableResponse["30days"].iTotalRecords += 1;
-                tableResponse["30days"].iTotalDisplayRecords += 1;
-                tableResponse["7days"].iTotalRecords += 1;
-                tableResponse["7days"].iTotalDisplayRecords += 1;
-                tableResponse["yesterday"].iTotalRecords += 1;
-                tableResponse["yesterday"].iTotalDisplayRecords += 1;
-
-                if (days_this_year > 1) {
-                    pushValues("month", 0, {"t": 1, "s": 1, "n": 1, "u": 1, "uvalue": 1});
-                    //tableResponse["month"]['aaData'][0]['n']=1;
-                    tableResponse.month.iTotalRecords = 1;
-                    tableResponse.month.iTotalDisplayRecords = 1;
-                }
-
-                var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview00", "visit": 1, "start": 1}}]);
-                request
-                    .get('/i?begin_session=1&app_key=' + APP_KEY + '&device_id=' + "user9" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000)) + '&events=' + data)
-                    .expect(200)
-                    .end(function(err, res) {
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
-                    });
-            });
-        });
-
-        describe('verifying totals after last update', function() {
-            verifyTotals("yesterday");
-            verifyTotals("30days");
-            verifyTotals("month");
-            verifyTotals("7days");
-        });
-
-        describe('Ending sesssion', function() {
-            it('request', function(done) {
-                pushValues("yesterday", 0, {"uvc": 1, "b": 1, "e": 1});
-                pushValues("30days", 0, {"uvc": 1, "b": 1, "e": 1});
-                pushValues("7days", 0, { "uvc": 1, "b": 1, "e": 1});
-
-                if (days_this_year > 1) {
-                    tableResponse.month.iTotalRecords = 1;
-                    tableResponse.month.iTotalDisplayRecords = 1;
-                    pushValues("month", 0, {"uvc": 1, "b": 1, "e": 1});
-                    //tableResponse["month"]['aaData'][0]['n']=1;
-                }
-
-                request
-                    .get('/i?end_session=1&app_key=' + APP_KEY + '&device_id=' + "user9" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000) + 1000))
-                    .expect(200)
-                    .end(function(err, res) {
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
-                    });
-            });
-        });
-
-        describe('verifying totals after last update', function() {
-            verifyTotals("yesterday");
-            verifyTotals("30days");
-            verifyTotals("month");
-            verifyTotals("7days");
-        });
-
-        describe('Check adding more data', function() {
-            it('adding view+session', function(done) {
-                pushValues("yesterday", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
-                pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "n": 1, "uvalue": 1});
-                pushValues("7days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
-
-                if (days_this_year > 1) {
-                    pushValues("month", 0, {"t": 1, "s": 1, "n": 1, "u": 1, "uvalue": 1});
-                }
-
-                var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview00", "visit": 1, "start": 1}}]);
-                request
-                    .get('/i?begin_session=1&app_key=' + APP_KEY + '&device_id=' + "user10" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000)) + '&events=' + data)
-                    .expect(200)
-                    .end(function(err, res) {
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
-                    });
-            });
-
-
-            it('adding different view', function(done) {
-                pushValues("yesterday", 1, {"u": 1, "t": 1, "uvalue": 1, "n": 1});
-                pushValues("30days", 1, {"u": 1, "t": 1, "n": 1});
-                pushValues("7days", 1, {"u": 1, "t": 1, "uvalue": 1, "n": 1});
-
-
-                tableResponse["30days"].iTotalRecords += 1;
-                tableResponse["30days"].iTotalDisplayRecords += 1;
-                tableResponse["7days"].iTotalRecords += 1;
-                tableResponse["7days"].iTotalDisplayRecords += 1;
-                tableResponse["yesterday"].iTotalRecords += 1;
-                tableResponse["yesterday"].iTotalDisplayRecords += 1;
-
-                if (days_this_year > 1) {
-                    pushValues("month", 1, {"t": 1, "n": 1, "u": 1, "uvalue": 1});
-                    tableResponse["month"].iTotalRecords += 1;
-                    tableResponse["month"].iTotalDisplayRecords += 1;
-                }
-
-                var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview1", "visit": 1}}]);
-                request
-                    .get('/i?app_key=' + APP_KEY + '&device_id=' + "user10" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000) + 100) + '&events=' + data)
-                    .expect(200)
-                    .end(function(err, res) {
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
-                    });
-            });
-
-
-            it('going back to first one', function(done) {
-                pushValues("yesterday", 0, { "t": 1});
-                pushValues("30days", 0, {"t": 1});
-                pushValues("7days", 0, { "t": 1});
-
-                if (days_this_year > 1) {
-                    pushValues("month", 0, {"t": 1});
-                }
-
-                var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview00", "visit": 1}}]);
-                request
-                    .get('/i?app_key=' + APP_KEY + '&device_id=' + "user10" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000) + 150) + '&events=' + data)
-                    .expect(200)
-                    .end(function(err, res) {
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
-                    });
-            });
-
-
-            it('Again to second', function(done) {
-                pushValues("yesterday", 1, { "t": 1});
-                pushValues("30days", 1, {"t": 1});
-                pushValues("7days", 1, { "t": 1});
-
-                if (days_this_year > 1) {
-                    pushValues("month", 1, {"t": 1});
-                }
-
-                var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview1", "visit": 1}}]);
-                request
-                    .get('/i?app_key=' + APP_KEY + '&device_id=' + "user10" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000) + 200) + '&events=' + data)
-                    .expect(200)
-                    .end(function(err, res) {
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
-                    });
-            });
-
-
-            it('Ending session', function(done) {
-                pushValues("yesterday", 1, {"uvc": 1, "e": 1});
-                pushValues("30days", 1, {"uvc": 1, "e": 1});
-                pushValues("7days", 1, { "uvc": 1, "e": 1});
-
-
-                pushValues("yesterday", 0, {"uvc": 1});
-                pushValues("30days", 0, {"uvc": 1});
-                pushValues("7days", 0, { "uvc": 1});
-
-                if (days_this_year > 1) {
-                    pushValues("month", 1, {"uvc": 1, "e": 1});
-                    pushValues("month", 0, {"uvc": 1});
-                    //tableResponse["month"]['aaData'][0]['n']=1;
-                }
-
-                request
-                    .get('/i?end_session=1&app_key=' + APP_KEY + '&device_id=' + "user10" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000) + 1000))
-                    .expect(200)
-                    .end(function(err, res) {
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
-                    });
-            });
-
-        });
-
-        describe('verifying totals after last update', function() {
-            verifyTotals("yesterday");
-            verifyTotals("30days");
-            verifyTotals("month");
-            verifyTotals("7days");
-        });
-    });*/
     describe('Adding views with UTM segments', function() {
         it('adding new view', function(done) {
             tableResponse.hour.iTotalRecords = 1;
@@ -1435,7 +1148,6 @@ describe('Testing views plugin', function() {
                 });
             });
         });
-
     });
 
     describe('reset app', function() {
