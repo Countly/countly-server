@@ -58,6 +58,11 @@ const __dirname = path.dirname(__filename);
 
 // TODO: a separate build for prelogin files
 
+
+const REFACTORED_PLUGINS = [
+    "alerts"
+];
+
 // List of legacy scripts in exact order from dashboard.html
 // These will be concatenated into a single scope
 // COMMIT HASH BEFORE REMOVALS: d1167224987671af19c576fbd4c6d7ab56515dde
@@ -202,6 +207,11 @@ const legacyScripts = [
     // nodejs doesn't pick up glob patterns when * is used for both directories and symlinks
     // ...globSync("./plugins/*/frontend/public/javascripts/*.js").map(f => "../../../" + f),
     ...globSync("./plugins/*")
+        .filter(
+            pluginPath => !REFACTORED_PLUGINS
+                .map(plugin => `./plugins/${plugin}`)
+                .includes(pluginPath)
+        )
         .map(pluginPath => globSync("./" + pluginPath + "/frontend/public/javascripts/*.js"))
         .flat()
         .map(f => "../../../" + f),

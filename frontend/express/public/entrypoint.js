@@ -285,6 +285,11 @@ window.Vue.component('cly-worldmap', ClyWorldmap);
 window.countlyVue.mixins.zoom = ExternalZoomMixin;
 
 // =============================================================================
+// ES MODULE PLUGIN IMPORTS
+// =============================================================================
+import.meta.glob('../../../plugins/*/frontend/public/index.js');
+
+// =============================================================================
 // NEW ES MODULE CODE GOES BELOW
 // =============================================================================
 //
