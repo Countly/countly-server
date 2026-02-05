@@ -69,6 +69,8 @@
         "jobServer/constants/JobPriorities.ts",
         "jobServer/example/ExampleJob.ts",
         "jobServer/example/SimpleExample.ts",
+        "jobServer/JobUtils.ts",
+        "jobServer/requestProcessor.ts",
         "api/jobs/appExpire.ts",
         "api/jobs/clearAutoTasks.ts",
         "api/jobs/clearTokens.ts",
