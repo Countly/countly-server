@@ -80,7 +80,7 @@ import {
     // Lifecycle
     setAppInstance,
     _removeUnfinishedRequests,
-    switchApp,
+    switchApp as _originalSwitchApp,
     main,
     dashboard,
     runRefreshScripts,
@@ -295,6 +295,52 @@ export { setRoutesHit };
  */
 export { getOrigLang };
 export { setOrigLang };
+
+/**
+ * Switch to a different app
+ * @param {string} app_id - The app ID to switch to
+ * @param {function} [callback] - Optional callback after switch
+ */
+function switchApp(app_id, callback) {
+    var currentFragment = Backbone.history.fragment || "";
+    var hadActiveView = app && app._activeView;
+
+    var emitVueRefresh = function() {
+        if (app && app._activeView && app._activeView.vm) {
+            app._activeView.vm.$root.$emit("cly-refresh", {reason: "appSwitch"});
+        }
+        if (window.countlyVue && window.countlyVue.sideBarComponent) {
+            window.countlyVue.sideBarComponent.$root.$emit("cly-refresh", {reason: "appSwitch"});
+        }
+    };
+
+    var postSwitchActions = function() {
+        if (countlyCommon.APP_NAMESPACE !== false) {
+            var cleanFragment = currentFragment;
+            var fragmentParts = currentFragment.split("/");
+            if (fragmentParts.length > 1 && Backbone.history.appIds && Backbone.history.appIds.indexOf(fragmentParts[1]) !== -1) {
+                fragmentParts.splice(1, 1);
+                cleanFragment = fragmentParts.join("/");
+            }
+            var newHash = "#/" + app_id + (cleanFragment.indexOf("/") === 0 ? cleanFragment : "/" + cleanFragment);
+            if (history && history.replaceState) {
+                history.replaceState(undefined, undefined, newHash);
+            }
+        }
+
+        if (!hadActiveView) {
+            onAppSwitch(app_id);
+        }
+
+        emitVueRefresh();
+
+        if (typeof callback === "function") {
+            callback();
+        }
+    };
+
+    _originalSwitchApp(app_id, postSwitchActions);
+}
 
 // Re-export all functions from submodules
 export {
@@ -556,7 +602,12 @@ function initializeApp() {
 
             countlyCommon.setActiveApp(activeApp._id);
         }
-        // No need to set activeAppName separately - it's derived from the store
+        else {
+            var store = getGlobalStore();
+            if (store.state.countlyCommon.activeAppId && !store.state.countlyCommon.activeApp) {
+                store.commit('countlyCommon/setActiveApp', store.state.countlyCommon.activeAppId);
+            }
+        }
     }
 
     // Idle timer
