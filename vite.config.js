@@ -114,7 +114,7 @@ const legacyScripts = [
     // 'javascripts/countly/countly.cms.js', // ESM - imported in entrypoint.js, exposed as window.countlyCMS
     'core/device-and-type/javascripts/countly.models.js',
     'core/device-and-type/javascripts/countly.views.js',
-    'core/app-resolution/javascripts/countly.views.js',
+    // 'core/app-resolution/javascripts/countly.views.js',
     'core/app-version/javascripts/countly.views.js',
     'core/jobs/javascripts/countly.views.js',
     // 'core/logs/javascripts/countly.views.js',
