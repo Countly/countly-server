@@ -74,6 +74,7 @@
         "jobServer/example/SimpleExample.ts",
         "jobServer/JobUtils.ts",
         "jobServer/requestProcessor.ts",
+        "jobServer/PulseJobRunner.ts",
         "api/jobs/appExpire.ts",
         "api/jobs/clearAutoTasks.ts",
         "api/jobs/clearTokens.ts",
