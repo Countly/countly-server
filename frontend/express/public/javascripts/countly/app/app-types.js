@@ -3,19 +3,31 @@
  *
  * Contains functions for managing app types (mobile, web, desktop, etc.)
  * and localization utilities.
+ *
+ * All app type state is now stored in the Vuex store (countlyApp module)
+ * as the single source of truth.
  */
 
 import jQuery from 'jquery';
-import {
-    appTypes,
-    _menuForTypes,
-    _subMenuForTypes,
-    _menuForAllTypes,
-    _subMenuForAllTypes
-} from './app-state.js';
+import { getGlobalStore } from '../vue/data/store.js';
 import { addMenuForType, addSubMenuForType } from './app-menu.js';
 
 const $ = jQuery;
+
+/**
+ * Get the app types state from the store
+ * @returns {Object} Object containing app types and menu state
+ */
+function getAppTypesState() {
+    const store = getGlobalStore();
+    return {
+        appTypes: store.state.countlyApp.appTypes,
+        menuForTypes: store.state.countlyApp.menuForTypes,
+        subMenuForTypes: store.state.countlyApp.subMenuForTypes,
+        menuForAllTypes: store.state.countlyApp.menuForAllTypes,
+        subMenuForAllTypes: store.state.countlyApp.subMenuForAllTypes,
+    };
+}
 
 /**
  * Register a new app type
@@ -23,41 +35,46 @@ const $ = jQuery;
  * @param {function|null} view - The view constructor for this app type's dashboard, or null to use HomeView
  */
 export function addAppType(name, view) {
-    if (view) {
-        appTypes[name] = new view();
-    }
-    else {
-        appTypes[name] = null;
-    }
+    const store = getGlobalStore();
+    const {
+        menuForTypes,
+        subMenuForTypes,
+        menuForAllTypes,
+        subMenuForAllTypes
+    } = getAppTypesState();
+
+    // Register the app type in the store
+    const viewInstance = view ? new view() : null;
+    store.commit('countlyApp/addAppType', { type: name, config: viewInstance });
 
     var menu = $("#default-type").clone();
     menu.attr("id", name + "-type");
     $("#sidebar-menu").append(menu);
 
     // Process deferred menus for this app type
-    if (_menuForTypes[name]) {
-        for (var i = 0; i < _menuForTypes[name].length; i++) {
-            addMenuForType(name, _menuForTypes[name][i].category, _menuForTypes[name][i].node);
+    if (menuForTypes[name]) {
+        for (var i = 0; i < menuForTypes[name].length; i++) {
+            addMenuForType(name, menuForTypes[name][i].category, menuForTypes[name][i].node);
         }
-        _menuForTypes[name] = null;
+        menuForTypes[name] = null;
     }
 
     // Process deferred submenus for this app type
-    if (_subMenuForTypes[name]) {
-        for (i = 0; i < _subMenuForTypes[name].length; i++) {
-            addSubMenuForType(name, _subMenuForTypes[name][i].parent_code, _subMenuForTypes[name][i].node);
+    if (subMenuForTypes[name]) {
+        for (i = 0; i < subMenuForTypes[name].length; i++) {
+            addSubMenuForType(name, subMenuForTypes[name][i].parent_code, subMenuForTypes[name][i].node);
         }
-        _subMenuForTypes[name] = null;
+        subMenuForTypes[name] = null;
     }
 
     // Add all-type menus to this app type
-    for (i = 0; i < _menuForAllTypes.length; i++) {
-        addMenuForType(name, _menuForAllTypes[i].category, _menuForAllTypes[i].node);
+    for (i = 0; i < menuForAllTypes.length; i++) {
+        addMenuForType(name, menuForAllTypes[i].category, menuForAllTypes[i].node);
     }
 
     // Add all-type submenus to this app type
-    for (i = 0; i < _subMenuForAllTypes.length; i++) {
-        addSubMenuForType(name, _subMenuForAllTypes[i].parent_code, _subMenuForAllTypes[i].node);
+    for (i = 0; i < subMenuForAllTypes.length; i++) {
+        addSubMenuForType(name, subMenuForAllTypes[i].parent_code, subMenuForAllTypes[i].node);
     }
 }
 
@@ -128,10 +145,12 @@ export function localize(el, data) {
 
 /**
  * Get all registered app types
+ * Uses Vuex store as single source of truth
  * @returns {object} The app types object
  */
 export function getAppTypes() {
-    return appTypes;
+    const store = getGlobalStore();
+    return store.state.countlyApp.appTypes;
 }
 
 /**
@@ -140,6 +159,7 @@ export function getAppTypes() {
  * @returns {boolean} True if the type is registered
  */
 export function hasAppType(type) {
+    const appTypes = getAppTypes();
     return typeof appTypes[type] !== "undefined";
 }
 
@@ -149,5 +169,6 @@ export function hasAppType(type) {
  * @returns {object|null} The view for the app type, or null if not found
  */
 export function getAppTypeView(type) {
+    const appTypes = getAppTypes();
     return appTypes[type] || null;
 }

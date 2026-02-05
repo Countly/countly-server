@@ -3,22 +3,35 @@
  *
  * Contains functions for managing sidebar menus and submenus.
  * Uses registerData from container.js for sidebar integration.
+ *
+ * All menu state is now stored in the Vuex store (countlyApp module)
+ * as the single source of truth.
  */
 
 import { registerData } from '../vue/container.js';
 import { i18n } from '../vue/core.js';
 import { isPluginEnabled } from '../countly.helpers.js';
-import {
-    _menuForTypes,
-    _subMenuForTypes,
-    _menuForAllTypes,
-    _subMenuForAllTypes,
-    _subMenuForCodes,
-    _subMenus,
-    _internalMenuCategories,
-    _uniqueMenus,
-    appTypes
-} from './app-state.js';
+import { getGlobalStore } from '../vue/data/store.js';
+
+/**
+ * Get the menu state from the store
+ * @returns {Object} Object containing all menu state accessors
+ */
+function getMenuState() {
+    const store = getGlobalStore();
+    return {
+        menuForTypes: store.state.countlyApp.menuForTypes,
+        subMenuForTypes: store.state.countlyApp.subMenuForTypes,
+        menuForAllTypes: store.state.countlyApp.menuForAllTypes,
+        subMenuForAllTypes: store.state.countlyApp.subMenuForAllTypes,
+        subMenuForCodes: store.state.countlyApp.subMenuForCodes,
+        subMenus: store.state.countlyApp.subMenus,
+        internalMenuCategories: store.state.countlyApp.internalMenuCategories,
+        uniqueMenus: store.state.countlyApp.uniqueMenus,
+        appTypes: store.state.countlyApp.appTypes,
+        menuCategories: store.state.countlyApp.menuCategories,
+    };
+}
 
 /**
  * Add a new menu category to the sidebar
@@ -26,7 +39,10 @@ import {
  * @param {object} node - Category configuration with priority, title, etc.
  */
 export function addMenuCategory(category, node) {
-    if (_internalMenuCategories.indexOf(category) !== -1) {
+    const store = getGlobalStore();
+    const { internalMenuCategories } = getMenuState();
+
+    if (internalMenuCategories.indexOf(category) !== -1) {
         throw "Category already exists with name: " + category;
     }
     if (typeof node.priority === "undefined") {
@@ -39,7 +55,13 @@ export function addMenuCategory(category, node) {
         title: node.text || i18n("sidebar.category." + category),
         node: node
     });
-    _internalMenuCategories.push(category);
+
+    // Add to internal categories list (this modifies the array in place since it's a reference)
+    internalMenuCategories.push(category);
+
+    // Register in store
+    store.commit('countlyApp/addMenuCategory', { category: category, config: node });
+
     if (typeof node.callback === "function") {
         node.callback(category, node);
     }
@@ -52,23 +74,32 @@ export function addMenuCategory(category, node) {
  * @param {object} node - Menu configuration
  */
 export function addMenuForType(app_type, category, node) {
-    if (_internalMenuCategories.indexOf(category) === -1) {
+    const {
+        internalMenuCategories,
+        uniqueMenus,
+        appTypes,
+        menuForTypes,
+        subMenuForCodes,
+        subMenus
+    } = getMenuState();
+
+    if (internalMenuCategories.indexOf(category) === -1) {
         throw "Wrong category for menu: " + category;
     }
     if (!node.text || !node.code || typeof node.priority === "undefined") {
         throw "Provide code, text, icon and priority properties for menu element";
     }
 
-    if (!_uniqueMenus[app_type]) {
-        _uniqueMenus[app_type] = {};
+    if (!uniqueMenus[app_type]) {
+        uniqueMenus[app_type] = {};
     }
 
-    if (!_uniqueMenus[app_type][category]) {
-        _uniqueMenus[app_type][category] = {};
+    if (!uniqueMenus[app_type][category]) {
+        uniqueMenus[app_type][category] = {};
     }
 
-    if (!_uniqueMenus[app_type][category][node.code]) {
-        _uniqueMenus[app_type][category][node.code] = true;
+    if (!uniqueMenus[app_type][category][node.code]) {
+        uniqueMenus[app_type][category][node.code] = true;
     }
     else {
         return;
@@ -88,25 +119,25 @@ export function addMenuForType(app_type, category, node) {
     });
 
     if (!appTypes[app_type] && category !== "management" && category !== "users") {
-        if (!_menuForTypes[app_type]) {
-            _menuForTypes[app_type] = [];
+        if (!menuForTypes[app_type]) {
+            menuForTypes[app_type] = [];
         }
-        _menuForTypes[app_type].push({category: category, node: node});
+        menuForTypes[app_type].push({category: category, node: node});
         return;
     }
     if (!node.url && category !== "management" && category !== "users") {
-        _subMenus[node.code] = true;
+        subMenus[node.code] = true;
     }
 
     if (typeof node.callback === "function") {
         node.callback(app_type, category, node);
     }
 
-    if (!node.url && category !== "management" && category !== "users" && _subMenuForCodes[node.code]) {
-        for (var i = 0; i < _subMenuForCodes[node.code].length; i++) {
-            addSubMenuForType(_subMenuForCodes[node.code][i].app_type, node.code, _subMenuForCodes[node.code][i].node);
+    if (!node.url && category !== "management" && category !== "users" && subMenuForCodes[node.code]) {
+        for (var i = 0; i < subMenuForCodes[node.code].length; i++) {
+            addSubMenuForType(subMenuForCodes[node.code][i].app_type, node.code, subMenuForCodes[node.code][i].node);
         }
-        _subMenuForCodes[node.code] = null;
+        subMenuForCodes[node.code] = null;
     }
 }
 
@@ -117,6 +148,14 @@ export function addMenuForType(app_type, category, node) {
  * @param {object} node - Submenu configuration
  */
 export function addSubMenuForType(app_type, parent_code, node) {
+    const {
+        uniqueMenus,
+        appTypes,
+        subMenuForTypes,
+        subMenus,
+        subMenuForCodes
+    } = getMenuState();
+
     if (!parent_code) {
         throw "Provide code name for parent category";
     }
@@ -124,16 +163,16 @@ export function addSubMenuForType(app_type, parent_code, node) {
         throw "Provide text, code, url and priority for sub menu";
     }
 
-    if (!_uniqueMenus[app_type]) {
-        _uniqueMenus[app_type] = {};
+    if (!uniqueMenus[app_type]) {
+        uniqueMenus[app_type] = {};
     }
 
-    if (!_uniqueMenus[app_type][parent_code]) {
-        _uniqueMenus[app_type][parent_code] = {};
+    if (!uniqueMenus[app_type][parent_code]) {
+        uniqueMenus[app_type][parent_code] = {};
     }
 
-    if (!_uniqueMenus[app_type][parent_code][node.code]) {
-        _uniqueMenus[app_type][parent_code][node.code] = true;
+    if (!uniqueMenus[app_type][parent_code][node.code]) {
+        uniqueMenus[app_type][parent_code][node.code] = true;
     }
     else {
         return;
@@ -152,17 +191,17 @@ export function addSubMenuForType(app_type, parent_code, node) {
     });
 
     if (!appTypes[app_type]) {
-        if (!_subMenuForTypes[app_type]) {
-            _subMenuForTypes[app_type] = [];
+        if (!subMenuForTypes[app_type]) {
+            subMenuForTypes[app_type] = [];
         }
-        _subMenuForTypes[app_type].push({parent_code: parent_code, node: node});
+        subMenuForTypes[app_type].push({parent_code: parent_code, node: node});
         return;
     }
-    if (!_subMenus[parent_code]) {
-        if (!_subMenuForCodes[parent_code]) {
-            _subMenuForCodes[parent_code] = [];
+    if (!subMenus[parent_code]) {
+        if (!subMenuForCodes[parent_code]) {
+            subMenuForCodes[parent_code] = [];
         }
-        _subMenuForCodes[parent_code].push({app_type: app_type, node: node});
+        subMenuForCodes[parent_code].push({app_type: app_type, node: node});
         return;
     }
 
@@ -177,6 +216,9 @@ export function addSubMenuForType(app_type, parent_code, node) {
  * @param {object} node - Menu configuration
  */
 export function addMenu(category, node) {
+    const store = getGlobalStore();
+    const { appTypes, menuForAllTypes } = getMenuState();
+
     if (node && !node.pluginName && !node.permission) {
         console.warn('Please add permission to this menu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added'); // eslint-disable-line no-console
     }
@@ -191,7 +233,10 @@ export function addMenu(category, node) {
             for (var type in appTypes) {
                 addMenuForType(type, category, node);
             }
-            _menuForAllTypes.push({category: category, node: node});
+            menuForAllTypes.push({category: category, node: node});
+
+            // Also register in store for new app types
+            store.commit('countlyApp/addUniqueMenu', { code: node.code, menu: node });
         }
     }
 }
@@ -202,6 +247,8 @@ export function addMenu(category, node) {
  * @param {object} node - Submenu configuration
  */
 export function addSubMenu(parent_code, node) {
+    const { appTypes, subMenuForAllTypes } = getMenuState();
+
     if (node && !node.pluginName && !node.permission) {
         console.warn('Please add permission to this submenu item.' + JSON.stringify(node) + ' Menu items without permission will not be allowed to be added'); // eslint-disable-line no-console
     }
@@ -212,6 +259,6 @@ export function addSubMenu(parent_code, node) {
         for (var type in appTypes) {
             addSubMenuForType(type, parent_code, node);
         }
-        _subMenuForAllTypes.push({parent_code: parent_code, node: node});
+        subMenuForAllTypes.push({parent_code: parent_code, node: node});
     }
 }

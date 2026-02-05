@@ -130,10 +130,9 @@
                         countlyGlobal.apps[response._id] = response;
                         countlyGlobal.admin_apps[response._id] = response;
                         self.$store.dispatch("countlyCommon/addToAllApps", response);
-                        countlyCommon.ACTIVE_APP_ID = response._id + "";
-                        countlyCommon.ACTIVE_APP_KEY = response.key + "";
+                        // Use setActiveApp as single source of truth - it updates store state and handles persistence
+                        countlyCommon.setActiveApp(response._id);
                         app.onAppManagementSwitch(response._id + "", response.type || "mobile");
-                        self.$store.dispatch("countlyCommon/updateActiveApp", response._id + "");
 
                         if (self.isDemoApp) {
                             self.populateApp();

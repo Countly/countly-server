@@ -3,49 +3,58 @@
  *
  * Main orchestration module for the Countly dashboard.
  * Creates the Backbone router and ties together all app submodules.
+ *
+ * State Management:
+ * All stateful data is managed by the Vuex store (vue/data/store.js) as the
+ * single source of truth. This file uses getter/setter functions that delegate
+ * to the store for all state access.
  */
 
 import jQuery from 'jquery';
 import _ from 'underscore';
-import store from 'storejs';
 import Backbone from '../utils/backbone-min.js';
 import countlyCommon from './countly.common.js';
 import countlyGlobal from './countly.global.js';
 import { validateCreate, validateAnyAppAdmin, validateGlobalAdmin } from './countly.auth.js';
 import { notify, logout } from './countly.helpers.js';
+import { DASHBOARD_VALIDATE_SESSION } from './countly.config.js';
 
-// Import from submodules
+// Import store accessors - single source of truth for all state
 import {
-    // State
-    dateToSelected,
-    dateFromSelected,
-    activeAppName,
-    activeAppKey,
-    _isFirstLoad,
-    refreshActiveView,
-    routesHit,
-    origLang,
-    _myRequests,
-    appTypes,
-    pageScripts,
-    dataExports,
-    appSwitchCallbacks,
-    appManagementSwitchCallbacks,
-    appObjectModificators,
-    appManagementViews,
-    appAddTypeCallbacks,
-    userEditCallbacks,
-    refreshScripts,
-    appSettings,
-    widgetCallbacks,
+    getGlobalStore,
+    getActiveAppKey as getStoreActiveAppKey,
+    getActiveAppName as getStoreActiveAppName,
+    // App state getters
+    getDateToSelected,
     setDateToSelected,
+    getDateFromSelected,
     setDateFromSelected,
-    setActiveAppName,
-    setActiveAppKey,
+    getIsFirstLoad,
     setIsFirstLoad,
+    getRefreshActiveView,
     setRefreshActiveView,
+    getRoutesHit,
     setRoutesHit,
+    getOrigLang,
     setOrigLang,
+    getMyRequests,
+    getAppTypes,
+    getPageScripts,
+    getDataExports,
+    getAppSettings,
+    getWidgetCallbacks,
+    getRefreshScripts,
+    getAppSwitchCallbacks,
+    getAppManagementSwitchCallbacks,
+    getAppObjectModificators,
+    getAppManagementViews,
+    getAppAddTypeCallbacks,
+    getUserEditCallbacks,
+    getBrowserLangShort,
+} from './vue/data/store.js';
+
+// Import from submodules - functions that operate on state
+import {
     // Menu
     addMenuCategory,
     addMenuForType,
@@ -117,161 +126,174 @@ export function setActiveView(view) {
 
 /**
  * Get the selected end date timestamp for date range
+ * Uses Vuex store as single source of truth
  * @returns {number} the end date timestamp
  */
-export function getDateToSelected() {
-    return dateToSelected;
-}
+export { getDateToSelected };
 export { setDateToSelected };
 
 /**
  * Get the selected start date timestamp for date range
+ * Uses Vuex store as single source of truth
  * @returns {number} the start date timestamp
  */
-export function getDateFromSelected() {
-    return dateFromSelected;
-}
+export { getDateFromSelected };
 export { setDateFromSelected };
 
 /**
  * Get the name of the currently active application
+ * Uses Vuex store as single source of truth
  * @returns {string} the active application name
  */
 export function getActiveAppName() {
-    return activeAppName;
+    return getStoreActiveAppName();
 }
-export { setActiveAppName };
+
+/**
+ * Set the name of the currently active application
+ * Note: This is derived from the active app object in the store.
+ * Changing the active app via countlyCommon.setActiveApp() will update this automatically.
+ * @deprecated Use countlyCommon.setActiveApp() instead
+ * @param {string} val - the application name (ignored, use setActiveApp instead)
+ */
+export function setActiveAppName() {
+    // No-op: activeAppName is derived from activeApp in the store
+    // This function is kept for backward compatibility but does nothing
+    // Use countlyCommon.setActiveApp() to change the active app
+    // console.warn('setActiveAppName is deprecated. Use countlyCommon.setActiveApp() to change the active app.');
+}
 
 /**
  * Get the API key of the currently active application
+ * Uses Vuex store as single source of truth
  * @returns {string} the active application API key
  */
 export function getActiveAppKey() {
-    return activeAppKey;
+    return getStoreActiveAppKey();
 }
-export { setActiveAppKey };
+
+/**
+ * Set the API key of the currently active application
+ * Note: This is derived from the active app object in the store.
+ * Changing the active app via countlyCommon.setActiveApp() will update this automatically.
+ * @deprecated Use countlyCommon.setActiveApp() instead
+ * @param {string} val - the application key (ignored, use setActiveApp instead)
+ */
+export function setActiveAppKey() {
+    // No-op: activeAppKey is derived from activeApp in the store
+    // This function is kept for backward compatibility but does nothing
+    // Use countlyCommon.setActiveApp() to change the active app
+    // console.warn('setActiveAppKey is deprecated. Use countlyCommon.setActiveApp() to change the active app.');
+}
 
 /**
  * Check if this is the first load of the application
+ * Uses Vuex store as single source of truth
  * @returns {boolean} true if this is the first load, false otherwise
  */
 export function isFirstLoad() {
-    return _isFirstLoad;
+    return getIsFirstLoad();
 }
 export { setIsFirstLoad };
 
 /**
  * Get the registered application types
+ * Uses Vuex store as single source of truth
  * @returns {object} object containing all registered app types
  */
-export function getAppTypes() {
-    return appTypes;
-}
+export { getAppTypes };
 
 /**
  * Get the registered page scripts
+ * Uses Vuex store as single source of truth
  * @returns {object} object containing page scripts keyed by path pattern
  */
-export function getPageScripts() {
-    return pageScripts;
-}
+export { getPageScripts };
 
 /**
  * Get the registered data export configurations
+ * Uses Vuex store as single source of truth
  * @returns {object} object containing data export configurations
  */
-export function getDataExports() {
-    return dataExports;
-}
+export { getDataExports };
 
 /**
  * Get the registered app switch callback functions
+ * Uses Vuex store as single source of truth
  * @returns {Array<function>} array of callback functions triggered on app switch
  */
-export function getAppSwitchCallbacks() {
-    return appSwitchCallbacks;
-}
+export { getAppSwitchCallbacks };
 
 /**
  * Get the registered app management switch callback functions
+ * Uses Vuex store as single source of truth
  * @returns {Array<function>} array of callback functions triggered on app management switch
  */
-export function getAppManagementSwitchCallbacks() {
-    return appManagementSwitchCallbacks;
-}
+export { getAppManagementSwitchCallbacks };
 
 /**
  * Get the registered app object modificator functions
+ * Uses Vuex store as single source of truth
  * @returns {Array<function>} array of functions that modify app objects
  */
-export function getAppObjectModificators() {
-    return appObjectModificators;
-}
+export { getAppObjectModificators };
 
 /**
  * Get the registered app management views
+ * Uses Vuex store as single source of truth
  * @returns {object} object containing app management view configurations
  */
-export function getAppManagementViews() {
-    return appManagementViews;
-}
+export { getAppManagementViews };
 
 /**
  * Get the registered app add type callback functions
+ * Uses Vuex store as single source of truth
  * @returns {Array<function>} array of callback functions triggered when adding app types
  */
-export function getAppAddTypeCallbacks() {
-    return appAddTypeCallbacks;
-}
+export { getAppAddTypeCallbacks };
 
 /**
  * Get the registered user edit callback functions
+ * Uses Vuex store as single source of truth
  * @returns {Array<function>} array of callback functions triggered on user edit
  */
-export function getUserEditCallbacks() {
-    return userEditCallbacks;
-}
+export { getUserEditCallbacks };
 
 /**
  * Get the registered refresh scripts
+ * Uses Vuex store as single source of truth
  * @returns {object} object containing refresh scripts keyed by path pattern
  */
-export function getRefreshScripts() {
-    return refreshScripts;
-}
+export { getRefreshScripts };
 
 /**
  * Get the registered app settings configurations
+ * Uses Vuex store as single source of truth
  * @returns {object} object containing app settings configurations
  */
-export function getAppSettings() {
-    return appSettings;
-}
+export { getAppSettings };
 
 /**
  * Get the registered widget callback functions
+ * Uses Vuex store as single source of truth
  * @returns {object} object containing widget callbacks
  */
-export function getWidgetCallbacks() {
-    return widgetCallbacks;
-}
+export { getWidgetCallbacks };
 
 /**
  * Get the count of routes that have been navigated to
+ * Uses Vuex store as single source of truth
  * @returns {number} the number of routes hit during this session
  */
-export function getRoutesHit() {
-    return routesHit;
-}
+export { getRoutesHit };
 export { setRoutesHit };
 
 /**
  * Get the original language map JSON string
+ * Uses Vuex store as single source of truth
  * @returns {string} JSON string of the original i18n language map
  */
-export function getOrigLang() {
-    return origLang;
-}
+export { getOrigLang };
 export { setOrigLang };
 
 // Re-export all functions from submodules
@@ -366,7 +388,7 @@ function initializeApp() {
     });
 
     // Add language class to body
-    $("body").addClass("lang-" + countlyCommon.BROWSER_LANG_SHORT);
+    $("body").addClass("lang-" + getBrowserLangShort());
 
     // Load i18n properties
     jQuery.i18n.properties({
@@ -374,7 +396,7 @@ function initializeApp() {
             return plugin + "/localization/" + plugin;
         })),
         cache: true,
-        language: countlyCommon.BROWSER_LANG_SHORT,
+        language: getBrowserLangShort(),
         countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
         path: countlyGlobal.cdn,
         mode: 'map',
@@ -422,13 +444,13 @@ function initializeApp() {
                     }
                     setTimeout(function() {
                         validateSession();
-                    }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);
+                    }, DASHBOARD_VALIDATE_SESSION || 30000);
                 }
             });
         };
         setTimeout(function() {
             validateSession();
-        }, countlyCommon.DASHBOARD_VALIDATE_SESSION || 30000);
+        }, DASHBOARD_VALIDATE_SESSION || 30000);
 
         // Session timeout handling
         if (parseInt(countlyGlobal.config.session_timeout)) {
@@ -516,7 +538,7 @@ function initializeApp() {
 
         // Set moment locale
         try {
-            window.moment.locale(countlyCommon.BROWSER_LANG_SHORT);
+            window.moment.locale(getBrowserLangShort());
         }
         catch (e) {
             window.moment.locale("en");
@@ -524,6 +546,8 @@ function initializeApp() {
     });
 
     // Set active app
+    // Note: Active app name is now derived from the store's activeApp object
+    // countlyCommon.setActiveApp() updates all related state via the Vuex store
     if (!_.isEmpty(countlyGlobal.apps)) {
         if (!countlyCommon.ACTIVE_APP_ID) {
             var activeApp = (countlyGlobal.member && countlyGlobal.member.active_app_id && countlyGlobal.apps[countlyGlobal.member.active_app_id])
@@ -531,27 +555,24 @@ function initializeApp() {
                 : countlyGlobal.defaultApp;
 
             countlyCommon.setActiveApp(activeApp._id);
-            setActiveAppName(activeApp.name);
         }
-        else {
-            setActiveAppName(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name);
-        }
+        // No need to set activeAppName separately - it's derived from the store
     }
 
     // Idle timer
     $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
 
     $(document).bind("idle.idleTimer", function() {
-        clearInterval(app.refreshActiveView);
+        clearInterval(getRefreshActiveView());
     });
 
     $(document).bind("active.idleTimer", function() {
         if (app._activeView && app._activeView.restart) {
             app._activeView.restart();
         }
-        app.refreshActiveView = setInterval(function() {
+        setRefreshActiveView(setInterval(function() {
             performRefresh();
-        }, countlyCommon.DASHBOARD_REFRESH_MS);
+        }, countlyCommon.DASHBOARD_REFRESH_MS));
     });
 
     // Initialize app switch callback
@@ -635,6 +656,7 @@ setAppInstance(app);
 
 // Define getters/setters using Object.defineProperty because Backbone.extend
 // doesn't preserve ES6 getter/setter syntax - it evaluates them at definition time
+// All state is now accessed via the Vuex store as single source of truth
 Object.defineProperties(app, {
     activeView: {
         get: function() {
@@ -648,7 +670,7 @@ Object.defineProperties(app, {
     },
     dateToSelected: {
         get: function() {
-            return dateToSelected;
+            return getDateToSelected();
         },
         set: function(val) {
             setDateToSelected(val);
@@ -658,7 +680,7 @@ Object.defineProperties(app, {
     },
     dateFromSelected: {
         get: function() {
-            return dateFromSelected;
+            return getDateFromSelected();
         },
         set: function(val) {
             setDateFromSelected(val);
@@ -668,27 +690,31 @@ Object.defineProperties(app, {
     },
     activeAppName: {
         get: function() {
-            return activeAppName;
+            return getStoreActiveAppName();
         },
-        set: function(val) {
-            setActiveAppName(val);
+        set: function() {
+            // No-op: activeAppName is derived from activeApp in the store
+            // Use countlyCommon.setActiveApp() to change the active app
+            // console.warn('app.activeAppName setter is deprecated. Use countlyCommon.setActiveApp() to change the active app.');
         },
         enumerable: true,
         configurable: true
     },
     activeAppKey: {
         get: function() {
-            return activeAppKey;
+            return getStoreActiveAppKey();
         },
-        set: function(val) {
-            setActiveAppKey(val);
+        set: function() {
+            // No-op: activeAppKey is derived from activeApp in the store
+            // Use countlyCommon.setActiveApp() to change the active app
+            // console.warn('app.activeAppKey setter is deprecated. Use countlyCommon.setActiveApp() to change the active app.');
         },
         enumerable: true,
         configurable: true
     },
     _isFirstLoad: {
         get: function() {
-            return _isFirstLoad;
+            return getIsFirstLoad();
         },
         set: function(val) {
             setIsFirstLoad(val);
@@ -698,7 +724,7 @@ Object.defineProperties(app, {
     },
     refreshActiveView: {
         get: function() {
-            return refreshActiveView;
+            return getRefreshActiveView();
         },
         set: function(val) {
             setRefreshActiveView(val);
@@ -708,98 +734,98 @@ Object.defineProperties(app, {
     },
     _myRequests: {
         get: function() {
-            return _myRequests;
+            return getMyRequests();
         },
         enumerable: true,
         configurable: true
     },
     appTypes: {
         get: function() {
-            return appTypes;
+            return getAppTypes();
         },
         enumerable: true,
         configurable: true
     },
     pageScripts: {
         get: function() {
-            return pageScripts;
+            return getPageScripts();
         },
         enumerable: true,
         configurable: true
     },
     dataExports: {
         get: function() {
-            return dataExports;
+            return getDataExports();
         },
         enumerable: true,
         configurable: true
     },
     appSwitchCallbacks: {
         get: function() {
-            return appSwitchCallbacks;
+            return getAppSwitchCallbacks();
         },
         enumerable: true,
         configurable: true
     },
     appManagementSwitchCallbacks: {
         get: function() {
-            return appManagementSwitchCallbacks;
+            return getAppManagementSwitchCallbacks();
         },
         enumerable: true,
         configurable: true
     },
     appObjectModificators: {
         get: function() {
-            return appObjectModificators;
+            return getAppObjectModificators();
         },
         enumerable: true,
         configurable: true
     },
     appManagementViews: {
         get: function() {
-            return appManagementViews;
+            return getAppManagementViews();
         },
         enumerable: true,
         configurable: true
     },
     appAddTypeCallbacks: {
         get: function() {
-            return appAddTypeCallbacks;
+            return getAppAddTypeCallbacks();
         },
         enumerable: true,
         configurable: true
     },
     userEditCallbacks: {
         get: function() {
-            return userEditCallbacks;
+            return getUserEditCallbacks();
         },
         enumerable: true,
         configurable: true
     },
     refreshScripts: {
         get: function() {
-            return refreshScripts;
+            return getRefreshScripts();
         },
         enumerable: true,
         configurable: true
     },
     appSettings: {
         get: function() {
-            return appSettings;
+            return getAppSettings();
         },
         enumerable: true,
         configurable: true
     },
     widgetCallbacks: {
         get: function() {
-            return widgetCallbacks;
+            return getWidgetCallbacks();
         },
         enumerable: true,
         configurable: true
     },
     routesHit: {
         get: function() {
-            return routesHit;
+            return getRoutesHit();
         },
         set: function(val) {
             setRoutesHit(val);
@@ -809,7 +835,7 @@ Object.defineProperties(app, {
     },
     origLang: {
         get: function() {
-            return origLang;
+            return getOrigLang();
         },
         set: function(val) {
             setOrigLang(val);
@@ -822,6 +848,8 @@ Object.defineProperties(app, {
 // =============================================================================
 // BACKBONE HISTORY EXTENSIONS
 // =============================================================================
+
+import storejs from 'storejs';
 
 Backbone.history || (Backbone.history = new Backbone.History);
 Backbone.history._checkUrl = Backbone.history.checkUrl;
@@ -869,7 +897,7 @@ Backbone.history.getFragment = function() {
 };
 
 Backbone.history.checkUrl = function() {
-    store.set("countly_fragment_name", Backbone.history._getFragment());
+    storejs.set("countly_fragment_name", Backbone.history._getFragment());
     var app_id = Backbone.history._getFragment().split("/")[1] || "";
     if (countlyCommon.APP_NAMESPACE !== false && countlyCommon.ACTIVE_APP_ID !== 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1) {
         Backbone.history.noHistory("#/" + countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
@@ -892,8 +920,8 @@ Backbone.history.checkUrl = function() {
 
 // Initial hash check
 (function() {
-    if (!Backbone.history.getFragment() && store.get("countly_fragment_name")) {
-        Backbone.history.noHistory("#" + store.get("countly_fragment_name"));
+    if (!Backbone.history.getFragment() && storejs.get("countly_fragment_name")) {
+        Backbone.history.noHistory("#" + storejs.get("countly_fragment_name"));
     }
     else {
         var app_id = Backbone.history._getFragment().split("/")[1] || "";
@@ -926,6 +954,8 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
     }
     jqXHR.my_set_url = myurl;
     jqXHR.my_set_data = mydata;
+
+    var _myRequests = getMyRequests();
 
     if (originalOptions && (originalOptions.type === 'GET' || originalOptions.type === 'get') && originalOptions.url.substr(0, 2) === '/o') {
         if (originalOptions.data && originalOptions.data.preventGlobalAbort && originalOptions.data.preventGlobalAbort === true) {
@@ -962,3 +992,13 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         }
     }
 });
+
+// =============================================================================
+// EXPORTS
+// =============================================================================
+
+// Export the Vuex store getter for external access
+export { getGlobalStore };
+
+// Default export is the app instance
+export default app;

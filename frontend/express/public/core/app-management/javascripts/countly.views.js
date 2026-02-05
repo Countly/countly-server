@@ -444,10 +444,10 @@
                                 });
                                 self.applyAppListOrdering();
                                 self.$store.dispatch("countlyCommon/addToAllApps", data);
-                                self.$store.dispatch("countlyCommon/updateActiveApp", data._id + "");
+                                // Use setActiveApp as single source of truth - it updates the store and persists
                                 countlyCommon.setActiveApp(data._id);
                                 if (self.firstApp) {
-                                    countlyCommon.ACTIVE_APP_ID = data._id + "";
+                                    // Note: ACTIVE_APP_ID is now managed by the store via setActiveApp
                                     app.onAppManagementSwitch(data._id + "", data && data.type || "mobile");
                                     app.initSidebar();
                                 }
@@ -637,14 +637,14 @@
 
                                 //find next app
                                 var nextAapp = (self.appList[index2]) ? self.appList[index2].value : self.appList[0].value;
-                                self.$store.dispatch("countlyCommon/updateActiveApp", nextAapp);
                                 self.selectedApp = nextAapp;
                                 self.uploadData.app_image_id = countlyGlobal.apps[self.selectedApp]._id + "";
                                 self.app_icon["background-image"] = 'url("appimages/' + self.selectedApp + '.png?' + Date.now().toString() + '")';
                                 app.navigate("#/manage/apps/" + self.selectedApp);
 
+                                // Use setActiveApp as single source of truth if deleted app was the active one
                                 if (countlyCommon.ACTIVE_APP_ID === app_id) {
-                                    app.switchApp(nextAapp);
+                                    countlyCommon.setActiveApp(nextAapp);
                                 }
                             }
                         },

@@ -91,12 +91,9 @@ Vue.use(vuescroll);
 import vuedraggable from 'vuedraggable';
 Vue.component("draggable", vuedraggable);
 
-import jQuery from 'jquery';
-window.jQuery = jQuery;
-window.$ = jQuery;
-
-import './javascripts/utils/jquery.i18n.properties.js';
-import './javascripts/utils/jquery.idle-timer.js';
+import VueECharts from 'vue-echarts';
+import "echarts";
+Vue.component('echarts', VueECharts);
 
 import underscore from 'underscore';
 window._ = underscore;
@@ -115,6 +112,21 @@ window.store = store;
 
 import Backbone from './javascripts/utils/backbone-min.js';
 window.Backbone = Backbone;
+
+// these needs to be here for now
+import jQuery from 'jquery';
+window.jQuery = jQuery;
+window.$ = jQuery;
+import './javascripts/utils/jquery.i18n.properties.js';
+import './javascripts/utils/jquery.idle-timer.js';
+
+// Initialize Vuex store before other imports (single source of truth for state)
+import './javascripts/countly/vue/data/store.js';
+
+import * as countlyTemplate from './javascripts/countly/countly.template.js';
+window.countlyTemplate = countlyTemplate;
+window.app = countlyTemplate.app;
+window.AppRouter = countlyTemplate.AppRouter;
 
 import countlyView from './javascripts/countly/countly.view.js';
 window.countlyView = countlyView;
@@ -178,11 +190,6 @@ window.CV = countlyVue;
 
 import * as countlyVueContainer from './javascripts/countly/vue/container.js';
 window.countlyVue.container = countlyVueContainer;
-
-import * as countlyTemplate from './javascripts/countly/countly.template.js';
-window.countlyTemplate = countlyTemplate;
-window.app = countlyTemplate.app;
-window.AppRouter = countlyTemplate.AppRouter;
 
 import countlyCMS from './javascripts/countly/countly.cms.js';
 window.countlyCMS = countlyCMS;

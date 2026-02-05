@@ -114,11 +114,13 @@
                     });
 
                     var appKey = selectedApp.key;
-                    var appName = selectedApp.name;
                     var appId = selectedApp._id;
-                    if (app.activeAppKey !== appKey) {
-                        app.activeAppName = appName;
-                        app.activeAppKey = appKey;
+                    var currentAppKey = this.$store.getters["countlyCommon/getActiveAppKey"];
+
+                    // Only switch if selecting a different app
+                    if (currentAppKey !== appKey) {
+                        // Use countlyCommon.setActiveApp as single source of truth
+                        // This updates the store and handles persistence
                         app.switchApp(appId);
                     }
                     this.handleClose();

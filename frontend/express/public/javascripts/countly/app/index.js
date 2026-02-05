@@ -3,15 +3,67 @@
  * 
  * Re-exports all app submodules for convenient importing.
  * This provides a clean API for accessing app functionality.
+ * 
+ * State is now managed by the Vuex store (vue/data/store.js) as the single
+ * source of truth. The exports from app-state.js delegate to the store.
+ * 
+ * IMPORTANT: Use getter functions (getDateToSelected, getIsFirstLoad, etc.)
+ * instead of static exports (dateToSelected, _isFirstLoad, etc.) to ensure
+ * you always get the current value from the store.
  */
 
-// State management
+// State management - Getter functions (RECOMMENDED - always return current value)
 export {
-    // State variables (read-only exports)
+    // Store access
+    getGlobalStore,
+    getState,
+    // View and navigation getters
+    getDateToSelected,
+    getDateFromSelected,
+    getIsFirstLoad,
+    getRefreshActiveView,
+    getRoutesHit,
+    getOrigLang,
+    getMyRequests,
+    // Menu getters
+    getMenuForTypes,
+    getSubMenuForTypes,
+    getMenuForAllTypes,
+    getSubMenuForAllTypes,
+    getSubMenuForCodes,
+    getSubMenus,
+    getInternalMenuCategories,
+    getUniqueMenus,
+    getMenuCategories,
+    // App configuration getters
+    getAppTypes,
+    getPageScripts,
+    getDataExports,
+    getAppSettings,
+    getWidgetCallbacks,
+    getRefreshScripts,
+    // Callback registry getters
+    getAppSwitchCallbacks,
+    getAppManagementSwitchCallbacks,
+    getAppObjectModificators,
+    getAppManagementViews,
+    getAppAddTypeCallbacks,
+    getUserEditCallbacks,
+    // Setters (commit to Vuex store)
+    setDateToSelected,
+    setDateFromSelected,
+    setIsFirstLoad,
+    setRefreshActiveView,
+    setRoutesHit,
+    incrementRoutesHit,
+    setOrigLang,
+} from './app-state.js';
+
+// Deprecated static exports - kept for backwards compatibility
+// WARNING: These capture initial values and do NOT reflect current state
+export {
     dateToSelected,
     dateFromSelected,
-    activeAppName,
-    activeAppKey,
     _isFirstLoad,
     refreshActiveView,
     routesHit,
@@ -25,27 +77,19 @@ export {
     _subMenus,
     _internalMenuCategories,
     _uniqueMenus,
+    _menuCategories,
     appTypes,
     pageScripts,
     dataExports,
     appSettings,
     widgetCallbacks,
+    refreshScripts,
     appSwitchCallbacks,
     appManagementSwitchCallbacks,
     appObjectModificators,
     appManagementViews,
     appAddTypeCallbacks,
     userEditCallbacks,
-    refreshScripts,
-    // State setters
-    setDateToSelected,
-    setDateFromSelected,
-    setActiveAppName,
-    setActiveAppKey,
-    setIsFirstLoad,
-    setRefreshActiveView,
-    setRoutesHit,
-    setOrigLang
 } from './app-state.js';
 
 // Menu management
@@ -96,7 +140,7 @@ export {
 export {
     addAppType,
     localize,
-    getAppTypes,
+    getAppTypes as getAppTypesConfig,
     hasAppType,
     getAppTypeView
 } from './app-types.js';

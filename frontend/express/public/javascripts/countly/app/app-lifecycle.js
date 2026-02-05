@@ -3,6 +3,9 @@
  *
  * Contains functions for view rendering, routing, navigation,
  * and view lifecycle management.
+ *
+ * All state is now accessed from the Vuex store (countlyApp module)
+ * as the single source of truth.
  */
 
 import jQuery from 'jquery';
@@ -13,12 +16,15 @@ import countlyGlobal from '../countly.global.js';
 import { getAllRoutes } from '../vue/container.js';
 import { notify } from '../countly.helpers.js';
 import {
-    pageScripts,
-    refreshScripts,
-    routesHit,
+    getPageScripts,
+    getRefreshScripts,
+    getRoutesHit,
     setRoutesHit,
-    appTypes
-} from './app-state.js';
+    getAppTypes,
+    getMyRequests,
+    getRefreshActiveView,
+    setRefreshActiveView,
+} from '../vue/data/store.js';
 import { onAppSwitch } from './app-callbacks.js';
 
 const $ = jQuery;
@@ -38,7 +44,7 @@ export function setAppInstance(appInstance) {
  * Remove unfinished AJAX requests when switching views
  */
 export function _removeUnfinishedRequests() {
-    const _myRequests = _app ? _app._myRequests : {};
+    const _myRequests = getMyRequests();
     for (var url in _myRequests) {
         for (var data in _myRequests[url]) {
             if (parseInt(_myRequests[url][data].readyState) !== 4) {
@@ -157,6 +163,8 @@ export function main(/*forced*/) {
  * Dashboard route handler for root route
  */
 export function dashboard() {
+    const appTypes = getAppTypes();
+
     if (countlyGlobal.member.restrict && countlyGlobal.member.restrict.indexOf("#/") !== -1) {
         return;
     }
@@ -180,6 +188,7 @@ export function dashboard() {
  * Run all registered refresh scripts for the current route
  */
 export function runRefreshScripts() {
+    const refreshScripts = getRefreshScripts();
     var i = 0;
     var l = 0;
     if (refreshScripts[Backbone.history.fragment]) {
@@ -231,10 +240,12 @@ export function renderWhenReady(viewName) {
 
     _app._activeView = viewName;
 
-    var currentRoutesHit = routesHit + 1;
+    var currentRoutesHit = getRoutesHit() + 1;
     setRoutesHit(currentRoutesHit);
 
-    clearInterval(_app.refreshActiveView);
+    // Clear the refresh interval
+    clearInterval(getRefreshActiveView());
+
     if (typeof countlyGlobal.member.password_changed === "undefined") {
         countlyGlobal.member.password_changed = Math.round(new Date().getTime() / 1000);
     }
@@ -269,9 +280,12 @@ export function renderWhenReady(viewName) {
     }
 
     viewName.render();
-    _app.refreshActiveView = setInterval(function() {
+
+    // Set up refresh interval and store the ID
+    const refreshIntervalId = setInterval(function() {
         performRefresh();
     }, countlyCommon.DASHBOARD_REFRESH_MS);
+    setRefreshActiveView(refreshIntervalId);
 
     if (countlyGlobal && countlyGlobal.message) {
         const message = Array.isArray(countlyGlobal.message)
@@ -294,7 +308,7 @@ export function renderWhenReady(viewName) {
  * @returns {boolean} True if there is routing history
  */
 export function hasRoutingHistory() {
-    if (routesHit > 1) {
+    if (getRoutesHit() > 1) {
         return true;
     }
     return false;
@@ -320,6 +334,7 @@ export function back(fallback_route) {
  * Run page scripts for the current route
  */
 export function pageScript() {
+    const pageScripts = getPageScripts();
     var i = 0;
     var l = 0;
     if (pageScripts["#" + Backbone.history.fragment]) {

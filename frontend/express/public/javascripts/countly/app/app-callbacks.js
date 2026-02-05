@@ -3,22 +3,15 @@
  *
  * Contains functions for registering and invoking various callbacks
  * throughout the application lifecycle.
+ * 
+ * All callback registries are now stored in the Vuex store (countlyApp module)
+ * as the single source of truth. This module provides convenience functions
+ * that dispatch actions or commit mutations to the store.
  */
 
 import jQuery from 'jquery';
 import countlyGlobal from '../countly.global.js';
-import {
-    appSwitchCallbacks,
-    appManagementSwitchCallbacks,
-    appObjectModificators,
-    appManagementViews,
-    appAddTypeCallbacks,
-    userEditCallbacks,
-    pageScripts,
-    refreshScripts,
-    dataExports,
-    appSettings,
-} from './app-state.js';
+import { getGlobalStore } from '../vue/data/store.js';
 
 const $ = jQuery;
 
@@ -27,12 +20,11 @@ const $ = jQuery;
  * @param {function|object} callback - Callback function or object with name and fn properties
  */
 export function addAppSwitchCallback(callback) {
-    if (typeof callback === "function") {
-        appSwitchCallbacks.push({name: "unknown", fn: callback});
-    }
-    else {
-        appSwitchCallbacks.push(callback);
-    }
+    const store = getGlobalStore();
+    const callbackObj = typeof callback === "function"
+        ? { name: "unknown", fn: callback }
+        : callback;
+    store.commit('countlyApp/addAppSwitchCallback', callbackObj);
 }
 
 /**
@@ -40,7 +32,8 @@ export function addAppSwitchCallback(callback) {
  * @param {function} callback - Callback function
  */
 export function addAppManagementSwitchCallback(callback) {
-    appManagementSwitchCallbacks.push(callback);
+    const store = getGlobalStore();
+    store.commit('countlyApp/addAppManagementSwitchCallback', callback);
 }
 
 /**
@@ -48,7 +41,8 @@ export function addAppManagementSwitchCallback(callback) {
  * @param {function} callback - Modificator function
  */
 export function addAppObjectModificator(callback) {
-    appObjectModificators.push(callback);
+    const store = getGlobalStore();
+    store.commit('countlyApp/addAppObjectModificator', callback);
 }
 
 /**
@@ -57,10 +51,14 @@ export function addAppObjectModificator(callback) {
  * @param {object} options - View options with title and view properties
  */
 export function addAppManagementView(plugin, options) {
-    appManagementViews[plugin] = {
-        title: options.title,
-        view: options.view
-    };
+    const store = getGlobalStore();
+    store.commit('countlyApp/addAppManagementView', {
+        plugin: plugin,
+        config: {
+            title: options.title,
+            view: options.view
+        }
+    });
 }
 
 /**
@@ -69,10 +67,14 @@ export function addAppManagementView(plugin, options) {
  * @param {object} options - Input options with title and inputs properties
  */
 export function addAppManagementInput(plugin, options) {
-    appManagementViews[plugin] = {
-        title: options.title,
-        inputs: options.inputs
-    };
+    const store = getGlobalStore();
+    store.commit('countlyApp/addAppManagementView', {
+        plugin: plugin,
+        config: {
+            title: options.title,
+            inputs: options.inputs
+        }
+    });
 }
 
 /**
@@ -81,7 +83,8 @@ export function addAppManagementInput(plugin, options) {
  * @param {object} options - Setting options
  */
 export function addAppSetting(id, options) {
-    appSettings[id] = options;
+    const store = getGlobalStore();
+    store.commit('countlyApp/addAppSetting', { id: id, config: options });
 }
 
 /**
@@ -89,7 +92,8 @@ export function addAppSetting(id, options) {
  * @param {function} callback - Callback function
  */
 export function addAppAddTypeCallback(callback) {
-    appAddTypeCallbacks.push(callback);
+    const store = getGlobalStore();
+    store.commit('countlyApp/addAppAddTypeCallback', callback);
 }
 
 /**
@@ -97,7 +101,8 @@ export function addAppAddTypeCallback(callback) {
  * @param {function} callback - Callback function
  */
 export function addUserEditCallback(callback) {
-    userEditCallbacks.push(callback);
+    const store = getGlobalStore();
+    store.commit('countlyApp/addUserEditCallback', callback);
 }
 
 /**
@@ -106,7 +111,8 @@ export function addUserEditCallback(callback) {
  * @param {function} callback - Export function
  */
 export function addDataExport(name, callback) {
-    dataExports[name] = callback;
+    const store = getGlobalStore();
+    store.commit('countlyApp/addDataExport', { key: name, config: callback });
 }
 
 /**
@@ -115,10 +121,8 @@ export function addDataExport(name, callback) {
  * @param {function} callback - Script function
  */
 export function addPageScript(route, callback) {
-    if (!pageScripts[route]) {
-        pageScripts[route] = [];
-    }
-    pageScripts[route].push(callback);
+    const store = getGlobalStore();
+    store.commit('countlyApp/addPageScript', { path: route, script: callback });
 }
 
 /**
@@ -127,10 +131,8 @@ export function addPageScript(route, callback) {
  * @param {function} callback - Refresh function
  */
 export function addRefreshScript(route, callback) {
-    if (!refreshScripts[route]) {
-        refreshScripts[route] = [];
-    }
-    refreshScripts[route].push(callback);
+    const store = getGlobalStore();
+    store.commit('countlyApp/addRefreshScript', { path: route, script: callback });
 }
 
 /**
@@ -141,6 +143,8 @@ export function addRefreshScript(route, callback) {
  */
 export function onAppSwitch(appId, isRefresh, isInit) {
     if (countlyGlobal.apps[appId]) {
+        const store = getGlobalStore();
+        const appSwitchCallbacks = store.state.countlyApp.appSwitchCallbacks;
         for (var i = 0; i < appSwitchCallbacks.length; i++) {
             try {
                 if (typeof appSwitchCallbacks[i] === "function") {
@@ -163,8 +167,15 @@ export function onAppSwitch(appId, isRefresh, isInit) {
  * @param {string} type - The app type
  */
 export function onAppManagementSwitch(appId, type) {
+    const store = getGlobalStore();
+    const appManagementSwitchCallbacks = store.state.countlyApp.appManagementSwitchCallbacks;
     for (var i = 0; i < appManagementSwitchCallbacks.length; i++) {
-        appManagementSwitchCallbacks[i](appId, type || "mobile");
+        try {
+            appManagementSwitchCallbacks[i](appId, type || "mobile");
+        }
+        catch (e) {
+            console.error("Error in app management switch callback:", e); // eslint-disable-line no-console
+        }
     }
 }
 
@@ -173,8 +184,15 @@ export function onAppManagementSwitch(appId, type) {
  * @param {string} type - The app type being added
  */
 export function onAppAddTypeSwitch(type) {
+    const store = getGlobalStore();
+    const appAddTypeCallbacks = store.state.countlyApp.appAddTypeCallbacks;
     for (var i = 0; i < appAddTypeCallbacks.length; i++) {
-        appAddTypeCallbacks[i](type || "mobile");
+        try {
+            appAddTypeCallbacks[i](type || "mobile");
+        }
+        catch (e) {
+            console.error("Error in app add type callback:", e); // eslint-disable-line no-console
+        }
     }
 }
 
@@ -184,9 +202,16 @@ export function onAppAddTypeSwitch(type) {
  * @returns {jQuery.Deferred} A deferred object that resolves when all callbacks complete
  */
 export function onUserEdit(user) {
+    const store = getGlobalStore();
+    const userEditCallbacks = store.state.countlyApp.userEditCallbacks;
     var deferreds = [];
     for (var i = 0; i < userEditCallbacks.length; i++) {
-        deferreds.push(userEditCallbacks[i](user));
+        try {
+            deferreds.push(userEditCallbacks[i](user));
+        }
+        catch (e) {
+            console.error("Error in user edit callback:", e); // eslint-disable-line no-console
+        }
     }
     return $.when.apply(null, deferreds);
 }

@@ -1,13 +1,9 @@
 import jQuery from 'jquery';
-import countlyCommon from '../countly.common';
 import Vue from 'vue';
-import Vuex from 'vuex';
 import { logout, notify, T } from '../countly.helpers';
+import { TemplateLoader } from '../countly.template.loader.js';
 import countlyView from '../countly.view';
 import countlyGlobal from '../countly.global';
-import store from 'storejs';
-import VueECharts from 'vue-echarts';
-import "echarts";
 import { BufferedObjectMixin, MultiStepFormMixin } from '../../components/form/mixins.js'; // TO-DO: remove this dependency when drawer form is modularized.
 import { ModalMixin, hasDrawersMixin, hasDrawersMethodsMixin } from '../../components/drawer/mixins.js'; // TO-DO: remove this dependency when drawer form is modularized in plugins
 import { hasFormDialogsMixin } from '../../components/dialog/mixins.js'; // TO-DO: remove this dependency when dialog form is modularized in plugins
@@ -19,9 +15,34 @@ import {
     validateGlobalAdmin
 } from '../countly.auth';
 import * as countlyVuex from './data/vuex.js';
+import {
+    getGlobalStore,
+    registerGlobally,
+    unregister,
+    initAppSwitchCallback,
+    getActiveAppId,
+} from './data/store.js';
 
-Vue.use(Vuex);
-Vue.component('echarts', VueECharts);
+// Import utilities directly from utility modules
+import {
+    formatTimeAgoText,
+    formatTimeAgo,
+} from '../countly.common.formatters.js';
+import {
+    formatNumber,
+    formatNumberSafe,
+    getShortNumber,
+    unescapeHtml,
+} from '../countly.common.utils.js';
+
+// Import config constants directly
+import { GRAPH_COLORS, DEBUG } from '../countly.config.js';
+
+// Import popup components
+import {
+    ClyGenericPopups,
+    ClyQuickstartPopover
+} from '../../components/popups/index.js';
 
 // @vue/component
 export const autoRefreshMixin = {
@@ -54,7 +75,8 @@ export const autoRefreshMixin = {
  * @returns {string} - Translated string or key if translation not found
  */
 export function i18n() {
-    var appType = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
+    var activeAppId = getActiveAppId();
+    var appType = (countlyGlobal.apps[activeAppId] && countlyGlobal.apps[activeAppId].type) || "mobile";
     let args = arguments || [];
     if (args.length === 1) { //single arg. use map
         return i18nM(args[0]);
@@ -81,7 +103,8 @@ export function i18n() {
  * @returns {string} - Translated string or key if translation not found
  */
 export function i18nM(key) {
-    var appType = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
+    var activeAppId = getActiveAppId();
+    var appType = (countlyGlobal.apps[activeAppId] && countlyGlobal.apps[activeAppId].type) || "mobile";
     if (!appType || appType === "mobile") {
         return jQuery.i18n.map[key] || key;
     }
@@ -161,12 +184,12 @@ export const i18nMixin = { methods: { i18n, i18nM } };
 // @vue/component
 export const commonFormattersMixin = {
     methods: {
-        parseTimeAgo: countlyCommon.formatTimeAgoText,
-        formatTimeAgo: countlyCommon.formatTimeAgo,
-        formatNumber: countlyCommon.formatNumber,
-        formatNumberSafe: countlyCommon.formatNumberSafe,
-        getShortNumber: countlyCommon.getShortNumber,
-        unescapeHtml: countlyCommon.unescapeHtml
+        parseTimeAgo: formatTimeAgoText,
+        formatTimeAgo: formatTimeAgo,
+        formatNumber: formatNumber,
+        formatNumberSafe: formatNumberSafe,
+        getShortNumber: getShortNumber,
+        unescapeHtml: unescapeHtml
     }
 };
 
@@ -295,7 +318,7 @@ export const DashboardsWidgetMixin = {
                 metricName = map[widgetData.metrics[0]];
             }
             if (widgetData.bar_color && widgetData.bar_color > 0) {
-                return {xAxis: {data: labels}, series: [{"name": metricName, color: countlyCommon.GRAPH_COLORS[this.data.bar_color - 1], "data": series, stack: "A"}]};
+                return {xAxis: {data: labels}, series: [{"name": metricName, color: GRAPH_COLORS[this.data.bar_color - 1], "data": series, stack: "A"}]};
             }
             else {
                 return {xAxis: {data: labels}, series: [{"name": metricName, "data": series, stack: "A"}]};
@@ -331,7 +354,7 @@ export const DashboardsWidgetMixin = {
                         name: namingMap[metric],
                         data: dd.graph,
                         label: {
-                            formatter: "{a|" + namingMap[metric] + "}\n" + (countlyCommon.getShortNumber(total) || 0),
+                            formatter: "{a|" + namingMap[metric] + "}\n" + (getShortNumber(total) || 0),
                             fontWeight: 500,
                             fontSize: 16,
                             fontFamily: "Inter",
@@ -400,262 +423,13 @@ export const mixins = {
     'hasFormDialogs': hasFormDialogsMixin, // TO-DO: remove this dependency when dialog form is modularized in plugins.
 };
 
-const _globalVuexStore = new Vuex.Store({
-    modules: {
-        countlyCommon: {
-            namespaced: true,
-            state: {
-                areNotesHidden: false,
-                period: countlyCommon.getPeriod(),
-                periodLabel: countlyCommon.getDateRangeForCalendar(),
-                activeApp: null,
-                allApps: countlyGlobal.apps,
-                notificationToasts: [],
-                persistentNotifications: [],
-                dialogs: []
-            },
-            getters: {
-                getAreNotesHidden(state) {
-                    return state.areNotesHidden;
-                },
-                period: function(state) {
-                    return state.period;
-                },
-                periodLabel: function(state) {
-                    return state.periodLabel;
-                },
-                getActiveApp: function(state) {
-                    return state.activeApp;
-                },
-                getAllApps: function(state) {
-                    return state.allApps;
-                },
-                confirmDialogs: function(state) {
-                    return state.dialogs.filter(function(item) {
-                        return item.intent === "confirm";
-                    });
-                },
-                messageDialogs: function(state) {
-                    return state.dialogs.filter(function(item) {
-                        return item.intent === "message";
-                    });
-                },
-                blockerDialogs: function(state) {
-                    return state.dialogs.filter(function(item) {
-                        return item.intent === "blocker";
-                    });
-                },
-                quickstartContent: function(state) {
-                    return state.dialogs.filter(function(item) {
-                        return item.intent === "quickstart";
-                    });
-                },
-            },
-            mutations: {
-                setAreNotesHidden: function(state, value) {
-                    state.areNotesHidden = value;
-                },
-                setPeriod: function(state, period) {
-                    state.period = period;
-                },
-                setPeriodLabel: function(state, periodLabel) {
-                    state.periodLabel = periodLabel;
-                },
-                setActiveApp: function(state, id) {
-                    var appObj = state.allApps[id];
-                    if (appObj) {
-                        state.activeApp = Object.freeze(JSON.parse(JSON.stringify(appObj)));
-                    }
-                },
-                addToAllApps: function(state, additionalApps) {
-                    if (Array.isArray(additionalApps)) {
-                        additionalApps.forEach(function(app) {
-                            state.allApps[app._id] = app;
-                        });
-                    }
-                    else {
-                        state.allApps[additionalApps._id] = JSON.parse(JSON.stringify(additionalApps));
-                    }
-                    state.allApps = Object.assign({}, state.allApps, {});
-                },
-                removeFromAllApps: function(state, appToRemoveId) {
-                    var appObj = state.allApps[appToRemoveId];
-                    if (appObj) {
-                        delete state.allApps[appToRemoveId];
-                    }
-                    state.allApps = Object.assign({}, state.allApps, {});
-
-                },
-                deleteAllApps: function(state) {
-                    state.allApps = null;
-                    state.allApps = Object.assign({}, state.allApps, {});
-                },
-                addNotificationToast: function(state, payload) {
-                    payload.id = countlyCommon.generateId();
-                    state.notificationToasts.unshift(payload);
-                },
-                removeNotificationToast: function(state, id) {
-                    state.notificationToasts = state.notificationToasts.filter(function(item) {
-                        return item.id !== id;
-                    });
-                },
-                addPersistentNotification: function(state, payload) {
-                    if (!payload.id) {
-                        payload.id = countlyCommon.generateId();
-                    }
-                    state.persistentNotifications.unshift(payload);
-                },
-                removePersistentNotification: function(state, notificationId) {
-                    state.persistentNotifications = state.persistentNotifications.filter(function(item) {
-                        return item.id !== notificationId;
-                    });
-                },
-                addDialog: function(state, payload) {
-                    payload.id = countlyCommon.generateId();
-                    state.dialogs.unshift(payload);
-                },
-                removeDialog: function(state, id) {
-                    state.dialogs = state.dialogs.filter(function(item) {
-                        return item.id !== id;
-                    });
-                }
-            },
-            actions: {
-                setAreNotesHidden: function(context, value) {
-                    context.commit('setAreNotesHidden', value);
-                },
-                updatePeriod: function(context, obj) {
-                    context.commit("setPeriod", obj.period);
-                    context.commit("setPeriodLabel", obj.label);
-                },
-                updateActiveApp: function(context, id) {
-                    context.commit("setActiveApp", id);
-                },
-                removeActiveApp: function(context) {
-                    context.commit("setActiveApp", null);
-                    store.remove('countly_active_app');
-                },
-                addToAllApps: function(context, additionalApps) {
-                    context.commit("addToAllApps", additionalApps);
-                },
-                removeFromAllApps: function(context, appToRemoveId) {
-                    if (Array.isArray(appToRemoveId)) {
-                        appToRemoveId.forEach(function(app) {
-                            context.commit("removeFromAllApps", app);
-                        });
-                    }
-                    else {
-                        context.commit("removeFromAllApps", appToRemoveId);
-                    }
-                },
-                deleteAllApps: function(context) {
-                    context.commit("deleteAllApps");
-                },
-                onAddNotificationToast: function(context, payload) {
-                    context.commit('addNotificationToast', payload);
-                },
-                onRemoveNotificationToast: function(context, payload) {
-                    context.commit('removeNotificationToast', payload);
-                },
-                onAddPersistentNotification: function(context, payload) {
-                    context.commit('addPersistentNotification', payload);
-                },
-                onRemovePersistentNotification: function(context, notificationId) {
-                    context.commit('removePersistentNotification', notificationId);
-                },
-                onAddDialog: function(context, payload) {
-                    context.commit('addDialog', payload);
-                },
-                onRemoveDialog: function(context, payload) {
-                    context.commit('removeDialog', payload);
-                }
-            },
-        },
-        countlySidebar: {
-            namespaced: true,
-            state: {
-                selectedMenuItem: {},
-                guidesButton: '',
-                showMainMenu: window.localStorage.getItem('countlySidebarMenuVisible') === "false" ? false : true,
-            },
-            getters: {
-                getSelectedMenuItem: function(state) {
-                    return state.selectedMenuItem;
-                },
-                getGuidesButton: function(state) {
-                    return state.guidesButton;
-                }
-            },
-            mutations: {
-                setSelectedMenuItem: function(state, payload) {
-                    state.selectedMenuItem = payload;
-                },
-                setGuidesButton: function(state, payload) {
-                    state.guidesButton = payload;
-                },
-                toggleMainMenu(state, show) {
-                    if (typeof show !== "boolean") {
-                        show = !state.showMainMenu;
-                    }
-                    state.showMainMenu = show;
-                    window.localStorage.setItem('countlySidebarMenuVisible', show);
-                }
-            },
-            actions: {
-                updateSelectedMenuItem: function({commit}, payload) {
-                    commit('setSelectedMenuItem', payload);
-                },
-                selectGuidesButton: function(context) {
-                    context.commit('setGuidesButton', 'selected');
-                },
-                deselectGuidesButton: ({ getters, commit }) => {
-                    const buttonState = getters.getGuidesButton;
-                    if (buttonState !== 'highlighted') {
-                        commit('setGuidesButton', '');
-                    }
-                },
-                highlightGuidesButton: function({getters, commit}, payload) {
-                    const buttonState = getters.getGuidesButton;
-                    if (!payload) {
-                        payload = 'hover';
-                    }
-                    if (buttonState !== 'selected') {
-                        commit('setGuidesButton', payload);
-                    }
-                }
-            }
-        }
-    }
-});
-
+// Initialize app switch callback when DOM is ready
 jQuery(document).ready(function() {
-    window.app.addAppSwitchCallback(function(appId) {
-        _globalVuexStore.dispatch("countlyCommon/updateActiveApp", appId);
-    });
+    initAppSwitchCallback();
 });
 
-let _uniqueCopiedStoreId = 0;
-
-export const getGlobalStore = function() {
-    return _globalVuexStore;
-};
-
-export const registerGlobally = function(wrapper, copy, force) {
-    var vuexStore = _globalVuexStore;
-    var name = wrapper.name;
-    if (copy) {
-        name += "_" + _uniqueCopiedStoreId;
-        _uniqueCopiedStoreId += 1;
-    }
-    if (!vuexStore.hasModule(name) || force) {
-        vuexStore.registerModule(name, wrapper.module);
-    }
-    return name;
-};
-
-export const unregister = function(name) {
-    _globalVuexStore.unregisterModule(name);
-};
+// Re-export store functions for backward compatibility
+export { getGlobalStore, registerGlobally, unregister };
 
 export const vuex = {
     getGlobalStore: getGlobalStore,
@@ -669,67 +443,8 @@ export const BackboneRouteAdapter = function() {};
 Vue.prototype.$route = new BackboneRouteAdapter();
 Vue.prototype.$i18n = i18n;
 
-export const TemplateLoader = function(templates) {
-    this.templates = templates;
-    this.elementsToBeRendered = [];
-};
-
-TemplateLoader.prototype.load = function() {
-    var self = this;
-
-    var getDeferred = function(fName, elId) {
-        if (!elId) {
-            return T.get(fName, function(src) {
-                self.elementsToBeRendered.push(src);
-            });
-        }
-        else {
-            return T.get(fName, function(src) {
-                self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
-            });
-        }
-    };
-
-    if (this.templates) {
-        var templatesDeferred = [];
-        this.templates.forEach(function(item) {
-            if (typeof item === "string") {
-                templatesDeferred.push(getDeferred(item));
-                return;
-            }
-            for (var name in item.mapping) {
-                var fileName = item.mapping[name];
-                var elementId = item.namespace + "-" + name;
-                templatesDeferred.push(getDeferred(fileName, elementId));
-            }
-        });
-
-        return jQuery.when.apply(null, templatesDeferred);
-    }
-    return true;
-};
-
-TemplateLoader.prototype.mount = function(parentSelector) {
-    parentSelector = parentSelector || "#vue-templates";
-    this.elementsToBeRendered.forEach(function(el) {
-        var jqEl = jQuery(el);
-        var elId = jqEl.get(0).id;
-        var elType = jqEl.get(0).type;
-        if (elId && elType === "text/x-template") {
-            if (jQuery(parentSelector).find("#" + elId).length === 0) {
-                jQuery(parentSelector).append(jqEl);
-            }
-            else {
-                // eslint-disable-next-line no-console
-                console.log("Duplicate component templates are not allowed. Please check the template with \"" + elId + "\" id.");
-            }
-        }
-    });
-};
-
-TemplateLoader.prototype.destroy = function() {
-    this.elementsToBeRendered = [];
-};
+// TemplateLoader is now imported from '../countly.template.loader.js'
+export { TemplateLoader };
 
 export const VuexLoader = function(vuexModules) {
     this.vuex = vuexModules;
@@ -755,134 +470,9 @@ VuexLoader.prototype.destroy = function() {
     });
 };
 
-export const NotificationToastsView = {
-    template: '<div class="notification-toasts"> \
-                    <cly-notification v-for="(toast) in notificationToasts" :key="toast.id" :id="toast.id" :text="toast.text" :goTo="toast.goTo" :autoHide="toast.autoHide" :color="toast.color" :closable="true" :customWidth="toast.width" :toast="true" @close="onClose" class="notification-toasts__item"></cly-notification>\
-                </div>',
-    store: _globalVuexStore,
-    computed: {
-        notificationToasts: function() {
-            return this.$store.state.countlyCommon.notificationToasts;
-        }
-    },
-    methods: {
-        onClose: function(id) {
-            this.$store.dispatch('countlyCommon/onRemoveNotificationToast', id);
-        }
-    }
-};
-
-export const DialogsView = {
-    template: '<div>\
-                    <cly-confirm-dialog\
-                        v-for="dialog in confirmDialogs"\
-                        @confirm="onCloseDialog(dialog, true)"\
-                        @cancel="onCloseDialog(dialog, false)"\
-                        @close="onCloseDialog(dialog, false)"\
-                        visible\
-                        :key="dialog.id"\
-                        :dialogType="dialog.type"\
-                        :test-id="dialog.testId"\
-                        :saveButtonLabel="dialog.confirmLabel"\
-                        :cancelButtonLabel="dialog.cancelLabel"\
-                        :title="dialog.title"\
-                        :show-close="dialog.showClose"\
-                        :alignCenter="dialog.alignCenter">\
-                            <template slot-scope="scope">\
-                                <div v-html="dialog.message"></div>\
-                            </template>\
-                    </cly-confirm-dialog>\
-                    <cly-message-dialog\
-                        v-for="dialog in messageDialogs"\
-                        @confirm="onCloseDialog(dialog, true)"\
-                        @close="onCloseDialog(dialog, false)"\
-                        :test-id="dialog.testId"\
-                        visible\
-                        :show-close="false"\
-                        :key="dialog.id"\
-                        :dialogType="dialog.type"\
-                        :confirmButtonLabel="dialog.confirmLabel"\
-                        :title="dialog.title">\
-                            <template slot-scope="scope">\
-                                <div v-html="dialog.message"></div>\
-                            </template>\
-                    </cly-message-dialog>\
-                    <el-dialog\
-                        v-for="dialog in blockerDialogs"\
-                        visible\
-                        :test-id="dialog.testId"\
-                        :center="dialog.center"\
-                        :width="dialog.width"\
-                        :close-on-click-modal="false"\
-                        :close-on-press-escape="false"\
-                        :show-close="false"\
-                        :key="dialog.id"\
-                        :title="dialog.title">\
-                        <div v-html="dialog.message"></div>\
-                    </el-dialog>\
-            </div>',
-    store: _globalVuexStore,
-    computed: {
-        messageDialogs: function() {
-            return this.$store.getters['countlyCommon/messageDialogs'];
-        },
-        confirmDialogs: function() {
-            return this.$store.getters['countlyCommon/confirmDialogs'];
-        },
-        blockerDialogs: function() {
-            return this.$store.getters['countlyCommon/blockerDialogs'];
-        },
-    },
-    methods: {
-        onCloseDialog: function(dialog, status) {
-            if (dialog.callback) {
-                dialog.callback(status);
-            }
-            this.$store.dispatch('countlyCommon/onRemoveDialog', dialog.id);
-        }
-    }
-};
-
-export const GenericPopupsView = {
-    components: {
-        NotificationToasts: NotificationToastsView,
-        Dialogs: DialogsView
-    },
-    template: '<div>\
-                    <NotificationToasts></NotificationToasts>\
-                    <Dialogs></Dialogs>\
-                </div>'
-};
-
-export const QuickstartPopoverView = {
-    template: '<div class="quickstart-popover-wrapper" data-test-id="quickstart-popover-wrapper">\
-        <div class="quickstart-popover-positioner" data-test-id="quickstart-popover-positioner">\
-        <el-popover\
-            v-for="content in quickstartContent"\
-            popper-class="quickstart-popover-popover"\
-            :value="!!content"\
-            :visible-arrow="false"\
-            trigger="manual"\
-            :width="content.width"\
-            :key="content.id"\
-            :title="content.title">\
-            <i class="ion-close bu-is-size-7 quickstart-popover-close" data-test-id="quickstart-popover-close" @click="handleCloseClick(content.id)"></i>\
-            <div v-html="content.message"></div>\
-        </el-popover>\
-        </div>\
-    </div>',
-    store: _globalVuexStore,
-    computed: {
-        quickstartContent: function() {
-            return this.$store.getters['countlyCommon/quickstartContent'];
-        },
-    },
-    methods: {
-        handleCloseClick: function(dialogId) {
-            this.$store.dispatch('countlyCommon/onRemoveDialog', dialogId);
-        },
-    },
-};
+// Re-export popup components for backward compatibility
+export { ClyGenericPopups as GenericPopupsView };
+export { ClyQuickstartPopover as QuickstartPopoverView };
 
 export const countlyVueWrapperView = countlyView.extend({
     constructor: function(opts) {
@@ -923,11 +513,11 @@ export const countlyVueWrapperView = countlyView.extend({
         }
         self.vm = new Vue({
             el: el,
-            store: _globalVuexStore,
+            store: getGlobalStore(),
             components: {
                 MainView: self.component,
-                GenericPopups: GenericPopupsView,
-                QuickstartPopover: QuickstartPopoverView
+                GenericPopups: ClyGenericPopups,
+                QuickstartPopover: ClyQuickstartPopover
             },
             template: '<div>\
                             <MainView></MainView>\
@@ -939,7 +529,7 @@ export const countlyVueWrapperView = countlyView.extend({
             },
             methods: {
                 handleClyError: function(payload) {
-                    if (countlyCommon.DEBUG) {
+                    if (DEBUG) {
                         notify({
                             title: i18n("common.error"),
                             message: payload.message,
