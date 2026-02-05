@@ -1,9 +1,14 @@
 import { validateRead, validateGlobalAdmin } from "../countly.auth";
 import { isPluginEnabled } from "../countly.helpers";
+import { getGlobalStore } from './data/store.js';
 
-
-// Module-level state
-const dict = {};
+/**
+ * Get the container dict from Vuex store
+ * @returns {Object} The container dict
+ */
+function getDict() {
+    return getGlobalStore().state.countlyContainer.dict;
+}
 
 /**
  * Register data to a container by id, with optional priority-based ordering
@@ -16,39 +21,8 @@ export function registerData(id, value, type) {
         return;
     }
 
-    if (!Object.prototype.hasOwnProperty.call(dict, id)) {
-        dict[id] = {};
-    }
-
-    // Note: type property is used when registring data value as object type. By default, container keeps array type.
-    if (type === 'object') {
-        dict[id].data = {};
-        Object.assign(dict[id].data, value);
-        return;
-    }
-
-    if (!Object.prototype.hasOwnProperty.call(dict[id], "data")) {
-        dict[id].data = [];
-    }
-
-    const _items = dict[id].data;
-
-    if (!Object.prototype.hasOwnProperty.call(value, 'priority')) {
-        _items.push(Object.freeze(value));
-    }
-    else {
-        let found = false;
-        let i = 0;
-        while (!found && i < _items.length) {
-            if (!Object.prototype.hasOwnProperty.call(_items[i], 'priority') || _items[i].priority > value.priority) {
-                found = true;
-            }
-            else {
-                i++;
-            }
-        }
-        _items.splice(i, 0, value);
-    }
+    const store = getGlobalStore();
+    store.commit('countlyContainer/registerData', { id, value, type });
 }
 
 /**
@@ -62,26 +36,8 @@ export function registerTab(id, tab) {
             return;
         }
 
-        if (!Object.prototype.hasOwnProperty.call(dict, id)) {
-            dict[id] = {};
-        }
-
-        if (!Object.prototype.hasOwnProperty.call(dict[id], "tabs")) {
-            dict[id].tabs = [];
-        }
-
-        tab.priority = tab.priority || 0;
-        let putAt = dict[id].tabs.length;
-
-        if (tab.priority) {
-            for (let zz = 0; zz < dict[id].tabs.length; zz++) {
-                if (dict[id].tabs[zz].priority && dict[id].tabs[zz].priority > tab.priority) {
-                    putAt = zz;
-                    break;
-                }
-            }
-        }
-        dict[id].tabs.splice(putAt, 0, tab);
+        const store = getGlobalStore();
+        store.commit('countlyContainer/registerTab', { id, tab });
     }
 }
 
@@ -92,15 +48,8 @@ export function registerTab(id, tab) {
  */
 export function registerMixin(id, mixin) {
     if (mixin && (!mixin.pluginName || isPluginEnabled(mixin.pluginName))) {
-        if (!Object.prototype.hasOwnProperty.call(dict, id)) {
-            dict[id] = {};
-        }
-
-        if (!Object.prototype.hasOwnProperty.call(dict[id], "mixins")) {
-            dict[id].mixins = [];
-        }
-
-        dict[id].mixins.push(mixin);
+        const store = getGlobalStore();
+        store.commit('countlyContainer/registerMixin', { id, mixin });
     }
 }
 
@@ -110,18 +59,8 @@ export function registerMixin(id, mixin) {
  * @param {string|Array<string>} path - single template path or array of template paths
  */
 export function registerTemplate(id, path) {
-    if (!Object.prototype.hasOwnProperty.call(dict, id)) {
-        dict[id] = {};
-    }
-    if (!Object.prototype.hasOwnProperty.call(dict[id], "templates")) {
-        dict[id].templates = [];
-    }
-    if (Array.isArray(path)) {
-        dict[id].templates = dict[id].templates.concat(path);
-    }
-    else {
-        dict[id].templates.push(path);
-    }
+    const store = getGlobalStore();
+    store.commit('countlyContainer/registerTemplate', { id, path });
 }
 
 /**
@@ -132,6 +71,7 @@ export function registerTemplate(id, path) {
 export function dataMixin(mapping) {
     const mixin = {
         data: function() {
+            const dict = getDict();
             const ob = Object.keys(mapping).reduce(function(acc, val) {
                 const dataOb = dict[mapping[val]] ? dict[mapping[val]].data : [];
                 if (Array.isArray(dataOb)) {
@@ -171,6 +111,7 @@ export function dataMixin(mapping) {
 export function tabsMixin(mapping) {
     const mixin = {
         data: function() {
+            const dict = getDict();
             const ob = Object.keys(mapping).reduce(function(acc, val) {
                 acc[val] = (dict[mapping[val]] ? dict[mapping[val]].tabs : []).filter(function(tab) {
                     if (tab.permission) {
@@ -191,6 +132,7 @@ export function tabsMixin(mapping) {
  * @returns {Array<object>} array of route objects with url and app_type properties
  */
 export function getAllRoutes() {
+    const dict = getDict();
     const routes = [];
 
     for (const id in dict) {
@@ -219,6 +161,7 @@ export function getAllRoutes() {
  * @returns {Array<object>} concatenated array of all mixins from the specified containers
  */
 export function mixins(ids) {
+    const dict = getDict();
     let result = [];
 
     ids.forEach(function(id) {
@@ -235,6 +178,7 @@ export function mixins(ids) {
  * @returns {Array<string>} concatenated array of all template paths from the specified containers
  */
 export function templates(ids) {
+    const dict = getDict();
     let result = [];
     ids.forEach(function(id) {
         const template = dict[id] ? dict[id].templates : [];
@@ -249,6 +193,7 @@ export function templates(ids) {
  * @returns {Array<object>} concatenated array of Vuex modules from permission-filtered tabs
  */
 export function tabsVuex(ids) {
+    const dict = getDict();
     let vuex = [];
 
     ids.forEach(function(id) {

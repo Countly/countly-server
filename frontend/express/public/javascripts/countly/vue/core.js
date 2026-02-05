@@ -21,7 +21,9 @@ import {
     unregister,
     initAppSwitchCallback,
     getActiveAppId,
+    incrementAndGetComponentId,
 } from './data/store.js';
+import { handleViewError } from './view-error-handler.js';
 
 // Import utilities directly from utility modules
 import {
@@ -131,7 +133,7 @@ export function ajax(request, options) {
                 logout();
             }
             if (jqXHR.abort_reason === "duplicate" || (jqXHR.statusText !== "abort" && jqXHR.statusText !== "canceled")) {
-                window.app.activeView.onError(jqXHR);
+                handleViewError(jqXHR);
             }
         });
     }
@@ -561,20 +563,17 @@ export const countlyVueWrapperView = countlyView.extend({
     }
 });
 
-let _uniqueComponentId = 0;
-
 export const countlyBaseComponent = Vue.extend({
     mixins: [
         basicComponentUtilsMixin
     ],
     computed: {
         componentId: function() {
-            return "cly-cmp-" + _uniqueComponentId;
+            return "cly-cmp-" + this.ucid;
         }
     },
     beforeCreate: function() {
-        this.ucid = _uniqueComponentId.toString();
-        _uniqueComponentId += 1;
+        this.ucid = incrementAndGetComponentId().toString();
     }
 });
 

@@ -109,6 +109,102 @@ const periodSettings = getInitialPeriodSettings(langSettings.browserLangShort);
  */
 const _globalVuexStore = new Vuex.Store({
     modules: {
+        countlyContainer: {
+            namespaced: true,
+            state: {
+                dict: {}
+            },
+            mutations: {
+                registerData(state, { id, value, type }) {
+                    if (!Object.prototype.hasOwnProperty.call(state.dict, id)) {
+                        state.dict[id] = {};
+                    }
+
+                    if (type === 'object') {
+                        state.dict[id].data = {};
+                        Object.assign(state.dict[id].data, value);
+                        return;
+                    }
+
+                    if (!Object.prototype.hasOwnProperty.call(state.dict[id], "data")) {
+                        state.dict[id].data = [];
+                    }
+
+                    const items = state.dict[id].data;
+
+                    if (!Object.prototype.hasOwnProperty.call(value, 'priority')) {
+                        items.push(Object.freeze(value));
+                    }
+                    else {
+                        let found = false;
+                        let i = 0;
+                        while (!found && i < items.length) {
+                            if (!Object.prototype.hasOwnProperty.call(items[i], 'priority') || items[i].priority > value.priority) {
+                                found = true;
+                            }
+                            else {
+                                i++;
+                            }
+                        }
+                        items.splice(i, 0, value);
+                    }
+                },
+                registerTab(state, { id, tab }) {
+                    if (!Object.prototype.hasOwnProperty.call(state.dict, id)) {
+                        state.dict[id] = {};
+                    }
+
+                    if (!Object.prototype.hasOwnProperty.call(state.dict[id], "tabs")) {
+                        state.dict[id].tabs = [];
+                    }
+
+                    tab.priority = tab.priority || 0;
+                    let putAt = state.dict[id].tabs.length;
+
+                    if (tab.priority) {
+                        for (let zz = 0; zz < state.dict[id].tabs.length; zz++) {
+                            if (state.dict[id].tabs[zz].priority && state.dict[id].tabs[zz].priority > tab.priority) {
+                                putAt = zz;
+                                break;
+                            }
+                        }
+                    }
+                    state.dict[id].tabs.splice(putAt, 0, tab);
+                },
+                registerMixin(state, { id, mixin }) {
+                    if (!Object.prototype.hasOwnProperty.call(state.dict, id)) {
+                        state.dict[id] = {};
+                    }
+
+                    if (!Object.prototype.hasOwnProperty.call(state.dict[id], "mixins")) {
+                        state.dict[id].mixins = [];
+                    }
+
+                    state.dict[id].mixins.push(mixin);
+                },
+                registerTemplate(state, { id, path }) {
+                    if (!Object.prototype.hasOwnProperty.call(state.dict, id)) {
+                        state.dict[id] = {};
+                    }
+                    if (!Object.prototype.hasOwnProperty.call(state.dict[id], "templates")) {
+                        state.dict[id].templates = [];
+                    }
+                    if (Array.isArray(path)) {
+                        state.dict[id].templates = state.dict[id].templates.concat(path);
+                    }
+                    else {
+                        state.dict[id].templates.push(path);
+                    }
+                }
+            },
+            getters: {
+                getDict: (state) => state.dict,
+                getData: (state) => (id) => state.dict[id]?.data || [],
+                getTabs: (state) => (id) => state.dict[id]?.tabs || [],
+                getMixins: (state) => (id) => state.dict[id]?.mixins || [],
+                getTemplates: (state) => (id) => state.dict[id]?.templates || []
+            }
+        },
         countlyCommon: {
             namespaced: true,
             state: {
@@ -548,6 +644,9 @@ const _globalVuexStore = new Vuex.Store({
                 appManagementViews: {},
                 appAddTypeCallbacks: [],
                 userEditCallbacks: [],
+
+                // Component ID counter for unique component identifiers
+                uniqueComponentId: 0,
             },
             getters: {
                 // View getters
@@ -651,6 +750,11 @@ const _globalVuexStore = new Vuex.Store({
                 },
                 getUserEditCallbacks: function(state) {
                     return state.userEditCallbacks;
+                },
+
+                // Component ID getter
+                getUniqueComponentId: function(state) {
+                    return state.uniqueComponentId;
                 },
             },
             mutations: {
@@ -782,6 +886,11 @@ const _globalVuexStore = new Vuex.Store({
                 },
                 addUserEditCallback: function(state, callback) {
                     state.userEditCallbacks.push(callback);
+                },
+
+                // Component ID mutation
+                incrementComponentId: function(state) {
+                    state.uniqueComponentId += 1;
                 },
             },
             actions: {
@@ -1325,6 +1434,71 @@ export const getUniqueMenus = function() {
  */
 export const getInternalMenuCategories = function() {
     return _globalVuexStore.state.countlyApp.internalMenuCategories;
+};
+
+/**
+ * Returns the current uniqueComponentId from the store
+ * @returns {number} The current unique component ID
+ */
+export const getUniqueComponentId = function() {
+    return _globalVuexStore.state.countlyApp.uniqueComponentId;
+};
+
+/**
+ * Increments the uniqueComponentId in the store and returns the new value
+ * @returns {number} The new unique component ID
+ */
+export const incrementAndGetComponentId = function() {
+    _globalVuexStore.commit('countlyApp/incrementComponentId');
+    return _globalVuexStore.state.countlyApp.uniqueComponentId;
+};
+
+// ============================================================================
+// Convenience Accessors for countlyContainer module
+// ============================================================================
+
+/**
+ * Returns the container dict from the store
+ * @returns {Object} The container dict
+ */
+export const getContainerDict = function() {
+    return _globalVuexStore.state.countlyContainer.dict;
+};
+
+/**
+ * Returns data for a specific container ID from the store
+ * @param {string} id - The container identifier
+ * @returns {Array|Object} The container data
+ */
+export const getContainerData = function(id) {
+    return _globalVuexStore.getters['countlyContainer/getData'](id);
+};
+
+/**
+ * Returns tabs for a specific container ID from the store
+ * @param {string} id - The container identifier
+ * @returns {Array} The container tabs
+ */
+export const getContainerTabs = function(id) {
+    return _globalVuexStore.getters['countlyContainer/getTabs'](id);
+};
+
+/**
+ * Returns mixins for a specific container ID from the store
+ * @param {string} id - The container identifier
+ * @returns {Array} The container mixins
+ */
+export const getContainerMixins = function(id) {
+    return _globalVuexStore.getters['countlyContainer/getMixins'](id);
+};
+
+/**
+ * Returns templates for a specific container ID from the store
+ * @param {string} id - The container identifier
+ * @returns {Array} The container templates
+ */
+export const getContainerTemplates = function(id) {
+    return _globalVuexStore.getters['countlyContainer/getTemplates'](id);
 };
 
 /**

@@ -4,9 +4,16 @@ import jQuery from 'jquery';
 import { countlyCommon } from './countly.common.js';
 import { app } from './countly.template.js';
 import countlyDeviceDetails from './countly.device.detail.js';
-import countlyVue from './vue/core.js';
-
+import { i18n } from './vue/core.js';
 const $ = jQuery;
+import {
+    encodeHtml,
+    encodeSomeHtml,
+    decode,
+    union,
+} from './countly.common.utils.js';
+import vuexGlobalStore from './vue/data/store.js';
+import * as COUNTLY_CONFIG from './countly.config.js';
 
 /**
  * Some helper functions to be used throughout all views. Includes custom popup, alert and confirm dialogs for the time being.
@@ -100,7 +107,7 @@ export function notify(msg) {
         payload.text = msg.message;
     }
     else {
-        payload.text = countlyCommon.encodeHtml(msg.message);
+        payload.text = encodeHtml(msg.message);
     }
     payload.autoHide = !msg.sticky;
     payload.id = msg.id;
@@ -136,10 +143,10 @@ export function notify(msg) {
     payload.color = colorToUse;
 
     if (persistent) {
-        countlyCommon.dispatchPersistentNotification(payload);
+        vuexGlobalStore.dispatch('countlyCommon/onAddPersistentNotification', payload);
     }
     else {
-        countlyCommon.dispatchNotificationToast(payload);
+        vuexGlobalStore.dispatch('countlyCommon/onAddNotificationToast', payload);
     }
 }
 
@@ -148,7 +155,7 @@ export function notify(msg) {
  * @param {string} notificationId - The unique identifier of the notification to remove
  */
 export function removePersistentNotification(notificationId) {
-    countlyCommon.removePersistentNotification(notificationId);
+    vuexGlobalStore.dispatch('countlyCommon/onRemovePersistentNotification', notificationId);
 }
 
 /**
@@ -194,7 +201,7 @@ export function getBacklink() {
  * @returns {boolean} true when active app type is mobile, otherwise false
  */
 export function isActiveAppMobile() {
-    return countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile';
+    return countlyGlobal.apps[vuexGlobalStore.state.countlyCommon.activeAppId].type === 'mobile';
 }
 
 /**
@@ -212,37 +219,30 @@ export function showAlert(msg, type, moreData) {
     if (countlyGlobal.ssr) {
         return;
     }
+    var confirmLabel = i18n('common.ok'),
+        convertedType = "secondary";
 
-    if (window.countlyVue && window.countlyVue.vuex) {
-
-        var confirmLabel = countlyVue.i18n('common.ok'),
-            convertedType = "secondary";
-
-        if (moreData && moreData.button_title) {
-            confirmLabel = moreData.button_title;
-        }
-
-        if (type === "popStyleGreen") {
-            convertedType = "success";
-        }
-        else if (type === "red") {
-            convertedType = "danger";
-        }
-
-        var payload = {
-            intent: 'message',
-            message: (moreData && moreData.title) ? countlyCommon.encodeSomeHtml(msg) : "",
-            type: convertedType,
-            confirmLabel: confirmLabel,
-            title: (moreData && moreData.title) || countlyCommon.encodeSomeHtml(msg),
-            image: moreData && moreData.image
-        };
-
-        var currentStore = window.countlyVue.vuex.getGlobalStore();
-        if (currentStore) {
-            currentStore.dispatch('countlyCommon/onAddDialog', payload);
-        }
+    if (moreData && moreData.button_title) {
+        confirmLabel = moreData.button_title;
     }
+
+    if (type === "popStyleGreen") {
+        convertedType = "success";
+    }
+    else if (type === "red") {
+        convertedType = "danger";
+    }
+
+    var payload = {
+        intent: 'message',
+        message: (moreData && moreData.title) ? encodeSomeHtml(msg) : "",
+        type: convertedType,
+        confirmLabel: confirmLabel,
+        title: (moreData && moreData.title) || encodeSomeHtml(msg),
+        image: moreData && moreData.image
+    };
+
+    vuexGlobalStore.dispatch('countlyCommon/onAddDialog', payload);
 }
 
 /**
@@ -271,42 +271,36 @@ export function showConfirm(msg, type, callback, buttonText, moreData, testId = 
         return;
     }
 
-    if (window.countlyVue && window.countlyVue.vuex) {
+    var cancelLabel = i18n('common.cancel'),
+        confirmLabel = i18n('common.continue'),
+        convertedType = "danger",
+        showClose = moreData && moreData.showClose !== false,
+        alignCenter = moreData && moreData.alignCenter !== false;
 
-        var cancelLabel = countlyVue.i18n('common.cancel'),
-            confirmLabel = countlyVue.i18n('common.continue'),
-            convertedType = "danger",
-            showClose = moreData && moreData.showClose !== false,
-            alignCenter = moreData && moreData.alignCenter !== false;
-
-        if (buttonText && buttonText.length === 2) {
-            cancelLabel = buttonText[0];
-            confirmLabel = buttonText[1];
-        }
-
-        if (type === "popStyleGreen") {
-            convertedType = "success";
-        }
-
-        var payload = {
-            intent: 'confirm',
-            message: countlyCommon.encodeSomeHtml(msg),
-            type: convertedType,
-            confirmLabel: confirmLabel,
-            cancelLabel: cancelLabel,
-            title: moreData && moreData.title,
-            image: moreData && moreData.image,
-            showClose: showClose,
-            alignCenter: alignCenter,
-            callback: callback,
-            testId: testId
-        };
-
-        var currentStore = window.countlyVue.vuex.getGlobalStore();
-        if (currentStore) {
-            currentStore.dispatch('countlyCommon/onAddDialog', payload);
-        }
+    if (buttonText && buttonText.length === 2) {
+        cancelLabel = buttonText[0];
+        confirmLabel = buttonText[1];
     }
+
+    if (type === "popStyleGreen") {
+        convertedType = "success";
+    }
+
+    var payload = {
+        intent: 'confirm',
+        message: encodeSomeHtml(msg),
+        type: convertedType,
+        confirmLabel: confirmLabel,
+        cancelLabel: cancelLabel,
+        title: moreData && moreData.title,
+        image: moreData && moreData.image,
+        showClose: showClose,
+        alignCenter: alignCenter,
+        callback: callback,
+        testId: testId
+    };
+
+    vuexGlobalStore.dispatch('countlyCommon/onAddDialog', payload);
 }
 
 /**
@@ -323,19 +317,14 @@ export function showBlockerDialog(msg, moreData) {
         return;
     }
 
-    if (window.countlyVue && window.countlyVue.vuex) {
-        var payload = {
-            intent: "blocker",
-            message: msg,
-            title: (moreData && moreData.title) || "",
-            width: (moreData && moreData.width) || "400px",
-        };
+    var payload = {
+        intent: "blocker",
+        message: msg,
+        title: (moreData && moreData.title) || "",
+        width: (moreData && moreData.width) || "400px",
+    };
 
-        var currentStore = window.countlyVue.vuex.getGlobalStore();
-        if (currentStore) {
-            currentStore.dispatch('countlyCommon/onAddDialog', payload);
-        }
-    }
+    vuexGlobalStore.dispatch('countlyCommon/onAddDialog', payload);
 }
 
 /**
@@ -347,18 +336,13 @@ export function showQuickstartPopover(content) {
         return;
     }
 
-    if (window.countlyVue && window.countlyVue.vuex) {
-        var payload = {
-            intent: "quickstart",
-            message: content,
-            width: "314",
-        };
+    var payload = {
+        intent: "quickstart",
+        message: content,
+        width: "314",
+    };
 
-        var currentStore = window.countlyVue.vuex.getGlobalStore();
-        if (currentStore) {
-            currentStore.dispatch('countlyCommon/onAddDialog', payload);
-        }
-    }
+    vuexGlobalStore.dispatch('countlyCommon/onAddDialog', payload);
 }
 
 /**
@@ -398,7 +382,7 @@ export function displayExportStatus(error, export_id, task_id) {
             sticky: false,
             clearAll: true,
             onClick: function() {
-                var win = window.open(countlyCommon.API_PARTS.data.r + "/export/download/" + task_id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID, '_blank');
+                var win = window.open(COUNTLY_CONFIG.API_PARTS.data.r + "/export/download/" + task_id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + vuexGlobalStore.state.countlyCommon.activeAppId, '_blank');
                 win.focus();
             }
         });
@@ -534,30 +518,30 @@ export function createMetricModel(countlyMetric, metric, _jQueryRef, fetchValue)
     countlyMetric.initialize = function(processed) {
         var periodToFetch = countlyCommon.getPeriodForAjax();
 
-        var key = countlyCommon.ACTIVE_APP_ID + "-" + _name + "-" + periodToFetch;
-        var key_refresh = countlyCommon.ACTIVE_APP_ID + "-" + _name + "-refresh";
+        var key = vuexGlobalStore.state.countlyCommon.activeAppId + "-" + _name + "-" + periodToFetch;
+        var key_refresh = vuexGlobalStore.state.countlyCommon.activeAppId + "-" + _name + "-refresh";
         if (_promises[key]) {
             return _promises[key];
         }
         else if (_promises[key_refresh]) {
             return _promises[key_refresh];
         }
-        if (_initialized && _period === periodToFetch && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
+        if (_initialized && _period === periodToFetch && _activeAppKey === vuexGlobalStore.state.countlyCommon.activeAppKey) {
             return this.refresh();
         }
         _period = countlyCommon.getPeriodForAjax();
 
-        if (!countlyCommon.DEBUG) {
-            _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+        if (!COUNTLY_CONFIG.DEBUG) {
+            _activeAppKey = vuexGlobalStore.state.countlyCommon.activeAppKey;
             _initialized = true;
 
             if (processed) {
                 _processed = true;
                 return $.ajax({
                     type: "GET",
-                    url: countlyCommon.API_PARTS.data.r + "/analytics/metric",
+                    url: COUNTLY_CONFIG.API_PARTS.data.r + "/analytics/metric",
                     data: {
-                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "app_id": vuexGlobalStore.state.countlyCommon.activeAppId,
                         "metric": _name,
                         "period": _period
                     },
@@ -572,9 +556,9 @@ export function createMetricModel(countlyMetric, metric, _jQueryRef, fetchValue)
             else {
                 _promises[key] = $.ajax({
                     type: "GET",
-                    url: countlyCommon.API_PARTS.data.r,
+                    url: COUNTLY_CONFIG.API_PARTS.data.r,
                     data: {
-                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "app_id": vuexGlobalStore.state.countlyCommon.activeAppId,
                         "method": _name,
                         "period": _period
                     },
@@ -604,9 +588,9 @@ export function createMetricModel(countlyMetric, metric, _jQueryRef, fetchValue)
     };
 
     countlyMetric.refresh = function() {
-        if (!countlyCommon.DEBUG) {
-            if (_activeAppKey !== countlyCommon.ACTIVE_APP_KEY) {
-                _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+        if (!COUNTLY_CONFIG.DEBUG) {
+            if (_activeAppKey !== vuexGlobalStore.state.countlyCommon.activeAppKey) {
+                _activeAppKey = vuexGlobalStore.state.countlyCommon.activeAppKey;
                 return this.initialize();
             }
 
@@ -616,15 +600,15 @@ export function createMetricModel(countlyMetric, metric, _jQueryRef, fetchValue)
                 }
             }
             else {
-                var key = countlyCommon.ACTIVE_APP_ID + "-" + _name + "-refresh";
+                var key = vuexGlobalStore.state.countlyCommon.activeAppId + "-" + _name + "-refresh";
                 if (_promises[key]) {
                     return _promises[key];
                 }
                 _promises[key] = $.ajax({
                     type: "GET",
-                    url: countlyCommon.API_PARTS.data.r,
+                    url: COUNTLY_CONFIG.API_PARTS.data.r,
                     data: {
-                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "app_id": vuexGlobalStore.state.countlyCommon.activeAppId,
                         "method": _name,
                         "action": "refresh"
                     },
@@ -692,10 +676,10 @@ export function createMetricModel(countlyMetric, metric, _jQueryRef, fetchValue)
             var data = JSON.parse(JSON.stringify(_Db));
             for (i = 0; i < _Db.length; i++) {
                 if (fetchValue && !clean) {
-                    data[i][metric1 || _name] = fetchValue(countlyCommon.decode(data[i]._id));
+                    data[i][metric1 || _name] = fetchValue(decode(data[i]._id));
                 }
                 else {
-                    data[i][metric1 || _name] = countlyCommon.decode(data[i]._id);
+                    data[i][metric1 || _name] = decode(data[i]._id);
                 }
                 chartData.chartData[i] = data[i];
             }
@@ -705,7 +689,7 @@ export function createMetricModel(countlyMetric, metric, _jQueryRef, fetchValue)
                 {
                     name: metric1 || _name,
                     func: function(rangeArr) {
-                        rangeArr = countlyCommon.decode(rangeArr);
+                        rangeArr = decode(rangeArr);
                         if (fetchValue && !clean) {
                             return fetchValue(rangeArr);
                         }
@@ -808,10 +792,10 @@ export function createMetricModel(countlyMetric, metric, _jQueryRef, fetchValue)
             var data = JSON.parse(JSON.stringify(_Db));
             for (var i = 0; i < _Db.length; i++) {
                 if (fetchValue) {
-                    data[i].range = fetchValue(countlyCommon.decode(data[i]._id));
+                    data[i].range = fetchValue(decode(data[i]._id));
                 }
                 else {
-                    data[i].range = countlyCommon.decode(data[i]._id);
+                    data[i].range = decode(data[i]._id);
                 }
                 rangeData.chartData[i] = data[i];
             }
@@ -830,10 +814,10 @@ export function createMetricModel(countlyMetric, metric, _jQueryRef, fetchValue)
             var data = JSON.parse(JSON.stringify(_Db));
             for (var i = 0; i < _Db.length; i++) {
                 if (fetchValue) {
-                    data[i].range = fetchValue(countlyCommon.decode(data[i]._id));
+                    data[i].range = fetchValue(decode(data[i]._id));
                 }
                 else {
-                    data[i].range = countlyCommon.decode(data[i]._id);
+                    data[i].range = decode(data[i]._id);
                 }
                 rangeData.chartData[i] = data[i];
             }
@@ -853,10 +837,10 @@ export function createMetricModel(countlyMetric, metric, _jQueryRef, fetchValue)
             var data = JSON.parse(JSON.stringify(_Db));
             for (i = 0; i < _Db.length; i++) {
                 if (fetchValue && !clean) {
-                    data[i][metric_pd || _name] = fetchValue(countlyCommon.decode(data[i]._id));
+                    data[i][metric_pd || _name] = fetchValue(decode(data[i]._id));
                 }
                 else {
-                    data[i][metric_pd || _name] = countlyCommon.decode(data[i]._id);
+                    data[i][metric_pd || _name] = decode(data[i]._id);
                 }
                 oSVersionData.chartData[i] = data[i];
             }
@@ -866,7 +850,7 @@ export function createMetricModel(countlyMetric, metric, _jQueryRef, fetchValue)
                 {
                     name: metric_pd || _name,
                     func: function(rangeArr) {
-                        rangeArr = countlyCommon.decode(rangeArr);
+                        rangeArr = decode(rangeArr);
                         if (fetchValue && !clean) {
                             return fetchValue(rangeArr);
                         }
@@ -970,7 +954,7 @@ export function createMetricModel(countlyMetric, metric, _jQueryRef, fetchValue)
     function extendMeta() {
         if (_Db.meta) {
             for (var i in _Db.meta) {
-                _metrics[i] = countlyCommon.union(_metrics[i], _Db.meta[i]);
+                _metrics[i] = union(_metrics[i], _Db.meta[i]);
             }
         }
     }

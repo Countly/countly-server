@@ -1,9 +1,9 @@
 /**
  * Countly Common Utilities Module
- * 
+ *
  * Pure utility functions with no state dependencies.
  * These can be safely imported without causing circular dependencies.
- * 
+ *
  * @module countly.common.utils
  */
 
@@ -16,7 +16,7 @@ import _ from 'underscore';
 // ============================================================================
 
 /**
- * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first 
+ * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first
  * and all . (dot) symbols to &#46; in the string
  * @param {string} str - value to encode
  * @returns {string} encoded string
@@ -26,7 +26,7 @@ export function encode(str) {
 }
 
 /**
- * Decode value from db, decoding first &#36; to $ and all &#46; to . (dots). 
+ * Decode value from db, decoding first &#36; to $ and all &#46; to . (dots).
  * Decodes also url encoded values as &amp;#36;.
  * @param {string} str - value to decode
  * @returns {string} decoded string

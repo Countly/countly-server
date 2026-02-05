@@ -113,7 +113,6 @@ window.store = store;
 import Backbone from './javascripts/utils/backbone-min.js';
 window.Backbone = Backbone;
 
-// these needs to be here for now
 import jQuery from 'jquery';
 window.jQuery = jQuery;
 window.$ = jQuery;
