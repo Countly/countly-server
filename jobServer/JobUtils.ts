@@ -46,12 +46,12 @@ class JobUtils {
     static validateJobClass(JobClass: JobClassConstructor, BaseClass: JobClassConstructor = Job): boolean {
         // Check if it's a class/constructor
         if (typeof JobClass !== 'function') {
-            throw new Error('Job must be a class constructor');
+            throw new TypeError('Job must be a class constructor');
         }
 
         // Check if it inherits from the base class
         if (!(JobClass.prototype instanceof BaseClass)) {
-            throw new Error(`Job class must extend ${BaseClass.name}`);
+            throw new TypeError(`Job class must extend ${BaseClass.name}`);
         }
 
         // Check if required methods are overridden
@@ -139,7 +139,7 @@ class JobUtils {
         const isEveryYear = laterString.includes('every 1 year') || laterString.includes('yearly');
         const isWeekday = laterString.toLowerCase().includes('weekday');
         const isEveryNDays = laterString.match(/every\s+(\d+)\s+days?/);
-        const isLastDayOfMonth = laterString.includes("last day of the month");
+        const isLastDayOfMonth = laterString.includes('last day of the month');
         const isOnceInHours = laterString.match(/once in (\d+) hours?/);
 
         // Handle specific patterns
@@ -148,21 +148,21 @@ class JobUtils {
         }
 
         if (isEveryMinute) {
-            const interval = parseInt(isEveryMinute[1], 10);
+            const interval = Number.parseInt(isEveryMinute[1], 10);
             return `*/${interval} * * * *`;
         }
 
         if (isEveryHour) {
-            const interval = parseInt(isEveryHour[1], 10);
+            const interval = Number.parseInt(isEveryHour[1], 10);
             return laterString.includes('on the 1st min')
                 ? `1 */${interval} * * *`
                 : `0 */${interval} * * *`;
         }
 
         if (isSpecificTime && isEveryDay) {
-            let [, hourStr, minuteStr, meridiem] = isSpecificTime;
-            let hour = parseInt(hourStr, 10);
-            const minute = parseInt(minuteStr, 10);
+            const [, hourStr, minuteStr, meridiem] = isSpecificTime;
+            let hour = Number.parseInt(hourStr, 10);
+            const minute = Number.parseInt(minuteStr, 10);
             if (meridiem) {
                 hour = meridiem.toLowerCase() === 'pm' && hour < 12 ? hour + 12 : hour;
                 hour = meridiem.toLowerCase() === 'am' && hour === 12 ? 0 : hour;
@@ -172,9 +172,9 @@ class JobUtils {
 
         if (isWeekday) {
             if (isSpecificTime) {
-                let [, hourStr, minuteStr, meridiem] = isSpecificTime;
-                let hour = parseInt(hourStr, 10);
-                const minute = parseInt(minuteStr, 10);
+                const [, hourStr, minuteStr, meridiem] = isSpecificTime;
+                let hour = Number.parseInt(hourStr, 10);
+                const minute = Number.parseInt(minuteStr, 10);
                 if (meridiem) {
                     hour = meridiem.toLowerCase() === 'pm' && hour < 12 ? hour + 12 : hour;
                     hour = meridiem.toLowerCase() === 'am' && hour === 12 ? 0 : hour;
@@ -185,11 +185,11 @@ class JobUtils {
         }
 
         if (isEveryNDays) {
-            const interval = parseInt(isEveryNDays[1], 10);
+            const interval = Number.parseInt(isEveryNDays[1], 10);
             if (isSpecificTime) {
-                let [, hourStr, minuteStr, meridiem] = isSpecificTime;
-                let hour = parseInt(hourStr, 10);
-                const minute = parseInt(minuteStr, 10);
+                const [, hourStr, minuteStr, meridiem] = isSpecificTime;
+                let hour = Number.parseInt(hourStr, 10);
+                const minute = Number.parseInt(minuteStr, 10);
                 if (meridiem) {
                     hour = meridiem.toLowerCase() === 'pm' && hour < 12 ? hour + 12 : hour;
                     hour = meridiem.toLowerCase() === 'am' && hour === 12 ? 0 : hour;
@@ -201,20 +201,20 @@ class JobUtils {
 
         if (isLastDayOfMonth) {
             if (isSpecificTime) {
-                let [, hourStr, minuteStr, meridiem] = isSpecificTime;
-                let hour = parseInt(hourStr, 10);
-                const minute = parseInt(minuteStr, 10);
+                const [, hourStr, minuteStr, meridiem] = isSpecificTime;
+                let hour = Number.parseInt(hourStr, 10);
+                const minute = Number.parseInt(minuteStr, 10);
                 if (meridiem) {
                     hour = meridiem.toLowerCase() === 'pm' && hour < 12 ? hour + 12 : hour;
                     hour = meridiem.toLowerCase() === 'am' && hour === 12 ? 0 : hour;
                 }
                 return `${minute} ${hour} L * *`;
             }
-            return `0 0 L * *`;
+            return '0 0 L * *';
         }
 
         if (isOnceInHours) {
-            const interval = parseInt(isOnceInHours[1], 10);
+            const interval = Number.parseInt(isOnceInHours[1], 10);
             return `0 */${interval} * * *`;
         }
 
