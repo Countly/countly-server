@@ -71,10 +71,10 @@
 </template>
 
 <script>
-import countlyVue from '../../../javascripts/countly/vue/core.js';
+import countlyVue, { autoRefreshMixin } from '../../../javascripts/countly/vue/core.js';
 
 export default {
-    mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.i18n],
+    mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.i18n, autoRefreshMixin],
     data: function() {
         return {
             progressBarColor: "#017AFF"
