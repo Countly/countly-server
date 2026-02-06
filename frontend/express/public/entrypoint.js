@@ -147,6 +147,7 @@ import ClyMultiplex from './javascripts/components/helpers/cly-multiplex.vue';
 import ClyListDrawer from './javascripts/components/helpers/cly-list-drawer.vue';
 import ClyAutoRefreshToggle from './javascripts/components/helpers/cly-auto-refresh-toggle.vue';
 import ClyDatabaseEngineDebugPanel from './javascripts/components/helpers/cly-database-engine-debug-panel.vue';
+import ClyContent from './javascripts/components/helpers/cly-content.vue';
 
 // Datatable component imports
 import ClyDatatableN from './javascripts/components/datatable/cly-datatable-n.vue';
@@ -269,6 +270,7 @@ window.Vue.component('cly-multiplex', ClyMultiplex);
 window.Vue.component('cly-list-drawer', ClyListDrawer);
 window.Vue.component('cly-auto-refresh-toggle', ClyAutoRefreshToggle);
 window.Vue.component('cly-database-engine-debug-panel', ClyDatabaseEngineDebugPanel);
+window.Vue.component('cly-content', ClyContent);
 
 // Register datatable components
 window.Vue.component('cly-datatable-n', ClyDatatableN);
