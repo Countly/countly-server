@@ -49,6 +49,7 @@ import './core/token-manager/index.js';
 import './core/home/index.js';
 import './core/carrier/index.js';
 import './core/health-manager/index.js';
+import './core/date-presets/index.js';
 
 // Component imports
 import ClyStatusBadge from './javascripts/components/cly-status-badge.vue';

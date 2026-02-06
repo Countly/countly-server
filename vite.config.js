@@ -155,8 +155,8 @@ const legacyScripts = [
     // 'core/version-history/javascripts/countly.views.js',
     'core/onboarding/javascripts/countly.models.js',
     'core/onboarding/javascripts/countly.views.js',
-    'core/date-presets/javascripts/countly.views.js',
-    'core/date-presets/javascripts/countly.models.js',
+    // 'core/date-presets/javascripts/countly.views.js',
+    // 'core/date-presets/javascripts/countly.models.js',
     // 'core/health-manager/javascripts/countly.models.js',
     // 'core/health-manager/javascripts/countly.views.js',
 
