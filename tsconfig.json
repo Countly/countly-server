@@ -78,7 +78,6 @@
         "jobServer/requestProcessor.ts",
         "jobServer/PulseJobRunner.ts",
         "jobServer/config.ts",
-        "jobServer/index.ts",
         "api/jobs/appExpire.ts",
         "api/jobs/clearAutoTasks.ts",
         "api/jobs/clearTokens.ts",
