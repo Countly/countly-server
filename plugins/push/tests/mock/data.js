@@ -5,6 +5,9 @@
  * @typedef {import("../../api/new/types/schedule.ts").Schedule} Schedule
  * @typedef {import("../../api/new/types/queue.ts").ScheduleEvent} ScheduleEvent
  * @typedef {import("../../api/new/types/queue.ts").PushEvent} PushEvent
+ * @typedef {import("../../api/new/types/queue.ts").ResultEvent} ResultEvent
+ * @typedef {import("../../api/new/types/queue.ts").CohortTriggerEvent} CohortTriggerEvent
+ * @typedef {import("../../api/new/types/queue.ts").EventTriggerEvent} EventTriggerEvent
  * @typedef {import("../../api/new/types/user.js").User} User
  * @typedef {import("../../api/new/types/credentials.js").PlatformCredential} PlatformCredential
  */
@@ -23,10 +26,12 @@ module.exports = {
             timezoneAware: true,
             schedulerTimezone: 180,
             status: "scheduled",
-            events: {
-                composed: [],
-                scheduled: [],
-            },
+            events: [
+                {
+                    scheduledTo: new Date,
+                    status: "scheduled",
+                }
+            ],
             result: {
                 actioned: 0,
                 total: 0,
@@ -252,6 +257,39 @@ module.exports = {
             appTimezone: "NA",
             trigger: this.plainTrigger(),
             platformConfiguration: {}
+        };
+    },
+    /**
+     * @returns {ResultEvent}
+     */
+    resultEvent() {
+        return {
+            ...this.pushEvent(),
+            response: "Android response",
+            sentAt: new Date,
+        };
+    },
+    /**
+     * @returns {CohortTriggerEvent}
+     */
+    cohortTriggerEvent() {
+        return {
+            appId: new ObjectId,
+            kind: "cohort",
+            cohortId: "cohort id",
+            uids: ["1", "2"],
+            direction: "enter",
+        };
+    },
+    /**
+     * @returns {EventTriggerEvent}
+     */
+    eventTriggerEvent() {
+        return {
+            appId: new ObjectId,
+            kind: "event",
+            eventKeys: ["event1", "event2"],
+            uid: "1",
         };
     },
     /*

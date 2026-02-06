@@ -7,10 +7,10 @@
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api'),
-    { Message, TriggerKind, ValidationError, PushError } = require('./send'),
+    { ValidationError, PushError } = require('./send'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
-    { onTokenSession, onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push'),
-    { autoOnCohort, /*autoOnCohortDeletion,*/ autoOnEvent } = require('./api-auto'),
+    { onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push'),
+    { autoOnCohort, /*autoOnCohortDeletion,*/ } = require('./api-auto'),
     { apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
     { estimate, test, create, update, toggle, remove, all, one, mime, user, periodicStats } = require('./api-message'),
@@ -44,18 +44,18 @@ const plugins = require('../../pluginManager'),
         }
     };
 
-const { initPushQueue } = require("./new/lib/kafka.js");
+const { initPushQueue, loadKafka } = require("./new/lib/kafka.js");
 const { composeAllScheduledPushes } = require('./new/composer.js');
 const { sendAllPushes } = require('./new/sender.js');
 const { saveResults } = require("./new/resultor.js");
 const { scheduleMessageByAutoTriggers } = require("./new/scheduler.js");
-const { guessThePlatformFromUserAgentHeader } = require("./new/lib/utils.js");
-const platforms = require("./new/constants/platform-keymap.js");
-const ALL_PLATFORM_KEYS = Object.keys(platforms);
 
 plugins.register("/master", async function() {
     try {
+        const { kafkaInstance, Partitioners } = await loadKafka();
         await initPushQueue(
+            kafkaInstance,
+            Partitioners.DefaultPartitioner,
             pushes => sendAllPushes(pushes),
             schedules => composeAllScheduledPushes(common.db, schedules),
             results => saveResults(common.db, results),
@@ -65,89 +65,6 @@ plugins.register("/master", async function() {
     }
     catch (err) {
         log.e("Error initializing push queue:", err);
-    }
-});
-
-plugins.register('/i', async ob => {
-    let params = ob.params,
-        la = params.app_user.la;
-    if (params.qstring.events && Array.isArray(params.qstring.events)) {
-        let events = params.qstring.events,
-            keys = events.map(e => e.key);
-        keys = keys.filter((k, i) => keys.indexOf(k) === i);
-
-        autoOnEvent(params.app_id, params.app_user.uid, keys, events);
-
-        let push = events.filter(e => e.key && e.key.indexOf('[CLY]_push_action') === 0 && e.segmentation && e.segmentation.i && e.segmentation.i.length === 24);
-        if (push.length) {
-            try {
-                let ids = push.map(e => common.db.ObjectID(e.segmentation.i)),
-                    msgs = await Message.findMany({_id: {$in: ids}}),
-                    updates = {};
-                for (let i = 0; i < push.length; i++) {
-                    let event = push[i],
-                        msg = msgs.filter(m => m.id === event.segmentation.i)[0],
-                        count = parseInt(event.count, 10);
-                    if (!msg || count !== 1) {
-                        log.i('Invalid segmentation for [CLY]_push_action from %s: %j (msg %s, count %j)', params.qstring.device_id, event.segmentation, msg ? 'found' : 'not found', event.segmentation.count);
-                        continue;
-                    }
-                    else {
-                        log.d('Recording push action: [%s] (%s) {%d}, %j', msg.id, params.app_user.uid, count, event);
-                    }
-
-                    let p = event.segmentation.p,
-                        a = msg.triggers.filter(tr => tr.kind === TriggerKind.Cohort || tr.kind === TriggerKind.Event).length > 0,
-                        t = msg.triggers.filter(tr => tr.kind === TriggerKind.API).length > 0,
-                        upd = updates[msg.id];
-                    if (upd) {
-                        upd.$inc['result.actioned'] += count;
-                    }
-                    else {
-                        upd = updates[msg.id] = {$inc: {'result.actioned': count}};
-                    }
-
-                    if (!p && params.req.headers['user-agent']) {
-                        p = guessThePlatformFromUserAgentHeader(params.req.headers['user-agent']);
-                    }
-
-                    event.segmentation.a = a;
-                    event.segmentation.t = t;
-
-                    if (p && ALL_PLATFORM_KEYS.indexOf(p) !== -1) {
-                        event.segmentation.p = p;
-                        event.segmentation.ap = a + p;
-                        event.segmentation.tp = t + p;
-                        if (upd.$inc[`result.subs.${p}.actioned`]) {
-                            upd.$inc[`result.subs.${p}.actioned`] += count;
-                        }
-                        else {
-                            upd.$inc[`result.subs.${p}.actioned`] = count;
-                        }
-                        if (la) {
-                            if (upd.$inc[`result.subs.${p}.subs.${la}.actioned`]) {
-                                upd.$inc[`result.subs.${p}.subs.${la}.actioned`] += count;
-                            }
-                            else {
-                                upd.$inc[`result.subs.${p}.subs.${la}.actioned`] = count;
-                            }
-                        }
-                    }
-                    else {
-                        delete event.segmentation.p;
-                    }
-                }
-
-                await Promise.all(Object.keys(updates).map(mid => common.db.collection('messages').updateOne({_id: common.db.ObjectID(mid)}, updates[mid])));
-            }
-            catch (e) {
-                log.e('Wrong [CLY]_push_* event i segmentation', e);
-            }
-        }
-    }
-
-    if (params.qstring.token_session) {
-        onTokenSession(params.app_user, params);
     }
 });
 
@@ -190,12 +107,6 @@ function apiCall(apisObj, ob) {
             }
         }
     }
-
-    // if (paths[3] !== 'approve') {
-    //     log.d('invalid endpoint', paths);
-    //     common.returnMessage(params, 404, 'Invalid endpoint');
-    //     return true;
-    // }
 }
 
 /**

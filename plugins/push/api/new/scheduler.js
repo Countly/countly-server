@@ -73,7 +73,7 @@ async function scheduleMessageByDateTrigger(db, messageId) {
         // starting from now, always keep NUMBER_OF_SCHEDULES_AHEAD_OF_TIME schedules
         // for the future for recurring and multi triggers.
         let previousSchedules = await scheduleCol
-            .find({ messageId, status: { $in: ["scheduled", "sending"] }})
+            .find({ messageId, status: { $in: ["scheduled"] }})
             .sort({ scheduledTo: -1 })
             .limit(NUMBER_OF_SCHEDULES_AHEAD_OF_TIME)
             .toArray();

@@ -1,14 +1,16 @@
 /**
  * @typedef {import('../types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import('../types/queue.ts').PushEvent} PushEvent
- * @typedef {import('../types/queue.ts').PushEventDTO} PushEventDTO
  * @typedef {import('../types/queue.ts').PushEventHandler} PushEventHandler
  * @typedef {import('../types/queue.ts').ScheduleEventHandler} ScheduleEventHandler
  * @typedef {import('../types/queue.ts').ResultEventHandler} ResultEventHandler
  * @typedef {import('../types/queue.ts').AutoTriggerEventHandler} AutoTriggerEventHandler
  * @typedef {import('../types/queue.ts').ResultEvent} ResultEvent
  * @typedef {import('../types/queue.ts').AutoTriggerEvent} AutoTriggerEvent
- * @typedef {import('../types/queue.ts').ResultEventDTO} ResultEventDTO
+ * @typedef {import('../../../../kafka/api/api.js').kafkajs.Kafka} Kafka
+ * @typedef {import('../../../../kafka/api/api.js').kafkajs.Producer} Producer
+ * @typedef {import('../../../../kafka/api/api.js').kafkajs.Partitioners} Partitioners
+ * @typedef {import('../../../../kafka/api/api.js').kafkajs.ICustomPartitioner} ICustomPartitioner
  */
 
 const kafkaConfig = require("../constants/kafka-config.json");
@@ -21,31 +23,125 @@ const {
 const common = require('../../../../../api/utils/common');
 const log = common.log('push:kafka');
 
+/** @type {Producer=} */
 let PRODUCER;
+
+/**
+ * Loads the Kafka client instance and partitioners from the Kafka plugin.
+ * @returns {Promise<{kafkaInstance: Kafka, Partitioners: Partitioners}>} Resolves with the Kafka instance and partitioners
+ */
+async function loadKafka() {
+    verifyKafka();
+    const {
+        onReady: onKafkaClientReady,
+        kafkajs: { Partitioners }
+    } = require('../../../../kafka/api/api.js');
+    const clientObject = await new Promise(res => onKafkaClientReady(res));
+    const kafkaInstance = /** @type {Kafka} */(clientObject.createKafkaInstance());
+    return { kafkaInstance, Partitioners };
+}
+
+/**
+ * Verifies that the Kafka plugin is available and enabled.
+ * @returns {boolean} True if the plugin is available and enabled
+ * @throws {Error} if the plugin is not available or not enabled
+ */
+function verifyKafka() {
+    if (!common.config.kafka?.enabled) {
+        throw new Error("Kafka is not enabled in the configuration");
+    }
+    try {
+        require.resolve('../../../../kafka/api/lib/KafkaConsumer');
+        require.resolve('../../../../kafka/api/lib/kafkaClient');
+    }
+    catch (e) {
+        throw new Error("Kafka plugin is not available");
+    }
+    return true;
+}
+
+/**
+ * Sets up the Kafka producer with the given partitioner.
+ * @param {Kafka} kafkaInstance - the Kafka client instance
+ * @param {ICustomPartitioner} createPartitioner - function to create the partitioner
+ * @returns {Promise<Producer>} Resolves with the connected producer
+ */
+async function setupProducer(kafkaInstance, createPartitioner) {
+    let localProducer = kafkaInstance.producer({ createPartitioner });
+    await localProducer.connect();
+    PRODUCER = localProducer;
+    return PRODUCER;
+}
+
+/**
+ * Checks if the Kafka producer is initialized.
+ * @returns {Promise<boolean>} Resolves with true if initialized, false otherwise
+ */
+async function isProducerInitialized() {
+    return !!PRODUCER;
+}
+
+/**
+ * Sets up Kafka topics and partitions according to the configuration.
+ * If `forceRecreation` is true, it will delete and recreate the topics.
+ * @param {Kafka} kafkaInstance - the Kafka client instance
+ * @param {boolean} forceRecreation - whether to forcefully recreate topics
+ * @returns {Promise<void>} Resolves when topics are set up
+ * @throws {Error} if there is an error during topic creation or deletion
+ */
+async function setupTopicsAndPartitions(kafkaInstance, forceRecreation = false) {
+    const admin = kafkaInstance.admin();
+    const topics = Object.values(kafkaConfig.topics);
+    await admin.connect();
+
+    if (forceRecreation) {
+        try {
+            await admin.deleteTopics({
+                topics: topics.map(({ name }) => name)
+            });
+        }
+        catch (err) {
+            log.e("Error deleting topics:", err);
+            // ignore...
+        }
+    }
+
+    const existingTopics = await admin.listTopics();
+    const topicsToCreate = topics.filter(
+        ({ name }) => !existingTopics.includes(name)
+    );
+    await admin.createTopics({
+        topics: topicsToCreate.map(
+            ({ name, partitions, config }) => ({
+                // eg. [{ name: 'cleanup.policy', value: 'compact' }],
+                configEntries: config
+                    ? Object.entries(config).map(
+                        ([configName, value]) => ({ name: configName, value })
+                    )
+                    : undefined,
+                topic: name,
+                numPartitions: partitions
+            })
+        )
+    });
+    await admin.disconnect();
+    log.i("Kafka topics are set up");
+}
 
 /**
  * Connects to the kafka broker and creates the required topics.
  * Also sets up consumers for the topics and calls the provided handlers when messages are received.
- *
+ * @param {Kafka} kafkaInstance - the Kafka client instance
+ * @param {ICustomPartitioner} createPartitioner - function to create the partitioner for the producer
  * @param {PushEventHandler} onPushMessages - function to call when there's a PushEvent in the PUSH_MESSAGES_TOPIC topic
  * @param {ScheduleEventHandler} onMessageSchedules - function to call when there's a
  * @param {ResultEventHandler} onMessageResults - function to call when there's a ResultEvent in the MESSAGE_RESULTS_TOPIC topic
  * @param {AutoTriggerEventHandler} onAutoTriggerEvents - function to call when there's an AutoTriggerEvent in the AUTO_TRIGGER_TOPIC topic
  * @returns {Promise<void>} Resolves when the consumers and producer are set up
  */
-async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResults, onAutoTriggerEvents) {
-    const {
-        onReady: onKafkaClientReady,
-        kafkajs: { Partitioners }
-    } = common.plugins.getPluginsApis().kafka;
-    const clientObject = await new Promise(res => onKafkaClientReady(res));
-    const kafkaInstance = /** @type {Kafka} */(clientObject.createKafkaInstance());
+async function initPushQueue(kafkaInstance, createPartitioner, onPushMessages, onMessageSchedules, onMessageResults, onAutoTriggerEvents) {
+    await setupProducer(kafkaInstance, createPartitioner);
     await setupTopicsAndPartitions(kafkaInstance);
-
-    PRODUCER = kafkaInstance.producer({
-        createPartitioner: Partitioners.DefaultPartitioner
-    });
-    await PRODUCER.connect();
 
     const pushConsumer = kafkaInstance.consumer({
         groupId: kafkaConfig.consumerGroupId,
@@ -113,7 +209,7 @@ async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResult
  */
 async function sendScheduleEvents(scheduleEvents) {
     if (!PRODUCER) {
-        throw new Error("Producer is not initialized");
+        throw new Error("Kafka producer is not initialized");
     }
     // important: if you ever need to update the partitioner, you also have to
     // change it in the scheduler service (we use the default partitioner here
@@ -149,7 +245,7 @@ async function sendScheduleEvents(scheduleEvents) {
  */
 async function sendPushEvents(pushes) {
     if (!PRODUCER) {
-        throw new Error("Producer is not initialized");
+        throw new Error("Kafka producer is not initialized");
     }
     await PRODUCER.send({
         topic: kafkaConfig.topics.SEND.name,
@@ -164,7 +260,7 @@ async function sendPushEvents(pushes) {
  */
 async function sendResultEvents(results) {
     if (!PRODUCER) {
-        throw new Error("Producer is not initialized");
+        throw new Error("Kafka producer is not initialized");
     }
     await PRODUCER.send({
         topic: kafkaConfig.topics.RESULT.name,
@@ -180,7 +276,7 @@ async function sendResultEvents(results) {
  */
 async function sendAutoTriggerEvents(autoTriggerEvents) {
     if (!PRODUCER) {
-        throw new Error("Producer is not initialized");
+        throw new Error("Kafka producer is not initialized");
     }
     await PRODUCER.send({
         topic: kafkaConfig.topics.AUTO_TRIGGER.name,
@@ -188,58 +284,16 @@ async function sendAutoTriggerEvents(autoTriggerEvents) {
     });
 }
 
-/**
- * Sets up Kafka topics and partitions according to the configuration.
- * If `forceRecreation` is true, it will delete and recreate the topics.
- * @param {Kafka} kafkaInstance - the Kafka client instance
- * @param {boolean} forceRecreation - whether to forcefully recreate topics
- * @returns {Promise<void>} Resolves when topics are set up
- * @throws {Error} if there is an error during topic creation or deletion
- */
-async function setupTopicsAndPartitions(kafkaInstance, forceRecreation = false) {
-    const admin = kafkaInstance.admin();
-    const topics = Object.values(kafkaConfig.topics);
-    await admin.connect();
-
-    if (forceRecreation) {
-        try {
-            await admin.deleteTopics({
-                topics: topics.map(({ name }) => name)
-            });
-        }
-        catch (err) {
-            log.e("Error deleting topics:", err);
-            // ignore...
-        }
-    }
-
-    const existingTopics = await admin.listTopics();
-    const topicsToCreate = topics.filter(
-        ({ name }) => !existingTopics.includes(name)
-    );
-    await admin.createTopics({
-        topics: topicsToCreate.map(
-            ({ name, partitions, config }) => ({
-                // eg. [{ name: 'cleanup.policy', value: 'compact' }],
-                configEntries: config
-                    ? Object.entries(config).map(
-                        ([configName, value]) => ({ name: configName, value })
-                    )
-                    : undefined,
-                topic: name,
-                numPartitions: partitions
-            })
-        )
-    });
-    await admin.disconnect();
-    log.i("Kafka topics are set up");
-}
 
 module.exports = ({
+    verifyKafka,
+    isProducerInitialized,
+    loadKafka,
+    setupProducer,
+    setupTopicsAndPartitions,
+    initPushQueue,
     sendPushEvents,
     sendScheduleEvents,
     sendResultEvents,
-    initPushQueue,
     sendAutoTriggerEvents,
-    setupTopicsAndPartitions,
 });
