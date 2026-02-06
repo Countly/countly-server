@@ -48,7 +48,7 @@
 @use "../../core/device-and-type/stylesheets/main" as analytics-device-and-type-main-style;
 @use "../../core/geo-countries/stylesheets/main" as geo-countries-main-style;
 @use "../../core/user-management/stylesheets/main" as user-management-main-style;
-@use "../../core/home/stylesheets/main" as home-main-style;
+// @use "../../core/home/stylesheets/main" as home-main-style; // Migrated to SFC - imported in plugin index.js
 @use "../../core/app-management/stylesheets/main" as app-management-main-style;
 @use "../../core/report-manager/stylesheets/main" as report-manager-main-style;
 // @use "../../core/version-history/stylesheets/main" as version-history-main-style; // Migrated to SFC - imported in plugin index.js

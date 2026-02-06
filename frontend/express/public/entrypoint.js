@@ -46,6 +46,7 @@ import './core/platform/index.js';
 import './core/version-history/index.js';
 import './core/jobs/index.js';
 import './core/token-manager/index.js';
+import './core/home/index.js';
 
 // Component imports
 import ClyStatusBadge from './javascripts/components/cly-status-badge.vue';
@@ -118,6 +119,7 @@ import { getPeriodLabel } from './javascripts/components/date/mixins.js';
 import ClyBackLink from './javascripts/components/helpers/cly-back-link.vue';
 import ClyInPageNotification from './javascripts/components/helpers/cly-in-page-notification.vue';
 import ClyEmptyHome from './javascripts/components/helpers/cly-empty-home.vue';
+import ClyHomeWidgetHeader from './core/home/components/HomeWidgetTitle.vue';
 import ClyStatusTag from './javascripts/components/helpers/cly-status-tag.vue';
 import ClyDiffHelper from './javascripts/components/helpers/cly-diff-helper.vue';
 import ClyMetricCards from './javascripts/components/helpers/cly-metric-cards.vue';
@@ -239,6 +241,7 @@ window.countlyVue.getPeriodLabel = getPeriodLabel; // remove this after updating
 window.Vue.component('cly-back-link', ClyBackLink);
 window.Vue.component('cly-in-page-notification', ClyInPageNotification);
 window.Vue.component('cly-empty-home', ClyEmptyHome);
+window.Vue.component('clyd-home-widget-header', ClyHomeWidgetHeader);
 window.Vue.component('cly-status-tag', ClyStatusTag);
 window.Vue.component('cly-diff-helper', ClyDiffHelper);
 window.Vue.component('cly-metric-cards', ClyMetricCards);
