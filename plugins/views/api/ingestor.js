@@ -220,7 +220,7 @@ var pluginOb = {},
                     "isEnded": last_started_view.isEnded || false
                 };
                 for (var segk in last_started_view.segmentation) {
-                    if (segk !== "visit") {
+                    if (segk !== "visit" && segk !== "start") {
                         update.$set.last_view.segments[segk] = last_started_view.segmentation[segk];
                     }
                 }
