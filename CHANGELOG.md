@@ -6,6 +6,7 @@ Enterprise Fixes:
 - [crash_symbolication] Use countlyfs for JavaScript symbolication
 - [funnels] Fix funnel name tooltip content
 - [groups] Dealing with invalid values for group permission
+- [geo] Update table row cursor to indicate that it's clickable
 
 ## Version 25.03.33
 Fixes:
