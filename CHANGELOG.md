@@ -1,6 +1,7 @@
 ## Version 25.03.X
 Fixes:
 - [core] Fix period calculation
+- [dashboards] Update dialog button color when deleting dashboard/widget
 
 Enterprise Fixes:
 - [crash_symbolication] Use countlyfs for JavaScript symbolication
