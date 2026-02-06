@@ -47,6 +47,7 @@ import './core/version-history/index.js';
 import './core/jobs/index.js';
 import './core/token-manager/index.js';
 import './core/home/index.js';
+import './core/carrier/index.js';
 
 // Component imports
 import ClyStatusBadge from './javascripts/components/cly-status-badge.vue';
