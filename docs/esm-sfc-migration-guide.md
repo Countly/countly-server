@@ -58,6 +58,76 @@ import countlyCommon from '../../../javascripts/countly/countly.common.js';
 const CV = countlyVue;  // Create local alias if needed
 ```
 
+### Explicit Global SFC Component Imports
+
+**All global SFC components used in a template must be explicitly imported and registered in the `components` option.**
+
+In the legacy system, components like `<cly-header>`, `<cly-datatable-n>`, etc. were globally registered via `Vue.component()` and available everywhere without imports. In the ESM/SFC architecture, each component must import what it uses.
+
+#### ❌ Forbidden pattern:
+```vue
+<template>
+    <cly-header :title="i18n('plugin.title')"></cly-header>
+    <cly-main>
+        <cly-datatable-n :rows="rows"></cly-datatable-n>
+    </cly-main>
+</template>
+
+<script>
+// Missing component imports - relies on global registration
+export default {
+    // no components option
+};
+</script>
+```
+
+#### ✅ Required pattern:
+```vue
+<template>
+    <cly-header :title="i18n('plugin.title')"></cly-header>
+    <cly-main>
+        <cly-datatable-n :rows="rows"></cly-datatable-n>
+    </cly-main>
+</template>
+
+<script>
+import ClyHeader from '../../../javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../javascripts/components/layout/cly-main.vue';
+import ClyDatatableN from '../../../javascripts/components/datatable/cly-datatable-n.vue';
+
+export default {
+    components: {
+        ClyHeader,
+        ClyMain,
+        ClyDatatableN
+    }
+};
+</script>
+```
+
+#### Component source mapping:
+
+| Tag name | Import path |
+|---|---|
+| `cly-header` | `components/layout/cly-header.vue` |
+| `cly-main` | `components/layout/cly-main.vue` |
+| `cly-section` | `components/layout/cly-section.vue` |
+| `cly-date-picker-g` | `components/date/global-date-picker.vue` |
+| `cly-chart-bar` | `components/echart/cly-chart-bar.vue` |
+| `cly-chart-line` | `components/echart/cly-chart-line.vue` |
+| `cly-chart-pie` | `components/echart/cly-chart-pie.vue` |
+| `cly-chart-time` | `components/echart/cly-chart-time.vue` |
+| `cly-datatable-n` | `components/datatable/cly-datatable-n.vue` |
+| `cly-progress-bar` | `components/progress/progress-bar.vue` |
+| `cly-more-options` | `components/dropdown/more-options.vue` |
+| `cly-dynamic-tabs` | `components/nav/cly-dynamic-tabs.vue` |
+| `cly-tooltip-icon` | `components/helpers/cly-tooltip-icon.vue` |
+| `cly-metric-cards` | `components/helpers/cly-metric-cards.vue` |
+| `cly-metric-card` | `components/helpers/cly-metric-card.vue` |
+| `cly-metric-breakdown` | `components/helpers/cly-metric-breakdown.vue` |
+
+> **Note:** Element UI components (`el-table-column`, `el-select`, `el-option`, `el-tabs`, etc.) are registered globally via `Vue.use(ElementUI)` and do **not** need explicit imports. These will be handled during the Vue 3 / Element Plus migration.
+
 ### Validation Checklist
 
 Before completing migration, verify:
@@ -66,6 +136,7 @@ Before completing migration, verify:
 - [ ] All dependencies are explicitly imported at the top of the file
 - [ ] No `(function() { ... })()` IIFE patterns remain
 - [ ] Components with `<cly-date-picker-g>` include `autoRefreshMixin`
+- [ ] All `cly-*` components used in templates are imported and registered in the `components` option
 
 ### Warning
 
@@ -244,8 +315,16 @@ export default getVuexModule();
 
 <script>
 import countlyVue, { autoRefreshMixin } from '../../../javascripts/countly/vue/core.js';
+import ClyHeader from '../../../javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../javascripts/components/layout/cly-main.vue';
+import ClyDatePickerG from '../../../javascripts/components/date/global-date-picker.vue';
 
 export default {
+    components: {
+        ClyHeader,
+        ClyMain,
+        ClyDatePickerG
+    },
     mixins: [
         countlyVue.mixins.commonFormatters,
         countlyVue.mixins.i18n,
@@ -274,6 +353,7 @@ export default {
 - **Do NOT include registerTab here** (separation of concerns)
 - Copy template HTML exactly as-is
 - **Add `autoRefreshMixin`** if component uses global date picker (see below)
+- **Import and register all `cly-*` components** used in the template (see [Explicit Global SFC Component Imports](#explicit-global-sfc-component-imports))
 
 ---
 
@@ -398,12 +478,13 @@ import countlyVue, { autoRefreshMixin } from '../../../javascripts/countly/vue/c
 [ ] 2. Create new folder structure (components/, store/)
 [ ] 3. Create store/index.js
 [ ] 4. Create components/PluginView.vue
-[ ] 5. Add autoRefreshMixin if using global date picker
-[ ] 6. Create index.js with registerTab
-[ ] 7. Remove from vite.config.js legacyScripts
-[ ] 8. Add import to entrypoint.js
-[ ] 9. Delete legacy files
-[ ] 10. Build and test (including date picker functionality)
+[ ] 5. Import and register all cly-* global SFC components used in templates
+[ ] 6. Add autoRefreshMixin if using global date picker
+[ ] 7. Create index.js with registerTab
+[ ] 8. Remove from vite.config.js legacyScripts
+[ ] 9. Add import to entrypoint.js
+[ ] 10. Delete legacy files
+[ ] 11. Build and test (including date picker functionality)
 ```
 
 ---

@@ -38,10 +38,16 @@ import { i18n } from '../../../javascripts/countly/vue/core.js';
 import countlySession from '../../../javascripts/countly/countly.session.js';
 import countlyTotalUsers from '../../../javascripts/countly/countly.total.users.js';
 import countlyCommon from '../../../javascripts/countly/countly.common.js';
+import ClyTooltipIcon from '../../../javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClyChartTime from '../../../javascripts/components/echart/cly-chart-time.vue';
 
 const $ = jQuery;
 
 export default {
+    components: {
+        ClyTooltipIcon,
+        ClyChartTime
+    },
     data: function() {
         return {
             description: i18n('session-overview.description'),

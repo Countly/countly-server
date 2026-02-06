@@ -63,10 +63,26 @@
 <script>
 import countlyVue, { autoRefreshMixin } from '../../../javascripts/countly/vue/core.js';
 import countlyCommon from '../../../javascripts/countly/countly.common.js';
+import ClyHeader from '../../../javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../javascripts/components/layout/cly-section.vue';
+import ClyDatePickerG from '../../../javascripts/components/date/global-date-picker.vue';
+import ClyChartPie from '../../../javascripts/components/echart/cly-chart-pie.vue';
+import ClyDatatableN from '../../../javascripts/components/datatable/cly-datatable-n.vue';
+import ClyMoreOptions from '../../../javascripts/components/dropdown/more-options.vue';
 
 const CV = countlyVue;
 
 export default {
+    components: {
+        ClyHeader,
+        ClyMain,
+        ClySection,
+        ClyDatePickerG,
+        ClyChartPie,
+        ClyDatatableN,
+        ClyMoreOptions
+    },
     mixins: [
         countlyVue.mixins.commonFormatters,
         countlyVue.mixins.i18n,

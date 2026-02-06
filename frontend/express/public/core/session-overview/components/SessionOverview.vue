@@ -42,8 +42,22 @@
 
 <script>
 import countlyVue, { autoRefreshMixin } from '../../../javascripts/countly/vue/core.js';
+import ClyHeader from '../../../javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../javascripts/components/layout/cly-section.vue';
+import ClyDatePickerG from '../../../javascripts/components/date/global-date-picker.vue';
+import ClyChartLine from '../../../javascripts/components/echart/cly-chart-line.vue';
+import ClyDatatableN from '../../../javascripts/components/datatable/cly-datatable-n.vue';
 
 export default {
+    components: {
+        ClyHeader,
+        ClyMain,
+        ClySection,
+        ClyDatePickerG,
+        ClyChartLine,
+        ClyDatatableN
+    },
     mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.i18n, autoRefreshMixin],
     data: function() {
         return {};
