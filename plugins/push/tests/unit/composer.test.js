@@ -16,7 +16,6 @@ const { createMockedMongoDb } = require("../mock/mongo");
 const { createSilentLogger } = require("../mock/logger");
 const common = require("../../../../api/utils/common");
 const proxyquire = require("proxyquire");
-const { loadPluginConfiguration } = require("../../api/new/lib/utils");
 let {
     collection,
     db,
@@ -30,7 +29,6 @@ const {
     composeScheduledPushes,
     userPropsProjection,
     loadCredentials,
-    createPushStream,
     buildUserAggregationPipeline,
     convertAudienceFiltersToMatchStage
 } = proxyquire("../../api/new/composer", {
@@ -125,49 +123,6 @@ describe("Push composer", async() => {
             assert(db.collection.calledWith("creds"));
             assert(collection.findOne.calledWith({ _id: credId }));
             assert.deepStrictEqual(creds, { a: mockedCreds });
-        });
-    });
-
-    describe("Loading plugin configuration", () => {
-        it("shouldn't return anything when plugin is not configured", async() => {
-            collection.findOne.resolves({});
-
-            const pluginConfig = await loadPluginConfiguration();
-
-            assert(db.collection.calledWith("plugins"));
-            assert(collection.findOne.calledWith({ _id: "plugins" }));
-            assert(pluginConfig === undefined);
-        });
-
-        it("should return the plugin config", async() => {
-            const pluginDocument = {
-                _id: "plugins",
-                push: {
-                    proxyhost: "host",
-                    proxyport: "port",
-                    proxyuser: "user",
-                    proxypass: "pass",
-                    proxyunauthorized: true,
-                    message_timeout: 15000,
-                    message_results_ttl: 86400
-                }
-            };
-            const result = {
-                messageTimeout: 15000,
-                messageResultsTTL: 86400,
-                proxy: {
-                    host: "host",
-                    port: "port",
-                    user: "user",
-                    pass: "pass",
-                    auth: false
-                }
-            };
-            collection.findOne.resolves(pluginDocument);
-            const config = await loadPluginConfiguration();
-            assert(db.collection.calledWith("plugins"));
-            assert(collection.findOne.calledWith({ _id: "plugins" }));
-            assert.deepStrictEqual(config, result);
         });
     });
 
@@ -598,7 +553,7 @@ describe("Push composer", async() => {
             assert(await composeScheduledPushes(db, scheduleEvent) === 0);
         });
 
-        it("create push events for each user token", async() => {
+        it("should create push events for each user token", async() => {
             const scheduleEvent = mockData.scheduleEvent();
             const {appId, messageId, scheduleId} = scheduleEvent;
             const schedule = mockData.schedule();

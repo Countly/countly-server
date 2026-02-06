@@ -1405,6 +1405,9 @@
                     series: this.yAxisPushNotificationSeries
                 };
             },
+            kafkaStatus: function() {
+                return this.$store.state.countlyPushNotificationDashboard.kafkaStatus;
+            },
             totalAppUsers: function() {
                 return this.$store.state.countlyPushNotificationDashboard.totalAppUsers;
             },
