@@ -37,13 +37,13 @@
 
 // All core "Plugins" views specific SASS partials
 @use "../../core/user-activity/stylesheets/main" as user-activity-main-style;
-@use "../../core/session-overview/stylesheets/main" as session-overview-main-style;
-@use "../../core/session-durations/stylesheets/main" as session-durations-main-style;
-@use "../../core/session-frequency/stylesheets/main" as session-frequency-main-style;
+// @use "../../core/session-overview/stylesheets/main" as session-overview-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/session-durations/stylesheets/main" as session-durations-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/session-frequency/stylesheets/main" as session-frequency-main-style; // Migrated to SFC - imported in plugin index.js
 @use "../../core/events/stylesheets/main" as events-overview-main-style;
-@use "../../core/platform/stylesheets/main" as analytics-platform-main-style;
-@use "../../core/app-version/stylesheets/main" as analytics-appversion-main-style;
-@use "../../core/app-resolution/stylesheets/main" as analytics-resolution-main-style;
+// @use "../../core/platform/stylesheets/main" as analytics-platform-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/app-version/stylesheets/main" as analytics-appversion-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/app-resolution/stylesheets/main" as analytics-resolution-main-style; // Migrated to SFC - imported in plugin index.js
 @use "../../core/carrier/stylesheets/main" as analytics-carrier-main-style;
 @use "../../core/device-and-type/stylesheets/main" as analytics-device-and-type-main-style;
 @use "../../core/geo-countries/stylesheets/main" as geo-countries-main-style;

@@ -3,6 +3,7 @@ import { registerTab } from '../../javascripts/countly/vue/container.js';
 
 import SessionFrequencyView from './components/SessionFrequency.vue';
 import store from './store/index.js';
+import './stylesheets/_main.scss';
 
 // Register tab.
 registerTab("/analytics/sessions", {

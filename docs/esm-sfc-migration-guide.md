@@ -365,6 +365,7 @@ import { registerTab } from '../../javascripts/countly/vue/container.js';
 
 import PluginView from './components/PluginView.vue';
 import store from './store/index.js';
+import './stylesheets/_main.scss';
 
 // Register tab.
 registerTab("/main/route", {
@@ -386,12 +387,32 @@ registerTab("/main/route", {
 ### Key points:
 - Import `i18n` from `vue/core.js`
 - Import `registerTab` from `vue/container.js`
+- **Import SCSS styles** - Makes plugin self-contained with all assets in one entrypoint
 - Store is connected via `vuex.clyModel`
 - Only add exports if other modules need access
 
 ---
 
-## Step 6: Update vite.config.js
+## Step 6: Update Global SCSS Manifest
+
+Comment out the plugin's SCSS reference in `manifest.scss` since styles are now imported in the plugin's index.js:
+
+```scss
+// core/frontend/express/public/stylesheets/styles/manifest.scss
+
+// All core "Plugins" views specific SASS partials
+// @use "../../core/plugin-name/stylesheets/main" as plugin-name-main-style; // Migrated to SFC - imported in plugin index.js
+```
+
+### Why this is needed:
+- Previously, all plugin styles were globally imported via `manifest.scss`
+- Now each plugin imports its own styles via its `index.js` entrypoint
+- Comment (don't delete) to track migration progress
+- The compiled `manifest2.css` will auto-update on next build
+
+---
+
+## Step 7: Update vite.config.js
 
 Remove from `legacyScripts` array:
 ```js
@@ -406,7 +427,7 @@ const legacyScripts = [
 
 ---
 
-## Step 7: Update entrypoint.js
+## Step 8: Update entrypoint.js
 
 ```js
 // =============================================================================
@@ -422,7 +443,7 @@ import './core/plugin-name/index.js';
 
 ---
 
-## Step 8: Delete Legacy Files
+## Step 9: Delete Legacy Files
 
 ```bash
 rm plugin-name/javascripts/countly.models.js
@@ -435,7 +456,7 @@ rmdir plugin-name/javascripts/
 
 ---
 
-## Step 9: Build and Test
+## Step 10: Build and Test
 
 ```bash
 cd core
@@ -480,11 +501,12 @@ import countlyVue, { autoRefreshMixin } from '../../../javascripts/countly/vue/c
 [ ] 4. Create components/PluginView.vue
 [ ] 5. Import and register all cly-* global SFC components used in templates
 [ ] 6. Add autoRefreshMixin if using global date picker
-[ ] 7. Create index.js with registerTab
-[ ] 8. Remove from vite.config.js legacyScripts
-[ ] 9. Add import to entrypoint.js
-[ ] 10. Delete legacy files
-[ ] 11. Build and test (including date picker functionality)
+[ ] 7. Create index.js with registerTab and SCSS import
+[ ] 8. Comment out SCSS reference in manifest.scss
+[ ] 9. Remove from vite.config.js legacyScripts
+[ ] 10. Add import to entrypoint.js
+[ ] 11. Delete legacy files
+[ ] 12. Build and test (including date picker functionality)
 ```
 
 ---
@@ -510,6 +532,7 @@ import { registerTab } from '../../javascripts/countly/vue/container.js';
 
 import SessionDurationsView from './components/SessionDurations.vue';
 import store from './store/index.js';
+import './stylesheets/_main.scss';
 
 // Register tab.
 registerTab("/analytics/sessions", {
