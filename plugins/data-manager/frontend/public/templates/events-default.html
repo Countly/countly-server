@@ -20,10 +20,10 @@
             <template v-slot:header-left>
                 <cly-multi-select
                 test-id="event-category-filters"
-                 ref="eventCategoryFilters" 
+                 ref="eventCategoryFilters"
                  v-bind:arrow="true"
                  :selectXWidth="336"
-                 v-model="filter" 
+                 v-model="filter"
                  :fields="filterFields">
                     <template v-slot:action>
                         <div class="bu-level-item bu-is-clickable text-small color-red-100 bu-pl-1">
@@ -33,7 +33,7 @@
                 </cly-multi-select>
             </template>
 
-            <template v-slot="scope">   
+            <template v-slot="scope">
                 <el-table-column v-if="canUserUpdate || canUserDelete" fixed="left" type="selection" :reserve-selection="true" width="55" prop="isSelected">
                 </el-table-column>
 
@@ -46,7 +46,7 @@
                         <div v-if="rowScope.row.audit && rowScope.row.audit.userName" :data-test-id="'datatable-manage-events-last-modified-by-label-' + rowScope.$index" class="text-small color-cool-gray-50">Last modified by {{rowScope.row.audit.userName}}</div>
                         <div>
                             <span v-if="isDrill" class="tag-container">
-                                <span v-bind:class="statusClassObject(rowScope.row.status)" class="bu-tag bu-mt-1"> 
+                                <span v-bind:class="statusClassObject(rowScope.row.status)" class="bu-tag bu-mt-1">
                                     <span class="blinker"></span>
                                     <span :data-test-id="'datatable-manage-events-events-status-' + rowScope.$index">{{rowScope.row.status}}</span>
                                 </span>
@@ -122,7 +122,7 @@
                             <div :data-test-id="'datatable-manage-events-events-value-' + rowScope.$index">{{unescapeHtml(rowScope.row[col.value] || i18n('data-manager.empty-placeholder'))}}</div>
                         </template>
                     </el-table-column>
-                </template>  
+                </template>
 
                 <el-table-column type="options" align="center">
                     <template v-slot="rowScope">
@@ -146,7 +146,7 @@
                                 <el-dropdown-item command=null><i class="cly-io cly-io-hashtag"></i>{{ i18n('data-manager.uncategorized') }}</el-dropdown-item>
                                 <el-dropdown-item :command="cat._id" :key="idx" v-for="(cat, idx) in categories"><i class="cly-io cly-io-hashtag"></i>{{cat.name}}</el-dropdown-item>
                             </cly-more-options>
-                            
+
                             <cly-more-options v-if="isDrill" class="bu-mr-3" size="small" text="Change Status" type="default" icon="cly-io cly-io-refresh bu-mr-2" :widthSameAsTrigger="true" :showArrows=true @command="handleChangeStatus($event, scope.diff)" >
                                 <el-dropdown-item command="live" icon="cly-io cly-io-play">{{ i18n('data-manager.live') }}</el-dropdown-item>
                                 <el-dropdown-item command="approved" icon="cly-io cly-io-badge-check">{{ i18n('data-manager.approved') }}</el-dropdown-item>
@@ -175,15 +175,15 @@
         </cly-datatable-n>
     </cly-main>
 
-    <cly-confirm-dialog 
-    @cancel="closeDeleteForm" 
-    @confirm="submitDeleteForm" 
-    :before-close="closeDeleteForm" 
-    ref="deleteConfirmDialog" 
-    :visible.sync="showDeleteDialog" 
-    dialogType="danger" 
-    :saveButtonLabel="i18n('common.delete')" 
-    :cancelButtonLabel="i18n('common.no-dont-delete')" 
+    <cly-confirm-dialog
+    @cancel="closeDeleteForm"
+    @confirm="submitDeleteForm"
+    :before-close="closeDeleteForm"
+    ref="deleteConfirmDialog"
+    :visible.sync="showDeleteDialog"
+    dialogType="danger"
+    :saveButtonLabel="i18n('common.delete')"
+    :cancelButtonLabel="i18n('common.no-dont-delete')"
     :title="i18n('data-manager.delete-events')">
         <template slot-scope="scope">
             <div data-test-id="delete-event-popup-delete-event-permanently-question-label">{{i18n('data-manager.delete-event-permanently')}}<br/></div>

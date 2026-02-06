@@ -85,6 +85,10 @@
         }
     }
 
+    &__event-row--unplanned {
+        background-color: #FBECE5;
+    }
+
     &__validation{
         &-action-bar{
             background: #FBECE5;
@@ -106,7 +110,7 @@
                 border-radius: 4px;
             }
         }
-        
+
         &__table {
             width: 100%;
             table-layout: fixed;
@@ -232,5 +236,61 @@
         a {
                 text-decoration: underline
         }
+    }
+
+    /* PII rules table – row color by scope */
+    .cly-vue-data-manager-pii-row--scope-global {
+        border-left: 3px solid #017AFF;
+    }
+    .cly-vue-data-manager-pii-row--scope-app {
+        border-left: 3px solid #10A14A;
+    }
+
+    /* PII rules table – scope tag in cell */
+    .tag--scope-global,
+    .tag--scope-app {
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    .tag--scope-global {
+        background-color: #E6F0FB;
+        color: #017AFF;
+    }
+    .tag--scope-app {
+        background-color: #EBFAEE;
+        color: #10A14A;
+    }
+
+    /* PII incidents table – row color by action */
+    .cly-vue-data-manager-pii-row--notify {
+        border-left: 3px solid #017AFF;
+    }
+    .cly-vue-data-manager-pii-row--obfuscate {
+        border-left: 3px solid #8E44AD;
+    }
+    .cly-vue-data-manager-pii-row--block {
+        border-left: 3px solid #D23F00;
+    }
+
+    /* PII incidents table – action tag in cell */
+    .tag--pii-notify,
+    .tag--pii-obfuscate,
+    .tag--pii-block {
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    .tag--pii-notify {
+        background-color: #E6F0FB;
+        color: #017AFF;
+    }
+    .tag--pii-obfuscate {
+        background-color: #F4E6FA;
+        color: #8E44AD;
+    }
+    .tag--pii-block {
+        background-color: #FBECE5;
+        color: #D23F00;
     }
 }
