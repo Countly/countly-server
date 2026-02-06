@@ -68,6 +68,7 @@
         "api/parts/mgmt/cms.ts",
         "api/parts/mgmt/date_presets.ts",
         "api/parts/mgmt/ip.ts",
+        "jobServer/api.ts",
         "jobServer/Job.ts",
         "jobServer/constants/JobPriorities.ts",
         "jobServer/example/ExampleJob.ts",
