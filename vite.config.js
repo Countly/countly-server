@@ -121,7 +121,7 @@ const legacyScripts = [
     'core/device-and-type/javascripts/countly.views.js',
     // 'core/app-resolution/javascripts/countly.views.js',
     // 'core/app-version/javascripts/countly.views.js',
-    'core/jobs/javascripts/countly.views.js',
+    // 'core/jobs/javascripts/countly.views.js',
     // 'core/logs/javascripts/countly.views.js',
     'core/token-manager/javascripts/countly.views.js',
     'core/report-manager/javascripts/countly.views.js',
