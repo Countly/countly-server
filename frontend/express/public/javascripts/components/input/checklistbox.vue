@@ -65,8 +65,12 @@
 import { AbstractListBoxMixin, SearchableOptionsMixin } from './mixins.js';
 import countlyGlobal from '../../countly/countly.global.js';
 import $ from 'jquery';
+import vuescroll from 'vuescroll';
 
 export default {
+    components: {
+        'vue-scroll': vuescroll
+    },
     mixins: [AbstractListBoxMixin, SearchableOptionsMixin],
     props: {
         value: {

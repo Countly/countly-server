@@ -232,6 +232,7 @@ import countlyCommon from '../../countly/countly.common.js';
 import DateTable from './date-table.vue';
 import MonthTable from './month-table.vue';
 import YearTable from './year-table.vue';
+import vuescroll from 'vuescroll';
 import {
     availableShortcuts,
     globalMin,
@@ -259,6 +260,7 @@ export default {
         'date-table': DateTable,
         'month-table': MonthTable,
         'year-table': YearTable,
+        'vue-scroll': vuescroll
     },
     computed: {
         isStartFocused: function() {

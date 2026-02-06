@@ -159,8 +159,12 @@
 
 <script>
 import { TabbedOptionsMixin, SearchableOptionsMixin } from './mixins.js';
+import vuescroll from 'vuescroll';
 
 export default {
+    components: {
+        'vue-scroll': vuescroll
+    },
     mixins: [TabbedOptionsMixin, SearchableOptionsMixin],
     props: {
         title: { type: String, default: '' },

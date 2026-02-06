@@ -48,6 +48,7 @@ import { LegendMixin, ZoomMixin, UpdateOptionsMixin, EventsMixin } from './mixin
 import { BaseChartMixin } from './chart-options.js';
 import ClyChartHeader from './cly-chart-header.vue';
 import ClyCustomLegend from './cly-custom-legend.vue';
+import vuescroll from 'vuescroll';
 
 export default {
     mixins: [
@@ -59,7 +60,8 @@ export default {
     ],
     components: {
         'cly-chart-header': ClyChartHeader,
-        'cly-custom-legend': ClyCustomLegend
+        'cly-custom-legend': ClyCustomLegend,
+        'vue-scroll': vuescroll
     },
     data: function() {
         return {

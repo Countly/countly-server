@@ -165,6 +165,7 @@ import ClyMetricCards from '../../../javascripts/components/helpers/cly-metric-c
 import ClyMetricCard from '../../../javascripts/components/helpers/cly-metric-card.vue';
 import ClyMetricBreakdown from '../../../javascripts/components/helpers/cly-metric-breakdown.vue';
 import ClyDynamicTabs from '../../../javascripts/components/nav/cly-dynamic-tabs.vue';
+import vuescroll from 'vuescroll';
 
 const CV = countlyVue;
 
@@ -177,7 +178,8 @@ export default {
         ClyMetricCards,
         ClyMetricCard,
         ClyMetricBreakdown,
-        ClyDynamicTabs
+        ClyDynamicTabs,
+        'vue-scroll': vuescroll
     },
     mixins: [
         countlyVue.mixins.i18n,
