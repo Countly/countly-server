@@ -152,7 +152,7 @@ const legacyScripts = [
     'core/home/javascripts/countly.models.js',
     'core/home/javascripts/countly.views.js',
     'core/notes/javascripts/countly.views.js',
-    'core/version-history/javascripts/countly.views.js',
+    // 'core/version-history/javascripts/countly.views.js',
     'core/onboarding/javascripts/countly.models.js',
     'core/onboarding/javascripts/countly.views.js',
     'core/date-presets/javascripts/countly.views.js',
