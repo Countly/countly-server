@@ -142,7 +142,7 @@ const legacyScripts = [
     'core/events/javascripts/countly.overview.views.js',
     'core/geo-countries/javascripts/countly.cities.models.js',
     'core/geo-countries/javascripts/countly.models.js',
-    'core/user-analytics-overview/javascripts/countly.views.js',
+    // 'core/user-analytics-overview/javascripts/countly.views.js',
     'core/geo-countries/javascripts/countly.views.js',
     'core/geo-countries/javascripts/countly.widgets.geo.js',
     'core/app-management/javascripts/countly.models.js',

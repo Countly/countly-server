@@ -51,6 +51,7 @@ import './core/carrier/index.js';
 import './core/health-manager/index.js';
 import './core/date-presets/index.js';
 import './core/user-activity/index.js';
+import './core/user-analytics-overview/index.js';
 
 // Component imports
 import ClyStatusBadge from './javascripts/components/cly-status-badge.vue';
