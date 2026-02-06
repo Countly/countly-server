@@ -113,7 +113,7 @@ const legacyScripts = [
     // 'javascripts/countly/vue/components/vis.js',
     // 'javascripts/countly/vue/components/helpers.js',
     // 'javascripts/countly/vue/components/progress.js',
-    'javascripts/countly/vue/directives/scroll-shadow.js',
+    // 'javascripts/countly/vue/directives/scroll-shadow.js', // ESM - imported in entrypoint.js
     'javascripts/countly/vue/legacy.js',
     // 'javascripts/countly/countly.views.js',
     // 'javascripts/countly/countly.cms.js', // ESM - imported in entrypoint.js, exposed as window.countlyCMS

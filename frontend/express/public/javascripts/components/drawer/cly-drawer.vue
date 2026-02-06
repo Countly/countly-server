@@ -122,8 +122,12 @@
 import { BaseComponentMixin } from '../../mixins/base.js';
 import { MultiStepFormMixin } from '../form/mixins.js';
 import { ModalMixin } from './mixins.js';
+import { scrollShadowDirective } from '../../countly/vue/directives/scroll-shadow.js';
 
 export default {
+    directives: {
+        'scroll-shadow': scrollShadowDirective
+    },
     mixins: [BaseComponentMixin, MultiStepFormMixin, ModalMixin],
     inheritAttrs: false,
     props: {

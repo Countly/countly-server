@@ -37,8 +37,12 @@
 <script>
 import { MultiStepFormMixin } from '../form/mixins.js';
 import { ModalMixin } from '../drawer/mixins.js';
+import { scrollShadowDirective } from '../../countly/vue/directives/scroll-shadow.js';
 
 export default {
+    directives: {
+        'scroll-shadow': scrollShadowDirective
+    },
     inheritAttrs: false,
     mixins: [
         MultiStepFormMixin,
