@@ -8,6 +8,7 @@ Enterprise Fixes:
 - [surveys] Allow surveys to resize and reposition when user rotates devices or adjust browser window
 - [nps] Allow nps to resize and reposition when user rotates devices or adjust browser window
 - [groups] Dealing with invalid values for group permission
+- [geo] Update table row cursor to indicate that it's clickable
 
 ## Version 25.03.33
 Fixes:
