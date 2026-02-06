@@ -36,7 +36,7 @@
 @use "states/state";
 
 // All core "Plugins" views specific SASS partials
-@use "../../core/user-activity/stylesheets/main" as user-activity-main-style;
+// @use "../../core/user-activity/stylesheets/main" as user-activity-main-style; // Migrated to SFC - imported in plugin index.js
 // @use "../../core/session-overview/stylesheets/main" as session-overview-main-style; // Migrated to SFC - imported in plugin index.js
 // @use "../../core/session-durations/stylesheets/main" as session-durations-main-style; // Migrated to SFC - imported in plugin index.js
 // @use "../../core/session-frequency/stylesheets/main" as session-frequency-main-style; // Migrated to SFC - imported in plugin index.js
