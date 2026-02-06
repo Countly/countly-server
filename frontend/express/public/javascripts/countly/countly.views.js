@@ -18,6 +18,7 @@ import jQuery from 'jquery';
 const $ = jQuery;
 
 /**
+ * TODO: THIS SEEMS LIKE NOT BEING USED ANYMORE, SHOULD BE REMOVED IF CONFIRMED
  * Dashboard View - Displays a fallback message when no app type plugin is installed
  * or when no apps are configured in the system.
  * @type {Object}
@@ -108,12 +109,12 @@ export const DownloadView = countlyView.extend({
 /**
  * Sets up a jQuery AJAX prefilter to automatically inject authentication tokens,
  * timezone information, and database debug parameters into API requests.
- * 
+ *
  * This prefilter handles:
  * - Adding the countly-token header for authenticated requests
  * - Appending periodOffset and userTimezone parameters
  * - Adding database debug comparison and override parameters when enabled
- * 
+ *
  * @returns {void}
  */
 export function setupAjaxPrefilter() {
@@ -232,11 +233,11 @@ export function registerViews() {
 
 /**
  * Registers application routes for handling exported data downloads.
- * 
+ *
  * Routes registered:
  * - `/exportedData/AppUserExport/:task_id` - For app user export downloads
  * - `/exportedData/tableExport/:task_id` - For table export downloads
- * 
+ *
  * @returns {void}
  */
 export function registerRoutes() {
@@ -297,10 +298,10 @@ export function registerAppSwitchCallback() {
 /**
  * Checks if there are unsaved changes in the event blueprint view and prompts
  * the user for confirmation before navigating away.
- * 
+ *
  * This function is used as a URL check callback in Backbone.history to prevent
  * accidental navigation when the user has unsaved changes.
- * 
+ *
  * @returns {boolean} Returns true if navigation should proceed (no unsaved changes
  *                    or user confirmed discard), false if navigation should be blocked
  */
@@ -342,14 +343,14 @@ export function registerUrlCheck() {
  * Initializes all views, routes, and callbacks for the module.
  * This is the main entry point that should be called to set up everything
  * that was previously executed on module load.
- * 
+ *
  * Calls the following initialization functions in order:
  * 1. setupAjaxPrefilter() - Sets up AJAX request interceptors
  * 2. registerViews() - Creates and registers view instances
  * 3. registerRoutes() - Sets up URL routing
  * 4. registerAppSwitchCallback() - Registers app switch handlers
  * 5. registerUrlCheck() - Registers navigation guards
- * 
+ *
  * @returns {void}
  */
 export function initialize() {
