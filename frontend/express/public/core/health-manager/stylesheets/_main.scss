@@ -2,16 +2,16 @@
 
 // Kafka Events view styling
 .kafka-events-view {
-    // Expanded row container
-    .el-table__expanded-cell {
-        padding: 0 !important;
+    // Expanded row container - using specificity instead of !important
+    .el-table .el-table__body-wrapper .el-table__expanded-cell {
+        padding: 0;
 
         > .cell {
-            padding: 0 !important;
+            padding: 0;
         }
     }
 
-    .el-table__expand-column .cell {
+    .el-table .el-table__expand-column .cell {
         padding: 0 10px;
     }
 

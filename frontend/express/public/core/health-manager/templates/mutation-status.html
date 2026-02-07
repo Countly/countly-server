@@ -2,6 +2,13 @@
     <cly-main>
         <div class="bu-mb-4">
             <cly-notification
+                v-if="hasError"
+                :text="i18n('health-manager.error.fetch-failed')"
+                color="light-destructive"
+                :closable="false"
+            >
+            </cly-notification>
+            <cly-notification
                 v-if="!clickhouseHealthy && showClickhouseMetrics"
                 :text="i18n('mutation-status.alert.clickhouse-unhealthy')"
                 color="light-warning"
@@ -27,7 +34,7 @@
                         <cly-tooltip-icon v-if="card.tooltip" class="bu-ml-1" :tooltip="card.tooltip"></cly-tooltip-icon>
                     </template>
                     <template v-slot:number>
-                        <span :class="card.numberClass || ''">{{ card.value.toUpperCase() || '-' }}</span>
+                        <span :class="card.numberClass || ''">{{ card.value != null ? String(card.value).toUpperCase() : '-' }}</span>
                     </template>
                     <template v-slot:description>
                         <span class="text-small color-cool-gray-600">{{ card.detail }}</span>
@@ -37,7 +44,7 @@
         </cly-section>
 
         <cly-section :title="i18n('mutation-status.summary.title')" :tooltip="i18n('mutation-status.summary.tooltip')">
-            <cly-chart-bar :option="summaryBarOption" :showToggle="false" :force-loading="isLoading" v-loading="isLoading"></cly-chart-bar>
+            <cly-chart-bar :option="summaryBarOption" :showToggle="false" :noEmpty="true" v-loading="isLoading"></cly-chart-bar>
         </cly-section>
 
         <cly-section :title="i18n('mutation-status.table.title')" :tooltip="i18n('mutation-status.table.tooltip')">
@@ -110,9 +117,9 @@
                 <template v-slot="scope">
                     <el-table-column fixed="left" width="150" sortable="custom" prop="status" :label="i18n('mutation-status.table.status')">
                         <template v-slot="rowScope">
-                            <div v-tooltip="rowScope.row.status === 'completed' ? i18n('mutation-status.table.completed-at', formatDate(rowScope.row.mutation_completion_ts)) : rowScope.row.status.toUpperCase()">
+                            <div v-tooltip="rowScope.row.status === 'completed' ? i18n('mutation-status.table.completed-at', formatDate(rowScope.row.mutation_completion_ts)) : (rowScope.row.status || '').toUpperCase()">
                                 <cly-status-tag
-                                    :text="rowScope.row.status.toUpperCase()"
+                                    :text="(rowScope.row.status || '').toUpperCase()"
                                     :color="rowScope.row.status === 'failed' ? 'red' : (rowScope.row.status === 'completed' ? 'green' : 'yellow')">
                                 </cly-status-tag>
                             </div>
@@ -137,7 +144,7 @@
                     </el-table-column>
                     <el-table-column sortable="custom" prop="type" :label="i18n('mutation-status.table.type')" min-width="140">
                         <template v-slot="rowScope">
-                            <div class="text-medium font-weight-bold"> {{ rowScope.row.type.toUpperCase() }} </div>
+                            <div class="text-medium font-weight-bold"> {{ (rowScope.row.type || '').toUpperCase() }} </div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="ts" :label="i18n('mutation-status.table.timestamp')" min-width="200">
@@ -160,9 +167,9 @@
                             <div> {{ rowScope.row.fail_count }} </div>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="retryAt" :label="i18n('mutation-status.table.retry-at')" min-width="200">
+                    <el-table-column sortable="custom" prop="retry_at" :label="i18n('mutation-status.table.retry-at')" min-width="200">
                         <template v-slot="rowScope">
-                            <div> {{ formatDate(rowScope.row.retryAt) }} </div>
+                            <div> {{ formatDate(rowScope.row.retry_at) }} </div>
                         </template>
                     </el-table-column>
                 </template>
