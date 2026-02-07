@@ -2085,10 +2085,12 @@ const processRequest = (params) => {
                             const [consumerState, consumerHealth, lagHistory, connectStatus, stateSummary, healthSummary] = await Promise.all([
                                 common.db.collection("kafka_consumer_state")
                                     .find({})
+                                    .sort({ lastProcessedAt: -1 })
                                     .limit(KAFKA_QUERY_LIMIT)
                                     .toArray(),
                                 common.db.collection("kafka_consumer_health")
                                     .find({})
+                                    .sort({ updatedAt: -1 })
                                     .limit(KAFKA_QUERY_LIMIT)
                                     .toArray(),
                                 common.db.collection("kafka_lag_history")
@@ -2098,6 +2100,7 @@ const processRequest = (params) => {
                                     .toArray(),
                                 common.db.collection("kafka_connect_status")
                                     .find({})
+                                    .sort({ updatedAt: -1 })
                                     .limit(KAFKA_QUERY_LIMIT)
                                     .toArray(),
                                 // Aggregate consumer state summary via MongoDB pipeline
