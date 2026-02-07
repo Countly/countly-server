@@ -1,5 +1,10 @@
-require('./api');
+/**
+ * Request processor module for jobServer
+ * @module jobServer/requestProcessor
+ *
+ * Proxy file - re-exports from TypeScript implementation
+ */
 
-const { processRequest } = require('../api/utils/requestProcessor');
+const requestProcessor = require('./requestProcessor.ts');
 
-module.exports = { processRequest };
+module.exports = { processRequest: requestProcessor.processRequest };
