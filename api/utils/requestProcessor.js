@@ -2007,16 +2007,16 @@ const processRequest = (params) => {
                                     const query = {};
 
                                     if (params.qstring.eventType && params.qstring.eventType !== 'all') {
-                                        query.type = params.qstring.eventType;
+                                        query.type = params.qstring.eventType + "";
                                     }
                                     if (params.qstring.groupId && params.qstring.groupId !== 'all') {
-                                        query.groupId = params.qstring.groupId;
+                                        query.groupId = params.qstring.groupId + "";
                                     }
                                     if (params.qstring.topic && params.qstring.topic !== 'all') {
-                                        query.topic = params.qstring.topic;
+                                        query.topic = params.qstring.topic + "";
                                     }
                                     if (params.qstring.clusterId && params.qstring.clusterId !== 'all') {
-                                        query.clusterId = params.qstring.clusterId;
+                                        query.clusterId = params.qstring.clusterId + "";
                                     }
 
                                     // Get accurate counts
@@ -2079,43 +2079,70 @@ const processRequest = (params) => {
                     // Default: /o/system/kafka - Get Kafka status overview
                     validateUserForMgmtReadAPI(async() => {
                         try {
-                            // Fetch Kafka consumer state (per-partition stats)
-                            const consumerState = await common.db.collection("kafka_consumer_state")
-                                .find({})
-                                .toArray();
+                            const KAFKA_QUERY_LIMIT = 500;
 
-                            // Fetch Kafka consumer health (per-consumer-group stats)
-                            const consumerHealth = await common.db.collection("kafka_consumer_health")
-                                .find({})
-                                .toArray();
+                            // Fetch all Kafka data and summaries in parallel
+                            const [consumerState, consumerHealth, lagHistory, connectStatus, stateSummary, healthSummary] = await Promise.all([
+                                common.db.collection("kafka_consumer_state")
+                                    .find({})
+                                    .sort({ lastProcessedAt: -1 })
+                                    .limit(KAFKA_QUERY_LIMIT)
+                                    .toArray(),
+                                common.db.collection("kafka_consumer_health")
+                                    .find({})
+                                    .sort({ updatedAt: -1 })
+                                    .limit(KAFKA_QUERY_LIMIT)
+                                    .toArray(),
+                                common.db.collection("kafka_lag_history")
+                                    .find({})
+                                    .sort({ ts: -1 })
+                                    .limit(100)
+                                    .toArray(),
+                                common.db.collection("kafka_connect_status")
+                                    .find({})
+                                    .sort({ updatedAt: -1 })
+                                    .limit(KAFKA_QUERY_LIMIT)
+                                    .toArray(),
+                                // Aggregate consumer state summary via MongoDB pipeline
+                                common.db.collection("kafka_consumer_state")
+                                    .aggregate([{
+                                        $group: {
+                                            _id: null,
+                                            totalBatchesProcessed: { $sum: { $ifNull: ["$batchCount", 0] } },
+                                            totalDuplicatesSkipped: { $sum: { $ifNull: ["$duplicatesSkipped", 0] } },
+                                            avgBatchSizeSum: { $sum: { $ifNull: ["$avgBatchSize", 0] } },
+                                            groupsWithData: { $sum: { $cond: [{ $gt: ["$avgBatchSize", 0] }, 1, 0] } }
+                                        }
+                                    }])
+                                    .toArray(),
+                                // Aggregate consumer health summary via MongoDB pipeline
+                                common.db.collection("kafka_consumer_health")
+                                    .aggregate([{
+                                        $group: {
+                                            _id: null,
+                                            totalRebalances: { $sum: { $ifNull: ["$rebalanceCount", 0] } },
+                                            totalErrors: { $sum: { $ifNull: ["$errorCount", 0] } },
+                                            totalLag: { $sum: { $ifNull: ["$totalLag", 0] } }
+                                        }
+                                    }])
+                                    .toArray()
+                            ]);
 
-                            // Fetch lag history (last 100 snapshots for charts)
-                            const lagHistory = await common.db.collection("kafka_lag_history")
-                                .find({})
-                                .sort({ ts: -1 })
-                                .limit(100)
-                                .toArray();
+                            // Extract summary from aggregation pipelines
+                            const stSummary = stateSummary[0] || {};
+                            const totalBatchesProcessed = stSummary.totalBatchesProcessed || 0;
+                            const totalDuplicatesSkipped = stSummary.totalDuplicatesSkipped || 0;
+                            const avgBatchSizeOverall = stSummary.groupsWithData > 0
+                                ? stSummary.avgBatchSizeSum / stSummary.groupsWithData
+                                : 0;
 
-                            // Fetch Kafka Connect status
-                            const connectStatus = await common.db.collection("kafka_connect_status")
-                                .find({})
-                                .toArray();
+                            const htSummary = healthSummary[0] || {};
+                            const totalRebalances = htSummary.totalRebalances || 0;
+                            const totalErrors = htSummary.totalErrors || 0;
+                            const totalLagAll = htSummary.totalLag || 0;
 
-                            // Aggregate stats from per-consumer-group documents
-                            // New schema: one document per consumer group with nested partition offsets
-                            let totalBatchesProcessed = 0;
-                            let totalDuplicatesSkipped = 0;
-                            let avgBatchSizeOverall = 0;
-                            let groupsWithData = 0;
-
+                            // Transform consumer state rows
                             const partitionStats = consumerState.map(state => {
-                                totalBatchesProcessed += state.batchCount || 0;
-                                totalDuplicatesSkipped += state.duplicatesSkipped || 0;
-                                if (state.avgBatchSize) {
-                                    avgBatchSizeOverall += state.avgBatchSize;
-                                    groupsWithData++;
-                                }
-                                // Count active partitions from nested partitions object
                                 const partitions = state.partitions || {};
                                 const partitionCount = Object.keys(partitions).length;
                                 const activePartitions = Object.values(partitions).filter(p => p.lastProcessedAt).length;
@@ -2135,37 +2162,26 @@ const processRequest = (params) => {
                                 };
                             });
 
-                            avgBatchSizeOverall = groupsWithData > 0 ? avgBatchSizeOverall / groupsWithData : 0;
-
-                            // Process consumer health stats
-                            let totalRebalances = 0;
-                            let totalErrors = 0;
-                            let totalLagAll = 0;
-
-                            const consumerStats = consumerHealth.map(health => {
-                                totalRebalances += health.rebalanceCount || 0;
-                                totalErrors += health.errorCount || 0;
-                                totalLagAll += health.totalLag || 0;
-                                return {
-                                    id: health._id,
-                                    groupId: health.groupId,
-                                    rebalanceCount: health.rebalanceCount || 0,
-                                    lastRebalanceAt: health.lastRebalanceAt,
-                                    lastJoinAt: health.lastJoinAt,
-                                    lastMemberId: health.lastMemberId,
-                                    lastGenerationId: health.lastGenerationId,
-                                    commitCount: health.commitCount || 0,
-                                    lastCommitAt: health.lastCommitAt,
-                                    errorCount: health.errorCount || 0,
-                                    lastErrorAt: health.lastErrorAt,
-                                    lastErrorMessage: health.lastErrorMessage,
-                                    recentErrors: health.recentErrors || [],
-                                    totalLag: health.totalLag || 0,
-                                    partitionLag: health.partitionLag || {},
-                                    lagUpdatedAt: health.lagUpdatedAt,
-                                    updatedAt: health.updatedAt
-                                };
-                            });
+                            // Transform consumer health rows
+                            const consumerStats = consumerHealth.map(health => ({
+                                id: health._id,
+                                groupId: health.groupId,
+                                rebalanceCount: health.rebalanceCount || 0,
+                                lastRebalanceAt: health.lastRebalanceAt,
+                                lastJoinAt: health.lastJoinAt,
+                                lastMemberId: health.lastMemberId,
+                                lastGenerationId: health.lastGenerationId,
+                                commitCount: health.commitCount || 0,
+                                lastCommitAt: health.lastCommitAt,
+                                errorCount: health.errorCount || 0,
+                                lastErrorAt: health.lastErrorAt,
+                                lastErrorMessage: health.lastErrorMessage,
+                                recentErrors: health.recentErrors || [],
+                                totalLag: health.totalLag || 0,
+                                partitionLag: health.partitionLag || {},
+                                lagUpdatedAt: health.lagUpdatedAt,
+                                updatedAt: health.updatedAt
+                            }));
 
                             // Process Kafka Connect status
                             const connectorStats = connectStatus.map(conn => ({

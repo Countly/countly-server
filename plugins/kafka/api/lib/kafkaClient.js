@@ -1,7 +1,73 @@
-const { Kafka } = require('kafkajs');
-const log = require('../../../../api/utils/log.js')('kafka:client');
+const { Kafka, logLevel } = require('kafkajs');
+const logFactory = require('../../../../api/utils/log.js');
+const log = logFactory('kafka:client');
 const countlyConfig = require('../../../../api/config');
 const kafkaRequestQueueFix = require('./kafkaRequestQueueFix');
+
+/**
+ * Map Countly log level string to KafkaJS numeric logLevel
+ * @param {string} countlyLevel - Countly level ('debug','info','warn','error')
+ * @returns {number} KafkaJS logLevel enum value
+ */
+const COUNTLY_TO_KAFKA_LEVEL = {
+    debug: logLevel.DEBUG,
+    info: logLevel.INFO,
+    warn: logLevel.WARN,
+    error: logLevel.ERROR,
+};
+
+/**
+ * Convert Countly log level string to KafkaJS numeric logLevel
+ * Defaults to WARN if level is unrecognized or not set to avoid excessive KafkaJS logging
+ * @param {string} countlyLevel - Countly log level string
+ * @return {number} Corresponding KafkaJS logLevel enum value
+ */
+function countlyLevelToKafkaLevel(countlyLevel) {
+    return COUNTLY_TO_KAFKA_LEVEL[countlyLevel] ?? logLevel.WARN;
+}
+
+/**
+ * Map KafkaJS numeric level to Countly logger method name
+ */
+const KAFKA_LEVEL_TO_METHOD = {
+    [logLevel.ERROR]: 'e',
+    [logLevel.WARN]: 'w',
+    [logLevel.INFO]: 'i',
+    [logLevel.DEBUG]: 'd',
+};
+
+/**
+ * Create a KafkaJS logCreator that routes internal KafkaJS logging
+ * through Countly's logger.
+ *
+ * KafkaJS namespaces (e.g. "Consumer", "Producer", "Admin") become
+ * sub-loggers: 'kafka:client:Consumer', 'kafka:client:Producer', etc.
+ *
+ * @returns {Function} KafkaJS logCreator function
+ */
+function createCountlyLogCreator() {
+    const subLoggers = {};
+
+    return () => {
+        return ({ namespace, level, log: logEntry }) => {
+            const subLog = namespace
+                ? (subLoggers[namespace] ??= log.sub(namespace))
+                : log;
+
+            // eslint-disable-next-line no-unused-vars
+            const { message, timestamp: _ts, logger: _lgr, ...extra } = logEntry;
+            const method = KAFKA_LEVEL_TO_METHOD[level] || 'd';
+            const hasExtra = Object.keys(extra).length > 0;
+
+            if (hasExtra) {
+                subLog[method](message, extra);
+            }
+            else {
+                subLog[method](message);
+            }
+        };
+    };
+}
 
 /**
  * @typedef {Object} ConnectionConfig
@@ -96,6 +162,9 @@ class KafkaClient {
             );
         }
 
+        // Translate Countly log level to KafkaJS so it does not emit suppressed messages
+        const kafkaJsLogLevel = countlyLevelToKafkaLevel(logFactory.getLevel('kafka:client'));
+
         this.#kafka = new Kafka({
             clientId,
             brokers,
@@ -110,7 +179,9 @@ class KafkaClient {
             retry: {
                 initialRetryTime: rdkafkaConfig.initialRetryTime || 100,
                 retries: rdkafkaConfig.retries || 8
-            }
+            },
+            logLevel: kafkaJsLogLevel,
+            logCreator: createCountlyLogCreator()
         });
 
         log.i('KafkaClient initialized with brokers:', brokers.join(','));
