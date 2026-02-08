@@ -38,6 +38,12 @@ const render = require('../../api/utils/render.js');
 
 var loaded_configs_time = 0;
 
+// Kafka events meta cache (30s TTL) with in-flight dedup
+var _kafkaMetaCache = null;
+var _kafkaMetaCacheTs = 0;
+var _kafkaMetaCachePromise = null;
+const KAFKA_META_CACHE_TTL = 30000;
+
 const countlyApi = {
     data: {
         usage: require('../parts/data/usage.js'),
@@ -198,13 +204,13 @@ const processRequest = (params) => {
                  *
                  * @apiDescription Access database, get collections, indexes and data
                  * @apiQuery {Object} args User data object
-                 * @apiQuery {String} args.full_name Full name 
+                 * @apiQuery {String} args.full_name Full name
                  * @apiQuery {String} args.username Username
                  * @apiQuery {String} args.password Password
                  * @apiQuery {String} args.email Email
                  * @apiQuery {Object} args.permission Permission object
                  * @apiQuery {Boolean} args.global_admin Global admin flag
-                 * 
+                 *
                  * @apiSuccessExample {json} Success-Response:
                  * HTTP/1.1 200 OK
                  * {
@@ -228,11 +234,11 @@ const processRequest = (params) => {
                  *  "api_key":"1c5e93c6657d76ae8903f14c32cb3796",
                  *  "_id":"626bef4cb00db29a02f8f7a0"
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
-                 *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+                 *  "result": "Missing parameter \"app_key\" or \"device_id\"""
                  * }
                  */
                 case 'create':
@@ -245,23 +251,23 @@ const processRequest = (params) => {
                  *
                  * @apiDescription Access database, get collections, indexes and data
                  * @apiQuery {Object} args User data object
-                 * @apiQuery {String} args.full_name Full name 
+                 * @apiQuery {String} args.full_name Full name
                  * @apiQuery {String} args.username Username
                  * @apiQuery {String} args.password Password
                  * @apiQuery {String} args.email Email
                  * @apiQuery {Object} args.permission Permission object
                  * @apiQuery {Boolean} args.global_admin Global admin flag
-                 * 
+                 *
                  * @apiSuccessExample {json} Success-Response:
                  * HTTP/1.1 200 OK
                  * {
                  *  "result":"Success"
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
-                 *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+                 *  "result": "Missing parameter \"app_key\" or \"device_id\"""
                  * }
                  */
                 case 'update':
@@ -275,17 +281,17 @@ const processRequest = (params) => {
                  * @apiDescription Access database, get collections, indexes and data
                  * @apiQuery {Object} args User data object
                  * @apiQuery {String} args.user_ids IDs array for users which will be deleted
-                 * 
+                 *
                  * @apiSuccessExample {json} Success-Response:
                  * HTTP/1.1 200 OK
                  * {
                  *  "result":"Success"
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
-                 *  "result": "Missing parameter \"app_key\" or \"device_id\""" 
+                 *  "result": "Missing parameter \"app_key\" or \"device_id\"""
                  * }
                  */
                 case 'delete':
@@ -1219,7 +1225,7 @@ const processRequest = (params) => {
                  * {
                  *   "result":"Missing parameter \"api_key\" or \"auth_token\""
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
@@ -1936,62 +1942,82 @@ const processRequest = (params) => {
                     }, params);
                     break;
                 case 'aggregator':
-                    validateUserForMgmtReadAPI(() => {
-                        //fetch current aggregator status
-                        common.db.collection("plugins").findOne({_id: "_changeStreams"}, function(err, pluginsData) {
-                            if (err) {
-                                common.returnMessage(params, 400, 'Error fetching aggregator status');
-                            }
-                            else {
-                                //find biggest cd value in drill database
-                                common.drillDb.collection("drill_events").find({}, {cd: 1}).sort({cd: -1}).limit(1).toArray(function(err2, drillData) {
-                                    var data = [];
-                                    var now = Date.now().valueOf();
-                                    var nowDrill = now;
-                                    if (drillData && drillData.length) {
-                                        nowDrill = new Date(drillData[0].cd).valueOf();
-                                    }
+                    validateUserForMgmtReadAPI(async() => {
+                        try {
+                            //fetch aggregator status and latest drill cd in parallel
+                            const [pluginsData, drillData] = await Promise.all([
+                                common.db.collection("plugins").findOne({_id: "_changeStreams"}),
+                                common.drillDb.collection("drill_events").find({}, {projection: {cd: 1}}).sort({cd: -1}).limit(1).toArray()
+                            ]);
 
-                                    for (var key in pluginsData) {
-                                        if (key !== "_id") {
-                                            var lastAccepted = new Date(pluginsData[key].cd).valueOf();
-                                            data.push({
-                                                name: key,
-                                                last_cd: pluginsData[key].cd,
-                                                drill: drillData && drillData[0] && drillData[0].cd,
-                                                last_id: pluginsData[key]._id,
-                                                diff: (now - lastAccepted) / 1000,
-                                                diffDrill: (nowDrill - lastAccepted) / 1000
-                                            });
-                                        }
-                                    }
-                                    common.returnOutput(params, data);
-                                });
+                            var data = [];
+                            var now = Date.now().valueOf();
+                            var nowDrill = now;
+                            if (drillData && drillData.length) {
+                                nowDrill = new Date(drillData[0].cd).valueOf();
                             }
 
-                        });
+                            if (pluginsData) {
+                                for (var key in pluginsData) {
+                                    if (key !== "_id") {
+                                        var lastAccepted = new Date(pluginsData[key].cd).valueOf();
+                                        data.push({
+                                            name: key,
+                                            last_cd: pluginsData[key].cd,
+                                            drill: drillData && drillData[0] && drillData[0].cd,
+                                            last_id: pluginsData[key]._id,
+                                            diff: (now - lastAccepted) / 1000,
+                                            diffDrill: (nowDrill - lastAccepted) / 1000
+                                        });
+                                    }
+                                }
+                            }
+                            common.returnOutput(params, data);
+                        }
+                        catch (err) {
+                            log.e('Error fetching aggregator status:', err);
+                            common.returnMessage(params, 500, 'Error fetching aggregator status');
+                        }
                     }, params);
                     break;
                 case 'kafka':
                     // Handle sub-routes: /o/system/kafka/events and /o/system/kafka/events/meta
                     if (paths[4] === 'events') {
                         if (paths[5] === 'meta') {
-                            // /o/system/kafka/events/meta - Get filter options
+                            // /o/system/kafka/events/meta - Get filter options (cached 30s, deduped)
                             validateUserForMgmtReadAPI(async() => {
                                 try {
-                                    const [eventTypes, groupIds, topics, clusterIds] = await Promise.all([
-                                        common.db.collection('kafka_consumer_events').distinct('type'),
-                                        common.db.collection('kafka_consumer_events').distinct('groupId'),
-                                        common.db.collection('kafka_consumer_events').distinct('topic'),
-                                        common.db.collection('kafka_consumer_events').distinct('clusterId')
-                                    ]);
+                                    var now = Date.now();
+                                    if (_kafkaMetaCache && (now - _kafkaMetaCacheTs) < KAFKA_META_CACHE_TTL) {
+                                        common.returnOutput(params, _kafkaMetaCache);
+                                        return;
+                                    }
 
-                                    common.returnOutput(params, {
-                                        eventTypes: eventTypes.filter(Boolean).sort(),
-                                        groupIds: groupIds.filter(Boolean).sort(),
-                                        topics: topics.filter(Boolean).sort(),
-                                        clusterIds: clusterIds.filter(Boolean).sort()
-                                    });
+                                    // Reuse in-flight fetch to prevent thundering herd on cache expiry
+                                    if (!_kafkaMetaCachePromise) {
+                                        _kafkaMetaCachePromise = Promise.all([
+                                            common.db.collection('kafka_consumer_events').distinct('type'),
+                                            common.db.collection('kafka_consumer_events').distinct('groupId'),
+                                            common.db.collection('kafka_consumer_events').distinct('topic'),
+                                            common.db.collection('kafka_consumer_events').distinct('clusterId')
+                                        ]).then(function([eventTypes, groupIds, topics, clusterIds]) {
+                                            _kafkaMetaCache = {
+                                                eventTypes: eventTypes.filter(Boolean).sort(),
+                                                groupIds: groupIds.filter(Boolean).sort(),
+                                                topics: topics.filter(Boolean).sort(),
+                                                clusterIds: clusterIds.filter(Boolean).sort()
+                                            };
+                                            _kafkaMetaCacheTs = Date.now();
+                                            _kafkaMetaCachePromise = null;
+                                            return _kafkaMetaCache;
+                                        }).catch(function(err) {
+                                            _kafkaMetaCachePromise = null;
+                                            throw err;
+                                        });
+                                    }
+
+                                    var result = await _kafkaMetaCachePromise;
+                                    common.returnOutput(params, result);
                                 }
                                 catch (err) {
                                     log.e('Error fetching Kafka events meta:', err);
@@ -2081,25 +2107,65 @@ const processRequest = (params) => {
                         try {
                             const KAFKA_QUERY_LIMIT = 500;
 
-                            // Fetch all Kafka data and summaries in parallel
+                            // Fetch all Kafka data and summaries in parallel (with projections)
                             const [consumerState, consumerHealth, lagHistory, connectStatus, stateSummary, healthSummary] = await Promise.all([
                                 common.db.collection("kafka_consumer_state")
-                                    .find({})
+                                    .find({}, {
+                                        projection: {
+                                            consumerGroup: 1,
+                                            topic: 1,
+                                            partitions: 1,
+                                            lastProcessedAt: 1,
+                                            batchCount: 1,
+                                            duplicatesSkipped: 1,
+                                            lastDuplicateAt: 1,
+                                            lastBatchSize: 1,
+                                            avgBatchSize: 1
+                                        }
+                                    })
                                     .sort({ lastProcessedAt: -1 })
                                     .limit(KAFKA_QUERY_LIMIT)
                                     .toArray(),
                                 common.db.collection("kafka_consumer_health")
-                                    .find({})
+                                    .find({}, {
+                                        projection: {
+                                            groupId: 1,
+                                            rebalanceCount: 1,
+                                            lastRebalanceAt: 1,
+                                            lastJoinAt: 1,
+                                            lastMemberId: 1,
+                                            lastGenerationId: 1,
+                                            commitCount: 1,
+                                            lastCommitAt: 1,
+                                            errorCount: 1,
+                                            lastErrorAt: 1,
+                                            lastErrorMessage: 1,
+                                            recentErrors: 1,
+                                            totalLag: 1,
+                                            partitionLag: 1,
+                                            lagUpdatedAt: 1,
+                                            updatedAt: 1
+                                        }
+                                    })
                                     .sort({ updatedAt: -1 })
                                     .limit(KAFKA_QUERY_LIMIT)
                                     .toArray(),
                                 common.db.collection("kafka_lag_history")
-                                    .find({})
+                                    .find({}, {projection: {ts: 1, groups: 1, connectLag: 1}})
                                     .sort({ ts: -1 })
                                     .limit(100)
                                     .toArray(),
                                 common.db.collection("kafka_connect_status")
-                                    .find({})
+                                    .find({}, {
+                                        projection: {
+                                            connectorName: 1,
+                                            connectorState: 1,
+                                            connectorType: 1,
+                                            workerId: 1,
+                                            tasks: 1,
+                                            updatedAt: 1
+                                        }
+                                    })
                                     .sort({ updatedAt: -1 })
                                     .limit(KAFKA_QUERY_LIMIT)
                                     .toArray(),
@@ -2628,7 +2694,7 @@ const processRequest = (params) => {
                  *       "ok": 1
                  *     }
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
@@ -2668,13 +2734,13 @@ const processRequest = (params) => {
                  * @apiQuery {Boolean} multi, Defines availability multiple times
                  * @apiQuery {Boolean} apps, App Id of selected application
                  * @apiQuery {Boolean} ttl, expiration time for token
-                 * 
+                 *
                  * @apiSuccessExample {json} Success-Response:
                  * HTTP/1.1 200 OK
                  * {
                  *    "result": "0e1c012f855e7065e779b57a616792fb5bd03834"
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
@@ -2776,7 +2842,7 @@ const processRequest = (params) => {
                  *
                  * @apiDescription Returns active tokens as an array that uses tokens in order to protect the API key
                  * @apiQuery {String} app_id, App Id of related application or {String} auth_token
-                 * 
+                 *
                  * @apiSuccessExample {json} Success-Response:
                  * HTTP/1.1 200 OK
                  * {
@@ -2789,7 +2855,7 @@ const processRequest = (params) => {
                  *        "owner": "60e42efa5c23ee7ec6259af0",
                  *        "app": "",
                  *        "endpoint": [
-                 *            
+                 *
                  *        ],
                  *        "purpose": "Test Token",
                  *        "temporary": false
@@ -2807,7 +2873,7 @@ const processRequest = (params) => {
                  *        }
                  *    ]
                  * }
-                 * 
+                 *
                  * @apiErrorExample {json} Error-Response:
                  * HTTP/1.1 400 Bad Request
                  * {
