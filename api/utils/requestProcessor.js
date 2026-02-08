@@ -1976,7 +1976,7 @@ const processRequest = (params) => {
                         }
                         catch (err) {
                             log.e('Error fetching aggregator status:', err);
-                            common.returnMessage(params, 400, 'Error fetching aggregator status');
+                            common.returnMessage(params, 500, 'Error fetching aggregator status');
                         }
                     }, params);
                     break;
