@@ -47,7 +47,7 @@ import './core/jobs/index.js';
 import './core/token-manager/index.js';
 import './core/home/index.js';
 import './core/carrier/index.js';
-import './core/health-manager/index.js';
+// import './core/health-manager/index.js';
 import './core/date-presets/index.js';
 import './core/user-activity/index.js';
 import './core/user-analytics-overview/index.js';
