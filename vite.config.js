@@ -124,7 +124,7 @@ const legacyScripts = [
     // 'core/jobs/javascripts/countly.views.js',
     // 'core/logs/javascripts/countly.views.js',
     // 'core/token-manager/javascripts/countly.views.js',
-    'core/report-manager/javascripts/countly.views.js',
+    // 'core/report-manager/javascripts/countly.views.js',
     // 'core/platform/javascripts/countly.views.js',
     // 'core/carrier/javascripts/countly.models.js',
     // 'core/carrier/javascripts/countly.views.js',
