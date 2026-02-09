@@ -120,7 +120,7 @@ export const LegendMixin = {
             if (echartRef && legend) {
                 var oldChartOpt = echartRef.getOption();
 
-                if (Array.isArray(oldChartOpt.legend)) {
+                if (oldChartOpt && Array.isArray(oldChartOpt.legend)) {
                     var oldSelected = oldChartOpt.legend.find(function(item) {
                         return item.id === "__chartLegend";
                     });
@@ -157,7 +157,7 @@ export const ZoomMixin = {
 
             if (echartRef && header) {
                 var oldChartOpt = echartRef.getOption();
-                if (Array.isArray(oldChartOpt.dataZoom)) {
+                if (oldChartOpt && Array.isArray(oldChartOpt.dataZoom)) {
                     var dataZoom = oldChartOpt.dataZoom[0];
 
                     if (dataZoom && header.isZoom) {
