@@ -157,10 +157,30 @@ import countlyVue, { autoRefreshMixin } from '../../../javascripts/countly/vue/c
 import countlyCommon from '../../../javascripts/countly/countly.common.js';
 import PlatformTableView from './PlatformTableView.vue';
 import VersionsTableView from './VersionsTableView.vue';
+import ClyHeader from '../../../javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../javascripts/components/layout/cly-main.vue';
+import ClyDatePickerG from '../../../javascripts/components/date/global-date-picker.vue';
+import ClyMoreOptions from '../../../javascripts/components/dropdown/more-options.vue';
+import ClyMetricCards from '../../../javascripts/components/helpers/cly-metric-cards.vue';
+import ClyMetricCard from '../../../javascripts/components/helpers/cly-metric-card.vue';
+import ClyMetricBreakdown from '../../../javascripts/components/helpers/cly-metric-breakdown.vue';
+import ClyDynamicTabs from '../../../javascripts/components/nav/cly-dynamic-tabs.vue';
+import vuescroll from 'vuescroll';
 
 const CV = countlyVue;
 
 export default {
+    components: {
+        ClyHeader,
+        ClyMain,
+        ClyDatePickerG,
+        ClyMoreOptions,
+        ClyMetricCards,
+        ClyMetricCard,
+        ClyMetricBreakdown,
+        ClyDynamicTabs,
+        'vue-scroll': vuescroll
+    },
     mixins: [
         countlyVue.mixins.i18n,
         countlyVue.container.dataMixin({ externalLinks: '/analytics/platforms/links' }),

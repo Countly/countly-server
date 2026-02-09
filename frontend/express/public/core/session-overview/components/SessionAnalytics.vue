@@ -10,8 +10,12 @@
 
 <script>
 import { tabsMixin } from '../../../javascripts/countly/vue/container.js';
+import ClyDynamicTabs from '../../../javascripts/components/nav/cly-dynamic-tabs.vue';
 
 export default {
+    components: {
+        ClyDynamicTabs
+    },
     mixins: [
         tabsMixin({
             "sessionAnalyticsTabs": "/analytics/sessions"

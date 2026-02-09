@@ -38,8 +38,14 @@
 <script>
 import countlyVue from '../../../javascripts/countly/vue/core.js';
 import countlyCommon from '../../../javascripts/countly/countly.common.js';
+import ClySection from '../../../javascripts/components/layout/cly-section.vue';
+import ClyDatatableN from '../../../javascripts/components/datatable/cly-datatable-n.vue';
 
 export default {
+    components: {
+        ClySection,
+        ClyDatatableN
+    },
     mixins: [countlyVue.mixins.i18n],
     computed: {
         appPlatform: function() {

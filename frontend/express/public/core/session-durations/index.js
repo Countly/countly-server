@@ -3,6 +3,7 @@ import { registerTab } from '../../javascripts/countly/vue/container.js';
 
 import SessionDurationsView from './components/SessionDurations.vue';
 import store from './store/index.js';
+import './stylesheets/_main.scss';
 
 // Register tab.
 registerTab("/analytics/sessions", {

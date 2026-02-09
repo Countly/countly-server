@@ -42,8 +42,12 @@
 
 <script>
 import { BaseComponentMixin } from '../../mixins/base.js';
+import vuescroll from 'vuescroll';
 
 export default {
+    components: {
+        'vue-scroll': vuescroll
+    },
     mixins: [BaseComponentMixin],
     props: {
         hideLeftSidebar: {

@@ -6,6 +6,7 @@ import SessionOverviewView from './components/SessionOverview.vue';
 import SessionAnalyticsView from './components/SessionAnalytics.vue';
 import SessionsHomeWidget from './components/SessionsHomeWidget.vue';
 import store from './store/index.js';
+import './stylesheets/_main.scss';
 
 // Helper function to create BackboneWrapper for SessionAnalytics
 var getSessionAnalyticsView = function() {

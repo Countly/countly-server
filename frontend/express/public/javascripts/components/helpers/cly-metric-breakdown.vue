@@ -45,7 +45,12 @@
 </template>
 
 <script>
+import vuescroll from 'vuescroll';
+
 export default {
+    components: {
+        'vue-scroll': vuescroll
+    },
     props: {
         name: {
             type: String

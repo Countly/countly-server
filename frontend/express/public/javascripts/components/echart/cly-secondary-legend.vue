@@ -16,8 +16,12 @@
 
 <script>
 import countlyVue from '../../countly/vue/core.js';
+import vuescroll from 'vuescroll';
 
 export default {
+    components: {
+        'vue-scroll': vuescroll
+    },
     mixins: [
         countlyVue.mixins.commonFormatters,
     ],

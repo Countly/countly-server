@@ -36,22 +36,22 @@
 @use "states/state";
 
 // All core "Plugins" views specific SASS partials
-@use "../../core/user-activity/stylesheets/main" as user-activity-main-style;
-@use "../../core/session-overview/stylesheets/main" as session-overview-main-style;
-@use "../../core/session-durations/stylesheets/main" as session-durations-main-style;
-@use "../../core/session-frequency/stylesheets/main" as session-frequency-main-style;
+// @use "../../core/user-activity/stylesheets/main" as user-activity-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/session-overview/stylesheets/main" as session-overview-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/session-durations/stylesheets/main" as session-durations-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/session-frequency/stylesheets/main" as session-frequency-main-style; // Migrated to SFC - imported in plugin index.js
 @use "../../core/events/stylesheets/main" as events-overview-main-style;
-@use "../../core/platform/stylesheets/main" as analytics-platform-main-style;
-@use "../../core/app-version/stylesheets/main" as analytics-appversion-main-style;
-@use "../../core/app-resolution/stylesheets/main" as analytics-resolution-main-style;
-@use "../../core/carrier/stylesheets/main" as analytics-carrier-main-style;
+// @use "../../core/platform/stylesheets/main" as analytics-platform-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/app-version/stylesheets/main" as analytics-appversion-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/app-resolution/stylesheets/main" as analytics-resolution-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/carrier/stylesheets/main" as analytics-carrier-main-style; // Migrated to SFC - imported in plugin index.js
 @use "../../core/device-and-type/stylesheets/main" as analytics-device-and-type-main-style;
-@use "../../core/geo-countries/stylesheets/main" as geo-countries-main-style;
+// @use "../../core/geo-countries/stylesheets/main" as geo-countries-main-style; // Migrated to SFC - imported in plugin index.js
 @use "../../core/user-management/stylesheets/main" as user-management-main-style;
-@use "../../core/home/stylesheets/main" as home-main-style;
+// @use "../../core/home/stylesheets/main" as home-main-style; // Migrated to SFC - imported in plugin index.js
 @use "../../core/app-management/stylesheets/main" as app-management-main-style;
 @use "../../core/report-manager/stylesheets/main" as report-manager-main-style;
-@use "../../core/version-history/stylesheets/main" as version-history-main-style;
-@use "../../core/health-manager/stylesheets/main" as health-manager-main-style;
-@use "../../core/onboarding/stylesheets/main" as onboarding-main-style;
-@use "../../core/date-presets/stylesheets/main" as date-presets-main-style;
+// @use "../../core/version-history/stylesheets/main" as version-history-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/health-manager/stylesheets/main" as health-manager-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/onboarding/stylesheets/main" as onboarding-main-style; // Migrated to SFC - imported in plugin index.js
+// @use "../../core/date-presets/stylesheets/main" as date-presets-main-style; // Migrated to SFC - imported in plugin index.js

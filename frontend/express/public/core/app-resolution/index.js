@@ -2,6 +2,7 @@ import { i18n } from '../../javascripts/countly/vue/core.js';
 import { registerTab } from '../../javascripts/countly/vue/container.js';
 
 import AppResolutionView from './components/AppResolution.vue';
+import './stylesheets/_main.scss';
 
 // Register tab.
 registerTab("/analytics/technology", {

@@ -229,9 +229,11 @@
 <script>
 import moment from 'moment';
 import countlyCommon from '../../countly/countly.common.js';
+import countlyPresets from '../../../core/date-presets/store/index.js';
 import DateTable from './date-table.vue';
 import MonthTable from './month-table.vue';
 import YearTable from './year-table.vue';
+import vuescroll from 'vuescroll';
 import {
     availableShortcuts,
     globalMin,
@@ -259,6 +261,7 @@ export default {
         'date-table': DateTable,
         'month-table': MonthTable,
         'year-table': YearTable,
+        'vue-scroll': vuescroll
     },
     computed: {
         isStartFocused: function() {
@@ -535,8 +538,8 @@ export default {
                     excludeCurrentDay = this.selectedPreset.exclude_current_day;
                 }
                 else if (this.isGlobalDatePicker) {
-                    window.countlyPresets.refreshGlobalDatePreset();
-                    let globalPreset = window.countlyPresets.getGlobalDatePreset();
+                    countlyPresets.refreshGlobalDatePreset();
+                    let globalPreset = countlyPresets.getGlobalDatePreset();
                     excludeCurrentDay = globalPreset && globalPreset.exclude_current_day;
                 }
             }
@@ -702,7 +705,7 @@ export default {
         handleDropdownShow: function() {
             this.isVisible = true;
             if (this.isGlobalDatePicker) {
-                this.presetSelection = this.allowPresets && window.countlyPresets.getGlobalDatePresetId() !== null;
+                this.presetSelection = this.allowPresets && countlyPresets.getGlobalDatePresetId() !== null;
             }
             else {
                 this.presetSelection = this.allowPresets && this.selectedPreset !== null;
@@ -948,7 +951,7 @@ export default {
                 if (this.allowPresets && !isPreset) {
                     this.selectedPreset = null;
                     if (this.isGlobalDatePicker) {
-                        window.countlyPresets.clearGlobalDatePresetId();
+                        countlyPresets.clearGlobalDatePresetId();
                     }
                 }
 

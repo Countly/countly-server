@@ -19,7 +19,8 @@ plugin-name/
 ### New Structure (ESM + SFC)
 ```
 plugin-name/
-├── index.js                 # Entry point + registerTab
+├── index.js                 # Entry point + registerTab + routes
+├── widget.js                # Dashboard widget (if applicable)
 ├── components/
 │   └── PluginView.vue       # Vue SFC (build-time compilation)
 ├── store/
@@ -38,12 +39,16 @@ plugin-name/
 
 #### ❌ Forbidden patterns:
 ```js
-// DO NOT use window globals
+// DO NOT use window globals for importable modules
 window.countlyVue
 window.countlyCommon
 window.CV
 window.jQuery
 window.$
+window.moment       // npm package - use import
+window.store        // npm package (storejs) - use import
+window._            // npm package (underscore) - use import
+window.Backbone     // local ESM - use import
 countlyVue          // implicit window.countlyVue
 countlyCommon       // implicit window.countlyCommon
 CV                  // implicit window.CV
@@ -51,12 +56,100 @@ CV                  // implicit window.CV
 
 #### ✅ Required pattern:
 ```js
-// ALWAYS use explicit imports
-import countlyVue from '../../../javascripts/countly/vue/index.js';
+// ALWAYS use explicit imports - prefer named imports over default
+import { i18n, vuex, commonFormattersMixin, i18nMixin, autoRefreshMixin } from '../../../javascripts/countly/vue/core.js';
 import countlyCommon from '../../../javascripts/countly/countly.common.js';
 
-const CV = countlyVue;  // Create local alias if needed
+// npm packages - import directly, NEVER use window.*
+import moment from 'moment';
+import _ from 'underscore';
+import storejs from 'storejs';
+
+// Local ESM modules
+import Backbone from '../../../javascripts/utils/backbone-min.js';
+import * as countlyCMS from '../../../javascripts/countly/countly.cms.js';
 ```
+
+#### ⚠️ Exception: Legacy IIFE modules without ESM exports
+
+Some modules are still legacy IIFEs and have no ESM exports. These are the **only** cases where `window.*` is acceptable. Always add a comment explaining why:
+```js
+// countlyPopulator is still legacy IIFE - no ESM exports available
+var countlyPopulator = window.countlyPopulator;
+
+// countlyPlugins is still legacy IIFE - no ESM exports available
+var countlyPlugins = window.countlyPlugins;
+```
+
+### Explicit Global SFC Component Imports
+
+**All global SFC components used in a template must be explicitly imported and registered in the `components` option.**
+
+In the legacy system, components like `<cly-header>`, `<cly-datatable-n>`, etc. were globally registered via `Vue.component()` and available everywhere without imports. In the ESM/SFC architecture, each component must import what it uses.
+
+#### ❌ Forbidden pattern:
+```vue
+<template>
+    <cly-header :title="i18n('plugin.title')"></cly-header>
+    <cly-main>
+        <cly-datatable-n :rows="rows"></cly-datatable-n>
+    </cly-main>
+</template>
+
+<script>
+// Missing component imports - relies on global registration
+export default {
+    // no components option
+};
+</script>
+```
+
+#### ✅ Required pattern:
+```vue
+<template>
+    <cly-header :title="i18n('plugin.title')"></cly-header>
+    <cly-main>
+        <cly-datatable-n :rows="rows"></cly-datatable-n>
+    </cly-main>
+</template>
+
+<script>
+import ClyHeader from '../../../javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../javascripts/components/layout/cly-main.vue';
+import ClyDatatableN from '../../../javascripts/components/datatable/cly-datatable-n.vue';
+
+export default {
+    components: {
+        ClyHeader,
+        ClyMain,
+        ClyDatatableN
+    }
+};
+</script>
+```
+
+#### Component source mapping:
+
+| Tag name | Import path |
+|---|---|
+| `cly-header` | `components/layout/cly-header.vue` |
+| `cly-main` | `components/layout/cly-main.vue` |
+| `cly-section` | `components/layout/cly-section.vue` |
+| `cly-date-picker-g` | `components/date/global-date-picker.vue` |
+| `cly-chart-bar` | `components/echart/cly-chart-bar.vue` |
+| `cly-chart-line` | `components/echart/cly-chart-line.vue` |
+| `cly-chart-pie` | `components/echart/cly-chart-pie.vue` |
+| `cly-chart-time` | `components/echart/cly-chart-time.vue` |
+| `cly-datatable-n` | `components/datatable/cly-datatable-n.vue` |
+| `cly-progress-bar` | `components/progress/progress-bar.vue` |
+| `cly-more-options` | `components/dropdown/more-options.vue` |
+| `cly-dynamic-tabs` | `components/nav/cly-dynamic-tabs.vue` |
+| `cly-tooltip-icon` | `components/helpers/cly-tooltip-icon.vue` |
+| `cly-metric-cards` | `components/helpers/cly-metric-cards.vue` |
+| `cly-metric-card` | `components/helpers/cly-metric-card.vue` |
+| `cly-metric-breakdown` | `components/helpers/cly-metric-breakdown.vue` |
+
+> **Note:** Element UI components (`el-table-column`, `el-select`, `el-option`, `el-tabs`, etc.) are registered globally via `Vue.use(ElementUI)` and do **not** need explicit imports. These will be handled during the Vue 3 / Element Plus migration.
 
 ### Validation Checklist
 
@@ -66,6 +159,7 @@ Before completing migration, verify:
 - [ ] All dependencies are explicitly imported at the top of the file
 - [ ] No `(function() { ... })()` IIFE patterns remain
 - [ ] Components with `<cly-date-picker-g>` include `autoRefreshMixin`
+- [ ] All `cly-*` components used in templates are imported and registered in the `components` option
 
 ### Warning
 
@@ -146,15 +240,15 @@ touch plugin-name/store/index.js
 
 ### New store/index.js:
 ```js
-import countlyVue from '../../../javascripts/countly/vue/index.js';
+import { ajax, vuex } from '../../../javascripts/countly/vue/core.js';
 import countlyCommon from '../../../javascripts/countly/countly.common.js';
 
-const CV = countlyVue;
+var countlyPluginName = {};
 
 // Service layer - API calls
-const service = {
+countlyPluginName.service = {
     fetchData: function() {
-        return CV.$.ajax({
+        return ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/plugin",
             data: { app_id: countlyCommon.ACTIVE_APP_ID },
@@ -164,14 +258,14 @@ const service = {
 };
 
 // Vuex module
-const getVuexModule = function() {
-    return countlyVue.vuex.Module("countlyPluginName", {
+countlyPluginName.getVuexModule = function() {
+    return vuex.Module("countlyPluginName", {
         state: function() {
             return { data: [] };
         },
         actions: {
             fetchData: function(context) {
-                return service.fetchData()
+                return countlyPluginName.service.fetchData()
                     .then(function(res) {
                         context.commit('setData', res);
                     });
@@ -185,14 +279,14 @@ const getVuexModule = function() {
     });
 };
 
-export default getVuexModule();
+export default countlyPluginName;
 ```
 
 ### Key changes:
 - Remove `window.countlyPluginName` global
-- Import `countlyVue` and `countlyCommon`
-- Keep service functions private (not exported)
-- Export the instantiated Vuex module
+- Use named imports (`ajax`, `vuex`) instead of importing the entire `countlyVue` default export
+- Export the **store object** with `getVuexModule` method (NOT the result of `getVuexModule()` — VuexLoader calls `clyModel.getVuexModule()` internally)
+- `$.when()` is not available in ESM — use `Promise.all([...])` instead
 
 ---
 
@@ -243,12 +337,20 @@ export default getVuexModule();
 </template>
 
 <script>
-import countlyVue, { autoRefreshMixin } from '../../../javascripts/countly/vue/core.js';
+import { autoRefreshMixin, commonFormattersMixin, i18nMixin } from '../../../javascripts/countly/vue/core.js';
+import ClyHeader from '../../../javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../javascripts/components/layout/cly-main.vue';
+import ClyDatePickerG from '../../../javascripts/components/date/global-date-picker.vue';
 
 export default {
+    components: {
+        ClyHeader,
+        ClyMain,
+        ClyDatePickerG
+    },
     mixins: [
-        countlyVue.mixins.commonFormatters,
-        countlyVue.mixins.i18n,
+        commonFormattersMixin,
+        i18nMixin,
         autoRefreshMixin
     ],
     computed: {
@@ -274,6 +376,7 @@ export default {
 - **Do NOT include registerTab here** (separation of concerns)
 - Copy template HTML exactly as-is
 - **Add `autoRefreshMixin`** if component uses global date picker (see below)
+- **Import and register all `cly-*` components** used in the template (see [Explicit Global SFC Component Imports](#explicit-global-sfc-component-imports))
 
 ---
 
@@ -285,6 +388,7 @@ import { registerTab } from '../../javascripts/countly/vue/container.js';
 
 import PluginView from './components/PluginView.vue';
 import store from './store/index.js';
+import './stylesheets/_main.scss';
 
 // Register tab.
 registerTab("/main/route", {
@@ -306,12 +410,32 @@ registerTab("/main/route", {
 ### Key points:
 - Import `i18n` from `vue/core.js`
 - Import `registerTab` from `vue/container.js`
+- **Import SCSS styles** - Makes plugin self-contained with all assets in one entrypoint
 - Store is connected via `vuex.clyModel`
 - Only add exports if other modules need access
 
 ---
 
-## Step 6: Update vite.config.js
+## Step 6: Update Global SCSS Manifest
+
+Comment out the plugin's SCSS reference in `manifest.scss` since styles are now imported in the plugin's index.js:
+
+```scss
+// core/frontend/express/public/stylesheets/styles/manifest.scss
+
+// All core "Plugins" views specific SASS partials
+// @use "../../core/plugin-name/stylesheets/main" as plugin-name-main-style; // Migrated to SFC - imported in plugin index.js
+```
+
+### Why this is needed:
+- Previously, all plugin styles were globally imported via `manifest.scss`
+- Now each plugin imports its own styles via its `index.js` entrypoint
+- Comment (don't delete) to track migration progress
+- The compiled `manifest2.css` will auto-update on next build
+
+---
+
+## Step 7: Update vite.config.js
 
 Remove from `legacyScripts` array:
 ```js
@@ -326,7 +450,7 @@ const legacyScripts = [
 
 ---
 
-## Step 7: Update entrypoint.js
+## Step 8: Update entrypoint.js
 
 ```js
 // =============================================================================
@@ -342,7 +466,7 @@ import './core/plugin-name/index.js';
 
 ---
 
-## Step 8: Delete Legacy Files
+## Step 9: Delete Legacy Files
 
 ```bash
 rm plugin-name/javascripts/countly.models.js
@@ -355,7 +479,7 @@ rmdir plugin-name/javascripts/
 
 ---
 
-## Step 9: Build and Test
+## Step 10: Build and Test
 
 ```bash
 cd core
@@ -374,20 +498,37 @@ npm run build:vite
 
 ## Import Path Reference
 
-Paths are relative to file location:
+Paths are relative to file location. Always prefer named imports over the default `countlyVue` export:
 
 ```js
 // From store/index.js (3 levels deep)
-import countlyVue from '../../../javascripts/countly/vue/index.js';
+import { ajax, vuex } from '../../../javascripts/countly/vue/core.js';
 import countlyCommon from '../../../javascripts/countly/countly.common.js';
 
 // From index.js (2 levels deep)
-import { i18n } from '../../javascripts/countly/vue/core.js';
-import { registerTab } from '../../javascripts/countly/vue/container.js';
+import { i18n, views, mixins, templateUtil } from '../../javascripts/countly/vue/core.js';
+import { registerTab, registerData } from '../../javascripts/countly/vue/container.js';
 
 // From components/PluginView.vue (3 levels deep)
-import countlyVue, { autoRefreshMixin } from '../../../javascripts/countly/vue/core.js';
+import { autoRefreshMixin, commonFormattersMixin, i18nMixin, i18n } from '../../../javascripts/countly/vue/core.js';
 ```
+
+### Available named exports from `vue/core.js`:
+
+| Export | Usage |
+|---|---|
+| `i18n` | Translation function: `i18n('key')` |
+| `i18nM` | Translation function returning marked string |
+| `autoRefreshMixin` | Mixin for date picker refresh support |
+| `commonFormattersMixin` | Replaces `countlyVue.mixins.commonFormatters` |
+| `i18nMixin` | Replaces `countlyVue.mixins.i18n` |
+| `mixins` | Object with `customDashboards`, `zoom`, `hasDrawers`, `graphNotesCommand`, etc. |
+| `vuex` | Object with `Module()`, `FetchMixin()` |
+| `views` | Object with `create()`, `BackboneWrapper` |
+| `ajax` | AJAX utility (use `{ ajax }` where `CV.$` was used) |
+| `templateUtil` | `templateUtil.stage()` replaces `countlyVue.T()` |
+| `registerGlobally` | Register Vuex module globally |
+| `unregister` | Unregister Vuex module |
 
 ---
 
@@ -398,12 +539,14 @@ import countlyVue, { autoRefreshMixin } from '../../../javascripts/countly/vue/c
 [ ] 2. Create new folder structure (components/, store/)
 [ ] 3. Create store/index.js
 [ ] 4. Create components/PluginView.vue
-[ ] 5. Add autoRefreshMixin if using global date picker
-[ ] 6. Create index.js with registerTab
-[ ] 7. Remove from vite.config.js legacyScripts
-[ ] 8. Add import to entrypoint.js
-[ ] 9. Delete legacy files
-[ ] 10. Build and test (including date picker functionality)
+[ ] 5. Import and register all cly-* global SFC components used in templates
+[ ] 6. Add autoRefreshMixin if using global date picker
+[ ] 7. Create index.js with registerTab and SCSS import
+[ ] 8. Comment out SCSS reference in manifest.scss
+[ ] 9. Remove from vite.config.js legacyScripts
+[ ] 10. Add import to entrypoint.js
+[ ] 11. Delete legacy files
+[ ] 12. Build and test (including date picker functionality)
 ```
 
 ---
@@ -429,6 +572,7 @@ import { registerTab } from '../../javascripts/countly/vue/container.js';
 
 import SessionDurationsView from './components/SessionDurations.vue';
 import store from './store/index.js';
+import './stylesheets/_main.scss';
 
 // Register tab.
 registerTab("/analytics/sessions", {
@@ -449,6 +593,86 @@ registerTab("/analytics/sessions", {
 
 ---
 
+## Dashboard Widget Integration (`widget.js`)
+
+If the plugin has a custom dashboard widget (legacy `countly.widgets.*.js`), place the widget code in a separate `widget.js` file at the same level as `index.js` and import it from `index.js`.
+
+### Structure:
+```
+plugin-name/
+├── index.js              # Entry point (registerTab, routes, imports widget.js)
+├── widget.js             # Dashboard widget (WidgetComponent, dashboard config DrawerComponent, registerData)
+├── components/
+├── store/
+└── stylesheets/
+```
+
+### index.js:
+```js
+import { i18n } from '../../javascripts/countly/vue/core.js';
+import { registerTab } from '../../javascripts/countly/vue/container.js';
+
+import PluginView from './components/PluginView.vue';
+import store from './store/index.js';
+import './stylesheets/_main.scss';
+import './widget.js';  // Dashboard widget registration
+
+registerTab("/main/route", { /* ... */ });
+```
+
+### widget.js:
+```js
+import { views, i18nM, mixins, templateUtil } from '../../javascripts/countly/vue/core.js';
+import { registerData } from '../../javascripts/countly/vue/container.js';
+import PluginWidgetDrawer from './components/PluginWidgetDrawer.vue';
+
+// WidgetComponent must use views.create() because it depends on a shared runtime HTML template
+// loaded by the dashboards plugin. This cannot be an SFC until dashboards migrates those templates.
+var WidgetComponent = views.create({
+    template: templateUtil.stage('/dashboards/templates/widgets/analytics/widget.html'),
+    mixins: [mixins.customDashboards.global, mixins.customDashboards.widget, /* ... */],
+    // ...
+});
+
+registerData("/custom/dashboards/widget", {
+    type: "analytics",
+    label: i18nM("dashboards.widget-type.analytics"),
+    getter: function(widget) { /* ... */ },
+    drawer: { component: PluginWidgetDrawer, /* ... */ },
+    grid: { component: WidgetComponent, /* ... */ }
+});
+```
+
+### PluginWidgetDrawer.vue (SFC):
+```vue
+<template>
+    <div>
+        <!-- drawer form fields -->
+    </div>
+</template>
+
+<script>
+import { i18nMixin } from '../../../javascripts/countly/vue/core.js';
+
+export default {
+    mixins: [i18nMixin],
+    props: {
+        scope: { type: Object }
+    },
+    // computed, methods, etc.
+};
+</script>
+```
+
+### Key points:
+- `widget.js` is a side-effect-only import (no exports needed) — it registers itself via `registerData`
+- No changes needed in `entrypoint.js` — `index.js` handles everything
+- **DrawerComponent → SFC**: Dashboard widget drawer components (the panel that opens when adding/editing a widget on a custom dashboard) typically use **inline string templates** (`template: '<div>...</div>'`) and have no dependency on shared runtime HTML templates. These **should be converted to Vue SFC files** in the `components/` directory and imported into `widget.js`. This gives you build-time template compilation and better developer experience. Remember to add `i18nMixin` explicitly — `views.create()` adds it automatically, but SFC components need it declared in `mixins`.
+- **WidgetComponent → `views.create()`**: The grid widget component typically depends on a shared runtime HTML template loaded by the dashboards plugin (`templateUtil.stage()`). These **must stay as `views.create()`** until the dashboards plugin migrates those shared templates to SFC. At that point they can also become SFC imports.
+- **Rule of thumb**: If a component uses `templateUtil.stage()` or references a runtime HTML template, it must use `views.create()`. If it uses an inline string template (`template: '<div>...</div>'`), convert it to an SFC.
+
+---
+
 ## Global Date Picker Support (autoRefreshMixin)
 
 If your component uses the global date picker (`<cly-date-picker-g>`), you **must** include the `autoRefreshMixin` for date changes to trigger data refresh.
@@ -462,12 +686,12 @@ The global date picker emits a `cly-date-change` event when the date selection c
 ### How to use:
 
 ```js
-import countlyVue, { autoRefreshMixin } from '../../../javascripts/countly/vue/core.js';
+import { autoRefreshMixin, commonFormattersMixin, i18nMixin } from '../../../javascripts/countly/vue/core.js';
 
 export default {
     mixins: [
-        countlyVue.mixins.commonFormatters,
-        countlyVue.mixins.i18n,
+        commonFormattersMixin,
+        i18nMixin,
         autoRefreshMixin  // Add this mixin
     ],
     methods: {
@@ -518,12 +742,27 @@ export default {
 **Cause:** Missing `autoRefreshMixin`
 **Fix:** Add `autoRefreshMixin` to component mixins:
 ```js
-import countlyVue, { autoRefreshMixin } from '../../../javascripts/countly/vue/core.js';
+import { autoRefreshMixin, commonFormattersMixin, i18nMixin } from '../../../javascripts/countly/vue/core.js';
 
 export default {
-    mixins: [countlyVue.mixins.commonFormatters, countlyVue.mixins.i18n, autoRefreshMixin],
+    mixins: [commonFormattersMixin, i18nMixin, autoRefreshMixin],
     // ...
 };
+```
+
+### Error: `CV.$.when is not a function`
+**Cause:** `countlyVue.$` in ESM only exposes `{ ajax }`, not jQuery's full API
+**Fix:** Replace `CV.$.when(a, b)` with `Promise.all([a, b])`
+
+### Error: `clyModel.getVuexModule is not a function`
+**Cause:** Store exports the result of `getVuexModule()` instead of the store object
+**Fix:** Export the store object itself:
+```js
+// ❌ Wrong - VuexLoader can't call getVuexModule() on a plain module object
+export default getVuexModule();
+
+// ✅ Correct - VuexLoader calls clyModel.getVuexModule() internally
+export default countlyPluginName;
 ```
 
 ---

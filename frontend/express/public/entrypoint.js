@@ -42,6 +42,21 @@ import './core/logs/index.js';
 import './core/app-resolution/index.js';
 import './core/app-version/index.js';
 import './core/platform/index.js';
+import './core/version-history/index.js';
+import './core/jobs/index.js';
+import './core/token-manager/index.js';
+import './core/home/index.js';
+import './core/carrier/index.js';
+import './core/health-manager/index.js';
+import './core/date-presets/index.js';
+import './core/user-activity/index.js';
+import './core/user-analytics-overview/index.js';
+import './core/geo-countries/index.js';
+import './core/report-manager/index.js';
+import './core/onboarding/index.js';
+
+// Report manager component imports (globally registered - used by sidebar, drill, funnels, etc.)
+import ClyReportManagerDialog from './core/report-manager/components/ClyReportManagerDialog.vue';
 
 // Component imports
 import ClyStatusBadge from './javascripts/components/cly-status-badge.vue';
@@ -114,6 +129,7 @@ import { getPeriodLabel } from './javascripts/components/date/mixins.js';
 import ClyBackLink from './javascripts/components/helpers/cly-back-link.vue';
 import ClyInPageNotification from './javascripts/components/helpers/cly-in-page-notification.vue';
 import ClyEmptyHome from './javascripts/components/helpers/cly-empty-home.vue';
+import ClyHomeWidgetHeader from './core/home/components/HomeWidgetTitle.vue';
 import ClyStatusTag from './javascripts/components/helpers/cly-status-tag.vue';
 import ClyDiffHelper from './javascripts/components/helpers/cly-diff-helper.vue';
 import ClyMetricCards from './javascripts/components/helpers/cly-metric-cards.vue';
@@ -138,6 +154,7 @@ import ClyMultiplex from './javascripts/components/helpers/cly-multiplex.vue';
 import ClyListDrawer from './javascripts/components/helpers/cly-list-drawer.vue';
 import ClyAutoRefreshToggle from './javascripts/components/helpers/cly-auto-refresh-toggle.vue';
 import ClyDatabaseEngineDebugPanel from './javascripts/components/helpers/cly-database-engine-debug-panel.vue';
+import ClyContent from './javascripts/components/helpers/cly-content.vue';
 
 // Datatable component imports
 import ClyDatatableN from './javascripts/components/datatable/cly-datatable-n.vue';
@@ -235,6 +252,7 @@ window.countlyVue.getPeriodLabel = getPeriodLabel; // remove this after updating
 window.Vue.component('cly-back-link', ClyBackLink);
 window.Vue.component('cly-in-page-notification', ClyInPageNotification);
 window.Vue.component('cly-empty-home', ClyEmptyHome);
+window.Vue.component('clyd-home-widget-header', ClyHomeWidgetHeader);
 window.Vue.component('cly-status-tag', ClyStatusTag);
 window.Vue.component('cly-diff-helper', ClyDiffHelper);
 window.Vue.component('cly-metric-cards', ClyMetricCards);
@@ -259,6 +277,7 @@ window.Vue.component('cly-multiplex', ClyMultiplex);
 window.Vue.component('cly-list-drawer', ClyListDrawer);
 window.Vue.component('cly-auto-refresh-toggle', ClyAutoRefreshToggle);
 window.Vue.component('cly-database-engine-debug-panel', ClyDatabaseEngineDebugPanel);
+window.Vue.component('cly-content', ClyContent);
 
 // Register datatable components
 window.Vue.component('cly-datatable-n', ClyDatatableN);
@@ -279,6 +298,9 @@ window.Vue.component('cly-chart-bar', ClyChartBar);
 window.Vue.component('cly-chart-pie', ClyChartPie);
 window.Vue.component('cly-map-picker', ClyMapPicker);
 window.Vue.component('cly-worldmap', ClyWorldmap);
+
+// Report manager dialog (globally registered - used by sidebar, drill, funnels, etc.)
+window.Vue.component('cly-report-manager-dialog', ClyReportManagerDialog);
 
 // Export zoom mixin for backward compatibility
 window.countlyVue.mixins.zoom = ExternalZoomMixin;
