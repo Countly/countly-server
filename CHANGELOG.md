@@ -2,6 +2,7 @@
 Fixes:
 - [core] Fix period calculation
 - [dashboards] Update dialog button color when deleting dashboard/widget
+- [star-rating] Fix rating number when exporting data
 
 Enterprise Fixes:
 - [crash_symbolication] Use countlyfs for JavaScript symbolication
