@@ -39,12 +39,16 @@ plugin-name/
 
 #### ❌ Forbidden patterns:
 ```js
-// DO NOT use window globals
+// DO NOT use window globals for importable modules
 window.countlyVue
 window.countlyCommon
 window.CV
 window.jQuery
 window.$
+window.moment       // npm package - use import
+window.store        // npm package (storejs) - use import
+window._            // npm package (underscore) - use import
+window.Backbone     // local ESM - use import
 countlyVue          // implicit window.countlyVue
 countlyCommon       // implicit window.countlyCommon
 CV                  // implicit window.CV
@@ -55,6 +59,26 @@ CV                  // implicit window.CV
 // ALWAYS use explicit imports - prefer named imports over default
 import { i18n, vuex, commonFormattersMixin, i18nMixin, autoRefreshMixin } from '../../../javascripts/countly/vue/core.js';
 import countlyCommon from '../../../javascripts/countly/countly.common.js';
+
+// npm packages - import directly, NEVER use window.*
+import moment from 'moment';
+import _ from 'underscore';
+import storejs from 'storejs';
+
+// Local ESM modules
+import Backbone from '../../../javascripts/utils/backbone-min.js';
+import * as countlyCMS from '../../../javascripts/countly/countly.cms.js';
+```
+
+#### ⚠️ Exception: Legacy IIFE modules without ESM exports
+
+Some modules are still legacy IIFEs and have no ESM exports. These are the **only** cases where `window.*` is acceptable. Always add a comment explaining why:
+```js
+// countlyPopulator is still legacy IIFE - no ESM exports available
+var countlyPopulator = window.countlyPopulator;
+
+// countlyPlugins is still legacy IIFE - no ESM exports available
+var countlyPlugins = window.countlyPlugins;
 ```
 
 ### Explicit Global SFC Component Imports
