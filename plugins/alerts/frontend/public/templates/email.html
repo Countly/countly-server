@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title><%= title %></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <style type="text/css">
+        /* CLIENT-SPECIFIC STYLES */
+        #outlook a{padding:0;} /* Force Outlook to provide a "view in browser" message */
+        .ReadMsgBody{width:100%;} .ExternalClass{width:100%;} /* Force Hotmail to display emails at full width */
+        .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div {line-height: 100%;} /* Force Hotmail to display normal line spacing */
+        body, table, td, a{-webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;} /* Prevent WebKit and Windows mobile changing default text sizes */
+        table, td{mso-table-lspace:0pt; mso-table-rspace:0pt;} /* Remove spacing between tables in Outlook 2007 and up */
+        img{-ms-interpolation-mode:bicubic;} /* Allow smoother rendering of resized image in Internet Explorer */
+
+        /* RESET STYLES */
+        body{margin:0; padding:0;}
+        img{border:0; height:auto; line-height:100%; outline:none; text-decoration:none;}
+        table{border-collapse:collapse !important;}
+        body{height:100% !important; margin:0; padding:0; width:100% !important;}
+
+        /* iOS BLUE LINKS */
+        .appleBody a {color:#68440a; text-decoration: none;}
+        .appleFooter a {color:#999999; text-decoration: none;}
+
+        #report-title span { font-size: 25px; display: block; }
+
+        /* MOBILE STYLES */
+        @media screen and (max-width: 525px) {
+
+            /* FULL-WIDTH TABLES */
+            table[class="responsive-table"]{
+                width:100% !important;
+            }
+
+            /* UTILITY CLASSES FOR ADJUSTING PADDING ON MOBILE */
+            td[class="padding"]{
+                padding: 10px 5% 15px 5% !important;
+            }
+
+            td[class="padding-copy"]{
+                padding: 10px 5% 10px 5% !important;
+                text-align: left !important;
+            }
+
+            td[class="section-padding"]{
+                padding: 10px 15px 10px 15px !important;
+            }
+
+            td[class="section-padding-bottom-image"]{
+                padding: 50px 15px 0 15px !important;
+            }
+
+            table[class="mobile-button-container"]{
+                margin:0 auto;
+                width:100% !important;
+            }
+
+            a[class="mobile-button"]{
+                width:90% !important;
+                padding: 15px !important;
+                border: 0 !important;
+                font-size: 16px !important;
+            }
+
+            #report-title { font-size: 25px !important; line-height: 30px !important; }
+            #report-title span { font-size: 20px; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0;">
+
+<!-- HEADER -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td bgcolor="#ffffff" align="center" style="padding:0 15px;">
+            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
+                <tr>
+                    <td style="padding: 30px 0px 30px 0px;" class="logo" align="center">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" >
+                            <tr>
+                                <td bgcolor="#FFFFFF" width="100" align="left"><img alt="Logo" src="<%= typeof localhost !== 'undefined' ? localhost : host %>/images/pre-login/countly-logo-dark.png" width="150" style="display: block; font-family: Helvetica, Arial, sans-serif; color: #666666; font-size: 16px;" border="0"></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<!-- ONE COLUMN SECTION -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td bgcolor="#FFFFFF" align="center" style="padding: 20px 15px 20px 15px;">
+            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
+                <tr>
+                    <td>
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td id="report-title" align="left" style="font-size: 24px; font-family: Helvetica, Arial, sans-serif; color: #333C48; padding-top: 0px; line-height: 32px; font-weight: 500; letter-spacing: 0.3%;" ><%= subTitle %><span style="color: #0166D6; display: inline;"><%= apps[0].name %> app.</span></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<% for(var i=0; i<apps.length; i++) {%>
+
+ <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td bgcolor="#ffffff" align="center" style="padding: 35px 15px 15px 15px;" class="section-padding">
+            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
+                <tr>
+                    <td style="padding: 10px 0 10px 0;">
+                        <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                            <tr>
+                                <td valign="top" class="mobile-wrapper">
+                                    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%;" align="left">
+                                        <tr>
+                                            <td style="padding: 0 0 10px 0;">
+                                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                    <tr>
+                                                        <td align="left" style="font-family: Inter; color: #333C48; font-size: 16px; font-weight:400; line-height: 22px;">
+                                                            You're receiving this email because the
+                                                            <span style="color: #0166D6; display: inline; font-family: Inter; font-weight: 400; font-size: 16px;"><%= alertName %></span>
+                                                            you set up was triggered.
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td align="left" style="font-family: Inter; color: #333C48; font-size: 16px; font-weight:400; line-height: 22px;">
+                                                            <% if (alertDataType === "crashes" && alertDataSubType === "new crash/error" && extra && extra._id) { %>
+                                                                <a href="<%= host %>/dashboard#/<%= apps[i].id %>/crashes/<%= extra._id %>">
+                                                                    Click to access the crash details.
+                                                                </a>
+                                                            <% } %>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            <% for(var j = 0 ; j < (apps[i]).data.length; j++){   var row = (apps[i]).data         %>
+
+                <tr>
+                    <td style="padding: 10px 0 0 0;">
+                        <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td valign="top" style="width: <%- row[j].value !=undefined? '80%' : '100%' %>" class="mobile-wrapper">
+                                            <table cellpadding="0" cellspacing="0" border="0"    align="left">
+                                            <tr>
+                                                <td style="padding: 0 0 10px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                        <tr>
+                                                            <td align="left" style="font-family: Arial, sans-serif; color: #4c4c4c; font-size: 15px; line-height: 26px;"><%- row[j].key %></td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <% if(row[j].value !=undefined){ %>
+                                        <td style="width: 20%" >
+                                            <table cellpadding="0" cellspacing="0" border="0" width="68%" align="right">
+                                                <tr>
+                                                    <td style="padding: 0 0 10px 0;">
+                                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                            <tr>
+                                                                <td align="left" style="font-family: Arial, sans-serif; color: #4c4c4c; font-size: 15px; line-height: 26px;"><%- row[j].value %> </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    <% } %>
+                                </tr>
+                        </table>
+                    </td>
+
+                </tr>
+
+            <% }  %>
+                <tr>
+                    <td style="padding: 10px 0 0 0; border-top: 1px dashed #DDDDDD; ">
+                        <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                            <tr>
+                                <td valign="top" class="mobile-wrapper">
+                                    <table cellpadding="0" cellspacing="0" border="0" width="32%" style="width: 32%;" align="left">
+                                        <tr>
+                                            <td style="padding: 0 0 10px 0;">
+                                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                    <tr>
+                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 16px; font-weight: bold;">
+
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<% } %>
+
+<!-- ONE COLUMN SECTION -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td bgcolor="#ffffff" align="center" style="padding: 0px 15px 15px 15px;" class="section-padding">
+            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
+                <tr>
+                    <td>
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td align="center">
+                                    <!-- BULLETPROOF BUTTON -->
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0" class="mobile-button-container">
+                                        <tr>
+                                            <td align="left" style="padding: 25px 0 0 0;" class="padding-copy">
+                                                <table border="0" cellspacing="0" cellpadding="0" class="responsive-table">
+                                                    <tr>
+                                                        <td align="left"><a href="<%= host %>/dashboard" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; font-weight: normal; color: #ffffff; text-decoration: none; background-color: #3a9d3e; border-top: 15px solid #3a9d3e; border-bottom: 15px solid #3a9d3e; border-left: 25px solid #3a9d3e; border-right: 25px solid #3a9d3e; border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; display: inline-block;" class="mobile-button">Go to Dashboard</a></td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<!-- FOOTER -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td bgcolor="#ffffff" align="center">
+            <table border="0" cellspacing="0" cellpadding="0" width="100%" align="center">
+                <tr>
+                    <td style="padding: 70px 0px 20px 0px;" align="center">
+                        <!-- UNSUBSCRIBE COPY -->
+                        <table width="500" border="0" cellspacing="0" cellpadding="0" align="center" class="responsive-table">
+                            <tr>
+                                <td align="center" style="font-size: 12px; line-height: 18px; font-family: Helvetica, Arial, sans-serif; color:#666666;">
+                                    <a style="color: #3a9d3e; text-decoration: none;" href="<%= host %>/dashboard#/manage/alerts" target="_blank">Alert settings</a> | Countly
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<!-- Gmail hack -->
+<div style="white-space:nowrap; font:15px courier; color:#ffffff; line-height:0; width:500px !important; min-width:500px !important; max-width:500px !important;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div>
+<!-- /Gmail hack -->
+
+</body>
+</html>
