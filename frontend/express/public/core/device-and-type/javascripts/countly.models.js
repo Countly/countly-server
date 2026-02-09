@@ -1,4 +1,4 @@
-/* global CountlyHelpers, countlyAuth, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails,countlyBrowser, countlyGlobal, countlyDensity, CV*/
+/* global CountlyHelpers, countlyAuth, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails, countlyGlobal, countlyDensity, CV*/
 (function(countlyDevicesAndTypes) {
 
     CountlyHelpers.createMetricModel(window.countlyDevicesAndTypes, {name: "device_details", estOverrideMetric: "platforms"}, jQuery);
@@ -121,7 +121,7 @@
             return $.when(countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platform"));
         },
         fetchBrowser: function() {
-            return $.when(countlyBrowser.initialize(), countlyTotalUsers.initialize("browser"));
+            return $.when(window.countlyBrowser.initialize(), countlyTotalUsers.initialize("browser"));
         },
         fetchDensity: function() {
             return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize());
@@ -142,7 +142,7 @@
 
             if (appType === "web") {
                 if (countlyAuth.validateRead('browser')) {
-                    return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("devices"), countlyBrowser.initialize(), countlyTotalUsers.initialize("browser"));
+                    return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("devices"), window.countlyBrowser.initialize(), countlyTotalUsers.initialize("browser"));
                 }
                 else {
                     return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("devices"));
@@ -203,7 +203,7 @@
 
         },
         calculateBrowser: function() {
-            var chartData = countlyCommon.extractTwoLevelData(countlyBrowser.getDb(), countlyBrowser.getMeta("browser"), countlyBrowser.clearObject, [
+            var chartData = countlyCommon.extractTwoLevelData(window.countlyBrowser.getDb(), window.countlyBrowser.getMeta("browser"), window.countlyBrowser.clearObject, [
                 {
                     name: "browser",
                     func: function(rangeArr) {
@@ -228,7 +228,7 @@
 
             var stacked_version = [];
             for (var i = 0; i < chartData.chartData.length; i++) {
-                var tmpBrowserVersion = countlyBrowser.getBrowserVersionData(chartData.chartData[i].browser);
+                var tmpBrowserVersion = window.countlyBrowser.getBrowserVersionData(chartData.chartData[i].browser);
                 stacked_version.push({"label": chartData.chartData[i].browser, "u": chartData.chartData[i].u, "t": chartData.chartData[i].t, "n": chartData.chartData[i].n, "data": tmpBrowserVersion});
             }
             chartData.versions = stacked_version;
@@ -281,7 +281,7 @@
             var loadTotalsFor = [
                 {"model": countlyDevice, "label": "devices", "func": countlyDevicesAndTypes.helpers.getDeviceFullName},
                 {
-                    "model": countlyBrowser,
+                    "model": window.countlyBrowser,
                     "label": "browser",
                     "func": function(rangeArr) {
                         return rangeArr;

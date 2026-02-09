@@ -240,7 +240,7 @@
                                 breakdowns.push({ label: "Densities", value: "density"});
                             }
 
-                            if (typeof countlyBrowser !== "undefined") {
+                            if (typeof window.countlyBrowser !== "undefined") {
                                 breakdowns.push({ label: "Browsers", value: "browser"});
                             }
 

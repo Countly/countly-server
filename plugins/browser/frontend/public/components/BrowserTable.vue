@@ -1,0 +1,39 @@
+<template>
+    <cly-section>
+        <cly-datatable-n :rows="appBrowserRows" :resizable="true" :force-loading="isLoading">
+            <template v-slot="scope">
+                <el-table-column sortable="custom" prop="browser" :label="i18n('browser.table.browser')"></el-table-column>
+                <el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
+                <el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')"></el-table-column>
+                <el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')"></el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
+</template>
+
+<script>
+import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+
+export default {
+    mixins: [
+        countlyVue.mixins.i18n
+    ],
+    computed: {
+        appBrowser: function() {
+            return this.$store.state.countlyDevicesAndTypes.appBrowser;
+        },
+        appBrowserRows: function() {
+            return this.appBrowser.chartData;
+        },
+        isLoading: function() {
+            return this.$store.state.countlyDevicesAndTypes.browserLoading;
+        }
+    },
+    methods: {
+        numberFormatter: function(row, col, value) {
+            return countlyCommon.formatNumber(value, 0);
+        }
+    }
+};
+</script>
