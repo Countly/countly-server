@@ -986,7 +986,7 @@
 
                 case "delete":
                     d.__action = "delete";
-                    CountlyHelpers.confirm(this.i18nM("dashboards.delete-widget-text"), "popStyleGreen", function(result) {
+                    CountlyHelpers.confirm(this.i18nM("dashboards.delete-widget-text"), "danger", function(result) {
                         if (!result) {
                             return false;
                         }
@@ -1579,7 +1579,7 @@
 
                 case "delete":
                     d.__action = "delete";
-                    CountlyHelpers.confirm(this.i18n("dashboards.delete-dashboard-text", d.name), "popStyleGreen", function(result) {
+                    CountlyHelpers.confirm(this.i18n("dashboards.delete-dashboard-text", d.name), "danger", function(result) {
                         if (!result) {
                             return false;
                         }
