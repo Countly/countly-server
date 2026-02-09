@@ -265,9 +265,10 @@ var countlyConfig = {
         // Consumer-specific settings (handled by KafkaConsumer)
         consumer: {
             // Fetch size controls for batch processing optimization
-            fetchMinBytes: 262144, // Minimum bytes to fetch per request (default: 256KB, better than 1KB for throughput)
-            fetchMaxWaitMs: 1000, // Maximum wait time for fetch requests in milliseconds (default: 1000ms, better than 500ms)
-            fetchMaxBytes: 52428800, // Maximum bytes to fetch per request (default: 50MB)
+            // These values are tuned to cap JSON parse time under 5s per batch (leaving margin before heartbeat)
+            fetchMinBytes: 65536, // Minimum bytes to fetch per request (default: 64KB, responds faster with smaller batches)
+            fetchMaxWaitMs: 500, // Maximum wait time for fetch requests in milliseconds (default: 500ms, lower latency)
+            fetchMaxBytes: 10485760, // Maximum bytes to fetch per request (default: 10MB, caps worst-case parse time)
             maxPartitionFetchBytes: 1048576, // Maximum bytes per partition per fetch (default: 1MB)
 
             // Queue controls for memory management
@@ -278,8 +279,9 @@ var countlyConfig = {
             partitionsConsumedConcurrently: 4, // Number of partitions to consume concurrently per process (default: 4)
 
             // Consumer group settings (conservative defaults to reduce rebalancing)
-            sessionTimeoutMs: 60000, // Consumer session timeout in milliseconds (default: 60 seconds) - WARNING: Too low causes rebalances, potentially losing in-flight messages
-            heartbeatIntervalMs: 10000, // Heartbeat interval in milliseconds (default: 10 seconds, should be ~1/6 of sessionTimeout)
+            // These values are tuned for CPU-throttled environments (K8s with resource limits)
+            sessionTimeoutMs: 120000, // Consumer session timeout in milliseconds (default: 120 seconds) - WARNING: Too low causes rebalances, potentially losing in-flight messages
+            heartbeatIntervalMs: 20000, // Heartbeat interval in milliseconds (default: 20 seconds, maintains 1:6 ratio with sessionTimeout)
             rebalanceTimeoutMs: 120000, // Rebalance timeout in milliseconds (default: 2 minutes)
             maxPollIntervalMs: 300000, // Maximum time between polls in milliseconds (default: 5 minutes) - WARNING: Too low causes consumer to be kicked out, losing uncommitted offsets
             autoOffsetReset: 'earliest', // Where to start reading when no offset exists (latest/earliest)
@@ -291,7 +293,19 @@ var countlyConfig = {
 
             // Metadata and rack-aware settings
             metadataMaxAge: 300000, // How often to refresh topic/partition metadata in milliseconds (default: 5 minutes)
-            rackId: null // Rack ID for rack-aware consumption (follower fetching). null = disabled
+            rackId: null, // Rack ID for rack-aware consumption (follower fetching). null = disabled
+
+            // Static membership (KIP-345) - Pod identity for rebalance optimization
+            // - null (default): Disabled, use dynamic membership (safe for Deployments + HPA)
+            // - string: Enable static membership with explicit ID (not recommended for HPA)
+            // Dynamic membership = rebalance on restart, but no fencing issues
+            // WARNING: Hostname fallback is UNSAFE - pod names change on restart in Deployments
+            groupInstanceId: null,
+
+            // Offset backward detection threshold for topic recreation detection
+            // When the incoming offset is more than this value behind the saved offset,
+            // it triggers a state reset assuming the topic was recreated (default: 10000)
+            offsetBackwardThreshold: 10000
         }
     },
 
@@ -326,7 +340,7 @@ var countlyConfig = {
     */
     api: {
         port: 3001,
-        host: "localhost",
+        host: "localhost", // Use "0.0.0.0" for containerized deployments behind a reverse proxy
         max_sockets: 1024,
         timeout: 120000,
         maxUploadFileSize: 200 * 1024 * 1024, // 200MB
@@ -349,7 +363,7 @@ var countlyConfig = {
     */
     ingestor: {
         port: 3010,
-        host: "localhost",
+        host: "localhost", // Use "0.0.0.0" for containerized deployments behind a reverse proxy
         max_sockets: 1024,
         timeout: 120000,
         maxUploadFileSize: 200 * 1024 * 1024, // 200MB
@@ -365,7 +379,7 @@ var countlyConfig = {
     */
     jobServer: {
         port: 3020,
-        host: "localhost",
+        host: "localhost", // Use "0.0.0.0" for containerized deployments behind a reverse proxy
         max_sockets: 1024,
         timeout: 120000,
         maxUploadFileSize: 200 * 1024 * 1024, // 200MB

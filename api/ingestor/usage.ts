@@ -544,9 +544,9 @@ const usage: IngestorUsageModule = {
                 params.collectedMetrics[common.dbUserMap.carrier] = params.qstring.metrics._carrier;
             }
             if (params.qstring.metrics._os) {
-                params.qstring.metrics._os += "";
+                params.qstring.metrics._os += '';
                 if (params.qstring.metrics._os_version && !params.is_os_processed) {
-                    params.qstring.metrics._os_version += "";
+                    params.qstring.metrics._os_version += '';
 
                     if (common.os_mapping[params.qstring.metrics._os.toLowerCase()] && !params.qstring.metrics._os_version.startsWith(common.os_mapping[params.qstring.metrics._os.toLowerCase()])) {
                         params.qstring.metrics._os_version = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._os_version;
@@ -554,7 +554,7 @@ const usage: IngestorUsageModule = {
                     }
                     else {
                         params.qstring.metrics._os = params.qstring.metrics._os.replace(/\[|\]/g, '');
-                        params.qstring.metrics._os_version = "[" + params.qstring.metrics._os + "]" + params.qstring.metrics._os_version;
+                        params.qstring.metrics._os_version = '[' + params.qstring.metrics._os + ']' + params.qstring.metrics._os_version;
                         params.is_os_processed = true;
                     }
                     params.collectedMetrics[common.dbUserMap.platform_version] = params.qstring.metrics._os_version;
@@ -562,28 +562,28 @@ const usage: IngestorUsageModule = {
                 params.collectedMetrics[common.dbUserMap.platform] = params.qstring.metrics._os;
             }
             if (params.qstring.metrics._app_version) {
-                params.qstring.metrics._app_version += "";
+                params.qstring.metrics._app_version += '';
                 if (!params.qstring.metrics._app_version.includes('.') && common.isNumber(params.qstring.metrics._app_version)) {
-                    params.qstring.metrics._app_version += ".0";
+                    params.qstring.metrics._app_version += '.0';
                 }
                 params.collectedMetrics[common.dbUserMap.app_version] = params.qstring.metrics._app_version;
             }
             if (!params.qstring.metrics._device_type && params.qstring.metrics._device) {
-                const device = (params.qstring.metrics._device + "");
-                if (params.qstring.metrics._os === "iOS" && (device.startsWith("iPhone") || device.startsWith("iPod"))) {
-                    params.qstring.metrics._device_type = "mobile";
+                const device = (params.qstring.metrics._device + '');
+                if (params.qstring.metrics._os === 'iOS' && (device.startsWith('iPhone') || device.startsWith('iPod'))) {
+                    params.qstring.metrics._device_type = 'mobile';
                 }
-                else if (params.qstring.metrics._os === "iOS" && device.startsWith("iPad")) {
-                    params.qstring.metrics._device_type = "tablet";
+                else if (params.qstring.metrics._os === 'iOS' && device.startsWith('iPad')) {
+                    params.qstring.metrics._device_type = 'tablet';
                 }
-                else if (params.qstring.metrics._os === "watchOS" && device.startsWith("Watch")) {
-                    params.qstring.metrics._device_type = "wearable";
+                else if (params.qstring.metrics._os === 'watchOS' && device.startsWith('Watch')) {
+                    params.qstring.metrics._device_type = 'wearable';
                 }
-                else if (params.qstring.metrics._os === "tvOS" && device.startsWith("AppleTV")) {
-                    params.qstring.metrics._device_type = "smarttv";
+                else if (params.qstring.metrics._os === 'tvOS' && device.startsWith('AppleTV')) {
+                    params.qstring.metrics._device_type = 'smarttv';
                 }
-                else if (params.qstring.metrics._os === "macOS" && (device.startsWith("Mac") || device.startsWith("iMac"))) {
-                    params.qstring.metrics._device_type = "desktop";
+                else if (params.qstring.metrics._os === 'macOS' && (device.startsWith('Mac') || device.startsWith('iMac'))) {
+                    params.qstring.metrics._device_type = 'desktop';
                 }
             }
             if (params.qstring.metrics._device_type) {
@@ -593,17 +593,17 @@ const usage: IngestorUsageModule = {
                 params.collectedMetrics[common.dbUserMap.device] = params.qstring.metrics._device;
             }
             if (!params.qstring.metrics._manufacturer && params.qstring.metrics._os) {
-                if (params.qstring.metrics._os === "iOS") {
-                    params.qstring.metrics._manufacturer = "Apple";
+                if (params.qstring.metrics._os === 'iOS') {
+                    params.qstring.metrics._manufacturer = 'Apple';
                 }
-                else if (params.qstring.metrics._os === "watchOS") {
-                    params.qstring.metrics._manufacturer = "Apple";
+                else if (params.qstring.metrics._os === 'watchOS') {
+                    params.qstring.metrics._manufacturer = 'Apple';
                 }
-                else if (params.qstring.metrics._os === "tvOS") {
-                    params.qstring.metrics._manufacturer = "Apple";
+                else if (params.qstring.metrics._os === 'tvOS') {
+                    params.qstring.metrics._manufacturer = 'Apple';
                 }
-                else if (params.qstring.metrics._os === "macOS") {
-                    params.qstring.metrics._manufacturer = "Apple";
+                else if (params.qstring.metrics._os === 'macOS') {
+                    params.qstring.metrics._manufacturer = 'Apple';
                 }
             }
             if (params.qstring.metrics._manufacturer) {
@@ -611,11 +611,11 @@ const usage: IngestorUsageModule = {
             }
             if (params.qstring.metrics._has_hinge) {
                 const hasHingeValue = params.qstring.metrics._has_hinge;
-                if (hasHingeValue === "true" || hasHingeValue === true || hasHingeValue === "hinged") {
-                    params.qstring.metrics._has_hinge = "hinged";
+                if (hasHingeValue === 'true' || hasHingeValue === true || hasHingeValue === 'hinged') {
+                    params.qstring.metrics._has_hinge = 'hinged';
                 }
                 else {
-                    params.qstring.metrics._has_hinge = "not_hinged";
+                    params.qstring.metrics._has_hinge = 'not_hinged';
                 }
                 params.collectedMetrics[common.dbUserMap.has_hinge] = params.qstring.metrics._has_hinge;
             }
@@ -632,7 +632,7 @@ const usage: IngestorUsageModule = {
                     params.collectedMetrics.av_build = versionComponents.build!;
                 }
                 else {
-                    log.d("App version %s is not a valid semantic version. It cannot be separated into semantic version parts", params.qstring.metrics._app_version);
+                    log.d('App version %s is not a valid semantic version. It cannot be separated into semantic version parts', params.qstring.metrics._app_version);
                     params.collectedMetrics.av_major = null;
                     params.collectedMetrics.av_minor = null;
                     params.collectedMetrics.av_patch = null;
@@ -652,16 +652,16 @@ const usage: IngestorUsageModule = {
         usage.processCoreMetrics(params);
         for (const key in params.collectedMetrics) {
             // We check if country data logging is on and user's country is the configured country of the app
-            if (key === "cc" && (plugins.getConfig("api", params.app && params.app.plugins, true).country_data === false || params.app_cc !== params.user.country)) {
+            if (key === 'cc' && (plugins.getConfig('api', params.app && params.app.plugins, true).country_data === false || params.app_cc !== params.user.country)) {
                 continue;
             }
             // We check if city data logging is on and user's country is the configured country of the app
-            if (key === "cty" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
+            if (key === 'cty' && (plugins.getConfig('api', params.app && params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
                 continue;
             }
 
             if (params.collectedMetrics[key]) {
-                const escapedMetricVal = (params.collectedMetrics[key] + "").replace(/^\$/, "").replace(/\./g, ":");
+                const escapedMetricVal = (params.collectedMetrics[key] + '').replace(/^\$/, '').replace(/\./g, ':');
                 params.collectedMetrics[key] = escapedMetricVal;
             }
             else {
@@ -699,24 +699,24 @@ const usage: IngestorUsageModule = {
         }
         up_extra.vc = user.vc;
         const drill_doc: DrillDocument = {
-            "key": "[CLY]_session",
-            "lsid": user.lsid,
-            "segmentation": user.lsparams as Record<string, unknown> || {},
-            "dur": ((user.sd || 0) + (session_duration || 0)),
-            "count": 1,
-            "up_extra": up_extra
+            'key': '[CLY]_session',
+            'lsid': user.lsid,
+            'segmentation': user.lsparams as Record<string, unknown> || {},
+            'dur': ((user.sd || 0) + (session_duration || 0)),
+            'count': 1,
+            'up_extra': up_extra
         };
 
         let lasts = (user.ls || 0) * 1000;
-        const idsplit = (user.lsid || '').split("_");
+        const idsplit = (user.lsid || '').split('_');
         if (idsplit[3] && idsplit[3].length === 13) {
             lasts = Number.parseInt(idsplit[3], 10);
         }
-        drill_doc._id = params.app_id + "_" + (user as any).uid + "_" + user.lsid;
+        drill_doc._id = params.app_id + '_' + (user as any).uid + '_' + user.lsid;
         if (lasts) {
             drill_doc.timestamp = lasts;
         }
-        drill_doc.segmentation.ended = "true";
+        drill_doc.segmentation.ended = 'true';
         eventList.push(drill_doc);
 
         // Flush last view stored for user
@@ -727,15 +727,15 @@ const usage: IngestorUsageModule = {
                 (user.last_view.segments as any).bounce = 1;
             }
             const lastViewDoc: DrillDocument = {
-                "key": "[CLY]_view", // Will be renamed to [CLY]_view_update before inserting to drill
-                "name": user.last_view.name,
-                "segmentation": user.last_view.segments as Record<string, unknown>,
-                "dur": user.last_view.duration || 0,
-                "_id": (user.last_view._idv ? (params.app_id + "_" + (user as any).uid + '_' + user.last_view._idv + '_up') : (user.lvid + '_up')),
-                "timestamp": user.last_view.ts,
-                "_system_auto_added": true,
-                "count": 1,
-                "up_extra": {}
+                'key': '[CLY]_view', // Will be renamed to [CLY]_view_update before inserting to drill
+                'name': user.last_view.name,
+                'segmentation': user.last_view.segments as Record<string, unknown>,
+                'dur': user.last_view.duration || 0,
+                '_id': (user.last_view._idv ? (params.app_id + '_' + (user as any).uid + '_' + user.last_view._idv + '_up') : (user.lvid + '_up')),
+                'timestamp': user.last_view.ts,
+                '_system_auto_added': true,
+                'count': 1,
+                'up_extra': {}
             };
             eventList.push(lastViewDoc);
         }
@@ -756,7 +756,7 @@ const usage: IngestorUsageModule = {
                 params.qstring.begin_session = true;
             }
             session_duration = Number.parseInt(params.qstring.session_duration as string);
-            const session_duration_limit = Number.parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
+            const session_duration_limit = Number.parseInt(plugins.getConfig('api', params.app && params.app.plugins, true).session_duration_limit);
             if (session_duration) {
                 if (session_duration_limit && session_duration > session_duration_limit) {
                     session_duration = session_duration_limit;
@@ -779,12 +779,12 @@ const usage: IngestorUsageModule = {
                 userProps[common.dbUserMap.has_ongoing_session] = true;
             }
 
-            if (!params.qstring.ignore_cooldown && lastEndSession && ((params.time.timestamp || 0) - lastEndSession) < plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
+            if (!params.qstring.ignore_cooldown && lastEndSession && ((params.time.timestamp || 0) - lastEndSession) < plugins.getConfig('api', params.app && params.app.plugins, true).session_cooldown) {
                 delete params.qstring.begin_session; // do not start a new session.
             }
             else {
                 if (params.app_user[common.dbUserMap.has_ongoing_session]) {
-                    params.qstring.end_session = { "lsid": ob.params.app_user.lsid, "ls": ob.params.app_user.ls, "sd": ob.params.app_user.sd };
+                    params.qstring.end_session = { 'lsid': ob.params.app_user.lsid, 'ls': ob.params.app_user.ls, 'sd': ob.params.app_user.sd };
                 }
                 userProps[common.dbUserMap.last_begin_session_timestamp] = params.time.timestamp;
                 userProps.lsid = params.request_id;
@@ -810,7 +810,7 @@ const usage: IngestorUsageModule = {
 
                         }
                         catch (ex) {
-                            log.e("Error adding previous session end event: " + ex);
+                            log.e('Error adding previous session end event: ' + ex);
                         }
                     }
                     userProps.sd = 0 + session_duration;
@@ -835,7 +835,7 @@ const usage: IngestorUsageModule = {
                     update.$unset = {};
                 }
                 delete params.app_user.last_view;
-                update.$unset.last_view = "";
+                update.$unset.last_view = '';
                 update.$inc.sc = 1;
 
             }
@@ -860,10 +860,10 @@ const usage: IngestorUsageModule = {
                 update.$unset = {};
             }
             if (params.app_user[common.dbUserMap.has_ongoing_session]) {
-                update.$unset[common.dbUserMap.has_ongoing_session] = "";
+                update.$unset[common.dbUserMap.has_ongoing_session] = '';
             }
             if (params.app_user.last_view) {
-                update.$unset.last_view = "";
+                update.$unset.last_view = '';
             }
         }
 
@@ -913,7 +913,7 @@ const usage: IngestorUsageModule = {
         const userProps: Record<string, unknown> = {};
         const update: UpdateObject = {};
         params.user = {} as ParamsUser;
-        const config = plugins.getConfig("api", params.app && params.app.plugins, true);
+        const config = plugins.getConfig('api', params.app && params.app.plugins, true);
 
         if (params.qstring.tz) {
             const tz = Number.parseInt(params.qstring.tz);
@@ -935,7 +935,7 @@ const usage: IngestorUsageModule = {
         }
         let locationData: LocationData | undefined;
         if (params.qstring.location) {
-            const coords = (params.qstring.location + "").split(',');
+            const coords = (params.qstring.location + '').split(',');
             if (coords.length === 2) {
                 const lat = Number.parseFloat(coords[0]);
                 const lon = Number.parseFloat(coords[1]);
@@ -971,7 +971,7 @@ const usage: IngestorUsageModule = {
                 }
             }
         }
-        if (params.qstring.begin_session && params.qstring.location === "") {
+        if (params.qstring.begin_session && params.qstring.location === '') {
             // user opted out of location tracking
             userProps.cc = userProps.rgn = userProps.cty = 'Unknown';
             if ((userProps as any).loc) {
@@ -984,7 +984,7 @@ const usage: IngestorUsageModule = {
                 update.$unset = { loc: 1 };
             }
         }
-        else if (params.qstring.begin_session && params.qstring.location !== "") {
+        else if (params.qstring.begin_session && params.qstring.location !== '') {
             if ((userProps as any).loc !== undefined || (userProps.cc && userProps.cty)) {
                 const data = locationData || await locFromGeocoder(params, {
                     country: userProps.cc as string | undefined,
@@ -1057,13 +1057,13 @@ const usage: IngestorUsageModule = {
                 }
             }
             if (!userProps.cc) {
-                userProps.cc = "Unknown";
+                userProps.cc = 'Unknown';
             }
             if (!userProps.cty) {
-                userProps.cty = "Unknown";
+                userProps.cty = 'Unknown';
             }
             if (!userProps.rgn) {
-                userProps.rgn = "Unknown";
+                userProps.rgn = 'Unknown';
             }
         }
 
@@ -1076,8 +1076,8 @@ const usage: IngestorUsageModule = {
             userProps.cty = 'Unknown';
         }
 
-        params.user.country = (userProps.cc as string) || "Unknown";
-        params.user.city = (userProps.cty as string) || "Unknown";
+        params.user.country = (userProps.cc as string) || 'Unknown';
+        params.user.city = (userProps.cty as string) || 'Unknown';
 
         // if we have metrics, let's process metrics
         if (params.qstring.metrics) {
@@ -1095,12 +1095,12 @@ const usage: IngestorUsageModule = {
             let eventCount = 0;
             for (let i = 0; i < params.qstring.events.length; i++) {
                 const currEvent = params.qstring.events[i];
-                if (currEvent.key === "[CLY]_orientation") {
+                if (currEvent.key === '[CLY]_orientation') {
                     if (currEvent.segmentation && (currEvent.segmentation as any).mode) {
                         userProps.ornt = (currEvent.segmentation as any).mode;
                     }
                 }
-                if (!(currEvent.key + "").startsWith("[CLY]_")) {
+                if (!(currEvent.key + '').startsWith('[CLY]_')) {
                     eventCount++;
                     currEvent.ce = false;
                 }
@@ -1113,7 +1113,7 @@ const usage: IngestorUsageModule = {
                     update.$inc = {};
                 }
 
-                update.$inc["data.events"] = eventCount;
+                update.$inc['data.events'] = eventCount;
             }
         }
 

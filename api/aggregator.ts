@@ -73,19 +73,19 @@ interface AggregatorCommon {
     queryRunner: InstanceType<typeof QueryRunner>;
 }
 
-const t = ["countly:", "aggregator"];
-t.push("node");
+const t = ['countly:', 'aggregator'];
+t.push('node');
 
 // Finally set the visible title
 process.title = t.join(' ');
 
-console.log("Connecting to databases");
+console.log('Connecting to databases');
 
 // Overriding function
 plugins.loadConfigs = plugins.loadConfigsIngestor;
 
 plugins.connectToAllDatabases(true).then(function() {
-    log.i("Db connections done");
+    log.i('Db connections done');
 
     common.writeBatcher = new WriteBatcher(common.db);
     common.secondaryWriteBatcher = new WriteBatcher(common.db); // Remove once all plugins are updated
@@ -136,6 +136,27 @@ plugins.connectToAllDatabases(true).then(function() {
         }).catch((e: Error) => {
             log.d('Kafka lag history collection check:', e.message);
         });
+
+        // TTL index for consumer events (cluster mismatch, offset backward, state reset, etc.)
+        // Events auto-expire after 30 days
+        common.db.collection('kafka_consumer_events').createIndex(
+            { ts: 1 },
+            { expireAfterSeconds: 2592000, background: true } // 30 days TTL
+        ).then(() => {
+            log.i('Kafka consumer events TTL index ensured');
+        }).catch((e: Error) => {
+            log.d('Kafka consumer events TTL index creation:', e.message);
+        });
+
+        // Query index for efficient filtering by type, groupId, and timestamp
+        common.db.collection('kafka_consumer_events').createIndex(
+            { type: 1, groupId: 1, ts: -1 },
+            { background: true }
+        ).then(() => {
+            log.i('Kafka consumer events query index ensured');
+        }).catch((e: Error) => {
+            log.d('Kafka consumer events query index creation:', e.message);
+        });
     }
 
     common.readBatcher.transformationFunctions = {
@@ -144,7 +165,7 @@ plugins.connectToAllDatabases(true).then(function() {
          * @param data - Event data from database
          * @returns Transformed event data
          */
-        "event_object": function(data: EventData): EventData {
+        'event_object': function(data: EventData): EventData {
             if (data && data.list) {
                 data._list = {};
                 data._list_length = 0;
@@ -196,12 +217,12 @@ plugins.connectToAllDatabases(true).then(function() {
     async function storeBatchedData(code: number | string): Promise<void> {
         try {
             await common.writeBatcher.flushAll();
-            console.log("Successfully stored batch state");
+            console.log('Successfully stored batch state');
         }
         catch (ex) {
-            console.log("Could not store batch state", ex);
+            console.log('Could not store batch state', ex);
         }
-        process.exit(typeof code === "number" ? code : 1);
+        process.exit(typeof code === 'number' ? code : 1);
     }
 
     /**
@@ -223,7 +244,7 @@ plugins.connectToAllDatabases(true).then(function() {
     for (const sig of signals) {
         process.on(sig, async function() {
             storeBatchedData(sig);
-            plugins.dispatch("/aggregator/exit");
+            plugins.dispatch('/aggregator/exit');
             console.log('Got signal: ' + sig);
         });
     }
@@ -237,7 +258,7 @@ plugins.connectToAllDatabases(true).then(function() {
             log.e('Logging caught exception');
         }
         console.trace();
-        plugins.dispatch("/aggregator/exit");
+        plugins.dispatch('/aggregator/exit');
         storeBatchedData(1);
     });
 
@@ -252,11 +273,11 @@ plugins.connectToAllDatabases(true).then(function() {
         console.trace();
     });
 
-    console.log("Starting aggregator", process.pid);
+    console.log('Starting aggregator', process.pid);
 
-    plugins.init({ "skipDependencies": true, "filename": "aggregator" });
+    plugins.init({ 'skipDependencies': true, 'filename': 'aggregator' });
     plugins.loadConfigs(common.db, async function() {
-        plugins.dispatch("/aggregator", { common: common });
+        plugins.dispatch('/aggregator', { common: common });
     });
 });
 

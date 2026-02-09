@@ -38,7 +38,7 @@ class ClearMessageResultsJob extends Job {
         try {
             /** @type {ScheduleCollection} */
             const scheduleCol = db.collection("schedules");
-            const timeoutBufferForSchedules = 24 * 60 * 60 * 1000;
+            const timeoutBufferForSchedules = 48 * 60 * 60 * 1000;
 
             // ================================================
             // update all the schedule events that are still scheduled but are

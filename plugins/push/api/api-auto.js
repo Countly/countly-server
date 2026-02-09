@@ -66,7 +66,6 @@ module.exports.autoOnCohortDeletion = async function(_id, ack) {
 */
 /**
  * Handler function for /cohort/enter (/cohort/exit) hooks
- *
  * @param {ObjectId} appId app id
  * @param {string} uid user uid
  * @param {string[]} keys unique event keys

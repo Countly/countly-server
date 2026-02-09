@@ -1,59 +1,11 @@
-var countlyModel = require('./countly.model.js'),
-    countlyCommon = require('./countly.common.js');
-
 /**
-* This module defines default model to handle event data
-* @module "api/lib/countly.event"
-* @extends module:api/lib/countly.model~countlyMetric
-*/
+ * This module defines default model to handle event data
+ * @module "api/lib/countly.event"
+ * @extends module:api/lib/countly.model~countlyMetric
+ *
+ * Proxy file - re-exports from TypeScript implementation
+ */
 
-/**
-* Model creator
-* @returns {object} new model
-*/
-function create() {
-    /** @lends module:api/lib/countly.event */
-    var countlyEvent = countlyModel.create(function(val) {
-        return val.replace(/:/g, ".").replace(/\[CLY\]/g, "").replace(/.\/\//g, "://");
-    });
-    countlyEvent.setMetrics(["c", "s", "dur"]);
-    countlyEvent.setUniqueMetrics([]);
+const create = require('./countly.event.ts').default;
 
-    /**
-    * Get event data by periods
-    * @param {object} options - options object
-    * @returns {array} with event data objects
-    */
-    countlyEvent.getSubperiodData = function(options) {
-
-        var dataProps = [
-            { name: "c" },
-            { name: "s" },
-            { name: "dur" }
-        ];
-        options = options || {};
-        return countlyCommon.extractData(countlyEvent.getDb(), countlyEvent.clearObject, dataProps, countlyCommon.calculatePeriodObject(null, options.bucket));
-    };
-
-    /**
-    * Get event data by segments
-    * @param {string} segment - segment for which to get data
-    * @returns {array} with event data objects
-    */
-    countlyEvent.getSegmentedData = function(segment) {
-        return countlyCommon.extractMetric(countlyEvent.getDb(), countlyEvent.getMeta(segment), countlyEvent.clearObject, [
-            {
-                name: segment,
-                func: function(rangeArr) {
-                    return rangeArr;
-                }
-            },
-            { "name": "c" },
-            { "name": "s" },
-            { "name": "dur" }
-        ]);
-    };
-
-    return countlyEvent;
-}
 module.exports = create;
