@@ -1,4 +1,5 @@
 import jQuery from 'jquery';
+import '../../utils/jquery.i18n.properties.js';
 import Vue from 'vue';
 import { logout, notify, T } from '../countly.helpers';
 import { TemplateLoader } from '../countly.template.loader.js';
@@ -448,6 +449,7 @@ Vue.prototype.$i18n = i18n;
 // TemplateLoader is now imported from '../countly.template.loader.js'
 export { TemplateLoader };
 
+// TODO: CHECK IF WE NEED VUEX LOADER ANYMORE - we might be able to directly register modules in the view and remove this abstraction layer
 export const VuexLoader = function(vuexModules) {
     this.vuex = vuexModules;
     this.loadedModules = [];
@@ -456,9 +458,11 @@ export const VuexLoader = function(vuexModules) {
 VuexLoader.prototype.load = function() {
     var self = this;
     this.vuex.forEach(function(item) {
-        var module = item.clyModel.getVuexModule();
-        vuex.registerGlobally(module);
-        self.loadedModules.push(module);
+        if (item.clyModel && typeof item.clyModel.getVuexModule === "function") {
+            var module = item.clyModel.getVuexModule();
+            vuex.registerGlobally(module);
+            self.loadedModules.push(module);
+        }
     });
 };
 

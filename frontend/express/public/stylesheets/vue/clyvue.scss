@@ -110,7 +110,7 @@
                 border-color: rgba(239, 148, 0, 0.25);
                 box-shadow: 0px 5px 8px rgba(239, 148, 0, 0.09);
                 color: #333C48;
-            }            
+            }
             &--dark-successful {
                 background-color: #24292E;
                 border-color: rgba(1, 102, 214, 0.25);
@@ -131,17 +131,17 @@
                 border-color: rgba(1, 102, 214, 0.25);
                 color: #FFFFFF;
             }
-        }    
+        }
         .alert-image {
             height: 32px;
         }
     }
-}  
+}
 
 .cly-vue-notification__alert-box + .cly-vue-notification__alert-box {
     margin-top: 16px;
 }
-    
+
 .cly-vue-status-tag {
     display: inline-block;
     border-radius: 4px;
@@ -199,7 +199,7 @@
     &--green {
         background-color: #EBFAEE;
         color: #12AF51;
-        
+
         /* .cly-vue-status-tag--green .cly-vue-status-tag__blink */
         & .cly-vue-status-tag__blink {
             background-color: #12AF51;
@@ -210,7 +210,7 @@
     &--red {
         background-color: #FBECE5;
         color: #D23F00;
-        
+
         /* .cly-vue-status-tag--red .cly-vue-status-tag__blink */
         & .cly-vue-status-tag__blink {
             background-color: #D23F00;
@@ -244,12 +244,12 @@
             margin: 4px 0;
         }
     }
-    
+
     /* .cly-vue-status-tag--yellow */
     &--yellow {
         background-color: #FCF5E5;
         color: #CDAD7A;
-        
+
         /* .cly-vue-status-tag--yellow .cly-vue-status-tag__blink */
         & .cly-vue-status-tag__blink {
             background-color: #CDAD7A;
@@ -266,7 +266,7 @@
 .cly-vue-theme-clydef {
 
     background-color:#FCFCFC;
-    // #content-container { 
+    // #content-container {
     //     padding:59px 0 35px 0;
     // }
 
@@ -274,15 +274,15 @@
         z-index: 1997;
     }
 
-    #vue-common-overlay { 
-        display:none; 
+    #vue-common-overlay {
+        display:none;
         background-color:#383A3F;
-        opacity:0.5; 
-        width:100%; 
-        height:100%; 
-        position:fixed; 
-        z-index:1999; 
-        top:0; 
+        opacity:0.5;
+        width:100%;
+        height:100%;
+        position:fixed;
+        z-index:1999;
+        top:0;
         &.is-active {
             display: block;
         }
@@ -356,7 +356,7 @@
 
                 @for $i from 1 through 15 {
                     &.tabs-#{$i} li {
-                        width: calc(#{100 / $i + "%"} - 1px);
+                        width: calc(#{calc(100 / $i) + "%"} - 1px);
                     }
                 }
 
@@ -669,7 +669,7 @@
         &__calendars-col {
             width: 341px;
         }
-        
+
         &__tab-list {
             div[role="tablist"] {
                 left: 24px;
@@ -732,7 +732,7 @@
             padding: 8px;
             cursor: pointer;
             line-height: 16px;
-        
+
             &--active {
                 background: #F9F9F9;
                 border-radius: 4px;
@@ -748,7 +748,7 @@
             &--custom {
                 margin-bottom: 24px;
             }
-            
+
             &--custom--override {
                 margin-bottom: unset !important;
             }
@@ -782,7 +782,7 @@
             border-bottom: 1px solid #ECECEC;
         }
 
-        
+
         &__in-between-conj {
             padding: 0 11px;
         }
@@ -802,7 +802,7 @@
             margin-left: 8px;
             border: none;
         }
-        
+
         &__day-names-wrapper {
             margin: 0 14px 9px 14px;
         }
@@ -827,7 +827,7 @@
                 margin: 0;
             }
             &__item {
-                height: 44px;    
+                height: 44px;
                 line-height: 44px;
             }
         }
@@ -847,7 +847,7 @@
                 width: 44px;
                 height: 36px;
                 padding: 0;
-                > div { 
+                > div {
                     padding: 0px;
                     height: 32px;
                     span {
@@ -883,8 +883,8 @@
                     }
                 }
             }
-        } 
-        
+        }
+
         .el-month-table {
             margin-top: 2px;
             margin-bottom: 14px;
@@ -892,7 +892,7 @@
                 width: 78px;
                 height: 66px;
                 padding: 0;
-                > div { 
+                > div {
                     padding: 0px;
                     a {
                         width: 68px;
@@ -1006,7 +1006,7 @@
                 > a:hover {
                     @include cell-hover()
                }
-            }   
+            }
         }
     }
 
@@ -1115,7 +1115,7 @@
             }
         }
     }
-	
+
 	//radio blocks
 	.cly-vue-radio-block {
 		 .radio-wrapper {
@@ -1189,7 +1189,7 @@
         }
 		.radio-wrapper-horizontal {
 			width: 100%;
-			
+
 			.radio-button  {
 				border-top: 1px solid #ececec;
 				border-bottom: 1px solid #ececec;
@@ -1204,7 +1204,7 @@
 						border: none;
                     }
                 }
-				
+
 				.box {
 					visibility:hidden;
 				}
@@ -1855,7 +1855,7 @@
             display: flex;
             cursor: pointer;
         }
-    } 
+    }
 
     .cly-vue-metric-cards {
         &:not(:last-of-type) {
@@ -1910,9 +1910,9 @@
                     background-color: #F6F6F6;
                     .cly-vue-metric-breakdown__numbers {
                         color: #0166D6;
-                        i { 
+                        i {
                             color: black !important;
-                        } 
+                        }
                     }
                 }
             }
@@ -1969,7 +1969,7 @@
             min-width: 270px;
             flex: 1 !important;
         }
-        
+
         .cly-vue-metric-breakdown {
             min-width: 270px;
             flex: 1 !important;
@@ -2010,7 +2010,7 @@
     .cly-vue-popover{
         cursor: pointer;
         z-index: 2000;
-        
+
         .trigger {
             display: block!important;
         }
@@ -2061,8 +2061,8 @@
         width: 100%;
 
         /*
-            cly-vue-drawer-step block not to be confused with 
-            cly-vue-drawer__step* elements. The latter one is used for 
+            cly-vue-drawer-step block not to be confused with
+            cly-vue-drawer__step* elements. The latter one is used for
             internal elements, while the block is a public utility for
             plugin developers.
         */
@@ -2168,20 +2168,20 @@
                     .cly-vue-drawer__steps-view {
                         @if $i == 12 {
                             width: 100%;
-                          } 
+                          }
                         @else {
                             width: #{$i*math.div(1348, 12) + 'px'}
                           }
-                        
+
                     }
                     .cly-vue-drawer__sidecars-view {
                         @if $i == 12 {
                             width: 0%;
-                          } 
+                          }
                         @else {
                             width: calc(100% - #{$i*math.div(1348, 12) + 'px'})
                           }
-                        
+
                     }
                 }
             }
@@ -2291,7 +2291,7 @@
             position: relative;
             display: flex;
             align-items: center;
-            z-index: 1000;    
+            z-index: 1000;
             width: 100%;
             max-width: 720px;
         }
@@ -2303,7 +2303,7 @@
             background-color: transparent;
             border: 1px solid #A7AEB8;
             color: #A7AEB8;
-            display: inline-block;   
+            display: inline-block;
             min-width: 18px;
             // margin: 0px 6px;
             .index {
@@ -2391,7 +2391,7 @@
         &__footer {
             border-top: 1px solid #ECECEC;
         }
-        &__steps-wrapper{ 
+        &__steps-wrapper{
             height: 100%;
             flex-direction: column;
             display: flex;
@@ -2462,7 +2462,7 @@
                 &::before, &::after {
                     content: none;
                 }
-            } 
+            }
         }
         &-step {
             &__line {
@@ -2501,7 +2501,7 @@
             }
             &__auto-group {
                 + .cly-vue-form-step__auto-group {
-                    margin-top: 20px; //12px 
+                    margin-top: 20px; //12px
                 }
             }
         }
@@ -2540,7 +2540,7 @@
             }
         }
     }
-	
+
 	//confirm dialog
     .cly-vue-confirm-dialog,
     .cly-vue-message-dialog
@@ -2594,10 +2594,10 @@
             padding: 0;
             font-family: 'Inter';
         }
-        
-        .leaflet-tooltip-top:before, 
-        .leaflet-tooltip-bottom:before, 
-        .leaflet-tooltip-left:before, 
+
+        .leaflet-tooltip-top:before,
+        .leaflet-tooltip-bottom:before,
+        .leaflet-tooltip-left:before,
         .leaflet-tooltip-right:before {
             content: none;
         }
@@ -3553,7 +3553,7 @@
         .cly-io-16 {
             display: contents;
         }
-        
+
     }
 
     .cly-vue-empty-home {
@@ -4263,7 +4263,7 @@
     /* .cly-vue-content-builder-header__input */
     &__input {
         /* .cly-vue-content-builder-header__input .el-input__inner */
-        & .el-input__inner { 
+        & .el-input__inner {
             height: initial;
             padding: 0;
 
@@ -4428,7 +4428,7 @@
             font-weight: 400;
             line-height: 20px;
             color: #383A3F;
-            
+
             background-color: #FFFFFF;
             border: 1px solid #E2E4E8;
             border-radius: 6px;
@@ -4672,7 +4672,7 @@
         font-size: 14px;
         line-height: 20px;
     }
-    
+
     /* .cly-vue-content-builder-sidebar-input__upload-action */
     &__upload-action {
         height: 24px;
@@ -4819,7 +4819,7 @@
             border-top-right-radius: 6px;
             border-bottom-right-radius: 6px;
         }
-        
+
         /* .cly-option-swapper__option--no-highlight */
         &--no-highlight {
             background: #F6F6F6;
@@ -4854,7 +4854,7 @@
         display: inline-block;
     }
     .__view {
-        min-height: auto !important; 
+        min-height: auto !important;
     }
 
     &__list {

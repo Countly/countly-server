@@ -2,6 +2,7 @@
 @use "./variables.scss" as v;
 @use "./colors.scss" as c;
 @use "sass:map";
+@use 'sass:color';
 
 /* Element Chalk Variables */
 
@@ -33,15 +34,15 @@ $--color-primary-green: map.get(c.$colors, "primary-green");
 $--color-white: map.get(c.$colors, "white");
 /// color|1|Background Color|4
 $--color-black: map.get(c.$colors, "black");
-$--color-primary-light-1: mix($--color-white, $--color-primary, 10%) !default; /* 53a8ff */
-$--color-primary-light-2: mix($--color-white, $--color-primary, 20%) !default; /* 66b1ff */
-$--color-primary-light-3: mix($--color-white, $--color-primary, 30%) !default; /* 79bbff */
-$--color-primary-light-4: mix($--color-white, $--color-primary, 40%) !default; /* 8cc5ff */
-$--color-primary-light-5: mix($--color-white, $--color-primary, 50%) !default; /* a0cfff */
-$--color-primary-light-6: mix($--color-white, $--color-primary, 60%) !default; /* b3d8ff */
-$--color-primary-light-7: mix($--color-white, $--color-primary, 70%) !default; /* c6e2ff */
-$--color-primary-light-8: mix($--color-white, $--color-primary, 80%) !default; /* d9ecff */
-$--color-primary-light-9: mix($--color-white, $--color-primary, 90%) !default; /* ecf5ff */
+$--color-primary-light-1: color.mix($--color-white, $--color-primary, 10%) !default; /* 53a8ff */
+$--color-primary-light-2: color.mix($--color-white, $--color-primary, 20%) !default; /* 66b1ff */
+$--color-primary-light-3: color.mix($--color-white, $--color-primary, 30%) !default; /* 79bbff */
+$--color-primary-light-4: color.mix($--color-white, $--color-primary, 40%) !default; /* 8cc5ff */
+$--color-primary-light-5: color.mix($--color-white, $--color-primary, 50%) !default; /* a0cfff */
+$--color-primary-light-6: color.mix($--color-white, $--color-primary, 60%) !default; /* b3d8ff */
+$--color-primary-light-7: color.mix($--color-white, $--color-primary, 70%) !default; /* c6e2ff */
+$--color-primary-light-8: color.mix($--color-white, $--color-primary, 80%) !default; /* d9ecff */
+$--color-primary-light-9: color.mix($--color-white, $--color-primary, 90%) !default; /* ecf5ff */
 /// color|1|Functional Color|1
 $--color-success: map.get(c.$colors, "success");
 /// color|1|Functional Color|1
@@ -58,15 +59,15 @@ $--color-blue-100: map.get(c.$colors, "blue-100");
 $--color-sky-blue-100: map.get(c.$colors, "sky-blue-100");
 $--color-light-blue-100: map.get(c.$colors, "light-blue-100");
 
-$--color-success-light: mix($--color-white, $--color-success, 80%) !default;
-$--color-warning-light: mix($--color-white, $--color-warning, 80%) !default;
-$--color-danger-light: mix($--color-white, $--color-danger, 80%) !default;
-$--color-info-light: mix($--color-white, $--color-info, 80%) !default;
+$--color-success-light: color.mix($--color-white, $--color-success, 80%) !default;
+$--color-warning-light: color.mix($--color-white, $--color-warning, 80%) !default;
+$--color-danger-light: color.mix($--color-white, $--color-danger, 80%) !default;
+$--color-info-light: color.mix($--color-white, $--color-info, 80%) !default;
 
-$--color-success-lighter: mix($--color-white, $--color-success, 90%) !default;
-$--color-warning-lighter: mix($--color-white, $--color-warning, 90%) !default;
-$--color-danger-lighter: mix($--color-white, $--color-danger, 90%) !default;
-$--color-info-lighter: mix($--color-white, $--color-info, 90%) !default;
+$--color-success-lighter: color.mix($--color-white, $--color-success, 90%) !default;
+$--color-warning-lighter: color.mix($--color-white, $--color-warning, 90%) !default;
+$--color-danger-lighter: color.mix($--color-white, $--color-danger, 90%) !default;
+$--color-info-lighter: color.mix($--color-white, $--color-info, 90%) !default;
 /// color|1|Font Color|2
 $--color-text-primary: map.get(c.$colors, "text-primary");
 /// color|1|Font Color|2
@@ -521,7 +522,7 @@ $--cascader-tag-background: #f0f2f5;
 
 /* Group
 -------------------------- */
-$--group-option-flex: 0 0 (1/5) * 100% !default;
+$--group-option-flex: 0 0 calc(1/5) * 100% !default;
 $--group-option-offset-bottom: 12px !default;
 $--group-option-fill-hover: rgba($--color-black, 0.06) !default;
 $--group-title-color: $--color-black !default;
@@ -818,7 +819,7 @@ $--card-padding: 20px !default;
 $--slider-main-background-color: $--color-primary !default;
 /// color||Color|0
 $--slider-runway-background-color: $--border-color-light !default;
-$--slider-button-hover-color: mix($--color-primary, black, 97%) !default;
+$--slider-button-hover-color: color.mix($--color-primary, black, 97%) !default;
 $--slider-stop-background-color: $--color-white !default;
 $--slider-disable-color: $--color-text-placeholder !default;
 $--slider-margin: 16px 0 !default;

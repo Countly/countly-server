@@ -18,6 +18,7 @@ import countlyGlobal from './countly.global.js';
 import { validateCreate, validateAnyAppAdmin, validateGlobalAdmin } from './countly.auth.js';
 import { notify, logout } from './countly.helpers.js';
 import { DASHBOARD_VALIDATE_SESSION } from './countly.config.js';
+import '../utils/jquery.idle-timer.js';
 
 // Import store accessors - single source of truth for all state
 import {

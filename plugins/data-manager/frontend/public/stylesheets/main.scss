@@ -106,7 +106,7 @@
                 border-radius: 4px;
             }
         }
-        
+
         &__table {
             width: 100%;
             table-layout: fixed;
@@ -217,7 +217,7 @@
                 margin-bottom: 10px;
             }
             .dz-filename::before{
-                content: url('/data-manager/images/upload-icon.svg');
+                content: url('../images/upload-icon.svg');
                 vertical-align: middle;
                 display: inline-block;
                 margin-right: 8px;

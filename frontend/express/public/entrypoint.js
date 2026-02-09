@@ -13,9 +13,8 @@ import './javascripts/dom/gridstack/gridstack.css';
 import './stylesheets/bulma/bulma-custom.css';
 import './stylesheets/styles/manifest.scss';
 
-// Plugin stylesheets
-// import.meta.glob('../../../plugins/*/frontend/public/stylesheets/**/*.scss', { eager: true });
-import.meta.glob('../../../plugins/*/frontend/public/stylesheets/**/*.css');
+// Plugin stylesheets (TODO: REMOVE AFTER MIGRATION TO ES MODULES - these should be imported directly in each plugin's index.js instead)
+import.meta.glob('../../../plugins/*/frontend/public/stylesheets/**/*.scss');
 
 import "./imports.js";
 

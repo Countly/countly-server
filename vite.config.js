@@ -160,42 +160,6 @@ const legacyScripts = [
     'core/health-manager/javascripts/countly.models.js',
     'core/health-manager/javascripts/countly.views.js',
 
-    // ...[
-    //     "web",
-    //     "mobile",
-    //     "desktop",
-    //     "browser",
-    //     "guides",
-    //     "dashboards",
-    //     "data-manager",
-    //     "data_migration",
-    //     "dbviewer",
-    //     "density",
-    //     "empty",
-    //     "hooks",
-    //     "locale",
-    //     "logger",
-    //     "onboarding",
-    //     "plugins",
-    //     "populator",
-    //     "push",
-    //     "recaptcha",
-    //     "reports",
-    //     "remote-config",
-    //     "sdk",
-    //     "server-stats",
-    //     "slipping-away-users",
-    //     "sources",
-    //     "start-rating",
-    //     "system-utility",
-    //     "systemlogs",
-    //     "times-of-day",
-    //     "two-factor-auth",
-    //     "views",
-    //     "vue-example",
-    //     "groups"
-    // ].map(platform => globSync(`plugins/${platform}/frontend/public/javascripts/*.js`)).flat().map(f => "../../../" + f),
-
     // Only include if drill plugin exists (EE only)
     ...(fs.existsSync('./plugins/drill/frontend/public/javascripts/countly.query.builder.core.js')
         ? [
@@ -209,7 +173,7 @@ const legacyScripts = [
     ...globSync("./plugins/*")
         .filter(
             pluginPath => !REFACTORED_PLUGINS
-                .map(plugin => `./plugins/${plugin}`)
+                .map(plugin => `plugins/${plugin}`)
                 .includes(pluginPath)
         )
         .map(pluginPath => globSync("./" + pluginPath + "/frontend/public/javascripts/*.js"))
@@ -424,6 +388,7 @@ export default defineConfig({
     },
 
     resolve: {
+        preserveSymlinks: true,
         alias: {
             // TODO: REMOVE THIS AFTER SWITCHING TO SINGLE FILE COMPONENTS (.vue)
             'vue': 'vue/dist/vue.esm.js',
