@@ -1,3 +1,15 @@
+@font-face {
+    font-family: 'Lato';
+    src: url('../../../../../frontend/express/public/fonts/Lato-Regular/Lato-Regular.eot'),
+        url('../../../../../frontend/express/public/fonts/Lato-Regular/Lato-Regular.eot?#iefix') format('embedded-opentype'),
+        url('../../../../../frontend/express/public/fonts/Lato-Regular/Lato-Regular.woff2') format('woff2'),
+        url('../../../../../frontend/express/public/fonts/Lato-Regular/Lato-Regular.woff') format('woff'),
+        url('../../../../../frontend/express/public/fonts/Lato-Regular/Lato-Regular.ttf') format('truetype');
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+
 .ratings-popup {
   font-family: 'Lato', sans-serif;
 }
@@ -7,7 +19,7 @@
     display: none;
   }
 
-  .disabled { 
+  .disabled {
     cursor: auto !important;
     opacity: 0.5;
   }

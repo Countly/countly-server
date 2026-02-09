@@ -58,12 +58,12 @@
         &__consent-wrapper {
           .el-checkbox__label {
             padding-left: 8px;
-      
+
             &:hover {
               color: #333c48;
             }
           }
-      
+
           .el-checkbox__input.is-checked + .el-checkbox__label {
             color: #333c48;
           }
@@ -252,7 +252,7 @@
         width: 50px;
         background-repeat: no-repeat;
         margin: 0px 5px 0px 5px;
-        background-image: url("/star-rating/images/star-rating/emoji.svg");
+        background-image: url("../images/star-rating/emoji.svg");
     }
 
     &__rp-ratings-item__emoji1 {
@@ -261,7 +261,7 @@
         width: 50px;
         background-repeat: no-repeat;
         margin: 0px 5px 0px 5px;
-        background-image: url("/star-rating/images/star-rating/emojis_1-default.svg")
+        background-image: url("../images/star-rating/emojis_1-default.svg")
     }
 
     &__rp-ratings-item__emoji2 {
@@ -270,7 +270,7 @@
         width: 50px;
         background-repeat: no-repeat;
         margin: 0px 5px 0px 5px;
-        background-image: url("/star-rating/images/star-rating/emojis_2-default.svg")
+        background-image: url("../images/star-rating/emojis_2-default.svg")
     }
 
     &__rp-ratings-item__emoji3 {
@@ -279,7 +279,7 @@
         width: 50px;
         background-repeat: no-repeat;
         margin: 0px 5px 0px 5px;
-        background-image: url("/star-rating/images/star-rating/emojis_3-default.svg")
+        background-image: url("../images/star-rating/emojis_3-default.svg")
     }
 
     &__rp-ratings-item__emoji4 {
@@ -288,7 +288,7 @@
         width: 50px;
         background-repeat: no-repeat;
         margin: 0px 5px 0px 5px;
-        background-image: url("/star-rating/images/star-rating/emojis_4-default.svg")
+        background-image: url("../images/star-rating/emojis_4-default.svg")
     }
 
     &__rp-ratings-item__emoji5 {
@@ -297,31 +297,31 @@
         width: 50px;
         background-repeat: no-repeat;
         margin: 0px 5px 0px 5px;
-        background-image: url("/star-rating/images/star-rating/emojis_5-default.svg")
+        background-image: url("../images/star-rating/emojis_5-default.svg")
     }
 
     &__rp-ratings-active-item__emojis {
-        background-image: url("/star-rating/images/star-rating/emoji_filled.svg");
+        background-image: url("../images/star-rating/emoji_filled.svg");
     }
 
     &__rp-ratings-active-item__emoji1 {
-        background-image: url("/star-rating/images/star-rating/emojis-1.svg")
+        background-image: url("../images/star-rating/emojis-1.svg")
     }
 
     &__rp-ratings-active-item__emoji2 {
-        background-image: url("/star-rating/images/star-rating/emojis-2.svg")
+        background-image: url("../images/star-rating/emojis-2.svg")
     }
 
     &__rp-ratings-active-item__emoji3 {
-        background-image: url("/star-rating/images/star-rating/emojis-3.svg")
+        background-image: url("../images/star-rating/emojis-3.svg")
     }
 
     &__rp-ratings-active-item__emoji4 {
-        background-image: url("/star-rating/images/star-rating/emojis-4.svg")
+        background-image: url("../images/star-rating/emojis-4.svg")
     }
 
     &__rp-ratings-active-item__emoji5 {
-        background-image: url("/star-rating/images/star-rating/emojis-5.svg")
+        background-image: url("../images/star-rating/emojis-5.svg")
     }
 
     &__rp-ratings-item__thumbs {
@@ -330,11 +330,11 @@
         width: 50px;
         background-repeat: no-repeat;
         margin: 0px 5px 0px 5px;
-        background-image: url("/star-rating/images/star-rating/thumbs_up-default.svg")
+        background-image: url("../images/star-rating/thumbs_up-default.svg")
     }
 
     &__rp-ratings-active-item__thumbs {
-        background-image: url("/star-rating/images/star-rating/thumbs_up-filled.svg")
+        background-image: url("../images/star-rating/thumbs_up-filled.svg")
     }
 
     &__rp-ratings-item__stars {
@@ -343,11 +343,11 @@
         width: 50px;
         background-repeat: no-repeat;
         margin: 0px 5px 0px 5px;
-        background-image: url("/star-rating/images/star-rating/star-default.svg")
+        background-image: url("../images/star-rating/star-default.svg")
     }
 
     &__rp-ratings-active-item__stars {
-        background-image: url("/star-rating/images/star-rating/star-filled.svg")
+        background-image: url("../images/star-rating/star-filled.svg")
     }
 
     &__rp-question-area {

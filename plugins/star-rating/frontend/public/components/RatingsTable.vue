@@ -1,0 +1,53 @@
+<template>
+    <cly-datatable-n test-id="ratings-data-table" :rows="preparedRows" v-loading="loadingState" :force-loading="loadingState" :persist-key="ratingsTablePersistKey">
+        <template v-slot="scope">
+            <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')">
+                <template v-slot="rowScope">
+                    <span :data-test-id="'ratings-data-table-rating-' + rowScope.$index" class="text-medium">
+                        <span :class="'rating-color rating-color-' + rowScope.row.rating"></span> {{ rowScope.row.rating + 1 }}
+                    </span>
+                </template>
+            </el-table-column>
+            <el-table-column sortable="true" prop="count" :label="i18n('feedback.number-of-ratings')">
+                <template v-slot="rowScope">
+                    <span :data-test-id="'ratings-data-table-number-of-rating-' + rowScope.$index" class="text-medium">
+                        {{ rowScope.row.count }}
+                    </span>
+                </template>
+            </el-table-column>
+            <el-table-column sortable="true" prop="percentage" :label="i18n('feedback.percentage')">
+                <template v-slot="rowScope">
+                    <span class="text-medium" :data-test-id="'ratings-data-table-percentage-' + rowScope.$index">
+                        {{ rowScope.row.percent }}%<span :style="{ width: rowScope.row.percent + 'px'}" :class="'rating-color rating-color-' + rowScope.row.rating"></span>
+                    </span>
+                </template>
+            </el-table-column>
+        </template>
+    </cly-datatable-n>
+</template>
+
+<script>
+import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+
+export default {
+    mixins: [countlyVue.mixins.i18n],
+    props: {
+        ratings: Array,
+        loadingState: Boolean
+    },
+    computed: {
+        preparedRows: function() {
+            return this.ratings.map(function(rating) {
+                rating.percentage = parseFloat(rating.percent) || 0;
+                return rating;
+            });
+        }
+    },
+    data: function() {
+        return {
+            ratingsTablePersistKey: 'ratings_table_' + countlyCommon.ACTIVE_APP_ID
+        };
+    }
+};
+</script>

@@ -286,7 +286,7 @@ window.countlyVue.mixins.zoom = ExternalZoomMixin;
 // =============================================================================
 // ES MODULE PLUGIN IMPORTS
 // =============================================================================
-import.meta.glob('../../../plugins/*/frontend/public/index.js');
+import.meta.glob('../../../plugins/*/frontend/public/index.js', { eager: true });
 
 // =============================================================================
 // NEW ES MODULE CODE GOES BELOW

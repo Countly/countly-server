@@ -525,3 +525,216 @@ export default {
     // ...
 };
 ```
+
+---
+
+## Plugin Migration (plugins/ directory)
+
+Plugins located in the `plugins/` directory follow a similar migration pattern but with a different file structure and import paths.
+
+### Plugin Legacy Structure (IIFE)
+```
+plugins/plugin-name/frontend/public/
+├── javascripts/
+│   ├── countly.models.js    # Store logic (IIFE, window global)
+│   └── countly.views.js     # Vue components (IIFE, window global)
+├── templates/
+│   └── *.html               # Runtime template compilation
+└── stylesheets/
+    └── plugin.scss          # Plugin styles
+```
+
+### Plugin New Structure (ESM + SFC)
+```
+plugins/plugin-name/frontend/public/
+├── index.js                 # Entry point + route/tab registration
+├── components/
+│   └── PluginView.vue       # Vue SFC (build-time compilation)
+├── store/
+│   └── index.js             # Vuex store module
+└── assets/
+    └── main.scss            # Styles (imported in index.js)
+```
+
+### Key Differences from Core Migration
+
+1. **Import Paths**: Plugins use longer relative paths to reach frontend files:
+   ```js
+   // From plugin's index.js
+   import { i18n } from '../../../../frontend/express/public/javascripts/countly/vue/core.js';
+   
+   // From plugin's components/*.vue
+   import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+   
+   // From plugin's store/index.js
+   import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+   ```
+
+2. **SCSS Import in index.js**: Include styles directly in the entry point:
+   ```js
+   // At the end of index.js
+   import './assets/main.scss';
+   ```
+
+3. **Assets Folder**: Use `assets/` folder instead of `stylesheets/`:
+   ```
+   assets/
+   └── main.scss
+   ```
+
+4. **Auto-Discovery**: Plugin `index.js` files are automatically imported via:
+   ```js
+   // In entrypoint.js
+   import.meta.glob('../../../plugins/*/frontend/public/index.js', { eager: true });
+   ```
+
+5. **No Manual entrypoint.js Edit**: Unlike core modules, plugins don't need to be manually added to `entrypoint.js` - they are auto-discovered.
+
+---
+
+### Plugin Example: Browser Plugin
+
+#### Final Structure:
+```
+plugins/browser/frontend/public/
+├── index.js
+├── components/
+│   ├── BrowserView.vue
+│   ├── BrowserTable.vue
+│   └── VersionTable.vue
+├── javascripts/
+│   └── countly.models.js    # Keep if used by shared stores
+├── assets/
+│   └── main.scss
+└── localization/
+    └── browser.properties
+```
+
+#### index.js:
+```js
+import { i18n } from '../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { registerTab } from '../../../../frontend/express/public/javascripts/countly/vue/container.js';
+
+import BrowserView from './components/BrowserView.vue';
+
+import './assets/main.scss';
+
+const FEATURE_NAME = 'browser';
+
+// Register tab under technology analytics.
+// Note: This component uses the shared countlyDevicesAndTypes store from device-and-type plugin.
+registerTab("/analytics/technology", {
+    type: "web",
+    priority: 6,
+    name: "browsers",
+    permission: FEATURE_NAME,
+    route: "#/analytics/technology/browsers",
+    title: i18n('browser.title'),
+    dataTestId: "browser-analytics",
+    component: BrowserView
+});
+
+// Export for other plugins that may need to extend browser analytics
+export { BrowserView };
+```
+
+#### components/BrowserView.vue:
+```vue
+<template>
+    <div class="browser-view">
+        <cly-header :title="i18n('browser.title')"></cly-header>
+        <cly-main>
+            <cly-date-picker-g></cly-date-picker-g>
+            <!-- content -->
+        </cly-main>
+    </div>
+</template>
+
+<script>
+import countlyVue, { autoRefreshMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+
+export default {
+    mixins: [
+        countlyVue.mixins.i18n,
+        autoRefreshMixin
+    ],
+    mounted: function() {
+        this.$store.dispatch('countlyDevicesAndTypes/fetchBrowser');
+    },
+    methods: {
+        refresh: function(force) {
+            this.$store.dispatch('countlyDevicesAndTypes/fetchBrowser', force);
+        },
+        dateChanged: function() {
+            this.refresh(true);
+        }
+    },
+    computed: {
+        appBrowser: function() {
+            return this.$store.state.countlyDevicesAndTypes.appBrowser;
+        },
+        isLoading: function() {
+            return this.$store.state.countlyDevicesAndTypes.browserLoading;
+        }
+    }
+};
+</script>
+```
+
+---
+
+### Plugin Import Path Reference
+
+Paths are relative from plugin's `frontend/public/` directory:
+
+```js
+// From index.js (plugins/plugin-name/frontend/public/index.js)
+import { i18n } from '../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { registerTab } from '../../../../frontend/express/public/javascripts/countly/vue/container.js';
+
+// From components/*.vue (plugins/plugin-name/frontend/public/components/View.vue)
+import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+
+// From store/index.js (plugins/plugin-name/frontend/public/store/index.js)
+import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+```
+
+---
+
+### Plugin Migration Checklist
+
+```
+[ ] 1. Analyze legacy files (models, views, templates)
+[ ] 2. Create new folder structure (components/, store/, assets/)
+[ ] 3. Create store/index.js (if plugin has its own store)
+[ ] 4. Create components/*.vue files
+[ ] 5. Add autoRefreshMixin if using global date picker
+[ ] 6. Create index.js with registerTab/route registration
+[ ] 7. Move SCSS to assets/main.scss and import in index.js
+[ ] 8. Delete legacy files (countly.views.js, templates/)
+[ ] 9. Keep countly.models.js if used by shared stores
+[ ] 10. Build and test
+```
+
+---
+
+### Using Shared Stores
+
+Some plugins don't have their own store but use shared stores from core modules. For example, the browser plugin uses `countlyDevicesAndTypes` from the device-and-type core module:
+
+```js
+// Dispatching actions on shared store
+this.$store.dispatch('countlyDevicesAndTypes/fetchBrowser');
+
+// Reading from shared store state
+this.$store.state.countlyDevicesAndTypes.appBrowser;
+this.$store.state.countlyDevicesAndTypes.browserLoading;
+```
+
+In this case:
+- **Don't create a store/index.js** for the plugin
+- **Don't include vuex in registerTab** since no store registration is needed
+- The shared store must be registered before the plugin component mounts

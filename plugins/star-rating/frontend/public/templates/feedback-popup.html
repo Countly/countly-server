@@ -15,7 +15,7 @@
     </head>
     <body class="ratings-popup cly-vue-ratings-preview">
         <div class="rating-loader-wrapper">
-            <img 
+            <img
                 class="rating-loader"
                 src="../../star-rating/images/star-rating/loader.svg"
             />
@@ -198,7 +198,7 @@
             var WIDGET_BODY_FULLSCREEN_CLASS = 'modal-content--fullscreen';
             var WIDGET_BODY_ID = '#widget-body';
             var DEFAULT_PLATFORM = 'Web';
-            
+
             (function() {
                 // HELPER FUNCTIONS
                 function hasClass(ele, cls) {
@@ -351,11 +351,11 @@
 
                         if(consent){
                             contentEl.removeClass("hidden");
-                            
+
                             $(contentEl).find(".text").html(finalText);
-                            
+
                             var consentChecked = contentEl.find("input").is(":checked");
-                            
+
                             if (consentChecked) {
                                 $("#cf-submit-button").removeClass("disabled");
                                 removeClass(sendButton, 'disabled-send-button');
@@ -399,7 +399,7 @@
                             if (typeof response.globalLogo === 'string') {
                                 response.globalLogo = response.globalLogo.toLowerCase() === 'true';
                             }
-                            
+
                             if (response.globalLogo) {
                                 $('#powered-by-countly').attr('src', url + response.logo);
                             }
@@ -488,7 +488,7 @@
                 else if ($(WIDGET_BODY_ID).hasClass(WIDGET_BODY_FULLSCREEN_CLASS)) {
                     $(WIDGET_BODY_ID).removeClass(WIDGET_BODY_FULLSCREEN_CLASS);
                 }
-                
+
                 for (var key in custom) {
                     if (!eventObject.segmentation[key]) {
                         eventObject.segmentation[key] = custom[key];
@@ -540,7 +540,7 @@
                             }
                             else {
                                 addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
-                                removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + '-fill'); 
+                                removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + '-fill');
                             }
                         }
                     }
@@ -593,10 +593,10 @@
                     if ($(this).hasClass("disabled-send-button")) {
                         return;
                     }
-                    
+
                     // replace with value from dom
                     eventObject["segmentation"].comment = document.getElementById('countly-feedback-comment-textarea').value;
-                    
+
                     // make required validations and replace email value from dom
                     if (showEmailCheckbox.getAttribute('data-state') == 1) {
                         if (!isValidEmail(document.getElementById('countly-feedback-contact-me-email').value.trim())) {
@@ -637,7 +637,7 @@
                 function closeHandler(e) {
                     if (widgetVersion) {
                         var isWebSDK = platform === 'Web';
-    
+
                         if (!isWebSDK) {
                             window.location.href = 'https://countly_action_event?cly_widget_command=1&close=1';
                         }
@@ -646,7 +646,7 @@
                                 close: true,
                                 cly_widget_command: 1
                             });
-    
+
                             window.parent.postMessage(payload, parentOrigin);
                         }
                     }

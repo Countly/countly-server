@@ -1,3 +1,15 @@
+@font-face {
+    font-family: 'Lato';
+    src: url('../../../../../frontend/express/public/fonts/Lato-Regular/Lato-Regular.eot'),
+        url('../../../../../frontend/express/public/fonts/Lato-Regular/Lato-Regular.eot?#iefix') format('embedded-opentype'),
+        url('../../../../../frontend/express/public/fonts/Lato-Regular/Lato-Regular.woff2') format('woff2'),
+        url('../../../../../frontend/express/public/fonts/Lato-Regular/Lato-Regular.woff') format('woff'),
+        url('../../../../../frontend/express/public/fonts/Lato-Regular/Lato-Regular.ttf') format('truetype');
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+
 #cfbg {
     display: none;
     position: fixed;
@@ -277,8 +289,8 @@
 }
 
 /* SAFARI ONLY STYLES - START */
-html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-s > #feedback-sticker-svg, 
-html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-m > #feedback-sticker-svg, 
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-s > #feedback-sticker-svg,
+html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-m > #feedback-sticker-svg,
 html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.mright-l > #feedback-sticker-svg {
     vertical-align: middle;
     margin-left: 3px;
@@ -306,6 +318,6 @@ html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bleft-l > #f
 html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bright-l > #feedback-sticker-svg,
 html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bright-s > #feedback-sticker-svg,
 html[data-countly-useragent*='Safari/60'] .countly-feedback-sticker.bleft-s > #feedback-sticker-svg {
-    margin-bottom: -1px;   
+    margin-bottom: -1px;
 }
 /* SAFARI ONLY STYLES - END */

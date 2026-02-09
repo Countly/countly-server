@@ -1,0 +1,622 @@
+<template>
+    <div>
+        <cly-drawer
+            toggle-transition="stdt-fade"
+            ref="widgetDrawer"
+            @close="onClose"
+            @submit="onSubmit"
+            @open="onOpen"
+            :hasCancelButton="true"
+            :requires-async-submit="true"
+            :saveButtonLabel="i18n('common.save')"
+            :createButtonLabel="i18n('common.create')"
+            :title="$props.settings.isEditMode ? $props.settings.editTitle : $props.settings.createTitle"
+            name="widget-drawer"
+            v-bind="$props.controls"
+            test-id="ratings-drawer">
+            <template v-slot:sidecars="drawerScope">
+                <cly-content id="mainSidecar" role="sidecar" :always-active="true" style="background:#81868D">
+                    <div class="ratings-drawer__sidecar widget-preview cly-vue-ratings-preview">
+                        <div class="preview-stage" v-if="drawerScope.currentStepId === 'step1' || drawerScope.currentStepId === 'step2' || drawerScope.currentStepId === 'step3'">
+                            <div class="bu-is-size-7 ratings-drawer__stage-label" data-test-id="ratings-drawer-ratingspopup-label">
+                                {{ i18n('feedback.ratings-popup') }}
+                            </div>
+                            <div class="ratings-drawer__ratings-popup">
+                                <div class="ratings-drawer__rp-question-area" data-test-id="ratings-drawer-ratingspopup-question">
+                                    {{ unescapeHtml(drawerScope.editedObject.popup_header_text) }}
+                                </div>
+                                <div v-if="drawerScope.editedObject.ratings_texts">
+                                    <div class="ratings-drawer__rp-ratings-area" v-if="drawerScope.editedObject.rating_symbol==='emojis'">
+                                        <div data-test-id="ratings-drawer-ratingspopup-emoji1" v-tooltip="drawerScope.editedObject.ratings_texts[0]" @click="setRatingItemActive(0)" :class="[ratingItem[0].active && 'ratings-drawer__rp-ratings-active-item__emoji1', ratingItem[0].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__emoji1']"></div>
+                                        <div data-test-id="ratings-drawer-ratingspopup-emoji2" v-tooltip="drawerScope.editedObject.ratings_texts[1]" @click="setRatingItemActive(1)" :class="[ratingItem[1].active && 'ratings-drawer__rp-ratings-active-item__emoji2', ratingItem[1].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__emoji2']"></div>
+                                        <div data-test-id="ratings-drawer-ratingspopup-emoji3" v-tooltip="drawerScope.editedObject.ratings_texts[2]" @click="setRatingItemActive(2)" :class="[ratingItem[2].active && 'ratings-drawer__rp-ratings-active-item__emoji3', ratingItem[2].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__emoji3']"></div>
+                                        <div data-test-id="ratings-drawer-ratingspopup-emoji4" v-tooltip="drawerScope.editedObject.ratings_texts[3]" @click="setRatingItemActive(3)" :class="[ratingItem[3].active && 'ratings-drawer__rp-ratings-active-item__emoji4', ratingItem[3].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__emoji4']"></div>
+                                        <div data-test-id="ratings-drawer-ratingspopup-emoji5" v-tooltip="drawerScope.editedObject.ratings_texts[4]" @click="setRatingItemActive(4)" :class="[ratingItem[4].active && 'ratings-drawer__rp-ratings-active-item__emoji5', ratingItem[4].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__emoji5']"></div>
+                                    </div>
+                                    <div class="ratings-drawer__rp-ratings-area" v-else>
+                                        <div data-test-id="ratings-drawer-ratingspopup-emoji1" v-tooltip="drawerScope.editedObject.ratings_texts[0]" @click="setRatingItemActive(0)" :class="[ratingItem[0].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[0].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                                        <div data-test-id="ratings-drawer-ratingspopup-emoji2" v-tooltip="drawerScope.editedObject.ratings_texts[1]" @click="setRatingItemActive(1)" :class="[ratingItem[1].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[1].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                                        <div data-test-id="ratings-drawer-ratingspopup-emoji3" v-tooltip="drawerScope.editedObject.ratings_texts[2]" @click="setRatingItemActive(2)" :class="[ratingItem[2].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[2].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                                        <div data-test-id="ratings-drawer-ratingspopup-emoji4" v-tooltip="drawerScope.editedObject.ratings_texts[3]" @click="setRatingItemActive(3)" :class="[ratingItem[3].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[3].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                                        <div data-test-id="ratings-drawer-ratingspopup-emoji5" v-tooltip="drawerScope.editedObject.ratings_texts[4]" @click="setRatingItemActive(4)" :class="[ratingItem[4].active && 'ratings-drawer__rp-ratings-active-item__' + drawerScope.editedObject.rating_symbol, ratingItem[4].inactive && 'ratings-drawer__rp-ratings-inactive-item' ,'ratings-drawer__rp-ratings-item__' + drawerScope.editedObject.rating_symbol]"></div>
+                                    </div>
+                                </div>
+                                <div class="ratings-drawer__rp-optional-area">
+                                    <el-checkbox test-id="ratings-drawer-ratingspopup-comment-checkbox" v-model="drawerScope.editedObject.comment_enable">
+                                        <span data-test-id="ratings-drawer-ratingspopup-comment-label">{{ drawerScope.editedObject.popup_comment_callout }}</span>
+                                    </el-checkbox>
+                                </div>
+                                <div class="ratings-drawer__rp-optional-area">
+                                    <el-checkbox test-id="ratings-drawer-ratingspopup-contact-checkbox" v-model="drawerScope.editedObject.contact_enable">
+                                        <span data-test-id="ratings-drawer-ratingspopup-contact-label">{{ drawerScope.editedObject.popup_email_callout }}</span>
+                                    </el-checkbox>
+                                </div>
+                                <div v-if="drawerScope.editedObject.consent" class="ratings-drawer__consent">
+                                    <label>
+                                        <input data-test-id="ratings-drawer-ratingspopup-consent-checkbox" type="checkbox" value="consent" checked>
+                                        <span v-html="finalTxt(drawerScope.editedObject.links)" data-test-id="ratings-drawer-ratingspopup-consent-text"></span>
+                                    </label>
+                                </div>
+                                <div class="ratings-drawer__rp-action-area">
+                                    <el-button data-test-id="ratings-drawer-ratingspopup-submit-button" :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color}" class="ratings-drawer__rp-callout-button">{{ drawerScope.editedObject.popup_button_callout }} </el-button>
+                                </div>
+                                <div class="ratings-drawer__rp-footer" data-test-id="ratings-drawer-ratingspopup-poweredby-label">
+                                    <img v-if="imageSrc && drawerScope.editedObject.logoType === 'custom'" class="ratings-drawer__image" :src="imageSrc">
+                                    <img v-if="drawerScope.editedObject.logoType === 'default'" :src="'/star-rating/images/star-rating/powered-by-countly.svg'">
+                                </div>
+                            </div>
+                            <div class="bu-is-size-7 ratings-drawer__stage-label" v-if="drawerScope.currentStepId !== 'step3'" data-test-id="ratings-drawer-thankyoupopup-label">
+                                {{ i18n('feedback.thank-you-message') }}
+                            </div>
+                            <div class="ratings-drawer__thanks-popup" v-if="drawerScope.currentStepId !== 'step3'">
+                                <div class="ratings-drawer__tp-icon bu-mt-4" data-test-id="ratings-drawer-thankyoupopup-icon">
+                                    <span class="el-icon-success" data-test-id="ratings-drawer-thankyoupopup-color-icon" :style="{'color': drawerScope.editedObject.trigger_bg_color}"></span>
+                                </div>
+                                <div class="bu-has-text-weight-medium ratings-drawer__tp-thanks-message bu-is-size-4" data-test-id="ratings-drawer-thankyoupopup-message-text">{{ drawerScope.editedObject.popup_thanks_message }}</div>
+                                <div class="ratings-drawer__tp-footer" data-test-id="ratings-drawer-thankyoupopup-poweredby-label">
+                                    <img v-if="imageSrc && drawerScope.editedObject.logoType === 'custom'" class="ratings-drawer__image" :src="imageSrc">
+                                    <img v-if="drawerScope.editedObject.logoType === 'default'" :src="'/star-rating/images/star-rating/powered-by-countly.svg'">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preview-stage bu-pt-4 bu-mt-4" v-if="drawerScope.currentStepId !== 'step1' && drawerScope.currentStepId !== 'step3'">
+                            <div data-test-id="ratings-drawer-trigger-button-preview-label" class="bu-is-size-7 ratings-drawer__stage-label">
+                                {{ i18n('feedback.trigger-button-preview') }}
+                            </div>
+                            <div class="ratings-drawer__trigger-button">
+                                <img class="ratings-drawer__tb-background" :src="'/star-rating/images/star-rating/browser.svg'"/>
+                                <div data-test-id="ratings-drawer-trigger-button" :style="{'background-color': drawerScope.editedObject.trigger_bg_color, 'color': drawerScope.editedObject.trigger_font_color }" :class="['ratings-drawer__tb-sticker', 'ratings-drawer__tb-' + drawerScope.editedObject.trigger_position + '-' + drawerScope.editedObject.trigger_size]">
+                                    <span data-test-id="ratings-drawer-trigger-button-label">{{ drawerScope.editedObject.trigger_button_text }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </cly-content>
+            </template>
+            <template v-slot:default="drawerScope">
+                <cly-form-step id="step1" :name="i18n('feedback.settings')">
+                    <div class="cly-vue-drawer-step__section">
+                        <div class="text-medium text-heading bu-mb-1" data-test-id="ratings-drawer-settings-widget-name-label">
+                            {{i18n('feedback.internalName')}}
+                        </div>
+                        <div class="text-smallish color-cool-gray-50 bu-mb-1" data-test-id="ratings-drawer-settings-widget-name-desc">
+                            {{i18n('feedback.internalName.description')}}
+                        </div>
+                        <validation-provider name="internalName" v-slot="v" rules="required">
+                            <el-input
+                                :class="{'is-error': v.errors.length > 0}"
+                                v-model="drawerScope.editedObject.internalName"
+                                :placeholder="i18n('feedback.internalName.placeholder')"
+                                test-id="ratings-drawer-settings-ratings-widget-name-input">
+                            </el-input>
+                        </validation-provider>
+                    </div>
+                    <div class="cly-vue-drawer-step__section">
+                        <div class="text-medium text-heading bu-mb-2" data-test-id="ratings-drawer-settings-question-label">
+                            {{i18n('feedback.question')}}
+                        </div>
+                        <validation-provider name="popup_header_text" rules="required" v-slot="v">
+                            <el-input v-model="drawerScope.editedObject.popup_header_text" :placeholder="i18n('feedback.type-your-question')" test-id="ratings-drawer-settings-question-input"></el-input>
+                        </validation-provider>
+                    </div>
+                    <div class="cly-vue-drawer-step__section-group cly-vue-drawer-step__section-group--filled bu-mb-2">
+                        <div class="cly-vue-drawer-step__section">
+                            <div class="text-medium text-heading text-uppercase bu-mb-4 bu-mt-1" data-test-id="ratings-drawer-settings-ratings-label">
+                                {{ i18n('feedback.ratings') }}
+                            </div>
+                            <validation-provider name="ratings_text_0" v-slot="v">
+                                <el-input class="ratings-drawer__ratings-texts-input" v-model="drawerScope.editedObject.ratings_texts[0]" test-id="ratings-drawer-settings-ratings-emoji1-text-input"></el-input>
+                            </validation-provider>
+                            <validation-provider name="ratings_text_1" v-slot="v">
+                                <el-input class="ratings-drawer__ratings-texts-input" v-model="drawerScope.editedObject.ratings_texts[1]" test-id="ratings-drawer-settings-ratings-emoji2-text-input"></el-input>
+                            </validation-provider>
+                            <validation-provider name="ratings_text_2" v-slot="v">
+                                <el-input class="ratings-drawer__ratings-texts-input" v-model="drawerScope.editedObject.ratings_texts[2]" test-id="ratings-drawer-settings-ratings-emoji3-text-input"></el-input>
+                            </validation-provider>
+                            <validation-provider name="ratings_text_3" v-slot="v">
+                                <el-input class="ratings-drawer__ratings-texts-input" v-model="drawerScope.editedObject.ratings_texts[3]" test-id="ratings-drawer-settings-ratings-emoji4-text-input"></el-input>
+                            </validation-provider>
+                            <validation-provider name="ratings_text_4" v-slot="v">
+                                <el-input class="ratings-drawer__ratings-texts-input" v-model="drawerScope.editedObject.ratings_texts[4]" test-id="ratings-drawer-settings-ratings-emoji5-text-input"></el-input>
+                            </validation-provider>
+                        </div>
+                    </div>
+                    <div class="cly-vue-drawer-step__section bu-pt-5 bu-pb-1">
+                        <el-checkbox test-id="ratings-drawer-settings-comment-checkbox" class="text-smallish bu-pb-2" v-model="drawerScope.editedObject.comment_enable">
+                            <span data-test-id="ratings-drawer-settings-comment-label">{{ i18n('feedback.use-add-comment-option') }}</span>
+                        </el-checkbox>
+                        <validation-provider v-if="drawerScope.editedObject.comment_enable" name="popup_comment_callout" v-slot="v">
+                            <el-input test-id="ratings-drawer-settings-comment-input" v-model="drawerScope.editedObject.popup_comment_callout" :placeholder="i18n('feedback.type-your-option-name')"></el-input>
+                        </validation-provider>
+                    </div>
+                    <div class="cly-vue-drawer-step__section bu-py-1">
+                        <el-checkbox test-id="ratings-drawer-settings-contact-checkbox" class="text-smallish bu-pb-2" v-model="drawerScope.editedObject.contact_enable">
+                            <span data-test-id="ratings-drawer-settings-contact-label">{{ i18n('feedback.use-contact-email-option') }}</span>
+                        </el-checkbox>
+                        <validation-provider v-if="drawerScope.editedObject.contact_enable" name="popup_email_callout" v-slot="v">
+                            <el-input test-id="ratings-drawer-settings-contact-input" v-model="drawerScope.editedObject.popup_email_callout" :placeholder="i18n('feedback.type-your-option-name')"></el-input>
+                        </validation-provider>
+                    </div>
+                    <div class="cly-vue-drawer-step__section bu-py-1 ratings-drawer__step__consent-wrapper">
+                        <el-checkbox
+                            test-id="ratings-drawer-settings-add-user-consent"
+                            class="text-smallish"
+                            @change="onConsentCheckbox(drawerScope.editedObject)"
+                            size="small"
+                            v-bind:label="i18n('feedback.consent')"
+                            v-model="drawerScope.editedObject.consent"
+                            v-if="drawerScope.currentStepId === 'step1'">
+                        </el-checkbox>
+                    </div>
+                    <star-consent-link
+                        v-if="drawerScope.editedObject.consent"
+                        ref="links"
+                        :max-links="3"
+                        :read-only="!!drawerScope.editedObject._id"
+                        v-model="drawerScope.editedObject.links">
+                    </star-consent-link>
+                    <div class="cly-vue-drawer-step__section">
+                        <div class="text-medium-big bu-has-text-weight-medium bu-pb-2 bu-pt-4">
+                            {{i18n('feedback.buttons.heading')}}
+                        </div>
+                        <div class="text-medium text-heading bu-mb-2" data-test-id="ratings-drawer-settings-button-callout-label">
+                            {{i18n('feedback.button-callout')}}
+                        </div>
+                        <validation-provider name="popup_button_callout" v-slot="v">
+                            <el-input test-id="ratings-drawer-settings-button-callout-input" v-model="drawerScope.editedObject.popup_button_callout" :placeholder="i18n('feedback.type-button-callout')"></el-input>
+                        </validation-provider>
+                    </div>
+                    <div class="cly-vue-drawer-step__section">
+                        <div class="text-medium text-heading bu-mb-2" data-test-id="ratings-drawer-settings-thanks-label">
+                            {{i18n('feedback.thank-you-message')}}
+                        </div>
+                        <validation-provider name="popup_thanks_message" rules="required" v-slot="v">
+                            <el-input test-id="ratings-drawer-settings-thanks-input" v-model="drawerScope.editedObject.popup_thanks_message" :placeholder="i18n('feedback.type-thank-you-message')"></el-input>
+                        </validation-provider>
+                    </div>
+                </cly-form-step>
+                <cly-form-step id="step2" :name="i18n('feedback.widget-appearance')">
+                    <div class="cly-vue-drawer-step__section">
+                        <div class="cly-vue-drawer-step__section">
+                            <div class="text-medium text-heading text-heading">
+                                <span class="ratings-section-title bu-mb-2" data-test-id="ratings-drawer-appearance-rating-symbol-label">
+                                    {{ i18n('feedback.rating-symbol') }}
+                                </span>
+                                <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+                            </div>
+                            <validation-provider name="rating_symbol" rules="required" v-slot="v">
+                                <el-select test-id="ratings-drawer" placement="bottom-start" v-model="drawerScope.editedObject.rating_symbol" :placeholder="i18n('feedback.rating-symbol')">
+                                    <el-option v-for="symbol in ratingSymbols" :key="symbol" :label="i18n('feedback.' + symbol)" :value="symbol"></el-option>
+                                </el-select>
+                            </validation-provider>
+                        </div>
+                        <div class="bu-pt-3 bu-pb-4">
+                            <div class="text-medium text-heading">
+                                <span class="ratings-section-title bu-mb-2" data-test-id="ratings-drawer-appearance-logo-label">
+                                    {{ i18n('feedback.logo') }}
+                                </span>
+                                <cly-tooltip-icon data-test-id="ratings-drawer-appearance-logo-tooltip" icon="ion-help-circled" :tooltip="i18n('ratings.tooltip.drawer-logo')"></cly-tooltip-icon>
+                            </div>
+                            <div class="bu-is-flex bu-is-align-items-center">
+                                <el-radio
+                                    :test-id="'ratings-drawer-' + item.value"
+                                    class="is-autosized bu-pt-4"
+                                    v-model="drawerScope.editedObject.logoType"
+                                    :label="item.value"
+                                    :key="idx"
+                                    v-for="(item, idx) in constants.logoOptions"
+                                    border>
+                                    {{item.label}}
+                                </el-radio>
+                            </div>
+                            <cly-dropzone
+                                v-if="drawerScope.editedObject.logoType === 'custom'"
+                                class="ratings-drawer-dropzone bu-mt-4"
+                                ref="logoDropzone"
+                                id="logo-dropzone"
+                                @vdropzone-file-added="onFileAdded"
+                                @vdropzone-removed-file="onFileRemoved"
+                                @vdropzone-complete="onComplete"
+                                :options="logoDropzoneOptions"
+                                :useCustomSlot="true">
+                                <div class="dropzone-custom-content">
+                                    <h3 class="dropzone-custom-title">
+                                        <img data-test-id="ratings-drawer-upload-image-model-folder-icon" class="ratings-drawer__logo__width" v-if="imageSrc" :src="imageSrc" alt="">
+                                        <img v-else data-test-id="ratings-drawer-upload-image-model-empty-folder-icon" :src="'/star-rating/images/star-rating/folder-icon.svg'" alt="">
+                                    </h3>
+                                    <div v-if="imageSrc">
+                                        <el-button data-test-id="ratings-drawer-upload-image-remove-button" @click.native.stop @click="remove()" size="small" type="text" class="bu-has-text-weight-light color-red-50">{{ i18n('feedback.remove-file') }}</el-button>
+                                    </div>
+                                    <div v-else class="subtitle text-medium bu-mt-2">
+                                        <span data-test-id="ratings-drawer-upload-image-model-text-label" class="bu-has-text-weight-light bu-has-text-grey">{{ i18n('feedback.drop-message') }}</span>
+                                        <span data-test-id="ratings-drawer-upload-image-model-click-upload-button" class="bu-has-text-link bu-has-text-weight-medium">{{ i18n('feedback.click-to-upload') }}</span>
+                                    </div>
+                                </div>
+                            </cly-dropzone>
+                        </div>
+                        <div class="cly-vue-drawer-step__section">
+                            <div class="text-medium text-heading bu-mb-2" data-test-id="ratings-drawer-appearance-main-color-label">
+                                {{i18n('feedback.main-color')}}
+                            </div>
+                            <cly-colorpicker
+                                test-id="ratings-drawer-appearance-main-color-dropdown"
+                                reset-value='#FFFFFF'
+                                v-model="drawerScope.editedObject.trigger_bg_color"
+                                placement="right">
+                            </cly-colorpicker>
+                        </div>
+                        <div class="cly-vue-drawer-step__section">
+                            <div class="text-medium text-heading bu-mb-2" data-test-id="ratings-drawer-appearance-font-color-label">
+                                {{i18n('feedback.font-color')}}
+                            </div>
+                            <cly-colorpicker
+                                test-id="ratings-drawer-appearance-font-color-dropdown"
+                                reset-value='#FFFFFF'
+                                v-model="drawerScope.editedObject.trigger_font_color"
+                                placement="right">
+                            </cly-colorpicker>
+                        </div>
+                        <div class="cly-vue-drawer-step__section">
+                            <div class="bu-mb-2">
+                                <span class="text-medium text-heading ratings-section-title" data-test-id="ratings-drawer-appearance-trigger-button-size-label">
+                                    {{ i18n('feedback.trigger-button-size') }}
+                                </span>
+                                <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+                            </div>
+                            <div class="bu-is-flex bu-is-align-items-center">
+                                <el-radio
+                                    :test-id="'ratings-drawer-' + item.value"
+                                    v-model="drawerScope.editedObject.trigger_size"
+                                    class="is-bordered is-autosized"
+                                    :label="item.value"
+                                    :key="idx"
+                                    v-for="(item, idx) in constants.trigger_sizes">
+                                    {{item.label}}
+                                </el-radio>
+                            </div>
+                        </div>
+                        <div class="text-medium text-heading bu-mb-2" data-test-id="ratings-drawer-appearance-position-on-the-page-label">
+                            {{ i18n('feedback.position-on-the-page') }}
+                        </div>
+                        <div class="bu-is-flex text-center ratings-drawer__sticker-size">
+                            <el-radio
+                                :test-id="'ratings-drawer-position-on-the-page-' + item.value"
+                                v-model="drawerScope.editedObject.trigger_position"
+                                class="is-bordered is-autosized bu-is-justify-content-center"
+                                :label="item.value"
+                                :key="idx"
+                                v-for="(item, idx) in constants.trigger_positions">
+                                <div class="bu-is-align-items-center">
+                                    <img :data-test-id="'ratings-drawer-' + item.value + '-logo'" :src="'/star-rating/images/star-rating/' + item.key + '.svg'">
+                                </div>
+                                <div :data-test-id="'ratings-drawer-' + item.value + '-label'" class="bu-is-align-items-center">
+                                    {{item.label}}
+                                </div>
+                            </el-radio>
+                        </div>
+                        <div class="cly-vue-drawer-step__section">
+                            <div class="text-medium text-heading bu-mb-2" data-test-id="ratings-drawer-appearance-trigger-text-label">
+                                {{ i18n('feedback.trigger-text') }}
+                            </div>
+                            <validation-provider name="trigger_button_text" v-slot="v">
+                                <el-input test-id="ratings-drawer-appearance-trigger-text-input" v-model="drawerScope.editedObject.trigger_button_text" :placeholder="i18n('feedback.trigger-text')"></el-input>
+                            </validation-provider>
+                        </div>
+                        <div class="cly-vue-drawer-step__section">
+                            <div class="text-medium text-heading text-heading">
+                                <span class="ratings-section-title bu-mb-2" data-test-id="ratings-drawer-appearance-visibility-label">
+                                    {{ i18n('feedback.visibility') }}
+                                </span>
+                                <cly-tooltip-icon data-test-id="ratings-drawer-appearance-visibility-tooltip" icon="ion-help-circled" :tooltip="i18n('ratings.tooltip.drawer-visibility')"></cly-tooltip-icon>
+                            </div>
+                            <validation-provider name="contact_email_option" v-slot="v">
+                                <el-checkbox test-id="ratings-drawer-appearance-hide-sticker-checkbox" v-model="drawerScope.editedObject.hide_sticker">
+                                    <span data-test-id="ratings-drawer-appearance-hide-sticker-label"> {{ i18n('feedback.hide-sticker') }} </span>
+                                </el-checkbox>
+                            </validation-provider>
+                        </div>
+                    </div>
+                </cly-form-step>
+                <cly-form-step id="step3" v-slot="stepSlot" :name="i18n('feedback.devices-targeting')">
+                    <div v-if="cohortsEnabled" class="cly-vue-drawer-step__section">
+                        <div class="text-medium text-heading bu-mb-2" data-test-id="ratings-drawer-devices-segmentation-label">
+                            {{ i18n('feedback.segmentation') }}
+                        </div>
+                        <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered">
+                            <div class="bu-column bu-is-12">
+                                <cly-cohort-segmentation
+                                    test-id="ratings-drawer"
+                                    :show-in-the-last-minutes="true"
+                                    :show-in-the-last-hours="true"
+                                    ref="ratingsSegmentation"
+                                    :property-segmentation="drawerScope.editedObject.targeting.user_segmentation"
+                                    :behavior-segmentation="drawerScope.editedObject.targeting.steps"
+                                    :ignore-existing-cohort="true">
+                                </cly-cohort-segmentation>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cly-vue-drawer-step__section">
+                        <el-checkbox test-id="ratings-drawer-selected-pages" v-model="drawerScope.editedObject.target_page">
+                            <span data-test-id="ratings-drawer-selected-pages-label">{{ i18n('feedback.show-only-selected-pages') }}</span>
+                        </el-checkbox>
+                        <div v-if="drawerScope.editedObject.target_page" class="text-small text-heading bu-mt-3" data-test-id="ratings-drawer-type-pages-label">
+                            {{ i18n('feedback.type-pages') }}
+                        </div>
+                        <el-select
+                            v-if="drawerScope.editedObject.target_page"
+                            class="ratings-drawer__target-page-selector"
+                            v-model="drawerScope.editedObject.target_pages"
+                            test-id="ratings-drawer-type-pages-select"
+                            :collapse-tags="false"
+                            multiple
+                            filterable
+                            allow-create
+                            default-first-option
+                            :placeholder="i18n('feedback.target-pages')">
+                            <el-option value="/" label="/"></el-option>
+                        </el-select>
+                    </div>
+                    <div class="cly-vue-drawer-step__section">
+                        <el-checkbox
+                            size="small"
+                            test-id="ratings-drawer-feedback-active"
+                            v-bind:label="i18n('feedback.set-feedback-active')"
+                            v-model="drawerScope.editedObject.status">
+                        </el-checkbox>
+                    </div>
+                </cly-form-step>
+            </template>
+        </cly-drawer>
+    </div>
+</template>
+
+<script>
+import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
+import starRatingPlugin from '../store/index.js';
+import ConsentLink from './ConsentLink.vue';
+
+var CLY_X_INT = 'cly_x_int';
+
+export default {
+    mixins: [countlyVue.mixins.i18n, countlyVue.mixins.commonFormatters],
+    components: {
+        "star-consent-link": ConsentLink
+    },
+    props: {
+        settings: Object,
+        controls: Object
+    },
+    data: function() {
+        return {
+            imageSource: '',
+            deleteLogo: false,
+            imageSrc: '',
+            logoType: 'default',
+            globalLogo: false,
+            consent: false,
+            ratingItem: [
+                { active: false, inactive: false },
+                { active: false, inactive: false },
+                { active: false, inactive: false },
+                { active: false, inactive: false },
+                { active: false, inactive: false }
+            ],
+            constants: {
+                trigger_sizes: [
+                    {label: this.i18n("star-rating.trigger-size.small") || 'Small', value: 's'},
+                    {label: this.i18n("star-rating.trigger-size.medium") || 'Medium', value: 'm'},
+                    {label: this.i18n("star-rating.trigger-size.large") || 'Large', value: 'l'}
+                ],
+                logoOptions: [
+                    { label: this.i18n("surveys.appearance.logo.option.default"), value: "default" },
+                    { label: this.i18n("surveys.appearance.logo.option.custom"), value: "custom" },
+                    { label: this.i18n("surveys.appearance.logo.option.no.logo"), value: "none" }
+                ],
+                trigger_positions: [
+                    {value: 'mleft', label: this.i18n("star-rating.trigger-position.center-left") || 'Center left', key: 'middle-left'},
+                    {value: 'mright', label: this.i18n("star-rating.trigger-position.center-right") || 'Center right', key: 'middle-right'},
+                    {value: 'bleft', label: this.i18n("star-rating.trigger-position.bottom-left") || 'Bottom left', key: 'bottom-left'},
+                    {value: 'bright', label: this.i18n("star-rating.trigger-position.bottom-right") || 'Bottom right', key: 'bottom-right'}
+                ]
+            },
+            ratingSymbols: ['emojis', 'thumbs', 'stars'],
+            logoDropzoneOptions: {
+                createImageThumbnails: false,
+                maxFilesize: 2,
+                autoProcessQueue: false,
+                addRemoveLinks: true,
+                acceptedFiles: 'image/jpeg,image/png,image/gif',
+                dictDefaultMessage: this.i18n('feedback.drop-message'),
+                dictRemoveFile: this.i18n('feedback.remove-file'),
+                url: "/i/feedback/logo" + "?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                paramName: "logo",
+                params: { _csrf: countlyGlobal.csrf_token, identifier: '' }
+            },
+            logoFile: "",
+            stamp: 0,
+            cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
+        };
+    },
+    watch: {
+        imageSource: {
+            immediate: true,
+            handler: function(newValue) {
+                this.imageSrc = newValue;
+            }
+        }
+    },
+    methods: {
+        onConsentCheckbox: function(ev) {
+            if (!ev.links || ev.links.length < 1) {
+                ev.links = {
+                    "link": [
+                        {
+                            "text": "Terms and Conditions",
+                            "link": "https://termsandconditions.com",
+                            "textValue": "Terms and Conditions",
+                            "linkValue": "https://termsandconditions.com"
+                        },
+                        {
+                            "text": "Privacy Policy",
+                            "link": "https://privacyPolicy.com",
+                            "textValue": "Privacy Policy",
+                            "linkValue": "https://privacyPolicy.com"
+                        }
+                    ],
+                    "finalText": "I agree to the Terms and Conditions and Privacy Policy."
+                };
+            }
+        },
+        finalTxt: function(links) {
+            var finalText = links.finalText;
+
+            links.link.forEach(function(link) {
+                var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
+                finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
+            });
+
+            return finalText;
+        },
+        onClose: function() {},
+        setRatingItemActive: function(index) {
+            var self = this;
+            this.ratingItem.forEach(function(item) {
+                if (self.ratingItem.indexOf(item) > index) {
+                    item.inactive = true;
+                    item.active = false;
+                }
+                else {
+                    item.inactive = false;
+                    item.active = true;
+                }
+            });
+        },
+        onSubmit: function(submitted, done) {
+            var self = this;
+            if (submitted.links) {
+                submitted.finalText = submitted.links.finalText;
+                submitted.links = submitted.links.link;
+                submitted.links.forEach(function(link) {
+                    var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
+                    link.linkValue = link.linkValue + separator + CLY_X_INT + '=1';
+                    delete link.text;
+                    delete link.link;
+                });
+            }
+            if (this.logoFile !== "") {
+                submitted.logo = this.logoFile;
+            }
+
+            if (!this.imageSource || submitted.logoType !== 'custom') {
+                submitted.logo = '';
+            }
+
+            if (!submitted.logoType) {
+                submitted.logoType = 'default';
+            }
+            if (!submitted.globalLogo) {
+                submitted.globalLogo = false;
+            }
+            if (this.cohortsEnabled) {
+                var finalizedTargeting = null;
+                var exported = this.$refs.ratingsSegmentation.export();
+                if (!((exported.behaviorSegmentation.length === 0) && (Object.keys(exported.propertySegmentation.query).length === 0))) {
+                    finalizedTargeting = Object.assign({}, {
+                        user_segmentation: JSON.stringify(exported.propertySegmentation),
+                        steps: JSON.stringify(exported.behaviorSegmentation)
+                    });
+                }
+
+                submitted.targeting = finalizedTargeting;
+            }
+
+            if (submitted.target_page) {
+                submitted.target_page = "selected";
+            }
+            else {
+                submitted.target_page = "all";
+                submitted.target_pages = ["/"];
+            }
+
+            if (this.settings.isEditMode) {
+                starRatingPlugin.editFeedbackWidget(submitted, function() {
+                    self.$emit('widgets-refresh');
+                    done();
+                });
+            }
+            else {
+                starRatingPlugin.createFeedbackWidget(submitted, function() {
+                    self.$emit('widgets-refresh');
+                    done();
+                });
+            }
+        },
+        onOpen: function() {
+            var self = this;
+            var loadImage = new Image();
+
+            if (this.controls.initialEditedObject.logo) {
+                if (this.controls.initialEditedObject.logo.indexOf("feedback_logo") > -1) {
+                    loadImage.src = window.location.origin + this.controls.initialEditedObject.logo;
+                }
+                else {
+                    loadImage.src = window.location.origin + "/star-rating/images/" + this.controls.initialEditedObject.logo;
+                }
+            }
+            loadImage.onload = function() {
+                self.imageSource = loadImage.src;
+            };
+        },
+        onFileRemoved: function() {
+            this.imageSource = '';
+            this.deleteLogo = true;
+        },
+        onFileAdded: function(file) {
+            this.deleteLogo = false;
+            var img = new FileReader();
+            var self = this;
+            img.onload = function() {
+                self.imageSource = img.result;
+            };
+            img.readAsDataURL(file);
+            this.stamp = Date.now();
+            this.logoDropzoneOptions.params.identifier = this.stamp;
+            setTimeout(function() {
+                self.$refs.logoDropzone.processQueue();
+            }, 1);
+        },
+        onComplete: function(res) {
+            var fileName = res.upload.filename;
+            var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
+            this.logoFile = this.stamp + '.' + fileExtension;
+        },
+        remove: function() {
+            this.imageSource = '';
+            this.deleteLogo = true;
+        }
+    }
+};
+</script>

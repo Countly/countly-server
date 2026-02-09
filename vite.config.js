@@ -58,9 +58,10 @@ const __dirname = path.dirname(__filename);
 
 // TODO: a separate build for prelogin files
 
-
 const REFACTORED_PLUGINS = [
-    "alerts"
+    "alerts",
+    // "browser",
+    "star-rating",
 ];
 
 // List of legacy scripts in exact order from dashboard.html
