@@ -61,6 +61,7 @@ const __dirname = path.dirname(__filename);
 const REFACTORED_PLUGINS = [
     "alerts",
     "browser",
+    "compare",
     "star-rating",
 ];
 
