@@ -1194,7 +1194,7 @@
             countlyVue.container.tabsMixin({
                 "externalTabs": "groups/tab"
             })
-        ].concat(countlyVue.container.mixins(["vue/example"])),
+        ],
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,

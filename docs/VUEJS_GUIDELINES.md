@@ -222,33 +222,33 @@ var DrawerComponent = countlyVue.views.create({
 Templates are automatically loaded and wrapped:
 
 ```javascript
-var exampleView = new countlyVue.views.BackboneWrapper({
+var myPluginView = new countlyVue.views.BackboneWrapper({
     component: MainView,
     templates: [
         // Load all templates in a file
-        "/vue-example/templates/empty.html",
-        
+        "/my-plugin/templates/empty.html",
+
         // Load with namespace mapping
         {
-            namespace: 'vue-example',
+            namespace: 'my-plugin',
             mapping: {
-                'table-template': '/vue-example/templates/table.html',
-                'main-template': '/vue-example/templates/main.html'
+                'table-template': '/my-plugin/templates/table.html',
+                'main-template': '/my-plugin/templates/main.html'
             }
         }
     ]
 });
 ```
 
-The template ID is auto-generated as: `{namespace}-{key}` (e.g., `vue-example-table-template`).
+The template ID is auto-generated as: `{namespace}-{key}` (e.g., `my-plugin-table-template`).
 
 ### Template File Content
 
 When using namespace mapping, template files contain raw HTML (no script wrapper):
 
 ```html
-<!-- /vue-example/templates/main.html -->
-<div class="vue-example-wrapper" v-bind:class="[componentId]">
+<!-- /my-plugin/templates/main.html -->
+<div class="my-plugin-wrapper" v-bind:class="[componentId]">
     <tg-view></tg-view>
     <table-view @open-drawer="openDrawer"></table-view>
 </div>
@@ -435,16 +435,16 @@ Vue views are integrated with Backbone router via `countlyVue.views.BackboneWrap
 ### Basic Routing
 
 ```javascript
-var exampleView = new countlyVue.views.BackboneWrapper({
+var myPluginView = new countlyVue.views.BackboneWrapper({
     component: MainView,
-    vuex: [{clyModel: countlyVueExample}],
-    templates: ["/vue-example/templates/main.html"]
+    vuex: [{clyModel: countlyMyPlugin}],
+    templates: ["/my-plugin/templates/main.html"]
 });
 
-app.vueExampleView = exampleView;
+app.myPluginView = myPluginView;
 
-app.route("/vue/example", 'vue-example', function() {
-    this.renderWhenReady(this.vueExampleView);
+app.route("/my/plugin", 'my-plugin', function() {
+    this.renderWhenReady(this.myPluginView);
 });
 ```
 

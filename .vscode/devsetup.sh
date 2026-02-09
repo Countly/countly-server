@@ -25,7 +25,6 @@ DISABLED_PLUGINS=(
     "recaptcha"
     "tracker"
     "two-factor-auth"
-    "vue-example"
     "white-labeling"
 )
 

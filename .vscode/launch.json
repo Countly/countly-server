@@ -150,7 +150,6 @@
                 "/two-factor-auth/": "${workspaceFolder}/plugins/two-factor-auth/frontend/public/",
                 "/users/": "${workspaceFolder}/plugins/users/frontend/public/",
                 "/views/": "${workspaceFolder}/plugins/views/frontend/public/",
-                "/vue-example/": "${workspaceFolder}/plugins/vue-example/frontend/public/",
                 "/web/": "${workspaceFolder}/plugins/web/frontend/public/",
                 "/white-label/": "${workspaceFolder}/plugins/white-label/frontend/public/",
                 "/": "${workspaceFolder}/frontend/express/public"
