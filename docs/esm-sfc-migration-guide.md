@@ -25,8 +25,10 @@ plugin-name/
 │   └── PluginView.vue       # Vue SFC (build-time compilation)
 ├── store/
 │   └── index.js             # Vuex store module
-└── stylesheets/
-    └── _main.scss           # Styles (unchanged)
+└── assets/
+    ├── main.scss            # Styles (imported in index.js)
+    ├── images/              # Image assets (SVG, PNG, etc.)
+    └── fonts/               # Font files (WOFF2, WOFF, etc.)
 ```
 
 ---
@@ -190,9 +192,22 @@ const legacyScripts = [
 ```bash
 mkdir -p plugin-name/components
 mkdir -p plugin-name/store
+mkdir -p plugin-name/assets
 touch plugin-name/index.js
 touch plugin-name/components/PluginView.vue
 touch plugin-name/store/index.js
+touch plugin-name/assets/main.scss
+```
+
+Move all static assets (images, fonts, etc.) into `assets/`:
+```bash
+# Move images
+mv plugin-name/images/* plugin-name/assets/images/
+
+# Move fonts (if any)
+mv plugin-name/fonts/* plugin-name/assets/fonts/
+
+# Move SCSS content into assets/main.scss (inline the styles, don't just @use)
 ```
 
 ---
@@ -388,7 +403,7 @@ import { registerTab } from '../../javascripts/countly/vue/container.js';
 
 import PluginView from './components/PluginView.vue';
 import store from './store/index.js';
-import './stylesheets/_main.scss';
+import './assets/main.scss';
 
 // Register tab.
 registerTab("/main/route", {
@@ -410,7 +425,7 @@ registerTab("/main/route", {
 ### Key points:
 - Import `i18n` from `vue/core.js`
 - Import `registerTab` from `vue/container.js`
-- **Import SCSS styles** - Makes plugin self-contained with all assets in one entrypoint
+- **Import SCSS styles** from `assets/main.scss` - Makes plugin self-contained with all assets in one entrypoint
 - Store is connected via `vuex.clyModel`
 - Only add exports if other modules need access
 
@@ -473,8 +488,11 @@ rm plugin-name/javascripts/countly.models.js
 rm plugin-name/javascripts/countly.views.js
 rm -rf plugin-name/templates/
 
-# If javascripts folder is empty:
-rmdir plugin-name/javascripts/
+# Remove empty legacy directories:
+rmdir plugin-name/javascripts/    # If empty
+rmdir plugin-name/stylesheets/    # Moved to assets/main.scss
+rmdir plugin-name/images/         # Moved to assets/images/
+rmdir plugin-name/fonts/          # Moved to assets/fonts/
 ```
 
 ---
@@ -536,17 +554,21 @@ import { autoRefreshMixin, commonFormattersMixin, i18nMixin, i18n } from '../../
 
 ```
 [ ] 1. Analyze legacy files (models, views, templates)
-[ ] 2. Create new folder structure (components/, store/)
+[ ] 2. Create new folder structure (components/, store/, assets/)
 [ ] 3. Create store/index.js
 [ ] 4. Create components/PluginView.vue
 [ ] 5. Import and register all cly-* global SFC components used in templates
 [ ] 6. Add autoRefreshMixin if using global date picker
-[ ] 7. Create index.js with registerTab and SCSS import
-[ ] 8. Comment out SCSS reference in manifest.scss
-[ ] 9. Remove from vite.config.js legacyScripts
-[ ] 10. Add import to entrypoint.js
-[ ] 11. Delete legacy files
-[ ] 12. Build and test (including date picker functionality)
+[ ] 7. Consolidate static assets into assets/ directory:
+       - Move styles into assets/main.scss
+       - Move images into assets/images/
+       - Move fonts into assets/fonts/
+[ ] 8. Create index.js with registerTab and SCSS import (from assets/main.scss)
+[ ] 9. Comment out SCSS reference in manifest.scss
+[ ] 10. Remove from vite.config.js legacyScripts
+[ ] 11. Add import to entrypoint.js
+[ ] 12. Delete legacy files and empty directories (stylesheets/, images/, fonts/, templates/, javascripts/)
+[ ] 13. Build and test (including date picker functionality)
 ```
 
 ---
@@ -561,8 +583,8 @@ session-durations/
 │   └── SessionDurations.vue
 ├── store/
 │   └── index.js
-└── stylesheets/
-    └── _main.scss
+└── assets/
+    └── main.scss
 ```
 
 ### index.js:
@@ -572,7 +594,7 @@ import { registerTab } from '../../javascripts/countly/vue/container.js';
 
 import SessionDurationsView from './components/SessionDurations.vue';
 import store from './store/index.js';
-import './stylesheets/_main.scss';
+import './assets/main.scss';
 
 // Register tab.
 registerTab("/analytics/sessions", {
@@ -604,7 +626,7 @@ plugin-name/
 ├── widget.js             # Dashboard widget (WidgetComponent, dashboard config DrawerComponent, registerData)
 ├── components/
 ├── store/
-└── stylesheets/
+└── assets/
 ```
 
 ### index.js:
@@ -614,7 +636,7 @@ import { registerTab } from '../../javascripts/countly/vue/container.js';
 
 import PluginView from './components/PluginView.vue';
 import store from './store/index.js';
-import './stylesheets/_main.scss';
+import './assets/main.scss';
 import './widget.js';  // Dashboard widget registration
 
 registerTab("/main/route", { /* ... */ });
@@ -779,8 +801,12 @@ plugins/plugin-name/frontend/public/
 │   └── countly.views.js     # Vue components (IIFE, window global)
 ├── templates/
 │   └── *.html               # Runtime template compilation
-└── stylesheets/
-    └── plugin.scss          # Plugin styles
+├── stylesheets/
+│   └── plugin.scss          # Plugin styles
+├── images/
+│   └── *.svg                # Image assets
+└── fonts/
+    └── *.woff2              # Font files (if any)
 ```
 
 ### Plugin New Structure (ESM + SFC)
@@ -792,7 +818,11 @@ plugins/plugin-name/frontend/public/
 ├── store/
 │   └── index.js             # Vuex store module
 └── assets/
-    └── main.scss            # Styles (imported in index.js)
+    ├── main.scss            # Styles (imported in index.js)
+    ├── images/              # Image assets (moved from images/)
+    │   └── *.svg
+    └── fonts/               # Font files (moved from fonts/)
+        └── *.woff2
 ```
 
 ### Key Differences from Core Migration
@@ -815,11 +845,17 @@ plugins/plugin-name/frontend/public/
    import './assets/main.scss';
    ```
 
-3. **Assets Folder**: Use `assets/` folder instead of `stylesheets/`:
+3. **Assets Folder**: Consolidate all static assets (SCSS, images, fonts) into the `assets/` directory. Move files from legacy `stylesheets/`, `images/`, and `fonts/` directories:
    ```
    assets/
-   └── main.scss
+   ├── main.scss            # All plugin styles (inline, not @use from stylesheets/)
+   ├── images/              # SVG, PNG, etc. (moved from images/<plugin-name>/)
+   │   ├── icon.svg
+   │   └── background.png
+   └── fonts/               # WOFF2, WOFF, etc. (moved from fonts/)
+       └── custom-font.woff2
    ```
+   After moving files into `assets/`, delete the now-empty legacy `stylesheets/`, `images/`, and `fonts/` directories. The `main.scss` should contain the actual style definitions (not just `@use` imports from `stylesheets/`), since the old `stylesheets/` directory is removed.
 
 4. **Auto-Discovery**: Plugin `index.js` files are automatically imported via:
    ```js
@@ -844,7 +880,9 @@ plugins/browser/frontend/public/
 ├── javascripts/
 │   └── countly.models.js    # Keep if used by shared stores
 ├── assets/
-│   └── main.scss
+│   ├── main.scss            # All plugin styles
+│   └── images/              # Static image assets
+│       └── browser-icon.svg
 └── localization/
     └── browser.properties
 ```
@@ -952,8 +990,12 @@ import { countlyCommon } from '../../../../../frontend/express/public/javascript
 [ ] 4. Create components/*.vue files
 [ ] 5. Add autoRefreshMixin if using global date picker
 [ ] 6. Create index.js with registerTab/route registration
-[ ] 7. Move SCSS to assets/main.scss and import in index.js
-[ ] 8. Delete legacy files (countly.views.js, templates/)
+[ ] 7. Consolidate all static assets into assets/ directory:
+       - Move SCSS content into assets/main.scss (inline styles, not @use imports)
+       - Move images from images/ to assets/images/
+       - Move fonts from fonts/ to assets/fonts/
+       - Import assets/main.scss in index.js
+[ ] 8. Delete legacy directories (stylesheets/, images/, fonts/, javascripts/, templates/)
 [ ] 9. Keep countly.models.js if used by shared stores
 [ ] 10. Build and test
 ```
