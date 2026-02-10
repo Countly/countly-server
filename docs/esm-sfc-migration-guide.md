@@ -255,15 +255,15 @@ mv plugin-name/fonts/* plugin-name/assets/fonts/
 
 ### New store/index.js:
 ```js
-import { ajax, vuex } from '../../../javascripts/countly/vue/core.js';
-import countlyCommon from '../../../javascripts/countly/countly.common.js';
+import { countlyCommon } from '../../../javascripts/countly/countly.common.js';
+import { Module, ServerDataTable } from '../../../javascripts/countly/vue/data/vuex.js';
 
 var countlyPluginName = {};
 
 // Service layer - API calls
 countlyPluginName.service = {
     fetchData: function() {
-        return ajax({
+        return $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + "/plugin",
             data: { app_id: countlyCommon.ACTIVE_APP_ID },
@@ -274,7 +274,7 @@ countlyPluginName.service = {
 
 // Vuex module
 countlyPluginName.getVuexModule = function() {
-    return vuex.Module("countlyPluginName", {
+    return Module("countlyPluginName", {
         state: function() {
             return { data: [] };
         },
@@ -299,7 +299,8 @@ export default countlyPluginName;
 
 ### Key changes:
 - Remove `window.countlyPluginName` global
-- Use named imports (`ajax`, `vuex`) instead of importing the entire `countlyVue` default export
+- **Use named imports from source modules** — e.g. `{ Module, ServerDataTable }` from `vue/data/vuex.js`, NOT from `vue/core.js`
+- **Never import the default `countlyVue` object** — always import specific named exports from their source module
 - Export the **store object** with `getVuexModule` method (NOT the result of `getVuexModule()` — VuexLoader calls `clyModel.getVuexModule()` internally)
 - `$.when()` is not available in ESM — use `Promise.all([...])` instead
 
@@ -353,6 +354,7 @@ export default countlyPluginName;
 
 <script>
 import { autoRefreshMixin, commonFormattersMixin, i18nMixin } from '../../../javascripts/countly/vue/core.js';
+import { getServerDataSource } from '../../../javascripts/countly/vue/data/vuex.js';
 import ClyHeader from '../../../javascripts/components/layout/cly-header.vue';
 import ClyMain from '../../../javascripts/components/layout/cly-main.vue';
 import ClyDatePickerG from '../../../javascripts/components/date/global-date-picker.vue';
@@ -516,20 +518,56 @@ npm run build:vite
 
 ## Import Path Reference
 
-Paths are relative to file location. Always prefer named imports over the default `countlyVue` export:
+Paths are relative to file location. **Always use named imports from source modules — never import the default `countlyVue` object.**
 
 ```js
 // From store/index.js (3 levels deep)
-import { ajax, vuex } from '../../../javascripts/countly/vue/core.js';
-import countlyCommon from '../../../javascripts/countly/countly.common.js';
+import { countlyCommon } from '../../../javascripts/countly/countly.common.js';
+import { createMetricModel } from '../../../javascripts/countly/countly.helpers.js';
+import { Module, ServerDataTable } from '../../../javascripts/countly/vue/data/vuex.js';
 
 // From index.js (2 levels deep)
-import { i18n, views, mixins, templateUtil } from '../../javascripts/countly/vue/core.js';
+import { i18n, views } from '../../javascripts/countly/vue/core.js';
 import { registerTab, registerData } from '../../javascripts/countly/vue/container.js';
+import { app } from '../../javascripts/countly/countly.template.js';
 
 // From components/PluginView.vue (3 levels deep)
-import { autoRefreshMixin, commonFormattersMixin, i18nMixin, i18n } from '../../../javascripts/countly/vue/core.js';
+import { autoRefreshMixin, commonFormattersMixin, i18nMixin, authMixin } from '../../../javascripts/countly/vue/core.js';
+import { getServerDataSource } from '../../../javascripts/countly/vue/data/vuex.js';
+import { countlyCommon } from '../../../javascripts/countly/countly.common.js';
+import countlyGlobal from '../../../javascripts/countly/countly.global.js';
+import { confirm as CountlyConfirm, alert as CountlyAlert, notify } from '../../../javascripts/countly/countly.helpers.js';
+import { validateGlobalAdmin } from '../../../javascripts/countly/countly.auth.js';
+import { monitor as monitorTask } from '../../../javascripts/countly/countly.task.manager.js';
 ```
+
+### Named imports mapping (legacy → ESM)
+
+This table maps the old `countlyVue.*` / `CountlyHelpers.*` / `countlyAuth.*` patterns to their proper named imports:
+
+| Legacy pattern | Named import | Source module |
+|---|---|---|
+| `countlyVue.mixins.i18n` | `i18nMixin` | `vue/core.js` |
+| `countlyVue.mixins.auth(feature)` | `authMixin(feature)` | `vue/core.js` |
+| `countlyVue.mixins.commonFormatters` | `commonFormattersMixin` | `vue/core.js` |
+| `countlyVue.views.create({...})` | `views.create({...})` | `vue/core.js` |
+| `countlyVue.views.BackboneWrapper` | `views.BackboneWrapper` | `vue/core.js` |
+| `countlyVue.vuex.Module(...)` | `Module(...)` | `vue/data/vuex.js` |
+| `countlyVue.vuex.ServerDataTable(...)` | `ServerDataTable(...)` | `vue/data/vuex.js` |
+| `countlyVue.vuex.getServerDataSource(...)` | `getServerDataSource(...)` | `vue/data/vuex.js` |
+| `countlyVue.container.registerTab(...)` | `registerTab(...)` | `vue/container.js` |
+| `countlyVue.container.registerData(...)` | `registerData(...)` | `vue/container.js` |
+| `countlyVue.container.registerMixin(...)` | `registerMixin(...)` | `vue/container.js` |
+| `CV.i18n(...)` / `countlyVue.i18n(...)` | `i18n(...)` | `vue/core.js` |
+| `CV.T(...)` / `countlyVue.T(...)` | `templateUtil.stage(...)` | `vue/core.js` |
+| `CV.$.ajax(...)` | `$.ajax(...)` | jQuery global |
+| `CountlyHelpers.confirm(...)` | `CountlyConfirm(...)` | `countly.helpers.js` (aliased to avoid shadowing `window.confirm`) |
+| `CountlyHelpers.alert(...)` | `CountlyAlert(...)` | `countly.helpers.js` (aliased to avoid shadowing `window.alert`) |
+| `CountlyHelpers.notify(...)` | `notify(...)` | `countly.helpers.js` |
+| `CountlyHelpers.createMetricModel(...)` | `createMetricModel(...)` | `countly.helpers.js` |
+| `countlyAuth.validateGlobalAdmin()` | `validateGlobalAdmin()` | `countly.auth.js` |
+| `countlyAuth.validateRead(...)` | `validateRead(...)` | `countly.auth.js` |
+| `countlyTaskManager.monitor(...)` | `monitor(...)` or `monitorTask(...)` | `countly.task.manager.js` |
 
 ### Available named exports from `vue/core.js`:
 
@@ -540,13 +578,22 @@ import { autoRefreshMixin, commonFormattersMixin, i18nMixin, i18n } from '../../
 | `autoRefreshMixin` | Mixin for date picker refresh support |
 | `commonFormattersMixin` | Replaces `countlyVue.mixins.commonFormatters` |
 | `i18nMixin` | Replaces `countlyVue.mixins.i18n` |
+| `authMixin` | Replaces `countlyVue.mixins.auth` — call as `authMixin(featureName)` |
 | `mixins` | Object with `customDashboards`, `zoom`, `hasDrawers`, `graphNotesCommand`, etc. |
-| `vuex` | Object with `Module()`, `FetchMixin()` |
 | `views` | Object with `create()`, `BackboneWrapper` |
-| `ajax` | AJAX utility (use `{ ajax }` where `CV.$` was used) |
+| `ajax` | AJAX utility (use where `CV.$.ajax` was used) |
 | `templateUtil` | `templateUtil.stage()` replaces `countlyVue.T()` |
-| `registerGlobally` | Register Vuex module globally |
-| `unregister` | Unregister Vuex module |
+
+### Available named exports from `vue/data/vuex.js`:
+
+| Export | Usage |
+|---|---|
+| `Module` | Creates Vuex module: `Module("name", options)` |
+| `ServerDataTable` | Creates server data table resource: `ServerDataTable("name", options)` |
+| `MutableTable` | Creates mutable table resource |
+| `getServerDataSource` | Gets data source for `cly-datatable-n`: `getServerDataSource(store, path, resourceName)` |
+| `getLocalStore` | Gets local Vuex store for a BackboneWrapper |
+| `FetchMixin` | Vuex fetch mixin factory |
 
 ---
 
@@ -830,13 +877,14 @@ plugins/plugin-name/frontend/public/
 1. **Import Paths**: Plugins use longer relative paths to reach frontend files:
    ```js
    // From plugin's index.js
-   import { i18n } from '../../../../frontend/express/public/javascripts/countly/vue/core.js';
-   
+   import { i18n, views } from '../../../../frontend/express/public/javascripts/countly/vue/core.js';
+
    // From plugin's components/*.vue
-   import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
-   
+   import { i18nMixin, autoRefreshMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+   import { getServerDataSource } from '../../../../../frontend/express/public/javascripts/countly/vue/data/vuex.js';
+
    // From plugin's store/index.js
-   import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+   import { Module, ServerDataTable } from '../../../../../frontend/express/public/javascripts/countly/vue/data/vuex.js';
    ```
 
 2. **SCSS Import in index.js**: Include styles directly in the entry point:
@@ -928,12 +976,12 @@ export { BrowserView };
 </template>
 
 <script>
-import countlyVue, { autoRefreshMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { autoRefreshMixin, i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 
 export default {
     mixins: [
-        countlyVue.mixins.i18n,
+        i18nMixin,
         autoRefreshMixin
     ],
     mounted: function() {
@@ -963,20 +1011,24 @@ export default {
 
 ### Plugin Import Path Reference
 
-Paths are relative from plugin's `frontend/public/` directory:
+Paths are relative from plugin's `frontend/public/` directory. **Always use named imports — never import the default `countlyVue` object.**
 
 ```js
 // From index.js (plugins/plugin-name/frontend/public/index.js)
-import { i18n } from '../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { i18n, views } from '../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { registerTab } from '../../../../frontend/express/public/javascripts/countly/vue/container.js';
+import { app } from '../../../../frontend/express/public/javascripts/countly/countly.template.js';
 
 // From components/*.vue (plugins/plugin-name/frontend/public/components/View.vue)
-import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { i18nMixin, authMixin, autoRefreshMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { getServerDataSource } from '../../../../../frontend/express/public/javascripts/countly/vue/data/vuex.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+import { validateGlobalAdmin } from '../../../../../frontend/express/public/javascripts/countly/countly.auth.js';
 
 // From store/index.js (plugins/plugin-name/frontend/public/store/index.js)
-import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { Module, ServerDataTable } from '../../../../../frontend/express/public/javascripts/countly/vue/data/vuex.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+import { createMetricModel } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
 ```
 
 ---

@@ -14,14 +14,14 @@
     .cly-vue-chart-legend__line {
         margin-top: 12px;
     }
-    
+
 }
 .cly-vue-compliance__consent_history_expanded_column {
     height: 16px;
 }
 .cly-vue-compliance__consent_history_expanded_column:last-child {
-    /* Internal note: The style written for the .el-table__expanded-cell class 
-       inside crashes is affecting the global scope because no plugin namespace 
+    /* Internal note: The style written for the .el-table__expanded-cell class
+       inside crashes is affecting the global scope because no plugin namespace
        was provided. This line was added as a temporary fix to keep consistency */
     padding-bottom: 32px;
 }
@@ -37,7 +37,7 @@
     border-top: none;
   }
   .cly-vue-complaince__hub_style_widthzero {
-    
+
     .cly-vue-section__content {
         border-top: 0;
     }

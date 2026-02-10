@@ -57,11 +57,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // TODO: a separate build for prelogin files
+// TODO: a separate build for pace files (pace is currently built with main bundle and cached, but it would be better to have it as a separate bundle that main bundle can depend on, so it can also be cached separately and not be affected by changes in main bundle)
+// TODO: a separate build for user facing survey files (same reason as pace)
 
 const REFACTORED_PLUGINS = [
     "alerts",
     "browser",
     "compare",
+    "compliance-hub",
     "star-rating",
 ];
 

@@ -1,12 +1,13 @@
-<div class="cly-vue-compliance__user_consent_history">
-<div class="bu-mt-5">
-        <div class="bu-is-flex bu-my-4">
-            <div class="bu-mr-2 text-big font-weight-bold"> User Consent History </div>
-            <div>
-                <cly-tooltip-icon></cly-tooltip-icon>
+<template>
+    <div class="cly-vue-compliance__user_consent_history">
+        <div class="bu-mt-5">
+            <div class="bu-is-flex bu-my-4">
+                <div class="bu-mr-2 text-big font-weight-bold"> User Consent History </div>
+                <div>
+                    <cly-tooltip-icon></cly-tooltip-icon>
+                </div>
             </div>
         </div>
-    </div>
         <cly-datatable-n :force-loading="isLoading" :data-source="userConsentHistoryTableSource" :default-sort="{prop: 'ts', order: 'descending'}">
             <template v-slot="scope">
                 <el-table-column fixed type="expand">
@@ -53,10 +54,9 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column fixed width="250"sortable="custom" label="ID" prop="_id">
-
+                <el-table-column fixed width="250" sortable="custom" label="ID" prop="_id">
                 </el-table-column>
-                <el-table-column width = "80" sortable="custom" prop="uid" label="UID">
+                <el-table-column width="80" sortable="custom" prop="uid" label="UID">
                 </el-table-column>
                 <el-table-column sortable="custom" width="120" label="CHANGES">
                     <template v-slot="rowScope">
@@ -64,9 +64,7 @@
                             <p v-if="rowScope.row.type.includes('i')">{{i18n("consent.opt-i")}}</p>
                             <p v-if="rowScope.row.type.includes('o')">{{i18n("consent.opt-o")}} </p>
                         </div>
-
                     </template>
-
                 </el-table-column>
                 <el-table-column width="224" sortable="custom" label="CONSENT">
                     <template v-slot="rowScope">
@@ -76,16 +74,40 @@
                             <p v-if="rowScope.row.optout.length > 0">{{i18n("consent.opt-o")}} from {{rowScope.row.optout.length}}
                                 feature(s)</p>
                         </div>
-
                     </template>
-
                 </el-table-column>
                 <el-table-column min-width="230" sortable="custom" prop="ts" label="TIME">
                     <template v-slot="rowScope">
                         {{rowScope.row.time}}
-
                     </template>
                 </el-table-column>
             </template>
         </cly-datatable-n>
-</div>
+    </div>
+</template>
+
+<script>
+import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { getServerDataSource } from '../../../../../frontend/express/public/javascripts/countly/vue/data/vuex.js';
+
+export default {
+    mixins: [i18nMixin],
+    data: function() {
+        return {
+            userConsentHistoryTableSource: getServerDataSource(this.$store, "countlyConsentManager", "consentHistoryUserResource"),
+        };
+    },
+    computed: {
+        isLoading: function() {
+            return this.$store.getters["countlyConsentManager/isLoading"];
+        }
+    },
+    beforeCreate: function() {
+        var userDetails = this.$store.getters["countlyUsers/userDetailsResource/userDetails"];
+        if (userDetails.uid) {
+            this.$store.dispatch("countlyConsentManager/uid", userDetails.uid);
+            this.$store.dispatch("countlyConsentManager/fetchConsentHistoryUserResource", userDetails);
+        }
+    }
+};
+</script>
