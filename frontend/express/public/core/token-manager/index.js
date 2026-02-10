@@ -2,7 +2,7 @@ import { views } from '../../javascripts/countly/vue/core.js';
 import app from '../../javascripts/countly/countly.template.js';
 
 import TokenManagerMain from './components/TokenManagerMain.vue';
-import './stylesheets/_main.scss';
+import './assets/main.scss';
 
 // Create main view
 const getMainView = function() {

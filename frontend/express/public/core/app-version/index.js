@@ -2,7 +2,7 @@ import { i18n } from '../../javascripts/countly/vue/core.js';
 import { registerTab } from '../../javascripts/countly/vue/container.js';
 
 import AppVersionView from './components/AppVersionView.vue';
-import './stylesheets/_main.scss';
+import './assets/main.scss';
 
 // Register tab under technology analytics.
 // Note: This component uses the shared countlyDevicesAndTypes store from device-and-type plugin.

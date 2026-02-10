@@ -3,7 +3,7 @@ import app from '../../javascripts/countly/countly.template.js';
 
 import VersionHistoryView from './components/VersionHistory.vue';
 import countlyVersionHistoryManager from '../../javascripts/countly/countly.version.history.js';
-import './stylesheets/_main.scss';
+import './assets/main.scss';
 
 /**
  * Get the version history view wrapped for Backbone routing

@@ -7,7 +7,7 @@ import * as CountlyHelpers from '../../javascripts/countly/countly.helpers.js';
 import UserActivityView from './components/UserActivity.vue';
 import UserLoyaltyView from './components/UserLoyalty.vue';
 import store from './store/index.js';
-import './stylesheets/_main.scss';
+import './assets/main.scss';
 
 // Helper function to create BackboneWrapper for UserLoyalty
 var getUserLoyaltyView = function() {

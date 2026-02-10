@@ -11,7 +11,7 @@ import _ from 'underscore';
 import AppSetupView from './components/AppSetupView.vue';
 import ConsentView from './components/ConsentView.vue';
 import store from './store/index.js';
-import './stylesheets/_main.scss';
+import './assets/main.scss';
 
 // Routes
 app.route('/initial-setup', 'initial-setup', function() {
