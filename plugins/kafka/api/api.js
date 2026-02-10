@@ -27,6 +27,20 @@ let kafkaBootstrapper = null;
 
 
 /**
+ * Normalize broker configuration to a clean array of broker addresses.
+ * Accepts both array and comma-separated string formats.
+ * @param {string|string[]|undefined} raw - Raw broker value from config
+ * @returns {string[]} Normalized array of broker addresses (may be empty)
+ */
+function normalizeBrokers(raw) {
+    if (!raw) {
+        return [];
+    }
+    const entries = Array.isArray(raw) ? raw : String(raw).split(',');
+    return entries.map(b => String(b).trim()).filter(Boolean);
+}
+
+/**
  * Validate critical Kafka configuration to prevent system breakage
  * Only validates configs that would cause immediate failures
  * @param {Object} kafkaConfig - Kafka configuration object
@@ -36,9 +50,14 @@ function validateKafkaConfig(kafkaConfig) {
     const errors = [];
     const warnings = [];
 
+    // Normalize brokers in-place so downstream code sees a clean array
+    if (kafkaConfig.rdkafka) {
+        kafkaConfig.rdkafka.brokers = normalizeBrokers(kafkaConfig.rdkafka.brokers);
+    }
+
     // Critical: Must have brokers to connect
-    if (!kafkaConfig.rdkafka?.brokers || !Array.isArray(kafkaConfig.rdkafka.brokers) || kafkaConfig.rdkafka.brokers.length === 0) {
-        errors.push('kafka.rdkafka.brokers must be a non-empty array');
+    if (!kafkaConfig.rdkafka?.brokers || kafkaConfig.rdkafka.brokers.length === 0) {
+        errors.push('kafka.rdkafka.brokers must be a non-empty array or comma-separated string');
     }
 
     // Critical: Transaction timeout required when transactions enabled
