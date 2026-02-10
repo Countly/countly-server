@@ -234,6 +234,7 @@ import DateTable from './date-table.vue';
 import MonthTable from './month-table.vue';
 import YearTable from './year-table.vue';
 import vuescroll from 'vuescroll';
+import Emitter from 'element-ui/src/mixins/emitter';
 import {
     availableShortcuts,
     globalMin,
@@ -255,7 +256,7 @@ export default {
     mixins: [
         InputControlsMixin,
         CalendarsMixin,
-        window.ELEMENT.utils.Emitter // TO-DO: window reference will be removed and it will be imported after vue 3 migration
+        Emitter
     ],
     components: {
         'date-table': DateTable,
