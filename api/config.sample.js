@@ -276,7 +276,7 @@ var countlyConfig = {
             queuedMaxMessagesKbytes: 524288, // Maximum memory for message queue in KB (default: 512MB, lower memory usage)
 
             // Concurrency and performance settings
-            partitionsConsumedConcurrently: 1, // Number of partitions to consume concurrently per process (default: 4)
+            partitionsConsumedConcurrently: 1, // Number of partitions to consume concurrently per process (default: 1)
 
             // Consumer group settings (conservative defaults to reduce rebalancing)
             // These values are tuned for CPU-throttled environments (K8s with resource limits)
