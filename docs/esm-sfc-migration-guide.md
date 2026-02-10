@@ -83,6 +83,45 @@ var countlyPopulator = window.countlyPopulator;
 var countlyPlugins = window.countlyPlugins;
 ```
 
+#### ⚠️ Exception: Optional cross-plugin dependencies (Dynamic Import)
+
+When a plugin **optionally** depends on another plugin that may or may not be installed/enabled, use **dynamic `import()`** with a `.catch()` fallback.
+
+##### Pattern:
+```js
+// Module-level: dynamic import with graceful fallback
+var groupsModelRef = null;
+var groupsModelPromise = import('path/to/other-plugin/store/index.js')
+    .then(function(mod) { groupsModelRef = mod.default; return mod.default; })
+    .catch(function() { return null; });
+```
+
+- `groupsModelPromise` — use in lifecycle hooks (`mounted`, `created`) for async initialization
+- `groupsModelRef` — use for synchronous access after the promise has resolved (e.g., in methods, watchers)
+
+##### Usage in lifecycle hooks:
+```js
+mounted: function() {
+    var self = this;
+    if (countlyGlobal.plugins.includes("groups")) {
+        groupsModelPromise.then(function(groupsModel) {
+            if (!groupsModel) return; // plugin not available
+            groupsModel.initialize().then(function() {
+                self.allGroups = groupsModel.data();
+            });
+        });
+    }
+},
+```
+
+##### Usage for synchronous access (after promise has resolved):
+```js
+// In methods or watchers — groupsModelRef is set once the dynamic import resolves
+if (groupsModelRef) {
+    groupsModelRef.saveUserGroup({ email: email, group_id: groupId }, function() {});
+}
+```
+
 ### Explicit Global SFC Component Imports
 
 **All global SFC components used in a template must be explicitly imported and registered in the `components` option.**
