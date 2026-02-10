@@ -158,8 +158,8 @@ const legacyScripts = [
     // 'core/onboarding/javascripts/countly.views.js',
     // 'core/date-presets/javascripts/countly.views.js',
     // 'core/date-presets/javascripts/countly.models.js',
-    'core/health-manager/javascripts/countly.models.js',
-    'core/health-manager/javascripts/countly.views.js',
+    // 'core/health-manager/javascripts/countly.models.js',
+    // 'core/health-manager/javascripts/countly.views.js',
 
     // Only include if drill plugin exists (EE only)
     ...(fs.existsSync('./plugins/drill/frontend/public/javascripts/countly.query.builder.core.js')
