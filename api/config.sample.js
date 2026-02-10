@@ -33,7 +33,7 @@ var countlyConfig = {
                 enabled: true
             },
             clickhouse: {
-                enabled: false
+                enabled: true
             }
         },
         comparisonLogs: {
@@ -43,7 +43,7 @@ var countlyConfig = {
 
     /**
     * MongoDB connection definition and options
-    * @type {object} 
+    * @type {object}
     * @property {string} [host=localhost] - host where to connect to mongodb, default localhost
     * @property {array=} replSetServers - array with multiple hosts, if you are connecting to replica set, provide this instead of host
     * @property {string=} replicaName - replica name, must provide for replica set connection to work
@@ -199,19 +199,19 @@ var countlyConfig = {
     },
     /**
     * Kafka connection definition and options
-    * 
+    *
     * ⚠️  IMPORTANT: When Kafka is enabled, it is treated as a HARD DEPENDENCY.
     * Any connection failures during startup will cause the application to exit.
-    * 
+    *
     * ⚠️  DATA LOSS WARNINGS:
     * - acks=0 or acks=1: Can lose data on broker failures
     * - messageTimeoutMs too low: Messages dropped after timeout
-    * - deliveryTimeoutMs too low: Messages lost when retries exhausted  
+    * - deliveryTimeoutMs too low: Messages lost when retries exhausted
     * - retries too low: Data lost on temporary network issues
     * - enableAutoCommit=true: Data lost if consumer crashes before processing
     * - sessionTimeoutMs too low: Rebalances lose in-flight messages
     * - maxPollIntervalMs too low: Consumer kicked out, loses uncommitted offsets
-    * 
+    *
     * @type {object}
     * @property {boolean} [enabled=false] - Enable Kafka integration (when true, Kafka becomes a hard dependency)
     * @property {string} [drillEventsTopic=countly-drill-events] - Topic name for drill events
@@ -225,7 +225,7 @@ var countlyConfig = {
     * @property {object} rdkafka - librdkafka configuration settings
     */
     kafka: {
-        enabled: false, // Enable/disable Kafka integration globally (when true, becomes hard dependency)
+        enabled: true, // Enable/disable Kafka integration globally (when true, becomes hard dependency)
         drillEventsTopic: "drill-events", // Default topic name for event data
         groupIdPrefix: "cly_", // Prefix added to all consumer group IDs
 
@@ -276,7 +276,7 @@ var countlyConfig = {
             queuedMaxMessagesKbytes: 524288, // Maximum memory for message queue in KB (default: 512MB, lower memory usage)
 
             // Concurrency and performance settings
-            partitionsConsumedConcurrently: 4, // Number of partitions to consume concurrently per process (default: 4)
+            partitionsConsumedConcurrently: 1, // Number of partitions to consume concurrently per process (default: 4)
 
             // Consumer group settings (conservative defaults to reduce rebalancing)
             // These values are tuned for CPU-throttled environments (K8s with resource limits)
@@ -312,13 +312,13 @@ var countlyConfig = {
     /**
     * EventSink configuration for writing events to multiple destinations
     * EventSink provides a unified interface for writing events to MongoDB, Kafka, or both
-    * 
+    *
     * @type {object}
     * @property {Array<string>} [sinks=['mongo']] - Array of sink types to enable
     *                                               Options: 'mongo', 'kafka', or both
     *                                               MongoDB is always available as fallback
     *                                               Kafka is only used if kafka.enabled is also true
-    * 
+    *
     * Examples:
     * - sinks: ['mongo'] - Write only to MongoDB (default)
     * - sinks: ['kafka'] - Write only to Kafka (if enabled)
@@ -330,7 +330,7 @@ var countlyConfig = {
 
     /**
     * Default API configuration
-    * @type {object} 
+    * @type {object}
     * @property {number} [port=3001] - api port number to use, default 3001
     * @property {string} [host=localhost] - host to which to bind connection
     * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
@@ -353,7 +353,7 @@ var countlyConfig = {
     },
     /**
     * Default Ingestor configuration
-    * @type {object} 
+    * @type {object}
     * @property {number} [port=3010] - api port number to use, default 3010
     * @property {string} [host=localhost] - host to which to bind connection
     * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
@@ -370,7 +370,7 @@ var countlyConfig = {
     },
     /**
     * Default Job Server configuration
-    * @type {object} 
+    * @type {object}
     * @property {number} [port=3020] - port number to use, default 3020
     * @property {string} [host=localhost] - host to which to bind connection
     * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
@@ -386,12 +386,12 @@ var countlyConfig = {
     },
     /**
     * Path to use for countly directory, empty path if installed at root of website
-    * @type {string} 
+    * @type {string}
     */
     path: "",
     /**
     * Default logging settings
-    * @type {object} 
+    * @type {object}
     * @property {string} [default=warn] - default level of logging for {@link logger}
     * @property {array=} info - modules to log for information level for {@link logger}
     * @property {boolean} [prettyPrint=false] - whether to pretty print the logs
@@ -403,7 +403,7 @@ var countlyConfig = {
     },
     /**
     * Default proxy settings, if provided then countly uses ip address from the right side of x-forwarded-for header ignoring list of provided proxy ip addresses
-    * @type {array=} 
+    * @type {array=}
     */
     ignoreProxies: [/*"127.0.0.1"*/],
 
@@ -434,7 +434,7 @@ var countlyConfig = {
 	* Usable only in case when there are multiple countly instances connected to single database. Has to be set to true for at least one instance.
 	*/
     preventJobs: false,
-    /** 
+    /**
      * Share same database connection pool between databases
      */
     shared_connection: true,
