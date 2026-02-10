@@ -10,6 +10,8 @@ Enterprise Fixes:
 - [nps] Allow nps to resize and reposition when user rotates devices or adjust browser window
 - [groups] Dealing with invalid values for group permission
 - [geo] Update table row cursor to indicate that it's clickable
+- [users] Change table column min-width to width so it can be resized even smaller
+- [users] Display filtered user count instead of all user count in the table summary
 
 ## Version 25.03.33
 Fixes:
