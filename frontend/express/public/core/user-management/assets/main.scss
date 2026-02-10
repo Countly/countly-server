@@ -1,3 +1,37 @@
+.user-management-view {
+  .el-tabs--button > .el-tabs__header {
+    padding: 24px 24px 0px 24px;
+  }
+
+  .manage-users-action-btn {
+    background-color: #12af51;
+  }
+}
+
+.manage-users-table {
+  margin: 0px;
+
+  &__groups {
+    display: inline-flex;
+    color: #32659d;
+
+    a:hover {
+      color: #1a75da;
+      text-decoration: underline;
+    }
+  }
+
+  &__groups-label {
+    margin: 0px 2px;
+  }
+}
+
+.user-management-filter-form {
+  .select-full-width {
+    width: 100%;
+  }
+}
+
 .user-management-drawer-content {
 
   &__pp-options {
@@ -39,7 +73,7 @@
     text-decoration: underline;
     cursor: pointer;
   }
-  
+
   &__top-section {
     display: flex;
     flex-direction: row;
@@ -56,7 +90,7 @@
   &__input-wrapper {
     margin-top: 10px;
   }
-  
+
   &__label {
     display: flex;
     justify-content: space-between;
@@ -164,14 +198,13 @@
     font-size: 12px;
     border-bottom: 1px solid #ebebeb;
     padding-bottom: 10px;
-    //box-shadow: 0px 3px 5px rgb(0 0 0 / 8%);
   }
 
   &__feature-search {
     width: calc(40% - 15px);
     margin-left: 10px;
-    
-    .el-input__inner { 
+
+    .el-input__inner {
       background-color: white !important;
     }
   }
@@ -252,19 +285,12 @@
     font-weight: 500;
     font-size: 12px;
     line-height: 15px;
-    /* identical to box height */
-
     letter-spacing: 0.5px;
     text-transform: uppercase;
-
-    /* interface/cool-gray-100 */
-
     color: #333C48;
   }
 
   &__role-section {
-    //padding: 10px 10px 0px 10px;
-
     .check-text {
       margin-top: 4px !important;
     }

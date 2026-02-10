@@ -148,8 +148,8 @@ const legacyScripts = [
     // 'core/geo-countries/javascripts/countly.widgets.geo.js',
     'core/app-management/javascripts/countly.models.js',
     'core/app-management/javascripts/countly.views.js',
-    'core/user-management/javascripts/countly.models.js',
-    'core/user-management/javascripts/countly.views.js',
+    // 'core/user-management/javascripts/countly.models.js', // Migrated to SFC
+    // 'core/user-management/javascripts/countly.views.js', // Migrated to SFC
     // 'core/home/javascripts/countly.models.js',
     // 'core/home/javascripts/countly.views.js',
     'core/notes/javascripts/countly.views.js',
