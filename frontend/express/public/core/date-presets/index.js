@@ -5,7 +5,7 @@ import app from '../../javascripts/countly/countly.template.js';
 import PresetManagement from './components/PresetManagement.vue';
 import PresetList from './components/PresetList.vue';
 import store from './store/index.js';
-import './stylesheets/_main.scss';
+import './assets/main.scss';
 
 // Expose on window for legacy date.js (runs in virtual:legacy-concat scope).
 window.countlyPresets = store;

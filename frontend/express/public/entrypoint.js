@@ -47,13 +47,14 @@ import './core/jobs/index.js';
 import './core/token-manager/index.js';
 import './core/home/index.js';
 import './core/carrier/index.js';
-// import './core/health-manager/index.js';
+import './core/health-manager/index.js';
 import './core/date-presets/index.js';
 import './core/user-activity/index.js';
 import './core/user-analytics-overview/index.js';
 import './core/geo-countries/index.js';
 import './core/report-manager/index.js';
 import './core/onboarding/index.js';
+import './core/user-management/index.js';
 
 // Report manager component imports (globally registered - used by sidebar, drill, funnels, etc.)
 import ClyReportManagerDialog from './core/report-manager/components/ClyReportManagerDialog.vue';

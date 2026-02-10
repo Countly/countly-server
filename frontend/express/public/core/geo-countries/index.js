@@ -8,7 +8,7 @@ import CityView from './components/CityView.vue';
 import CountriesHomeWidget from './components/CountriesHomeWidget.vue';
 import countryStore from './store/countly.country.js';
 import citiesStore from './store/countly.cities.js';
-import './stylesheets/_main.scss';
+import './assets/main.scss';
 import './widget.js';
 
 // Register countries tab under geo analytics.

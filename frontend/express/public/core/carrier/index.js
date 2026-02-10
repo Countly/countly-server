@@ -3,7 +3,7 @@ import { registerTab } from '../../javascripts/countly/vue/container.js';
 
 import CarrierView from './components/CarrierView.vue';
 import store from './store/index.js';
-import './stylesheets/_main.scss';
+import './assets/main.scss';
 
 // Register tab.
 registerTab("/analytics/technology", {

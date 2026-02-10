@@ -6,7 +6,7 @@ import cronstrue from 'cronstrue';
 
 import JobsView from './components/JobsView.vue';
 import JobDetailsView from './components/JobDetailsView.vue';
-import './stylesheets/_main.scss';
+import './assets/main.scss';
 
 // Register VeeValidate custom validator for cron expressions
 extend('validCron', {
