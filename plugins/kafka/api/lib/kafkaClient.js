@@ -120,7 +120,8 @@ class KafkaClient {
         const kafkaConfig = countlyConfig.kafka || {};
         const rdkafkaConfig = kafkaConfig.rdkafka || {};
 
-        const brokers = rdkafkaConfig.brokers || ['localhost:9092'];
+        const rawBrokers = rdkafkaConfig.brokers || ['localhost:9092'];
+        const brokers = Array.isArray(rawBrokers) ? rawBrokers : String(rawBrokers).split(',').map(b => b.trim()).filter(Boolean);
         const clientId = rdkafkaConfig.clientId || 'countly-kafka-client';
 
         // Map librdkafka-style security to KafkaJS
