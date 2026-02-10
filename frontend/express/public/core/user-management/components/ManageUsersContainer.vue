@@ -26,8 +26,10 @@ import UserDrawer from './UserDrawer.vue';
 
 var isGroupPluginEnabled = countlyGlobal.plugins.includes("groups");
 
-// TO-DO: legacy IIFE, no ESM export available for now.
-var groupsModel = window.groupsModel;
+var groupsModelRef = null;
+var groupsModelPromise = import('../../../../../../plugins/groups/frontend/public/store/index.js')
+    .then(function(mod) { groupsModelRef = mod.default; return mod.default; })
+    .catch(function() { return null; });
 
 export default {
     components: {
@@ -59,8 +61,8 @@ export default {
         groupMap: function() {
             var map = {};
 
-            if (isGroupPluginEnabled) {
-                this.groupModelData = groupsModel.data();
+            if (isGroupPluginEnabled && groupsModelRef) {
+                this.groupModelData = groupsModelRef.data();
                 this.groupModelData.forEach(function(group) {
                     map[group._id] = group.name;
                 });
@@ -136,8 +138,11 @@ export default {
     mounted: function() {
         var self = this;
         if (isGroupPluginEnabled) {
-            groupsModel.initialize().then(function() {
-                self.groupModelData = groupsModel.data();
+            groupsModelPromise.then(function(groupsModel) {
+                if (!groupsModel) return;
+                groupsModel.initialize().then(function() {
+                    self.groupModelData = groupsModel.data();
+                });
             });
         }
         Promise.all([countlyUserManagement.fetchUsers(), countlyUserManagement.fetchFeatures()]).then(function() {

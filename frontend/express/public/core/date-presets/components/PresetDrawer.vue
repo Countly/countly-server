@@ -128,6 +128,7 @@ import countlyVue from '../../../javascripts/countly/vue/core.js';
 import * as CountlyHelpers from '../../../javascripts/countly/countly.helpers.js';
 import countlyGlobal from '../../../javascripts/countly/countly.global.js';
 import countlyPresets from '../store/index.js';
+import _ from 'underscore';
 
 import ClyDrawer from '../../../javascripts/components/drawer/cly-drawer.vue';
 import ClyFormStep from '../../../javascripts/components/form/cly-form-step.vue';
@@ -135,6 +136,11 @@ import ClyFormField from '../../../javascripts/components/form/cly-form-field.vu
 import ClyDatePicker from '../../../javascripts/components/date/date-picker.vue';
 import ClyTooltipIcon from '../../../javascripts/components/helpers/cly-tooltip-icon.vue';
 import ClySelectEmail from '../../../javascripts/components/input/select-email.vue';
+
+var groupsModelRef = null;
+var groupsModelPromise = import('../../../../../../plugins/groups/frontend/public/store/index.js')
+    .then(function(mod) { groupsModelRef = mod.default; return mod.default; })
+    .catch(function() { return null; });
 
 var CV = countlyVue;
 var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
@@ -211,17 +217,20 @@ export default {
     created: function() {
         if (this.groupSharingAllowed) {
             var self = this;
-            window.groupsModel.initialize().then(function() {
-                var groups = window._.sortBy(window.groupsModel.data(), 'name');
+            groupsModelPromise.then(function(groupsModel) {
+                if (!groupsModel) return;
+                groupsModel.initialize().then(function() {
+                    var groups = _.sortBy(groupsModel.data(), 'name');
 
-                var userGroups = groups.map(function(g) {
-                    return {
-                        name: g.name,
-                        value: g._id
-                    };
+                    var userGroups = groups.map(function(g) {
+                        return {
+                            name: g.name,
+                            value: g._id
+                        };
+                    });
+
+                    self.allGroups = userGroups;
                 });
-
-                self.allGroups = userGroups;
             });
         }
     },
