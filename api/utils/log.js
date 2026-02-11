@@ -1,5 +1,14 @@
 const pino = require('pino');
 
+// Optional pino-pretty import for human-readable console output
+let pinoPretty;
+try {
+    pinoPretty = require('pino-pretty');
+}
+catch (e) {
+    // pino-pretty not available, will use JSON output
+}
+
 // Optional OpenTelemetry imports
 let trace;
 let context;
@@ -207,7 +216,9 @@ class LogManager {
         this.#prefs = loadLoggingConfig();
         this.#prefs.default = this.#prefs.default || 'warn';
         this.#deflt = this.#prefs.default || 'error';
-        this.#prettyPrint = this.#prefs.prettyPrint || false;
+        // Pretty-print enabled by default for human-readable console output
+        // Set config.logging.prettyPrint = false for JSON output (e.g., for log aggregation)
+        this.#prettyPrint = this.#prefs.prettyPrint !== false;
 
         // Initialize OpenTelemetry metrics if available
         if (metrics) {
@@ -306,22 +317,19 @@ class LogManager {
     }
 
     /**
-     * Gets or creates the pretty transport singleton
-     * @returns {Object|null} The pretty transport or null
+     * Gets or creates the pretty stream singleton
+     * @returns {Object|null} The pretty stream or null
      */
     getPrettyTransport() {
-        if (!this.#prettyPrint) {
+        if (!this.#prettyPrint || !pinoPretty) {
             return null;
         }
 
         if (!this.#prettyTransport) {
-            this.#prettyTransport = pino.transport({
-                target: 'pino-pretty',
-                options: {
-                    colorize: true,
-                    translateTime: 'SYS:standard',
-                    ignore: 'pid,hostname'
-                }
+            this.#prettyTransport = pinoPretty({
+                colorize: true,
+                translateTime: 'SYS:HH:MM:ss.l',
+                ignore: 'pid,hostname'
             });
         }
         return this.#prettyTransport;
