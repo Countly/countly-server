@@ -1,5 +1,8 @@
-/*global  app*/
-app.addAppType("web", null);//empty function, so use base dashboard
+import { app } from '../../../../frontend/express/public/javascripts/countly/countly.template.js';
+
+import './assets/main.scss';
+
+app.addAppType("web", null); //empty function, so use base dashboard
 
 app.addSubMenuForType("web", "analytics", {code: "analytics-technology", permission: "core", url: "#/analytics/technology", text: "sidebar.analytics.technology", priority: 30});
 app.addSubMenuForType("web", "analytics", {code: "analytics-geo", permission: "core", url: "#/analytics/geo", text: "sidebar.analytics.geo", priority: 40});
