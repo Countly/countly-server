@@ -19,6 +19,9 @@
                 {{i18n('dashboards.share-with')}}
                 <cly-tooltip-icon :tooltip="i18n('dashboards.share-with-tooltip-content')" data-test-id="dashboard-visibility-tooltip"></cly-tooltip-icon>
             </div>
+            <div v-if="constants.isPublicDisabled" class="text-small color-cool-gray-50 bu-mb-2">
+                {{i18n('dashboards.public-dashboards-disabled-info')}}
+            </div>
             <cly-form-field name="share_with" rules="required">
                 <el-radio-group :disabled="!canShare" v-model="drawerScope.editedObject.share_with" style="width: 100%;">
                     <el-radio
@@ -27,9 +30,14 @@
                         :test-id="'dashboard-visibility-option-' + item.value"
                         v-for="(item) in constants.sharingOptions"
                         :label="item.value"
-                        :key="item.value">
+                        :key="item.value"
+                        :disabled="constants.isPublicDisabled && item.value === 'all-users'">
                         <div>
                             {{item.name}}
+                            <cly-tooltip-icon
+                                v-if="constants.isPublicDisabled && item.value === 'all-users'"
+                                :tooltip="i18n('dashboards.share.all-users.description') + ' ' + i18n('dashboards.public-dashboards-disabled-info')">
+                            </cly-tooltip-icon>
                         </div>
                         <div class="text-small color-cool-gray-50">
                             {{item.description}}
