@@ -3,9 +3,9 @@ var plugins = require('../../pluginManager.ts'),
 const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.js');
 const log = require('../../../api/utils/log.js')('views:aggregator');
 const crypto = require('crypto');
+const viewsUtils = require('./parts/viewsUtils.js');
 
 (function() {
-
     var forbiddenSegValues = [];
 
     for (let i = 1; i < 32; i++) {
@@ -43,6 +43,38 @@ const crypto = require('crypto');
         "utm_content": true,
         "referrer": true
     };
+
+
+    plugins.register("/batcher/fail", function(ob) {
+        if (ob.db === "countly" && (ob.collection.indexOf("app_viewdata") === 0)) {
+            //omit segment using app_id and segment name
+            if (ob.data && ob.data.updateOne && ob.data.updateOne.update && ob.data.updateOne.update.$set) {
+                var appId = ob.data.updateOne.update.$set.a;
+                var segment = ob.data.updateOne.update.$set.s;
+                if (appId && segment) {
+                    log.d("calling segment omiting for " + appId + " - " + segment);
+                    viewsUtils.ommit_segments({extend: true, db: common.db, omit: [segment], appId: appId, params: {"qstring": {}, "user": {"_id": "SYSTEM", "username": "SYSTEM"}}}, function(err) {
+                        if (err) {
+                            log.e(err);
+                        }
+                    });
+                }
+            }
+        }
+        else if (ob.db === "countly" && ob.collection === "views") {
+            //Failed to update root document
+            var _id = ob.data.updateOne.filter._id;
+            if (_id) {
+                log.d("Failed to update root document for app " + _id + ". There are too many segments/values stored. Run cleanup for core document.");
+            }
+            viewsUtils.cleanupRootDocument({db: common.db, appId: _id}, function(err) {
+                if (err) {
+                    log.e(err);
+                }
+            });
+        }
+    });
+
 
     //Recording views
     plugins.register("/aggregator", async function() {
@@ -121,7 +153,7 @@ const crypto = require('crypto');
                                             if (escapedViewSegments[segKey] || (viewMeta.omit && viewMeta.omit.indexOf(segKey) !== -1)) {
                                                 continue;
                                             }
-                                            else if (segKey !== 'platform' && (!viewMeta.segments[segKey] && Object.keys(viewMeta.segments).length > plugins.getConfig("views").segment_limit)) {
+                                            else if (segKey !== 'platform' && (!viewMeta.segments[segKey] && Object.keys(viewMeta.segments).length >= plugins.getConfig("views").segment_limit)) {
                                                 continue;
                                             }
                                             segments.push(segKey);
@@ -178,7 +210,7 @@ const crypto = require('crypto');
                                                 escapedMetricVal = "[CLY]" + escapedMetricVal;
                                             }
 
-                                            if (viewMeta.segments[segments[i]] && (!viewMeta.segments[segments[i]][escapedMetricVal] && Object.keys(viewMeta.segments[segments[i]]).length > plugins.getConfig("views").segment_value_limit)) {
+                                            if (viewMeta.segments[segments[i]] && (!viewMeta.segments[segments[i]][escapedMetricVal] && Object.keys(viewMeta.segments[segments[i]]).length >= plugins.getConfig("views").segment_value_limit)) {
                                                 continue;
                                             }
 
@@ -201,7 +233,6 @@ const crypto = require('crypto');
                                                 tmpTimeObjZero["d." + time.month + "." + escapedMetricVal + prop] = update[prop];
                                             }
                                         }
-
                                         common.manualWriteBatcher.add("app_viewdata", tmpMonthId, {"$inc": tmpTimeObjMonth, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.month}}, "countly", {token: token});
                                         common.manualWriteBatcher.add("app_viewdata", tmpZeroId, {"$inc": tmpTimeObjZero, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.zero}}, "countly", {token: token});
                                     }

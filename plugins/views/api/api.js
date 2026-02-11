@@ -1332,11 +1332,15 @@ const FEATURE_NAME = 'views';
         else if (params.qstring.method === "get_view_segments") {
             validateRead(params, FEATURE_NAME, function() {
                 var res = {segments: [], domains: []};
-                common.db.collection("views").findOne({'_id': common.db.ObjectID(params.app_id)}, function(err1, res1) {
+                common.db.collection("views").findOne({'_id': common.db.ObjectID(params.qstring.app_id)}, function(err1, res1) {
+                    if (err1) {
+                        log.e(err1);
+                    }
+                    console.log(JSON.stringify(res1));
                     if (res1 && res1.segments) {
                         res.segments = res1.segments;
                         for (var k in res1.segments) {
-                            res1.segments[k] = Object.keys(res1.segments[k]) || [];
+                            res.segments[k] = Object.keys(res1.segments[k]) || [];
                         }
                     }
                     if (res1 && res1.omit) {

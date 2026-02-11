@@ -4,6 +4,7 @@ Script fixes indexes for views collections and merges views if there are  views 
 **/
 
 var pluginManager = require('../../pluginManager.ts'),
+/** SCRIPT IS DEPRECATED FOR  NEWARCH. Needs to be rewritten to work with the new architecture */
     crypto = require('crypto'),
     Promise = require("bluebird"),
     countlyDb;
