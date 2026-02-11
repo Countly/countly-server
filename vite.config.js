@@ -114,8 +114,8 @@ const legacyScripts = [
     // 'javascripts/countly/vue/components/datatable.js',
     // 'javascripts/countly/vue/components/dialog.js',
     // 'javascripts/countly/vue/components/drawer.js',
-    'core/notes/javascripts/countly.models.js', // TO-DO: will be moved to notes plugin, but for now it has to stay here because it's used in multiple places and too complicated for now
-    'core/notes/javascripts/countly.common.notes.js', // TO-DO: same
+    // 'core/notes/javascripts/countly.models.js', // Migrated to ESM - imported in core/notes/index.js
+    // 'core/notes/javascripts/countly.common.notes.js', // Migrated to ESM - imported in core/notes/index.js
     // 'javascripts/countly/vue/components/vis.js',
     // 'javascripts/countly/vue/components/helpers.js',
     // 'javascripts/countly/vue/components/progress.js',
@@ -156,7 +156,7 @@ const legacyScripts = [
     // 'core/user-management/javascripts/countly.views.js', // Migrated to SFC
     // 'core/home/javascripts/countly.models.js',
     // 'core/home/javascripts/countly.views.js',
-    'core/notes/javascripts/countly.views.js',
+    // 'core/notes/javascripts/countly.views.js', // Migrated to ESM - imported in core/notes/index.js
     // 'core/version-history/javascripts/countly.views.js',
     // 'core/onboarding/javascripts/countly.models.js',
     // 'core/onboarding/javascripts/countly.views.js',

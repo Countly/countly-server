@@ -1,5 +1,6 @@
 import { mergeWith as _mergeWith } from 'lodash';
 import { countlyCommon } from '../../countly/countly.common.js';
+import { i18n } from '../../../javascripts/countly/vue/core.js';
 import moment from 'moment';
 
 // TO-DO: window.hideGraphTooltip dependency will be imported
@@ -619,14 +620,83 @@ export const GraphNotesMixin = {
             return returnedObj;
         },
         getGraphNotes: function() {
-            // This is a placeholder - actual implementation depends on countlyGraphNotesCommon
-            // which should be available globally
-            if (this.hideNotation || this.areNotesHidden) {
-                this.seriesOptions.markPoint.data = [];
-                return;
+            if (!this.hideNotation && !this.areNotesHidden) {
+                var self = this;
+                var chartHeight = 300;
+                var yAxisHeight = '';
+                var filter = {};
+                var mergeByDate = false;
+
+                filter = this.graphNotesFilterChecks();
+                countlyCommon.getGraphNotes(filter.appIds, filter.customPeriod).then(function(data) {
+                    self.notes = data.aaData;
+                }).then(function() {
+                    self.seriesOptions.markPoint.data = [];
+                    if (self.notes && self.notes.length) {
+                        if (self.$refs.echarts) {
+                            chartHeight = self.$refs.echarts.getHeight();
+                        }
+                        if ((Array.isArray(countlyCommon.periodObj._period) && countlyCommon.periodObj.currentPeriodArr.length > 30)) {
+                            mergeByDate = true;
+                        }
+                        self.mergedNotes = self.mergeGraphNotesByDate(self.notes, mergeByDate);
+                        self.mergedNotes.forEach(function(note, index) {
+                            if (note.dateStr) {
+                                if (chartHeight < 250 && chartHeight !== 100) {
+                                    if (note.hasCloseDate && note.times === 1) {
+                                        yAxisHeight = '65%';
+                                    }
+                                    else {
+                                        yAxisHeight = '60%';
+                                    }
+                                }
+                                else {
+                                    if (note.hasCloseDate && note.times === 1) {
+                                        yAxisHeight = '80%';
+                                    }
+                                    else {
+                                        yAxisHeight = '75%';
+                                    }
+                                }
+                            }
+
+                            self.seriesOptions.markPoint.data.push({
+                                note: note,
+                                value: note.times > 1 ? ' ' : note.indicator,
+                                xAxis: note.dateStr,
+                                y: yAxisHeight,
+                                symbolRotate: -20,
+                                symbolSize: note.indicator.length === 1 ? 30 : 40,
+                            });
+
+                            self.seriesOptions.markPoint.data[index].itemStyle = {
+                                color: note.times > 1 ? window.countlyGraphNotesCommon.COLOR_TAGS[0].label : window.countlyGraphNotesCommon.COLOR_TAGS.find(function(x) {
+                                    return x.value === note.color;
+                                }).label
+                            };
+                            self.seriesOptions.markPoint.emphasis.itemStyle = {
+                                borderColor: "#c5c5c5",
+                                borderWidth: 4
+                            };
+                        });
+
+                        self.seriesOptions.markPoint.tooltip = {
+                            transitionDuration: 1,
+                            show: true,
+                            trigger: "item",
+                            confine: true,
+                            extraCssText: 'z-index: 1000',
+                            alwaysShowContent: true,
+                            formatter: function(params) {
+                                return self.graphNotesTooltipFormatter(self.mergedNotes, params);
+                            }
+                        };
+                    }
+                });
             }
-            // The actual implementation requires countlyGraphNotesCommon
-            // which is loaded via legacy scripts
+            else {
+                this.seriesOptions.markPoint.data = [];
+            }
         },
         onClick: function() {
             if (!document.querySelectorAll(".graph-overlay").length) {
@@ -740,9 +810,53 @@ export function mergeWithCustomizer(objValue, srcValue) {
     }
 }
 
-// Also expose ExternalZoomMixin to countlyVue.mixins for backward compatibility
-if (typeof window !== 'undefined' && window.countlyVue) {
-    window.countlyVue.mixins.zoom = ExternalZoomMixin;
-}
+export const AnnotationCommandMixin = {
+    data: function() {
+        return {
+            drawerSettingsForWidgets: {
+                createTitle: i18n('notes.add-new-note'),
+                editTitle: i18n('notes.edit-note'),
+                saveButtonLabel: i18n('common.save'),
+                createButtonLabel: i18n('common.create'),
+                isEditMode: false
+            },
+        };
+    },
+    computed: {
+        areNotesHidden: function() {
+            return this.$store.getters['countlyCommon/getAreNotesHidden'];
+        }
+    },
+    methods: {
+        refreshNotes: function() {
+            if (this.$refs.echartRef) {
+                this.$refs.echartRef.getGraphNotes();
+            }
+        },
+        graphNotesHandleCommand: function(event) {
+            if (event === "add") {
+                this.openDrawer("annotation", {
+                    noteType: "private",
+                    ts: Date.now(),
+                    color: {value: 1, label: '#39C0C8'},
+                    emails: [],
+                    category: this.category,
+                    appIds: this.data ? this.data.apps : null
+                });
+            }
+            else if (event === "manage") {
+                window.location.href = '#/analytics/graph-notes';
+            }
+            else if (event === "show") {
+                this.notesVisibility();
+            }
+        },
+        notesVisibility: function() {
+            this.$store.dispatch('countlyCommon/setAreNotesHidden', !this.areNotesHidden);
+        },
+    }
+};
+
+// countlyVue.mixins.graphNotesCommand = AnnotationHandleCommand;
 
 export { FONT_FAMILY };

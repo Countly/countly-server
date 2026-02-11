@@ -222,9 +222,7 @@ import ClyChartPie from '../../../javascripts/components/echart/cly-chart-pie.vu
 import ClyChartZoom from '../../../javascripts/components/echart/cly-chart-zoom.vue';
 import ClyDatatableN from '../../../javascripts/components/datatable/cly-datatable-n.vue';
 import ClyBlank from '../../../javascripts/components/helpers/cly-blank.vue';
-
-// countlyGraphNotesCommon is a legacy window global (not yet migrated to ESM)
-var graphNotesDrawer = window.countlyGraphNotesCommon ? window.countlyGraphNotesCommon.drawer : { template: '<div></div>' };
+import AnnotationDrawer from '../../notes/components/AnnotationDrawer.vue';
 
 export default {
     components: {
@@ -235,7 +233,7 @@ export default {
         ClyChartZoom,
         ClyDatatableN,
         ClyBlank,
-        "drawer": graphNotesDrawer
+        "drawer": AnnotationDrawer
     },
     mixins: [
         countlyVue.mixins.customDashboards.global,

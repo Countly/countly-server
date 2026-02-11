@@ -198,3 +198,10 @@ window.countlyTaskManager = countlyTaskManager;
 
 import { initialize as initializeCountlyViews } from './javascripts/countly/countly.views.js';
 initializeCountlyViews();
+
+import countlyGraphNotesStore from './core/notes/store/index.js';
+import AnnotationDrawer from './core/notes/components/AnnotationDrawer.vue';
+window.countlyGraphNotesCommon = {
+    COLOR_TAGS: countlyGraphNotesStore.module.state.colorTags,
+    drawer: AnnotationDrawer
+};

@@ -26,7 +26,8 @@
 <script>
 import countlyVue from '../../countly/vue/core.js';
 import * as countlyAuth from '../../countly/countly.auth.js';
-// TO-DO: dependency: window.countlyGraphNotesCommon will be imported.
+import AnnotationDrawer from '../../../core/notes/components/AnnotationDrawer.vue';
+
 export default {
     props: {
         category: {
@@ -90,9 +91,7 @@ export default {
         }
     },
     components: {
-        "drawer": function() {
-            return window.countlyGraphNotesCommon ? window.countlyGraphNotesCommon.drawer : { template: '<div></div>' };
-        }
+        "drawer": AnnotationDrawer
     }
 };
 </script>

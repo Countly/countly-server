@@ -1,0 +1,195 @@
+<template>
+<div v-bind:class="[componentId]">
+    <cly-header
+        :title="i18n('notes.manage-notes')"
+        :tooltip="{description: i18n('notes.manage-notes')}"
+    >
+        <template v-slot:header-top>
+            <cly-back-link :title="i18n('common.back')"></cly-back-link>
+        </template>
+        <template v-if="hasCreateRight" v-slot:header-right>
+            <div class="bu-level-item">
+              <el-button type="success" @click="createNote" size="small" icon="el-icon-circle-plus">{{i18n('notes.add-new-note')}}
+              </el-button>
+            </div>
+          </template>
+    </cly-header>
+    <cly-main>
+        <cly-date-picker-g class="bu-mb-5"></cly-date-picker-g>
+        <cly-confirm-dialog @cancel="closeDeleteForm" @confirm="submitDeleteForm" :before-close="closeDeleteForm" ref="deleteConfirmDialog" :visible.sync="showDeleteDialog" dialogType="danger" :saveButtonLabel="deleteDialogConfirmText" :cancelButtonLabel="i18n('common.no-dont-delete')" :title="deleteDialogTitle" >
+            <template slot-scope="scope">
+                {{deleteDialogText}}
+            </template>
+        </cly-confirm-dialog>
+        <cly-datatable-n id="graph-notes-table" :rows="notes" :default-sort="{prop: 'indicator', order: 'ascending'}" :has-export="false">
+            <template v-slot:header-left="selectScope">
+                <el-select v-model="selectedType">
+                    <el-option v-for="item in typeList" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                </el-select>
+            </template>
+            <template v-slot="scope">
+                <el-table-column min-width="25" :sortable="false" prop="indicator">
+                </el-table-column>
+                <el-table-column min-width="250" :sortable="false" prop="note" :label="i18n('notes.note')">
+                    <template slot-scope="rowScope">
+                        {{decodeHtml(rowScope.row.note)}}
+                    </template>
+                </el-table-column>
+                <el-table-column sortable="custom" prop="noteType"  :label="i18n('notes.type')">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="owner_name" :label="i18n('notes.owner')">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="emails" :label="i18n('notes.shared-with')">
+                        <template slot-scope="rowScope">
+                        {{(rowScope.row.emails).toString() || '-'}}
+                    </template>
+                </el-table-column>
+                <el-table-column sortable="custom"  :formatter="dateFormatter" prop="ts" :label="i18n('common.date')">
+                </el-table-column>
+                <el-table-column type="options">
+                    <template v-slot="rowScope">
+                    <cly-more-options v-if="rowScope.row.hover && (hasUpdateRight || hasDeleteRight)" size="small" @command="handleCommand($event, rowScope.row)">
+                        <el-dropdown-item v-if="hasUpdateRight" command="edit">{{ i18n('common.edit') }}</el-dropdown-item>
+                        <el-dropdown-item v-if="hasDeleteRight" command="delete">{{ i18n('common.delete') }}</el-dropdown-item>
+                    </cly-more-options>
+                    </template>
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+        <annotation-drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></annotation-drawer>
+    </cly-main>
+</div>
+</template>
+
+<script>
+import { i18nMixin, i18n, mixins, commonFormattersMixin } from '../../../javascripts/countly/vue/core.js';
+import { countlyCommon } from '../../../javascripts/countly/countly.common.js';
+import { notify } from '../../../javascripts/countly/countly.helpers.js';
+import AnnotationDrawer from './AnnotationDrawer.vue';
+
+var FEATURE_NAME = "core";
+
+export default {
+    mixins: [i18nMixin, commonFormattersMixin, mixins.hasDrawers("annotation")],
+    components: {
+        "annotation-drawer": AnnotationDrawer
+    },
+    data: function() {
+        return {
+            deleteDialogTitle: i18n('management-users.warning'),
+            deleteDialogText: "",
+            deleteDialogConfirmText: i18n('common.ok'),
+            showDeleteDialog: false,
+            drawerSettings: {
+                createTitle: i18n('notes.add-new-note'),
+                editTitle: i18n('notes.edit-note'),
+                saveButtonLabel: i18n('common.save'),
+                createButtonLabel: i18n('common.create'),
+                isEditMode: false
+            },
+            typeList: [
+                {value: "all", label: i18n('notes.all-notes')},
+                {value: "private", label: "Private"},
+                {value: "shared", label: "Shared"},
+                {value: "public", label: "Public"}
+            ],
+            defaultType: 'all'
+        };
+    },
+    computed: {
+        notes: function() {
+            return this.$store.state.countlyGraphNotes.notes;
+        },
+        selectedType: {
+            get: function() {
+                return this.defaultType;
+            },
+            set: function(value) {
+                this.defaultType = value;
+                var filter = {};
+                if (value !== "all") {
+                    filter = {noteType: value};
+                }
+                this.$store.dispatch('countlyGraphNotes/fetchNotes', filter);
+            }
+        },
+        hasCreateRight: function() {
+            return window.countlyAuth.validateCreate(FEATURE_NAME);
+        },
+        hasUpdateRight: function() {
+            return window.countlyAuth.validateUpdate(FEATURE_NAME);
+        },
+        hasDeleteRight: function() {
+            return window.countlyAuth.validateDelete(FEATURE_NAME);
+        },
+    },
+    methods: {
+        refresh: function(force) {
+            if (force) {
+                this.$store.dispatch('countlyGraphNotes/fetchNotes', {});
+            }
+        },
+        decodeHtml: function(str) {
+            return countlyCommon.unescapeHtml(str);
+        },
+        handleCommand: function(command, data) {
+            switch (command) {
+            case "delete":
+                this.deleteDialogText = i18n('notes.delete-note', data.note);
+                this.noteToDialog = data._id;
+                this.showDeleteDialog = true;
+                break;
+            case 'edit':
+                data.color = {value: data.color};
+                this.drawerSettings.isEditMode = true;
+                data.note = countlyCommon.unescapeHtml(data.note);
+                this.openDrawer("annotation", data);
+                break;
+            default:
+                break;
+            }
+        },
+        createNote: function() {
+            this.openDrawer("annotation", {
+                noteType: "private",
+                ts: Date.now(),
+                color: {value: 1, label: '#39C0C8'},
+                emails: [],
+                category: this.category
+            });
+        },
+        submitDeleteForm: function() {
+            this.showDeleteDialog = false;
+            var self = this;
+            if (this.noteToDialog) {
+                this.$store.dispatch('countlyGraphNotes/delete', this.noteToDialog).then(function() {
+                    notify({
+                        type: 'success',
+                        message: i18n('common.success')
+                    });
+                    self.refresh(true);
+                }).catch(function(res) {
+                    notify({
+                        type: 'error',
+                        title: i18n('common.error'),
+                        message: res.message
+                    });
+                    self.refresh(true);
+                });
+            }
+        },
+        dateFormatter: function(row, col, value) {
+            if (!value) {
+                return '';
+            }
+            return countlyCommon.getDate(value);
+        },
+        closeDeleteForm: function() {
+            this.showDeleteDialog = false;
+        }
+    },
+    created: function() {
+        this.refresh(true);
+    }
+};
+</script>

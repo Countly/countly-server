@@ -1,12 +1,13 @@
 <script>
 import { mixins, templateUtil } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+import AnnotationDrawer from '../../../../../frontend/express/public/core/notes/components/AnnotationDrawer.vue';
 
 export default {
     template: templateUtil.stage('/dashboards/templates/widgets/analytics/widget.html'),
     mixins: [mixins.customDashboards.global, mixins.customDashboards.widget, mixins.customDashboards.apps, mixins.zoom, mixins.hasDrawers("annotation"), mixins.graphNotesCommand],
     components: {
-        "drawer": (window.countlyGraphNotesCommon && window.countlyGraphNotesCommon.drawer) || {}
+        "drawer": AnnotationDrawer
     },
     data: function() {
         return {

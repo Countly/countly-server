@@ -1,9 +1,7 @@
 import { views, i18nM, mixins, templateUtil } from '../../javascripts/countly/vue/core.js';
 import { registerData } from '../../javascripts/countly/vue/container.js';
 import GeoWidgetDrawer from './components/GeoWidgetDrawer.vue';
-
-// TO-DO: countlyGraphNotesCommon will be turned into module and imported.
-var countlyGraphNotesCommon = window.countlyGraphNotesCommon;
+import AnnotationDrawer from '../notes/components/AnnotationDrawer.vue';
 
 var WidgetComponent = views.create({
     // TO-DO: Replace runtime template with SFC import when dashboards plugin migrates shared widget templates.
@@ -15,7 +13,7 @@ var WidgetComponent = views.create({
         mixins.graphNotesCommand
     ],
     components: {
-        "drawer": countlyGraphNotesCommon.drawer
+        "drawer": AnnotationDrawer
     },
     data: function() {
         return {

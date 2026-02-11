@@ -55,6 +55,7 @@ import './core/geo-countries/index.js';
 import './core/report-manager/index.js';
 import './core/onboarding/index.js';
 import './core/user-management/index.js';
+import './core/notes/index.js';
 
 // Report manager component imports (globally registered - used by sidebar, drill, funnels, etc.)
 import ClyReportManagerDialog from './core/report-manager/components/ClyReportManagerDialog.vue';
