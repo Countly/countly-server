@@ -178,7 +178,6 @@ import {
     ClyChartPie,
     ClyMapPicker,
     ClyWorldmap,
-    ExternalZoomMixin
 } from './javascripts/components/echart/index.js';
 
 // Register components globally
@@ -303,9 +302,6 @@ window.Vue.component('cly-worldmap', ClyWorldmap);
 
 // Report manager dialog (globally registered - used by sidebar, drill, funnels, etc.)
 window.Vue.component('cly-report-manager-dialog', ClyReportManagerDialog);
-
-// Export zoom mixin for backward compatibility
-window.countlyVue.mixins.zoom = ExternalZoomMixin;
 
 // =============================================================================
 // ES MODULE PLUGIN IMPORTS

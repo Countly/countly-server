@@ -47,6 +47,8 @@ import {
     ClyQuickstartPopover
 } from '../../components/popups/index.js';
 
+import { ExternalZoomMixin, AnnotationCommandMixin } from '../../components/echart/mixins.js';
+
 // @vue/component
 export const autoRefreshMixin = {
     mounted: function() {
@@ -424,6 +426,8 @@ export const mixins = {
     'hasDrawers': hasDrawersMixin, // TO-DO: remove this dependency when drawer form is modularized.
     'hasDrawersMethods': hasDrawersMethodsMixin, // TO-DO: remove this dependency when drawer form is modularized.
     'hasFormDialogs': hasFormDialogsMixin, // TO-DO: remove this dependency when dialog form is modularized in plugins.
+    'zoom': ExternalZoomMixin, // TODO: remove this dependency when echart components are modularized in plugins.
+    'graphNotesCommand': AnnotationCommandMixin, // TODO: remove this dependency when echart components are modularized in plugins.
 };
 
 // Initialize app switch callback when DOM is ready
