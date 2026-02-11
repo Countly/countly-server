@@ -229,6 +229,12 @@ class KafkaConsumer {
             // Invalid JSON handling/metrics
             invalidJsonBehavior: consumerConfig.invalidJsonBehavior || 'skip', // 'skip'|'fail'
             invalidJsonMetrics: consumerConfig.invalidJsonMetrics ?? true,
+
+            // Static membership (KIP-345) - null = disabled (safe default for Deployments + HPA)
+            groupInstanceId: consumerConfig.groupInstanceId || null,
+
+            // Max poll interval - time between poll() calls before consumer is kicked
+            maxPollIntervalMs: consumerConfig.maxPollIntervalMs || 300000,
         };
 
         log.d(finalConfig, 'KafkaConsumer configuration');
@@ -272,8 +278,6 @@ class KafkaConsumer {
         if (typeof handler !== 'function') {
             throw new Error('KafkaConsumer.start(handler): handler must be a function');
         }
-
-        await this.#initConsumer();
 
         const runOptions = {
             // hard-disable auto commit & auto-resolve; we will commit manually
@@ -449,15 +453,27 @@ class KafkaConsumer {
         this.#_runLoopActive = true;
         (async() => {
             let backoff = 1000; // 1s initial
-            while (this.#_shouldRun && this.#consumer) {
+            while (this.#_shouldRun) {
                 try {
-                    // run() resolves on stop/disconnect/crash
+                    await this.#initConsumer();
                     await this.#consumer.run(runOptions);
                     break; // normal stop/disconnect
                 }
                 catch (err) {
                     log.e(`[group=${this.#config.groupId}] Consumer crashed; restarting in ${backoff}ms`, err);
                     this.#recordHealthStat('error', { message: err.message, type: 'CRASH' });
+
+                    // Tear down the consumer instance for full recreation
+                    if (this.#consumer) {
+                        try {
+                            await this.#consumer.disconnect();
+                        }
+                        catch (disconnectErr) {
+                            log.w(`[group=${this.#config.groupId}] Disconnect error during recovery: ${disconnectErr.message}`);
+                        }
+                        this.#consumer = null;
+                    }
+
                     if (!this.#_shouldRun) {
                         break;
                     }
@@ -564,14 +580,19 @@ class KafkaConsumer {
 
         const consumerOpts = {
             groupId: this.#config.groupId,
-            // Give each pod a stable instance id (e.g., hostname or StatefulSet ordinal)
-            groupInstanceId: process.env.KAFKA_GROUP_INSTANCE_ID || require('os').hostname(),
+            // Static membership (KIP-345):
+            // - KAFKA_GROUP_INSTANCE_ID env var takes precedence (backwards compatible)
+            // - Config value from kafka.consumer.groupInstanceId
+            // - undefined = disabled (safe default for Deployments + HPA)
+            // WARNING: Do NOT use hostname fallback - it's not stable across pod restarts
+            groupInstanceId: process.env.KAFKA_GROUP_INSTANCE_ID || this.#config.groupInstanceId || undefined,
             allowAutoTopicCreation: false,
             // read only committed transactional messages
             readUncommitted: false,
             sessionTimeout: this.#config.sessionTimeoutMs,
             heartbeatInterval: this.#config.heartbeatInterval,
             rebalanceTimeout: this.#config.rebalanceTimeout,
+            maxPollInterval: this.#config.maxPollIntervalMs,
             minBytes: this.#config.minBytes,
             maxWaitTimeInMs: this.#config.maxWaitTimeInMs,
             maxBytes: this.#config.maxBytes,
