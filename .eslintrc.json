@@ -367,6 +367,9 @@
                 "vite.config.js",
                 "vite.config.pace.js",
                 "frontend/express/public/**/*.js",
+                "plugins/*/frontend/public/index.js", // TO-DO: Replace with "plugins/*/frontend/public/**/*.js" once all plugins are migrated to ESM.
+                "plugins/*/frontend/public/widget.js",
+                "plugins/*/frontend/public/store/**/*.js",
                 "plugins/content/frontend/vite.config.js",
                 "plugins/journey_engine/frontend/vite.config.js",
                 "plugins/journey_engine/frontend/vite-manifest.js"
