@@ -137,6 +137,7 @@ const REFACTORED_PLUGINS = [
     "groups",
     "dashboards",
     "desktop",
+    "mobile",
     "push",
     "star-rating",
     "web",

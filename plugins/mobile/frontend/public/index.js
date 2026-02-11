@@ -1,4 +1,4 @@
-/*globals app */
+import { app } from '../../../../frontend/express/public/javascripts/countly/countly.template.js';
 
 app.addAppType("mobile", null);
 
