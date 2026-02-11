@@ -58,7 +58,7 @@ const __dirname = path.dirname(__filename);
 
 // TODO: a separate build for prelogin files
 // TODO: a separate build for pace files (pace is currently built with main bundle and cached, but it would be better to have it as a separate bundle that main bundle can depend on, so it can also be cached separately and not be affected by changes in main bundle)
-// TODO: a separate build for user facing survey files (same reason as pace)
+// TODO: a separate build for user facing surveys files
 
 const REFACTORED_PLUGINS = [
     "alerts",
@@ -66,6 +66,7 @@ const REFACTORED_PLUGINS = [
     "compare",
     "compliance-hub",
     "crashes",
+    "dashboards",
     "star-rating",
 ];
 
@@ -74,7 +75,7 @@ const REFACTORED_PLUGINS = [
 // COMMIT HASH BEFORE REMOVALS: d1167224987671af19c576fbd4c6d7ab56515dde
 const legacyScripts = [
     // === HEAD SECTION (from dashboard.html lines 111-169) ===
-    'javascripts/dom/gridstack/gridstack-h5.js', // install this into dashboard plugin (there's also a gridstack.css in entrypoint)
+    // 'javascripts/dom/gridstack/gridstack-h5.js', // install this into dashboard plugin (there's also a gridstack.css in entrypoint)
     // 'javascripts/utils/backbone-min.js',
     // 'javascripts/utils/jquery.i18n.properties.js',
     // 'javascripts/utils/store+json2.min.js',                                   - storejs IS INSTALLED. CHECK IF json2 IS NEEDED.

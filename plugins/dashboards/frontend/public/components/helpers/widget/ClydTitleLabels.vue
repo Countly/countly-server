@@ -1,0 +1,20 @@
+<template>
+<div v-if="labels" class="clyd-title-labels bu-is-flex bu-is-flex-shrink-1" style="min-width: 0;">
+    <div v-for="(item, idx) in labels" class="bu-ml-1 bu-p-1 text-smallest has-ellipsis" :data-test-id="'widget-item-' + idx">
+        {{item}}
+    </div>
+</div>
+</template>
+
+<script>
+export default {
+    props: {
+        labels: {
+            type: Array,
+            default: function() {
+                return [];
+            }
+        }
+    }
+};
+</script>
