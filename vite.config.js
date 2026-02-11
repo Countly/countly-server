@@ -124,6 +124,7 @@ function isVendorExternal(id) {
 }
 
 const REFACTORED_PLUGINS = [
+    "ab-testing",
     "active_users",
     "activity-map",
     "adjust",
