@@ -191,6 +191,7 @@ const async: any = require('async');
 const _: any = require('underscore');
 const crypto: typeof import('crypto') = require('crypto');
 const BluebirdPromise: any = require('bluebird');
+const debug: any = require('debug')('countly:pluginManager');
 const log: LogModule = require('../api/utils/log.js');
 const logDbRead: Logger = log('db:read');
 const logDbWrite: Logger = log('db:write');
@@ -436,9 +437,9 @@ class PluginManager {
                 }
             }
             catch (ex: any) {
-                console.log('Skipping plugin ' + pluginNames[i] + ' as we could not load it because of errors.');
-                console.error(ex.stack);
-                console.log('Saving this plugin as disabled in db');
+                const errorLine = (ex.message || '').split('\n')[0];
+                console.log('Skipping plugin ' + pluginNames[i] + ': ' + errorLine);
+                debug('Plugin %s load error:\n%s', pluginNames[i], ex.stack);
             }
         }
     }
@@ -1272,8 +1273,9 @@ class PluginManager {
                 }
             }
             catch (ex: any) {
-                console.log('skipping plugin because of errors:' + pluginNames[i]);
-                console.error(ex.stack);
+                const errorLine = (ex.message || '').split('\n')[0];
+                console.log('Skipping plugin ' + pluginNames[i] + ': ' + errorLine);
+                debug('Plugin %s load error:\n%s', pluginNames[i], ex.stack);
             }
         }
     }
