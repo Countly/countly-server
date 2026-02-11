@@ -60,6 +60,69 @@ const __dirname = path.dirname(__filename);
 // TODO: a separate build for pace files (pace is currently built with main bundle and cached, but it would be better to have it as a separate bundle that main bundle can depend on, so it can also be cached separately and not be affected by changes in main bundle)
 // TODO: a separate build for user facing surveys files
 
+// Mapping of npm package specifiers to window global names.
+// These packages are pre-built in vite.config.vendor.js.
+// The main build externalizes them and references the window globals instead.
+const VENDOR_GLOBALS = {
+    // Framework
+    'vue': 'Vue',
+    'vuex': 'Vuex',
+    // UI Framework
+    'element-ui/src/index.js': 'ELEMENT',
+    'element-ui/src/mixins/emitter': '__vendor_elementEmitter',
+    'element-tiptap': 'ElementTiptap',
+    // Validation
+    'vee-validate': 'VeeValidate',
+    'vee-validate/dist/rules': '__vendor_VeeValidateRules',
+    // Charting
+    'echarts': '__vendor_echarts',
+    'vue-echarts': '__vendor_VueECharts',
+    // Maps & Grid
+    'leaflet': '__vendor_leaflet',
+    'vue2-leaflet': '__vendor_Vue2Leaflet',
+    'sortablejs': '__vendor_Sortable',
+    'gridstack': '__vendor_gridstack',
+    // Vue Components
+    'vuescroll': '__vendor_vuescroll',
+    'vue2-dropzone': '__vendor_vue2Dropzone',
+    'vuedraggable': '__vendor_vuedraggable',
+    'vue-clipboard2': '__vendor_VueClipboard',
+    'vue-color': '__vendor_VueColor',
+    'vue-in-viewport-mixin': '__vendor_vueInViewportMixin',
+    'v-tooltip': 'VTooltip',
+    // Utilities
+    'jquery': 'jQuery',
+    'moment': 'moment',
+    'underscore': '_',
+    'lodash': '__vendor_lodash',
+    'storejs': 'store',
+    'cronstrue': 'cronstrue',
+    'highlight.js': 'hljs',
+    'uuid': '__vendor_uuid',
+    'countly-sdk-web': '__vendor_CountlySDK',
+};
+
+// Root package names derived from VENDOR_GLOBALS keys
+const VENDOR_PACKAGES = [...new Set(Object.keys(VENDOR_GLOBALS).map(k => {
+    // Handle scoped packages (@scope/pkg) and sub-paths (pkg/sub/path)
+    if (k.startsWith('@')) {
+        return k.split('/').slice(0, 2).join('/');
+    }
+    return k.split('/')[0];
+}))];
+
+/**
+ * Check if a module ID should be externalized (provided by vendor bundle).
+ */
+function isVendorExternal(id) {
+    // Never externalize CSS — it stays in the main bundle
+    if (/\.(css|scss|less)$/.test(id)) {
+        return false;
+    }
+    // Check exact match first, then prefix match for sub-paths
+    return VENDOR_PACKAGES.some(pkg => id === pkg || id.startsWith(pkg + '/'));
+}
+
 const REFACTORED_PLUGINS = [
     "active_users",
     "activity-map",
@@ -356,64 +419,78 @@ function vue2JsxPlugin() {
     };
 }
 
-export default defineConfig({
-    root: path.resolve(__dirname, 'frontend/express/public'),
-    base: '/dist/',
+export default defineConfig(({ mode }) => {
+    const isDev = mode === 'development';
 
-    plugins: [
-        cleanMainBundlePlugin(),
-        vue2JsxPlugin(),
-        vue(),
-        legacyConcatPlugin(),
-    ],
+    return {
+        root: path.resolve(__dirname, 'frontend/express/public'),
+        base: '/dist/',
 
-    build: {
-        outDir: path.resolve(__dirname, 'frontend/express/public/dist'),
-        emptyOutDir: false,
-        sourcemap: true,
-        manifest: true,
-        // minify: false,
+        plugins: [
+            cleanMainBundlePlugin(),
+            vue2JsxPlugin(),
+            vue(),
+            legacyConcatPlugin(),
+        ],
 
-        rollupOptions: {
-            input: {
-                main: path.resolve(__dirname, 'frontend/express/public/entrypoint.js'),
-            },
-            output: {
-                entryFileNames: 'js/countly.bundle.[hash].js',
-                chunkFileNames: 'js/countly.chunk.[hash].js',
-                assetFileNames: (assetInfo) => {
-                    if (assetInfo.name.endsWith('.css')) {
-                        return 'css/countly.bundle.[hash].css';
-                    }
-                    return 'assets/[name].[hash][extname]';
+        build: {
+            outDir: path.resolve(__dirname, 'frontend/express/public/dist'),
+            emptyOutDir: false,
+            sourcemap: !isDev,
+            manifest: true,
+            minify: !isDev,
+
+            rollupOptions: {
+                input: {
+                    main: path.resolve(__dirname, 'frontend/express/public/entrypoint.js'),
                 },
-                format: 'iife',
-                inlineDynamicImports: true,
+                external: isDev ? isVendorExternal : undefined,
+                output: {
+                    entryFileNames: 'js/countly.bundle.[hash].js',
+                    chunkFileNames: 'js/countly.chunk.[hash].js',
+                    assetFileNames: (assetInfo) => {
+                        if (assetInfo.name.endsWith('.css')) {
+                            return 'css/countly.bundle.[hash].css';
+                        }
+                        return 'assets/[name].[hash][extname]';
+                    },
+                    format: 'iife',
+                    inlineDynamicImports: true,
+                    ...(isDev ? {
+                        globals: (id) => {
+                            if (VENDOR_GLOBALS[id]) {
+                                return VENDOR_GLOBALS[id];
+                            }
+                            // Fallback for unmapped sub-path imports
+                            return '__vendor_' + id.replace(/[^a-zA-Z0-9]/g, '_');
+                        },
+                    } : {}),
+                },
+                treeshake: false,
             },
-            treeshake: false,
+
+            cssCodeSplit: false,
+            chunkSizeWarningLimit: 10000,
+            modulePreload: false,
         },
 
-        cssCodeSplit: false,
-        chunkSizeWarningLimit: 10000,
-        modulePreload: false,
-    },
-
-    resolve: {
-        preserveSymlinks: true,
-        alias: {
+        resolve: {
+            preserveSymlinks: true,
+            alias: {
             // TODO: REMOVE THIS AFTER SWITCHING TO SINGLE FILE COMPONENTS (.vue)
-            'vue': 'vue/dist/vue.esm.js',
-            // Redirect element-ui/lib/* to element-ui/packages/* for element-tiptap compatibility
-            // (we use a custom version of element-ui that doesn't have the lib folder)
-            // TODO: REMOVE THIS AFTER SWITCHING TO VUE3
-            'element-ui/lib': 'element-ui/packages',
+                'vue': 'vue/dist/vue.esm.js',
+                // Redirect element-ui/lib/* to element-ui/packages/* for element-tiptap compatibility
+                // (we use a custom version of element-ui that doesn't have the lib folder)
+                // TODO: REMOVE THIS AFTER SWITCHING TO VUE3
+                'element-ui/lib': 'element-ui/packages',
+            },
+            extensions: ['.vue', '.js', '.json', '.css']
         },
-        extensions: ['.vue', '.js', '.json', '.css']
-    },
 
-    esbuild: {
-        keepNames: true,
-    },
+        esbuild: {
+            keepNames: true,
+        },
 
-    logLevel: 'info',
+        logLevel: 'info',
+    };
 });

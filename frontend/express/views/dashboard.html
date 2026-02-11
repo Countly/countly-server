@@ -114,6 +114,10 @@
         <% } %>
     <% } %>
 
+    <% var vendorJs = getViteAsset('vendor-entrypoint.js', 'js'); %>
+    <% var vendorCss = getViteAsset('vendor-entrypoint.js', 'css'); %>
+    <% if (vendorCss) { %><link rel="stylesheet" href="<%- cdn %><%= vendorCss %>" /><% } %>
+    <% if (vendorJs) { %><script language="javascript" type="text/javascript" src="<%- cdn %><%= vendorJs %>"></script><% } %>
     <link rel="stylesheet" href="<%- cdn %><%= getViteAsset('entrypoint.js', 'css') %>" />
     <script language="javascript" type="text/javascript" src="<%- cdn %><%= getViteAsset('entrypoint.js', 'js') %>"></script>
 

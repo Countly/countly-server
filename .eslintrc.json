@@ -366,6 +366,7 @@
             "files": [
                 "vite.config.js",
                 "vite.config.pace.js",
+                "vite.config.vendor.js",
                 "frontend/express/public/**/*.js",
                 "plugins/*/frontend/public/index.js", // TO-DO: Replace with "plugins/*/frontend/public/**/*.js" once all plugins are migrated to ESM.
                 "plugins/*/frontend/public/widget.js",
@@ -778,7 +779,7 @@
                 "unicorn/prefer-type-error": "error",
                 "unicorn/require-number-to-fixed-digits-argument": "error",
                 "unicorn/template-indent": "error",
-                
+
                 // Base style rules (same as JS)
                 "block-spacing": ["error", "always"],
                 "brace-style": ["error", "stroustrup"],

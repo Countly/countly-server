@@ -5,12 +5,19 @@ window.Vuex = Vuex;
 
 // Import and configure VeeValidate
 import * as VeeValidate from 'vee-validate';
-import * as rules from 'vee-validate/dist/rules';
+import * as _veeRules from 'vee-validate/dist/rules';
 window.VeeValidate = VeeValidate;
 Vue.use(VeeValidate);
-Vue.component('validation-provider', VeeValidate.ValidationProvider);
-Vue.component('validation-observer', VeeValidate.ValidationObserver);
-Object.keys(rules).forEach(rule => VeeValidate.extend(rule, rules[rule]));
+// Skip component registration & rule extension if the vendor bundle already did it
+if (!window.__vendorVeeValidateInitialized) {
+    Vue.component('validation-provider', VeeValidate.ValidationProvider);
+    Vue.component('validation-observer', VeeValidate.ValidationObserver);
+    Object.keys(_veeRules).forEach(function(rule) {
+        if (rule !== 'default') {
+            VeeValidate.extend(rule, _veeRules[rule]);
+        }
+    });
+}
 VeeValidate.extend('arrmin', {
     validate: function(value, args) {
         return value.length >= args.length;

@@ -42,8 +42,9 @@
     "build:vite": "vite build && vite build --config vite.config.pace.js",
     "build:vite:main": "vite build",
     "build:vite:pace": "vite build --config vite.config.pace.js",
+    "build:vite:vendor": "vite build --config vite.config.vendor.js",
     "build:vite:dev": "vite build --mode development && vite build --config vite.config.pace.js --mode development",
-    "build:vite:watch": "vite build --watch",
+    "build:vite:watch": "vite build --mode development --watch",
     "dev:vite": "vite",
     "preview:vite": "vite preview"
   },

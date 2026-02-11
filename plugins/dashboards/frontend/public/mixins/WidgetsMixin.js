@@ -101,7 +101,6 @@ export default {
                 countlyDashboards.factory.log("No setting found for the " + widget.widget_type + " widget type based on the widget getter. Please register the widget settings correctly.");
                 return def ? defaultSetting : false;
             }
-            console.log(setting);
             return setting;
         },
         widgetSettingsPrimary: function(widget) {

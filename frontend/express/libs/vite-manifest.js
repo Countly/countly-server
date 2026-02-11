@@ -25,6 +25,8 @@ let manifestCache = null;
 let manifestPath = null;
 let paceManifestCache = null;
 let paceManifestPath = null;
+let vendorManifestCache = null;
+let vendorManifestPath = null;
 
 /**
  * Initialize the manifest helper with the path to the manifest file
@@ -47,6 +49,12 @@ function init(customPath) {
     paceManifestPath = path.join(__dirname, '../public/dist/.vite/pace-manifest.json');
     if (!fs.existsSync(paceManifestPath)) {
         paceManifestPath = path.join(__dirname, '../public/dist/pace-manifest.json');
+    }
+
+    // Initialize vendor manifest path
+    vendorManifestPath = path.join(__dirname, '../public/dist/.vite/vendor-manifest.json');
+    if (!fs.existsSync(vendorManifestPath)) {
+        vendorManifestPath = path.join(__dirname, '../public/dist/vendor-manifest.json');
     }
 }
 
@@ -118,6 +126,38 @@ function loadPaceManifest(forceReload = false) {
 }
 
 /**
+ * Load and parse the vendor-manifest.json file
+ * @param {boolean} forceReload - Force reload from disk (useful in development)
+ * @returns {object} The parsed vendor manifest object
+ */
+function loadVendorManifest(forceReload = false) {
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+
+    if (!forceReload && !isDevelopment && vendorManifestCache) {
+        return vendorManifestCache;
+    }
+
+    if (!vendorManifestPath) {
+        init();
+    }
+
+    try {
+        if (!fs.existsSync(vendorManifestPath)) {
+            // Vendor manifest is optional — only exists for dev builds
+            return null;
+        }
+
+        const manifestContent = fs.readFileSync(vendorManifestPath, 'utf-8');
+        vendorManifestCache = JSON.parse(manifestContent);
+        return vendorManifestCache;
+    }
+    catch (error) {
+        console.error('[Vite Manifest] Error loading vendor manifest:', error);
+        return null;
+    }
+}
+
+/**
  * Get the path to a bundled asset
  * @param {string} entryName - The name of the entry point (e.g., 'entrypoint.js' or 'pace.js')
  * @param {string} type - The type of asset: 'js', 'css', or 'file'
@@ -126,7 +166,7 @@ function loadPaceManifest(forceReload = false) {
  */
 function getAssetPath(entryName = 'entrypoint.js', type = 'js', index = 0) {
     // Use pace manifest for pace.js entry
-    const manifest = entryName === 'pace.js' ? loadPaceManifest() : loadManifest();
+    const manifest = entryName === 'pace.js' ? loadPaceManifest() : entryName === 'vendor-entrypoint.js' ? loadVendorManifest() : loadManifest();
 
     if (!manifest || Object.keys(manifest).length === 0) {
         // Fallback to Grunt paths if Vite manifest doesn't exist
@@ -173,7 +213,7 @@ function getAssetPath(entryName = 'entrypoint.js', type = 'js', index = 0) {
  * @returns {object} Object with 'js' and 'css' arrays
  */
 function getAssets(entryName = 'entrypoint.js') {
-    const manifest = entryName === 'pace.js' ? loadPaceManifest() : loadManifest();
+    const manifest = entryName === 'pace.js' ? loadPaceManifest() : entryName === 'vendor-entrypoint.js' ? loadVendorManifest() : loadManifest();
 
     if (!manifest || Object.keys(manifest).length === 0) {
         return {
@@ -214,7 +254,7 @@ function getAssets(entryName = 'entrypoint.js') {
  * @returns {string[]} Array of CSS file paths
  */
 function getCssFiles(entryName = 'entrypoint.js') {
-    const manifest = entryName === 'pace.js' ? loadPaceManifest() : loadManifest();
+    const manifest = entryName === 'pace.js' ? loadPaceManifest() : entryName === 'vendor-entrypoint.js' ? loadVendorManifest() : loadManifest();
 
     if (!manifest || Object.keys(manifest).length === 0) {
         return [getFallbackPath('css')];
@@ -323,6 +363,7 @@ function getLinkTags(entryName = 'entrypoint.js') {
 function clearCache() {
     manifestCache = null;
     paceManifestCache = null;
+    vendorManifestCache = null;
 }
 
 // Initialize on require
@@ -332,6 +373,7 @@ module.exports = {
     init,
     loadManifest,
     loadPaceManifest,
+    loadVendorManifest,
     getAssetPath,
     getAssets,
     getCssFiles,
