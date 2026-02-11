@@ -393,9 +393,10 @@
         computed: {
             preparedRows: function() {
                 return this.ratings.map(function(rating) {
-                    rating.rating += 1;
-                    rating.percentage = parseFloat(rating.percent) || 0;
-                    return rating;
+                    return Object.assign({}, rating, {
+                        rating: (Number(rating.rating) || 0) + 1,
+                        percentage: Number.parseFloat(rating.percent) || 0,
+                    });
                 });
             }
         },
