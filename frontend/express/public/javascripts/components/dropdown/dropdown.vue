@@ -34,13 +34,14 @@
 </template>
 
 <script>
+import Emitter from 'element-ui/src/mixins/emitter';
 
 const TriggerProxy = {
     template: '<div style="width:100%"><slot v-slot></slot></div>'
 };
 
 export default {
-    mixins: [window.ELEMENT.utils.Emitter], // TO-DO: window reference will be removed and it will be imported after vue 3 migration
+    mixins: [Emitter],
     components: {
         'trigger-proxy': TriggerProxy,
         'el-select-dropdown': window.ELEMENT.SelectDropdown

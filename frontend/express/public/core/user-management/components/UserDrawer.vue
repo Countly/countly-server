@@ -237,8 +237,12 @@ import ClySelectX from '../../../javascripts/components/input/select-x.vue';
 import ClyTooltipIcon from '../../../javascripts/components/helpers/cly-tooltip-icon.vue';
 import ClyMoreOptions from '../../../javascripts/components/dropdown/more-options.vue';
 
-// TO-DO: groupsModel is still legacy IIFE from groups plugin - no ESM exports available
-var groupsModel = window.groupsModel;
+var groupsModelRef = null;
+if (countlyGlobal.plugins.includes("groups")) {
+    import('../../../../../../plugins/groups/frontend/public/store/index.js')
+        .then(function(mod) { groupsModelRef = mod.default; })
+        .catch(function() { /* groups plugin not available */ });
+}
 
 export default {
     components: {
@@ -748,7 +752,7 @@ export default {
                     if (res.result && typeof res.result === "string") {
                         if (self.groupsInput.length) {
                             var group_id = self.groups;
-                            groupsModel.saveUserGroup({ email: submitted.email, group_id: group_id }, function() {});
+                            groupsModelRef.saveUserGroup({ email: submitted.email, group_id: group_id }, function() {});
                         }
                         self.$emit('refresh-table');
                         self.group = {};
@@ -801,7 +805,7 @@ export default {
                 countlyUserManagement.createUser(submitted, function(res) {
                     if (res.full_name) {
                         if (self.groups.length > 0) {
-                            groupsModel.saveUserGroup({ email: submitted.email, group_id: self.groups }, function() {});
+                            groupsModelRef.saveUserGroup({ email: submitted.email, group_id: self.groups }, function() {});
                         }
                         self.group = {};
                         self.$emit('refresh-table');
@@ -983,11 +987,11 @@ export default {
     },
     watch: {
         'groups': function() {
-            if (this.groups.length > 0) {
+            if (this.groups.length > 0 && groupsModelRef) {
                 var groupHasGlobalAdmin = false;
 
                 this.groups.forEach(function(grpId) {
-                    var group = groupsModel.data().find(function(grp) {
+                    var group = groupsModelRef.data().find(function(grp) {
                         return grpId === grp._id;
                     });
 

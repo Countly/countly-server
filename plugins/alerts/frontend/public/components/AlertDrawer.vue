@@ -481,6 +481,13 @@ import jQuery from 'jquery';
 import _ from 'underscore';
 import * as VeeValidate from 'vee-validate';
 
+var groupsModelRef = null;
+var groupsModelPromise = countlyGlobal.plugins.includes("groups")
+    ? import('../../../../groups/frontend/public/store/index.js')
+        .then(function(mod) { groupsModelRef = mod.default; return mod.default; })
+        .catch(function() { return null; })
+    : Promise.resolve(null);
+
 VeeValidate.extend('alert_interval', function(inpValue, args) {
     var min = parseInt(args[0] || 0, 10);
     var max = parseInt(args[1] || 60, 10);
@@ -804,22 +811,20 @@ export default {
     },
     mounted: function() {
         var self = this;
-        if (countlyGlobal.plugins.includes("groups")) {
-            var groupsModel = window.groupsModel;
-            if (groupsModel) {
-                groupsModel.initialize().then(function() {
-                    var groups = _.sortBy(groupsModel.data(), "name");
-                    var userGroups = groups.map(function(g) {
-                        return {
-                            name: g.name,
-                            value: g._id,
-                            users: g.users,
-                        };
-                    });
-                    self.allGroups = userGroups;
+        groupsModelPromise.then(function(groupsModel) {
+            if (!groupsModel) return;
+            groupsModel.initialize().then(function() {
+                var groups = _.sortBy(groupsModel.data(), "name");
+                var userGroups = groups.map(function(g) {
+                    return {
+                        name: g.name,
+                        value: g._id,
+                        users: g.users,
+                    };
                 });
-            }
-        }
+                self.allGroups = userGroups;
+            });
+        });
     },
     methods: {
         i18n: i18n,

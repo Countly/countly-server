@@ -83,6 +83,51 @@ var countlyPopulator = window.countlyPopulator;
 var countlyPlugins = window.countlyPlugins;
 ```
 
+#### ⚠️ Exception: Optional cross-plugin dependencies (Dynamic Import)
+
+When a plugin **optionally** depends on another plugin that may or may not be installed/enabled, use **dynamic `import()`** with a `.catch()` fallback. **Guard the import with a plugin-enabled check** so the module is only loaded when needed:
+
+##### Pattern:
+```js
+import countlyGlobal from '../../../javascripts/countly/countly.global.js';
+
+// Module-level: conditional dynamic import — only loads when the target plugin is active
+var groupsModelRef = null;
+var groupsModelPromise = countlyGlobal.plugins.includes("groups")
+    ? import('path/to/other-plugin/store/index.js')
+        .then(function(mod) { groupsModelRef = mod.default; return mod.default; })
+        .catch(function() { return null; })
+    : Promise.resolve(null);
+```
+
+- `groupsModelPromise` — use in lifecycle hooks (`mounted`, `created`) for async initialization
+- `groupsModelRef` — use for synchronous access after the promise has resolved (e.g., in methods, watchers)
+
+##### Why guard the import?
+- Prevents unnecessary module initialization when the plugin is disabled
+
+##### Usage in lifecycle hooks:
+```js
+mounted: function() {
+    var self = this;
+    // No need to check countlyGlobal.plugins here — groupsModelPromise is already null-safe
+    groupsModelPromise.then(function(groupsModel) {
+        if (!groupsModel) return; // plugin not available or disabled
+        groupsModel.initialize().then(function() {
+            self.allGroups = groupsModel.data();
+        });
+    });
+},
+```
+
+##### Usage for synchronous access (after promise has resolved):
+```js
+// In methods or watchers — groupsModelRef is set once the dynamic import resolves
+if (groupsModelRef) {
+    groupsModelRef.saveUserGroup({ email: email, group_id: groupId }, function() {});
+}
+```
+
 ### Explicit Global SFC Component Imports
 
 **All global SFC components used in a template must be explicitly imported and registered in the `components` option.**
@@ -150,6 +195,10 @@ export default {
 | `cly-metric-cards` | `components/helpers/cly-metric-cards.vue` |
 | `cly-metric-card` | `components/helpers/cly-metric-card.vue` |
 | `cly-metric-breakdown` | `components/helpers/cly-metric-breakdown.vue` |
+| `cly-notification` | `components/helpers/cly-notification.vue` |
+| `cly-database-engine-debug-panel` | `components/helpers/cly-database-engine-debug-panel.vue` |
+| `cly-chart-zoom` | `components/echart/cly-chart-zoom.vue` |
+| `cly-form-field-group` | `components/form/cly-form-field-group.vue` |
 
 > **Note:** Element UI components (`el-table-column`, `el-select`, `el-option`, `el-tabs`, etc.) are registered globally via `Vue.use(ElementUI)` and do **not** need explicit imports. These will be handled during the Vue 3 / Element Plus migration.
 

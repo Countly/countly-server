@@ -37,10 +37,11 @@
 
 <script>
 import { goTo } from '../../countly/countly.helpers';
+import Emitter from 'element-ui/src/mixins/emitter';
 
 export default {
     componentName: 'ElDropdown',
-    mixins: [window.ELEMENT.utils.Emitter],
+    mixins: [Emitter],
     props: {
         size: {
             type: String,
