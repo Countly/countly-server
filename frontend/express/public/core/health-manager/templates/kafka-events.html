@@ -15,7 +15,7 @@
                         :search-placeholder="i18n('common.search')"
                         v-model="filters.eventType"
                         @change="onFilterChange"
-                        :options="[{label: 'All Event Types', value: 'all'}].concat(filterOptions.eventTypes.map(function(t) { return {label: formatType(t), value: t}; }))">
+                        :options="[{label: i18n('kafka-events.filters.all-event-types'), value: 'all'}].concat(filterOptions.eventTypes.map(function(t) { return {label: formatType(t), value: t}; }))">
                     </cly-select-x>
                     <cly-select-x
                         test-id="group-select"
@@ -23,7 +23,7 @@
                         :search-placeholder="i18n('common.search')"
                         v-model="filters.groupId"
                         @change="onFilterChange"
-                        :options="[{label: 'All Groups', value: 'all'}].concat(filterOptions.groupIds.map(function(g) { return {label: g, value: g}; }))">
+                        :options="[{label: i18n('kafka-events.filters.all-groups'), value: 'all'}].concat(filterOptions.groupIds.map(function(g) { return {label: g, value: g}; }))">
                     </cly-select-x>
                     <cly-select-x
                         test-id="topic-select"
@@ -31,7 +31,7 @@
                         :search-placeholder="i18n('common.search')"
                         v-model="filters.topic"
                         @change="onFilterChange"
-                        :options="[{label: 'All Topics', value: 'all'}].concat(filterOptions.topics.map(function(t) { return {label: t, value: t}; }))">
+                        :options="[{label: i18n('kafka-events.filters.all-topics'), value: 'all'}].concat(filterOptions.topics.map(function(t) { return {label: t, value: t}; }))">
                     </cly-select-x>
                 </template>
 
@@ -42,13 +42,13 @@
                         </template>
                     </el-table-column>
 
-                    <el-table-column sortable="custom" prop="ts" label="Timestamp" width="170">
+                    <el-table-column sortable="custom" prop="ts" :label="i18n('kafka-events.table.timestamp')" width="170">
                         <template slot-scope="rowScope">
                             {{ formatDate(rowScope.row.ts) }}
                         </template>
                     </el-table-column>
 
-                    <el-table-column sortable="custom" prop="type" label="Event Type" width="200">
+                    <el-table-column sortable="custom" prop="type" :label="i18n('kafka-events.table.event-type')" width="200">
                         <template slot-scope="rowScope">
                             <span :class="['kafka-event-type', getSeverityBadgeClass(rowScope.row.type)]">
                                 <i :class="getSeverityIcon(rowScope.row.type)"></i>
@@ -57,22 +57,22 @@
                         </template>
                     </el-table-column>
 
-                    <el-table-column sortable="custom" prop="groupId" label="Consumer Group" width="180">
+                    <el-table-column sortable="custom" prop="groupId" :label="i18n('kafka-events.table.consumer-group')" width="180">
                     </el-table-column>
 
-                    <el-table-column sortable="custom" prop="topic" label="Topic" width="110">
+                    <el-table-column sortable="custom" prop="topic" :label="i18n('kafka-events.table.topic')" width="110">
                         <template slot-scope="rowScope">
                             {{ rowScope.row.topic || '-' }}
                         </template>
                     </el-table-column>
 
-                    <el-table-column sortable="custom" prop="partition" label="Partition" width="80">
+                    <el-table-column sortable="custom" prop="partition" :label="i18n('kafka-events.table.partition')" width="80">
                         <template slot-scope="rowScope">
                             {{ rowScope.row.partition !== null && rowScope.row.partition !== undefined ? rowScope.row.partition : '-' }}
                         </template>
                     </el-table-column>
 
-                    <el-table-column prop="clusterId" label="Cluster ID" width="130">
+                    <el-table-column prop="clusterId" :label="i18n('kafka-events.table.cluster-id')" width="130">
                         <template slot-scope="rowScope">
                             <span class="has-ellipsis" v-tooltip="{content: rowScope.row.clusterId}">
                                 {{ rowScope.row.clusterId || '-' }}
@@ -80,7 +80,7 @@
                         </template>
                     </el-table-column>
 
-                    <el-table-column prop="details.message" label="Details" min-width="300">
+                    <el-table-column prop="details.message" :label="i18n('kafka-events.table.details')" min-width="300">
                         <template slot-scope="rowScope">
                             <div class="has-ellipsis" v-tooltip="{content: rowScope.row.details && rowScope.row.details.message}">
                                 {{ rowScope.row.details && rowScope.row.details.message || '-' }}

@@ -325,9 +325,17 @@ function setupMocking() {
     Module._load = function(request, parent) {
         // Mock the log.js module from core
         if (request.includes('api/utils/log.js') || request.includes('api/utils/log')) {
-            return function(prefix) {
+            const factory = function(prefix) {
                 return createMockLogger(prefix);
             };
+            factory.getLevel = () => 'warn';
+            factory.setLevel = () => {};
+            factory.setDefault = () => {};
+            factory.setPrettyPrint = () => {};
+            factory.updateConfig = () => {};
+            factory.shutdown = () => {};
+            factory.hasOpenTelemetry = false;
+            return factory;
         }
 
         // Mock common.js if needed
