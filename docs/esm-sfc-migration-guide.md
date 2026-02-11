@@ -195,6 +195,10 @@ export default {
 | `cly-metric-cards` | `components/helpers/cly-metric-cards.vue` |
 | `cly-metric-card` | `components/helpers/cly-metric-card.vue` |
 | `cly-metric-breakdown` | `components/helpers/cly-metric-breakdown.vue` |
+| `cly-notification` | `components/helpers/cly-notification.vue` |
+| `cly-database-engine-debug-panel` | `components/helpers/cly-database-engine-debug-panel.vue` |
+| `cly-chart-zoom` | `components/echart/cly-chart-zoom.vue` |
+| `cly-form-field-group` | `components/form/cly-form-field-group.vue` |
 
 > **Note:** Element UI components (`el-table-column`, `el-select`, `el-option`, `el-tabs`, etc.) are registered globally via `Vue.use(ElementUI)` and do **not** need explicit imports. These will be handled during the Vue 3 / Element Plus migration.
 

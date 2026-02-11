@@ -61,6 +61,7 @@ const __dirname = path.dirname(__filename);
 // TODO: a separate build for user facing survey files (same reason as pace)
 
 const REFACTORED_PLUGINS = [
+    "active_users",
     "activity-map",
     "adjust",
     "alerts",
