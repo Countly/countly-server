@@ -1,10 +1,10 @@
 /**
 Path to file: {COUNTLY DIR}/plugins/views/scripts/fixViews.js
 Script fixes indexes for views collections and merges views if there are  views marked to be merged.
+SCRIPT IS DEPRECATED FOR NEWARCH. Needs to be rewritten to work with the new architecture
 **/
 
 var pluginManager = require('../../pluginManager.ts'),
-/** SCRIPT IS DEPRECATED FOR  NEWARCH. Needs to be rewritten to work with the new architecture */
     crypto = require('crypto'),
     Promise = require("bluebird"),
     countlyDb;
