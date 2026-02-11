@@ -85,32 +85,38 @@ var countlyPlugins = window.countlyPlugins;
 
 #### ⚠️ Exception: Optional cross-plugin dependencies (Dynamic Import)
 
-When a plugin **optionally** depends on another plugin that may or may not be installed/enabled, use **dynamic `import()`** with a `.catch()` fallback.
+When a plugin **optionally** depends on another plugin that may or may not be installed/enabled, use **dynamic `import()`** with a `.catch()` fallback. **Guard the import with a plugin-enabled check** so the module is only loaded when needed:
 
 ##### Pattern:
 ```js
-// Module-level: dynamic import with graceful fallback
+import countlyGlobal from '../../../javascripts/countly/countly.global.js';
+
+// Module-level: conditional dynamic import — only loads when the target plugin is active
 var groupsModelRef = null;
-var groupsModelPromise = import('path/to/other-plugin/store/index.js')
-    .then(function(mod) { groupsModelRef = mod.default; return mod.default; })
-    .catch(function() { return null; });
+var groupsModelPromise = countlyGlobal.plugins.includes("groups")
+    ? import('path/to/other-plugin/store/index.js')
+        .then(function(mod) { groupsModelRef = mod.default; return mod.default; })
+        .catch(function() { return null; })
+    : Promise.resolve(null);
 ```
 
 - `groupsModelPromise` — use in lifecycle hooks (`mounted`, `created`) for async initialization
 - `groupsModelRef` — use for synchronous access after the promise has resolved (e.g., in methods, watchers)
 
+##### Why guard the import?
+- Prevents unnecessary module initialization when the plugin is disabled
+
 ##### Usage in lifecycle hooks:
 ```js
 mounted: function() {
     var self = this;
-    if (countlyGlobal.plugins.includes("groups")) {
-        groupsModelPromise.then(function(groupsModel) {
-            if (!groupsModel) return; // plugin not available
-            groupsModel.initialize().then(function() {
-                self.allGroups = groupsModel.data();
-            });
+    // No need to check countlyGlobal.plugins here — groupsModelPromise is already null-safe
+    groupsModelPromise.then(function(groupsModel) {
+        if (!groupsModel) return; // plugin not available or disabled
+        groupsModel.initialize().then(function() {
+            self.allGroups = groupsModel.data();
         });
-    }
+    });
 },
 ```
 

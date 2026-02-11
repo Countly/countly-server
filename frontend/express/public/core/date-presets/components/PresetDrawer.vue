@@ -138,9 +138,11 @@ import ClyTooltipIcon from '../../../javascripts/components/helpers/cly-tooltip-
 import ClySelectEmail from '../../../javascripts/components/input/select-email.vue';
 
 var groupsModelRef = null;
-var groupsModelPromise = import('../../../../../../plugins/groups/frontend/public/store/index.js')
-    .then(function(mod) { groupsModelRef = mod.default; return mod.default; })
-    .catch(function() { return null; });
+var groupsModelPromise = countlyGlobal.plugins.includes("groups")
+    ? import('../../../../../../plugins/groups/frontend/public/store/index.js')
+        .then(function(mod) { groupsModelRef = mod.default; return mod.default; })
+        .catch(function() { return null; })
+    : Promise.resolve(null);
 
 var CV = countlyVue;
 var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));

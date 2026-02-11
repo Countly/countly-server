@@ -238,9 +238,11 @@ import ClyTooltipIcon from '../../../javascripts/components/helpers/cly-tooltip-
 import ClyMoreOptions from '../../../javascripts/components/dropdown/more-options.vue';
 
 var groupsModelRef = null;
-import('../../../../../../plugins/groups/frontend/public/store/index.js')
-    .then(function(mod) { groupsModelRef = mod.default; })
-    .catch(function() { /* groups plugin not available */ });
+if (countlyGlobal.plugins.includes("groups")) {
+    import('../../../../../../plugins/groups/frontend/public/store/index.js')
+        .then(function(mod) { groupsModelRef = mod.default; })
+        .catch(function() { /* groups plugin not available */ });
+}
 
 export default {
     components: {

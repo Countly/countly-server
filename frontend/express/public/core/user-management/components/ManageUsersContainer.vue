@@ -27,9 +27,11 @@ import UserDrawer from './UserDrawer.vue';
 var isGroupPluginEnabled = countlyGlobal.plugins.includes("groups");
 
 var groupsModelRef = null;
-var groupsModelPromise = import('../../../../../../plugins/groups/frontend/public/store/index.js')
-    .then(function(mod) { groupsModelRef = mod.default; return mod.default; })
-    .catch(function() { return null; });
+var groupsModelPromise = isGroupPluginEnabled
+    ? import('../../../../../../plugins/groups/frontend/public/store/index.js')
+        .then(function(mod) { groupsModelRef = mod.default; return mod.default; })
+        .catch(function() { return null; })
+    : Promise.resolve(null);
 
 export default {
     components: {
@@ -137,14 +139,12 @@ export default {
     },
     mounted: function() {
         var self = this;
-        if (isGroupPluginEnabled) {
-            groupsModelPromise.then(function(groupsModel) {
-                if (!groupsModel) return;
-                groupsModel.initialize().then(function() {
-                    self.groupModelData = groupsModel.data();
-                });
+        groupsModelPromise.then(function(groupsModel) {
+            if (!groupsModel) return;
+            groupsModel.initialize().then(function() {
+                self.groupModelData = groupsModel.data();
             });
-        }
+        });
         Promise.all([countlyUserManagement.fetchUsers(), countlyUserManagement.fetchFeatures()]).then(function() {
             var usersObj = countlyUserManagement.getUsers();
             self.fillOutUsers(usersObj);
