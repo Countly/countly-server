@@ -62,6 +62,7 @@ const __dirname = path.dirname(__filename);
 
 const REFACTORED_PLUGINS = [
     "activity-map",
+    "adjust",
     "alerts",
     "browser",
     "compare",
