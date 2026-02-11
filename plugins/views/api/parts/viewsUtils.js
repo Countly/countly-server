@@ -44,7 +44,7 @@ module.exports = {
             for (var z = 0; z < omit.length; z++) {
                 var colName = "app_viewdata";
                 try {
-                    await common.db.collection(colName).deleteMany({"_id": {"$regex": "^" + appId + "_" + omit + "_.*"}});
+                    await db.collection(colName).deleteMany({"_id": {"$regex": "^" + appId + "_" + omit + "_.*"}});
                 }
                 catch (err) {
                     if (err.code !== 26) { //if error is not collection not found.(Because it is possible for it to not exist)
@@ -71,7 +71,12 @@ module.exports = {
     cleanupRootDocument: async function(db, appId) {
         try {
             var doc = await db.collection('views').findOne({"_id": db.ObjectID(appId)});
-            var segment_value_limit = 10;
+            if (!doc) {
+                log.d("No root document found for app " + appId + ", skipping cleanup.");
+                return;
+            }
+            var viewsConfig = plugins.getConfig("views") || {};
+            var segment_value_limit = typeof viewsConfig.segment_value_limit === "number" ? viewsConfig.segment_value_limit : 10;
             var changes_collected = false;
             var omitted = doc.omit || [];
 
@@ -80,7 +85,7 @@ module.exports = {
                 if (doc.segments && doc.segments[omitted[z]]) {
                     changes_collected = true;
                     try {
-                        await this.ommit_segments({db, omit: [omitted[z]], appId, params: {qstring: {}, user: {_id: "system", username: "system"}}}, function(err) {
+                        await this.ommit_segments({db, omit: [omitted[z]], appId, params: {qstring: {}, user: {_id: "system", username: "system"}}, extend: true}, function(err) {
                             if (err) {
                                 log.e("Failed to omit segment " + omitted[z] + ": " + err);
                             }
@@ -97,21 +102,21 @@ module.exports = {
             if (!changes_collected && doc.segments) {
                 for (var seg in doc.segments) {
                     if (Object.keys(doc.segments[seg]).length > segment_value_limit && !omitted.includes(seg)) {
-                        changes_collected = true;
                         try {
-                            await this.ommit_segments({db, omit: [omitted[z]], appId, params: {qstring: {}, user: {_id: "system", username: "system"}}}, function(err) {
+                            await this.ommit_segments({db, omit: [seg], appId, params: {qstring: {}, user: {_id: "system", username: "system"}}, extend: true}, function(err) {
                                 if (err) {
-                                    log.e("Failed to omit segment " + omitted[z] + ": " + err);
+                                    log.e("Failed to omit segment " + seg + ": " + err);
                                 }
                             });
 
                         }
                         catch (err) {
-                            log.e("Failed to omit segment " + omitted[z] + ": " + err);
+                            log.e("Failed to omit segment " + seg + ": " + err);
                         }
                     }
                 }
             }
+            log.d("Cleanup of root document for app " + appId + " completed.");
 
         }
         catch (error) {

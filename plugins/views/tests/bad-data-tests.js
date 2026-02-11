@@ -1,6 +1,7 @@
 var request = require('supertest');
 var should = require('should');
 var testUtils = require("../../../test/testUtils");
+var moment = require("moment");
 request = request.agent(testUtils.url);
 
 var APP_KEY = "";
@@ -313,6 +314,145 @@ describe('Testing views plugin with dots in names and segments', function() {
         });
     });
 
+    describe("Test if segment gets omitted on 16MB error", function() {
+        it("Modify custom_segment to have large number of segment values to trigger 16MB error", async function() {
+            //get viewID for testview3
+            let viewMeta = await db.collection("app_viewsmeta").findOne({"a": APP_ID, "view": "testview3"});
+            let viewId = viewMeta ? viewMeta._id : null;
+
+            var currentMonth = moment().startOf('month').format("YYYY:MM");
+            currentMonth = currentMonth.replace(":0", ":");
+
+            var props = ["d", "u", "t", "d"];
+
+            var segmentValues = [];
+            for (var i = 0; i < 600; i++) {
+                segmentValues.push("myvalue_" + i);
+            }
+            // Create a viewData document with large number of segment values to trigger 16MB error
+            var monthDocId = APP_ID + "_custom_segment_" + currentMonth + "_" + viewId.replace(APP_ID + "_", "");
+
+            var largeMonthDoc = {"a": APP_ID, d: {}, m: currentMonth, vw: viewId, s: "custom_segment"};
+            for (var z = 1; z < 31; z++) {
+                largeMonthDoc["d"][z + ""] = {};
+                for (var i = 1; i <= 24; i++) {
+                    largeMonthDoc["d"][z + ""][i + ""] = {};
+                    for (var m = 0; m < segmentValues.length; m++) {
+                        largeMonthDoc["d"][z + ""][i + ""][segmentValues[m]] = {};
+
+                        for (var p = 0; p < props.length; p++) {
+                            largeMonthDoc["d"][z + ""][i + ""][segmentValues[m]][props[p]] = 100;
+                        }
+                    }
+
+                }
+            }
+            for (var p = 0; p < 255; p++) {
+                largeMonthDoc["p" + p] = true;
+            }
+            console.log(monthDocId);
+            try {
+                var res = await db.collection("app_viewdata").updateOne({"_id": monthDocId}, {$set: largeMonthDoc}, {upsert: true});
+                console.log(JSON.stringify(res));
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+
+        it("Send in some data for same view/segment", function(done) {
+            var data = JSON.stringify([{
+                "key": "[CLY]_view",
+                "count": 1,
+                "segmentation": {
+                    "name": "testview3",
+                    "custom_segment": "mynewSpecialValue_1",
+                    "visit": 1
+                }
+            }]);
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=user_dots_6' + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
+                });
+        });
+
+        it("Fetch meta and validate if segment omitted", function(done) {
+            db.collection("views").findOne({"_id": db.ObjectID(APP_ID)}, function(err, metaDoc) {
+                if (err) {
+                    return done(err);
+                }
+                //custom_segment should not be in segments as it should have been omitted due to 16MB error
+                should.not.exist(metaDoc.segments.custom_segment);
+                done();
+            });
+        });
+    });
+
+    describe("Test 16MB error on root document", function() {
+        it("Modify views document to have data for omitted segment", async function() {
+            var updateObj = {};
+            for (var p = 0; p < 1626185; p++) {
+                updateObj["p" + p] = true;
+            }
+            updateObj = {"$set": {"segments.custom_segment": updateObj}};
+            try {
+
+                var res = await db.collection("views").updateOne({"_id": db.ObjectID(APP_ID)}, updateObj);
+                console.log(JSON.stringify(res));
+            }
+            catch (err) {
+                console.log(err);
+                throw err;
+            }
+        });
+        it("send data for different segment", function(done) {
+            var data = JSON.stringify([{
+                "key": "[CLY]_view",
+                "count": 1,
+                "segmentation": {
+                    "name": "testview3",
+                    "diffsegment": "mynewSpecialValue_2",
+                    "another_segment": "anotherValue",
+                    "another_segment2": "anotherValue2",
+                    "another_segment3": "anotherValue3",
+                    "another_segment4": "anotherValue4",
+                    "another_segment5": "anotherValue5",
+                    "visit": 1
+                }
+            }]);
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=user_dots_7' + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime + waitTime);
+                });
+        });
+
+        it("Fetch meta and validate if segment omitted", function(done) {
+            db.collection("views").findOne({"_id": db.ObjectID(APP_ID)}, function(err, metaDoc) {
+                if (err) {
+                    return done(err);
+                }
+                //custom_segment should not be in segments as it should have been omitted due to 16MB error
+                if (metaDoc.segments.custom_segment) {
+                    console.log(JSON.stringify(metaDoc.omit));
+                    console.log(Object.keys(metaDoc.segments.custom_segment).length);
+                    done("custom_segment not omitted");
+                }
+                else {
+                    done();
+                }
+            });
+        });
+    });
     describe('Cleanup', function() {
         it('should reset app data', function(done) {
             var params = {app_id: APP_ID, "period": "reset"};

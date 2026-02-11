@@ -63,15 +63,13 @@ const viewsUtils = require('./parts/viewsUtils.js');
         }
         else if (ob.db === "countly" && ob.collection === "views") {
             //Failed to update root document
-            var _id = ob.data.updateOne.filter._id;
-            if (_id) {
-                log.d("Failed to update root document for app " + _id + ". There are too many segments/values stored. Run cleanup for core document.");
-            }
-            viewsUtils.cleanupRootDocument({db: common.db, appId: _id}, function(err) {
-                if (err) {
-                    log.e(err);
+            if (ob.data && ob.data.updateOne && ob.data.updateOne.filter) {
+                var _id = ob.data.updateOne.filter._id;
+                if (_id) {
+                    log.d("Failed to update root document for app " + _id + ". There are too many segments/values stored. Run cleanup for core document.");
                 }
-            });
+                viewsUtils.cleanupRootDocument(common.db, _id);
+            }
         }
     });
 
@@ -233,15 +231,19 @@ const viewsUtils = require('./parts/viewsUtils.js');
                                                 tmpTimeObjZero["d." + time.month + "." + escapedMetricVal + prop] = update[prop];
                                             }
                                         }
-                                        common.manualWriteBatcher.add("app_viewdata", tmpMonthId, {"$inc": tmpTimeObjMonth, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.month}}, "countly", {token: token});
-                                        common.manualWriteBatcher.add("app_viewdata", tmpZeroId, {"$inc": tmpTimeObjZero, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.zero}}, "countly", {token: token});
+                                        common.manualWriteBatcher.add("app_viewdata", tmpMonthId, {"$inc": tmpTimeObjMonth, "$set": {"a": next.a, "n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.month, "s": segments[i]}}, "countly", {token: token});
+                                        common.manualWriteBatcher.add("app_viewdata", tmpZeroId, {"$inc": tmpTimeObjZero, "$set": {"a": next.a, "n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.zero, "s": segments[i]}}, "countly", {token: token});
                                     }
                                     if (Object.keys(meta_update).length > 0) {
-                                        common.db.collection("views").updateOne({_id: common.db.ObjectID(next.a)}, {"$set": meta_update}, {upsert: true}, function(err3) {
-                                            if (err3) {
-                                                log.e(err3);
+                                        //Flush meta document
+                                        try {
+                                            await common.db.collection("views").updateOne({_id: common.db.ObjectID(next.a)}, {"$set": meta_update}, {upsert: true});
+                                        }
+                                        catch (err3) {
+                                            if (err3.errorResponse && err3.errorResponse.code === 17419) {
+                                                viewsUtils.cleanupRootDocument(common.db, next.a);
                                             }
-                                        });
+                                        }
                                     }
                                     var dd = {view: next.n, "a": next.a};
                                     if (Object.keys(update_doc).length > 0) {
@@ -360,8 +362,8 @@ const viewsUtils = require('./parts/viewsUtils.js');
                                                 tmpTimeObjZero["d." + time.month + "." + escapedMetricVal + prop] = update[prop];
                                             }
 
-                                            common.manualWriteBatcher.add("app_viewdata", tmpMonthId, {"$inc": tmpTimeObjMonth, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.month}}, "countly", {token: token});
-                                            common.manualWriteBatcher.add("app_viewdata", tmpZeroId, {"$inc": tmpTimeObjZero, "$set": {"n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.zero}}, "countly", {token: token});
+                                            common.manualWriteBatcher.add("app_viewdata", tmpMonthId, {"$inc": tmpTimeObjMonth, "$set": {"a": next.a, "n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.month, "s": segments[i]}}, "countly", {token: token});
+                                            common.manualWriteBatcher.add("app_viewdata", tmpZeroId, {"$inc": tmpTimeObjZero, "$set": {"a": next.a, "n": next.n, "vw": next.a + "_" + view_id, "m": dateIds.zero, "s": segments[i]}}, "countly", {token: token});
                                         }
                                     }
 
