@@ -1,3 +1,4 @@
+/** SCRIPT IS DEPRECATED FOR  NEWARCH. Needs to be rewritten to work with the new architecture */
 /**
 Path to file: {COUNTLY DIR}/plugins/views/scripts/renameViews.js
 Script renames views for app. 

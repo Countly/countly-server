@@ -1,3 +1,4 @@
+/** SCRIPT IS DEPRECATED FOR  NEWARCH. Needs to be rewritten to work with the new architecture */
 //Put script in ./countly/plugins/views/scripts/omitViewSegments.js
 /*
 The script deletes data for specific segments in aggregated data. It also can set an omitting list in the database to ensure that segments are also omitted on incoming data.
