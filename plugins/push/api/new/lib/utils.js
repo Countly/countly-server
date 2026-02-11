@@ -23,14 +23,11 @@ const platforms = require('../constants/platform-keymap');
 
 /**
  * Loads the plugin configuration from the MongoDB database.
- * @returns {Promise<PluginConfiguration|undefined>} The plugin configuration object or undefined if not found.
+ * @returns {Promise<PluginConfiguration>} The plugin configuration object or undefined if not found.
  */
 async function loadPluginConfiguration() {
     /** @type {PluginConfigDocument} */
     const pushConfig = common.plugins.getConfig("push");
-    if (!pushConfig) {
-        return;
-    }
     /** @type {PluginConfiguration} */
     const config = {
         messageResultsTTL: pushConfig.message_results_ttl,

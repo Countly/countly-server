@@ -1,10 +1,30 @@
 /*global countlyVue, app, CV, countlyHealthManager, countlyCommon, moment*/
 
+var healthManagerDateMixin = {
+    methods: {
+        formatDate: function(val) {
+            if (!val) {
+                return 'N/A';
+            }
+            var ms = typeof val === 'string' ? Date.parse(val) : Number(val);
+            if (String(ms).length === 10) {
+                ms *= 1000;
+            }
+            if (!ms || isNaN(ms)) {
+                return 'N/A';
+            }
+            return moment(ms).format('DD-MM-YYYY HH:mm:ss');
+        }
+    }
+};
+
 var MutationStatusView = countlyVue.views.create({
     template: CV.T('/core/health-manager/templates/mutation-status.html'),
+    mixins: [healthManagerDateMixin],
     data: function() {
         return {
             isLoading: false,
+            hasError: false,
             mutationStatusData: [],
             mutationSummary: {},
             clickhouseMetrics: {},
@@ -35,7 +55,8 @@ var MutationStatusView = countlyVue.views.create({
         fetchData: function() {
             this.isLoading = true;
             var self = this;
-            countlyHealthManager.fetchMutationStatus(this.filters).then(function(res) {
+            self.hasError = false;
+            Promise.resolve(countlyHealthManager.fetchMutationStatus(this.filters)).then(function(res) {
                 var mutation = Array.isArray(res)
                     ? res.find(function(item) {
                         return item && item.provider === 'mutation';
@@ -63,6 +84,11 @@ var MutationStatusView = countlyVue.views.create({
 
                 self.mutationStatusData = queue;
                 self.mutationSummary = summary;
+            }).catch(function() {
+                self.hasError = true;
+                self.mutationStatusData = [];
+                self.mutationSummary = {};
+            }).finally(function() {
                 self.hasFetched = true;
                 self.isLoading = false;
             });
@@ -115,16 +141,6 @@ var MutationStatusView = countlyVue.views.create({
         onFilterShow: function() {
             this.filterForm = Object.assign({}, this.filters);
         },
-        formatDate: function(val) {
-            var ms = typeof val === 'string' ? Date.parse(val) : Number(val);
-            if (String(ms).length === 10) {
-                ms *= 1000;
-            }
-            if (!ms || isNaN(ms)) {
-                return 'N/A';
-            }
-            return moment(ms).format('DD-MM-YYYY HH:mm:ss');
-        }
     },
     computed: {
         showClickhouseMetrics: function() {
@@ -132,13 +148,13 @@ var MutationStatusView = countlyVue.views.create({
         },
         availableStatuses: function() {
             var base = {
-                queued: 'Queued',
-                running: 'Running',
-                failed: 'Failed',
-                completed: 'Completed'
+                queued: CV.i18n('mutation-status.status.queued'),
+                running: CV.i18n('mutation-status.status.running'),
+                failed: CV.i18n('mutation-status.status.failed'),
+                completed: CV.i18n('mutation-status.status.completed')
             };
             if (this.showClickhouseMetrics) {
-                base.awaiting_ch_mutation_validation = 'Awaiting CH validation';
+                base.awaiting_ch_mutation_validation = CV.i18n('mutation-status.status.awaiting-ch');
             }
             return base;
         },
@@ -242,14 +258,14 @@ var MutationStatusView = countlyVue.views.create({
         summaryBarOption: function() {
             var summary = this.mutationSummary || {};
             var rows = [
-                {name: 'Queued', value: summary.queued || 0},
-                {name: 'Running', value: summary.running || 0}
+                {name: CV.i18n('mutation-status.status.queued'), value: summary.queued || 0},
+                {name: CV.i18n('mutation-status.status.running'), value: summary.running || 0}
             ];
             if (this.showClickhouseMetrics) {
-                rows.push({name: 'Awaiting CH validation', value: summary.awaiting_ch_mutation_validation || 0});
+                rows.push({name: CV.i18n('mutation-status.status.awaiting-ch'), value: summary.awaiting_ch_mutation_validation || 0});
             }
-            rows.push({name: 'Failed', value: summary.failed || 0});
-            rows.push({name: 'Completed', value: summary.completed || 0});
+            rows.push({name: CV.i18n('mutation-status.status.failed'), value: summary.failed || 0});
+            rows.push({name: CV.i18n('mutation-status.status.completed'), value: summary.completed || 0});
             var total = rows.reduce(function(acc, cur) {
                 return acc + (cur.value || 0);
             }, 0);
@@ -286,7 +302,8 @@ var MutationStatusView = countlyVue.views.create({
                 },
                 series: [
                     {
-                        name: 'Mutations',
+                        name: CV.i18n('mutation-status.summary.series-name'),
+                        type: 'bar',
                         data: rows.map(function(row) {
                             return row.value;
                         }),
@@ -314,8 +331,8 @@ var MutationStatusView = countlyVue.views.create({
             var utilization = backpressure.utilization || {};
 
             var risk = (backpressure.risk_level || 'unknown').toString().toUpperCase();
-            var deferText = backpressure.deferred_due_to_clickhouse ? 'Mutation operations are being deferred' : 'No mutation operations are being deferred';
-            var issuesText = (this.clickhouseIssues && this.clickhouseIssues.length) ? this.clickhouseIssues.join(', ') : 'No issues detected';
+            var deferText = backpressure.deferred_due_to_clickhouse ? CV.i18n('mutation-status.metrics.deferred-yes') : CV.i18n('mutation-status.metrics.deferred-no');
+            var issuesText = (this.clickhouseIssues && this.clickhouseIssues.length) ? this.clickhouseIssues.join(', ') : CV.i18n('mutation-status.metrics.no-issues');
 
             var partsLimit = thresholds.CH_MAX_PARTS_PER_PARTITION || 0;
             var totalLimit = thresholds.CH_MAX_TOTAL_MERGETREE_PARTS || 0;
@@ -377,10 +394,12 @@ var MutationStatusView = countlyVue.views.create({
 
 var AggregatorStatusView = countlyVue.views.create({
     template: CV.T('/core/health-manager/templates/aggregator-status.html'),
+    mixins: [healthManagerDateMixin],
     data: function() {
         return {
             isLoading: false,
             hasFetched: false,
+            hasError: false,
             // Aggregator (change stream) data
             aggregatorData: [],
             // Kafka stats data
@@ -404,17 +423,20 @@ var AggregatorStatusView = countlyVue.views.create({
             this.isLoading = true;
             var self = this;
 
+            self.hasError = false;
+
             // Fetch aggregator (change stream) status
-            var aggregatorPromise = countlyHealthManager.fetchAggregatorStatus()
+            var aggregatorPromise = Promise.resolve(countlyHealthManager.fetchAggregatorStatus())
                 .then(function(data) {
                     self.aggregatorData = data || [];
                 })
                 .catch(function() {
                     self.aggregatorData = [];
+                    self.hasError = true;
                 });
 
             // Fetch Kafka stats
-            var kafkaPromise = countlyHealthManager.fetchKafkaStatus()
+            var kafkaPromise = Promise.resolve(countlyHealthManager.fetchKafkaStatus())
                 .then(function(data) {
                     if (data && (data.partitions || data.consumers)) {
                         self.kafkaEnabled = true;
@@ -431,25 +453,13 @@ var AggregatorStatusView = countlyVue.views.create({
                 .catch(function() {
                     self.kafkaEnabled = false;
                     self.lagHistory = [];
+                    self.hasError = true;
                 });
 
             Promise.all([aggregatorPromise, kafkaPromise]).finally(function() {
                 self.hasFetched = true;
                 self.isLoading = false;
             });
-        },
-        formatDate: function(val) {
-            if (!val) {
-                return 'N/A';
-            }
-            var ms = typeof val === 'string' ? Date.parse(val) : Number(val);
-            if (String(ms).length === 10) {
-                ms *= 1000;
-            }
-            if (!ms || isNaN(ms)) {
-                return 'N/A';
-            }
-            return moment(ms).format('DD-MM-YYYY HH:mm:ss');
         },
         formatNumber: function(val) {
             if (val === undefined || val === null) {
@@ -499,66 +509,107 @@ var AggregatorStatusView = countlyVue.views.create({
             return this.aggregatorData;
         },
         summaryCards: function() {
-            var summary = this.kafkaSummary || {};
+            var consumers = this.aggregatorConsumers;
+            var partitions = this.aggregatorPartitions;
+            var totalLag = consumers.reduce(function(acc, c) {
+                return acc + (c.totalLag || 0);
+            }, 0);
+            var totalBatches = partitions.reduce(function(acc, p) {
+                return acc + (p.batchCount || 0);
+            }, 0);
+            var totalDuplicates = partitions.reduce(function(acc, p) {
+                return acc + (p.duplicatesSkipped || 0);
+            }, 0);
+            var avgBatchSize = partitions.length > 0
+                ? Math.round(partitions.reduce(function(acc, p) {
+                    return acc + (p.avgBatchSize || 0);
+                }, 0) / partitions.length)
+                : 0;
+            var totalRebalances = consumers.reduce(function(acc, c) {
+                return acc + (c.rebalanceCount || 0);
+            }, 0);
+            var totalErrors = consumers.reduce(function(acc, c) {
+                return acc + (c.errorCount || 0);
+            }, 0);
             return [
                 {
-                    title: 'Total Lag',
-                    value: this.formatNumber(summary.totalLag || 0),
-                    detail: 'Messages behind',
-                    tooltip: 'Total number of messages waiting to be processed across all consumer groups',
-                    numberClass: this.getLagClass(summary.totalLag)
+                    title: CV.i18n('aggregator-status.cards.total-lag'),
+                    value: this.formatNumber(totalLag),
+                    detail: CV.i18n('aggregator-status.cards.total-lag.detail'),
+                    tooltip: CV.i18n('aggregator-status.cards.total-lag.tooltip'),
+                    numberClass: this.getLagClass(totalLag)
                 },
                 {
-                    title: 'Batches Processed',
-                    value: this.formatNumber(summary.totalBatchesProcessed || 0),
-                    detail: 'Since last TTL cleanup',
-                    tooltip: 'Total batches successfully processed by all consumers',
+                    title: CV.i18n('aggregator-status.cards.batches'),
+                    value: this.formatNumber(totalBatches),
+                    detail: CV.i18n('aggregator-status.cards.batches.detail'),
+                    tooltip: CV.i18n('aggregator-status.cards.batches.tooltip'),
                     numberClass: 'color-cool-gray-100'
                 },
                 {
-                    title: 'Duplicates Skipped',
-                    value: this.formatNumber(summary.totalDuplicatesSkipped || 0),
-                    detail: 'Batches deduplicated',
-                    tooltip: 'Number of batches skipped due to rebalance deduplication',
-                    numberClass: summary.totalDuplicatesSkipped > 0 ? 'color-yellow-100' : 'color-green-100'
+                    title: CV.i18n('aggregator-status.cards.duplicates'),
+                    value: this.formatNumber(totalDuplicates),
+                    detail: CV.i18n('aggregator-status.cards.duplicates.detail'),
+                    tooltip: CV.i18n('aggregator-status.cards.duplicates.tooltip'),
+                    numberClass: totalDuplicates > 0 ? 'color-yellow-100' : 'color-green-100'
                 },
                 {
-                    title: 'Avg Batch Size',
-                    value: this.formatNumber(summary.avgBatchSizeOverall || 0),
-                    detail: 'Events per batch',
-                    tooltip: 'Average number of events processed per batch',
+                    title: CV.i18n('aggregator-status.cards.avg-batch'),
+                    value: this.formatNumber(avgBatchSize),
+                    detail: CV.i18n('aggregator-status.cards.avg-batch.detail'),
+                    tooltip: CV.i18n('aggregator-status.cards.avg-batch.tooltip'),
                     numberClass: 'color-cool-gray-100'
                 },
                 {
-                    title: 'Rebalances',
-                    value: this.formatNumber(summary.totalRebalances || 0),
-                    detail: 'In last 7 days',
-                    tooltip: 'Number of consumer group rebalances (should be low)',
-                    numberClass: summary.totalRebalances > 10 ? 'color-yellow-100' : 'color-green-100'
+                    title: CV.i18n('aggregator-status.cards.rebalances'),
+                    value: this.formatNumber(totalRebalances),
+                    detail: CV.i18n('aggregator-status.cards.rebalances.detail'),
+                    tooltip: CV.i18n('aggregator-status.cards.rebalances.tooltip'),
+                    numberClass: totalRebalances > 10 ? 'color-yellow-100' : 'color-green-100'
                 },
                 {
-                    title: 'Errors',
-                    value: this.formatNumber(summary.totalErrors || 0),
-                    detail: 'In last 7 days',
-                    tooltip: 'Number of errors recorded by consumers',
-                    numberClass: this.getErrorClass(summary.totalErrors)
+                    title: CV.i18n('aggregator-status.cards.errors'),
+                    value: this.formatNumber(totalErrors),
+                    detail: CV.i18n('aggregator-status.cards.errors.detail'),
+                    tooltip: CV.i18n('aggregator-status.cards.errors.tooltip'),
+                    numberClass: this.getErrorClass(totalErrors)
                 }
             ];
         },
         hasKafkaData: function() {
-            return this.kafkaEnabled && (this.kafkaPartitions.length > 0 || this.kafkaConsumers.length > 0);
+            return this.kafkaEnabled && (this.aggregatorPartitions.length > 0 || this.aggregatorConsumers.length > 0);
         },
         hasAggregatorData: function() {
             return this.aggregatorData && this.aggregatorData.length > 0;
         },
+        aggregatorConsumers: function() {
+            return (this.kafkaConsumers || []).filter(function(c) {
+                return !c.groupId || c.groupId.indexOf('connect-clickhouse-sink') === -1;
+            });
+        },
+        aggregatorPartitions: function() {
+            return (this.kafkaPartitions || []).filter(function(p) {
+                return !p.consumerGroup || p.consumerGroup.indexOf('connect-clickhouse-sink') === -1;
+            });
+        },
+        aggregatorLagHistory: function() {
+            return (this.lagHistory || []).map(function(snapshot) {
+                return {
+                    ts: snapshot.ts,
+                    groups: (snapshot.groups || []).filter(function(g) {
+                        return !g.groupId || g.groupId.indexOf('connect-clickhouse-sink') === -1;
+                    })
+                };
+            });
+        },
         lagChartOption: function() {
-            if (!this.lagHistory || this.lagHistory.length === 0) {
+            if (!this.aggregatorLagHistory || this.aggregatorLagHistory.length === 0) {
                 return {};
             }
 
             // Extract unique group IDs from all snapshots
             var groupIds = [];
-            this.lagHistory.forEach(function(snapshot) {
+            this.aggregatorLagHistory.forEach(function(snapshot) {
                 (snapshot.groups || []).forEach(function(g) {
                     if (groupIds.indexOf(g.groupId) === -1) {
                         groupIds.push(g.groupId);
@@ -568,7 +619,7 @@ var AggregatorStatusView = countlyVue.views.create({
 
             // Build X-axis labels (timestamps)
             var self = this;
-            var xAxisData = this.lagHistory.map(function(snapshot) {
+            var xAxisData = this.aggregatorLagHistory.map(function(snapshot) {
                 if (!snapshot.ts) {
                     return '';
                 }
@@ -601,7 +652,7 @@ var AggregatorStatusView = countlyVue.views.create({
 
             // Build series for each consumer group with explicit colors
             var series = groupIds.map(function(groupId, index) {
-                var data = self.lagHistory.map(function(snapshot) {
+                var data = self.aggregatorLagHistory.map(function(snapshot) {
                     var group = (snapshot.groups || []).find(function(g) {
                         return g.groupId === groupId;
                     });
@@ -661,7 +712,7 @@ var AggregatorStatusView = countlyVue.views.create({
                 },
                 yAxis: {
                     type: 'value',
-                    name: 'Lag (messages)',
+                    name: CV.i18n('aggregator-status.chart.lag-axis'),
                     axisLabel: {
                         formatter: function(value) {
                             return value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value;
@@ -677,13 +728,17 @@ var AggregatorStatusView = countlyVue.views.create({
 
 var IngestionStatusView = countlyVue.views.create({
     template: CV.T('/core/health-manager/templates/ingestion-status.html'),
+    mixins: [healthManagerDateMixin],
     data: function() {
         return {
             isLoading: false,
             hasFetched: false,
+            hasError: false,
             connectStatus: {},
             connectors: [],
-            throughputHistory: []
+            throughputHistory: [],
+            sinkConsumers: [],
+            sinkPartitions: []
         };
     },
     mounted: function() {
@@ -697,39 +752,40 @@ var IngestionStatusView = countlyVue.views.create({
             this.isLoading = true;
             var self = this;
 
+            self.hasError = false;
             Promise.resolve(countlyHealthManager.fetchKafkaStatus())
                 .then(function(data) {
                     if (data) {
                         self.connectStatus = data.connectStatus || {};
                         self.connectors = (data.connectStatus && data.connectStatus.connectors) || [];
                         self.throughputHistory = (data.lagHistory || []).map(function(snapshot) {
+                            // Extract connect group lag from groups array
+                            var connectGroup = (snapshot.groups || []).find(function(g) {
+                                return g.groupId && g.groupId.indexOf('connect-clickhouse-sink') !== -1;
+                            });
                             return {
                                 ts: snapshot.ts,
-                                connectLag: snapshot.connectLag || 0
+                                connectLag: connectGroup ? (connectGroup.totalLag || 0) : 0
                             };
+                        });
+                        self.sinkConsumers = (data.consumers || []).filter(function(c) {
+                            return c.groupId && c.groupId.indexOf('connect-clickhouse-sink') !== -1;
+                        });
+                        self.sinkPartitions = (data.partitions || []).filter(function(p) {
+                            return p.consumerGroup && p.consumerGroup.indexOf('connect-clickhouse-sink') !== -1;
                         });
                     }
                 })
                 .catch(function() {
                     self.connectors = [];
+                    self.sinkConsumers = [];
+                    self.sinkPartitions = [];
+                    self.hasError = true;
                 })
                 .finally(function() {
                     self.hasFetched = true;
                     self.isLoading = false;
                 });
-        },
-        formatDate: function(val) {
-            if (!val) {
-                return 'N/A';
-            }
-            var ms = typeof val === 'string' ? Date.parse(val) : Number(val);
-            if (String(ms).length === 10) {
-                ms *= 1000;
-            }
-            if (!ms || isNaN(ms)) {
-                return 'N/A';
-            }
-            return moment(ms).format('DD-MM-YYYY HH:mm:ss');
         },
         formatNumber: function(val) {
             if (val === undefined || val === null) {
@@ -751,6 +807,15 @@ var IngestionStatusView = countlyVue.views.create({
                 return 'color-green-100';
             }
             if (lag < 1000) {
+                return 'color-yellow-100';
+            }
+            return 'color-red-100';
+        },
+        getErrorClass: function(errorCount) {
+            if (!errorCount || errorCount === 0) {
+                return 'color-green-100';
+            }
+            if (errorCount < 5) {
                 return 'color-yellow-100';
             }
             return 'color-red-100';
@@ -778,35 +843,35 @@ var IngestionStatusView = countlyVue.views.create({
 
             return [
                 {
-                    title: 'Sink Lag',
+                    title: CV.i18n('ingestion-status.cards.sink-lag'),
                     value: this.formatNumber(status.sinkLag || 0),
-                    detail: 'Messages behind',
-                    tooltip: 'Consumer lag for Kafka Connect ClickHouse sink (connect-ch group)',
+                    detail: CV.i18n('ingestion-status.cards.sink-lag.detail'),
+                    tooltip: CV.i18n('ingestion-status.cards.sink-lag.tooltip'),
                     numberClass: this.getLagClass(status.sinkLag)
                 },
                 {
-                    title: 'Connectors',
+                    title: CV.i18n('ingestion-status.cards.connectors'),
                     value: runningConnectors + ' / ' + connectors.length + ' running',
-                    detail: 'Active connectors',
-                    tooltip: 'Number of connectors in RUNNING state',
+                    detail: CV.i18n('ingestion-status.cards.connectors.detail'),
+                    tooltip: CV.i18n('ingestion-status.cards.connectors.tooltip'),
                     numberClass: runningConnectors === connectors.length && connectors.length > 0
                         ? 'color-green-100'
                         : 'color-yellow-100'
                 },
                 {
-                    title: 'Tasks',
+                    title: CV.i18n('ingestion-status.cards.tasks'),
                     value: runningTasks + ' / ' + totalTasks + ' running',
-                    detail: 'Active tasks',
-                    tooltip: 'Number of connector tasks in RUNNING state',
+                    detail: CV.i18n('ingestion-status.cards.tasks.detail'),
+                    tooltip: CV.i18n('ingestion-status.cards.tasks.tooltip'),
                     numberClass: runningTasks === totalTasks && totalTasks > 0
                         ? 'color-green-100'
                         : 'color-yellow-100'
                 },
                 {
-                    title: 'Last Updated',
+                    title: CV.i18n('ingestion-status.cards.last-updated'),
                     value: this.formatDate(status.sinkLagUpdatedAt),
-                    detail: 'Lag check time',
-                    tooltip: 'When the sink lag was last updated by the monitoring job',
+                    detail: CV.i18n('ingestion-status.cards.last-updated.detail'),
+                    tooltip: CV.i18n('ingestion-status.cards.last-updated.tooltip'),
                     numberClass: 'color-cool-gray-100'
                 }
             ];
@@ -849,7 +914,7 @@ var IngestionStatusView = countlyVue.views.create({
                 },
                 yAxis: {
                     type: 'value',
-                    name: 'Sink Lag',
+                    name: CV.i18n('ingestion-status.chart.sink-lag-axis'),
                     axisLabel: {
                         formatter: function(value) {
                             return value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value;
@@ -857,7 +922,7 @@ var IngestionStatusView = countlyVue.views.create({
                     }
                 },
                 series: [{
-                    name: 'ClickHouse Sink Lag',
+                    name: CV.i18n('ingestion-status.chart.sink-lag-series'),
                     type: 'line',
                     data: lagData,
                     smooth: true,
@@ -912,6 +977,7 @@ var KafkaEventsExpandedRow = countlyVue.views.create({
 
 var KafkaEventsView = countlyVue.views.create({
     template: CV.T('/core/health-manager/templates/kafka-events.html'),
+    mixins: [healthManagerDateMixin],
     components: {
         "expand-row": KafkaEventsExpandedRow
     },
@@ -970,12 +1036,14 @@ var KafkaEventsView = countlyVue.views.create({
         fetchMeta: function() {
             var self = this;
             if (countlyHealthManager && typeof countlyHealthManager.fetchKafkaEventsMeta === "function") {
-                countlyHealthManager.fetchKafkaEventsMeta().then(function(meta) {
+                Promise.resolve(countlyHealthManager.fetchKafkaEventsMeta()).then(function(meta) {
                     meta = meta || {};
                     self.filterOptions.eventTypes = meta.eventTypes || [];
                     self.filterOptions.groupIds = meta.groupIds || [];
                     self.filterOptions.topics = meta.topics || [];
                     self.filterOptions.clusterIds = meta.clusterIds || [];
+                }).catch(function() {
+                    // Meta endpoint may not be available; keep empty filter options
                 }).finally(function() {
                     self.hasFetched = true;
                 });
@@ -1031,12 +1099,6 @@ var KafkaEventsView = countlyVue.views.create({
         onFilterChange: function() {
             this.refresh(true);
         },
-        formatDate: function(val) {
-            if (!val) {
-                return 'N/A';
-            }
-            return moment(val).format('DD-MM-YYYY HH:mm:ss');
-        },
         formatType: function(type) {
             if (!type) {
                 return '-';
@@ -1081,22 +1143,22 @@ countlyVue.container.registerTab("/manage/health", {
     priority: 3,
     name: "ingestion-status",
     permission: "core",
-    title: 'Ingestion Status',
+    title: CV.i18n('health-manager.tabs.ingestion'),
     route: "#/manage/health/ingestion-status",
     dataTestId: "health-manager-ingestion-status",
     component: IngestionStatusView,
-    tooltip: 'Monitor Kafka producer and ClickHouse sink health'
+    tooltip: CV.i18n('ingestion-status.overview.tooltip')
 });
 
 countlyVue.container.registerTab("/manage/health", {
     priority: 4,
     name: "kafka-events",
     permission: "core",
-    title: 'Kafka Events',
+    title: CV.i18n('health-manager.tabs.kafka-events'),
     route: "#/manage/health/kafka-events",
     dataTestId: "health-manager-kafka-events",
     component: KafkaEventsView,
-    tooltip: 'View Kafka consumer events: cluster mismatches, offset anomalies, and state resets'
+    tooltip: CV.i18n('kafka-events.overview.tooltip')
 });
 
 app.route("/manage/health", "health-manager", function() {
