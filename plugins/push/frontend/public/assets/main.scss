@@ -1,3 +1,4 @@
+
 @use "sass:map";
 @use "../../../../../frontend/express/public/stylesheets/styles//base/typography-variables" as typography;
 @use "../../../../../frontend/express/public/stylesheets/styles//base/colors" as colors;
@@ -144,12 +145,12 @@
     &__ios-button {
         position: relative;
         height: 40px;
-        text-align: center;   
-        line-height: 42px; 
+        text-align: center;
+        line-height: 42px;
     }
 
     &__ios-button:first-child {
-        border-bottom: 1px solid rgba(255,255,255,.3);            
+        border-bottom: 1px solid rgba(255,255,255,.3);
     }
 
     &__ios-media {
@@ -270,7 +271,7 @@
 .cly-vue-push-notification-details-summary {
 
     margin-top: 64px;
-    
+
     &__header {
         margin-top: 64px;
 
@@ -278,7 +279,7 @@
             border-bottom: none !important;
             background-color: #f8f9fa !important;
         }
-    
+
         .cly-vue-header {
             background-color: #f8f9fa;
         }
@@ -387,7 +388,7 @@
     background-color: #D23F00;
     display: flex;
     align-items: center;
-    justify-content: center; 
+    justify-content: center;
     color: white;
     font-size: 10px;
     font-weight: bold;
@@ -464,7 +465,7 @@
         font-size: typography.$heading-4-size;
         line-height: typography.$heading-5-line-height;
         font-weight: typography.$font-weight-primary;
-    }   
+    }
 
     &__line-radio-button-group-header {
         font-size: typography.$text-button-size;
@@ -474,9 +475,9 @@
     }
 
     &__subsection-left {
-        background: #FFFFFF; 
+        background: #FFFFFF;
         border-bottom-right-radius: 0px;
-        border-top-right-radius: 0px;  
+        border-top-right-radius: 0px;
         border-bottom-left-radius: 6px;
         border-top-left-radius: 6px;
         border: 1px solid #E2E4E8;
@@ -511,14 +512,14 @@
 
         &:hover {
             cursor: pointer;
-        }    
+        }
     }
 
     &__subsection-right {
-        background: #F8FAFD; 
+        background: #F8FAFD;
         border: 1px solid #E2E4E8;
         border-bottom-left-radius: 0px;
-        border-top-left-radius: 0px;  
+        border-top-left-radius: 0px;
         border-bottom-right-radius: 6px;
         border-top-right-radius: 6px;
         padding-top: 8px;
@@ -530,7 +531,7 @@
     &__subsection-border {
         border: 1px solid #E2E4E8;
         background: #F8FAFD;
-        border-radius: 6px; 
+        border-radius: 6px;
         padding-top: 12px;
         padding-bottom: 12px;
         padding-left: 16px;
@@ -554,13 +555,13 @@
         color: map.get(colors.$colors,"black");
         line-height: 24px;
     }
-    
+
     &__review-section-group-subheader {
         font-size: typography.$text-small-size;
         line-height: 15px;
         letter-spacing: 0.5px;
         color: map.get(colors.$colors,"cool-gray-100");
-        font-weight: typography.$font-weight-primary;    
+        font-weight: typography.$font-weight-primary;
     }
 
     &__section-group {
@@ -653,7 +654,7 @@
         width: 100%;
         margin-left: 0px !important;
         padding: 12px !important;
-        
+
         .el-radio__label {
             font-size: typography.$text-button-size;
             line-height: 16px;
@@ -676,7 +677,7 @@
         flex: 1 0 90%;
         order: 1;
     }
-        
+
     .el-collapse-item {
         .el-collapse-item__header {
             padding-left: 24px;
@@ -778,7 +779,7 @@
 .cly-vue-push-notification-emoji-wrapper{
     position: relative;
 }
-  
+
 .regular-input {
     padding: 0.5rem 1rem;
     border-radius: 3px;
@@ -882,5 +883,5 @@
             visibility: hidden;
             margin-bottom: 0px !important;
         }
-   } 
+   }
 }

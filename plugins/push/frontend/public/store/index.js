@@ -1,9 +1,18 @@
 /* eslint-disable no-console */
-/*global countlyVue,CV,countlyPlugins,countlyCommon,countlySegmentation,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
-(function(countlyPushNotification) {
+import { i18n } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { Module, ServerDataTable, FetchMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/data/vuex.js';
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+import { notify, formatPercentage } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
+import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
+import jQuery from 'jquery';
+import moment from 'moment';
+import _ from 'underscore';
+import emojis from '../emojis.js';
 
-    var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
-    var actionsPerformedLabel = CV.i18n('push-notification.actions-performed-serie-name');
+var countlyPushNotification = {};
+
+    var messagesSentLabel = i18n('push-notification.sent-serie-name');
+    var actionsPerformedLabel = i18n('push-notification.actions-performed-serie-name');
     var DEBOUNCE_TIME_IN_MS = 250;
     var MB_TO_BYTES_RATIO = 1000000;
     var DAY_TO_MS_RATIO = 86400 * 1000;
@@ -14,7 +23,7 @@
     var DEFAULT_LOCALIZATION_VALUE = 'default';
     var DEFAULT_LOCALIZATION_LABEL = 'Default';
     var ALL_FILTER_OPTION_VALUE = 'all';
-    var ALL_FILTER_OPTION_LABEL = CV.i18n("push-notification.status-filter-all");
+    var ALL_FILTER_OPTION_LABEL = i18n("push-notification.status-filter-all");
 
     var TypeEnum = Object.freeze({
         ONE_TIME: "oneTime",
@@ -36,11 +45,11 @@
         Multi: 'multi',
     });
     var CampaignTypes = [
-        {label: CV.i18n('push-notification-drawer.one-time'), description: CV.i18n('push-notification-drawer.one-time-description')},
-        {label: CV.i18n('push-notification-drawer.automated'), description: CV.i18n('push-notification-drawer.automated-description')},
-        {label: CV.i18n('push-notification-drawer.recurring'), description: CV.i18n('push-notification-drawer.recurring-description')},
-        {label: CV.i18n('push-notification-drawer.multiple-days'), description: CV.i18n('push-notification-drawer.multiple-days-description')},
-        {label: CV.i18n('push-notification-drawer.api'), description: CV.i18n('push-notification-drawer.api-description')}
+        {label: i18n('push-notification-drawer.one-time'), description: i18n('push-notification-drawer.one-time-description')},
+        {label: i18n('push-notification-drawer.automated'), description: i18n('push-notification-drawer.automated-description')},
+        {label: i18n('push-notification-drawer.recurring'), description: i18n('push-notification-drawer.recurring-description')},
+        {label: i18n('push-notification-drawer.multiple-days'), description: i18n('push-notification-drawer.multiple-days-description')},
+        {label: i18n('push-notification-drawer.api'), description: i18n('push-notification-drawer.api-description')}
     ];
     var TriggerTypeEnum = Object.freeze({
         PLAIN: "One-Time",
@@ -144,52 +153,52 @@
     });
 
     var audienceSelectionOptions = {};
-    audienceSelectionOptions[AudienceSelectionEnum.NOW] = {label: CV.i18n('push-notification.now'), value: AudienceSelectionEnum.NOW};
-    audienceSelectionOptions[AudienceSelectionEnum.BEFORE] = {label: CV.i18n('push-notification.right-before-sending-the-message'), value: AudienceSelectionEnum.BEFORE};
+    audienceSelectionOptions[AudienceSelectionEnum.NOW] = {label: i18n('push-notification.now'), value: AudienceSelectionEnum.NOW};
+    audienceSelectionOptions[AudienceSelectionEnum.BEFORE] = {label: i18n('push-notification.right-before-sending-the-message'), value: AudienceSelectionEnum.BEFORE};
 
     var startDateOptions = {};
-    startDateOptions[SendEnum.NOW] = {label: CV.i18n('push-notification.send-now'), value: SendEnum.NOW};
-    startDateOptions[SendEnum.LATER] = {label: CV.i18n('push-notification.scheduled'), value: SendEnum.LATER };
+    startDateOptions[SendEnum.NOW] = {label: i18n('push-notification.send-now'), value: SendEnum.NOW};
+    startDateOptions[SendEnum.LATER] = {label: i18n('push-notification.scheduled'), value: SendEnum.LATER };
 
     var targetingOptions = {};
-    targetingOptions[TargetingEnum.ALL] = {label: CV.i18n('push-notification.all-push-enabled-users'), value: TargetingEnum.ALL};
-    targetingOptions[TargetingEnum.SEGMENTED] = {label: CV.i18n('push-notification.segmented-push-enabled-users'), value: TargetingEnum.SEGMENTED};
+    targetingOptions[TargetingEnum.ALL] = {label: i18n('push-notification.all-push-enabled-users'), value: TargetingEnum.ALL};
+    targetingOptions[TargetingEnum.SEGMENTED] = {label: i18n('push-notification.segmented-push-enabled-users'), value: TargetingEnum.SEGMENTED};
 
     var bucketList = ["daily", "weekly", "monthly"];
-    var weeklyRepetitionOptions = [{label: CV.i18n('common.monday'), value: 1}, {label: CV.i18n('common.tuesday'), value: 2}, {label: CV.i18n('common.wednesday'), value: 3}, {label: CV.i18n('common.thursday'), value: 4}, {label: CV.i18n('common.friday'), value: 5}, {label: CV.i18n('common.saturday'), value: 6}, {label: CV.i18n('common.sunday'), value: 7}];
+    var weeklyRepetitionOptions = [{label: i18n('common.monday'), value: 1}, {label: i18n('common.tuesday'), value: 2}, {label: i18n('common.wednesday'), value: 3}, {label: i18n('common.thursday'), value: 4}, {label: i18n('common.friday'), value: 5}, {label: i18n('common.saturday'), value: 6}, {label: i18n('common.sunday'), value: 7}];
 
     var triggerOptions = {};
-    triggerOptions[TriggerEnum.COHORT_ENTRY] = {label: CV.i18n('push-notification.cohorts-entry'), value: TriggerEnum.COHORT_ENTRY};
-    triggerOptions[TriggerEnum.COHORT_EXIT] = {label: CV.i18n('push-notification.cohorts-exit'), value: TriggerEnum.COHORT_EXIT};
-    triggerOptions[TriggerEnum.EVENT] = {label: CV.i18n('push-notification.performed-events'), value: TriggerEnum.EVENT};
+    triggerOptions[TriggerEnum.COHORT_ENTRY] = {label: i18n('push-notification.cohorts-entry'), value: TriggerEnum.COHORT_ENTRY};
+    triggerOptions[TriggerEnum.COHORT_EXIT] = {label: i18n('push-notification.cohorts-exit'), value: TriggerEnum.COHORT_EXIT};
+    triggerOptions[TriggerEnum.EVENT] = {label: i18n('push-notification.performed-events'), value: TriggerEnum.EVENT};
 
     var triggerNotMetOptions = {};
-    triggerNotMetOptions[TriggerNotMetEnum.SEND_ANYWAY] = {label: CV.i18n('push-notification.send-anyway'), value: TriggerNotMetEnum.SEND_ANYWAY};
-    triggerNotMetOptions[TriggerNotMetEnum.CANCEL_ON_EXIT] = {label: CV.i18n('push-notification.cancel-when-user-exits-cohort'), value: TriggerNotMetEnum.CANCEL_ON_EXIT};
+    triggerNotMetOptions[TriggerNotMetEnum.SEND_ANYWAY] = {label: i18n('push-notification.send-anyway'), value: TriggerNotMetEnum.SEND_ANYWAY};
+    triggerNotMetOptions[TriggerNotMetEnum.CANCEL_ON_EXIT] = {label: i18n('push-notification.cancel-when-user-exits-cohort'), value: TriggerNotMetEnum.CANCEL_ON_EXIT};
 
     var deliveryMethodOptions = {};
-    deliveryMethodOptions[DeliveryMethodEnum.IMMEDIATELY] = {label: CV.i18n('push-notification.immediately'), value: DeliveryMethodEnum.IMMEDIATELY};
-    deliveryMethodOptions[DeliveryMethodEnum.DELAYED] = {label: CV.i18n('push-notification.delayed'), value: DeliveryMethodEnum.DELAYED};
+    deliveryMethodOptions[DeliveryMethodEnum.IMMEDIATELY] = {label: i18n('push-notification.immediately'), value: DeliveryMethodEnum.IMMEDIATELY};
+    deliveryMethodOptions[DeliveryMethodEnum.DELAYED] = {label: i18n('push-notification.delayed'), value: DeliveryMethodEnum.DELAYED};
 
     var platformOptions = {};
     platformOptions[PlatformEnum.ANDROID] = {label: "Android", value: PlatformEnum.ANDROID};
     platformOptions[PlatformEnum.IOS] = {label: 'iOS', value: PlatformEnum.IOS};
 
     var statusOptions = {};
-    statusOptions[StatusEnum.ACTIVE] = {label: CV.i18n('push-notification.active'), value: StatusEnum.ACTIVE};
-    statusOptions[StatusEnum.SCHEDULED] = {label: CV.i18n('push-notification.scheduled'), value: StatusEnum.SCHEDULED};
-    statusOptions[StatusEnum.SENT] = {label: CV.i18n('push-notification.sent'), value: StatusEnum.SENT};
-    statusOptions[StatusEnum.SENDING] = {label: CV.i18n('push-notification.sending'), value: StatusEnum.SENDING};
-    statusOptions[StatusEnum.CANCELED] = {label: CV.i18n('push-notification.canceled'), value: StatusEnum.CANCELED};
-    statusOptions[StatusEnum.PENDING_APPROVAL] = {label: CV.i18n('push-notification.waiting-for-approval'), value: StatusEnum.PENDING_APPROVAL};
-    statusOptions[StatusEnum.FAILED] = {label: CV.i18n('push-notification.failed'), value: StatusEnum.FAILED};
-    statusOptions[StatusEnum.STOPPED] = {label: CV.i18n('push-notification.stopped'), value: StatusEnum.STOPPED};
-    statusOptions[StatusEnum.DRAFT] = {label: CV.i18n('push-notification.draft'), value: StatusEnum.DRAFT};
-    statusOptions[StatusEnum.REJECTED] = {label: CV.i18n('push-notification.rejected'), value: StatusEnum.REJECTED};
+    statusOptions[StatusEnum.ACTIVE] = {label: i18n('push-notification.active'), value: StatusEnum.ACTIVE};
+    statusOptions[StatusEnum.SCHEDULED] = {label: i18n('push-notification.scheduled'), value: StatusEnum.SCHEDULED};
+    statusOptions[StatusEnum.SENT] = {label: i18n('push-notification.sent'), value: StatusEnum.SENT};
+    statusOptions[StatusEnum.SENDING] = {label: i18n('push-notification.sending'), value: StatusEnum.SENDING};
+    statusOptions[StatusEnum.CANCELED] = {label: i18n('push-notification.canceled'), value: StatusEnum.CANCELED};
+    statusOptions[StatusEnum.PENDING_APPROVAL] = {label: i18n('push-notification.waiting-for-approval'), value: StatusEnum.PENDING_APPROVAL};
+    statusOptions[StatusEnum.FAILED] = {label: i18n('push-notification.failed'), value: StatusEnum.FAILED};
+    statusOptions[StatusEnum.STOPPED] = {label: i18n('push-notification.stopped'), value: StatusEnum.STOPPED};
+    statusOptions[StatusEnum.DRAFT] = {label: i18n('push-notification.draft'), value: StatusEnum.DRAFT};
+    statusOptions[StatusEnum.REJECTED] = {label: i18n('push-notification.rejected'), value: StatusEnum.REJECTED};
 
     var iosAuthConfigTypeOptions = {};
-    iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P8] = {label: CV.i18n('push-notification.key-file-p8'), value: IOSAuthConfigTypeEnum.P8};
-    iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P12] = {label: CV.i18n('push-notification.key-file-p12'), value: IOSAuthConfigTypeEnum.P12};
+    iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P8] = {label: i18n('push-notification.key-file-p8'), value: IOSAuthConfigTypeEnum.P8};
+    iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P12] = {label: i18n('push-notification.key-file-p12'), value: IOSAuthConfigTypeEnum.P12};
 
     var PlatformDtoEnum = Object.freeze({
         ANDROID: 'a',
@@ -243,12 +252,12 @@
             return result;
         },
         getInitialBaseModel: function(dto) {
-            const settings = countlyPlugins.getConfigsData();
+            const settings = window.countlyPlugins.getConfigsData();
             const pushSettings = settings?.push || {};
             return {
-                isEe: typeof countlySegmentation !== 'undefined',
-                isGeo: typeof countlyLocationTargetComponent !== 'undefined',
-                isCohorts: typeof countlyCohorts !== 'undefined',
+                isEe: typeof window.countlySegmentation !== 'undefined',
+                isGeo: typeof window.countlyLocationTargetComponent !== 'undefined',
+                isCohorts: typeof window.countlyCohorts !== 'undefined',
                 _id: null,
                 demo: false,
                 saveResults: pushSettings.save_results_by_default ?? false,
@@ -330,7 +339,7 @@
                     days: 0,
                     hours: 0
                 },
-                trigger: typeof countlyCohorts === 'undefined' ? TriggerEnum.EVENT : TriggerEnum.COHORT_ENTRY,
+                trigger: typeof window.countlyCohorts === 'undefined' ? TriggerEnum.EVENT : TriggerEnum.COHORT_ENTRY,
                 triggerNotMet: TriggerNotMetEnum.SEND_ANYWAY,
                 events: [],
                 cohorts: [],
@@ -507,7 +516,7 @@
             if (this.isNetworkError(error)) {
                 return 'Network error occurred.';
             }
-            return CV.i18n('push-notification.unknown-error');
+            return i18n('push-notification.unknown-error');
         },
         convertDateTimeToMS: function(datetime) {
             var result = 0;
@@ -611,10 +620,10 @@
             return result;
         },
         isInternationalizationFound: function(key) {
-            return key !== CV.i18n(key);
+            return key !== i18n(key);
         }
     };
-    var pushTableResource = countlyVue.vuex.ServerDataTable("pushTable", {
+    var pushTableResource = ServerDataTable("pushTable", {
         columns: ['name', 'status', 'sent', 'actioned', 'createdDateTime', 'lastDate'],
         onRequest: function(context) {
             context.rootState.countlyPushNotificationMain.isLoadingTable = true;
@@ -665,9 +674,9 @@
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "GET",
-                    url: window.countlyCommon.API_URL + "/o/push/message/GET",
+                    url: countlyCommon.API_URL + "/o/push/message/GET",
                     data: data,
                     contentType: "application/json",
                     success: function(response) {
@@ -684,7 +693,7 @@
         findAll: function(data) {
             data.app_id = countlyCommon.ACTIVE_APP_ID;
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/push/message/all",
                     data: data,
@@ -702,7 +711,7 @@
         },
         fetchMessageStats: function(_id, period = "30days") {
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/push/message/stats",
                     data: { _id, period },
@@ -726,9 +735,9 @@
                 data.echo = echo;
             }
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "GET",
-                    url: window.countlyCommon.API_URL + '/o/push/dashboard',
+                    url: countlyCommon.API_URL + '/o/push/dashboard',
                     data: data,
                     dataType: "json",
                     success: function(response) {
@@ -745,9 +754,9 @@
         delete: function(data) {
             data.app_id = countlyCommon.ACTIVE_APP_ID;
             return new Promise(function(resolve, reject) {
-                return CV.$.ajax({
+                return jQuery.ajax({
                     method: 'GET',
-                    url: window.countlyCommon.API_URL + '/i/push/message/remove',
+                    url: countlyCommon.API_URL + '/i/push/message/remove',
                     data: data,
                     dataType: "json",
                     success: function(response) {
@@ -763,9 +772,9 @@
         },
         save: function(dto) {
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "POST",
-                    url: window.countlyCommon.API_URL + '/i/push/message/create?app_id=' + countlyCommon.ACTIVE_APP_ID,
+                    url: countlyCommon.API_URL + '/i/push/message/create?app_id=' + countlyCommon.ACTIVE_APP_ID,
                     data: JSON.stringify(dto),
                     contentType: "application/json",
                     success: function(response) {
@@ -785,9 +794,9 @@
         },
         sendToTestUsers: function(dto) {
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "POST",
-                    url: window.countlyCommon.API_URL + '/i/push/message/test?app_id=' + countlyCommon.ACTIVE_APP_ID,
+                    url: countlyCommon.API_URL + '/i/push/message/test?app_id=' + countlyCommon.ACTIVE_APP_ID,
                     data: JSON.stringify(dto),
                     contentType: "application/json",
                     success: function(response) {
@@ -803,9 +812,9 @@
         },
         update: function(dto) {
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "POST",
-                    url: window.countlyCommon.API_URL + '/i/push/message/update?app_id=' + countlyCommon.ACTIVE_APP_ID,
+                    url: countlyCommon.API_URL + '/i/push/message/update?app_id=' + countlyCommon.ACTIVE_APP_ID,
                     data: JSON.stringify(dto),
                     contentType: "application/json",
                     success: function(response) {
@@ -825,9 +834,9 @@
         },
         estimate: function(data) {
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "POST",
-                    url: window.countlyCommon.API_URL + '/o/push/message/estimate?app_id=' + countlyCommon.ACTIVE_APP_ID,
+                    url: countlyCommon.API_URL + '/o/push/message/estimate?app_id=' + countlyCommon.ACTIVE_APP_ID,
                     data: JSON.stringify(data),
                     contentType: "application/json",
                     success: function(response) {
@@ -848,9 +857,9 @@
                 app_id: countlyCommon.ACTIVE_APP_ID
             };
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     method: 'GET',
-                    url: window.countlyCommon.API_URL + '/o/push/mime',
+                    url: countlyCommon.API_URL + '/o/push/mime',
                     data: data,
                     success: function(response) {
                         resolve(response);
@@ -864,11 +873,11 @@
             });
         },
         findAllUserProperties: function() {
-            if (typeof countlySegmentation === 'undefined') {
+            if (typeof window.countlySegmentation === 'undefined') {
                 return Promise.resolve({});
             }
-            return countlySegmentation.initialize("").then(function() {
-                return Promise.resolve(countlySegmentation.getFilters());
+            return window.countlySegmentation.initialize("").then(function() {
+                return Promise.resolve(window.countlySegmentation.getFilters());
             });
         },
         searchUsers: function(query, options) {
@@ -876,7 +885,7 @@
                 query: JSON.stringify(query)
             };
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "POST",
                     url: countlyCommon.API_PARTS.data.r + "?app_id=" + options.appId + "&method=user_details",
                     contentType: "application/json",
@@ -894,7 +903,7 @@
         },
         updateAppConfig: function(config, options) {
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "POST",
                     url: countlyCommon.API_PARTS.apps.w + '/update/plugins?app_id=' + options.app_id,
                     data: {
@@ -915,9 +924,9 @@
         },
         toggle: function(id, isActive) {
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "GET",
-                    url: window.countlyCommon.API_URL + '/i/push/message/toggle',
+                    url: countlyCommon.API_URL + '/i/push/message/toggle',
                     data: {
                         _id: id,
                         active: isActive,
@@ -1220,7 +1229,7 @@
                     return {
                         code: dto.result.error,
                         affectedUsers: dto.result.total || '',
-                        description: CV.i18n('push-notification.error-code.' + dto.result.error + '.desc') || ''
+                        description: i18n('push-notification.error-code.' + dto.result.error + '.desc') || ''
                     };
                 }
                 return null;
@@ -1243,14 +1252,14 @@
                     var result = {
                         code: errorKey,
                         affectedUsers: dto.result.errors[errorKey] || '',
-                        description: CV.i18n('push-notification.error-code.' + errorKey + '.desc')
+                        description: i18n('push-notification.error-code.' + errorKey + '.desc')
                     };
                     if (countlyPushNotification.helper.isInternationalizationFound('push-notification.error-code.' + errorKey + '.desc')) {
-                        result.description = CV.i18n('push-notification.error-code.' + errorKey + '.desc');
+                        result.description = i18n('push-notification.error-code.' + errorKey + '.desc');
                         return result;
                     }
                     if (countlyPushNotification.helper.isInternationalizationFound('push-notification.error-code.' + platformError + numberError + '.desc')) {
-                        result.description = CV.i18n('push-notification.error-code.' + platformError + numberError + '.desc');
+                        result.description = i18n('push-notification.error-code.' + platformError + numberError + '.desc');
                         return result;
                     }
                     result.description = "";
@@ -1542,9 +1551,9 @@
                     expiration: countlyPushNotification.helper.convertMSToDaysAndHours(this.findDefaultLocaleItem(dto.contents).expiration),
                     dashboard: this.mapDashboard(dto),
                     campaignType: "",
-                    isCohorts: typeof countlyCohorts !== 'undefined',
-                    isEe: typeof countlySegmentation !== 'undefined',
-                    isGeo: typeof countlyLocationTargetComponent !== 'undefined',
+                    isCohorts: typeof window.countlyCohorts !== 'undefined',
+                    isEe: typeof window.countlySegmentation !== 'undefined',
+                    isGeo: typeof window.countlyLocationTargetComponent !== 'undefined',
                     schedules: dto.schedules || [],
                 };
             },
@@ -1689,13 +1698,13 @@
                 };
             },
             mapLocalizationByKey: function(localizationKey) {
-                var label = countlyGlobalLang.languages[localizationKey] && countlyGlobalLang.languages[localizationKey].englishName;
+                var label = window.countlyGlobalLang.languages[localizationKey] && window.countlyGlobalLang.languages[localizationKey].englishName;
                 return { label: label || localizationKey, value: localizationKey};
             },
             hasAnyLocales: function(localesDto) {
                 if (localesDto) {
                     return Object.keys(localesDto).some(function(localeKey) {
-                        return Boolean(countlyGlobalLang.languages[localeKey]);
+                        return Boolean(window.countlyGlobalLang.languages[localeKey]);
                     });
                 }
                 return false;
@@ -1710,7 +1719,7 @@
                         var localizationItem = self.mapLocalizationByKey(localeKey);
                         localizationItem.count = localesDto[localeKey];
                         if (localesDto.count && localesDto.count !== 0) {
-                            localizationItem.percentage = CountlyHelpers.formatPercentage(localesDto[localeKey] / localesDto.count);
+                            localizationItem.percentage = formatPercentage(localesDto[localeKey] / localesDto.count);
                         }
                         else {
                             localizationItem.percentage = 0;
@@ -2060,7 +2069,6 @@
                 if (options.isEndDateSet) {
                     result.end = model.delivery.endDate;
                 }
-                window.test = model.automatic;
                 if (options.isUsersTimezoneSet) {
                     var usersTimezone = {
                         hours: model.automatic.usersTimezone.getHours(),
@@ -2451,11 +2459,11 @@
         monthlyRepetitionOptions: function() {
             const days = [];
             for (let i = 1; i <= 28; i++) {
-                days.push({ label: CV.i18n('push-notification.day') + " " + i, value: i });
+                days.push({ label: i18n('push-notification.day') + " " + i, value: i });
             }
-            days.push({ label: CV.i18n('push-notification.last-day'), value: 0 });
-            days.push({ label: CV.i18n('push-notification.x-day-before-the-last-day', 1), value: -1 });
-            days.push({ label: CV.i18n('push-notification.x-days-before-the-last-day', 2), value: -2 });
+            days.push({ label: i18n('push-notification.last-day'), value: 0 });
+            days.push({ label: i18n('push-notification.x-day-before-the-last-day', 1), value: -1 });
+            days.push({ label: i18n('push-notification.x-days-before-the-last-day', 2), value: -2 });
 
             return days;
         },
@@ -2496,11 +2504,11 @@
             if (!shouldFetchIfEmpty && cohortIdsList && !cohortIdsList.length) {
                 return Promise.resolve([]);
             }
-            if (typeof countlyCohorts === 'undefined') {
+            if (typeof window.countlyCohorts === 'undefined') {
                 return Promise.resolve([]);
             }
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
@@ -2523,7 +2531,7 @@
                         }
                         catch (error) {
                             console.error(error);
-                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                            reject(new Error(i18n('push-notification.unknown-error')));
                         }
                     },
                     error: function(error) {
@@ -2537,12 +2545,12 @@
             if (!shouldFetchIfEmpty && locationIdsList && !locationIdsList.length) {
                 return Promise.resolve([]);
             }
-            if (typeof countlyLocationTargetComponent === 'undefined') {
+            if (typeof window.countlyLocationTargetComponent === 'undefined') {
                 return Promise.resolve([]);
             }
             return new Promise(function(resolve, reject) {
                 //TODO-LA:re-use the target location service to fetch locations;
-                CV.$.ajax({
+                jQuery.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
@@ -2564,7 +2572,7 @@
                         }
                         catch (error) {
                             console.error(error);
-                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                            reject(new Error(i18n('push-notification.unknown-error')));
                         }
                     },
                     error: function(error) {
@@ -2576,14 +2584,14 @@
         },
         fetchEvents: function() {
             return new Promise(function(resolve, reject) {
-                countlyEventsOverview.service.fetchAllEvents()
+                window.countlyEventsOverview.service.fetchAllEvents()
                     .then(function(events) {
                         try {
                             resolve(countlyPushNotification.mapper.incoming.mapEvents(events.list || []));
                         }
                         catch (error) {
                             console.error(error);
-                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                            reject(new Error(i18n('push-notification.unknown-error')));
                         }
                     }).catch(function(error) {
                         console.error(error);
@@ -2601,7 +2609,7 @@
                         }
                         catch (error) {
                             console.error(error);
-                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                            reject(new Error(i18n('push-notification.unknown-error')));
                         }
                     })
                     .catch(function(error) {
@@ -2623,7 +2631,7 @@
                         }
                         catch (error) {
                             console.error(error);
-                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                            reject(new Error(i18n('push-notification.unknown-error')));
                         }
                     }).catch(function(error) {
                         console.error(error);
@@ -2641,7 +2649,7 @@
                         }
                         catch (error) {
                             console.error(error);
-                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                            reject(new Error(i18n('push-notification.unknown-error')));
                         }
                     }).catch(function(error) {
                         console.error(error);
@@ -2657,7 +2665,7 @@
                     }
                     catch (error) {
                         console.error(error);
-                        reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        reject(new Error(i18n('push-notification.unknown-error')));
                     }
                 }).catch(function(error) {
                     console.error(error);
@@ -2703,7 +2711,7 @@
                         }
                         catch (error) {
                             console.error(error);
-                            reject(new Error(CV.i18n('push-notification.unknown-error')));
+                            reject(new Error(i18n('push-notification.unknown-error')));
                         }
                     }).catch(function(error) {
                         console.error(error);
@@ -2745,7 +2753,7 @@
                 }
             }
             catch (error) {
-                return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
+                return Promise.reject(new Error(i18n('push-notification.unknown-error')));
             }
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.estimate(data).then(function(response) {
@@ -2757,7 +2765,7 @@
                     }
                     catch (error) {
                         console.error(error);
-                        reject(new Error(CV.i18n('push-notification.unknown-error')));
+                        reject(new Error(i18n('push-notification.unknown-error')));
                     }
 
                 }).catch(function(error) {
@@ -2780,7 +2788,7 @@
             }
             catch (error) {
                 console.error(error);
-                return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
+                return Promise.reject(new Error(i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.save(dto);
         },
@@ -2791,7 +2799,7 @@
             }
             catch (error) {
                 console.error(error);
-                return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
+                return Promise.reject(new Error(i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.update(dto);
         },
@@ -2802,14 +2810,14 @@
             }
             catch (error) {
                 console.error(error);
-                return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
+                return Promise.reject(new Error(i18n('push-notification.unknown-error')));
             }
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.sendToTestUsers(dto)
                     .then(function(response) {
                         if (!response.results) {
                             console.error(response);
-                            return reject(new Error(CV.i18n('push-notification.unknown-error')));
+                            return reject(new Error(i18n('push-notification.unknown-error')));
                         }
                         resolve(response.results);
                     }).catch(function(error) {
@@ -2845,7 +2853,7 @@
             }
             catch (error) {
                 console.error(error);
-                return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
+                return Promise.reject(new Error(i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.save(dto);
         },
@@ -2854,7 +2862,7 @@
                 throw new Error('Push approver plugin is not enabled');
             }
             return new Promise(function(resolve, reject) {
-                countlyPushNotificationApprover.service.approve(messageId)
+                window.countlyPushNotificationApprover.service.approve(messageId)
                     .then(function(response) {
                         resolve(response);
                     })
@@ -2871,7 +2879,7 @@
                 throw new Error('Push approver plugin is not enabled');
             }
             return new Promise(function(resolve, reject) {
-                countlyPushNotificationApprover.service.reject(messageId)
+                window.countlyPushNotificationApprover.service.reject(messageId)
                     .then(function(response) {
                         resolve(response);
                     })
@@ -2891,7 +2899,7 @@
             }
             catch (error) {
                 console.error(error);
-                return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
+                return Promise.reject(new Error(i18n('push-notification.unknown-error')));
             }
             return countlyPushNotification.api.updateAppConfig(appConfig, options);
         },
@@ -2961,11 +2969,11 @@
             countlyPushNotification.service.approve(id).then(function() {
                 context.dispatch('onFetchSuccess', {useLoader: false});
                 context.dispatch('fetchById', id);
-                CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-approved')});
+                notify({message: i18n('push-notification.was-successfully-approved')});
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
-                CountlyHelpers.notify({message: error.message, type: "error"});
+                notify({message: error.message, type: "error"});
             });
         },
         onReject: function(context, id) {
@@ -2973,11 +2981,11 @@
             countlyPushNotification.service.reject(id).then(function() {
                 context.dispatch('onFetchSuccess', {useLoader: false});
                 context.dispatch('fetchById', id);
-                CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-rejected')});
+                notify({message: i18n('push-notification.was-successfully-rejected')});
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
-                CountlyHelpers.notify({message: error.message, type: "error"});
+                notify({message: error.message, type: "error"});
             });
         },
         onDelete: function(context, id) {
@@ -2986,13 +2994,13 @@
                 countlyPushNotification.service.delete(id)
                     .then(function() {
                         context.dispatch('onFetchSuccess', {useLoader: true});
-                        CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-deleted')});
+                        notify({message: i18n('push-notification.was-successfully-deleted')});
                         resolve();
                     }).catch(function(error) {
                         console.error(error);
                         context.dispatch('onFetchError', {error: error, useLoader: true});
                         reject(error);
-                        CountlyHelpers.notify({message: error.message, type: "error"});
+                        notify({message: error.message, type: "error"});
                     });
             });
         },
@@ -3001,11 +3009,11 @@
             countlyPushNotification.service.toggle(payload.id, payload.isActive).then(function() {
                 context.dispatch('onFetchSuccess', {useLoader: false});
                 context.dispatch('fetchById', payload.id);
-                CountlyHelpers.notify({message: CV.i18n(payload.isActive ? 'push-notification.was-successfully-started' : 'push-notification.was-successfully-stopped')});
+                notify({message: i18n(payload.isActive ? 'push-notification.was-successfully-started' : 'push-notification.was-successfully-stopped')});
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
-                CountlyHelpers.notify({message: error.message, type: "error"});
+                notify({message: error.message, type: "error"});
             });
         },
         onSetLocaleFilter: function(context, value) {
@@ -3050,15 +3058,15 @@
         setPlatformFilterOptions: function(state, value) {
             var filterOptions = [];
             if (value.dashboard[PlatformEnum.IOS]) {
-                filterOptions.push({label: CV.i18n("push-notification.platform-filter-ios"), value: countlyPushNotification.service.PlatformEnum.IOS});
+                filterOptions.push({label: i18n("push-notification.platform-filter-ios"), value: countlyPushNotification.service.PlatformEnum.IOS});
                 state.platformFilter = PlatformEnum.IOS;
             }
             if (value.dashboard[PlatformEnum.ANDROID]) {
-                filterOptions.push({label: CV.i18n("push-notification.platform-filter-android"), value: countlyPushNotification.service.PlatformEnum.ANDROID});
+                filterOptions.push({label: i18n("push-notification.platform-filter-android"), value: countlyPushNotification.service.PlatformEnum.ANDROID});
                 state.platformFilter = PlatformEnum.ANDROID;
             }
             if (value.dashboard[PlatformEnum.ALL]) {
-                filterOptions.push({label: CV.i18n("push-notification.platform-filter-all"), value: countlyPushNotification.service.PlatformEnum.ALL});
+                filterOptions.push({label: i18n("push-notification.platform-filter-all"), value: countlyPushNotification.service.PlatformEnum.ALL});
                 state.platformFilter = PlatformEnum.ALL;
             }
             state.platformFilterOptions = filterOptions;
@@ -3073,11 +3081,11 @@
 
     countlyPushNotification.details = {};
     countlyPushNotification.details.getVuexModule = function() {
-        return countlyVue.vuex.Module("countlyPushNotificationDetails", {
+        return Module("countlyPushNotificationDetails", {
             state: getDetailsInitialState,
             actions: detailsActions,
             mutations: detailsMutations,
-            submodules: [countlyVue.vuex.FetchMixin()]
+            submodules: [FetchMixin()]
         });
     };
 
@@ -3113,11 +3121,11 @@
                 .then(function() {
                     context.dispatch('fetchAll', true);
                     context.dispatch('onFetchSuccess', {useLoader: true});
-                    CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-deleted')});
+                    notify({message: i18n('push-notification.was-successfully-deleted')});
                 }).catch(function(error) {
                     console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
-                    CountlyHelpers.notify({message: error.message, type: "error"});
+                    notify({message: error.message, type: "error"});
                 });
         },
         onApprove: function(context, id) {
@@ -3125,11 +3133,11 @@
             countlyPushNotification.service.approve(id).then(function() {
                 context.dispatch('fetchAll', false);
                 context.dispatch('onFetchSuccess', {useLoader: true});
-                CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-approved')});
+                notify({message: i18n('push-notification.was-successfully-approved')});
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: true});
-                CountlyHelpers.notify({message: error.message, type: "error"});
+                notify({message: error.message, type: "error"});
             });
         },
         onReject: function(context, id) {
@@ -3137,11 +3145,11 @@
             countlyPushNotification.service.reject(id).then(function() {
                 context.dispatch('fetchAll', false);
                 context.dispatch('onFetchSuccess', {useLoader: true});
-                CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-rejected')});
+                notify({message: i18n('push-notification.was-successfully-rejected')});
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: true});
-                CountlyHelpers.notify({message: error.message, type: "error"});
+                notify({message: error.message, type: "error"});
             });
         },
         onToggle: function(context, payload) {
@@ -3149,11 +3157,11 @@
             countlyPushNotification.service.toggle(payload.id, payload.isActive).then(function() {
                 context.dispatch('fetchAll', false);
                 context.dispatch('onFetchSuccess', {useLoader: true});
-                CountlyHelpers.notify({message: CV.i18n(payload.isActive ? 'push-notification.was-successfully-started' : 'push-notification.was-successfully-stopped')});
+                notify({message: i18n(payload.isActive ? 'push-notification.was-successfully-started' : 'push-notification.was-successfully-stopped')});
             }).catch(function(error) {
                 console.error(error);
                 context.dispatch('onFetchError', {error: error, useLoader: false});
-                CountlyHelpers.notify({message: error.message, type: "error"});
+                notify({message: error.message, type: "error"});
             });
         },
         onUserCommand: function(context, payload) {
@@ -3230,12 +3238,12 @@
                 return state.isLoadingTable;
             },
         };
-        return countlyVue.vuex.Module("countlyPushNotificationMain", {
+        return Module("countlyPushNotificationMain", {
             state: getMainInitialState,
             actions: mainActions,
             mutations: mainMutations,
             getters: getters,
-            submodules: [countlyVue.vuex.FetchMixin(), pushTableResource]
+            submodules: [FetchMixin(), pushTableResource]
         });
     };
 
@@ -3344,11 +3352,11 @@
 
     countlyPushNotification.dashboard = {};
     countlyPushNotification.dashboard.getVuexModule = function() {
-        return countlyVue.vuex.Module("countlyPushNotificationDashboard", {
+        return Module("countlyPushNotificationDashboard", {
             state: getDashboardInitialState,
             actions: dashboardActions,
             mutations: dashboardMutations,
-            submodules: [countlyVue.vuex.FetchMixin()],
+            submodules: [FetchMixin()],
             destroy: false,
         });
     };
@@ -3372,4 +3380,9 @@
     countlyPushNotification.getTokenName = function(type) {
         return TT[type];
     };
-}(window.countlyPushNotification = window.countlyPushNotification || {}));
+
+    countlyPushNotification.emojis = emojis;
+
+    window.countlyPushNotification = countlyPushNotification;
+
+    export default countlyPushNotification;

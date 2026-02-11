@@ -135,6 +135,7 @@ const REFACTORED_PLUGINS = [
     "geo",
     "groups",
     "dashboards",
+    "push",
     "star-rating",
 ];
 
