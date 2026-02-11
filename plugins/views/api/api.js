@@ -1336,7 +1336,6 @@ const FEATURE_NAME = 'views';
                     if (err1) {
                         log.e(err1);
                     }
-                    console.log(JSON.stringify(res1));
                     if (res1 && res1.segments) {
                         res.segments = res1.segments;
                         for (var k in res1.segments) {
