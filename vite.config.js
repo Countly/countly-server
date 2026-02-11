@@ -67,6 +67,7 @@ const REFACTORED_PLUGINS = [
     "compare",
     "compliance-hub",
     "crashes",
+    "geo",
     "groups",
     "star-rating",
 ];
