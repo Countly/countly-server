@@ -191,7 +191,7 @@ const async: any = require('async');
 const _: any = require('underscore');
 const crypto: typeof import('crypto') = require('crypto');
 const BluebirdPromise: any = require('bluebird');
-const debug: any = require('debug')('countly:pluginManager');
+const debug: any = require('debug');
 const log: LogModule = require('../api/utils/log.js');
 const logDbRead: Logger = log('db:read');
 const logDbWrite: Logger = log('db:write');
@@ -200,6 +200,7 @@ const exec: typeof cp.exec = cp.exec;
 const spawn: typeof cp.spawn = cp.spawn;
 const configextender: ConfigExtenderFn = require('../api/configextender');
 
+const d = debug('countly:pluginManager');
 // ============================================================
 // INTERNAL INTERFACES (used within this module only)
 // ============================================================
@@ -439,7 +440,7 @@ class PluginManager {
             catch (ex: any) {
                 const errorLine = (ex.message || '').split('\n')[0];
                 console.log('Skipping plugin ' + pluginNames[i] + ': ' + errorLine);
-                debug('Plugin %s load error:\n%s', pluginNames[i], ex.stack);
+                d('Plugin %s load error:\n%s', pluginNames[i], ex.stack);
             }
         }
     }
@@ -1275,7 +1276,7 @@ class PluginManager {
             catch (ex: any) {
                 const errorLine = (ex.message || '').split('\n')[0];
                 console.log('Skipping plugin ' + pluginNames[i] + ': ' + errorLine);
-                debug('Plugin %s load error:\n%s', pluginNames[i], ex.stack);
+                d('Plugin %s load error:\n%s', pluginNames[i], ex.stack);
             }
         }
     }
