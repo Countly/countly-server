@@ -48,7 +48,7 @@
         div p + p {
           font-size: 12px;
           line-height: 16px;
-          font-weight: 400; 
+          font-weight: 400;
           margin-top: 4px;
         }
       }
@@ -64,7 +64,7 @@
           width: 37.33%;
         }
       }
-    } 
+    }
   }
 
   .account-settings-avatar-box{
@@ -110,7 +110,7 @@
       border-bottom: 1px solid #ececec;
     }
     .bu-columns:last-child{
-      border-bottom: none; 
+      border-bottom: none;
       margin-bottom: -20px;
     }
     .el-collapse-item__header.is-active {
@@ -133,11 +133,11 @@
               max-width: 232px;
             }
           }
-        }  
+        }
       }
     }
     .el-collapse-item__arrow {color: #81868D;}
-    .el-collapse-item__header {color: #333C48; padding-left: 24px !important; text-transform: uppercase;} 
+    .el-collapse-item__header {color: #333C48; padding-left: 24px !important; text-transform: uppercase;}
     .el-collapse-item__wrap {overflow: unset;}
   }
   .box-card{
@@ -160,7 +160,7 @@
         font-size: 14px;
       }
     }
-  }  
+  }
 }
 .el-dropdown-menu__item--divided{
   &__fix-broken {
