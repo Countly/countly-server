@@ -129,6 +129,8 @@ const REFACTORED_PLUGINS = [
     "activity-map",
     "adjust",
     "alerts",
+    "attribution",
+    "block",
     "browser",
     "compare",
     "compliance-hub",
