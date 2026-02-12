@@ -50,7 +50,7 @@ import $ from 'jquery';
       name: 'Messages',
       language: '',
       path: '',
-      mode: 'vars',
+      mode: 'map',
       cache: false,
       encoding: 'UTF-8',
       async: false,
@@ -307,10 +307,7 @@ import $ from 'jquery';
 
   /** Parse .properties files */
   function parseData(data, mode) {
-    var parsed = '';
     var parameters = data.split(/\n/);
-    var regPlaceHolder = /(\{\d+})/g;
-    var regRepPlaceHolder = /\{(\d+)}/g;
     var unicodeRE = /(\\u.{4})/ig;
     for (var i = 0; i < parameters.length; i++) {
       parameters[i] = parameters[i].replace(/^\s\s*/, '').replace(/\s\s*$/, ''); // trim
@@ -332,77 +329,22 @@ import $ from 'jquery';
           value = value.replace(/^\s\s*/, '').replace(/\s\s*$/, '').replace(/\\\\=/g, '=').replace(/\\\\:/g, ':').replace(/\\\\!/g, '!').replace(/\\=/g, '=').replace(/\\:/g, ':').replace(/\\!/g, '!'); // trim
 
           /** Mode: bundle keys in a map */
-          if (mode == 'map' || mode == 'both') {
-            // handle unicode chars possibly left out
-            var unicodeMatches = value.match(unicodeRE);
-            if (unicodeMatches) {
-              for (var u = 0; u < unicodeMatches.length; u++) {
-                value = value.replace(unicodeMatches[u], unescapeUnicode(unicodeMatches[u]));
-              }
+          // handle unicode chars possibly left out
+          var unicodeMatches = value.match(unicodeRE);
+          if (unicodeMatches) {
+            for (var u = 0; u < unicodeMatches.length; u++) {
+              value = value.replace(unicodeMatches[u], unescapeUnicode(unicodeMatches[u]));
             }
-            // add to map
-            $.i18n.map[name] = value;
           }
-
-          /** Mode: bundle keys as vars/functions */
-          if (mode == 'vars' || mode == 'both') {
-            value = value.replace(/"/g, '\\"'); // escape quotation mark (")
-
-            // make sure namespaced key exists (eg, 'some.key')
-            checkKeyNamespace(name);
-
-            // value with variable substitutions
-            if (regPlaceHolder.test(value)) {
-              var parts = value.split(regPlaceHolder);
-              // process function args
-              var first = true;
-              var fnArgs = '';
-              var usedArgs = [];
-              for (var p = 0; p < parts.length; p++) {
-                if (regPlaceHolder.test(parts[p]) && (usedArgs.length == 0 || usedArgs.indexOf(parts[p]) == -1)) {
-                  if (!first) {
-                    fnArgs += ',';
-                  }
-                  fnArgs += parts[p].replace(regRepPlaceHolder, 'v$1');
-                  usedArgs.push(parts[p]);
-                  first = false;
-                }
-              }
-              parsed += name + '=function(' + fnArgs + '){';
-              // process function body
-              var fnExpr = '"' + value.replace(regRepPlaceHolder, '"+v$1+"') + '"';
-              parsed += 'return ' + fnExpr + ';' + '};';
-
-              // simple value
-            } else {
-              parsed += name + '="' + value + '";';
-            }
-          } // END: Mode: bundle keys as vars/functions
+          // add to map
+          $.i18n.map[name] = value;
         } // END: if(pair.length > 0)
       } // END: skip comments
     }
-    //eval(parsed);
   }
 
   /** Make sure namespace exists (for keys with dots in name) */
 // TODO key parts that start with numbers quietly fail. i.e. month.short.1=Jan
-  function checkKeyNamespace(key) {
-    var regDot = /\./;
-    if (regDot.test(key)) {
-      var fullname = '';
-      var names = key.split(/\./);
-      for (var i = 0; i < names.length; i++) {
-        if (i > 0) {
-          fullname += '.';
-        }
-        fullname += names[i];
-        if (eval('typeof ' + fullname + ' == "undefined"')) {
-          eval(fullname + '={};');
-        }
-      }
-    }
-  }
-
   /** Make sure filename is an array */
   function getFiles(names) {
     return (names && names.constructor == Array) ? names : [names];
