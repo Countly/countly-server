@@ -1,14 +1,15 @@
+<template>
     <cly-drawer
-		@submit="onSubmit"
-		@close="onClose"
-		@copy="onCopy"
+        @submit="onSubmit"
+        @close="onClose"
+        @copy="onCopy"
         :size="6"
-		:title="title"
+        :title="title"
         ref="drawerData"
-		:saveButtonLabel="saveButtonLabel"
+        :saveButtonLabel="saveButtonLabel"
         toggle-transition="stdt-fade"
- 		v-bind="$props.controls">
-        <template v-slot:default="drawerScope" >
+        v-bind="$props.controls">
+        <template v-slot:default="drawerScope">
             <cly-form-step id="step1" :name="i18n('hooks.step1')">
                 <cly-form-field name="hooksName" :label="i18n('hooks.name')" rules="required">
                     <el-input
@@ -42,9 +43,8 @@
                         <template v-slot:option-prefix="option">
                             <div class="hook-app-selector-image" :style="option.image">
                             </div>
-                        </template> 
+                        </template>
                     </cly-select-x>
-                </div>
                 </cly-form-field>
 
                 <pre v-if="0">
@@ -57,33 +57,31 @@
                 {{i18n('hooks.trigger')}}
                 </div>
                 <div class="cly-vue-drawer-hook_description">
-                    {{i18n('hooks.trigger-intro')}} 
+                    {{i18n('hooks.trigger-intro')}}
                 </div>
 
-                <hook-trigger 
-                    :hookData.sync="drawerScope.editedObject" 
+                <hook-trigger
+                    :hookData.sync="drawerScope.editedObject"
                     v-model="drawerScope.editedObject.trigger" ref="trigger"
                  />
                  <pre v-if="0">
                     {{drawerScope.editedObject}}
                  </pre>
-                </div>
             </cly-form-step>
 
             <cly-form-step id="step3" :name="i18n('hooks.step3')">
                 <div class="text-big text-heading cly-vue-hook-drawer__no-margin bu-mt-3">
-                    {{i18n('hooks.effects')}}<span class="cly-vue-tooltip-icon ion ion-help-circled cly-vue-hook-drawer__small-icon"  v-tooltip.top-center="i18n('hooks.actions-tips')"></span>
+                    {{i18n('hooks.effects')}}<span class="cly-vue-tooltip-icon ion ion-help-circled cly-vue-hook-drawer__small-icon" v-tooltip.top-center="i18n('hooks.actions-tips')"></span>
                 </div>
                 <div class="cly-vue-drawer-hook_description">
-                    {{i18n('hooks.effects-intro')}} 
+                    {{i18n('hooks.effects-intro')}}
                 </div>
-                <hook-effect 
-                    @removeEffect="removeEffect" 
-                    v-bind:index="index" 
-                    v-for="(effect, index) in drawerScope.editedObject.effects" 
-                    :key="index" 
+                <hook-effect
+                    @removeEffect="removeEffect"
+                    v-bind:index="index"
+                    v-for="(effect, index) in drawerScope.editedObject.effects"
+                    :key="index"
                     v-model="drawerScope.editedObject.effects[index]"/>
-                </div>
                 <el-button type="text" class="bg-light-blue-100 color-blue-100" @click="addEffect">{{i18n('hooks.add-effect')}}</el-button>
 
                 <div>
@@ -92,11 +90,9 @@
                             <div class="is-action-card-title" style="flex-grow: 1;">
                                 <div class="text-small text-heading cly-vue-hook-drawer__no-margin">
                                     {{i18n('hooks.test-hook')}}
-                                   
-                                    <!-- <span class="ion ion-help-circled cly-vue-hook-drawer__small-icon cly-vue-tooltip-icon" v-tooltip.top-center=""/> -->
                                 </div>
                             <div class="color-cool-gray-100 bu-mt-3" style="font-size: 13px;line-height: 16px;">
-                                    {{i18n('hooks.test-hook-intro')}} 
+                                    {{i18n('hooks.test-hook-intro')}}
                                 </div>
                             </div>
                             <div class="is-action-card-title-right">
@@ -114,12 +110,12 @@
                                 </el-button>
                             </div>
                         </div>
-                       
+
                         <div>
-                            <el-collapse v-model="testClaps" class="bu-my-4 is-bordered-box hook-test-card-list"> 
-                                <section v-for="item, idx in testResult" >
+                            <el-collapse v-model="testClaps" class="bu-my-4 is-bordered-box hook-test-card-list">
+                                <section v-for="(item, idx) in testResult" :key="idx">
                                     <div class="hooks-test-result-row">
-                                        <el-collapse-item  :name="idx" class="hook-test-collapse-item">  
+                                        <el-collapse-item :name="idx" class="hook-test-collapse-item">
                                             <template slot="title">
                                                 <span class="cly-vue-hook-drawer__check_icon done-icon text-small color-white cly-bullet--green"><i class="fa fa-check"></i></span>
                                                 {{i18n('hooks.' + item.t)}}
@@ -128,7 +124,7 @@
                                                 <div class="text-medium text-heading">Input: </div>
                                                 <div>{{item.i}}</div>
 
-                                                <div  class="text-medium text-heading bu-mt-2">Output:</div>
+                                                <div class="text-medium text-heading bu-mt-2">Output:</div>
                                                 <div>{{item.o}}</div>
                                                 <div v-if="item.logs" class="text-medium text-heading bu-mt-2">Error Logs:</div>
                                                 <div v-if="item.logs">{{item.logs}}</div>
@@ -148,5 +144,114 @@
             </cly-form-step>
         </template>
     </cly-drawer>
+</template>
 
+<script>
+import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
+import { validateCreate, validateUpdate } from '../../../../../frontend/express/public/javascripts/countly/countly.auth.js';
+import jQuery from 'jquery';
+import TriggerViews from './triggers/TriggerViews.vue';
+import EffectViews from './effects/EffectViews.vue';
 
+var FEATURE_NAME = "hooks";
+
+var appsSortFunction = function(a, b) {
+    const aLabel = a?.label || '';
+    const bLabel = b?.label || '';
+    const locale = window.countlyCommon?.BROWSER_LANG || 'en';
+
+    if (aLabel && bLabel) {
+        return aLabel.localeCompare(bLabel, locale, { numeric: true }) || 0;
+    }
+    if (!aLabel && bLabel) {
+        return 1;
+    }
+    if (aLabel && !bLabel) {
+        return -1;
+    }
+    return 0;
+};
+
+export default {
+    mixins: [i18nMixin],
+    components: {
+        "hook-trigger": TriggerViews,
+        "hook-effect": EffectViews,
+    },
+    data: function() {
+        var appsSelectorOption = [];
+        var appsSelectorOption2 = [];
+        for (var id in countlyGlobal.apps) {
+            var item = {label: countlyGlobal.apps[id].name, value: id, image: "background-image:url(" + countlyGlobal.apps[id].image + ")"};
+            if (validateCreate(FEATURE_NAME, countlyGlobal.member, id)) {
+                appsSelectorOption.push(item);
+            }
+            if (validateUpdate(FEATURE_NAME, countlyGlobal.member, id)) {
+                appsSelectorOption2.push(item);
+            }
+        }
+
+        appsSelectorOption.sort(appsSortFunction);
+        appsSelectorOption2.sort(appsSortFunction);
+
+        return {
+            title: "",
+            saveButtonLabel: "",
+            appsSelectorOption: appsSelectorOption,
+            appsSelectorOption2: appsSelectorOption2,
+            testClaps: [],
+            newTest: false,
+            description: "",
+        };
+    },
+    computed: {
+        testResult: function() {
+            var testResult = this.$store.getters["countlyHooks/testResult"];
+            if ((this.$data.newTest === true) && (testResult.length > 0)) {
+                this.$data.newTest = false;
+                this.$data.testClaps = [];
+                for (var i = 0; i < testResult.length; i++) {
+                    if (testResult[i].logs) {
+                        this.$data.testClaps.push(i);
+                    }
+                }
+            }
+            return testResult || [];
+        }
+    },
+    props: {
+        controls: {
+            type: Object
+        }
+    },
+    methods: {
+        onSubmit: function(doc) {
+            this.$store.dispatch("countlyHooks/saveHook", doc);
+        },
+        onClose: function($event) {
+            this.$emit("close", $event);
+        },
+        onCopy: function(newState) {
+            if (newState._id !== null) {
+                this.title = jQuery.i18n.map["hooks.edit-your-hook"];
+                this.saveButtonLabel = jQuery.i18n.map["hooks.save-hook"];
+                return;
+            }
+            this.title = jQuery.i18n.map["hooks.drawer-create-title"];
+            this.saveButtonLabel = jQuery.i18n.map["hooks.create-hook"];
+        },
+        addEffect: function() {
+            this.$refs.drawerData.editedObject.effects.push({type: null, configuration: null});
+        },
+        removeEffect: function(index) {
+            this.$refs.drawerData.editedObject.effects.splice(index, 1);
+        },
+        testHook: function() {
+            var hookData = this.$refs.drawerData.editedObject;
+            this.$data.newTest = true;
+            this.$store.dispatch("countlyHooks/testHook", hookData);
+        },
+    }
+};
+</script>

@@ -13,7 +13,7 @@
         line-height: 16px;
         color: #81868D;
     }
-      
+
     &__is-hidden {
         visibility: hidden;
     }
@@ -39,7 +39,7 @@
         margin-left: 9px;
         margin-right: 9px;
     }
- 
+
 }
 
 .hook-detail-card {
@@ -202,7 +202,7 @@
             flex-grow: 1;
         }
     }
-    
+
 }
 .hook-error-table {
     .el-table__expanded-cell {
@@ -241,8 +241,8 @@
 }
 
 .hook-app-selector-image {
-    border-radius: 3px; 
-    width: 16px; 
+    border-radius: 3px;
+    width: 16px;
     height: 16px;
     background-size: cover;
 }
@@ -250,7 +250,7 @@
     white-space: pre-line;
 }
 
-.hooks-table-app-selector .el-input input::placeholder { 
+.hooks-table-app-selector .el-input input::placeholder {
     color: #333C48;
     opacity: 1;
 }
