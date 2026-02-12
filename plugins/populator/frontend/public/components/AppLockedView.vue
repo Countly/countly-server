@@ -1,0 +1,25 @@
+<template>
+<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center bu-is-align-items-center populator-app-locked-wrapper">
+    <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center bu-is-align-items-center populator-app-locked-wrapper__content">
+        <div>
+            <img src="../assets/images/application-lock.svg">
+        </div>
+        <div class="bu-mt-5"><h3>{{i18n('management-applications.app-locked')}}</h3></div>
+        <div class="bu-mt-4 bu-has-text-centered populator-app-locked-wrapper__description"><span class="color-cool-gray-50 text-medium">{{i18n('populator.locked-description')}}</span></div>
+        <el-button class="bu-mt-5" type="success" size="medium" @click="redirectToAppManager">{{i18n('populator.go-application-manager')}}</el-button>
+    </div>
+</div>
+</template>
+
+<script>
+import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+
+export default {
+    mixins: [i18nMixin],
+    methods: {
+        redirectToAppManager: function() {
+            window.location.href = '#/manage/apps';
+        }
+    }
+};
+</script>

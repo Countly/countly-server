@@ -1,3 +1,4 @@
+@use './populator-legacy.css';
 .populator-template-drawer {
 
     &__key {
@@ -22,7 +23,7 @@
             font-size: 13px;
             line-height: 13px;
         }
-        
+
         .custom-value {
             width: 100%;
         }
@@ -95,7 +96,7 @@
 
         .bu-columns:not(:last-child) {
             margin-bottom: 0rem;
-        }    
+        }
     }
 
     .main-page-container {
@@ -177,7 +178,7 @@
 
     &__proggress-bar {
         width: 300px;
-    } 
+    }
 
     &__generate-data-header {
         // margin-top: 20px;
@@ -321,7 +322,7 @@
                 align-items: normal;
                 flex-direction: column;
                 width: 50%;
-    
+
                 .duration-text {
                     font-family: Inter;
                     font-style: normal;
@@ -332,18 +333,18 @@
                     margin-left: 24px;
                 }
             }
-    
+
             .right-container {
                 margin-left: 57px !important;
                 padding: unset !important;
                 margin-top: -5px !important;
             }
-    
+
             .el-checkbox__label {
                 margin-left: 8px !important;
                 padding-left: unset !important;
             }
-    
+
             .duration-input {
                 width: 80px !important;
             }
@@ -369,7 +370,7 @@
            .drag-handler {
                 margin-top: 7px;
                 margin-right: 6px;
-           } 
+           }
            .step-field {
                 width: 125px;
            }
@@ -497,7 +498,7 @@
     width: 240px;
     display: flex;
     justify-content: space-around;
-    
+
     &__each-box-wrapper {
         width: 100%;
     }
