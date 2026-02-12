@@ -1,10 +1,13 @@
-## Version 25.03.X
+## Version 25.03.34
 Fixes:
 - [core] Fix period calculation
 - [dashboards] Update dialog button color when deleting dashboard/widget
 - [star-rating] Fix rating number when exporting data
 
 Enterprise Fixes:
+- [content] Uniform journey and content block actions
+- [content] Fix overflow and missing translations in content blocks
+- [content] Fix button management when creating fullscreen content blocks
 - [crash_symbolication] Use countlyfs for JavaScript symbolication
 - [funnels] Fix funnel name tooltip content
 - [surveys] Allow surveys to resize and reposition when user rotates devices or adjust browser window
