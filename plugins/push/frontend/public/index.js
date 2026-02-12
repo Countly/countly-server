@@ -1,5 +1,6 @@
 import { app } from '../../../../frontend/express/public/javascripts/countly/countly.template.js';
 import { i18n, views } from '../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { getGlobalStore } from '../../../../frontend/express/public/javascripts/countly/vue/data/store.js';
 import { registerData } from '../../../../frontend/express/public/javascripts/countly/vue/container.js';
 import { countlyCommon } from '../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import { isActiveAppMobile } from '../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
@@ -65,13 +66,11 @@ app.addMenuForType("mobile", "reach", {code: "push", permission: featureName, ur
 
 // --- Configurations ---
 
-if (app.configurationsView) {
-    app.configurationsView.registerLabel("push", "push-notification.title");
-    app.configurationsView.registerLabel("push.proxyhost", "push-notification.proxy-host");
-    app.configurationsView.registerLabel("push.proxypass", "push-notification.proxy-password");
-    app.configurationsView.registerLabel("push.proxyport", "push-notification.proxy-port");
-    app.configurationsView.registerLabel("push.proxyuser", "push-notification.proxy-user");
-}
+getGlobalStore().commit('countlyConfigurations/registerLabel', {id: "push", value: "push-notification.title"});
+getGlobalStore().commit('countlyConfigurations/registerLabel', {id: "push.proxyhost", value: "push-notification.proxy-host"});
+getGlobalStore().commit('countlyConfigurations/registerLabel', {id: "push.proxypass", value: "push-notification.proxy-password"});
+getGlobalStore().commit('countlyConfigurations/registerLabel', {id: "push.proxyport", value: "push-notification.proxy-port"});
+getGlobalStore().commit('countlyConfigurations/registerLabel', {id: "push.proxyuser", value: "push-notification.proxy-user"});
 
 // --- App Settings ---
 

@@ -376,6 +376,15 @@ import jQuery from 'jquery';
 export default {
     mixins: [i18nMixin],
     computed: {
+        predefinedLabels: function() {
+            return this.$store.getters['countlyConfigurations/predefinedLabels'];
+        },
+        predefinedInputs: function() {
+            return this.$store.getters['countlyConfigurations/predefinedInputs'];
+        },
+        predefinedStructure: function() {
+            return this.$store.getters['countlyConfigurations/predefinedStructure'];
+        },
         selectedConfigSearchBar: {
             get: function() {
                 return this.selectedConfig;
@@ -416,9 +425,6 @@ export default {
             diff_: {},
             selectedConfig: this.$route.params.namespace || "api",
             searchPlaceholder: i18n("configs.search-settings"),
-            predefinedLabels: app.configurationsView.predefinedLabels,
-            predefinedInputs: app.configurationsView.predefinedInputs,
-            predefinedStructure: app.configurationsView.predefinedStructure,
             searchQuery: this.$route.params.searchQuery || "",
             searchResultStructure: {},
         };
@@ -454,7 +460,7 @@ export default {
                             self.configsData.frontend.__user.push(userProp);
                         }
                     }
-                    app.configurationsView.registerInput("frontend.__user", {input: "el-select", attrs: {multiple: true}, list: list});
+                    self.$store.commit('countlyConfigurations/registerInput', {id: "frontend.__user", value: {input: "el-select", attrs: {multiple: true}, list: list}});
                 }
 
                 delete self.configsData.frontend.countly_tracking;
@@ -488,13 +494,13 @@ export default {
                         if (!self.predefinedInputs[key + "." + subkey]) {
                             var type = typeof self.configsData[key][subkey];
                             if (type === "string") {
-                                app.configurationsView.registerInput(key + "." + subkey, {input: "el-input", attrs: {}});
+                                self.$store.commit('countlyConfigurations/registerInput', {id: key + "." + subkey, value: {input: "el-input", attrs: {}}});
                             }
                             else if (type === "number") {
-                                app.configurationsView.registerInput(key + "." + subkey, {input: "el-input-number", attrs: {}});
+                                self.$store.commit('countlyConfigurations/registerInput', {id: key + "." + subkey, value: {input: "el-input-number", attrs: {}}});
                             }
                             else if (type === "boolean") {
-                                app.configurationsView.registerInput(key + "." + subkey, {input: "el-switch", attrs: {}});
+                                self.$store.commit('countlyConfigurations/registerInput', {id: key + "." + subkey, value: {input: "el-switch", attrs: {}}});
                             }
                         }
                         if (!self.predefinedStructure[key].groups.length) {
@@ -619,7 +625,7 @@ export default {
             }
         },
         getLabel: function(id) {
-            return app.configurationsView.getInputLabel(id);
+            return this.$store.getters['countlyConfigurations/getInputLabel'](id);
         },
         getLabelName: function(id, ns) {
             ns = ns || this.selectedConfig;
@@ -631,15 +637,15 @@ export default {
                 return jQuery.i18n.map["configs.user-level-configuration"];
             }
 
-            return app.configurationsView.getInputLabel(ns + "." + id);
+            return this.$store.getters['countlyConfigurations/getInputLabel'](ns + "." + id);
         },
         getHelperLabel: function(id, ns) {
             ns = ns || this.selectedConfig;
-            return app.configurationsView.getHelperLabel(id, ns);
+            return this.$store.getters['countlyConfigurations/getHelperLabel'](id, ns);
         },
         getInputType: function(id, configId) {
             configId = configId || this.selectedConfig;
-            return app.configurationsView.getInputType(configId + "." + id);
+            return this.$store.getters['countlyConfigurations/getInputType'](configId + "." + id);
         },
         getConfigType: function(id) {
             return this.coreDefaults.includes(id) ? "Core" : "Plugins";

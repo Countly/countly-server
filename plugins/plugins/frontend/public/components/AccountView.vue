@@ -201,6 +201,14 @@ import jQuery from 'jquery';
 
 export default {
     mixins: [i18nMixin],
+    computed: {
+        predefinedLabels: function() {
+            return this.$store.getters['countlyConfigurations/predefinedLabels'];
+        },
+        predefinedInputs: function() {
+            return this.$store.getters['countlyConfigurations/predefinedInputs'];
+        }
+    },
     data: function() {
         return {
             uploadData: {
@@ -231,8 +239,6 @@ export default {
             userConfigs: {},
             avatar: this.setDefaultAvatar(countlyGlobal.member.member_image),
             initials: this.updateInitials(countlyGlobal.member.full_name),
-            predefinedLabels: app.configurationsView.predefinedLabels,
-            predefinedInputs: app.configurationsView.predefinedInputs,
             selectedConfig: "frontend",
             security: countlyGlobal.security
         };
@@ -250,9 +256,10 @@ export default {
                 if (!self.userConfigs.frontend) {
                     self.userConfigs.frontend = {};
                 }
-                for (var key in app.configurationsView.predefinedUserInputs) {
+                var predefinedUserInputs = self.$store.getters['countlyConfigurations/predefinedUserInputs'];
+                for (var key in predefinedUserInputs) {
                     var parts = key.split(".");
-                    var val = app.configurationsView.predefinedUserInputs[key];
+                    var val = predefinedUserInputs[key];
                     if (!self.userConfigs[parts[0]]) {
                         self.userConfigs[parts[0]] = {};
                     }
@@ -264,13 +271,13 @@ export default {
                     if (!self.predefinedInputs[self.selectedConfig + "." + subkey]) {
                         var type = typeof self.userConfigs[self.selectedConfig][subkey];
                         if (type === "string") {
-                            app.configurationsView.registerInput(self.selectedConfig + "." + subkey, {input: "el-input", attrs: {}});
+                            self.$store.commit('countlyConfigurations/registerInput', {id: self.selectedConfig + "." + subkey, value: {input: "el-input", attrs: {}}});
                         }
                         else if (type === "number") {
-                            app.configurationsView.registerInput(self.selectedConfig + "." + subkey, {input: "el-input-number", attrs: {}});
+                            self.$store.commit('countlyConfigurations/registerInput', {id: self.selectedConfig + "." + subkey, value: {input: "el-input-number", attrs: {}}});
                         }
                         else if (type === "boolean") {
-                            app.configurationsView.registerInput(self.selectedConfig + "." + subkey, {input: "el-switch", attrs: {}});
+                            self.$store.commit('countlyConfigurations/registerInput', {id: self.selectedConfig + "." + subkey, value: {input: "el-switch", attrs: {}}});
                         }
                     }
                 }
@@ -353,10 +360,10 @@ export default {
             }
         },
         getLabelName: function(id, key) {
-            return app.configurationsView.getInputLabel(id + "." + key);
+            return this.$store.getters['countlyConfigurations/getInputLabel'](id + "." + key);
         },
         getInputType: function(id, key) {
-            return app.configurationsView.getInputType(id + "." + key);
+            return this.$store.getters['countlyConfigurations/getInputType'](id + "." + key);
         },
         save: function(doc) {
             var data = {

@@ -7,6 +7,7 @@ import { registerData, registerTab, tabsVuex } from '../../../../frontend/expres
 import { countlyCommon } from '../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import countlyGlobal from '../../../../frontend/express/public/javascripts/countly/countly.global.js';
 import { validateRead } from '../../../../frontend/express/public/javascripts/countly/countly.auth.js';
+import { getGlobalStore } from '../../../../frontend/express/public/javascripts/countly/vue/data/store.js';
 
 import CrashOverview from './components/CrashOverview.vue';
 import Crashgroup from './components/Crashgroup.vue';
@@ -97,19 +98,18 @@ app.addSubMenu("crashes", {code: "crash", permission: FEATURE_NAME, url: "#/cras
 
 // --- Configurations ---
 
-if (app.configurationsView) {
-    app.configurationsView.registerInput("crashes.smart_regexes", {input: "el-input", attrs: {type: "textarea", rows: 5}});
+getGlobalStore().commit('countlyConfigurations/registerInput', {id: "crashes.smart_regexes", value: {input: "el-input", attrs: {type: "textarea", rows: 5}}});
 
-    app.configurationsView.registerInput("crashes.grouping_strategy", {
-        input: "el-select",
-        attrs: {},
-        list: [
-            {value: 'error_and_file', label: i18n("crashes.grouping_strategy.error_and_file")},
-            {value: 'stacktrace', label: i18n("crashes.grouping_strategy.stacktrace")}
-        ]
-    });
+getGlobalStore().commit('countlyConfigurations/registerInput', {id: "crashes.grouping_strategy", value: {
+    input: "el-select",
+    attrs: {},
+    list: [
+        {value: 'error_and_file', label: i18n("crashes.grouping_strategy.error_and_file")},
+        {value: 'stacktrace', label: i18n("crashes.grouping_strategy.stacktrace")}
+    ]
+}});
 
-    app.addAppManagementInput("crashes", i18n("crashes.title"),
+app.addAppManagementInput("crashes", i18n("crashes.title"),
         {
             "crashes.smart_preprocessing": {input: "el-switch", attrs: {}, defaultValue: true},
             "crashes.smart_regexes": {input: "el-input", attrs: {type: "textarea", rows: 5}},
@@ -122,7 +122,6 @@ if (app.configurationsView) {
                 ]
             }
         });
-}
 
 // --- Home Widget ---
 

@@ -1119,7 +1119,7 @@ export default {
             }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["management-applications.yes-delete-app"]], {title: jQuery.i18n.map["management-applications.delete-an-app"] + "?", image: "delete-an-app"});
         },
         getLabelName: function(id) {
-            return app.configurationsView.getInputLabel(id);
+            return this.$store.getters['countlyConfigurations/getInputLabel'](id);
         },
         isChangeKeyFound: function(key) {
             return this.changeKeys.some(function(changedKey) {

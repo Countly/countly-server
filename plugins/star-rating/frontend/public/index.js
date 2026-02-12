@@ -3,6 +3,7 @@ import { app } from '../../../../frontend/express/public/javascripts/countly/cou
 import countlyGlobal from '../../../../frontend/express/public/javascripts/countly/countly.global.js';
 import { countlyCommon } from '../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import { registerTab, registerMixin } from '../../../../frontend/express/public/javascripts/countly/vue/container.js';
+import { getGlobalStore } from '../../../../frontend/express/public/javascripts/countly/vue/data/store.js';
 
 import RatingsMain from './components/RatingsMain.vue';
 import WidgetDetail from './components/WidgetDetail.vue';
@@ -98,13 +99,13 @@ app.addPageScript("/manage/reports", function() {
     window.countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], pluginName: "star-rating", value: "star-rating"});
 });
 
-if (app.configurationsView && !app.configurationsView.predefinedLabels["feedback.main_color"]) {
-    app.configurationsView.registerLabel("feedback.main_color", "feedback.main_color-title");
-    app.configurationsView.registerLabel("feedback.font_color", "feedback.font_color-title");
-    app.configurationsView.registerLabel("feedback.feedback_logo", "feedback.logo-title");
-    app.configurationsView.registerInput("feedback.main_color", {input: "cly-colorpicker", helper: "feedback.main_color.description", attrs: {resetValue: '#2FA732'}});
-    app.configurationsView.registerInput("feedback.font_color", {input: "cly-colorpicker", helper: "feedback.font_color.description", attrs: {resetValue: '#2FA732'}});
-    app.configurationsView.registerInput("feedback.feedback_logo", {
+if (!getGlobalStore().getters['countlyConfigurations/predefinedLabels']["feedback.main_color"]) {
+    getGlobalStore().commit('countlyConfigurations/registerLabel', {id: "feedback.main_color", value: "feedback.main_color-title"});
+    getGlobalStore().commit('countlyConfigurations/registerLabel', {id: "feedback.font_color", value: "feedback.font_color-title"});
+    getGlobalStore().commit('countlyConfigurations/registerLabel', {id: "feedback.feedback_logo", value: "feedback.logo-title"});
+    getGlobalStore().commit('countlyConfigurations/registerInput', {id: "feedback.main_color", value: {input: "cly-colorpicker", helper: "feedback.main_color.description", attrs: {resetValue: '#2FA732'}}});
+    getGlobalStore().commit('countlyConfigurations/registerInput', {id: "feedback.font_color", value: {input: "cly-colorpicker", helper: "feedback.font_color.description", attrs: {resetValue: '#2FA732'}}});
+    getGlobalStore().commit('countlyConfigurations/registerInput', {id: "feedback.feedback_logo", value: {
         input: "image",
         helper: "feedback.logo.description",
         image_size: "feedback_logo",
@@ -115,7 +116,7 @@ if (app.configurationsView && !app.configurationsView.predefinedLabels["feedback
         },
         errorMessage: "",
         success: function() {
-            app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = "";
+            getGlobalStore().getters['countlyConfigurations/predefinedInputs']["feedback.feedback_logo"].errorMessage = "";
             if (this.$root && this.$root.$children) {
                 for (var i = 0; i < this.$root.$children.length; i++) {
                     if (this.$root.$children[i].configsData) {
@@ -137,7 +138,7 @@ if (app.configurationsView && !app.configurationsView.predefinedLabels["feedback
                     message = jQuery.i18n.map["feedback.error"];
                 }
             }
-            app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = message;
+            getGlobalStore().getters['countlyConfigurations/predefinedInputs']["feedback.feedback_logo"].errorMessage = message;
         },
         data: function() {
             return {
@@ -147,16 +148,16 @@ if (app.configurationsView && !app.configurationsView.predefinedLabels["feedback
         before: function(file) {
             var type = file.type;
             if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
-                app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = jQuery.i18n.map["feedback.imagef-error"];
+                getGlobalStore().getters['countlyConfigurations/predefinedInputs']["feedback.feedback_logo"].errorMessage = jQuery.i18n.map["feedback.imagef-error"];
                 return false;
             }
             if (file.size > 1.5 * 1024 * 1024) {
-                app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = jQuery.i18n.map["feedback.image-error"];
+                getGlobalStore().getters['countlyConfigurations/predefinedInputs']["feedback.feedback_logo"].errorMessage = jQuery.i18n.map["feedback.image-error"];
                 return false;
             }
             return true;
         }
-    });
+    }});
 }
 
 if (app.appManagementViews && !app.appManagementViews.feedbackApp) {
@@ -179,7 +180,7 @@ if (app.appManagementViews && !app.appManagementViews.feedbackApp) {
                 },
                 errorMessage: "",
                 success: function() {
-                    app.configurationsView.predefinedInputs["feedback.feedback_logo"].errorMessage = "";
+                    getGlobalStore().getters['countlyConfigurations/predefinedInputs']["feedback.feedback_logo"].errorMessage = "";
                     if (this.$root && this.$root.$children) {
                         for (var ii = 0; ii < this.$root.$children.length; ii++) {
                             if (this.$root.$children[ii].appDetails) {
@@ -201,7 +202,7 @@ if (app.appManagementViews && !app.appManagementViews.feedbackApp) {
                             message = jQuery.i18n.map["feedback.error"];
                         }
                     }
-                    app.configurationsView.predefinedInputs["feedback.feedback_logo" + feedbackId].errorMessage = message;
+                    getGlobalStore().getters['countlyConfigurations/predefinedInputs']["feedback.feedback_logo" + feedbackId].errorMessage = message;
                 },
                 before: function(file) {
                     segments = window.location.href.split('/');
@@ -209,11 +210,11 @@ if (app.appManagementViews && !app.appManagementViews.feedbackApp) {
                     feedbackId = segments[manageIndex + 1] || countlyCommon.ACTIVE_APP_ID;
                     var type = file.type;
                     if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
-                        app.configurationsView.predefinedInputs["feedback.feedback_logo" + feedbackId].errorMessage = jQuery.i18n.map["feedback.imagef-error"];
+                        getGlobalStore().getters['countlyConfigurations/predefinedInputs']["feedback.feedback_logo" + feedbackId].errorMessage = jQuery.i18n.map["feedback.imagef-error"];
                         return false;
                     }
                     if (file.size > 1.5 * 1024 * 1024) {
-                        app.configurationsView.predefinedInputs["feedback.feedback_logo" + feedbackId].errorMessage = jQuery.i18n.map["feedback.image-error"];
+                        getGlobalStore().getters['countlyConfigurations/predefinedInputs']["feedback.feedback_logo" + feedbackId].errorMessage = jQuery.i18n.map["feedback.image-error"];
                         return false;
                     }
                     return true;

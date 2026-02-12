@@ -1,5 +1,6 @@
 import countlyVue, { i18n } from '../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { app } from '../../../../frontend/express/public/javascripts/countly/countly.template.js';
+import { getGlobalStore } from '../../../../frontend/express/public/javascripts/countly/vue/data/store.js';
 
 import countlyLogger from './store/index.js';
 import LoggerView from './components/LoggerView.vue';
@@ -20,16 +21,14 @@ app.route('/manage/logger', 'logger', function() {
 
 app.addSubMenu("management", { code: "logger", permission: "logger", url: "#/manage/logger", text: "logger.title", priority: 50 });
 
-if (app.configurationsView) {
-    app.configurationsView.registerLabel("logger.state", "logger.state");
-    app.configurationsView.registerInput("logger.state", {
-        input: "el-select",
-        attrs: {},
-        list: [
-            { value: 'on', label: i18n("logger.state-on") },
-            { value: 'off', label: i18n("logger.state-off") },
-            { value: 'automatic', label: i18n("logger.state-automatic") }
-        ]
-    });
-    app.configurationsView.registerLabel("logger.limit", "logger.limit");
-}
+getGlobalStore().commit('countlyConfigurations/registerLabel', {id: "logger.state", value: "logger.state"});
+getGlobalStore().commit('countlyConfigurations/registerInput', {id: "logger.state", value: {
+    input: "el-select",
+    attrs: {},
+    list: [
+        { value: 'on', label: i18n("logger.state-on") },
+        { value: 'off', label: i18n("logger.state-off") },
+        { value: 'automatic', label: i18n("logger.state-automatic") }
+    ]
+}});
+getGlobalStore().commit('countlyConfigurations/registerLabel', {id: "logger.limit", value: "logger.limit"});
