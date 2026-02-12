@@ -84,6 +84,8 @@ Countly can collect and visualize data from mobile, web and desktop applications
 
 Countly installation script assumes it is running on a fresh Ubuntu/CentOS/RHEL Linux without any services listening on port 80 or 443 (which should also be open to incoming traffic), and takes care of every library and software required to be installed for Countly to run.
 
+:warning: **Note**: CentOS-based Docker images have been deprecated as CentOS 8 reached end-of-life. Please use the Ubuntu-based images instead.
+
 There are several ways to install Countly:
 
 1. The following command will download and install Countly on your **Ubuntu** or **CentOS** server.
@@ -93,6 +95,18 @@ There are several ways to install Countly:
 2. For bash lovers, we provide a beautiful installation script (`bin/countly.install.sh`) in countly-server package which installs everything required to run Countly Server. For this, you need a stable release of this repository [available here](https://github.com/Countly/countly-server/releases).
 
 3. Countly Lite also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/r/countly/countly-server/) and [installation instructions for Docker](https://support.countly.com/hc/en-us/articles/360036862332-Installing-the-Countly-Server).
+
+### 🐳 Docker Multi-Architecture Support
+
+Countly Docker images now support both **x86_64 (amd64)** and **ARM64 (aarch64)** architectures:
+
+* ✅ **AWS Graviton** instances
+* ✅ **Apple Silicon** (M1/M2/M3) Macs
+* ✅ **ARM-based** cloud servers and edge devices
+
+Docker will automatically pull the correct image for your platform. All official images (`countly/api`, `countly/frontend`, `countly/countly-core`, `countly/countly-server`) are multi-architecture.
+
+**Migration from CentOS images**: If you were using `Dockerfile-centos-api` or `Dockerfile-centos-frontend`, please migrate to the Debian-based `Dockerfile-api` and `Dockerfile-frontend`. These are faster, receive regular updates, and support ARM64.
 
 If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](https://support.countly.com/hc/en-us/articles/360037443652-Upgrading-the-Countly-Server).
 
