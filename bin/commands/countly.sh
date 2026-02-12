@@ -121,6 +121,8 @@ countly_upgrade (){
         fi
 
         (cd "$DIR/../.." ;
+        echo "Installing plugins...";
+        node "$DIR/../scripts/install_plugins.js" --skip-production;
         echo "Preparing production files...";
         countly task dist-all;
         echo "Restarting Countly...";
