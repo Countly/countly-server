@@ -145,6 +145,7 @@ const REFACTORED_PLUGINS = [
     "star-rating",
     "web",
     "logger",
+    "plugins",
     "populator",
 ];
 

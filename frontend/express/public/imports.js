@@ -212,3 +212,6 @@ window.countlyGraphNotesCommon = {
     COLOR_TAGS: countlyGraphNotesStore.module.state.colorTags,
     drawer: AnnotationDrawer
 };
+
+import * as countlyPlugins from '../../../plugins/plugins/frontend/public/store/index.js';
+window.countlyPlugins = countlyPlugins;
