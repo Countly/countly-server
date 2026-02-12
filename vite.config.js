@@ -134,6 +134,7 @@ const REFACTORED_PLUGINS = [
     "browser",
     "compare",
     "compliance-hub",
+    "consolidate",
     "concurrent_users",
     "config-transfer",
     "crashes",
