@@ -139,6 +139,7 @@ const REFACTORED_PLUGINS = [
     "config-transfer",
     "crashes",
     "dbviewer",
+    "density",
     "geo",
     "groups",
     "dashboards",

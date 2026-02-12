@@ -215,3 +215,6 @@ window.countlyGraphNotesCommon = {
 
 import * as countlyPlugins from '../../../plugins/plugins/frontend/public/store/index.js';
 window.countlyPlugins = countlyPlugins;
+
+import countlyDensity from '../../../plugins/density/frontend/public/store/index.js';
+window.countlyDensity = countlyDensity;
