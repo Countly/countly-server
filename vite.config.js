@@ -141,6 +141,7 @@ const REFACTORED_PLUGINS = [
     "push",
     "star-rating",
     "web",
+    "logger",
 ];
 
 // List of legacy scripts in exact order from dashboard.html

@@ -1,8 +1,11 @@
-/*global countlyCommon, CountlyHelpers $*/
-(function(countlyLogger) {
-    countlyLogger.getRequestLogs = function(query) {
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+import { alert as CountlyAlert } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
+import jQuery from 'jquery';
+
+export const countlyLogger = {
+    getRequestLogs(query) {
         query = query || {};
-        return $.ajax({
+        return jQuery.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
             data: {
@@ -15,14 +18,14 @@
             },
             error: function(xhr, status, error) {
                 if (error && status !== 'abort') {
-                    CountlyHelpers.alert(error, "red");
+                    CountlyAlert(error, "red");
                 }
             }
         });
-    };
+    },
 
-    countlyLogger.getCollectionInfo = function() {
-        return $.ajax({
+    getCollectionInfo() {
+        return jQuery.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
             data: {
@@ -34,9 +37,11 @@
             },
             error: function(xhr, status, error) {
                 if (error && status !== 'abort') {
-                    CountlyHelpers.alert(error, "red");
+                    CountlyAlert(error, "red");
                 }
             }
         });
-    };
-}(window.countlyLogger = window.countlyLogger || {}));
+    }
+}
+
+export default countlyLogger;
