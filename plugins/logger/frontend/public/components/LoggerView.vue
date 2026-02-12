@@ -1,0 +1,362 @@
+<template>
+<div v-bind:class="[componentId]" class="logger-home cly-vue-logger">
+    <cly-header
+        style="margin-bottom: 24px;"
+        :title="i18n('logger.title')"
+        :tooltip="{description: getTitleTooltip()}"
+    >
+        <template v-slot:header-bottom>
+            <span class='cly-vue-logger__subtitle text-small' data-test-id="manage-logger-subtitle">
+                {{collectionInfo}}
+            </span>
+        </template>
+        <template v-slot:header-right>
+            <cly-auto-refresh-toggle test-id="enable-auto-refresh" ref="loggerAutoRefreshToggle" feature="logger"></cly-auto-refresh-toggle>
+        </template>
+    </cly-header>
+    <cly-main>
+        <div style="margin-bottom: 24px;">
+            <cly-notification v-if="showTurnedOff" :text="i18n('logger.state-off-warning')" :goTo="goTo"></cly-notification>
+        </div>
+        <cly-section>
+            <cly-datatable-n
+                ref="requestLogTable"
+                test-id="datatable-logs"
+                :rows="logsData"
+                :resizable="false"
+                :force-loading="isLoading"
+                :exportFormat="formatExportFunction"
+                class="is-clickable"
+                @row-click="handleTableRowClick"
+                :row-class-name="tableRowClassName"
+                :default-sort="{prop: 'reqts', order: 'descending'}">
+                <template v-slot:header-left="filterScope">
+                    <el-select v-model="loggerFilter" placeholder="Select" @change="filterChange()">
+                        <el-option v-for="filter in filterOptions" :key="filter.value" :label="filter.label"
+                            :value="filter.value">
+                        </el-option>
+                    </el-select>
+                </template>
+                <template v-slot="scope">
+                    <el-table-column type="expand" class="shadow">
+                        <template v-slot="props">
+                            <cly-section>
+                                <el-tabs type="card" value="data">
+                                    <el-tab-pane name="data" label="Data" data-test-id="datatable-logs-expand-data">
+                                        <pre>{{JSON.stringify(jsonParser(props.row.q), null, 2)}}</pre>
+                                    </el-tab-pane>
+                                    <el-tab-pane name="header" label="Header" data-test-id="datatable-logs-expand-header">
+                                        <pre>{{JSON.stringify(props.row.h, null, 2)}}</pre>
+                                    </el-tab-pane>
+                                </el-tabs>
+                            </cly-section>
+                        </template>
+                    </el-table-column>
+                    <el-table-column class="request-date" sortable="custom"
+                        :label="i18n('logger.requests')" vertical-align="middle" prop="reqts" min-width="283">
+                        <template slot-scope="rowScope">
+                            <logger-readable-date :timestamp="rowScope.row.reqts" :data-test-id="'datatable-logs-request-received-' + rowScope.$index"></logger-readable-date>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="details" :label="i18n('logger.details')" min-width="413">
+                        <template slot-scope="rowScope">
+                            <logger-details :device="rowScope.row.d" :version="rowScope.row.v" :sdk="rowScope.row.s"
+                                :location="rowScope.row.l" :data-test-id="'datatable-logger-details-' + rowScope.$index"></logger-details>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="info" :label="i18n('logger.info')" min-width="283">
+                        <template slot-scope="rowScope">
+							<strong v-if="rowScope.row.c" class='red-text' :data-test-id="'datatable-logs-information-canceled-' + rowScope.$index">{{i18n('logger.request-canceled')}}</strong>
+							<div v-if="rowScope.row.c" class="bu-pt-2" :data-test-id="'datatable-logs-information-c-' + rowScope.$index">{{rowScope.row.c}}</div>
+                            <logger-info :info="rowScope.row.t" :filter="loggerFilter" :data-test-id="'datatable-logs-information-filter-' + rowScope.$index"></logger-info>
+                            <strong v-if="rowScope.row.p" class='red-text' :data-test-id="'datatable-logs-information-problems-' + rowScope.$index">{{i18n('logger.problems')}}</strong>
+							<div v-if="rowScope.row.p" v-for="p in rowScope.row.p" class="bu-pt-2" :data-test-id="'datatable-logs-information-p-' + rowScope.$index">{{p}}</div>
+                        </template>
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+        </cly-section>
+    </cly-main>
+</div>
+</template>
+
+<script>
+import { i18n, i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { dataMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/container.js';
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+import countlyLogger from '../store/index.js';
+import moment from 'moment';
+
+var formatVersion = function(version, eleminateFirstCharacter) {
+    return version ? eleminateFirstCharacter ? version.substring(1).replaceAll(':', '.') : version.replaceAll(':', '.') : '';
+};
+
+var filterLogs = function(logs, loggerFilter) {
+    return loggerFilter && loggerFilter === 'all'
+        ? logs
+        : logs && logs.length ? logs.filter(function(log) {
+            return log.t && Object.keys(log.t).includes(loggerFilter);
+        }) : [];
+};
+
+var ReadableDateComponent = {
+    props: ['timestamp'],
+    computed: {
+        date: function() {
+            return (Math.round(parseFloat(this.timestamp)) + "").length === 10 ?
+                moment(this.timestamp * 1000).format("MMMM Do YYYY") :
+                moment(this.timestamp).format("MMMM Do YYYY");
+        },
+        time: function() {
+            return (Math.round(parseFloat(this.timestamp)) + "").length === 10 ?
+                moment(this.timestamp * 1000).format("HH:mm:ss") :
+                moment(this.timestamp).format("HH:mm:ss");
+        },
+        reqId: function() {
+            return this.timestamp;
+        }
+    },
+    template: "<div class='bu-is-flex bu-is-align-items-center'><div>{{date}}<p style='color: #81868D; line-height: 16px; margin-top: 4px !important; margin-bottom: 4px !important;'>{{time}}</p><p style='color: #81868D; line-height: 16px; font-size: 12px; margin-top: 4px !important; margin-bottom: 4px !important;'>{{reqId}}</p></div></div>"
+};
+
+var DetailsComponent = {
+    props: ['device', 'location', 'version', 'sdk'],
+    computed: {
+        log: function() {
+            var flag = this.location.cc ? this.location.cc.toLowerCase() : '';
+            return {
+                id: this.device.id,
+                deviceInfo: (this.device.d && this.device.d !== 'undefined' ? this.device.d : '') + ' (' + (this.device.p || '') + formatVersion(this.device.pv, true) + ')',
+                version: formatVersion(this.version),
+                sdkInfo: this.sdk.name ? this.sdk.name + '' + formatVersion(this.sdk.version) : '',
+                country: this.location.cc,
+                city: this.location.cty && this.location.cty !== 'Unknown' ? ' (' + this.location.cty + ')' : '',
+                flagCss: 'flag ' + flag,
+                flagBg: 'display: inline-block; float: none; box-shadow: none; background-size: contain; background-image: url(images/flags/' + flag + '.png);',
+            };
+        },
+    },
+    template: '<div><p class="has-ellipsis" :tooltip="log.deviceInfo">{{log.deviceInfo}} <span class="oval"></span> {{log.version}} <span v-if="log.country" class="oval"></span> <span v-if="log.country" :class="log.flagCss" :style="log.flagBg"></span>{{log.country}}</p><p class="has-ellipsis" :tooltip="log.id">ID {{log.id}}</p><p class="has-ellipsis" :tooltip="log.sdkInfo">{{log.sdkInfo}}</p></div>'
+};
+
+var InfoComponent = {
+    props: ['info', 'filter'],
+    computed: {
+        logInfo: function() {
+            if (this.filter === 'all') {
+                return this.info && Object.keys(this.info).length ?
+                    Object.keys(this.info).join(', ') : [];
+            }
+            else {
+                var value = this.info[this.filter];
+                return typeof value === 'string' ? JSON.stringify(JSON.parse(value), null, 2) : JSON.stringify(value, null, 2);
+            }
+        },
+        showCodeBlock: function() {
+            return this.filter !== 'all';
+        }
+    },
+    template: "<pre v-if='showCodeBlock'><code style='display:block; white-space:pre-wrap; background-color: #F6F6F6; overflow: scroll !important; max-height: 178px;'>{{logInfo}}</code></pre><pre v-else>{{logInfo}}</pre>"
+};
+
+export default {
+    data: function() {
+        return {
+            message: 'EVENT LOGGING VIEW',
+            switch: true,
+            isTablePaused: true,
+            logsData: [],
+            isLoading: false,
+            isTurnedOff: false,
+            appId: countlyCommon.ACTIVE_APP_ID,
+            collectionInfo: '',
+            tablePersistKey: 'requestLogsTable_' + countlyCommon.ACTIVE_APP_ID,
+            defaultFilters: [{
+                value: 'all',
+                label: this.i18n('logger.all')
+            }, {
+                value: 'session',
+                label: this.i18n('logger.session')
+            }, {
+                value: 'events',
+                label: this.i18n('logger.event')
+            }, {
+                value: 'metrics',
+                label: this.i18n('logger.metric')
+            }, {
+                value: 'consent',
+                label: this.i18n('logger.consent')
+            }, {
+                value: 'crash',
+                label: this.i18n('logger.crashes')
+            }, {
+                value: 'user_details',
+                label: this.i18n('logger.user-details')
+            }],
+            loggerFilter: 'all'
+        };
+    },
+    computed: {
+        filterOptions: function() {
+            return this.defaultFilters.concat(this.externalFilters);
+        },
+        showTurnedOff: function() {
+            return this.isTurnedOff;
+        },
+        goTo: function() {
+            return {
+                title: i18n("common.go-to-settings"),
+                url: "#/" + this.appId + "/manage/configurations"
+            };
+        }
+    },
+    mixins: [
+        i18nMixin,
+        dataMixin({
+            'externalFilters': '/manage/logger'
+        })
+    ],
+    methods: {
+        formatExportFunction: function() {
+            var tableData = this.logsData;
+            var table = [];
+            var sanitizeQueryData = function(data) {
+                try {
+                    // If data is already a string, parse it first
+                    let queryObject = typeof data === 'string' ? JSON.parse(data) : data;
+
+                    // Handle nested JSON strings within the object
+                    Object.keys(queryObject).forEach(key => {
+                        if (typeof queryObject[key] === 'string') {
+                            // Try to parse if it looks like JSON
+                            if (queryObject[key].startsWith('{') || queryObject[key].startsWith('[')) {
+                                try {
+                                    queryObject[key] = JSON.parse(queryObject[key]);
+                                    if (typeof queryObject[key] === 'object' && queryObject[key] !== null) {
+                                        queryObject[key] = sanitizeQueryData(queryObject[key]);
+                                    }
+                                }
+                                catch (e) {
+                                    // If parsing fails, keep decoded string
+                                }
+                            }
+                            queryObject[key] = countlyCommon.unescapeHtml(queryObject[key]);
+                        }
+                        else if (typeof queryObject[key] === 'object' && queryObject[key] !== null) {
+                            // Recursively handle nested objects
+                            Object.keys(queryObject[key]).forEach(nestedKey => {
+                                if (typeof queryObject[key][nestedKey] === 'string') {
+                                    queryObject[key][nestedKey] = countlyCommon.unescapeHtml(queryObject[key][nestedKey]);
+                                }
+                            });
+                        }
+                    });
+                    return JSON.stringify(queryObject);
+                }
+                catch (err) {
+                    return data; // Return original data if processing fails
+                }
+            };
+
+            for (var i = 0; i < tableData.length; i++) {
+                var item = {};
+                item[i18n('logger.requests').toUpperCase()] = countlyCommon.formatTimeAgoText(tableData[i].reqts).text;
+                if (tableData[i].d && tableData[i].d.p && tableData[i].d.pv) {
+                    item[i18n('logger.platform').toUpperCase()] = tableData[i].d.p + "(" + tableData[i].d.pv + ")";
+                }
+                if (tableData[i].v) {
+                    item[i18n('logger.version').toUpperCase()] = tableData[i].d.v;
+                }
+                if (tableData[i].d && tableData[i].d.id) {
+                    item[i18n('logger.device-id').toUpperCase()] = tableData[i].d.id;
+                }
+
+                if (tableData[i].l && tableData[i].l.cc && tableData[i].l.cty) {
+                    item[i18n('logger.location').toUpperCase()] = tableData[i].l.cc + "(" + tableData[i].l.cty + ")";
+                }
+
+                if (tableData[i].t && Object.keys(tableData[i].t).length) {
+                    item[i18n('logger.info').toUpperCase()] = Object.keys(tableData[i].t).join(', ');
+                }
+                if (tableData[i].q) {
+                    try {
+                        item[i18n('logger.request-query').toUpperCase()] = sanitizeQueryData(tableData[i].q);
+                    }
+                    catch (err) {
+                        item[i18n('logger.request-header').toUpperCase()] = "-";
+                    }
+                }
+                if (tableData[i].h) {
+                    try {
+                        item["REQUEST HEADER"] = sanitizeQueryData(tableData[i].h);
+                    }
+                    catch (err) {
+                        item["REQUEST HEADER"] = "-";
+                    }
+                }
+                table.push(item);
+            }
+            return table;
+
+        },
+        getTitleTooltip: function() {
+            return this.i18n('logger.description');
+        },
+        fetchRequestLogs: function(isRefreshing) {
+            var vm = this;
+
+            if (!isRefreshing) {
+                vm.isLoading = true;
+            }
+
+            countlyLogger.getRequestLogs()
+                .then(function(data) {
+                    vm.isLoading = false;
+                    vm.isTurnedOff = data.state === 'off';
+                    vm.logsData = filterLogs(data.logs || data, vm.loggerFilter);
+                });
+        },
+        refresh: function() {
+            if (this.$refs && this.$refs.loggerAutoRefreshToggle && this.$refs.loggerAutoRefreshToggle.autoRefresh) {
+                this.fetchRequestLogs(true);
+            }
+        },
+        filterChange: function() {
+            this.fetchRequestLogs();
+        },
+        handleTableRowClick: function(row) {
+            // Only expand row if text inside of it are not highlighted
+            if (window.getSelection().toString().length === 0) {
+                this.$refs.requestLogTable.$refs.elTable.toggleRowExpansion(row);
+            }
+        },
+        tableRowClassName: function() {
+            return 'bu-is-clickable';
+        },
+        jsonParser: function(jsonObject) {
+            try {
+                return JSON.parse(jsonObject);
+            }
+            catch (error) {
+                //
+            }
+        }
+    },
+    components: {
+        "logger-readable-date": ReadableDateComponent,
+        "logger-details": DetailsComponent,
+        "logger-info": InfoComponent,
+    },
+    mounted: function() {
+        var self = this;
+
+        countlyLogger.getCollectionInfo()
+            .then(function(info) {
+                self.collectionInfo = info
+                    ? self.i18n('logger.collection-description', info.max)
+                    : self.i18n('logger.capped-remind');
+            });
+        this.fetchRequestLogs();
+    }
+};
+</script>
