@@ -8,11 +8,12 @@
 
 <script>
 import { AbstractTableMixin } from './mixins.js';
+import { MonthTable } from 'element-ui/src/index.js';
 
 export default {
     mixins: [AbstractTableMixin],
     components: {
-        'el-month-table': window.ELEMENT.MonthTable // TO-DO: window reference will be removed and it will be imported after vue 3 migration
+        'el-month-table': MonthTable
     }
 };
 </script>

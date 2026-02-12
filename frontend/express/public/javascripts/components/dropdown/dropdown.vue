@@ -35,6 +35,7 @@
 
 <script>
 import Emitter from 'element-ui/src/mixins/emitter';
+import { SelectDropdown } from 'element-ui/src/index.js';
 
 const TriggerProxy = {
     template: '<div style="width:100%"><slot v-slot></slot></div>'
@@ -44,7 +45,7 @@ export default {
     mixins: [Emitter],
     components: {
         'trigger-proxy': TriggerProxy,
-        'el-select-dropdown': window.ELEMENT.SelectDropdown
+        'el-select-dropdown': SelectDropdown
     },
     props: {
         disabled: {

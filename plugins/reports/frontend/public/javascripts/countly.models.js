@@ -6,7 +6,6 @@
     CV,
     CountlyHelpers,
     countlyVue,
-    app,
  */
 (function(countlyReporting, $) {
     var FEATURE_NAME = "reports";
@@ -249,7 +248,7 @@
                         },
                     }).then(function(data) {
                         if (data.length > 0) {
-                            var cnts = app.manageAppsView.getTimeZones();
+                            var cnts = countlyGlobal.timezones;
                             // ReportingView.zones = {};
                             var zNames = {};
                             var zoneNames = [];

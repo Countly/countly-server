@@ -9,16 +9,17 @@
 <script>
 import moment from 'moment';
 import { AbstractTableMixin } from './mixins.js';
+import { YearTable } from 'element-ui/src/index.js';
 
 const ExtendedYearTable = {
-    extends: window.ELEMENT.YearTable, // TO-DO: window reference will be removed and it will be imported after vue 3 migration
+    extends: YearTable,
     props: {
         minDate: Date,
         maxDate: Date
     },
     methods: {
         getCellStyle(year) {
-            const style = window.ELEMENT.YearTable.methods.getCellStyle.call(this, year); // TO-DO: window reference will be removed and it will be imported after vue 3 migration
+            const style = YearTable.methods.getCellStyle.call(this, year);
             const extendedStyle = Object.assign({}, style);
             const minDateYear = moment(this.minDate).year();
             const maxDateYear = moment(this.maxDate).year();

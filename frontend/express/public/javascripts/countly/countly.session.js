@@ -1,9 +1,8 @@
-/* global countlyLocation */
-
 import jQuery from 'jquery';
 import * as CountlyHelpers from './countly.helpers.js';
 import countlyCommon from './countly.common.js';
 import _ from 'underscore';
+import countlyLocation from './countly.location.js';
 
 const countlySession = {};
 

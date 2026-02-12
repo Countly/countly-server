@@ -706,7 +706,8 @@ const countlyVue = {
     vuex,
     T: templateUtil.stage,
     optionalComponent,
-    $: { ajax },
+    $: { ajax }, // backward compat.
+    ajax,
 };
 
 export default countlyVue;

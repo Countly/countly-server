@@ -8,11 +8,12 @@
 
 <script>
 import { AbstractTableMixin } from './mixins.js';
+import { DateTable } from 'element-ui/src/index.js';
 
 export default {
     mixins: [AbstractTableMixin],
     components: {
-        'el-date-table': window.ELEMENT.DateTable // TO-DO: window reference will be removed and it will be imported after vue 3 migration
+        'el-date-table': DateTable
     }
 };
 </script>
