@@ -138,6 +138,7 @@ const REFACTORED_PLUGINS = [
     "concurrent_users",
     "config-transfer",
     "crashes",
+    "dbviewer",
     "geo",
     "groups",
     "dashboards",
