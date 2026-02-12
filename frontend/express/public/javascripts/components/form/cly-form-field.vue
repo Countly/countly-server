@@ -22,9 +22,13 @@
 </template>
 
 <script>
+import { ValidationProvider } from 'vee-validate';
 import { BaseComponentMixin } from '../../mixins/base.js';
 
 export default {
+    components: {
+        ValidationProvider
+    },
     mixins: [BaseComponentMixin],
     inheritAttrs: false,
     props: {

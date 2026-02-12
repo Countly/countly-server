@@ -9,9 +9,13 @@
 </template>
 
 <script>
+import { ValidationObserver } from 'vee-validate';
 import { BaseStepMixin } from './mixins.js';
 
 export default {
+    components: {
+        ValidationObserver
+    },
     mixins: [BaseStepMixin],
     props: {
         validatorFn: { type: Function },
