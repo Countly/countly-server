@@ -135,6 +135,7 @@ const REFACTORED_PLUGINS = [
     "compare",
     "compliance-hub",
     "concurrent_users",
+    "config-transfer",
     "crashes",
     "geo",
     "groups",

@@ -664,7 +664,8 @@ This table maps the old `countlyVue.*` / `CountlyHelpers.*` / `countlyAuth.*` pa
 [ ] 10. Remove from vite.config.js legacyScripts
 [ ] 11. Add import to entrypoint.js
 [ ] 12. Delete legacy files and empty directories (stylesheets/, images/, fonts/, templates/, javascripts/)
-[ ] 13. Build and test (including date picker functionality)
+[ ] 13. If plugin registers specific app.route() under a wildcard route, add bare import of parent module (see Backbone Route Ordering section)
+[ ] 14. Build and test (including date picker functionality)
 ```
 
 ---
@@ -791,6 +792,23 @@ export default {
 
 ---
 
+## Backbone Route Ordering (Wildcard vs Specific Routes)
+
+Backbone's `history.route()` uses `unshift` — the **last registered route is checked first**. In the Vite bundle, Rollup determines module execution order by dependency graph, not import order. If a plugin's specific route (e.g. `/analytics/users/online-users/compare`) executes before the parent wildcard route (e.g. `/analytics/users/*tab`), the wildcard gets `unshift`ed last and shadows the specific route.
+
+**Fix:** Add a bare import of the parent module to create a dependency edge:
+
+```js
+// Ensure wildcard route registers before our specific route.
+import '../../../../frontend/express/public/core/user-analytics-overview/index.js'; // eslint-disable-line no-unused-vars
+
+app.route("/analytics/users/online-users/compare", "views", function() { ... });
+```
+
+This forces Rollup to execute the wildcard module first. ES modules are singletons, so the import won't re-execute it — it only establishes ordering. Apply this whenever your plugin registers a specific `app.route()` under another module's wildcard route.
+
+---
+
 ## Global Date Picker Support (autoRefreshMixin)
 
 If your component uses the global date picker (`<cly-date-picker-g>`), you **must** include the `autoRefreshMixin` for date changes to trigger data refresh.
@@ -871,6 +889,10 @@ export default {
 ### Error: `CV.$.when is not a function`
 **Cause:** `countlyVue.$` in ESM only exposes `{ ajax }`, not jQuery's full API
 **Fix:** Replace `CV.$.when(a, b)` with `Promise.all([a, b])`
+
+### Specific route not matching (redirects to wrong page)
+**Cause:** Plugin registers a specific `app.route()` that falls under another module's wildcard route, but Vite bundle execution order causes the wildcard to be checked first
+**Fix:** Add a bare import of the parent tab container module to establish correct execution order. See [Backbone Route Ordering](#backbone-route-ordering-wildcard-vs-specific-routes) section.
 
 ### Error: `clyModel.getVuexModule is not a function`
 **Cause:** Store exports the result of `getVuexModule()` instead of the store object
@@ -1098,7 +1120,8 @@ import { createMetricModel } from '../../../../../frontend/express/public/javasc
        - Import assets/main.scss in index.js
 [ ] 8. Delete legacy directories (stylesheets/, images/, fonts/, javascripts/, templates/)
 [ ] 9. Keep countly.models.js if used by shared stores
-[ ] 10. Build and test
+[ ] 10. If plugin registers specific app.route() under a wildcard route, add bare import of parent module (see Backbone Route Ordering section)
+[ ] 11. Build and test
 ```
 
 ---
