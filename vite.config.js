@@ -161,6 +161,7 @@ const REFACTORED_PLUGINS = [
     "populator",
     "hooks",
     "system-utility",
+    "two-factor-auth",
     "views",
 ];
 
