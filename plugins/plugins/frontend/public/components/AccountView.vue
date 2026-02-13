@@ -199,8 +199,27 @@ import * as countlyPlugins from '../store/index.js';
 import { dataMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/container.js';
 import jQuery from 'jquery';
 
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyForm from '../../../../../frontend/express/public/javascripts/components/form/cly-form.vue';
+import ClyFormStep from '../../../../../frontend/express/public/javascripts/components/form/cly-form-step.vue';
+import ClyInlineFormField from '../../../../../frontend/express/public/javascripts/components/form/cly-inline-form-field.vue';
+import ClyFormField from '../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
+import ClyConfirmDialog from '../../../../../frontend/express/public/javascripts/components/dialog/cly-confirm-dialog.vue';
+
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyHeader,
+        ClyMain,
+        ClySection,
+        ClyForm,
+        ClyFormStep,
+        ClyInlineFormField,
+        ClyFormField,
+        ClyConfirmDialog,
+    },
     computed: {
         predefinedLabels: function() {
             return this.$store.getters['countlyConfigurations/predefinedLabels'];

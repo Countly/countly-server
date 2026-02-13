@@ -153,6 +153,10 @@ import { validateCreate, validateUpdate } from '../../../../../frontend/express/
 import jQuery from 'jquery';
 import TriggerViews from './triggers/TriggerViews.vue';
 import EffectViews from './effects/EffectViews.vue';
+import ClyDrawer from '../../../../../frontend/express/public/javascripts/components/drawer/cly-drawer.vue';
+import ClyFormStep from '../../../../../frontend/express/public/javascripts/components/form/cly-form-step.vue';
+import ClyFormField from '../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
+import ClySelectX from '../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
 
 var FEATURE_NAME = "hooks";
 
@@ -178,6 +182,10 @@ export default {
     components: {
         "hook-trigger": TriggerViews,
         "hook-effect": EffectViews,
+        ClyDrawer,
+        ClyFormStep,
+        ClyFormField,
+        ClySelectX,
     },
     data: function() {
         var appsSelectorOption = [];

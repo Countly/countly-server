@@ -102,8 +102,13 @@
 <script>
 import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+
 export default {
     mixins: [countlyVue.mixins.i18n],
+    components: {
+        ClyDatatableN,
+    },
     updated: function() {
         this.$refs.compareApps.$refs.elTable.clearSelection();
         var self = this;

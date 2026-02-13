@@ -119,6 +119,11 @@ import { confirm as CountlyConfirm } from '../../../../../frontend/express/publi
 import { app } from '../../../../../frontend/express/public/javascripts/countly/countly.template.js';
 import hooksPlugin from '../store/index.js';
 import jQuery from 'jquery';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+import ClySelectX from '../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyDiffHelper from '../../../../../frontend/express/public/javascripts/components/helpers/cly-diff-helper.vue';
 
 var FEATURE_NAME = "hooks";
 
@@ -144,6 +149,13 @@ export default {
         i18nMixin,
         authMixin(FEATURE_NAME)
     ],
+    components: {
+        ClySection,
+        ClyDatatableN,
+        ClySelectX,
+        ClyMoreOptions,
+        ClyDiffHelper,
+    },
     computed: {
         tableRows: function() {
             var rows = this.$store.getters["countlyHooks/table/all"];

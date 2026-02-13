@@ -80,9 +80,13 @@
 <script>
 import { i18nMixin } from '../../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import _ from 'underscore';
+import ClySelectX from '../../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
 
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClySelectX,
+    },
     data: function() {
         return {
             methodOptions: [{label: 'GET', value: 'get'}, {label: 'POST', value: 'post'}],

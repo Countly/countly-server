@@ -78,12 +78,29 @@ import BrowserTable from './BrowserTable.vue';
 import VersionTable from './VersionTable.vue';
 import { dataMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/container.js';
 
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClyDatePickerG from '../../../../../frontend/express/public/javascripts/components/date/global-date-picker.vue';
+import ClyMetricCards from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-cards.vue';
+import ClyMetricCard from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-card.vue';
+import ClyDynamicTabs from '../../../../../frontend/express/public/javascripts/components/nav/cly-dynamic-tabs.vue';
+
 export default {
     mixins: [
         countlyVue.mixins.i18n,
         dataMixin({ 'externalLinks': '/analytics/browsers/links' }),
         autoRefreshMixin
     ],
+    components: {
+        ClyHeader,
+        ClyMoreOptions,
+        ClyMain,
+        ClyDatePickerG,
+        ClyMetricCards,
+        ClyMetricCard,
+        ClyDynamicTabs,
+    },
     data: function() {
         return {
             scrollCards: {

@@ -81,10 +81,23 @@
 import countlyVue, { autoRefreshMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import CompareAppsTable from './CompareAppsTable.vue';
 
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyBackLink from '../../../../../frontend/express/public/javascripts/components/helpers/cly-back-link.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClyDatePickerG from '../../../../../frontend/express/public/javascripts/components/date/global-date-picker.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyChartTime from '../../../../../frontend/express/public/javascripts/components/echart/cly-chart-time.vue';
+
 export default {
     mixins: [countlyVue.mixins.i18n, autoRefreshMixin],
     components: {
         "detail-tables": CompareAppsTable,
+        ClyHeader,
+        ClyBackLink,
+        ClyMain,
+        ClyDatePickerG,
+        ClySection,
+        ClyChartTime,
     },
     methods: {
         compareApps: function() {

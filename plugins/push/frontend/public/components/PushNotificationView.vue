@@ -26,6 +26,8 @@ import { i18n, i18nMixin, mixins, authMixin } from '../../../../../frontend/expr
 import PushNotificationDrawer from './PushNotificationDrawer.vue';
 import PushNotificationTabView from './PushNotificationTabView.vue';
 import countlyPushNotification from '../store/index.js';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyDynamicTabs from '../../../../../frontend/express/public/javascripts/components/nav/cly-dynamic-tabs.vue';
 
 var featureName = 'push';
 
@@ -84,7 +86,9 @@ export default {
         this.$store.dispatch('countlyPushNotificationDashboard/fetchDashboard');
     },
     components: {
-        "push-notification-drawer": PushNotificationDrawer
+        "push-notification-drawer": PushNotificationDrawer,
+        ClyHeader,
+        ClyDynamicTabs,
     }
 };
 </script>

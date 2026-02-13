@@ -41,6 +41,10 @@ import countlyGlobal from '../../../../../frontend/express/public/javascripts/co
 import starRatingPlugin from '../store/index.js';
 import WidgetsTable from './WidgetsTable.vue';
 import Drawer from './Drawer.vue';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClyEmptyView from '../../../../../frontend/express/public/javascripts/components/helpers/cly-empty-view.vue';
 
 var FEATURE_NAME = 'star_rating';
 
@@ -52,7 +56,11 @@ export default {
     ],
     components: {
         'widgets-table': WidgetsTable,
-        'drawer': Drawer
+        'drawer': Drawer,
+        ClyHeader,
+        ClyMain,
+        ClyTooltipIcon,
+        ClyEmptyView
     },
     data: function() {
         return {

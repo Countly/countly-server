@@ -66,12 +66,26 @@ import { i18nMixin, i18n, mixins, commonFormattersMixin } from '../../../javascr
 import { countlyCommon } from '../../../javascripts/countly/countly.common.js';
 import { notify } from '../../../javascripts/countly/countly.helpers.js';
 import AnnotationDrawer from './AnnotationDrawer.vue';
+import ClyHeader from '../../../javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../javascripts/components/layout/cly-main.vue';
+import ClyBackLink from '../../../javascripts/components/helpers/cly-back-link.vue';
+import ClyDatePickerG from '../../../javascripts/components/date/global-date-picker.vue';
+import ClyConfirmDialog from '../../../javascripts/components/dialog/cly-confirm-dialog.vue';
+import ClyDatatableN from '../../../javascripts/components/datatable/cly-datatable-n.vue';
+import ClyMoreOptions from '../../../javascripts/components/dropdown/more-options.vue';
 
 var FEATURE_NAME = "core";
 
 export default {
     mixins: [i18nMixin, commonFormattersMixin, mixins.hasDrawers("annotation")],
     components: {
+        ClyHeader,
+        ClyMain,
+        ClyBackLink,
+        ClyDatePickerG,
+        ClyConfirmDialog,
+        ClyDatatableN,
+        ClyMoreOptions,
         "annotation-drawer": AnnotationDrawer
     },
     data: function() {

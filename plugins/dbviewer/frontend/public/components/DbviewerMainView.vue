@@ -29,8 +29,14 @@ import { countlyCommon } from '../../../../../frontend/express/public/javascript
 import * as countlyDBviewer from '../store/index.js';
 import DbviewerTabView from './DbviewerTabView.vue';
 import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyDynamicTabs from '../../../../../frontend/express/public/javascripts/components/nav/cly-dynamic-tabs.vue';
 
 export default {
+    components: {
+        ClyHeader,
+        ClyDynamicTabs
+    },
     mixins: [i18nMixin],
     data: function() {
         return {

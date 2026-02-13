@@ -72,6 +72,9 @@ import { countlyCommon } from '../../../../../frontend/express/public/javascript
 import { notify } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
 import countlyPopulator from '../store/index.js';
 import Vue from 'vue';
+import ClyDrawer from '../../../../../frontend/express/public/javascripts/components/drawer/cly-drawer.vue';
+import ClyFormStep from '../../../../../frontend/express/public/javascripts/components/form/cly-form-step.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
 
 export default {
     mixins: [i18nMixin],
@@ -321,6 +324,9 @@ export default {
         }
     },
     components: {
+        ClyDrawer,
+        ClyFormStep,
+        ClyTooltipIcon
     }
 };
 </script>

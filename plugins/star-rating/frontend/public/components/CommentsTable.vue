@@ -46,6 +46,7 @@
 import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import moment from 'moment';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
 
 function replaceEscapes(str) {
     if (typeof str === 'string') {
@@ -55,6 +56,9 @@ function replaceEscapes(str) {
 }
 
 export default {
+    components: {
+        ClyDatatableN
+    },
     mixins: [countlyVue.mixins.i18n, countlyVue.mixins.commonFormatters],
     props: {
         comments: Array,

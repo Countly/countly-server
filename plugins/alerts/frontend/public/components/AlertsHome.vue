@@ -44,6 +44,11 @@ import AlertsTable from './AlertsTable.vue';
 import AlertDrawer from './AlertDrawer.vue';
 import { defaultDrawerConfigValue } from '../store/index.js';
 
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClyMetricCards from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-cards.vue';
+import ClyMetricCard from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-card.vue';
+
 const ALERTS_FEATURE_NAME = "alerts";
 
 export default {
@@ -55,6 +60,10 @@ export default {
     components: {
         "alerts-table": AlertsTable,
         "alert-drawer": AlertDrawer,
+        ClyHeader,
+        ClyMain,
+        ClyMetricCards,
+        ClyMetricCard,
     },
     data: function() {
         return {

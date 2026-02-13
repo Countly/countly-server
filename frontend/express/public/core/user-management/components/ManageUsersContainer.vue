@@ -19,6 +19,8 @@
 <script>
 import { i18nMixin, i18n, mixins as vueMixins } from '../../../javascripts/countly/vue/core.js';
 import countlyCommon from '../../../javascripts/countly/countly.common.js';
+import ClyHeader from '../../../javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../javascripts/components/layout/cly-main.vue';
 import countlyGlobal from '../../../javascripts/countly/countly.global.js';
 import countlyUserManagement from '../store/index.js';
 import UsersDataTable from './UsersDataTable.vue';
@@ -35,6 +37,8 @@ var groupsModelPromise = isGroupPluginEnabled
 
 export default {
     components: {
+        ClyHeader,
+        ClyMain,
         'data-table': UsersDataTable,
         'drawer': UserDrawer
     },

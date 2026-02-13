@@ -425,11 +425,44 @@ import { confirm as CountlyConfirm, alert as CountlyAlert, notify } from '../../
 import countlyCrashes from '../store/index.js';
 import CrashStacktrace from './CrashStacktrace.vue';
 import CrashBadge from './CrashBadge.vue';
+import DashboardTile from './DashboardTile.vue';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyBackLink from '../../../../../frontend/express/public/javascripts/components/helpers/cly-back-link.vue';
+import ClyGuide from '../../../../../frontend/express/public/javascripts/components/layout/cly-guide.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDropdown from '../../../../../frontend/express/public/javascripts/components/dropdown/dropdown.vue';
+import ClyInputDropdownTrigger from '../../../../../frontend/express/public/javascripts/components/dropdown/input-dropdown-trigger.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+import ClyMultiSelect from '../../../../../frontend/express/public/javascripts/components/dropdown/multi-select.vue';
+import ClyNotification from '../../../../../frontend/express/public/javascripts/components/helpers/cly-notification.vue';
+import ClyDatePicker from '../../../../../frontend/express/public/javascripts/components/date/date-picker.vue';
+import ClyChartBar from '../../../../../frontend/express/public/javascripts/components/echart/cly-chart-bar.vue';
 
 var FEATURE_NAME = 'crashes';
 
 export default {
-    components: {"crash-stacktrace": CrashStacktrace, "crash-badge": CrashBadge},
+    components: {
+        "crash-stacktrace": CrashStacktrace,
+        "crash-badge": CrashBadge,
+        "cly-crashes-dashboard-tile": DashboardTile,
+        ClyHeader,
+        ClyBackLink,
+        ClyGuide,
+        ClyMain,
+        ClySection,
+        ClyDropdown,
+        ClyInputDropdownTrigger,
+        ClyMoreOptions,
+        ClyTooltipIcon,
+        ClyDatatableN,
+        ClyMultiSelect,
+        ClyNotification,
+        ClyDatePicker,
+        ClyChartBar
+    },
     mixins: [
         i18nMixin,
         authMixin(FEATURE_NAME),

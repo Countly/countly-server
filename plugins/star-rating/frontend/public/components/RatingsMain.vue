@@ -13,8 +13,12 @@ import countlyVue, { i18n } from '../../../../../frontend/express/public/javascr
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import RatingsTab from './RatingsTab.vue';
 import WidgetsTab from './WidgetsTab.vue';
+import ClyDynamicTabs from '../../../../../frontend/express/public/javascripts/components/nav/cly-dynamic-tabs.vue';
 
 export default {
+    components: {
+        ClyDynamicTabs
+    },
     mixins: [countlyVue.mixins.i18n],
     data: function() {
         return {

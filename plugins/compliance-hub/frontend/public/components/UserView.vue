@@ -73,10 +73,21 @@ import countlyGlobal from '../../../../../frontend/express/public/javascripts/co
 import { confirm as CountlyConfirm, alert as CountlyAlert, notify } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
 import countlyConsentManager from '../store/index.js';
 
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+
 var FEATURE_NAME = "compliance_hub";
 
 export default {
     mixins: [authMixin(FEATURE_NAME), i18nMixin],
+    components: {
+        ClyMain,
+        ClySection,
+        ClyDatatableN,
+        ClyMoreOptions,
+    },
     data: function() {
         return {
             userTableDataSource: getServerDataSource(this.$store, "countlyConsentManager", "userDataResource"),

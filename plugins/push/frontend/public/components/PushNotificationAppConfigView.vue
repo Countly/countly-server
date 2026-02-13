@@ -215,6 +215,13 @@
 <script>
 import { i18n, i18nMixin, mixins } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { notify, confirm as CountlyConfirm } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDrawer from '../../../../../frontend/express/public/javascripts/components/drawer/cly-drawer.vue';
+import ClyFormStep from '../../../../../frontend/express/public/javascripts/components/form/cly-form-step.vue';
+import ClyFormField from '../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
 
 import countlyPushNotification from '../store/index.js';
 import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
@@ -259,6 +266,15 @@ initialTestUsersRows[countlyPushNotification.service.AddTestUserDefinitionTypeEn
 export default {
     componentName: "AppSettingsContainerObservable",
     mixins: [i18nMixin, mixins.hasDrawers("testUsersDrawer")],
+    components: {
+        ClySection,
+        ClyDrawer,
+        ClyFormStep,
+        ClyFormField,
+        ClyDatatableN,
+        ClyMoreOptions,
+        ClyTooltipIcon,
+    },
     data: function() {
         return {
             PlatformEnum: countlyPushNotification.service.PlatformEnum,

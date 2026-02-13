@@ -24,7 +24,14 @@
 </template>
 
 <script>
+import ClyProgressDonut from '../../../../../frontend/express/public/javascripts/components/progress/progress-donut.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+
 export default {
+    components: {
+        ClyProgressDonut,
+        ClyTooltipIcon
+    },
     props: {
         showDonut: {type: Boolean, default: false},
         donutPercentage: {type: Number, default: 50},

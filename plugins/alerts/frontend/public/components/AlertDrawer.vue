@@ -481,6 +481,11 @@ import jQuery from 'jquery';
 import _ from 'underscore';
 import * as VeeValidate from 'vee-validate';
 
+import ClyDrawer from '../../../../../frontend/express/public/javascripts/components/drawer/cly-drawer.vue';
+import ClyFormStep from '../../../../../frontend/express/public/javascripts/components/form/cly-form-step.vue';
+import ClyFormField from '../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
+import ClySelectX from '../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
+
 var groupsModelRef = null;
 var groupsModelPromise = countlyGlobal.plugins.includes("groups")
     ? import('../../../../groups/frontend/public/store/index.js')
@@ -508,6 +513,12 @@ export default {
             externalAlertDefine: "/alerts/data-define",
         }),
     ],
+    components: {
+        ClyDrawer,
+        ClyFormStep,
+        ClyFormField,
+        ClySelectX,
+    },
     props: {
         placeholder: { type: String, default: "Select" },
         controls: {

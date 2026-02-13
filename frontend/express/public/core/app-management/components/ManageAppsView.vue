@@ -440,6 +440,17 @@
 <script>
 import { i18n, i18nMixin } from '../../../javascripts/countly/vue/core.js';
 import { dataMixin } from '../../../javascripts/countly/vue/container.js';
+import ClyHeader from '../../../javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../javascripts/components/layout/cly-section.vue';
+import ClyListbox from '../../../javascripts/components/input/listbox.vue';
+import ClyMoreOptions from '../../../javascripts/components/dropdown/more-options.vue';
+import ClyForm from '../../../javascripts/components/form/cly-form.vue';
+import ClyFormStep from '../../../javascripts/components/form/cly-form-step.vue';
+import ClyInlineFormField from '../../../javascripts/components/form/cly-inline-form-field.vue';
+import ClySelectX from '../../../javascripts/components/input/select-x.vue';
+import ClyDiffHelper from '../../../javascripts/components/helpers/cly-diff-helper.vue';
+import ClyColorpicker from '../../../javascripts/components/input/colorpicker.vue';
 import countlyCommon from '../../../javascripts/countly/countly.common.js';
 import countlyGlobal from '../../../javascripts/countly/countly.global.js';
 import { confirm as CountlyConfirm, alert as CountlyAlert, notify, goTo } from '../../../javascripts/countly/countly.helpers.js';
@@ -459,6 +470,19 @@ import countlyAppVersion from '../../../javascripts/countly/countly.app.version.
 import * as countlyEvent from '../../../javascripts/countly/countly.event.js';
 
 export default {
+    components: {
+        ClyHeader,
+        ClyMain,
+        ClySection,
+        ClyListbox,
+        ClyMoreOptions,
+        ClyForm,
+        ClyFormStep,
+        ClyInlineFormField,
+        ClySelectX,
+        ClyDiffHelper,
+        ClyColorpicker,
+    },
     mixins: [
         i18nMixin,
         Emitter,

@@ -1360,6 +1360,12 @@ import MessageEditorWithEmojiPicker from './common/MessageEditorWithEmojiPicker.
 import AddUserPropertyPopover from './common/AddUserPropertyPopover.vue';
 import UserPropertyPreview from './common/UserPropertyPreview.vue';
 import UserPropertyTextPreview from './common/UserPropertyTextPreview.vue';
+import ClyDrawer from '../../../../../frontend/express/public/javascripts/components/drawer/cly-drawer.vue';
+import ClyFormStep from '../../../../../frontend/express/public/javascripts/components/form/cly-form-step.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClyDatePicker from '../../../../../frontend/express/public/javascripts/components/date/date-picker.vue';
+import ClySelectX from '../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
+import ClyNotification from '../../../../../frontend/express/public/javascripts/components/helpers/cly-notification.vue';
 
 import countlyPushNotification from '../store/index.js';
 import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
@@ -2648,7 +2654,13 @@ export default {
         "line-radio-button-with-description": LineRadioButtonWithDescription,
         "review-section-row": ReviewSectionRow,
         'user-property-preview': UserPropertyPreview,
-        'user-property-text-preview': UserPropertyTextPreview
+        'user-property-text-preview': UserPropertyTextPreview,
+        ClyDrawer,
+        ClyFormStep,
+        ClyTooltipIcon,
+        ClyDatePicker,
+        ClySelectX,
+        ClyNotification,
     },
 };
 </script>

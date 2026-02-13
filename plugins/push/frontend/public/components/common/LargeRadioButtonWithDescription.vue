@@ -19,7 +19,12 @@
 </template>
 
 <script>
+import ClyTooltipIcon from '../../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+
 export default {
+    components: {
+        ClyTooltipIcon,
+    },
     props: {
         value: {
             type: [String, Boolean],

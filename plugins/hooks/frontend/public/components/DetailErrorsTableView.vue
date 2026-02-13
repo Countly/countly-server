@@ -59,9 +59,13 @@
 
 <script>
 import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
 
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyDatatableN,
+    },
     computed: {
         tableRows: function() {
             var hookDetail = this.$store.getters["countlyHooks/hookDetail"];

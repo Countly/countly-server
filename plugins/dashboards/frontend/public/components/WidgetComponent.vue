@@ -56,6 +56,7 @@ import { i18nMixin } from '../../../../../frontend/express/public/javascripts/co
 import WidgetValidationMixin from '../mixins/WidgetValidationMixin.js';
 import DisabledWidget from './DisabledWidget.vue';
 import InvalidWidget from './InvalidWidget.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
 
 export default {
     mixins: [i18nMixin, WidgetValidationMixin],
@@ -90,7 +91,8 @@ export default {
     },
     components: {
         "widget-disabled": DisabledWidget,
-        "widget-invalid": InvalidWidget
+        "widget-invalid": InvalidWidget,
+        ClyMoreOptions
     },
     computed: {
         canUpdateGrid: function() {

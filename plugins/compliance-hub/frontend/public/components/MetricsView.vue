@@ -71,8 +71,23 @@
 import { i18nMixin, commonFormattersMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import countlyConsentManager from '../store/index.js';
 
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySelectX from '../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
+import ClyDatePickerG from '../../../../../frontend/express/public/javascripts/components/date/global-date-picker.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyChartTime from '../../../../../frontend/express/public/javascripts/components/echart/cly-chart-time.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+
 export default {
     mixins: [i18nMixin, commonFormattersMixin],
+    components: {
+        ClyMain,
+        ClySelectX,
+        ClyDatePickerG,
+        ClySection,
+        ClyChartTime,
+        ClyTooltipIcon,
+    },
     data: function() {
         return {
             consentDpChartloaded: false,

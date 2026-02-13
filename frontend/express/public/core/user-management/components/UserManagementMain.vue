@@ -13,8 +13,12 @@ import { i18nMixin, i18n } from '../../../javascripts/countly/vue/core.js';
 import { tabsMixin } from '../../../javascripts/countly/vue/container.js';
 import countlyCommon from '../../../javascripts/countly/countly.common.js';
 import ManageUsersContainer from './ManageUsersContainer.vue';
+import ClyDynamicTabs from '../../../javascripts/components/nav/cly-dynamic-tabs.vue';
 
 export default {
+    components: {
+        ClyDynamicTabs,
+    },
     mixins: [
         i18nMixin,
         tabsMixin({

@@ -89,8 +89,23 @@ import { dataMixin } from '../../../../../frontend/express/public/javascripts/co
 import jQuery from 'jquery';
 import _ from 'underscore';
 
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+import ClyDiffHelper from '../../../../../frontend/express/public/javascripts/components/helpers/cly-diff-helper.vue';
+import ClyConfirmDialog from '../../../../../frontend/express/public/javascripts/components/dialog/cly-confirm-dialog.vue';
+
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyHeader,
+        ClyMain,
+        ClySection,
+        ClyDatatableN,
+        ClyDiffHelper,
+        ClyConfirmDialog,
+    },
     data: function() {
         return {
             scope: {},

@@ -99,6 +99,18 @@ import starRatingPlugin from '../store/index.js';
 import RatingsTable from './RatingsTable.vue';
 import CommentsTable from './CommentsTable.vue';
 import Drawer from './Drawer.vue';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyStatusTag from '../../../../../frontend/express/public/javascripts/components/helpers/cly-status-tag.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyMultiSelect from '../../../../../frontend/express/public/javascripts/components/dropdown/multi-select.vue';
+import ClyDatePickerG from '../../../../../frontend/express/public/javascripts/components/date/global-date-picker.vue';
+import ClyMetricCards from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-cards.vue';
+import ClyMetricCard from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-card.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClyChartBar from '../../../../../frontend/express/public/javascripts/components/echart/cly-chart-bar.vue';
+import ClyDynamicTabs from '../../../../../frontend/express/public/javascripts/components/nav/cly-dynamic-tabs.vue';
 
 var FEATURE_NAME = 'star_rating';
 var CLY_X_INT = 'cly_x_int';
@@ -119,7 +131,19 @@ export default {
         autoRefreshMixin
     ],
     components: {
-        'drawer': Drawer
+        'drawer': Drawer,
+        ClyHeader,
+        ClyMain,
+        ClySection,
+        ClyStatusTag,
+        ClyMoreOptions,
+        ClyMultiSelect,
+        ClyDatePickerG,
+        ClyMetricCards,
+        ClyMetricCard,
+        ClyTooltipIcon,
+        ClyChartBar,
+        ClyDynamicTabs
     },
     data: function() {
         return {

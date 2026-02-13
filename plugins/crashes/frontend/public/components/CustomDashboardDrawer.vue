@@ -11,7 +11,12 @@
 </template>
 
 <script>
+import ClyFormFieldGroup from '../../../../../frontend/express/public/javascripts/components/form/cly-form-field-group.vue';
+
 export default {
+    components: {
+        ClyFormFieldGroup
+    },
     props: {
         scope: {
             type: Object,

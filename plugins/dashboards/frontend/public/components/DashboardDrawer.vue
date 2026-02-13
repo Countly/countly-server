@@ -134,11 +134,21 @@ import { i18nMixin } from '../../../../../frontend/express/public/javascripts/co
 import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
 import countlyDashboards from '../store/index.js';
 import { notify } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
+import ClyDrawer from '../../../../../frontend/express/public/javascripts/components/drawer/cly-drawer.vue';
+import ClyFormStep from '../../../../../frontend/express/public/javascripts/components/form/cly-form-step.vue';
+import ClyFormField from '../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
 
 var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
 
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyDrawer,
+        ClyFormStep,
+        ClyFormField,
+        ClyTooltipIcon
+    },
     props: {
         controls: {
             type: Object

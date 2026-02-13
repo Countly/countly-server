@@ -23,9 +23,15 @@
 
 <script>
 import { i18nMixin } from '../../../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClyFormField from '../../../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
+import ClyDatePicker from '../../../../../../../frontend/express/public/javascripts/components/date/date-picker.vue';
 
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyFormField,
+        ClyDatePicker
+    },
     props: {
         value: {
             type: [Array, String, Object, Boolean],

@@ -397,13 +397,21 @@ import { countlyCommon } from '../../../../../frontend/express/public/javascript
 import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
 import starRatingPlugin from '../store/index.js';
 import ConsentLink from './ConsentLink.vue';
+import ClyDrawer from '../../../../../frontend/express/public/javascripts/components/drawer/cly-drawer.vue';
+import ClyFormStep from '../../../../../frontend/express/public/javascripts/components/form/cly-form-step.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClyColorpicker from '../../../../../frontend/express/public/javascripts/components/input/colorpicker.vue';
 
 var CLY_X_INT = 'cly_x_int';
 
 export default {
     mixins: [countlyVue.mixins.i18n, countlyVue.mixins.commonFormatters],
     components: {
-        "star-consent-link": ConsentLink
+        "star-consent-link": ConsentLink,
+        ClyDrawer,
+        ClyFormStep,
+        ClyTooltipIcon,
+        ClyColorpicker
     },
     props: {
         settings: Object,

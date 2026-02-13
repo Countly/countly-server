@@ -12,11 +12,13 @@ import countlyVue, { i18n } from '../../../../../frontend/express/public/javascr
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import starRatingPlugin from '../store/index.js';
 import UserFeedbackRatingsTable from './UserFeedbackRatingsTable.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
 
 export default {
     mixins: [countlyVue.mixins.i18n],
     components: {
-        'user-feedback-ratings-table': UserFeedbackRatingsTable
+        'user-feedback-ratings-table': UserFeedbackRatingsTable,
+        ClyTooltipIcon
     },
     data: function() {
         return {

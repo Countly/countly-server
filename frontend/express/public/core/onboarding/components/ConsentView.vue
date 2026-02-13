@@ -55,11 +55,19 @@
 import { i18nMixin } from '../../../javascripts/countly/vue/core.js';
 import countlyGlobal from '../../../javascripts/countly/countly.global.js';
 import storejs from 'storejs';
+import ClyForm from '../../../javascripts/components/form/cly-form.vue';
+import ClyFormStep from '../../../javascripts/components/form/cly-form-step.vue';
+import ClyFormField from '../../../javascripts/components/form/cly-form-field.vue';
 
 // TO-DO: countlyPlugins is still legacy IIFE - no ESM exports available
 var countlyPlugins = window.countlyPlugins;
 
 export default {
+    components: {
+        ClyForm,
+        ClyFormStep,
+        ClyFormField,
+    },
     mixins: [i18nMixin],
     data: function() {
         return {

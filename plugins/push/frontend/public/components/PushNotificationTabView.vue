@@ -166,6 +166,16 @@
 import { i18n, i18nMixin, commonFormattersMixin, authMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { getServerDataSource } from '../../../../../frontend/express/public/javascripts/countly/vue/data/vuex.js';
 import { notify, formatPercentage } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+import ClyMetricCards from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-cards.vue';
+import ClyMetricCard from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-card.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyMultiSelect from '../../../../../frontend/express/public/javascripts/components/dropdown/multi-select.vue';
+import ClyNotification from '../../../../../frontend/express/public/javascripts/components/helpers/cly-notification.vue';
+import ClySelectX from '../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
+import ClyStatusTag from '../../../../../frontend/express/public/javascripts/components/helpers/cly-status-tag.vue';
 
 import countlyPushNotification from '../store/index.js';
 
@@ -193,6 +203,18 @@ var platformFilterOptions = [
 
 export default {
     mixins: [i18nMixin, commonFormattersMixin, authMixin(featureName)],
+    components: {
+        ClyMain,
+        ClySection,
+        ClyDatatableN,
+        ClyMetricCards,
+        ClyMetricCard,
+        ClyMoreOptions,
+        ClyMultiSelect,
+        ClyNotification,
+        ClySelectX,
+        ClyStatusTag,
+    },
     data: function() {
         return {
             remoteTableDataSource: getServerDataSource(this.$store, "countlyPushNotificationMain", "pushTable"),

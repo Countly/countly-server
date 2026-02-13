@@ -166,9 +166,21 @@ import countlyGlobal from '../../../javascripts/countly/countly.global.js';
 import { confirm as countlyConfirm, alert as countlyAlert } from '../../../javascripts/countly/countly.helpers.js';
 import UnreadPin from './UnreadPin.vue';
 import moment from 'moment';
+import ClyDatatableN from '../../../javascripts/components/datatable/cly-datatable-n.vue';
+import ClyMoreOptions from '../../../javascripts/components/dropdown/more-options.vue';
+import ClyStatusTag from '../../../javascripts/components/helpers/cly-status-tag.vue';
+import ClyForm from '../../../javascripts/components/form/cly-form.vue';
+import ClyFormStep from '../../../javascripts/components/form/cly-form-step.vue';
+import ClyFormField from '../../../javascripts/components/form/cly-form-field.vue';
 
 export default {
     components: {
+        ClyDatatableN,
+        ClyMoreOptions,
+        ClyStatusTag,
+        ClyForm,
+        ClyFormStep,
+        ClyFormField,
         "unread-pin": UnreadPin
     },
     mixins: [commonFormattersMixin, i18nMixin],

@@ -90,8 +90,15 @@
 import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { getServerDataSource } from '../../../../../frontend/express/public/javascripts/countly/vue/data/vuex.js';
 
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyTooltipIcon,
+        ClyDatatableN,
+    },
     data: function() {
         return {
             userConsentHistoryTableSource: getServerDataSource(this.$store, "countlyConsentManager", "consentHistoryUserResource"),

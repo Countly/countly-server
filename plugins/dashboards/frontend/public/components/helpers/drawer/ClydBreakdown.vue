@@ -25,9 +25,13 @@
 import { mixins, i18nMixin } from '../../../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import countlyGlobal from '../../../../../../../frontend/express/public/javascripts/countly/countly.global.js';
 import countlyDashboards from '../../../store/index.js';
+import ClyFormField from '../../../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
 
 export default {
     mixins: [i18nMixin, mixins.customDashboards.apps],
+    components: {
+        ClyFormField
+    },
     props: {
         appId: {
             type: String,

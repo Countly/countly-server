@@ -130,11 +130,23 @@ import countlyCommon from '../../../javascripts/countly/countly.common.js';
 import { notify } from '../../../javascripts/countly/countly.helpers.js';
 import app from '../../../javascripts/countly/countly.template.js';
 import countlyOnboarding from '../store/index.js';
+import ClyForm from '../../../javascripts/components/form/cly-form.vue';
+import ClyFormStep from '../../../javascripts/components/form/cly-form-step.vue';
+import ClyFormField from '../../../javascripts/components/form/cly-form-field.vue';
+import ClySelectX from '../../../javascripts/components/input/select-x.vue';
+import ClyProgressBar from '../../../javascripts/components/progress/progress-bar.vue';
 
 // TO-DO: countlyPopulator is still legacy IIFE - no ESM exports available
 var countlyPopulator = window.countlyPopulator;
 
 export default {
+    components: {
+        ClyForm,
+        ClyFormStep,
+        ClyFormField,
+        ClySelectX,
+        ClyProgressBar,
+    },
     mixins: [i18nMixin],
     data: function() {
         var timezones = [];

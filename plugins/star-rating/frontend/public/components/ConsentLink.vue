@@ -53,8 +53,12 @@
 
 <script>
 import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
 
 export default {
+    components: {
+        ClyTooltipIcon
+    },
     mixins: [countlyVue.mixins.i18n],
     props: {
         value: {

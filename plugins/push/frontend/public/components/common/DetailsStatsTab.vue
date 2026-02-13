@@ -31,9 +31,13 @@
 <script>
 import moment from 'moment';
 import { i18nMixin } from '../../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClyChartBar from '../../../../../../frontend/express/public/javascripts/components/echart/cly-chart-bar.vue';
 
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyChartBar,
+    },
     data: function() {
         return {
             selectedPeriod: "30days",

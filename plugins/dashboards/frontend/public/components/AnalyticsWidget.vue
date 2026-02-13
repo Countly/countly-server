@@ -214,6 +214,12 @@
 import { i18nMixin, mixins } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import AnnotationDrawer from '../../../../../frontend/express/public/core/notes/components/AnnotationDrawer.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyChartZoom from '../../../../../frontend/express/public/javascripts/components/echart/cly-chart-zoom.vue';
+import ClyChartTime from '../../../../../frontend/express/public/javascripts/components/echart/cly-chart-time.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+import ClyBlank from '../../../../../frontend/express/public/javascripts/components/helpers/cly-blank.vue';
+import ClyChartBar from '../../../../../frontend/express/public/javascripts/components/echart/cly-chart-bar.vue';
 
 export default {
     mixins: [
@@ -226,7 +232,13 @@ export default {
         mixins.graphNotesCommand
     ],
     components: {
-        "drawer": AnnotationDrawer
+        "drawer": AnnotationDrawer,
+        ClyMoreOptions,
+        ClyChartZoom,
+        ClyChartTime,
+        ClyDatatableN,
+        ClyBlank,
+        ClyChartBar
     },
     data: function() {
         return {

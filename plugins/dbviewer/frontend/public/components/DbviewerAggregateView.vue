@@ -74,8 +74,24 @@ import { i18n, i18nMixin } from '../../../../../frontend/express/public/javascri
 import { notify } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
 import { app } from '../../../../../frontend/express/public/javascripts/countly/countly.template.js';
 import * as countlyDBviewer from '../store/index.js';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyBackLink from '../../../../../frontend/express/public/javascripts/components/helpers/cly-back-link.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyNotification from '../../../../../frontend/express/public/javascripts/components/helpers/cly-notification.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
 
 export default {
+    components: {
+        ClyHeader,
+        ClyBackLink,
+        ClyMain,
+        ClyTooltipIcon,
+        ClySection,
+        ClyNotification,
+        ClyDatatableN
+    },
     mixins: [i18nMixin],
     data: function() {
         return {

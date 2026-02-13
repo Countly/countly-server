@@ -23,9 +23,13 @@
 
 <script>
 import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClyBlank from '../../../../../frontend/express/public/javascripts/components/helpers/cly-blank.vue';
 
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyBlank
+    },
     props: {
         canUpdate: {
             type: Boolean,

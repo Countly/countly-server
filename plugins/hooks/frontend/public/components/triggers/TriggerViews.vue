@@ -25,6 +25,7 @@ import APIEndPointTrigger from './APIEndPointTrigger.vue';
 import IncomingDataTrigger from './IncomingDataTrigger.vue';
 import InternalEventTrigger from './InternalEventTrigger.vue';
 import ScheduledTrigger from './ScheduledTrigger.vue';
+import ClyFormField from '../../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
 
 var TriggerFactory = {
     options: [
@@ -81,6 +82,7 @@ export default {
         IncomingDataTrigger: IncomingDataTrigger,
         InternalEventTrigger: InternalEventTrigger,
         ScheduledTrigger: ScheduledTrigger,
+        ClyFormField,
     },
     methods: {
     }

@@ -36,8 +36,12 @@ import moment from 'moment';
 import { i18nMixin, i18n as cvI18n } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import countlyCrashes from '../store/index.js';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
 
 export default {
+    components: {
+        ClyDatatableN
+    },
     mixins: [i18nMixin],
     data: function() {
         return {

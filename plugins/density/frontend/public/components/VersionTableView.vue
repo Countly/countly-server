@@ -43,8 +43,14 @@
 <script>
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
 
 export default {
+    components: {
+        ClySection,
+        ClyDatatableN
+    },
     mixins: [i18nMixin],
     data: function() {
         return {

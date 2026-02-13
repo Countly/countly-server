@@ -15,10 +15,17 @@
 import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+
 export default {
     mixins: [
         countlyVue.mixins.i18n
     ],
+    components: {
+        ClySection,
+        ClyDatatableN,
+    },
     computed: {
         appBrowser: function() {
             return this.$store.state.countlyDevicesAndTypes.appBrowser;

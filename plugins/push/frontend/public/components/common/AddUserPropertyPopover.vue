@@ -65,9 +65,13 @@
 <script>
 import { i18n, i18nMixin } from '../../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import countlyPushNotification from '../../store/index.js';
+import ClySelectX from '../../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
 
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClySelectX,
+    },
     props: {
         userProperty: {
             type: Object,

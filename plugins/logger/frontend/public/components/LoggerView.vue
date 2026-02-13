@@ -86,6 +86,12 @@ import { dataMixin } from '../../../../../frontend/express/public/javascripts/co
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import countlyLogger from '../store/index.js';
 import moment from 'moment';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyAutoRefreshToggle from '../../../../../frontend/express/public/javascripts/components/helpers/cly-auto-refresh-toggle.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClyNotification from '../../../../../frontend/express/public/javascripts/components/helpers/cly-notification.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
 
 var formatVersion = function(version, eleminateFirstCharacter) {
     return version ? eleminateFirstCharacter ? version.substring(1).replaceAll(':', '.') : version.replaceAll(':', '.') : '';
@@ -346,6 +352,12 @@ export default {
         "logger-readable-date": ReadableDateComponent,
         "logger-details": DetailsComponent,
         "logger-info": InfoComponent,
+        ClyHeader,
+        ClyAutoRefreshToggle,
+        ClyMain,
+        ClyNotification,
+        ClySection,
+        ClyDatatableN
     },
     mounted: function() {
         var self = this;

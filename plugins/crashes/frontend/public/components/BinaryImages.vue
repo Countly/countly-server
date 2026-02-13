@@ -47,8 +47,20 @@
 import { mixins } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyBackLink from '../../../../../frontend/express/public/javascripts/components/helpers/cly-back-link.vue';
+import ClyGuide from '../../../../../frontend/express/public/javascripts/components/layout/cly-guide.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
 
 export default {
+    components: {
+        ClyHeader,
+        ClyBackLink,
+        ClyGuide,
+        ClyMain,
+        ClyDatatableN
+    },
     props: {
         crashId: {type: String}
     },

@@ -12,9 +12,13 @@
 
 <script>
 import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClyFormFieldGroup from '../../../../../frontend/express/public/javascripts/components/form/cly-form-field-group.vue';
 
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyFormFieldGroup,
+    },
     props: {
         scope: {
             type: Object,

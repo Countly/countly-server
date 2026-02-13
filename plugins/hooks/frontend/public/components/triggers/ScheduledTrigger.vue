@@ -111,9 +111,13 @@
 <script>
 import { i18nMixin } from '../../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import countlyGlobal from '../../../../../../frontend/express/public/javascripts/countly/countly.global.js';
+import ClySelectX from '../../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
 
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClySelectX,
+    },
     data: function() {
         var zones = [];
         for (var country in countlyGlobal.timezones) {

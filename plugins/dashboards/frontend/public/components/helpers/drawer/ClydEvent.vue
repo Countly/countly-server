@@ -21,9 +21,15 @@
 
 <script>
 import { i18nMixin } from '../../../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClyFormField from '../../../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
+import ClySelectX from '../../../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
 
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyFormField,
+        ClySelectX
+    },
     props: {
         appIds: {
             type: Array,

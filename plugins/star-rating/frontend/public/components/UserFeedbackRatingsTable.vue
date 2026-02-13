@@ -26,8 +26,12 @@
 
 <script>
 import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
 
 export default {
+    components: {
+        ClyDatatableN
+    },
     mixins: [countlyVue.mixins.i18n, countlyVue.mixins.commonFormatters],
     props: {
         ratings: {

@@ -24,7 +24,14 @@ import UserView from './UserView.vue';
 import ConsentHistory from './ConsentHistory.vue';
 import ExportHistory from './ExportHistory.vue';
 
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyDynamicTabs from '../../../../../frontend/express/public/javascripts/components/nav/cly-dynamic-tabs.vue';
+
 export default {
+    components: {
+        ClyHeader,
+        ClyDynamicTabs,
+    },
     data: function() {
         var tabs = [
             {

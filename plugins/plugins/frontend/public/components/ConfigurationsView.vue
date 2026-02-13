@@ -373,8 +373,29 @@ import { app } from '../../../../../frontend/express/public/javascripts/countly/
 import * as countlyPlugins from '../store/index.js';
 import jQuery from 'jquery';
 
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyBackLink from '../../../../../frontend/express/public/javascripts/components/helpers/cly-back-link.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClyListbox from '../../../../../frontend/express/public/javascripts/components/input/listbox.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyColorpicker from '../../../../../frontend/express/public/javascripts/components/input/colorpicker.vue';
+import ClyEmptyView from '../../../../../frontend/express/public/javascripts/components/helpers/cly-empty-view.vue';
+import ClyDiffHelper from '../../../../../frontend/express/public/javascripts/components/helpers/cly-diff-helper.vue';
+
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyHeader,
+        ClyBackLink,
+        ClyMain,
+        ClyListbox,
+        ClyTooltipIcon,
+        ClySection,
+        ClyColorpicker,
+        ClyEmptyView,
+        ClyDiffHelper,
+    },
     computed: {
         predefinedLabels: function() {
             return this.$store.getters['countlyConfigurations/predefinedLabels'];

@@ -86,8 +86,13 @@
 import countlyVue from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+
 export default {
     mixins: [countlyVue.mixins.i18n],
+    components: {
+        ClyDatatableN,
+    },
     data: function() {
         return {
             scoreTableExportSettings: {

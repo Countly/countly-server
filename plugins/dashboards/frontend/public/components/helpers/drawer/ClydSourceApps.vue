@@ -21,9 +21,13 @@
 
 <script>
 import { i18nMixin } from '../../../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClyFormField from '../../../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
 
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyFormField
+    },
     props: {
         multipleLimit: {
             type: Number,

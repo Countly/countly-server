@@ -241,11 +241,48 @@ import { app } from '../../../../../frontend/express/public/javascripts/countly/
 import countlyCrashes from '../store/index.js';
 import CrashTabLabel from './CrashTabLabel.vue';
 import CrashBadge from './CrashBadge.vue';
+import DashboardTile from './DashboardTile.vue';
+import ClyTabs from '../../../../../frontend/express/public/javascripts/components/nav/cly-tabs.vue';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyAutoRefreshToggle from '../../../../../frontend/express/public/javascripts/components/helpers/cly-auto-refresh-toggle.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+import ClyDiffHelper from '../../../../../frontend/express/public/javascripts/components/helpers/cly-diff-helper.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyConfirmDialog from '../../../../../frontend/express/public/javascripts/components/dialog/cly-confirm-dialog.vue';
+import ClyListDrawer from '../../../../../frontend/express/public/javascripts/components/helpers/cly-list-drawer.vue';
+import ClyMetricCard from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-card.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClyProgressBar from '../../../../../frontend/express/public/javascripts/components/progress/progress-bar.vue';
+import ClyDatePickerG from '../../../../../frontend/express/public/javascripts/components/date/global-date-picker.vue';
+import ClyMultiSelect from '../../../../../frontend/express/public/javascripts/components/dropdown/multi-select.vue';
+import ClyChartLine from '../../../../../frontend/express/public/javascripts/components/echart/cly-chart-line.vue';
 
 var FEATURE_NAME = 'crashes';
 
 export default {
-    components: {"crash-tab-label": CrashTabLabel, "crash-badge": CrashBadge},
+    components: {
+        "crash-tab-label": CrashTabLabel,
+        "crash-badge": CrashBadge,
+        "cly-crashes-dashboard-tile": DashboardTile,
+        ClyTabs,
+        ClyHeader,
+        ClyAutoRefreshToggle,
+        ClyMain,
+        ClySection,
+        ClyDatatableN,
+        ClyDiffHelper,
+        ClyMoreOptions,
+        ClyConfirmDialog,
+        ClyListDrawer,
+        ClyMetricCard,
+        ClyTooltipIcon,
+        ClyProgressBar,
+        ClyDatePickerG,
+        ClyMultiSelect,
+        ClyChartLine
+    },
     mixins: [
         authMixin(FEATURE_NAME),
         commonFormattersMixin,

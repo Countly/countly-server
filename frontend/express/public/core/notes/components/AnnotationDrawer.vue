@@ -58,8 +58,18 @@ import { i18nMixin, i18n } from '../../../javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../javascripts/countly/countly.common.js';
 import { notify } from '../../../javascripts/countly/countly.helpers.js';
 import countlyGraphNotes from '../store/index.js';
+import ClyDrawer from '../../../javascripts/components/drawer/cly-drawer.vue';
+import ClyFormStep from '../../../javascripts/components/form/cly-form-step.vue';
+import ClyFormField from '../../../javascripts/components/form/cly-form-field.vue';
+import ClyDatePicker from '../../../javascripts/components/date/date-picker.vue';
 
 export default {
+    components: {
+        ClyDrawer,
+        ClyFormStep,
+        ClyFormField,
+        ClyDatePicker,
+    },
     mixins: [i18nMixin],
     data: function() {
         return {

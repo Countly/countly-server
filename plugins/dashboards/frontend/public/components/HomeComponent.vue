@@ -85,6 +85,9 @@ import NoWidget from './NoWidget.vue';
 import GridComponent from './GridComponent.vue';
 import DashboardDrawer from './DashboardDrawer.vue';
 import WidgetDrawer from './WidgetDrawer.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClyDatePickerG from '../../../../../frontend/express/public/javascripts/components/date/global-date-picker.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
 
 var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
 
@@ -95,7 +98,10 @@ export default {
         "no-widget": NoWidget,
         "dashboards-grid": GridComponent,
         "dashboards-drawer": DashboardDrawer,
-        "widgets-drawer": WidgetDrawer
+        "widgets-drawer": WidgetDrawer,
+        ClyMain,
+        ClyDatePickerG,
+        ClyMoreOptions
     },
     data: function() {
         return {

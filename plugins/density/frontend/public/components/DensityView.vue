@@ -76,8 +76,24 @@ import { countlyCommon } from '../../../../../frontend/express/public/javascript
 import { dataMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/container.js';
 import DensityTableView from './DensityTableView.vue';
 import VersionTableView from './VersionTableView.vue';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClyDatePickerG from '../../../../../frontend/express/public/javascripts/components/date/global-date-picker.vue';
+import ClyMetricCards from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-cards.vue';
+import ClyMetricCard from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-card.vue';
+import ClyDynamicTabs from '../../../../../frontend/express/public/javascripts/components/nav/cly-dynamic-tabs.vue';
 
 export default {
+    components: {
+        ClyHeader,
+        ClyMoreOptions,
+        ClyMain,
+        ClyDatePickerG,
+        ClyMetricCards,
+        ClyMetricCard,
+        ClyDynamicTabs
+    },
     mixins: [
         i18nMixin,
         autoRefreshMixin,

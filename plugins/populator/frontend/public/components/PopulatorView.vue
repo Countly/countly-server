@@ -197,6 +197,17 @@ import countlyPopulator from '../store/index.js';
 import PopulatorTemplateDrawer from './PopulatorTemplateDrawer.vue';
 import moment from 'moment';
 import Vue from 'vue';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDynamicTabs from '../../../../../frontend/express/public/javascripts/components/nav/cly-dynamic-tabs.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClySelectX from '../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
+import ClyDatePickerG from '../../../../../frontend/express/public/javascripts/components/date/global-date-picker.vue';
+import ClyProgressBar from '../../../../../frontend/express/public/javascripts/components/progress/progress-bar.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyConfirmDialog from '../../../../../frontend/express/public/javascripts/components/dialog/cly-confirm-dialog.vue';
 
 var FEATURE_NAME = 'populator';
 
@@ -207,7 +218,18 @@ export default {
         authMixin(FEATURE_NAME)
     ],
     components: {
-        'cly-populator-template-drawer': PopulatorTemplateDrawer
+        'cly-populator-template-drawer': PopulatorTemplateDrawer,
+        ClyHeader,
+        ClyMain,
+        ClySection,
+        ClyDynamicTabs,
+        ClyTooltipIcon,
+        ClySelectX,
+        ClyDatePickerG,
+        ClyProgressBar,
+        ClyDatatableN,
+        ClyMoreOptions,
+        ClyConfirmDialog
     },
     data: function() {
         return {

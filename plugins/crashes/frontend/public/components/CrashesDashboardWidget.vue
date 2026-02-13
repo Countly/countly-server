@@ -18,8 +18,16 @@
 import { i18nMixin, i18n as cvI18n, vuex } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import countlyCrashes from '../store/index.js';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyMetricCards from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-cards.vue';
+import ClyMetricCard from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-card.vue';
 
 export default {
+    components: {
+        ClySection,
+        ClyMetricCards,
+        ClyMetricCard
+    },
     mixins: [i18nMixin],
     data: function() {
         return {

@@ -18,8 +18,12 @@
 <script>
 import { countlyCommon } from '../../../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import { i18n } from '../../../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClyFormField from '../../../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
 
 export default {
+    components: {
+        ClyFormField
+    },
     props: {
         value: { default: 1 },
         options: {

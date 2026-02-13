@@ -18,9 +18,13 @@
 import { i18nMixin } from '../../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { notify } from '../../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
 import jQuery from 'jquery';
+import ClyFormField from '../../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
 
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyFormField,
+    },
     data: function() {
         return {
         };

@@ -91,10 +91,24 @@ import { app } from '../../../../../frontend/express/public/javascripts/countly/
 import { validateDelete } from '../../../../../frontend/express/public/javascripts/countly/countly.auth.js';
 import countlyPopulator from '../store/index.js';
 import moment from 'moment';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyBackLink from '../../../../../frontend/express/public/javascripts/components/helpers/cly-back-link.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyConfirmDialog from '../../../../../frontend/express/public/javascripts/components/dialog/cly-confirm-dialog.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
 
 var FEATURE_NAME = 'populator';
 
 export default {
+    components: {
+        ClyHeader,
+        ClyBackLink,
+        ClyMain,
+        ClySection,
+        ClyConfirmDialog,
+        ClyDatatableN
+    },
     mixins: [i18nMixin],
     data: function() {
         var self = this;

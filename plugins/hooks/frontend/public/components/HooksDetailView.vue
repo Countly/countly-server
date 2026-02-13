@@ -70,6 +70,11 @@ import moment from 'moment';
 import jQuery from 'jquery';
 import DetailErrorsTableView from './DetailErrorsTableView.vue';
 import HookDrawer from './HookDrawer.vue';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyBackLink from '../../../../../frontend/express/public/javascripts/components/helpers/cly-back-link.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
 
 var FEATURE_NAME = "hooks";
 
@@ -82,6 +87,11 @@ export default {
     components: {
         "error-table-view": DetailErrorsTableView,
         "drawer": HookDrawer,
+        ClyHeader,
+        ClyBackLink,
+        ClyMoreOptions,
+        ClyMain,
+        ClySection,
     },
     data: function() {
         return {

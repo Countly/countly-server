@@ -120,8 +120,23 @@ import { i18nMixin } from '../../../../../frontend/express/public/javascripts/co
 import { getServerDataSource } from '../../../../../frontend/express/public/javascripts/countly/vue/data/vuex.js';
 import countlyConsentManager from '../store/index.js';
 
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClyDatabaseEngineDebugPanel from '../../../../../frontend/express/public/javascripts/components/helpers/cly-database-engine-debug-panel.vue';
+import ClySelectX from '../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
+import ClyDatePickerG from '../../../../../frontend/express/public/javascripts/components/date/global-date-picker.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+
 export default {
     mixins: [i18nMixin],
+    components: {
+        ClyMain,
+        ClyDatabaseEngineDebugPanel,
+        ClySelectX,
+        ClyDatePickerG,
+        ClySection,
+        ClyDatatableN,
+    },
     data: function() {
         return {
             consentHistoryTableSource: getServerDataSource(this.$store, "countlyConsentManager", "consentHistoryResource"),

@@ -125,10 +125,25 @@ import countlyGlobal from '../../../../../frontend/express/public/javascripts/co
 import * as CountlyHelpers from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
 import { unescapeHtml } from '../../../../../frontend/express/public/javascripts/countly/countly.common.utils.js';
 
+import ClyEmptyView from '../../../../../frontend/express/public/javascripts/components/helpers/cly-empty-view.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+import ClySelectX from '../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyDiffHelper from '../../../../../frontend/express/public/javascripts/components/helpers/cly-diff-helper.vue';
+
 const ALERTS_FEATURE_NAME = "alerts";
 
 export default {
     mixins: [countlyVue.mixins.i18n, countlyVue.mixins.auth(ALERTS_FEATURE_NAME)],
+    components: {
+        ClyEmptyView,
+        ClySection,
+        ClyDatatableN,
+        ClySelectX,
+        ClyMoreOptions,
+        ClyDiffHelper,
+    },
     props: {
         callCreateAlertDrawer: { type: Function, default: function() {} },
     },

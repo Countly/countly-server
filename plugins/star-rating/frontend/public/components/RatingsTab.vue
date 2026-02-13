@@ -47,8 +47,30 @@ import { countlyCommon } from '../../../../../frontend/express/public/javascript
 import starRatingPlugin from '../store/index.js';
 import RatingsTable from './RatingsTable.vue';
 import CommentsTable from './CommentsTable.vue';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClyMultiSelect from '../../../../../frontend/express/public/javascripts/components/dropdown/multi-select.vue';
+import ClyDatePickerG from '../../../../../frontend/express/public/javascripts/components/date/global-date-picker.vue';
+import ClyMetricCards from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-cards.vue';
+import ClyMetricCard from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-card.vue';
+import ClyChartBar from '../../../../../frontend/express/public/javascripts/components/echart/cly-chart-bar.vue';
+import ClyDynamicTabs from '../../../../../frontend/express/public/javascripts/components/nav/cly-dynamic-tabs.vue';
 
 export default {
+    components: {
+        ClyHeader,
+        ClyMain,
+        ClySection,
+        ClyTooltipIcon,
+        ClyMultiSelect,
+        ClyDatePickerG,
+        ClyMetricCards,
+        ClyMetricCard,
+        ClyChartBar,
+        ClyDynamicTabs
+    },
     mixins: [countlyVue.mixins.i18n, autoRefreshMixin],
     data: function() {
         return {

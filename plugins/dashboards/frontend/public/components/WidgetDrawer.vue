@@ -56,9 +56,17 @@ import { i18nMixin } from '../../../../../frontend/express/public/javascripts/co
 import countlyDashboards from '../store/index.js';
 import { notify } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
 import WidgetsMixin from '../mixins/WidgetsMixin.js';
+import ClyDrawer from '../../../../../frontend/express/public/javascripts/components/drawer/cly-drawer.vue';
+import ClyFormStep from '../../../../../frontend/express/public/javascripts/components/form/cly-form-step.vue';
+import ClyFormField from '../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
 
 export default {
     mixins: [i18nMixin, WidgetsMixin],
+    components: {
+        ClyDrawer,
+        ClyFormStep,
+        ClyFormField
+    },
     props: {
         controls: {
             type: Object

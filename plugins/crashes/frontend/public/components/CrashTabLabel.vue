@@ -28,8 +28,12 @@
 
 <script>
 import { i18nMixin, commonFormattersMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
 
 export default {
+    components: {
+        ClyTooltipIcon
+    },
     mixins: [i18nMixin, commonFormattersMixin],
     props: {
         title: {type: String},

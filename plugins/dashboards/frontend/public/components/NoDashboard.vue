@@ -26,11 +26,13 @@
 import { mixins, i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import DashboardMixin from '../mixins/DashboardMixin.js';
 import DashboardDrawer from './DashboardDrawer.vue';
+import ClyBlank from '../../../../../frontend/express/public/javascripts/components/helpers/cly-blank.vue';
 
 export default {
     mixins: [i18nMixin, mixins.hasDrawers("dashboards"), DashboardMixin],
     components: {
-        "dashboards-drawer": DashboardDrawer
+        "dashboards-drawer": DashboardDrawer,
+        ClyBlank
     }
 };
 </script>

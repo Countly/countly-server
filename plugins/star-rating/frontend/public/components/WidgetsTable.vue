@@ -178,6 +178,8 @@ import { countlyCommon } from '../../../../../frontend/express/public/javascript
 import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
 import * as CountlyHelpers from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
 import starRatingPlugin from '../store/index.js';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
+import ClyDiffHelper from '../../../../../frontend/express/public/javascripts/components/helpers/cly-diff-helper.vue';
 
 var FEATURE_NAME = 'star_rating';
 
@@ -189,6 +191,10 @@ function replaceEscapes(str) {
 }
 
 export default {
+    components: {
+        ClyDatatableN,
+        ClyDiffHelper
+    },
     mixins: [
         countlyVue.mixins.i18n,
         countlyVue.mixins.auth(FEATURE_NAME),

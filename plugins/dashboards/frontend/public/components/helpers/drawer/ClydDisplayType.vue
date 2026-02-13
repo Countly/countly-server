@@ -24,7 +24,12 @@
 </template>
 
 <script>
+import ClyFormField from '../../../../../../../frontend/express/public/javascripts/components/form/cly-form-field.vue';
+
 export default {
+    components: {
+        ClyFormField
+    },
     props: {
         values: {
             type: Array,

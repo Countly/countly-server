@@ -269,11 +269,21 @@ import { app } from '../../../../../frontend/express/public/javascripts/countly/
 import DbviewerMongodbFiltering from './DbviewerMongodbFiltering.vue';
 import DbviewerClickhouseFiltering from './DbviewerClickhouseFiltering.vue';
 import store from 'storejs';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySelectX from '../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
 
 export default {
     components: {
         "dbviewer-mongodb-filtering": DbviewerMongodbFiltering,
-        "dbviewer-clickhouse-filtering": DbviewerClickhouseFiltering
+        "dbviewer-clickhouse-filtering": DbviewerClickhouseFiltering,
+        ClyMain,
+        ClySelectX,
+        ClyMoreOptions,
+        ClySection,
+        ClyDatatableN
     },
     mixins: [
         hasFormDialogsMixin("queryFilter"),

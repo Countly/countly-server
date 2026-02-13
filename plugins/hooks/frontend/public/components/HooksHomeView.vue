@@ -21,6 +21,8 @@ import { i18nMixin, authMixin, mixins } from '../../../../../frontend/express/pu
 import hooksPlugin from '../store/index.js';
 import TableView from './TableView.vue';
 import HookDrawer from './HookDrawer.vue';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
 
 var FEATURE_NAME = "hooks";
 
@@ -33,6 +35,8 @@ export default {
     components: {
         "table-view": TableView,
         "drawer": HookDrawer,
+        ClyHeader,
+        ClyMain,
     },
     data: function() {
         return {};

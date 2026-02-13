@@ -156,6 +156,15 @@ import DetailsTargetingTab from './common/DetailsTargetingTab.vue';
 import DetailsErrorsTab from './common/DetailsErrorsTab.vue';
 import DetailsStatsTab from './common/DetailsStatsTab.vue';
 import SchedulesTab from './common/SchedulesTab.vue';
+import ClyHeader from '../../../../../frontend/express/public/javascripts/components/layout/cly-header.vue';
+import ClyMain from '../../../../../frontend/express/public/javascripts/components/layout/cly-main.vue';
+import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
+import ClyBackLink from '../../../../../frontend/express/public/javascripts/components/helpers/cly-back-link.vue';
+import ClyChartBar from '../../../../../frontend/express/public/javascripts/components/echart/cly-chart-bar.vue';
+import ClyDynamicTabs from '../../../../../frontend/express/public/javascripts/components/nav/cly-dynamic-tabs.vue';
+import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
+import ClyStatusTag from '../../../../../frontend/express/public/javascripts/components/helpers/cly-status-tag.vue';
+import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
 
 import countlyPushNotification from '../store/index.js';
 
@@ -607,7 +616,16 @@ export default {
     },
     components: {
         "mobile-message-preview": MobileMessagePreview,
-        "push-notification-drawer": PushNotificationDrawer
+        "push-notification-drawer": PushNotificationDrawer,
+        ClyHeader,
+        ClyMain,
+        ClySection,
+        ClyBackLink,
+        ClyChartBar,
+        ClyDynamicTabs,
+        ClyMoreOptions,
+        ClyStatusTag,
+        ClyTooltipIcon,
     },
     mounted: function() {
         if (this.$route.params.id) {
