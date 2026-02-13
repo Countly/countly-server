@@ -1366,6 +1366,8 @@ import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/c
 import ClyDatePicker from '../../../../../frontend/express/public/javascripts/components/date/date-picker.vue';
 import ClySelectX from '../../../../../frontend/express/public/javascripts/components/input/select-x.vue';
 import ClyNotification from '../../../../../frontend/express/public/javascripts/components/helpers/cly-notification.vue';
+import ClyContent from '../../../../../frontend/express/public/javascripts/components/helpers/cly-content.vue';
+import ClyTimePicker from '../../../../../frontend/express/public/javascripts/components/date/time-picker.vue';
 
 import countlyPushNotification from '../store/index.js';
 import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
@@ -2661,6 +2663,8 @@ export default {
         ClyDatePicker,
         ClySelectX,
         ClyNotification,
+        ClyContent,
+        ClyTimePicker,
     },
 };
 </script>

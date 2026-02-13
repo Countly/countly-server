@@ -75,6 +75,9 @@ import Vue from 'vue';
 import ClyDrawer from '../../../../../frontend/express/public/javascripts/components/drawer/cly-drawer.vue';
 import ClyFormStep from '../../../../../frontend/express/public/javascripts/components/form/cly-form-step.vue';
 import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import LeftContainer from './common/LeftContainer.vue';
+import PopulatorSection from './common/PopulatorSection.vue';
+import NumberSelector from './common/NumberSelector.vue';
 
 export default {
     mixins: [i18nMixin],
@@ -326,7 +329,10 @@ export default {
     components: {
         ClyDrawer,
         ClyFormStep,
-        ClyTooltipIcon
+        ClyTooltipIcon,
+        'cly-populator-left-container': LeftContainer,
+        'cly-populator-section': PopulatorSection,
+        'cly-populator-number-selector': NumberSelector
     }
 };
 </script>
