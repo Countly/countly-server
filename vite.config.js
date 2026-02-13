@@ -145,6 +145,7 @@ const REFACTORED_PLUGINS = [
     "dbviewer",
     "density",
     "flows",
+    "formulas",
     "geo",
     "groups",
     "dashboards",
