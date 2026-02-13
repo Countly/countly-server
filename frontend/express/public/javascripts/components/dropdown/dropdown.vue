@@ -35,7 +35,8 @@
 
 <script>
 import Emitter from 'element-ui/src/mixins/emitter';
-import { SelectDropdown } from 'element-ui/src/index.js';
+import ElementUI from 'element-ui/src/index.js';
+var SelectDropdown = ElementUI.SelectDropdown;
 
 const TriggerProxy = {
     template: '<div style="width:100%"><slot v-slot></slot></div>'

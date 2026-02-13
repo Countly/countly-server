@@ -9,7 +9,8 @@
 <script>
 import moment from 'moment';
 import { AbstractTableMixin } from './mixins.js';
-import { YearTable } from 'element-ui/src/index.js';
+import ElementUI from 'element-ui/src/index.js';
+var YearTable = ElementUI.YearTable;
 
 const ExtendedYearTable = {
     extends: YearTable,

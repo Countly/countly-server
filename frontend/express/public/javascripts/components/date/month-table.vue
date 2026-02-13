@@ -8,7 +8,8 @@
 
 <script>
 import { AbstractTableMixin } from './mixins.js';
-import { MonthTable } from 'element-ui/src/index.js';
+import ElementUI from 'element-ui/src/index.js';
+var MonthTable = ElementUI.MonthTable;
 
 export default {
     mixins: [AbstractTableMixin],
