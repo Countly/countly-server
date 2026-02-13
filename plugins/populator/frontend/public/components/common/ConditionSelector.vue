@@ -45,8 +45,12 @@
 <script>
 import { i18n, i18nMixin } from '../../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { notify } from '../../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
+import NumberSelector from './NumberSelector.vue';
 
 export default {
+    components: {
+        'cly-populator-number-selector': NumberSelector
+    },
     mixins: [i18nMixin],
     props: {
         value: {

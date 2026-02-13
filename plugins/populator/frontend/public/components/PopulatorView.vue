@@ -208,6 +208,9 @@ import ClyProgressBar from '../../../../../frontend/express/public/javascripts/c
 import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
 import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
 import ClyConfirmDialog from '../../../../../frontend/express/public/javascripts/components/dialog/cly-confirm-dialog.vue';
+import ClyTabs from '../../../../../frontend/express/public/javascripts/components/nav/cly-tabs.vue';
+import ClySubSection from '../../../../../frontend/express/public/javascripts/components/layout/cly-sub-section.vue';
+import NumberSelector from './common/NumberSelector.vue';
 
 var FEATURE_NAME = 'populator';
 
@@ -219,6 +222,7 @@ export default {
     ],
     components: {
         'cly-populator-template-drawer': PopulatorTemplateDrawer,
+        'cly-populator-number-selector': NumberSelector,
         ClyHeader,
         ClyMain,
         ClySection,
@@ -229,7 +233,9 @@ export default {
         ClyProgressBar,
         ClyDatatableN,
         ClyMoreOptions,
-        ClyConfirmDialog
+        ClyConfirmDialog,
+        ClyTabs,
+        ClySubSection
     },
     data: function() {
         return {

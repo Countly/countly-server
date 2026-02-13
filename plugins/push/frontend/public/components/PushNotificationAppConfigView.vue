@@ -222,6 +222,8 @@ import ClyFormField from '../../../../../frontend/express/public/javascripts/com
 import ClyDatatableN from '../../../../../frontend/express/public/javascripts/components/datatable/cly-datatable-n.vue';
 import ClyMoreOptions from '../../../../../frontend/express/public/javascripts/components/dropdown/more-options.vue';
 import ClyTooltipIcon from '../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue';
+import ClyInlineFormField from '../../../../../frontend/express/public/javascripts/components/form/cly-inline-form-field.vue';
+import ClyDialog from '../../../../../frontend/express/public/javascripts/components/dialog/cly-dialog.vue';
 
 import countlyPushNotification from '../store/index.js';
 import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
@@ -274,6 +276,8 @@ export default {
         ClyDatatableN,
         ClyMoreOptions,
         ClyTooltipIcon,
+        ClyInlineFormField,
+        ClyDialog,
     },
     data: function() {
         return {

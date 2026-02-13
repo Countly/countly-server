@@ -108,10 +108,12 @@
 import { i18nMixin, i18n } from "../../../../../../frontend/express/public/javascripts/countly/vue/core.js";
 import { notify } from "../../../../../../frontend/express/public/javascripts/countly/countly.helpers.js";
 import ClyTooltipIcon from "../../../../../../frontend/express/public/javascripts/components/helpers/cly-tooltip-icon.vue";
+import SectionDetail from "./SectionDetail.vue";
 
 export default {
     components: {
-        ClyTooltipIcon
+        ClyTooltipIcon,
+        'cly-populator-section-detail': SectionDetail
     },
     mixins: [i18nMixin],
     props: {
