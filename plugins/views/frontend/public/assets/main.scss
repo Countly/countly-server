@@ -1,0 +1,26 @@
+.routename-views-home .go-to-actions-link {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.routename-views-home .cly-vue-notification__alert-box .el-button--text:hover {
+	background-color: transparent;
+}
+
+.routename-views-home .views-date-picker-container {
+    margin-bottom: 32px;
+}
+
+.bu-is-6 .views-dashboard-widget .cly-vue-metric-cards .cly-vue-metric-card {
+    flex-basis:100%;
+    width:100%;
+    border-bottom: 1px solid #ececec;
+}
+.bu-is-6 .views-dashboard-widget .cly-vue-metric-cards .cly-vue-metric-card:last-child {
+    border-bottom:none;
+}
+
+.bu-is-6 .views-dashboard-widget .cly-vue-metric-cards .cly-vue-metric-card .cly-vue-metric-card__wrapper {
+    border-left:none;
+    border-right:none;
+}
