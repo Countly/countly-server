@@ -1,3 +1,7 @@
+## Version 25.03.X
+Fixes:
+- [core] Update home page download notification text
+
 ## Version 25.03.34
 Fixes:
 - [core] Fix period calculation
