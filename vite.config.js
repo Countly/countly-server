@@ -158,6 +158,7 @@ const REFACTORED_PLUGINS = [
     "plugins",
     "populator",
     "hooks",
+    "system-utility",
 ];
 
 // List of legacy scripts in exact order from dashboard.html
