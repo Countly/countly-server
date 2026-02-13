@@ -147,6 +147,7 @@ const REFACTORED_PLUGINS = [
     "flows",
     "formulas",
     "funnels",
+    "heatmaps",
     "geo",
     "groups",
     "dashboards",
