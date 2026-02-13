@@ -125,6 +125,7 @@ function isVendorExternal(id) {
 
 const REFACTORED_PLUGINS = [
     "ab-testing",
+    "active_directory",
     "active_users",
     "activity-map",
     "adjust",
@@ -143,6 +144,7 @@ const REFACTORED_PLUGINS = [
     "crash_symbolication",
     "dbviewer",
     "density",
+    "flows",
     "geo",
     "groups",
     "dashboards",
