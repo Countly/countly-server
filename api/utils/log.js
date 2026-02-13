@@ -216,9 +216,12 @@ class LogManager {
         this.#prefs = loadLoggingConfig();
         this.#prefs.default = this.#prefs.default || 'warn';
         this.#deflt = this.#prefs.default || 'error';
-        // Pretty-print enabled by default for human-readable console output
-        // Set config.logging.prettyPrint = false for JSON output (e.g., for log aggregation)
-        this.#prettyPrint = this.#prefs.prettyPrint !== false;
+        // Output format determined by: explicit config > environment detection
+        // - prettyPrint: true  → always pretty (human-readable)
+        // - prettyPrint: false → always JSON (for log aggregation)
+        // - prettyPrint: unset → auto-detect (pretty in terminal/CI, JSON in Docker/PM2/pipes)
+        const isInteractive = process.stdout.isTTY || !!process.env.CI;
+        this.#prettyPrint = this.#prefs.prettyPrint ?? isInteractive;
 
         // Initialize OpenTelemetry metrics if available
         if (metrics) {
