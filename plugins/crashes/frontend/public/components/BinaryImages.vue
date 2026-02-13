@@ -39,7 +39,7 @@
                 </template>
             </cly-datatable-n>
         </cly-main>
-        <cly-crash-symbol-drawer @symbols-changed="refresh" ref="crashSymbolDrawer" :controls="drawers.crashSymbol" v-if="symbolicationEnabled"></cly-crash-symbol-drawer>
+        <component :is="drawerComponent" @symbols-changed="refresh" ref="crashSymbolDrawer" :controls="drawers.crashSymbol" v-if="symbolicationEnabled && drawerComponent"></component>
     </div>
 </template>
 
@@ -58,6 +58,8 @@ export default {
             appId: countlyCommon.ACTIVE_APP_ID,
             authToken: countlyGlobal.auth_token,
             symbolicationEnabled: countlyGlobal.plugins.includes("crash_symbolication"),
+            drawerComponent: null,
+            crashSymbolsModule: null,
             symbols: {}
         };
     },
@@ -100,24 +102,20 @@ export default {
 
             promises.push(this.$store.dispatch("countlyCrashes/crash/refresh"));
 
-            if (this.symbolicationEnabled) {
-                promises.push(new Promise(function(resolve, reject) {
-                    window.countlyCrashSymbols.fetchSymbols(false)
-                        .then(function(fetchSymbolsResponse) {
-                            self.symbols = {};
+            if (this.symbolicationEnabled && this.crashSymbolsModule) {
+                promises.push(this.crashSymbolsModule.fetchSymbols(false)
+                    .then(function(fetchSymbolsResponse) {
+                        self.symbols = {};
 
-                            var buildIdMaps = Object.values(fetchSymbolsResponse.symbolIndexing);
-                            buildIdMaps.forEach(function(buildIdMap) {
-                                Object.keys(buildIdMap).forEach(function(buildId) {
-                                    self.symbols[buildId] = buildIdMap[buildId];
-                                });
+                        var buildIdMaps = Object.values(fetchSymbolsResponse.symbolIndexing);
+                        buildIdMaps.forEach(function(buildIdMap) {
+                            Object.keys(buildIdMap).forEach(function(buildId) {
+                                self.symbols[buildId] = buildIdMap[buildId];
                             });
-
-                            resolve(self.symbols);
-                        }).catch(function(err) {
-                            reject(err);
                         });
-                }));
+
+                        return self.symbols;
+                    }));
             }
 
             return Promise.all(promises);
@@ -128,6 +126,18 @@ export default {
     },
     beforeCreate: function() {
         return this.$store.dispatch("countlyCrashes/crash/initialize", this.$route.params.crashId);
+    },
+    created: function() {
+        if (this.symbolicationEnabled) {
+            var self = this;
+            Promise.all([
+                import('../../../../crash_symbolication/frontend/public/components/CrashSymbolDrawer.vue'),
+                import('../../../../crash_symbolication/frontend/public/store/index.js')
+            ]).then(function(modules) {
+                self.drawerComponent = modules[0].default;
+                self.crashSymbolsModule = modules[1].default;
+            });
+        }
     },
     mounted: function() {
         this.refresh();

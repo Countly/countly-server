@@ -7,6 +7,10 @@ import { validateRead } from '../../../../../frontend/express/public/javascripts
 import countlySession from '../../../../../frontend/express/public/javascripts/countly/countly.session.js';
 import { app } from '../../../../../frontend/express/public/javascripts/countly/countly.template.js';
 
+function loadCrashSymbols() {
+    return import('../../../../crash_symbolication/frontend/public/store/index.js').then(function(m) { return m.default; });
+}
+
 /**
  *  Check if a version string follows some kind of scheme (there is only semantic versioning (semver) for now)
  *  @param {string} inpVersion - an app version string
@@ -940,7 +944,7 @@ countlyCrashes.getVuexModule = function() {
 
                         });
 
-                        if (typeof window.countlyCrashSymbols !== "undefined") {
+                        if (countlyGlobal.plugins.includes("crash_symbolication")) {
                             var latestCrash = crashgroupJson.data.find(function(item) {
                                 return item._id === crashgroupJson.lrid;
                             });
@@ -968,21 +972,22 @@ countlyCrashes.getVuexModule = function() {
 
                             crashes = crashes.concat(crashgroupJson.data);
 
-                            var ajaxPromise = window.countlyCrashSymbols.fetchSymbols(true);
-                            ajaxPromises.push(ajaxPromise);
-                            ajaxPromise.then(function(fetchSymbolsResponse) {
-                                crashes.forEach(function(crash, crashIndex) {
-                                    var symbol_id = window.countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing);
-                                    if (typeof symbol_id !== "undefined") {
-                                        if (crashIndex === 0) {
-                                            crashgroupJson._symbol_id = symbol_id;
+                            var ajaxPromise = loadCrashSymbols().then(function(countlyCrashSymbols) {
+                                return countlyCrashSymbols.fetchSymbols(true).then(function(fetchSymbolsResponse) {
+                                    crashes.forEach(function(crash, crashIndex) {
+                                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing);
+                                        if (typeof symbol_id !== "undefined") {
+                                            if (crashIndex === 0) {
+                                                crashgroupJson._symbol_id = symbol_id;
+                                            }
+                                            else {
+                                                crashgroupJson.data[crashIndex - 1]._symbol_id = symbol_id;
+                                            }
                                         }
-                                        else {
-                                            crashgroupJson.data[crashIndex - 1]._symbol_id = symbol_id;
-                                        }
-                                    }
+                                    });
                                 });
                             });
+                            ajaxPromises.push(ajaxPromise);
                         }
 
                         Promise.all(ajaxPromises)
@@ -1040,19 +1045,21 @@ countlyCrashes.getVuexModule = function() {
 
     _crashgroupSubmodule.actions.symbolicate = function(context, crash) {
         return new Promise(function(resolve, reject) {
-            if (typeof window.countlyCrashSymbols === "undefined") {
+            if (!countlyGlobal.plugins.includes("crash_symbolication")) {
                 reject(null);
             }
             else {
-                window.countlyCrashSymbols.fetchSymbols(true).then(function(fetchSymbolsResponse) {
-                    var symbol_id = window.countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing) || crash.symbol_id;
-                    window.countlyCrashSymbols.symbolicate(crash._id, symbol_id)
-                        .then(function(json) {
-                            resolve(json);
-                        })
-                        .catch(function(xhr) {
-                            reject(xhr);
-                        });
+                loadCrashSymbols().then(function(countlyCrashSymbols) {
+                    countlyCrashSymbols.fetchSymbols(true).then(function(fetchSymbolsResponse) {
+                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, fetchSymbolsResponse.symbolIndexing) || crash.symbol_id;
+                        countlyCrashSymbols.symbolicate(crash._id, symbol_id)
+                            .then(function(json) {
+                                resolve(json);
+                            })
+                            .catch(function(xhr) {
+                                reject(xhr);
+                            });
+                    });
                 });
             }
         });
