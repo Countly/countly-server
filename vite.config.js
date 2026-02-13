@@ -138,6 +138,7 @@ const REFACTORED_PLUGINS = [
     "concurrent_users",
     "config-transfer",
     "crashes",
+    "crashes-jira",
     "crash_symbolication",
     "dbviewer",
     "density",
