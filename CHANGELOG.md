@@ -1,3 +1,7 @@
+## Version 25.03.XX
+Enterprise fixes:
+- [users] Show content and journey events in user profile
+
 ## Version 25.03.34
 Fixes:
 - [core] Fix period calculation
