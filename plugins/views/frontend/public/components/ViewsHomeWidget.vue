@@ -13,8 +13,7 @@
 </template>
 
 <script>
-import { i18n, i18nMixin, autoRefreshMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
-import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+import { mixins } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { registerGlobally, unregister } from '../../../../../frontend/express/public/javascripts/countly/vue/data/store.js';
 import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
 import ClyMetricCards from '../../../../../frontend/express/public/javascripts/components/helpers/cly-metric-cards.vue';
@@ -26,15 +25,19 @@ export default {
         ClyMetricCards,
         ClyMetricCard
     },
-    mixins: [i18nMixin, autoRefreshMixin],
+    mixins: [
+        mixins.i18n,
+        mixins.autoRefresh,
+        mixins.commonFormatters,
+    ],
     data: function() {
         return {
             dataBlocks: [],
             isLoading: true,
             headerData: {
-                label: i18n("views.title"),
-                description: i18n("views.title-desc"),
-                linkTo: {"label": i18n('views.go-to-views'), "href": "#/analytics/views"},
+                label: this.i18n("views.title"),
+                description: this.i18n("views.title-desc"),
+                linkTo: {"label": this.i18n('views.go-to-views'), "href": "#/analytics/views"},
             }
         };
     },
@@ -82,22 +85,22 @@ export default {
 
             return [
                 {
-                    "name": i18n('views.total_page_views.title'),
-                    "description": i18n('views.total_page_views.desc'),
-                    "value": countlyCommon.formatNumber(totals.t),
+                    "name": this.i18n('views.total_page_views.title'),
+                    "description": this.i18n('views.total_page_views.desc'),
+                    "value": this.formatNumber(totals.t),
                     "percent": 0,
                     isPercentage: false
                 },
                 {
-                    "name": i18n('views.uvc'),
-                    "description": i18n('views.unique_page_views.desc'),
-                    "value": countlyCommon.formatNumber(totals.uvc),
+                    "name": this.i18n('views.uvc'),
+                    "description": this.i18n('views.unique_page_views.desc'),
+                    "value": this.formatNumber(totals.uvc),
                     "percent": 0,
                     isPercentage: false
                 },
                 {
-                    "name": i18n('views.br'),
-                    "description": i18n('views.bounce_rate.desc'),
+                    "name": this.i18n('views.br'),
+                    "description": this.i18n('views.bounce_rate.desc'),
                     "value": totals.br + "%",
                     "percent": Math.min(totals.br, 100),
                     isPercentage: true,

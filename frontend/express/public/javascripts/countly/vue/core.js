@@ -30,6 +30,7 @@ import { handleViewError } from './view-error-handler.js';
 import {
     formatTimeAgoText,
     formatTimeAgo,
+    formatSecond,
 } from '../countly.common.formatters.js';
 import {
     formatNumber,
@@ -189,6 +190,7 @@ export const i18nMixin = { methods: { i18n, i18nM } };
 // @vue/component
 export const commonFormattersMixin = {
     methods: {
+        formatSecond,
         parseTimeAgo: formatTimeAgoText,
         formatTimeAgo: formatTimeAgo,
         formatNumber: formatNumber,
@@ -262,6 +264,9 @@ export const DashboardsWidgetMixin = {
             if (keys1.length > 0) {
                 dd = dd[keys1[0]];
             }
+            if (!dd || !dd.rows) {
+                return [];
+            }
             var tableData = [];
             for (var k = 0; k < dd.rows.length; k++) {
                 var ob = {};
@@ -282,6 +287,9 @@ export const DashboardsWidgetMixin = {
             var keys1 = Object.keys(dd);
             if (keys1.length > 0) {
                 dd = dd[keys1[0]];
+            }
+            if (!dd || !dd.cols) {
+                return [];
             }
             var fields = [];
             for (var k = 0; k < dd.cols.length; k++) {

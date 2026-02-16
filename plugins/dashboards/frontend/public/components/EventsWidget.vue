@@ -1,27 +1,49 @@
+<template>
+    <base-widget
+        :data="data"
+        :loading="loading"
+        :is-allowed="isAllowed"
+        :title="title"
+        :show-buckets="showBuckets"
+        :selected-bucket="selectedBucket"
+        :timeline-graph="timelineGraph"
+        :number="number"
+        :table-data="getTableData"
+        :table-structure="tableStructure"
+        :stacked-bar-options="stackedBarOptions"
+        :metric-labels="metricLabels"
+        :legend-labels="legendLabels"
+        @command="$emit('command', $event)"
+    />
+</template>
 <script>
-import { mixins, templateUtil, i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { mixins } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
-import AnnotationDrawer from '../../../../../frontend/express/public/core/notes/components/AnnotationDrawer.vue';
+import BaseWidget from './BaseWidget.vue';
 
 export default {
-    template: templateUtil.stage('/dashboards/templates/widgets/analytics/widget.html'),
-    mixins: [i18nMixin, mixins.customDashboards.global, mixins.customDashboards.widget, mixins.customDashboards.apps, mixins.zoom, mixins.hasDrawers("annotation"), mixins.graphNotesCommand],
     components: {
-        "drawer": AnnotationDrawer
+        BaseWidget
     },
+    mixins: [
+        mixins.customDashboards.global,
+        mixins.customDashboards.widget,
+        mixins.customDashboards.apps,
+        mixins.i18n
+    ],
     data: function() {
         return {
             selectedBucket: "daily",
             map: {
-                "c": this.i18nM("events.table.count"),
-                "s": this.i18nM("events.table.sum"),
-                "dur": this.i18nM("events.table.dur")
+                "c": this.i18n("events.table.count"),
+                "s": this.i18n("events.table.sum"),
+                "dur": this.i18n("events.table.dur")
             }
         };
     },
     computed: {
         title: function() {
-            var title = this.i18nM("dashboards.widget-type.events");
+            var title = this.i18n("dashboards.widget-type.events");
 
             if (this.data.events && this.data.events.length === 1) {
                 var parts = this.data.events[0].split("***");
@@ -178,9 +200,6 @@ export default {
         }
     },
     methods: {
-        refresh: function() {
-            this.refreshNotes();
-        },
         formatDuration: function(value) {
             return countlyCommon.formatSecond(value || 0);
         },
@@ -242,20 +261,7 @@ export default {
                 xAxis: {data: labels},
                 series: series
             };
-        },
-        onWidgetCommand: function(event) {
-            if (event === 'add' || event === 'manage' || event === 'show') {
-                this.graphNotesHandleCommand(event);
-                return;
-            }
-            else if (event === 'zoom') {
-                this.triggerZoom();
-                return;
-            }
-            else {
-                return this.$emit('command', event);
-            }
-        },
+        }
     }
 };
 </script>

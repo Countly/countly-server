@@ -12,8 +12,12 @@
 
 <script>
 import ClyFormFieldGroup from '../../../../../frontend/express/public/javascripts/components/form/cly-form-field-group.vue';
+import { mixins } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 
 export default {
+    mixins: [
+        mixins.i18n
+    ],
     components: {
         ClyFormFieldGroup
     },

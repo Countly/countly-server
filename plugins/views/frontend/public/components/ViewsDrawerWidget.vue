@@ -39,18 +39,18 @@ export default {
         availableStatsMetric: function() {
             var app = this.scope.editedObject.apps[0];
             var metrics = [
-                { label: i18n("views.u"), value: "u" },
-                //{ label: i18n("views.n"), value: "n" },
-                { label: i18n("views.t"), value: "t" },
-                { label: i18n("views.d"), value: "d" },
-                { label: i18n("views.s"), value: "s" },
-                { label: i18n("views.e"), value: "e" },
-                { label: i18n("views.b"), value: "b" },
-                { label: i18n("views.br"), value: "br" },
-                // { label: i18n("views.uvc"), value: "uvc" }
+                { label: this.i18n("views.u"), value: "u" },
+                //{ label: this.i18n("views.n"), value: "n" },
+                { label: this.i18n("views.t"), value: "t" },
+                { label: this.i18n("views.d"), value: "d" },
+                { label: this.i18n("views.s"), value: "s" },
+                { label: this.i18n("views.e"), value: "e" },
+                { label: this.i18n("views.b"), value: "b" },
+                { label: this.i18n("views.br"), value: "br" },
+                // { label: this.i18n("views.uvc"), value: "uvc" }
             ];
             if (app && countlyGlobal.apps[app] && countlyGlobal.apps[app].type === "web") {
-                metrics.push({ label: i18n("views.scr"), value: "scr" });
+                metrics.push({ label: this.i18n("views.scr"), value: "scr" });
             }
             return metrics;
         }
