@@ -2487,7 +2487,7 @@ countlyPushNotification.service = {
         return Boolean(pushApproverRef);
     },
     isUserProfilesPluginEnabled: function() {
-        return Boolean(window.countlyUsers);
+        return countlyGlobal.plugins.includes("users");
     },
     isDrillPluginEnabled: function() {
         return Boolean(window.countlyDrill);
