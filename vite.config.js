@@ -153,7 +153,7 @@ const REFACTORED_PLUGINS = [
     "density",
     "desktop",
     // "drill",
-    // "errorlogs",
+    "errorlogs",
     "flows",
     "formulas",
     "funnels",
