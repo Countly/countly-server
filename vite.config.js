@@ -154,6 +154,7 @@ const REFACTORED_PLUGINS = [
     "desktop",
     "mobile",
     "push",
+    "sources",
     "star-rating",
     "web",
     "ldap",
