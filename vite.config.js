@@ -170,6 +170,7 @@ const REFACTORED_PLUGINS = [
     "system-utility",
     "tracker",
     "two-factor-auth",
+    "users",
     "views",
     "white-labeling",
 ];
