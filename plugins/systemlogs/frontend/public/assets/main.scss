@@ -1,0 +1,64 @@
+.systemlogs {
+    margin-top: -16px;
+
+    .dataTable-top {
+        border-radius: 0;
+    }
+
+    table {
+        table-layout: fixed;
+
+        td,
+        th {
+            width: 15%;
+        }
+
+        th:last-child,
+        td:last-child {
+            width: 50%;
+        }
+
+        th:first-child,
+        td:first-child {
+            width: 20%;
+        }
+
+        td {
+            font-family: Ubuntu;
+
+            pre {
+                background-color: transparent !important;
+                line-height: 15px;
+                white-space: pre-wrap;
+
+                .hljs-keyword,
+                .hljs-selector-tag,
+                .hljs-name,
+                .hljs-attr {
+                    color: #ff4f42;
+                }
+
+                .hljs-bullet,
+                .hljs-quote,
+                .hljs-number,
+                .hljs-regexp,
+                .hljs-literal,
+                .hljs-link {
+                    color: #8150da;
+                }
+            }
+        }
+    }
+
+    .search-table-data {
+        display: none;
+    }
+}
+
+#consent-view #d-table-actionlogs_wrapper {
+    margin: 0px;
+
+    .dataTable-top {
+        border-radius: 0px;
+    }
+}

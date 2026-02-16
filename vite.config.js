@@ -169,6 +169,7 @@ const REFACTORED_PLUGINS = [
     "okta",
     "hooks",
     "system-utility",
+    "systemlogs",
     "tracker",
     "two-factor-auth",
     "users",
