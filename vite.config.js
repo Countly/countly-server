@@ -190,7 +190,7 @@ const REFACTORED_PLUGINS = [
     // "surveys",
     "system-utility",
     "systemlogs",
-    // "times-of-day",
+    "times-of-day",
     "tracker",
     "two-factor-auth",
     "users",
