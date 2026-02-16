@@ -33,9 +33,9 @@ export default {
     data: function() {
         return {
             metrics: [
-                { label: this.i18nM("events.table.count"), value: "c" },
-                { label: this.i18nM("events.table.sum"), value: "s" },
-                { label: this.i18nM("events.table.dur"), value: "dur" }
+                { label: this.i18n("events.table.count"), value: "c" },
+                { label: this.i18n("events.table.sum"), value: "s" },
+                { label: this.i18n("events.table.dur"), value: "dur" }
             ]
         };
     },

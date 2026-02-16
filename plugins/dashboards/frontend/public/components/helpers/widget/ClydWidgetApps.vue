@@ -20,7 +20,10 @@ import { mixins } from '../../../../../../../frontend/express/public/javascripts
 import { countlyCommon } from '../../../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 
 export default {
-    mixins: [mixins.customDashboards.apps],
+    mixins: [
+        mixins.customDashboards.apps,
+        mixins.i18n
+    ],
     props: {
         apps: {
             type: Array,

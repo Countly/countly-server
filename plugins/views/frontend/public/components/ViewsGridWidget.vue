@@ -1,20 +1,29 @@
+<template>
+    <base-widget
+        :data="data"
+        :loading="loading"
+        :is-allowed="isAllowed"
+        :title="title"
+        :show-buckets="showBuckets"
+        :table-data="getTableData"
+        :table-structure="tableStructure"
+        :metric-labels="metricLabels"
+        @command="$emit('command', $event)"
+    />
+</template>
 <script>
-import { mixins, templateUtil, i18n } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
-import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
-import AnnotationDrawer from '../../../../../frontend/express/public/core/notes/components/AnnotationDrawer.vue';
+import { i18n, i18nMixin, mixins } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import BaseWidget from '../../../../dashboards/frontend/public/components/BaseWidget.vue';
 
 export default {
-    template: templateUtil.stage('/dashboards/templates/widgets/analytics/widget.html'),
+    components: {
+        BaseWidget
+    },
     mixins: [
         mixins.customDashboards.global,
         mixins.commonFormatters,
-        mixins.zoom,
-        mixins.hasDrawers("annotation"),
-        mixins.graphNotesCommand
+        i18nMixin
     ],
-    components: {
-        "drawer": AnnotationDrawer
-    },
     computed: {
         title: function() {
             if (this.data.title) {
@@ -56,7 +65,7 @@ export default {
                 for (var k = 0; k < this.data.metrics.length; k++) {
                     if (this.data.metrics[k] === "d") {
                         if (this.data.dashData.data.chartData[z].t > 0) {
-                            ob[this.data.metrics[k]] = countlyCommon.formatSecond(this.data.dashData.data.chartData[z].d / this.data.dashData.data.chartData[z].t);
+                            ob[this.data.metrics[k]] = this.formatSecond(this.data.dashData.data.chartData[z].d / this.data.dashData.data.chartData[z].t);
                         }
                         else {
                             ob[this.data.metrics[k]] = 0;
@@ -68,7 +77,7 @@ export default {
                             if (vv > 100) {
                                 vv = 100;
                             }
-                            ob[this.data.metrics[k]] = countlyCommon.formatNumber(vv) + "%";
+                            ob[this.data.metrics[k]] = this.formatNumber(vv) + "%";
                         }
                         else {
                             ob[this.data.metrics[k]] = 0;
@@ -76,7 +85,7 @@ export default {
                     }
                     else if (this.data.metrics[k] === "br") {
                         ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]] || 0;
-                        ob[this.data.metrics[k]] = countlyCommon.formatNumber(ob[this.data.metrics[k]]) + "%";
+                        ob[this.data.metrics[k]] = this.formatNumber(ob[this.data.metrics[k]]) + "%";
                     }
                     else {
                         ob[this.data.metrics[k]] = this.data.dashData.data.chartData[z][this.data.metrics[k]];
@@ -86,24 +95,6 @@ export default {
             }
             return tableData;
         }
-    },
-    methods: {
-        refresh: function() {
-            this.refreshNotes();
-        },
-        onWidgetCommand: function(event) {
-            if (event === 'zoom') {
-                this.triggerZoom();
-                return;
-            }
-            else if (event === 'add' || event === 'manage' || event === 'show') {
-                this.graphNotesHandleCommand(event);
-                return;
-            }
-            else {
-                return this.$emit('command', event);
-            }
-        },
     }
 };
 </script>

@@ -1,22 +1,42 @@
+<template>
+    <base-widget
+        :data="data"
+        :loading="loading"
+        :is-allowed="isAllowed"
+        :title="title"
+        :show-buckets="showBuckets"
+        :selected-bucket="selectedBucket"
+        :timeline-graph="timelineGraph"
+        :number="number"
+        :metric-labels="metricLabels"
+        :legend-labels="legendLabels"
+        @command="$emit('command', $event)"
+    />
+</template>
 <script>
-import { mixins, templateUtil } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { mixins } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
-import AnnotationDrawer from '../../../../../frontend/express/public/core/notes/components/AnnotationDrawer.vue';
+import BaseWidget from '../../../../dashboards/frontend/public/components/BaseWidget.vue';
 
 export default {
-    template: templateUtil.stage('/dashboards/templates/widgets/analytics/widget.html'),
-    mixins: [mixins.customDashboards.global, mixins.customDashboards.widget, mixins.customDashboards.apps, mixins.zoom, mixins.hasDrawers("annotation"), mixins.graphNotesCommand],
     components: {
-        "drawer": AnnotationDrawer
+        BaseWidget
     },
+    mixins: [
+        mixins.customDashboards.global,
+        mixins.customDashboards.widget,
+        mixins.customDashboards.apps,
+        mixins.i18n,
+    ],
     data: function() {
+        const self = this;
         return {
             selectedBucket: "daily",
             map: {
-                "crf": this.i18n("dashboards.crf"),
-                "crnf": this.i18n("dashboards.crnf"),
-                "cruf": this.i18n("dashboards.cruf"),
-                "crunf": this.i18n("dashboards.crunf")
+                "crf": self.i18n("dashboards.crf"),
+                "crnf": self.i18n("dashboards.crnf"),
+                "cruf": self.i18n("dashboards.cruf"),
+                "crunf": self.i18n("dashboards.crunf")
             }
         };
     },
@@ -118,24 +138,6 @@ export default {
 
             return labels;
         }
-    },
-    methods: {
-        refresh: function() {
-            this.refreshNotes();
-        },
-        onWidgetCommand: function(event) {
-            if (event === 'zoom') {
-                this.triggerZoom();
-                return;
-            }
-            else if (event === 'add' || event === 'manage' || event === 'show') {
-                this.graphNotesHandleCommand(event);
-                return;
-            }
-            else {
-                return this.$emit('command', event);
-            }
-        },
     }
 };
 </script>

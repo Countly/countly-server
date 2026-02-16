@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { i18nMixin, i18n as cvI18n, vuex } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { i18nMixin, vuex } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
 import countlyCrashes from '../store/index.js';
 import ClySection from '../../../../../frontend/express/public/javascripts/components/layout/cly-section.vue';
@@ -34,9 +34,9 @@ export default {
             crashesItems: [],
             isLoading: true,
             headerData: {
-                label: cvI18n("crashes.crash-statistics"),
-                description: cvI18n("crashes.plugin-description"),
-                linkTo: {"label": cvI18n('crashes.go-to-crashes'), "href": "#/crashes"},
+                label: this.i18n("crashes.crash-statistics"),
+                description: this.i18n("crashes.plugin-description"),
+                linkTo: {"label": this.i18n('crashes.go-to-crashes'), "href": "#/crashes"},
             }
         };
     },
@@ -72,11 +72,11 @@ export default {
             var blocks = [];
 
             var getUs = [
-                {"name": cvI18n('crashes.total-crashes'), "info": cvI18n('crashes.home.total'), "prop": "cr", "r": true},
-                {"name": cvI18n('crashes.unique'), "info": cvI18n('crashes.home.unique'), "prop": "cru", "r": true},
-                {"name": cvI18n('crashes.total-per-session'), "info": cvI18n('crashes.home.per-session'), "prop": "cr-session", "r": true},
-                {"name": cvI18n('crashes.free-users'), "info": cvI18n('crashes.help-free-users'), "prop": "crau", "p": true},
-                {"name": cvI18n('crashes.free-sessions'), "info": cvI18n('crashes.help-free-sessions'), "prop": "crinv", "p": true}
+                {"name": this.i18n('crashes.total-crashes'), "info": this.i18n('crashes.home.total'), "prop": "cr", "r": true},
+                {"name": this.i18n('crashes.unique'), "info": this.i18n('crashes.home.unique'), "prop": "cru", "r": true},
+                {"name": this.i18n('crashes.total-per-session'), "info": this.i18n('crashes.home.per-session'), "prop": "cr-session", "r": true},
+                {"name": this.i18n('crashes.free-users'), "info": this.i18n('crashes.help-free-users'), "prop": "crau", "p": true},
+                {"name": this.i18n('crashes.free-sessions'), "info": this.i18n('crashes.help-free-sessions'), "prop": "crinv", "p": true}
             ];
 
             for (var k = 0; k < getUs.length; k++) {

@@ -1,14 +1,33 @@
+<template>
+    <base-widget
+        :data="data"
+        :loading="loading"
+        :is-allowed="isAllowed"
+        :title="title"
+        :show-buckets="showBuckets"
+        :selected-bucket="selectedBucket"
+        :timeline-graph="timelineGraph"
+        :number="number"
+        :metric-labels="metricLabels"
+        :legend-labels="legendLabels"
+        @command="$emit('command', $event)"
+    />
+</template>
 <script>
-import { i18n, i18nMixin, mixins, templateUtil } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { i18nMixin, mixins } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
 import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
-import AnnotationDrawer from '../../../../../frontend/express/public/core/notes/components/AnnotationDrawer.vue';
+import BaseWidget from '../../../../dashboards/frontend/public/components/BaseWidget.vue';
 
 export default {
-    template: templateUtil.stage('/dashboards/templates/widgets/analytics/widget.html'),
-    mixins: [i18nMixin, mixins.customDashboards.global, mixins.customDashboards.widget, mixins.customDashboards.apps, mixins.zoom, mixins.hasDrawers("annotation"), mixins.graphNotesCommand],
     components: {
-        "drawer": AnnotationDrawer
+        BaseWidget
     },
+    mixins: [
+        mixins.customDashboards.global,
+        mixins.customDashboards.widget,
+        mixins.customDashboards.apps,
+        i18nMixin
+    ],
     data: function() {
         return {
             selectedBucket: "daily",
@@ -107,24 +126,6 @@ export default {
 
             return labels;
         }
-    },
-    methods: {
-        refresh: function() {
-            this.refreshNotes();
-        },
-        onWidgetCommand: function(event) {
-            if (event === 'zoom') {
-                this.triggerZoom();
-                return;
-            }
-            else if (event === 'add' || event === 'manage' || event === 'show') {
-                this.graphNotesHandleCommand(event);
-                return;
-            }
-            else {
-                return this.$emit('command', event);
-            }
-        },
-    },
+    }
 };
 </script>
