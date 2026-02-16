@@ -9,6 +9,17 @@ import moment from 'moment';
 import _ from 'underscore';
 import emojis from '../emojis.js';
 
+var pushApproverRef = null;
+if (countlyGlobal.plugins.includes("push_approver")) {
+    import('../../../../push_approver/frontend/public/store/index.js')
+        .then(function(mod) {
+            pushApproverRef = mod.default;
+        })
+        .catch(function() {
+            // plugin not available
+        });
+}
+
 var countlyPushNotification = {};
 
 var messagesSentLabel = i18n('push-notification.sent-serie-name');
@@ -2473,7 +2484,7 @@ countlyPushNotification.service = {
     statusOptions: statusOptions,
     iosAuthConfigTypeOptions: iosAuthConfigTypeOptions,
     isPushNotificationApproverPluginEnabled: function() {
-        return Boolean(window.countlyPushNotificationApprover);
+        return Boolean(pushApproverRef);
     },
     isUserProfilesPluginEnabled: function() {
         return Boolean(window.countlyUsers);
@@ -2862,7 +2873,7 @@ countlyPushNotification.service = {
             throw new Error('Push approver plugin is not enabled');
         }
         return new Promise(function(resolve, reject) {
-            window.countlyPushNotificationApprover.service.approve(messageId)
+            pushApproverRef.service.approve(messageId)
                 .then(function(response) {
                     resolve(response);
                 })
@@ -2879,7 +2890,7 @@ countlyPushNotification.service = {
             throw new Error('Push approver plugin is not enabled');
         }
         return new Promise(function(resolve, reject) {
-            window.countlyPushNotificationApprover.service.reject(messageId)
+            pushApproverRef.service.reject(messageId)
                 .then(function(response) {
                     resolve(response);
                 })
