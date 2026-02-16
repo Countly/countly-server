@@ -168,8 +168,10 @@ const REFACTORED_PLUGINS = [
     "okta",
     "hooks",
     "system-utility",
+    "tracker",
     "two-factor-auth",
     "views",
+    "white-labeling",
 ];
 
 // List of legacy scripts in exact order from dashboard.html
