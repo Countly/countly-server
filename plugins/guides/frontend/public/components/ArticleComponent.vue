@@ -1,3 +1,4 @@
+<template>
 <div class="article bu-column bu-columns" :key="index">
     <div class="bu-column article__image bu-is-flex bu-is-align-items-center bu-is-justify-content-center">
         <img :src="index % 3 === 1 ? 'images/icons/console.svg' : 'images/icons/reorder-four.svg'" alt="Icon"/>
@@ -10,4 +11,17 @@
             <i class="ion-android-arrow-forward"></i>
         </a>
     </div>
-</div> 
+</div>
+</template>
+
+<script>
+import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+
+export default {
+    mixins: [i18nMixin],
+    props: {
+        value: { type: Object, required: true },
+        index: { type: Number, required: true }
+    }
+};
+</script>

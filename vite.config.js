@@ -159,7 +159,7 @@ const REFACTORED_PLUGINS = [
     "funnels",
     "geo",
     "groups",
-    // "guides",
+    "guides",
     "heatmaps",
     "hooks",
     // "journey_engine",

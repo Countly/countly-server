@@ -53,7 +53,7 @@
     box-sizing: border-box;
 
     .walkthrough {
-        position: relative; 
+        position: relative;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -92,7 +92,7 @@
             word-break: break-word;
             overflow-wrap: break-word;
         }
-        
+
         &__button {
             display: flex;
             flex-direction: row;
@@ -144,7 +144,7 @@
 }
 
 .search {
-    .count { 
+    .count {
         position: absolute;
         right: 30px;
         font-size: 14px;
@@ -227,7 +227,7 @@
                 background-color: #CFD6E4;
             }
         }
-    } 
+    }
 }
 
 .guide-dialog-wrapper {
@@ -266,7 +266,7 @@
             width: 80%;
             transition: width 0.5s ease-in-out, padding 0.5s ease-in-out;
             .text {
-                opacity: 1; 
+                opacity: 1;
                 width: 100%;
                 padding-left: 5px;
                 transition: width 0.5s ease-in-out, padding 0.5s ease-in-out, opacity 0.3s;
@@ -304,16 +304,16 @@
         overflow : unset;
         position: absolute;
     }
-    
+
     .el-dialog__header {
         padding: 25px;
         border-bottom: 1px solid #ECECEC;
     }
-    
+
     .el-dialog__body {
        padding: 25px 25px 0 25px;
     }
-    
+
     .el-dialog__footer {
         padding: 25px;
         border-top: 1px solid #ECECEC;
@@ -375,7 +375,7 @@
                 margin-bottom: 20px;
             }
             .walkthroughs {
-                width: 100%; 
+                width: 100%;
                 gap: 20px;
                 .walkthrough {
                     width: 24%;
@@ -387,9 +387,8 @@
                         margin: 10px 10px 10px 0;
                         overflow-wrap: break-word;
                     }
-                } 
+                }
             }
-            
         }
     }
 }
@@ -404,16 +403,16 @@
 
     .close-icon {
         cursor: pointer;
-        position: absolute; 
-        right: 0; 
+        position: absolute;
+        right: 0;
         top: -30px;
     }
 
     .iframe {
-        position: absolute; 
-        top: 0; 
-        left: 0; 
-        width: 100%; 
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
         height: 100%;
         color-scheme: light
     }

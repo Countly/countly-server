@@ -1,3 +1,4 @@
+<template>
 <div class="search">
     <div class="bu-level item" v-for="(item, index) in items" :key="index">
         <div class="bu-level-left left">
@@ -19,17 +20,29 @@
                 </a>
                 <a v-else-if="item.type === 'walkthrough'" class="link" :href="item.url" target="_blank">
                     <span class="bu-mr-1">{{ i18n('guides.watch-walkthrough') }}</span>
-                    <img src="images/icons/play-circle-outline.svg" alt="Icon"/>
+                    <img :src="'images/icons/play-circle-outline.svg'" alt="Icon"/>
                 </a>
             </div>
         </div>
         <div class="bu-level-right">
-            <div v-if="item.type === 'article'" class="image article bu-level-item bu-column bu-is-narrow bu-is-flex bu-is-align-items-center bu-is-justify-content-center">  
+            <div v-if="item.type === 'article'" class="image article bu-level-item bu-column bu-is-narrow bu-is-flex bu-is-align-items-center bu-is-justify-content-center">
                 <img :src="index % 2 === 0 ? 'images/icons/reorder-four.svg' : 'images/icons/console.svg'" alt="Icon"/>
             </div>
             <div v-else-if="item.type === 'walkthrough'" class="image walkthrough bu-level-item bu-column bu-is-narrow bu-is-flex bu-is-align-items-center bu-is-justify-content-center">
-                <img src="images/icons/play-circle-filled.svg" alt="Icon"/>
+                <img :src="'images/icons/play-circle-filled.svg'" alt="Icon"/>
             </div>
         </div>
     </div>
 </div>
+</template>
+
+<script>
+import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+
+export default {
+    mixins: [i18nMixin],
+    props: {
+        items: { type: Array, required: false }
+    }
+};
+</script>
