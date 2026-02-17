@@ -204,7 +204,6 @@ const REFACTORED_PLUGINS = [
 // COMMIT HASH BEFORE REMOVALS: d1167224987671af19c576fbd4c6d7ab56515dde
 const legacyScripts = [
     // === HEAD SECTION (from dashboard.html lines 111-169) ===
-    // 'javascripts/dom/gridstack/gridstack-h5.js', // install this into dashboard plugin (there's also a gridstack.css in entrypoint)
     // 'javascripts/utils/backbone-min.js',
     // 'javascripts/utils/jquery.i18n.properties.js',
     // 'javascripts/utils/jquery.idle-timer.js',
