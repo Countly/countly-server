@@ -207,7 +207,6 @@ const legacyScripts = [
     // 'javascripts/dom/gridstack/gridstack-h5.js', // install this into dashboard plugin (there's also a gridstack.css in entrypoint)
     // 'javascripts/utils/backbone-min.js',
     // 'javascripts/utils/jquery.i18n.properties.js',
-    // 'javascripts/utils/store+json2.min.js',                                   - storejs IS INSTALLED. CHECK IF json2 IS NEEDED.
     // 'javascripts/utils/jquery.idle-timer.js',
     // 'javascripts/utils/initialAvatar.js',
 
