@@ -171,7 +171,7 @@ const REFACTORED_PLUGINS = [
     "mobile",
     // "oidc",
     "okta",
-    // "onboarding",
+    "onboarding",
     "performance-monitoring",
     "plugins",
     "populator",
