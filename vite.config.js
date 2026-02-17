@@ -166,7 +166,7 @@ const REFACTORED_PLUGINS = [
     "kafka",
     "ldap",
     "license",
-    // "locale",
+    "locale",
     "logger",
     "mobile",
     // "oidc",
