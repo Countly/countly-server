@@ -371,7 +371,6 @@
                 "plugins/*/frontend/public/index.js", // TO-DO: Replace with "plugins/*/frontend/public/**/*.js" once all plugins are migrated to ESM.
                 "plugins/*/frontend/public/widget.js",
                 "plugins/*/frontend/public/store/**/*.js",
-                "plugins/*/frontend/public/lib/**/*.js",
                 "plugins/content/frontend/vite.config.js",
                 "plugins/journey_engine/frontend/vite.config.js",
                 "plugins/journey_engine/frontend/vite-manifest.js"
@@ -384,7 +383,6 @@
                 "sourceType": "module"
             },
             "env": {
-                "browser": true,
                 "node": true,
                 "es2023": true
             }

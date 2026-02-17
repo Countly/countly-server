@@ -129,7 +129,7 @@ const REFACTORED_PLUGINS = [
     "active_users",
     "activity-map",
     "adjust",
-    "ai-assistants",
+    // "ai-assistants",
     "alerts",
     "attribution",
     "block",
