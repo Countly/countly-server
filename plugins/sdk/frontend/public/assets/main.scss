@@ -8,7 +8,7 @@
     }
 
     &__versions {
-        height: 291px; 
+        height: 291px;
         padding-bottom: 20px;
     }
 
@@ -18,10 +18,10 @@
         font-weight: normal;
         font-size: 14px;
         line-height: 20px;
-        color:#333C48;
+        color: #333C48;
 
         div:first-child {
-            text-align: left;   
+            text-align: left;
         }
 
         div:nth-child(2) {
@@ -74,29 +74,28 @@
 
 .sdk-behavior-settings-wrapper {
     .preset-button {
-    border-radius: 20px; // pill shape
-    padding: 6px 18px;
-    font-weight: 500;
-    font-size: 14px;
-    background-color: #f0f0f0;
-    color: #606266;
-    border: 1px solid #dcdfe6;
-    transition: all 0.2s ease;
+        border-radius: 20px;
+        padding: 6px 18px;
+        font-weight: 500;
+        font-size: 14px;
+        background-color: #f0f0f0;
+        color: #606266;
+        border: 1px solid #dcdfe6;
+        transition: all 0.2s ease;
 
-    &.active {
-        background-color: #12AF51; // Element UI's "success"
-        color: #fff;
-        border-color: #12AF51;
+        &.active {
+            background-color: #12AF51;
+            color: #fff;
+            border-color: #12AF51;
+        }
+
+        &:hover:not(.active) {
+            background-color: #e6f7ff;
+            color: #409eff;
+            border-color: #c6e2ff;
+        }
     }
 
-    &:hover:not(.active) {
-        background-color: #e6f7ff;
-        color: #409eff;
-        border-color: #c6e2ff;
-    }
-    }
-
-    /* Some changes for making left column of config to stay top-aligned. */
     .bu-columns.config-section,
     .config-section.bu-columns,
     .config-section.bu-is-vcentered,
@@ -135,7 +134,6 @@
         }
     }
 
-    /* SDK config validation styles */
     .config-invalid textarea,
     .config-invalid input,
     .config-invalid .el-textarea__inner {
@@ -150,7 +148,6 @@
     .validation-wrapper {
         display: flex;
         flex-direction: column;
-        // align-items: stretch;
     }
 
     .config-validation-box {
@@ -246,7 +243,7 @@
     .sdk-preset-select-wrapper { width: 100%; display: flex; justify-content: flex-start; margin-left: 188px; }
 
     .el-input-number {
-        .el-input-number__decrease, 
+        .el-input-number__decrease,
         .el-input-number__increase {
             background: white;
         }

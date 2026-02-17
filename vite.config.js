@@ -182,7 +182,7 @@ const REFACTORED_PLUGINS = [
     // "reports",
     "retention_segments",
     "revenue",
-    // "sdk",
+    "sdk",
     "server-stats",
     "slipping-away-users",
     "sources",
