@@ -179,7 +179,7 @@ const REFACTORED_PLUGINS = [
     "push_approver",
     "recaptcha",
     "remote-config",
-    // "reports",
+    "reports",
     "retention_segments",
     "revenue",
     "sdk",
