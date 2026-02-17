@@ -468,7 +468,7 @@ const countlyModel: CountlyModelModule = {
 
                         for (let i = 0; i < namesData.length; i++) {
                             for (let j = 0; j < _metrics.length; j++) {
-                                chartDP[j].data[i + 1] = [i, otherData[_metrics[i]][i]];
+                                chartDP[j].data[i + 1] = [i, otherData[_metrics[j]][i]];
                             }
                             chartData.chartDP.ticks.push([i, namesData[i]]);
                         }
