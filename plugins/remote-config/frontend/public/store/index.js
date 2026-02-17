@@ -1,143 +1,148 @@
-/*global countlyCommon, countlyVue, CV, countlyGlobal */
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
+import { ajax } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { Module } from '../../../../../frontend/express/public/javascripts/countly/vue/data/vuex.js';
 
-(function(countlyRemoteConfig) {
-    countlyRemoteConfig.factory = {
-        parameters: {
-            getEmpty: function() {
-                return {
-                    parameter_key: "",
-                    default_value: "",
-                    description: "",
-                    conditions: [],
-                    status: "Running",
-                    expiry_dttm: null
-                };
-            }
-        },
-        conditions: {
-            getEmpty: function() {
-                return {
-                    condition_name: "",
-                    condition_color: 1,
-                    condition: {},
-                    condition_definition: "",
-                    seed_value: ""
-                };
-            }
+var factory = {
+    parameters: {
+        getEmpty: function() {
+            return {
+                parameter_key: "",
+                default_value: "",
+                description: "",
+                conditions: [],
+                status: "Running",
+                expiry_dttm: null
+            };
         }
-    };
-
-    countlyRemoteConfig.service = {
-        initialize: function() {
-            return CV.$.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    app_id: countlyCommon.ACTIVE_APP_ID,
-                    method: 'remote-config'
-                },
-                dataType: "json"
-            });
-        },
-        getAb: function() {
-            return CV.$.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "method": "ab-testing"
-                },
-                dataType: "json",
-            });
-        },
-        createParameter: function(parameter) {
-            return CV.$.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.data.w + "/remote-config/add-parameter",
-                data: {
-                    app_id: countlyCommon.ACTIVE_APP_ID,
-                    parameter: JSON.stringify(parameter)
-                },
-                dataType: "json"
-            }, { disableAutoCatch: true });
-        },
-        updateParameter: function(id, parameter) {
-            return CV.$.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.data.w + "/remote-config/update-parameter",
-                data: {
-                    app_id: countlyCommon.ACTIVE_APP_ID,
-                    parameter_id: id,
-                    parameter: JSON.stringify(parameter)
-                },
-                dataType: "json"
-            }, { disableAutoCatch: true });
-        },
-        removeParameter: function(id) {
-            return CV.$.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.data.w + "/remote-config/remove-parameter",
-                data: {
-                    app_id: countlyCommon.ACTIVE_APP_ID,
-                    parameter_id: id
-                },
-                dataType: "json"
-            }, { disableAutoCatch: true });
-        },
-        createCondition: function(condition) {
-            return CV.$.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.data.w + "/remote-config/add-condition",
-                data: {
-                    app_id: countlyCommon.ACTIVE_APP_ID,
-                    condition: JSON.stringify(condition)
-                },
-                dataType: "json"
-            }, {"disableAutoCatch": true});
-        },
-        updateCondition: function(id, condition) {
-            return CV.$.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.data.w + "/remote-config/update-condition",
-                data: {
-                    app_id: countlyCommon.ACTIVE_APP_ID,
-                    condition_id: id,
-                    condition: JSON.stringify(condition)
-                },
-                dataType: "json"
-            });
-        },
-        removeCondition: function(id) {
-            return CV.$.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.data.w + "/remote-config/remove-condition",
-                data: {
-                    app_id: countlyCommon.ACTIVE_APP_ID,
-                    condition_id: id
-                },
-                dataType: "json"
-            });
-        },
-        addCompleteConfig: function(settings) {
-            return CV.$.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.data.w + "/remote-config/add-complete-config",
-                data: {
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "config": JSON.stringify(settings)
-                },
-                dataType: "json"
-            });
+    },
+    conditions: {
+        getEmpty: function() {
+            return {
+                condition_name: "",
+                condition_color: 1,
+                condition: {},
+                condition_definition: "",
+                seed_value: ""
+            };
         }
-    };
+    }
+};
 
-    countlyRemoteConfig.getVuexModule = function() {
+var service = {
+    initialize: function() {
+        return ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                method: 'remote-config'
+            },
+            dataType: "json"
+        });
+    },
+    getAb: function() {
+        return ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "method": "ab-testing"
+            },
+            dataType: "json",
+        });
+    },
+    createParameter: function(parameter) {
+        return ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/remote-config/add-parameter",
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                parameter: JSON.stringify(parameter)
+            },
+            dataType: "json"
+        }, { disableAutoCatch: true });
+    },
+    updateParameter: function(id, parameter) {
+        return ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/remote-config/update-parameter",
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                parameter_id: id,
+                parameter: JSON.stringify(parameter)
+            },
+            dataType: "json"
+        }, { disableAutoCatch: true });
+    },
+    removeParameter: function(id) {
+        return ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/remote-config/remove-parameter",
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                parameter_id: id
+            },
+            dataType: "json"
+        }, { disableAutoCatch: true });
+    },
+    createCondition: function(condition) {
+        return ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/remote-config/add-condition",
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                condition: JSON.stringify(condition)
+            },
+            dataType: "json"
+        }, {"disableAutoCatch": true});
+    },
+    updateCondition: function(id, condition) {
+        return ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/remote-config/update-condition",
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                condition_id: id,
+                condition: JSON.stringify(condition)
+            },
+            dataType: "json"
+        });
+    },
+    removeCondition: function(id) {
+        return ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/remote-config/remove-condition",
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                parameter_id: id
+            },
+            dataType: "json"
+        });
+    },
+    addCompleteConfig: function(settings) {
+        return ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w + "/remote-config/add-complete-config",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "config": JSON.stringify(settings)
+            },
+            dataType: "json"
+        });
+    }
+};
+
+var countlyRemoteConfig = {
+    factory: factory,
+    service: service,
+    getVuexModule: function() {
         var actions = {
             initialize: function(context) {
-                return countlyRemoteConfig.service.initialize().then(function(res) {
+                return service.initialize().then(function(res) {
                     if (res) {
                         if (res && countlyGlobal.plugins.indexOf("ab-testing") > -1) {
-                            countlyRemoteConfig.service.getAb().then(function(resp) {
+                            service.getAb().then(function(resp) {
                                 context.dispatch("parameters/setTableLoading", false);
                                 if (resp) {
                                     var parameters = res.parameters || [];
@@ -152,10 +157,8 @@
                                                             return vParameter.name === parameter.parameter_key;
                                                         });
                                                     }
-
                                                     return false;
                                                 });
-
                                                 if (parameterInExperiment) {
                                                     parameter.abStatus = experiment.status;
                                                     parameter.editable = false;
@@ -189,7 +192,7 @@
             }
         };
 
-        var parametersResource = countlyVue.vuex.Module("parameters", {
+        var parametersResource = Module("parameters", {
             state: function() {
                 return {
                     all: [],
@@ -247,7 +250,7 @@
                     context.commit("setConditionDialog", parameter);
                 },
                 create: function(context, parameter) {
-                    return countlyRemoteConfig.service.createParameter(parameter);
+                    return service.createParameter(parameter);
                 },
                 update: function(context, parameter) {
                     var id = parameter._id;
@@ -257,10 +260,10 @@
                     delete updateParameter.hover;
                     delete updateParameter.editable;
                     delete updateParameter.abStatus;
-                    return countlyRemoteConfig.service.updateParameter(id, updateParameter);
+                    return service.updateParameter(id, updateParameter);
                 },
                 remove: function(context, parameter) {
-                    return countlyRemoteConfig.service.removeParameter(parameter._id);
+                    return service.removeParameter(parameter._id);
                 },
                 setTableLoading: function(context, value) {
                     context.commit("setTableLoading", value);
@@ -268,7 +271,7 @@
             }
         });
 
-        var conditionsResource = countlyVue.vuex.Module("conditions", {
+        var conditionsResource = Module("conditions", {
             state: function() {
                 return {
                     all: [],
@@ -303,7 +306,7 @@
                     context.commit("setAll", conditions);
                 },
                 create: function(context, condition) {
-                    return countlyRemoteConfig.service.createCondition(condition).catch(function(err) {
+                    return service.createCondition(condition).catch(function(err) {
                         if (err && err.responseJSON && err.responseJSON.result) {
                             context.commit("setConditionError", err.responseJSON.result);
                         }
@@ -311,13 +314,12 @@
                 },
                 update: function(context, condition) {
                     var id = condition._id;
-
                     delete condition._id;
                     delete condition.hover;
-                    return countlyRemoteConfig.service.updateCondition(id, condition);
+                    return service.updateCondition(id, condition);
                 },
                 remove: function(context, condition) {
-                    return countlyRemoteConfig.service.removeCondition(condition._id);
+                    return service.removeCondition(condition._id);
                 },
                 setTableLoading: function(context, value) {
                     context.commit("setTableLoading", value);
@@ -325,10 +327,12 @@
             }
         });
 
-        return countlyVue.vuex.Module("countlyRemoteConfig", {
+        return Module("countlyRemoteConfig", {
             actions: actions,
             submodules: [parametersResource, conditionsResource]
         });
-    };
+    }
+};
 
-})(window.countlyRemoteConfig = window.countlyRemoteConfig || {});
+export default countlyRemoteConfig;
+export { factory, service };
