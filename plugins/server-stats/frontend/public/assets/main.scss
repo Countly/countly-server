@@ -1,0 +1,64 @@
+.data-points-tooltip {
+    padding: 6px;
+    line-height: 16px;
+
+    .text-big {
+        line-height: 16px;
+    }
+
+    table {
+        width: 100%;
+
+        tr td {
+            border-left: 1px solid #ececec;
+            text-align: left;
+            padding: 2px 8px;
+
+            &:first-child {
+                border: none;
+                padding-left: 2px;
+            }
+
+            &:last-child {
+                padding-right: 2px;
+            }
+        }
+    }
+
+    .data-points-tooltip-bottom-table tr td {
+        border: none;
+        padding: 2px;
+
+        &:first-child {
+            width: 1px;
+            white-space: nowrap;
+        }
+    }
+}
+
+.routename-data-points table td {
+    .i_am_not_clickable {
+        cursor: default;
+        color: #333C48;
+    }
+
+    .cell:hover {
+        text-decoration: none;
+
+        a {
+            text-decoration: underline;
+        }
+    }
+}
+
+.popover-title {
+    font-size: 10px;
+}
+
+.popover-key {
+    font-size: 12px;
+}
+
+.popover-value {
+    font-size: 14px;
+}
