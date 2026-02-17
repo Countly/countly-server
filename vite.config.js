@@ -187,7 +187,7 @@ const REFACTORED_PLUGINS = [
     "slipping-away-users",
     "sources",
     "star-rating",
-    // "surveys",
+    "surveys",
     "system-utility",
     "systemlogs",
     "times-of-day",
