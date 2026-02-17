@@ -1,3 +1,4 @@
+<template>
 <div class="data-migration__drawer">
   <cly-drawer
     toggle-transition="stdt-fade"
@@ -50,7 +51,7 @@
             :useCustomSlot="true">
               <div class="dropzone-custom-content">
                 <h3 class="dropzone-custom-title">
-                  <img src="/images/icons/folder-icon.svg" alt="">
+                  <img :src="'/images/icons/folder-icon.svg'" alt="">
                 </h3>
                 <div class="subtitle text-medium bu-mt-2">
                   <span class="bu-has-text-weight-light bu-has-text-grey">{{ i18n('feedback.drop-message') }}</span>
@@ -108,3 +109,114 @@
     </template>
   </cly-drawer>
 </div>
+</template>
+
+<script>
+import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
+import { notify } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
+import countlyDataMigration from '../store/index.js';
+
+export default {
+    mixins: [i18nMixin],
+    props: {
+        settings: Object,
+        controls: Object
+    },
+    data: function() {
+        return {
+            serverDomain: countlyGlobal.domain,
+            serverToken: '',
+            tokenGenerated: false,
+            importDropzoneOptions: {
+                createImageThumbnails: false,
+                autoProcessQueue: false,
+                addRemoveLinks: true,
+                acceptedFiles: 'application/gzip,application/x-gzip',
+                dictDefaultMessage: this.i18n('feedback.drop-message'),
+                dictRemoveFile: this.i18n('feedback.remove-file'),
+                url: "/i/datamigration/import",
+                paramName: "import_file",
+                params: { api_key: countlyGlobal.member.api_key, app_id: countlyCommon.ACTIVE_APP_ID }
+            },
+            importDrawerCancelButtonLabel: this.i18n('data-migration.cancel'),
+            importDrawerSaveButtonLabel: this.i18n('data-migration.import-title')
+        };
+    },
+    methods: {
+        onSubmit: function(submitted) {
+            var self = this;
+            if (submitted.from_server === 1) {
+                countlyDataMigration.createToken(function(res) {
+                    if (res.result === "success") {
+                        self.serverToken = res.data;
+                        self.tokenGenerated = true;
+                        notify({
+                            type: 'success',
+                            message: self.i18n('data-migration.generated-token')
+                        });
+                        self.importDrawerCancelButtonLabel = self.i18n('data-migration.close');
+                        self.importDrawerSaveButtonLabel = "";
+                    }
+                    else {
+                        notify({
+                            type: 'error',
+                            message: self.i18n(res.data.xhr.responseJSON.result)
+                        });
+                    }
+                    self.$refs.importDrawer.isSubmitPending = false;
+                });
+            }
+            else {
+                self.$refs.importDropzone.processQueue();
+            }
+        },
+        onComplete: function(res) {
+            if (res.xhr.status === 200) {
+                notify({
+                    type: 'success',
+                    message: this.i18n('data-migration.import-started')
+                });
+            }
+            else {
+                notify({
+                    type: 'error',
+                    message: this.i18n(res.data.xhr.responseJSON.result)
+                });
+            }
+            this.$refs.importDrawer.isSubmitPending = false;
+            this.$refs.importDrawer.doClose();
+        },
+        onOpen: function() {
+            this.tokenGenerated = false;
+            this.importDrawerCancelButtonLabel = this.i18n('data-migration.cancel');
+            this.importDrawerSaveButtonLabel = this.i18n('data-migration.create-token');
+        },
+        updateImportType: function(type) {
+            if (type === 1) {
+                this.importDrawerSaveButtonLabel = this.i18n('data-migration.create-token');
+            }
+            else {
+                this.importDrawerSaveButtonLabel = this.i18n('data-migration.import-title');
+            }
+        },
+        copy: function(type) {
+            var text = document.querySelector('#data-migration-server-' + type + '-input');
+            text.select();
+            document.execCommand("copy");
+            var message = '';
+            if (type === 'token') {
+                message = 'data-migration.tokken-coppied-in-clipboard';
+            }
+            else {
+                message = 'data-migration.address-coppied-in-clipboard';
+            }
+            notify({
+                type: 'info',
+                message: this.i18n(message)
+            });
+        }
+    }
+};
+</script>

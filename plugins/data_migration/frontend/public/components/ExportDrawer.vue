@@ -1,3 +1,4 @@
+<template>
 <div class="data-migration__drawer">
   <cly-drawer
       toggle-transition="stdt-fade"
@@ -11,7 +12,7 @@
       name="export-drawer"
       v-bind="$props.controls"
   >
-    <template  v-slot:default="drawerScope">
+    <template v-slot:default="drawerScope">
       <cly-form-step id="default">
           <div class="cly-vue-drawer-step__section">
             <div class="text-medium text-heading bu-mb-2">
@@ -23,11 +24,11 @@
                   v-model="drawerScope.editedObject.apps"
                   multiple
                   :placeholder="'Select Applications'">
-                  <el-option 
-                    v-for="(app, index) in apps"
+                  <el-option
+                    v-for="(appItem, index) in apps"
                     :key="index"
-                    :value="app.value"
-                    :label="app.label">
+                    :value="appItem.value"
+                    :label="appItem.label">
                   </el-option>
               </el-select>
             </validation-provider>
@@ -133,3 +134,102 @@
     </template>
   </cly-drawer>
 </div>
+</template>
+
+<script>
+import { i18nMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
+import { notify } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
+import countlyDataMigration from '../store/index.js';
+
+export default {
+    mixins: [i18nMixin],
+    props: {
+        settings: Object,
+        controls: Object
+    },
+    data: function() {
+        return {
+            apps: [],
+            exportDrawerSaveButtonLabel: this.i18n('data-migration.export-data-button')
+        };
+    },
+    methods: {
+        onClose: function() {},
+        onSubmit: function(submitted) {
+            var self = this;
+            var API_KEY = countlyGlobal.member.api_key;
+            var APP_ID = countlyCommon.ACTIVE_APP_ID;
+
+            var requestData = submitted;
+            requestData.api_key = API_KEY;
+            requestData.app_id = APP_ID;
+            requestData.apps = submitted.apps.join(",");
+            requestData.aditional_files = requestData.aditional_files ? 1 : 0;
+            requestData.redirect_traffic = requestData.redirect_traffic ? 1 : 0;
+
+            countlyDataMigration.saveExport(requestData, function(res) {
+                if (res.result === "success") {
+                    if (requestData.only_export === 2) {
+                        var data = res.data;
+                        var blob = new Blob([data], { type: 'application/x-sh' });
+                        var url = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'export_commands.sh';
+                        document.body.appendChild(a);
+                        a.click();
+                        notify({
+                            type: 'success',
+                            message: self.i18n('data-migration.download-auto')
+                        });
+                    }
+                    else {
+                        notify({
+                            type: 'success',
+                            message: self.i18n('data-migration.export-started')
+                        });
+                    }
+                }
+                else {
+                    notify({
+                        type: 'error',
+                        message: self.i18n(res.data.xhr.responseJSON.result)
+                    });
+                }
+            });
+        },
+        onOpen: function() {}
+    },
+    created: function() {
+        var apps = Object.keys(countlyGlobal.apps);
+        for (var i = 0; i < apps.length; i++) {
+            this.apps.push({
+                label: countlyGlobal.apps[apps[i]].name,
+                value: countlyGlobal.apps[apps[i]]._id
+            });
+        }
+
+        this.apps.sort(function(a, b) {
+            const aLabel = a?.label || '';
+            const bLabel = b?.label || '';
+            const locale = countlyCommon.BROWSER_LANG || 'en';
+
+            if (aLabel && bLabel) {
+                return aLabel.localeCompare(bLabel, locale, { numeric: true }) || 0;
+            }
+
+            if (!aLabel && bLabel) {
+                return 1;
+            }
+
+            if (aLabel && !bLabel) {
+                return -1;
+            }
+
+            return 0;
+        });
+    }
+};
+</script>
