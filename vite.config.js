@@ -147,7 +147,7 @@ const REFACTORED_PLUGINS = [
     "crashes",
     "crashes-jira",
     "dashboards",
-    // "data-manager",
+    "data-manager",
     "data_migration",
     "dbviewer",
     "density",

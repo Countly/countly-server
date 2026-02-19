@@ -1,0 +1,265 @@
+<template>
+    <cly-drawer
+        @submit="onSubmit"
+        @close="onClose"
+        ref="eventDrawer"
+        :title="title"
+        :saveButtonLabel="saveButtonLabel"
+        v-bind="$props.controls">
+        <template v-slot:default="drawerScope">
+            <cly-form-step id="create-event-form" name="First Step">
+
+                <cly-form-field test-id="event-drawer-event-name-label" :label="i18n('data-manager.event.name')">
+                        <el-input
+                            test-id="event-drawer-event-name-input"
+                            v-model="drawerScope.editedObject.name"
+                            :placeholder="i18n('data-manager.event.name')">
+                        </el-input>
+                </cly-form-field>
+
+                <cly-form-field test-id="event-drawer-event-key-label" :label="i18n('data-manager.events.key')" rules="required">
+                    <el-input
+                    test-id="event-drawer-event-key-input"
+                    :disabled="drawerScope.editedObject.isEditMode"
+                    class="bu-mb-3"
+                    v-model="drawerScope.editedObject.key"
+                    :placeholder="i18n('data-manager.events.enter-key')">
+                    </el-input>
+                </cly-form-field>
+
+                <div data-test-id="event-drawer-event-details-label" class="text-big text-heading bu-mt-2 bu-mb-1">{{i18n('data-manager.events.event-details')}}</div>
+
+                <cly-form-field test-id="event-drawer-event-desc-label" :label="i18n('data-manager.events.event-description')" :optional="true">
+                    <el-input
+                    data-test-id="event-drawer-event-desc-input"
+                    type="textarea"
+                    :rows="2"
+                    :placeholder="i18n('data-manager.events.enter-event-description')"
+                    v-model="drawerScope.editedObject.description">
+                    </el-input>
+                </cly-form-field>
+
+                <div v-if="isDrill">
+                    <cly-form-field test-id="event-drawer-category-label" :label="i18n('data-manager.category')" :optional="true">
+                        <cly-select-x
+                            test-id="event-drawer-category-dropdown"
+                            class="bu-pt-1"
+                            :search-placeholder="i18n('data-manager.search-category')"
+                            :placeholder="i18n('data-manager.uncategorized')"
+                            v-model="drawerScope.editedObject.category"
+                            :auto-commit="!autoCommitDisabled"
+                            :mode="selectX.mode"
+                            :hide-all-options-tab="allOptionsTabHidden"
+                            :options="categories">
+                        </cly-select-x>
+                    </cly-form-field>
+                </div>
+
+                <div v-if='drawerScope.editedObject.isEditMode'>
+                    <div v-if="isDrill">
+                        <cly-form-field test-id="event-drawer-status-dropdown-label" :label="i18n('data-manager.status')">
+                            <el-select test-id="event-drawer-status-dropdown" class="bu-pt-1" v-model="drawerScope.editedObject.status" >
+                                <el-option v-for="item in statusList" test-id="event-drawer-status-dropdown" :key="item.value" :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </cly-form-field>
+                    </div>
+
+                    <cly-form-field test-id="event-drawer-visibility-dropdown-label" :label="i18n('data-manager.visibility')">
+                        <el-select test-id="event-drawer-visibility-dropdown" class="bu-pt-1" v-model="drawerScope.editedObject.is_visible" >
+                            <el-option test-id="event-drawer-visibility-dropdown" :value=true :label="i18n('data-manager.visible')">
+                            </el-option>
+                            <el-option test-id="event-drawer-visibility-dropdown" :value=false :label="i18n('data-manager.hidden')">
+                            </el-option>
+                        </el-select>
+                    </cly-form-field>
+
+                    <div data-test-id="event-drawer-event-properties-label" class="text-big text-heading bu-mt-4 bu-pt-1">{{i18n('data-manager.events.event-properties')}}</div>
+
+                    <cly-form-field test-id="event-drawer-display-name-for-count-label" class="bu-pt-0" :label="i18n('data-manager.display-name-for-count')" :optional="true" :subheading="i18n('data-manager.display-name-for-count-subheading')">
+                        <el-input
+                        test-id="event-drawer-display-name-for-count-input"
+                        v-model="drawerScope.editedObject.count"
+                        :placeholder="i18n('data-manager.count')">
+                        </el-input>
+                    </cly-form-field>
+
+                    <cly-form-field test-id="event-drawer-display-name-for-sum-label" :label="i18n('data-manager.display-name-for-sum')" :optional="true" :subheading="i18n('data-manager.display-name-for-sum')">
+                        <el-input
+                        test-id="event-drawer-display-name-for-sum-input"
+                        v-model="drawerScope.editedObject.sum"
+                        :placeholder="i18n('data-manager.sum')">
+                        </el-input>
+                    </cly-form-field>
+
+                    <cly-form-field test-id="event-drawer-display-name-for-duration-label" :label="i18n('data-manager.display-name-for-duration')" :optional="true" :subheading="i18n('data-manager.display-name-for-duration')">
+                        <el-input
+                        test-id="event-drawer-display-name-for-duration-input"
+                        v-model="drawerScope.editedObject.dur"
+                        :placeholder="i18n('data-manager.duration')">
+                        </el-input>
+                    </cly-form-field>
+                </div>
+
+                <div v-if="drawerScope.editedObject.isEditMode">
+                    <cly-form-field test-id="event-drawer-omit-segments-dropdown-label" :label="i18n('data-manager.omit-segments')"
+                    :tooltip="i18n('data-manager.omit-segments.tooltip')">
+                        <el-select test-id="event-drawer-omit-segments-dropdown" multiple v-model="omitList" >
+                            <el-option v-for="item in drawerScope.editedObject.segments" test-id="event-drawer-omit-segments-dropdown" :key="item.name" :value="item.name">
+                            </el-option>
+                        </el-select>
+                    </cly-form-field>
+                </div>
+
+                <div v-if="isDrill" class="bu-mt-1">
+                    <div data-test-id="event-drawer-event-segmentation-label" class="text-big text-heading bu-pt-4">{{i18n('data-manager.event-segmentation')}}</div>
+                    <data-manager-create-segment
+                    ref="segments"
+                    :max-segments="20"
+                    :is-edit-mode="isEditMode"
+                    v-model="drawerScope.editedObject.segments"
+                    ></data-manager-create-segment>
+                </div>
+            </cly-form-step>
+        </template>
+    </cly-drawer>
+</template>
+
+<script>
+import { i18n, i18nMixin, commonFormattersMixin } from '../../../../../frontend/express/public/javascripts/countly/vue/core.js';
+import { countlyCommon } from '../../../../../frontend/express/public/javascripts/countly/countly.common.js';
+import countlyGlobal from '../../../../../frontend/express/public/javascripts/countly/countly.global.js';
+import { notify } from '../../../../../frontend/express/public/javascripts/countly/countly.helpers.js';
+
+var EXTENDED_VIEWS = (window.countlyDataManager && window.countlyDataManager.extended && window.countlyDataManager.extended.views) || {};
+var COMPONENTS = EXTENDED_VIEWS.components || {};
+
+export default {
+    mixins: [i18nMixin, commonFormattersMixin],
+    components: {
+        'data-manager-create-segment': COMPONENTS.CreateSegment
+    },
+    data: function() {
+        return {
+            isDrill: countlyGlobal.plugins.indexOf("drill") > -1,
+            isOpened: false,
+            saveButtonLabel: i18n("common.save"),
+            constants: {
+                "visibilityOptions": [
+                    { label: i18n("data-manager.global"), value: "global", description: i18n("data-manager.global-description") },
+                    { label: i18n("data-manager.global"), value: "private", description: i18n("data-manager.private-description") }
+                ]
+            },
+            selectX: {
+                currentVal: null,
+                mode: 'single-list',
+            },
+            autoCommitDisabled: false,
+            allOptionsTabHidden: true,
+            categoryList: [{
+                label: i18n("data-manager.uncategorized"),
+                value: '1'
+            }],
+            statusList: [
+                {
+                    label: i18n("data-manager.created"),
+                    value: 'created'
+                },
+                {
+                    label: i18n("data-manager.unplanned"),
+                    value: 'unplanned'
+                },
+                {
+                    label: i18n("data-manager.approved"),
+                    value: 'approved'
+                },
+                {
+                    label: i18n("data-manager.live"),
+                    value: 'live'
+                },
+                {
+                    label: i18n("data-manager.blocked"),
+                    value: 'blocked'
+                }
+            ]
+        };
+    },
+    computed: {
+        omitList: {
+            get: function() {
+                if (this.$refs.eventDrawer && this.$refs.eventDrawer.editedObject && this.$refs.eventDrawer.editedObject.omit_list) {
+                    return this.$refs.eventDrawer.editedObject.omit_list;
+                }
+                else if (this.controls && this.controls.initialEditedObject && this.controls.initialEditedObject.omit_list) {
+                    return this.controls.initialEditedObject.omit_list;
+                }
+                else {
+                    return [];
+                }
+            },
+            set: function(list) {
+                var segments = this.controls.initialEditedObject.segments;
+                if (list.length > this.$refs.eventDrawer.editedObject.omit_list) {
+                    segments = this.$refs.eventDrawer.editedObject.segments;
+                }
+                this.$refs.eventDrawer.editedObject.segments = segments.filter(function(sg) {
+                    if (list.indexOf(sg.name) > -1) {
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                });
+                this.$refs.eventDrawer.editedObject.omit_list = list;
+            },
+            cache: false
+        },
+        title: function() {
+            if (this.controls && this.controls.initialEditedObject && this.controls.initialEditedObject.isEditMode) {
+                return i18n("data-manager.edit-event");
+            }
+            else {
+                return i18n("data-manager.create-new-event");
+            }
+        },
+        categories: function() {
+            var cats = this.$store.getters["countlyDataManager/categories"] || [];
+            return [{ label: i18n('data-manager.uncategorized'), value: null }].concat(cats.map(function(ev) {
+                return {
+                    label: countlyCommon.unescapeHtml(ev.name),
+                    value: ev._id
+                };
+            }));
+        },
+        isEditMode: function() {
+            return this.controls && this.controls.initialEditedObject && this.controls.initialEditedObject.isEditMode;
+        },
+    },
+    props: {
+        controls: {
+            type: Object
+        }
+    },
+    methods: {
+        onClose: function(event) {
+            this.$emit("close", event);
+        },
+        onSubmit: function(doc) {
+            if (doc.isEditMode) {
+                if (!doc.status || doc.status === 'unplanned') {
+                    if (!doc.is_visible) {
+                        notify({message: i18n('data-manager.error.event-visibility-error'), sticky: false, type: 'error'});
+                    }
+                    doc.is_visible = true;
+                }
+                if (!(window._.isEqual(doc, this.$refs.eventDrawer.initialEditedObject))) {
+                    this.$store.dispatch('countlyDataManager/editEvent', doc);
+                }
+            }
+            else {
+                this.$store.dispatch('countlyDataManager/saveEvent', doc);
+            }
+        },
+    }
+};
+</script>
