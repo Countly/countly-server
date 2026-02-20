@@ -46,13 +46,14 @@
 
     };
 
-    CountlyHelpers.logout = function(path) {
-        if (path) {
-            window.location = "logout";
+    CountlyHelpers.logout = () => {
+        // Save current URL hash so user can return to the same page after re-login
+        // This key must match the one used in login.html and dashboard.html
+        const hash = window.location.hash;
+        if (hash && hash.length > 1) {
+            sessionStorage.setItem('countly_oauth_return_hash', hash);
         }
-        else {
-            window.location.reload();//this will log us out
-        }
+        window.location = "logout";
     };
     /**
     * Legacy method for displaying notifications. User {@link CountlyHelpers.notify} instead
