@@ -136,9 +136,6 @@ describe('Login in', function() {
         });
     });
     describe('Login out', function() {
-        before(function(done) {
-            testUtils.waitCSRF(done);
-        });
 
         it('should not logout by get method, bu simply redirect to login', function(done) {
             agent
