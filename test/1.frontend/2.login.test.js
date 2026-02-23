@@ -136,10 +136,8 @@ describe('Login in', function() {
         });
     });
     describe('Login out', function() {
-        beforeEach(function(done) {
-            testUtils.loadCSRF(agent, function() {
-                done();
-            });
+        before(function(done) {
+            testUtils.waitCSRF(done);
         });
 
         it('should not logout by get method, bu simply redirect to login', function(done) {
