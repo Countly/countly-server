@@ -245,6 +245,78 @@ plugins.connectToAllDatabases().then(function() {
     server.headersTimeout = (common.config.api.timeout || 120000) + 1000;
 
     plugins.loadConfigs(common.db);
+
+    // Start tRPC API server (POC) — runs on a separate port alongside the main API
+    var trpcPort = parseInt(process.env.TRPC_PORT || "3002", 10);
+    Promise.all([
+        import('@trpc/server/adapters/standalone'),
+        import('cors'),
+        import('../trpc-app-router.ts'),
+        import('trpc-to-openapi'),
+    ]).then(function([{createHTTPHandler}, corsModule, {appRouter}, {generateOpenApiDocument, createOpenApiHttpHandler}]) {
+        var openApiDocument = generateOpenApiDocument(appRouter, {
+            title: "Countly tRPC API",
+            description: "Countly analytics API powered by tRPC (POC)",
+            version: "0.1.0",
+            baseUrl: "http://localhost:" + trpcPort + "/api",
+            tags: ["Views"],
+        });
+        var openApiJson = JSON.stringify(openApiDocument, null, 2);
+        var swaggerHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Countly API — Swagger UI</title><link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"></head><body><div id="swagger-ui"></div><script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script><script>SwaggerUIBundle({url:"/openapi.json",dom_id:"#swagger-ui",presets:[SwaggerUIBundle.presets.apis,SwaggerUIBundle.SwaggerUIStandalonePreset],layout:"BaseLayout"});</script></body></html>';
+
+        var createContext = function() {
+            return {};
+        };
+
+        var trpcHandler = createHTTPHandler({
+            middleware: corsModule.default(),
+            router: appRouter,
+            createContext: createContext,
+        });
+
+        var openApiHandler = createOpenApiHttpHandler({
+            router: appRouter,
+            createContext: createContext,
+        });
+
+        var trpcHttpServer = require('http').createServer(function(req, res) {
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+            res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+            if (req.method === "OPTIONS") {
+                res.writeHead(204);
+                res.end();
+                return;
+            }
+
+            if (req.url === "/openapi.json") {
+                res.setHeader("Content-Type", "application/json");
+                res.end(openApiJson);
+                return;
+            }
+
+            if (req.url === "/docs" || req.url === "/docs/") {
+                res.setHeader("Content-Type", "text/html");
+                res.end(swaggerHtml);
+                return;
+            }
+
+            if (req.url && req.url.indexOf("/api/") === 0 || req.url === "/api") {
+                req.url = req.url.replace(/^\/api/, "") || "/";
+                openApiHandler(req, res);
+                return;
+            }
+
+            trpcHandler(req, res);
+        });
+
+        trpcHttpServer.listen(trpcPort);
+        log.i('[trpc] Server listening on port ' + trpcPort);
+        log.i('[trpc] OpenAPI spec at http://localhost:' + trpcPort + '/openapi.json');
+        log.i('[trpc] Swagger UI at http://localhost:' + trpcPort + '/docs');
+    }).catch(function(err) {
+        log.e('[trpc] Failed to start:', err);
+    });
 }).catch(function(error) {
     log.e('Database connection failed:', error);
     process.exit(1);

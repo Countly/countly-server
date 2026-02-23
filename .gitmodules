@@ -1,0 +1,3 @@
+[submodule "insight-architect"]
+	path = insight-architect
+	url = git@github.com:Countly/insight-architect.git
