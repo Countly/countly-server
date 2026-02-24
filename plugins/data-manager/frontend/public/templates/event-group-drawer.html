@@ -43,11 +43,17 @@
                 </div>
                 <div class="text-smallish font-weight-bold bu-mt-4 bu-mb-2">{{i18n('data-manager.select-events')}}</div>
                 <!-- validation for selecting from events -->
-                <validation-provider name="allEvents" rules="required" v-slot="v">
-                    <el-select class="bu-mb-2" multiple style="width:100%" v-model="drawerScope.editedObject.source_events" >
-                        <el-option v-for="item in eventList" :key="item.value" :value="item.value">
-                        </el-option>
-                    </el-select>
+                <validation-provider name="allEvents" rules="required" v-slot="v" tag="div" class="el-input">
+                    <cly-select-x
+                        class="el-input bu-mb-2"
+                        v-model="drawerScope.editedObject.source_events"
+                        :adaptive-length="true"
+                        :mode="'multi-check'"
+                        :options="eventList"
+                        :width="0"
+                        :width-same-as-trigger="true"
+                        >
+                    </cly-select-x>
                 </validation-provider>
 
                 <div class="bu-my-4">
