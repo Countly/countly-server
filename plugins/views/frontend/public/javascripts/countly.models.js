@@ -63,7 +63,7 @@
             var data = {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "views",
-                "period": countlyCommon.getPeriodForAjax(),
+                "period": countlyCommon.getPeriodAsDateStrings(),
                 "action": "getTotals"
             };
 
@@ -169,7 +169,7 @@
                 method: 'views',
                 action: 'getTable',
                 visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols),
-                period: countlyCommon.getPeriodForAjax(),
+                period: countlyCommon.getPeriodAsDateStrings()
             };
             data = data || {};
             var selectedInfo = context.getters.selectedData;
@@ -710,11 +710,11 @@
     //graphData['appID'][]
     //Public Methods
     countlyViews.initialize = function() {
-        if (_initialized && _period === countlyCommon.getPeriodForAjax() && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
+        if (_initialized && _period === countlyCommon.getPeriodAsDateStrings() && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
             return this.refresh();
         }
 
-        _period = countlyCommon.getPeriodForAjax();
+        _period = countlyCommon.getPeriodAsDateStrings();
         this.reset();
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
@@ -884,10 +884,10 @@
                 return this.initialize();
             }
             var periodIsOk = true;
-            if (_period !== countlyCommon.getPeriodForAjax()) {
+            if (_period !== countlyCommon.getPeriodAsDateStrings()) {
                 periodIsOk = false;
             }
-            _period = countlyCommon.getPeriodForAjax();
+            _period = countlyCommon.getPeriodAsDateStrings();
 
             var selected = [];
 
@@ -1025,7 +1025,7 @@
     };
 
     countlyViews.loadActionsData = function(view) {
-        _period = countlyCommon.getPeriodForAjax();
+        _period = countlyCommon.getPeriodAsDateStrings();
 
         return $.when(
             $.ajax({

@@ -605,7 +605,7 @@
             getExportQuery: function() {
 
                 // var set = this.dtable.fnSettings();
-                var requestPath = countlyCommon.API_PARTS.data.r + "?method=views&action=getExportQuery" + "&period=" + countlyCommon.getPeriodForAjax() + "&iDisplayStart=0&app_id=" + countlyCommon.ACTIVE_APP_ID + '&api_key=' + countlyGlobal.member.api_key;
+                var requestPath = countlyCommon.API_PARTS.data.r + "?method=views&action=getExportQuery" + "&period=" + countlyCommon.getPeriodAsDateStrings() + "&iDisplayStart=0&app_id=" + countlyCommon.ACTIVE_APP_ID + '&api_key=' + countlyGlobal.member.api_key;
 
 
                 var segment = this.$store.state.countlyViews.selectedSegment;
@@ -654,7 +654,7 @@
             openDrillViewDrawer: function() {
                 let self = this;
                 let args = {
-                    "period": countlyCommon.getPeriod(),
+                    "period": countlyCommon.getPeriodAsDateStrings(),
                     "selectedSegment": this.filter.segment,
                     "selectedSegmentValues": (this.filter.segmentKey && this.filter.segmentKey !== "all") ? [this.filter.segmentKey] : [],
                     "selectedViews": this.$store.state.countlyViews.selectedViews.map(function(id) {
