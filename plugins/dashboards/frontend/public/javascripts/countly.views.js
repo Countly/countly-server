@@ -512,12 +512,9 @@
                 ];
 
                 var allowPublicDashboards = countlyGlobal.allow_public_dashboards !== false;
-                var sharingOptions = allowPublicDashboards ? allSharingOptions : allSharingOptions.filter(function(option) {
-                    return option.value !== "all-users";
-                });
-
                 return {
-                    sharingOptions: sharingOptions
+                    sharingOptions: allSharingOptions,
+                    isPublicDisabled: !allowPublicDashboards
                 };
             },
             canShare: function() {
@@ -664,6 +661,14 @@
                     if (doc.__action === "create" ||
                         doc.__action === "duplicate") {
                         doc.share_with = "none";
+                    }
+                }
+                else {
+                    var allowPublicDashboards = countlyGlobal.allow_public_dashboards !== false;
+                    if (!allowPublicDashboards &&
+                        (doc.__action === "create" || doc.__action === "duplicate") &&
+                        doc.share_with === "all-users") {
+                        doc.share_with = "";
                     }
                 }
             },
@@ -986,7 +991,7 @@
 
                 case "delete":
                     d.__action = "delete";
-                    CountlyHelpers.confirm(this.i18nM("dashboards.delete-widget-text"), "popStyleGreen", function(result) {
+                    CountlyHelpers.confirm(this.i18nM("dashboards.delete-widget-text"), "danger", function(result) {
                         if (!result) {
                             return false;
                         }
@@ -1579,7 +1584,7 @@
 
                 case "delete":
                     d.__action = "delete";
-                    CountlyHelpers.confirm(this.i18n("dashboards.delete-dashboard-text", d.name), "popStyleGreen", function(result) {
+                    CountlyHelpers.confirm(this.i18n("dashboards.delete-dashboard-text", d.name), "danger", function(result) {
                         if (!result) {
                             return false;
                         }
