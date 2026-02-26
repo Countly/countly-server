@@ -200,11 +200,11 @@
                     pii: {
                         target: [
                             {
-                                value: "# of PII incidents",
+                                value: "# of sensitive data incidents",
                                 label: jQuery.i18n.map["alert.pii-incidents-count"] || "# of incidents",
                             },
                             {
-                                value: "new PII incident",
+                                value: "new sensitive data incident",
                                 label: jQuery.i18n.map["alert.new-pii-incident"] || "new incident",
                             },
                         ],
@@ -288,7 +288,7 @@
                     "new NPS response",
                     "new rating response",
                     "new crash/error",
-                    "new PII incident",
+                    "new sensitive data incident",
                     "o",
                     "m",
                 ];
@@ -306,7 +306,7 @@
                     "new NPS response",
                     "new rating response",
                     "new crash/error",
-                    "new PII incident",
+                    "new sensitive data incident",
                     "o",
                     "m",
                 ];
