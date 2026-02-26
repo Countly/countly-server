@@ -906,7 +906,7 @@ const getWidgetIdFromDataTable = (index) => {
 
 const navigateToWidgetsDetailPage = (widgetName) => {
     searchWidgetOnDataTable(widgetName);
-    cy.clickElement(widgetsDataTableElements().WIDGET_NAME, true);
+    cy.clickElement(widgetsDataTableElements().WIDGET_NAME);
 };
 
 const verifyWidgetDetailsPageElements = ({
