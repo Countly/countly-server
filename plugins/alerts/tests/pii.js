@@ -19,25 +19,25 @@ var DEVICE_ID = "pii-e2e-test-device";
 var eventTriggeredAlert = {
     "alertName": "PII E2E Event Alert",
     "alertDataType": "pii",
-    "alertDataSubType": "new PII incident",
+    "alertDataSubType": "new sensitive data incident",
     "selectedApps": [],
     "alertBy": "email",
     "enabled": true,
-    "compareDescribe": "new PII incident",
+    "compareDescribe": "new sensitive data incident",
     "alertValues": ["pii-e2e-test@example.com"]
 };
 
 var scheduledAlert = {
     "alertName": "PII E2E Scheduled Alert",
     "alertDataType": "pii",
-    "alertDataSubType": "PII incident count",
+    "alertDataSubType": "# of sensitive data incidents",
     "compareType": "more",
     "compareValue": "0",
     "period": "hourly",
     "selectedApps": [],
     "alertBy": "email",
     "enabled": true,
-    "compareDescribe": "PII incidents more than 0",
+    "compareDescribe": "sensitive data incidents more than 0",
     "alertValues": ["pii-e2e-test@example.com"]
 };
 
@@ -149,7 +149,7 @@ describe('Testing PII Alerts End-to-End', function() {
 
                         should.exist(eventAlert);
                         eventAlert.should.have.property('alertDataType', 'pii');
-                        eventAlert.should.have.property('alertDataSubType', 'new PII incident');
+                        eventAlert.should.have.property('alertDataSubType', 'new sensitive data incident');
                         eventAlert.should.have.property('alertBy', 'email');
                         eventAlert.should.have.property('enabled', true);
 
