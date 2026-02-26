@@ -18,7 +18,7 @@
  * @property {boolean}       enabled           - true|false
  * @property {string}        compareDescribe   - text to show on lists for this alert
  * @property {Array<string>} alertValues       - audience e.g. for alertBy="email", list of e-mails
- * @property {Array<string>} allGroups         - 
+ * @property {Array<string>} allGroups         -
  * @property {string}        createdBy         - creation time
  */
 
@@ -81,6 +81,7 @@ const TRIGGERED_BY_EVENT = {
     nps: "new NPS response",
     rating: "new rating response",
     crashes: "new crash/error",
+    pii: "new sensitive information incident",
 };
 
 module.exports = {
@@ -207,7 +208,7 @@ async function compileEmail(result) {
  * Formats the metric value to ensure it maintains its type.
  * If the value is a number, it rounds to 2 decimal places if necessary.
  * Otherwise, it returns the value as is.
- * 
+ *
  * @param {number|string} value - The value to be formatted.
  * @returns {number|string} The formatted value, maintaining the original type.
  */

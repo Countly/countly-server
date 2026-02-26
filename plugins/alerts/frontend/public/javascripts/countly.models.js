@@ -159,6 +159,38 @@
     countlyAlerts.getRatingForApp = getRatingForApp;
 
     /**
+     * Get PII rules for the specified app.
+     * @param {string} appId - The ID of the app.
+     * @param {function} callback - The callback function.
+     */
+    function getPiiRulesForApp(appId, callback) {
+        var data = {
+            enabled: "true",
+        };
+        if (appId === "all") {
+            data.app_ids = "all";
+            data.scope_filter = "global";
+        }
+        else {
+            data.app_ids = JSON.stringify([appId]);
+            data.include_global = "true";
+        }
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r + "/pii/rules",
+            data: data,
+            dataType: "json",
+            success: function(res) {
+                if (res && Array.isArray(res)) {
+                    return callback(res);
+                }
+                return callback([]);
+            },
+        });
+    }
+    countlyAlerts.getPiiRulesForApp = getPiiRulesForApp;
+
+    /**
      * extract getEventLongName
      * @param {string} eventKey - event key in db
      * @param {object} eventMap - for caching

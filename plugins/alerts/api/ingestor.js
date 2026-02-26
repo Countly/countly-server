@@ -20,7 +20,7 @@ const commonLib = require("./parts/common-lib.js");
         }
 
         for (let { module, name } of TRIGGER_BY_EVENT) {
-            if (name !== "crashes") {
+            if (name !== "crashes" && name !== "pii") {
                 try {
                     await module.triggerByEvent({ events, app });
                 }

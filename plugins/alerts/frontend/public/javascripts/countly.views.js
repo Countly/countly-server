@@ -49,6 +49,7 @@
                 saveButtonLabel: "",
                 apps: [""],
                 allowAll: false,
+                isAllAppsSelected: false,
                 filterButton: false,
                 showSubType1: true,
                 showSubType2: false,
@@ -196,6 +197,18 @@
                             },
                         ],
                     },
+                    pii: {
+                        target: [
+                            {
+                                value: "# of PII incidents",
+                                label: jQuery.i18n.map["alert.pii-incidents-count"] || "# of incidents",
+                            },
+                            {
+                                value: "new PII incident",
+                                label: jQuery.i18n.map["alert.new-pii-incident"] || "new incident",
+                            },
+                        ],
+                    },
                     revenue: {
                         target: [
                             { value: "total revenue", label: jQuery.i18n.map["alert.total-revenue"] || "total revenue" },
@@ -275,6 +288,7 @@
                     "new NPS response",
                     "new rating response",
                     "new crash/error",
+                    "new PII incident",
                     "o",
                     "m",
                 ];
@@ -292,6 +306,7 @@
                     "new NPS response",
                     "new rating response",
                     "new crash/error",
+                    "new PII incident",
                     "o",
                     "m",
                 ];
@@ -357,6 +372,7 @@
                     { label: jQuery.i18n.map["alert.Survey"], value: "survey" },
                     { label: jQuery.i18n.map["alert.User"], value: "users" },
                     { label: jQuery.i18n.map["alert.View"], value: "views" },
+                    { label: jQuery.i18n.map["alert.PII"] || "Sensitive Data", value: "pii" },
                 ];
                 // disable enterprise plugins if they are not available
                 if (!countlyGlobal.plugins.includes("concurrent_users")) {
@@ -373,6 +389,13 @@
                 }
                 if (!countlyGlobal.plugins.includes("users")) {
                     alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "users");
+                }
+                if (!countlyGlobal.plugins.includes("pii")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "pii");
+                }
+                // When "All Applications" is selected, only dataPoints and pii are available
+                if (this.isAllAppsSelected) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value === "dataPoints" || value === "pii");
                 }
                 return alertDataTypeOptions;
             },
@@ -488,6 +511,8 @@
                     return "Widget Name";
                 case "rating":
                     return "Widget Name";
+                case "pii":
+                    return "Rule";
                 }
             },
             showFilterButton: function(obj) {
@@ -505,7 +530,7 @@
             getMetrics: function() {
                 const formData = this.$refs.drawerData.editedObject;
                 this.alertDataSubType2Options = [];
-                if (formData.selectedApps === 'all') {
+                if (formData.selectedApps === 'all' && formData.alertDataType !== 'pii') {
                     formData.alertDataType = 'dataPoints';
                     formData.alertDataSubType = 'total data points';
                 }
@@ -604,8 +629,20 @@
                         }
                     );
                 }
+                if (formData.alertDataType === "pii") {
+                    var piiAppId = formData.selectedApps === 'all' ? 'all' : formData.selectedApps;
+                    countlyAlerts.getPiiRulesForApp(
+                        piiAppId,
+                        (data) => {
+                            this.alertDataSubType2Options = data.map((r) => {
+                                return { value: r._id, label: countlyCommon.unescapeHtml(r.name) };
+                            });
+                        }
+                    );
+                }
             },
             appSelected: function() {
+                this.isAllAppsSelected = this.$refs.drawerData.editedObject.selectedApps === 'all';
                 this.resetAlertCondition();
                 this.getMetrics();
             },
@@ -626,6 +663,7 @@
                     "survey",
                     "nps",
                     "rating",
+                    "pii",
                 ];
                 if (validDataTypesForSubType2.includes(val)) {
                     this.showSubType2 = true;
@@ -746,6 +784,8 @@
                     return "cly-io-16 cly-is cly-is-users";
                 case "views":
                     return "cly-io-16 cly-is cly-is-eye";
+                case "pii":
+                    return "cly-io-16 cly-is cly-is-shield-exclamation";
                 }
             },
             handleFilterClosing: function() {
@@ -1042,6 +1082,7 @@
                 this.showCondition = false;
                 this.showConditionValue = false;
                 newState.selectedApps = newState.selectedApps[0];
+                this.isAllAppsSelected = newState.selectedApps === 'all';
                 newState.alertName = countlyCommon.unescapeHtml(newState.alertName);
                 newState.alertValues = newState.alertValues.map((email) => countlyCommon.unescapeHtml(email));
                 this.getMetrics();
