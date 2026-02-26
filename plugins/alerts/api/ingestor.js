@@ -31,6 +31,19 @@ const commonLib = require("./parts/common-lib.js");
         }
     });
 
+    plugins.register("/pii/incident", async function(ob) {
+        for (let { module, name } of TRIGGER_BY_EVENT) {
+            if (name === "pii") {
+                try {
+                    await module.triggerByEvent(ob.data);
+                }
+                catch (err) {
+                    log.e("Alert module 'pii' couldn't be triggered by event", err);
+                }
+            }
+        }
+    });
+
 }(exported));
 
 module.exports = exported;

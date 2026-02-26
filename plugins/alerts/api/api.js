@@ -65,19 +65,6 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
         }
     });
 
-    plugins.register("/pii/incident", async function(ob) {
-        for (let { module, name } of TRIGGER_BY_EVENT) {
-            if (name === "pii") {
-                try {
-                    await module.triggerByEvent(ob.data);
-                }
-                catch (err) {
-                    log.e("Alert module 'pii' couldn't be triggered by event", err);
-                }
-            }
-        }
-    });
-
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
