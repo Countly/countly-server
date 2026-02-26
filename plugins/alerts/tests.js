@@ -142,17 +142,17 @@ function validateAlertObject(alert) {
     }
 
     // Validate required enum values according to OpenAPI spec
-    const validDataTypes = ["metric", "crash", "event", "session", "users", "views", "revenue", "cohorts", "dataPoints", "rating", "survey", "nps"];
+    const validDataTypes = ["metric", "crash", "event", "session", "users", "views", "revenue", "cohorts", "dataPoints", "rating", "survey", "nps", "pii"];
     validDataTypes.should.containEql(alert.alertDataType);
 
     // Optional fields - validate if present
     if (alert.alertDataSubType2 !== undefined && alert.alertDataSubType2 !== null) {
         alert.alertDataSubType2.should.be.a.String();
     }
-    if (alert.filterKey !== undefined) {
+    if (alert.filterKey !== undefined && alert.filterKey !== null) {
         alert.filterKey.should.be.a.String();
     }
-    if (alert.filterValue !== undefined) {
+    if (alert.filterValue !== undefined && alert.filterValue !== null) {
         alert.filterValue.should.be.a.String();
     }
     if (alert.allGroups !== undefined) {
