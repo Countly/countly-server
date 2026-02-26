@@ -342,7 +342,7 @@ function handleRequest(req, res) {
         const headers = {};
         headers["Access-Control-Allow-Origin"] = "*";
         headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
-        headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type";
+        headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type, Authorization";
         res.writeHead(200, headers);
         res.end();
     }
