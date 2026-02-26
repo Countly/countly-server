@@ -38,11 +38,20 @@ Cypress.Commands.add("clickDataTableMoreButtonItem", (element, rowIndex = 0) => 
 });
 
 Cypress.Commands.add("clickElement", (element, isForce = false, index = 0) => {
-    cy.getElement(element)
-        .eq(index)
-        .should('be.visible')
-        .and('not.be.disabled')
-        .click({ force: isForce });
+
+    if (isForce) {
+        cy.getElement(element)
+            .eq(index)
+            .click({ force: true });
+    }
+    else {
+        cy.getElement(element)
+            .filter(':visible')
+            .eq(index)
+            .should('exist')
+            .and('not.be.disabled')
+            .click();
+    }
 
     cy.checkPaceRunning();
 });
