@@ -38,12 +38,17 @@ Cypress.Commands.add("clickDataTableMoreButtonItem", (element, rowIndex = 0) => 
 });
 
 Cypress.Commands.add("clickElement", (element, isForce = false, index = 0) => {
-    cy.getElement(element).eq(index).click({ force: isForce });
+    cy.getElement(element)
+        .eq(index)
+        .should('be.visible')
+        .and('not.be.disabled')
+        .click({ force: isForce });
+
     cy.checkPaceRunning();
 });
 
 Cypress.Commands.add("clickBody", () => {
-    cy.get('body').click({ force: true });
+    cy.get('body', { log: false }).click(0, 0);
     cy.checkPaceRunning();
 });
 
@@ -76,7 +81,7 @@ Cypress.Commands.add("selectCheckboxOption", (element, ...options) => {
 });
 
 Cypress.Commands.add("clickOption", (element, option) => {
-    cy.getElement(element).contains(new RegExp("^" + option + "$", "g")).click({force: true});
+    cy.getElement(element).contains(new RegExp("^" + option + "$", "g")).click({ force: true });
 });
 
 Cypress.Commands.add("selectValue", (element, valueText) => {
@@ -181,18 +186,17 @@ Cypress.Commands.add("shouldUrlInclude", (url) => {
     cy.url().should('include', url);
 });
 
-Cypress.Commands.add('elementExists', (selector) => {
-
-    cy.wait(500);
-    if (!selector.includes('[data-test-id=') && (!selector[0].includes('.') || !selector[0].includes('#'))) {
-        selector = `[data-test-id="${selector}"]`;
+Cypress.Commands.add('elementExists', (selector, { parent = 'body' } = {}) => {
+    if (!selector.includes('[data-test-id=')) {
+        if (!(selector.startsWith('.') || selector.startsWith('#'))) {
+            selector = `[data-test-id="${selector}"]`;
+        }
     }
 
-    cy
-        .get('body')
-        .then(($body) => {
-            return $body.find(selector).length > 0;
-        });
+    return cy.get(parent, { log: false }).then($parent => {
+        const exists = $parent.find(selector).length > 0;
+        return exists;
+    });
 });
 
 Cypress.Commands.add('shouldBeExist', (element) => {
@@ -204,23 +208,11 @@ Cypress.Commands.add('shouldNotExist', (element) => {
 });
 
 Cypress.Commands.add('checkPaceRunning', () => {
-    cy
-        .elementExists('.pace-running')
-        .then((isExists) => {
-            if (isExists) {
-                cy.shouldNotExist('.pace-running');
-            }
-        });
+    cy.get('.pace-running', { timeout: 10000 }).should('not.exist')
 });
 
 Cypress.Commands.add('checkPaceActive', () => {
-    cy
-        .elementExists('.pace-active')
-        .then((isExists) => {
-            if (isExists) {
-                cy.shouldNotExist('.pace-active');
-            }
-        });
+    cy.get('.pace-active', { timeout: 10000 }).should('not.exist');
 });
 
 Cypress.Commands.add("scrollPageSlightly", (element = '.main-view', index = 0) => {
@@ -362,7 +354,7 @@ Cypress.Commands.add('dropMongoDatabase', () => {
 Cypress.Commands.add('getElement', (selector, parent = null) => {
 
     if (!selector.includes('[data-test-id=')) {
-        if (selector[0].includes('.') || selector[0].includes('#')) {
+        if (selector.startsWith('.') || selector.startsWith('#')) {
             return cy.get(selector);
         }
         else {
