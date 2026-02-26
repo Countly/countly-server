@@ -1128,12 +1128,21 @@
                     return true;
                 }
             },
-            calculateWidth(value) {
+            calculateWidth(value, options) {
                 if (!value) {
                     return;
                 }
+                var displayText = value;
+                if (options && Array.isArray(options)) {
+                    var match = options.find(function(o) {
+                        return o.value === value;
+                    });
+                    if (match && match.label) {
+                        displayText = match.label;
+                    }
+                }
                 let tmpEl = document.createElement("span");
-                tmpEl.textContent = value;
+                tmpEl.textContent = displayText;
                 tmpEl.style.cssText = `
                     visibility: hidden;
                     position: fixed;
