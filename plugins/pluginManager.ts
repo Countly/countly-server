@@ -50,6 +50,14 @@ interface EventsRegistry {
     [eventName: string]: EventHandler[];
 }
 
+/** API route definition for Express-style routing */
+interface ApiRouteDefinition {
+    method: string;
+    path: string;
+    pluginName: string;
+    handler: (req: any, res: any, next: any) => void;
+}
+
 /** Plugin API methods */
 interface PluginApi {
     [methodName: string]: Function;
@@ -336,6 +344,9 @@ class PluginManager {
 
     /** Core plugin list */
     coreList: string[] = ['api', 'core'];
+
+    /** Express-style API route definitions registered by plugins */
+    apiRoutes: ApiRouteDefinition[] = [];
 
     /** Dependency graph */
     dependencyMap: any = {};
@@ -1133,6 +1144,68 @@ class PluginManager {
         }
         else {
             (this.events[event] as any).push(registration);
+        }
+    }
+
+    /**
+     * Register an Express-style API HTTP route for a plugin.
+     * Use this for HTTP endpoint registration on the API server (port 3001).
+     * For lifecycle hooks and internal events, continue using plugins.register().
+     * @param method - HTTP method: 'GET', 'POST', 'DELETE', 'PUT', or 'ALL'
+     * @param path - Express route path, e.g. '/o/myfeature' or '/o/myfeature/:id'
+     * @param handler - Express route handler (req, res, next) => void. Access params via req.countlyParams.
+     * @param featureName - optional plugin name override
+     */
+    apiRoute(method: string, path: string, handler: (req: any, res: any, next: any) => void, featureName?: string): void {
+        if (!featureName) {
+            featureName = this.getFeatureName();
+            featureName = featureName || 'core';
+        }
+        this.apiRoutes.push({
+            method: method.toUpperCase(),
+            path,
+            pluginName: featureName,
+            handler
+        });
+    }
+
+    /**
+     * Mount all registered API routes onto an Express Router.
+     * Called during server startup in api.js after all plugins have loaded.
+     * Each route is wrapped with plugin enable/disable checking, matching
+     * the same pattern used by loadAppPlugins() for the frontend server.
+     * @param router - Express Router instance
+     */
+    mountApiRoutes(router: any): void {
+        for (const route of this.apiRoutes) {
+            const pluginName = route.pluginName;
+            const handler = route.handler;
+            const fullPluginsMap = this.fullPluginsMap;
+
+            const wrappedHandler = (req: any, res: any, next: any) => {
+                // Skip if this is a non-core plugin that has been disabled
+                if (fullPluginsMap[pluginName] && pluginConfig[pluginName] === false) {
+                    return next();
+                }
+                handler(req, res, next);
+            };
+
+            const m = route.method;
+            if (m === 'GET') {
+                router.get(route.path, wrappedHandler);
+            }
+            else if (m === 'POST') {
+                router.post(route.path, wrappedHandler);
+            }
+            else if (m === 'DELETE') {
+                router.delete(route.path, wrappedHandler);
+            }
+            else if (m === 'PUT') {
+                router.put(route.path, wrappedHandler);
+            }
+            else {
+                router.all(route.path, wrappedHandler);
+            }
         }
     }
 

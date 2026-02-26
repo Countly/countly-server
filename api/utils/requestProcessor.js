@@ -115,62 +115,73 @@ const processRequest = (params) => {
         return common.returnMessage(params, 400, "Please provide request data");
     }
 
-    const urlParts = url.parse(params.req.url, true),
-        queryString = urlParts.query,
-        paths = urlParts.pathname.split("/");
-    params.href = urlParts.href;
-    params.qstring = params.qstring || {};
-    params.res = params.res || {};
-    params.urlParts = urlParts;
-    params.paths = paths;
+    // When called via the Express legacy bridge, URL parsing and qstring
+    // merging were already done by the params middleware. Skip re-parsing
+    // to avoid duplicating query/body params. Programmatic callers (e.g.
+    // star-rating, taskmanager) do not set _expressParsed, so they still
+    // go through the original parsing path.
+    if (!params._expressParsed) {
+        const urlParts = url.parse(params.req.url, true),
+            queryString = urlParts.query,
+            paths = urlParts.pathname.split("/");
+        params.href = urlParts.href;
+        params.qstring = params.qstring || {};
+        params.res = params.res || {};
+        params.urlParts = urlParts;
+        params.paths = paths;
 
-    //request object fillers
-    params.req.method = params.req.method || "custom";
-    params.req.headers = params.req.headers || {};
-    params.req.socket = params.req.socket || {};
-    params.req.connection = params.req.connection || {};
+        //request object fillers
+        params.req.method = params.req.method || "custom";
+        params.req.headers = params.req.headers || {};
+        params.req.socket = params.req.socket || {};
+        params.req.connection = params.req.connection || {};
 
-    //copying query string data as qstring param
-    if (queryString) {
-        for (let i in queryString) {
-            params.qstring[i] = queryString[i];
-        }
-    }
-
-    //copying body as qstring param
-    if (params.req.body && typeof params.req.body === "object") {
-        for (let i in params.req.body) {
-            params.qstring[i] = params.req.body[i];
-        }
-    }
-
-    if (params.qstring.app_id && params.qstring.app_id.length !== 24) {
-        common.returnMessage(params, 400, 'Invalid parameter "app_id"');
-        return false;
-    }
-
-    if (params.qstring.user_id && params.qstring.user_id.length !== 24) {
-        common.returnMessage(params, 400, 'Invalid parameter "user_id"');
-        return false;
-    }
-
-    //remove countly path
-    if (common.config.path === "/" + paths[1]) {
-        paths.splice(1, 1);
-    }
-
-    let apiPath = '';
-
-    for (let i = 1; i < paths.length; i++) {
-        if (i > 2) {
-            break;
+        //copying query string data as qstring param
+        if (queryString) {
+            for (let i in queryString) {
+                params.qstring[i] = queryString[i];
+            }
         }
 
-        apiPath += "/" + paths[i];
+        //copying body as qstring param
+        if (params.req.body && typeof params.req.body === "object") {
+            for (let i in params.req.body) {
+                params.qstring[i] = params.req.body[i];
+            }
+        }
+
+        if (params.qstring.app_id && params.qstring.app_id.length !== 24) {
+            common.returnMessage(params, 400, 'Invalid parameter "app_id"');
+            return false;
+        }
+
+        if (params.qstring.user_id && params.qstring.user_id.length !== 24) {
+            common.returnMessage(params, 400, 'Invalid parameter "user_id"');
+            return false;
+        }
+
+        //remove countly path
+        if (common.config.path === "/" + params.paths[1]) {
+            params.paths.splice(1, 1);
+        }
+
+        let apiPath = '';
+
+        for (let i = 1; i < params.paths.length; i++) {
+            if (i > 2) {
+                break;
+            }
+
+            apiPath += "/" + params.paths[i];
+        }
+
+        params.apiPath = apiPath;
+        params.fullPath = params.paths.join("/");
     }
 
-    params.apiPath = apiPath;
-    params.fullPath = paths.join("/");
+    const paths = params.paths;
+    const apiPath = params.apiPath;
+    const urlParts = params.urlParts;
 
     reloadConfig().then(function() {
         plugins.dispatch("/", {
@@ -2647,111 +2658,8 @@ const processRequest = (params) => {
 
                 break;
             }
-            case '/o/ping': {
-                common.db.collection("plugins").findOne({_id: "plugins"}, {_id: 1}, (err) => {
-                    if (err) {
-                        return common.returnMessage(params, 404, 'DB Error');
-                    }
-                    else {
-                        return common.returnMessage(params, 200, 'Success');
-                    }
-                });
-                break;
-            }
-            /**
-             * @api {post} /o/jwt/token JWT Login
-             * @apiName JWTLogin
-             * @apiGroup JWT Authentication
-             *
-             * @apiDescription Authenticate with username and password to receive JWT access and refresh tokens
-             * @apiBody {String} username Username or email
-             * @apiBody {String} password Password
-             *
-             * @apiSuccessExample {json} Success-Response:
-             * HTTP/1.1 200 OK
-             * {
-             *   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-             *   "token_type": "Bearer",
-             *   "expires_in": 900,
-             *   "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-             *   "refresh_expires_in": 604800
-             * }
-             *
-             * @apiErrorExample {json} Error-Response:
-             * HTTP/1.1 401 Unauthorized
-             * {
-             *   "result": "Invalid username or password"
-             * }
-             */
-            case '/o/jwt': {
-                switch (paths[3]) {
-                /**
-                     * @api {post} /o/jwt/refresh JWT Refresh
-                     * @apiName JWTRefresh
-                     * @apiGroup JWT Authentication
-                     *
-                     * @apiDescription Exchange a refresh token for a new access token and refresh token
-                     * @apiBody {String} refresh_token The refresh token
-                     *
-                     * @apiSuccessExample {json} Success-Response:
-                     * HTTP/1.1 200 OK
-                     * {
-                     *   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                     *   "token_type": "Bearer",
-                     *   "expires_in": 900,
-                     *   "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                     *   "refresh_expires_in": 604800
-                     * }
-                     *
-                     * @apiErrorExample {json} Error-Response:
-                     * HTTP/1.1 401 Unauthorized
-                     * {
-                     *   "result": "Refresh token has expired. Please login again."
-                     * }
-                     */
-                case 'refresh': {
-                    require('../parts/mgmt/jwt_tokens.js').refresh(params);
-                    break;
-                }
-
-                case 'token':
-
-                    console.log('Post on token');
-                    require('../parts/mgmt/jwt_tokens.js').login(params);
-                    break;
-                }
-                break;
-            }
-            /**
-             * @api {post} /i/jwt/revoke JWT Revoke
-             * @apiName JWTRevoke
-             * @apiGroup JWT Authentication
-             *
-             * @apiDescription Revoke a refresh token (logout)
-             * @apiBody {String} refresh_token The refresh token to revoke
-             *
-             * @apiSuccessExample {json} Success-Response:
-             * HTTP/1.1 200 OK
-             * {
-             *   "success": true,
-             *   "message": "Token revoked successfully"
-             * }
-             *
-             * @apiErrorExample {json} Error-Response:
-             * HTTP/1.1 400 Bad Request
-             * {
-             *   "result": "Invalid refresh token"
-             * }
-             */
-            case '/i/jwt': {
-
-                switch (paths[3]) {
-                case 'revoke':
-                    require('../parts/mgmt/jwt_tokens.js').revoke(params);
-                    break;
-                }
-                break;
-            }
+            // '/o/ping' has been migrated to core/api/routes/ping.js (Express route)
+            // '/o/jwt' and '/i/jwt' have been migrated to core/api/routes/jwt.js (Express routes)
             case '/i/token': {
                 switch (paths[3]) {
                 /**
