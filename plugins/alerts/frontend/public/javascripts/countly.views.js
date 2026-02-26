@@ -1388,6 +1388,24 @@
         beforeCreate: function() {
             this.$store.dispatch("countlyAlerts/initialize");
         },
+        mounted: function() {
+            var prefill = sessionStorage.getItem('alerts_prefill');
+            if (prefill) {
+                sessionStorage.removeItem('alerts_prefill');
+                var data = JSON.parse(prefill);
+                if (data.alertDataType) {
+                    var config = countlyAlerts.defaultDrawerConfigValue();
+                    config.alertDataType = data.alertDataType;
+                    if (data.alertDataSubType2) {
+                        config.alertDataSubType2 = data.alertDataSubType2;
+                    }
+                    if (data.selectedApps) {
+                        config.selectedApps = [data.selectedApps];
+                    }
+                    this.openDrawer("home", config);
+                }
+            }
+        },
         methods: {
             createAlert: function() {
                 var config = countlyAlerts.defaultDrawerConfigValue();
