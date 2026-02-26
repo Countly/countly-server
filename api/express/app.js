@@ -46,6 +46,24 @@ function createApiApp({countlyConfig, processRequest, plugins, rateLimitMiddlewa
     // Core routes migrated from requestProcessor.js switch/case
     app.use(require('../routes/ping'));
     app.use(require('../routes/jwt'));
+    app.use(require('../routes/token'));
+    app.use(require('../routes/notes'));
+    app.use(require('../routes/cms'));
+    app.use(require('../routes/date_presets'));
+    app.use(require('../routes/version'));
+    app.use(require('../routes/sdk'));
+    app.use(require('../routes/users'));
+    app.use(require('../routes/apps'));
+    app.use(require('../routes/event_groups'));
+    app.use(require('../routes/tasks'));
+    app.use(require('../routes/render'));
+    app.use(require('../routes/app_users'));
+    app.use(require('../routes/events'));
+    app.use(require('../routes/system'));
+    app.use(require('../routes/export'));
+    app.use(require('../routes/analytics'));
+    // /o with method-based dispatch - must come after specific /o/* routes
+    app.use(require('../routes/data'));
 
     // Express router for plugin routes registered via plugins.apiRoute()
     const apiRouter = express.Router();
