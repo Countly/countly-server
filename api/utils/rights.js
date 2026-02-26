@@ -12,7 +12,8 @@ var common = require("./common.js"),
     plugins = require('../../plugins/pluginManager.ts'),
     Promise = require("bluebird"),
     crypto = require('crypto'),
-    log = require('./log.js')('core:rights');
+    log = require('./log.js')('core:rights'),
+    jwtUtils = require('./jwt.js');
 
 /** @type {Authorizer} */
 var authorize = require('./authorizer.js'); //for token validations
@@ -31,6 +32,24 @@ var cachedSchema = {};
 */
 function validate_token_if_exists(params) {
     return new Promise(function(resolve) {
+        // Check for JWT Bearer token first
+        var bearerToken = jwtUtils.extractBearerToken(params.req);
+        if (bearerToken) {
+            var jwtResult = jwtUtils.verifyToken(bearerToken, 'access');
+            if (jwtResult.valid) {
+                // Store JWT claims in params for potential use
+                params.jwt_claims = jwtResult.decoded;
+                resolve(jwtResult.decoded.sub);
+                return;
+            }
+            else if (jwtResult.error === 'TOKEN_EXPIRED') {
+                resolve('token-expired');
+                return;
+            }
+            // Fall through to existing auth if JWT invalid (allows other auth methods)
+        }
+
+        // Existing auth_token logic
         var token = params.qstring.auth_token || params.req.headers["countly-token"] || "";
         if (token && token !== "") {
             authorize.verify_return({
@@ -70,13 +89,17 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
             // then result is owner id
-            if (result !== 'token-not-given' && result !== 'token-invalid') {
+            if (result !== 'token-not-given' && result !== 'token-invalid' && result !== 'token-expired') {
                 query = {'_id': common.db.ObjectID(result)};
             }
             else {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else if (result === 'token-expired') {
+                        common.returnMessage(params, 401, 'Token has expired');
                         return false;
                     }
                     else {
@@ -166,13 +189,17 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
             // then result is owner id
-            if (result !== 'token-not-given' && result !== 'token-invalid') {
+            if (result !== 'token-not-given' && result !== 'token-invalid' && result !== 'token-expired') {
                 query = {'_id': common.db.ObjectID(result)};
             }
             else {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else if (result === 'token-expired') {
+                        common.returnMessage(params, 401, 'Token has expired');
                         return false;
                     }
                     else {
@@ -255,13 +282,17 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
             // then result is owner id
-            if (result !== 'token-not-given' && result !== 'token-invalid') {
+            if (result !== 'token-not-given' && result !== 'token-invalid' && result !== 'token-expired') {
                 query = {'_id': common.db.ObjectID(result)};
             }
             else {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else if (result === 'token-expired') {
+                        common.returnMessage(params, 401, 'Token has expired');
                         return false;
                     }
                     else {
@@ -326,13 +357,17 @@ exports.validateAppAdmin = function(params, callback, callbackParam) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
             // then result is owner id
-            if (result !== 'token-not-given' && result !== 'token-invalid') {
+            if (result !== 'token-not-given' && result !== 'token-invalid' && result !== 'token-expired') {
                 query = {'_id': common.db.ObjectID(result)};
             }
             else {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else if (result === 'token-expired') {
+                        common.returnMessage(params, 401, 'Token has expired');
                         return false;
                     }
                     else {
@@ -411,13 +446,17 @@ exports.validateUser = function(params, callback, callbackParam) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
             // then result is owner id
-            if (result !== 'token-not-given' && result !== 'token-invalid') {
+            if (result !== 'token-not-given' && result !== 'token-invalid' && result !== 'token-expired') {
                 query = {'_id': common.db.ObjectID(result)};
             }
             else {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else if (result === 'token-expired') {
+                        common.returnMessage(params, 401, 'Token has expired');
                         return false;
                     }
                     else {
@@ -809,13 +848,17 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
             // then result is owner id
-            if (result !== 'token-not-given' && result !== 'token-invalid') {
+            if (result !== 'token-not-given' && result !== 'token-invalid' && result !== 'token-expired') {
                 query = {'_id': common.db.ObjectID(result)};
             }
             else {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else if (result === 'token-expired') {
+                        common.returnMessage(params, 401, 'Token has expired');
                         return false;
                     }
                     else {
@@ -963,13 +1006,17 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
             var query = "";
             //var appIdExceptions = ['global_users', 'global_applications', 'global_jobs', 'global_plugins', 'global_configurations', 'global_upload'];
             // then result is owner id
-            if (result !== 'token-not-given' && result !== 'token-invalid') {
+            if (result !== 'token-not-given' && result !== 'token-invalid' && result !== 'token-expired') {
                 query = {'_id': common.db.ObjectID(result)};
             }
             else {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        return false;
+                    }
+                    else if (result === 'token-expired') {
+                        common.returnMessage(params, 401, 'Token has expired');
                         return false;
                     }
                     else {

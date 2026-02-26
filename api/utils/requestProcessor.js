@@ -185,6 +185,7 @@ const processRequest = (params) => {
         });
 
         if (!params.cancelRequest) {
+            console.log("Processing", apiPath);
             switch (apiPath) {
             case '/i/users': {
                 if (params.qstring.args) {
@@ -2655,6 +2656,100 @@ const processRequest = (params) => {
                         return common.returnMessage(params, 200, 'Success');
                     }
                 });
+                break;
+            }
+            /**
+             * @api {post} /o/jwt/token JWT Login
+             * @apiName JWTLogin
+             * @apiGroup JWT Authentication
+             *
+             * @apiDescription Authenticate with username and password to receive JWT access and refresh tokens
+             * @apiBody {String} username Username or email
+             * @apiBody {String} password Password
+             *
+             * @apiSuccessExample {json} Success-Response:
+             * HTTP/1.1 200 OK
+             * {
+             *   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+             *   "token_type": "Bearer",
+             *   "expires_in": 900,
+             *   "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+             *   "refresh_expires_in": 604800
+             * }
+             *
+             * @apiErrorExample {json} Error-Response:
+             * HTTP/1.1 401 Unauthorized
+             * {
+             *   "result": "Invalid username or password"
+             * }
+             */
+            case '/o/jwt': {
+                switch (paths[3]) {
+                /**
+                     * @api {post} /o/jwt/refresh JWT Refresh
+                     * @apiName JWTRefresh
+                     * @apiGroup JWT Authentication
+                     *
+                     * @apiDescription Exchange a refresh token for a new access token and refresh token
+                     * @apiBody {String} refresh_token The refresh token
+                     *
+                     * @apiSuccessExample {json} Success-Response:
+                     * HTTP/1.1 200 OK
+                     * {
+                     *   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                     *   "token_type": "Bearer",
+                     *   "expires_in": 900,
+                     *   "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                     *   "refresh_expires_in": 604800
+                     * }
+                     *
+                     * @apiErrorExample {json} Error-Response:
+                     * HTTP/1.1 401 Unauthorized
+                     * {
+                     *   "result": "Refresh token has expired. Please login again."
+                     * }
+                     */
+                case 'refresh': {
+                    require('../parts/mgmt/jwt_tokens.js').refresh(params);
+                    break;
+                }
+
+                case 'token':
+
+                    console.log('Post on token');
+                    require('../parts/mgmt/jwt_tokens.js').login(params);
+                    break;
+                }
+                break;
+            }
+            /**
+             * @api {post} /i/jwt/revoke JWT Revoke
+             * @apiName JWTRevoke
+             * @apiGroup JWT Authentication
+             *
+             * @apiDescription Revoke a refresh token (logout)
+             * @apiBody {String} refresh_token The refresh token to revoke
+             *
+             * @apiSuccessExample {json} Success-Response:
+             * HTTP/1.1 200 OK
+             * {
+             *   "success": true,
+             *   "message": "Token revoked successfully"
+             * }
+             *
+             * @apiErrorExample {json} Error-Response:
+             * HTTP/1.1 400 Bad Request
+             * {
+             *   "result": "Invalid refresh token"
+             * }
+             */
+            case '/i/jwt': {
+
+                switch (paths[3]) {
+                case 'revoke':
+                    require('../parts/mgmt/jwt_tokens.js').revoke(params);
+                    break;
+                }
                 break;
             }
             case '/i/token': {
