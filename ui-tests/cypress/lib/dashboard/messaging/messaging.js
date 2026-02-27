@@ -56,7 +56,7 @@ const verifyStaticElementsOfPage = () => {
         element: messagingMetricCardElements.ENABLED_USERS_PERCENTAGE_PROGRESS_CIRCLE,
     });
 
-    cy.clickElement(messagingPageElements.TAB_ONE_TIME_NOTIFICATIONS);
+    cy.clickElement(messagingPageElements.TAB_ONE_TIME_NOTIFICATIONS, true);
 
     cy.verifyElement({
         labelElement: messagingChartElements.FILTER_PARAMETERS_SELECT_LABEL,

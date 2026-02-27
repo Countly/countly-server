@@ -433,31 +433,31 @@ const verifySDKVersionsDataFromTable = ({
 };
 
 const clickSDKsTab = () => {
-    cy.clickElement(sdkStatsPageElements.TAB_SDK_S);
+    cy.clickElement(sdkStatsPageElements.TAB_SDK_S, true);
 };
 
 const clickSdkVersionsTab = () => {
-    cy.clickElement(sdkStatsPageElements.TAB_SDK_VERSIONS);
+    cy.clickElement(sdkStatsPageElements.TAB_SDK_VERSIONS, true);
 };
 
 const clickSdkStatsTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(sdkStatsPageElements.TAB_SDK_STATS);
+    cy.clickElement(sdkStatsPageElements.TAB_SDK_STATS, true);
 };
 
 const clickRequestStatsTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(sdkStatsPageElements.TAB_REQUEST_STATS);
+    cy.clickElement(sdkStatsPageElements.TAB_REQUEST_STATS, true);
 };
 
 const clickHealthCheckTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(sdkStatsPageElements.TAB_HEALTH_CHECK);
+    cy.clickElement(sdkStatsPageElements.TAB_HEALTH_CHECK, true);
 };
 
 const clickSdkConfigurationTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(sdkStatsPageElements.TAB_SDK_CONFIGURATION);
+    cy.clickElement(sdkStatsPageElements.TAB_SDK_CONFIGURATION, true);
 };
 
 module.exports = {
