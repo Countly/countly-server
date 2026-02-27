@@ -1118,7 +1118,7 @@ const verifyWidgetDetailsPageElements = ({
 };
 
 const deleteWidget = () => {
-    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_MORE_BUTTON);
+    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_MORE_BUTTON, true);
     cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_DELETE_BUTTON);
     cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_DELETE_CONFIRM_BUTTON);
 };
@@ -1138,7 +1138,7 @@ const shouldBeWidgetDeleted = (question) => {
 };
 
 const stopWidget = () => {
-    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_STOP_WIDGET_BUTTON);
+    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_STOP_WIDGET_BUTTON, true);
 };
 
 const shouldBeWidgetStopped = () => {
@@ -1146,7 +1146,7 @@ const shouldBeWidgetStopped = () => {
 };
 
 const clickEditWidgetButton = () => {
-    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_EDIT_WIDGET_BUTTON);
+    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_EDIT_WIDGET_BUTTON, true);
 };
 
 const clickBackToRatingWidgetLink = () => {
