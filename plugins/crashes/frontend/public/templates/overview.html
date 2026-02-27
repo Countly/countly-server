@@ -21,7 +21,7 @@
                                     <a
                                         class="crash-group-title has-ellipsis"
                                         :data-test-id="'datatable-crash-groups-group-title-' + col.$index"
-                                        :href="'#/crashes/' + col.row._id"
+                                        :href="crashgroupUrl(col.row._id)"
                                         v-html="col.row.name">
                                     </a>
                                     <div class="bu-mt-2 bu-is-flex">
