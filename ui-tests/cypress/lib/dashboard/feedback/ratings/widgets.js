@@ -1066,7 +1066,6 @@ const verifyWidgetDetailsPageElements = ({
 
         cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS);
         cy.scrollPageToBottom('.main-view');
-
         cy.verifyElement({
             labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_RATING_LABEL,
             labelText: "Rating",
@@ -1087,6 +1086,8 @@ const verifyWidgetDetailsPageElements = ({
             labelText: "E-mail",
         });
 
+        cy.scrollPageToBottom('.main-view');
+        
         for (index = 0; index < commentsTable.ratings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_RATING,
