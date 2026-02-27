@@ -1119,8 +1119,8 @@ const verifyWidgetDetailsPageElements = ({
 
 const deleteWidget = () => {
     cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_MORE_BUTTON, true);
-    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_DELETE_BUTTON);
-    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_DELETE_CONFIRM_BUTTON);
+    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_DELETE_BUTTON, true);
+    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_DELETE_CONFIRM_BUTTON, true);
 };
 
 const shouldBeWidgetDeleted = (question) => {
@@ -1150,7 +1150,7 @@ const clickEditWidgetButton = () => {
 };
 
 const clickBackToRatingWidgetLink = () => {
-    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_BACK_TO_RATING_WIDGETS_LINK);
+    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_BACK_TO_RATING_WIDGETS_LINK, true);
 };
 
 const createRatingWithApi = (username, password, appName, widgetName) => {
