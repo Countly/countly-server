@@ -1086,30 +1086,25 @@ const verifyWidgetDetailsPageElements = ({
             labelText: "E-mail",
         });
 
-        cy.scrollPageToBottom('.main-view');
-        
         for (index = 0; index < commentsTable.ratings.length; index++) {
+
+            cy.scrollPageToBottom('.main-view');
+
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_RATING,
                 labelText: commentsTable.ratings[index],
             });
-        }
 
-        for (index = 0; index < commentsTable.ratings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_TIME,
                 labelText: commentsTable.times,
             });
-        }
 
-        for (index = 0; index < commentsTable.comments.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_COMMENT,
                 labelText: commentsTable.comments[index],
             });
-        }
 
-        for (index = 0; index < commentsTable.emails.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_EMAIL,
                 labelText: commentsTable.emails[index],
