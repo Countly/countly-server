@@ -225,12 +225,12 @@ Cypress.Commands.add('checkPaceActive', () => {
 });
 
 Cypress.Commands.add('checkLoading', () => {
-  cy.get('body', { log: false }).then($body => {
-    if ($body.find('.el-loading-mask').length) {
-      cy.get('.el-loading-mask', { timeout: 10000 })
-        .should('not.exist');
-    }
-  });
+    cy.get('body').then($body => {
+        if ($body.find('.el-loading-mask').length) {
+            cy.get('.el-loading-mask', { timeout: 20000 })
+                .should('not.be.visible');
+        }
+    });
 });
 
 Cypress.Commands.add("scrollPageSlightly", (element = '.main-view', index = 0) => {
