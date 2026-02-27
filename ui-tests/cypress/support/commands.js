@@ -224,6 +224,15 @@ Cypress.Commands.add('checkPaceActive', () => {
     cy.get('.pace-active', { timeout: 10000 }).should('not.exist');
 });
 
+Cypress.Commands.add('checkLoading', () => {
+  cy.get('body', { log: false }).then($body => {
+    if ($body.find('.el-loading-mask').length) {
+      cy.get('.el-loading-mask', { timeout: 10000 })
+        .should('not.exist');
+    }
+  });
+});
+
 Cypress.Commands.add("scrollPageSlightly", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).then(($el) => {
         const currentScroll = $el[0].scrollTop;
