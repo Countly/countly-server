@@ -13,10 +13,8 @@ const countlyApi = {
     }
 };
 
-// POST/GET /i/notes - create or delete notes
-router.all('/i/notes', (req, res) => {
-    const params = req.countlyParams;
-
+// Helper: parse JSON args for notes endpoints
+function parseArgs(params) {
     if (params.qstring.args) {
         try {
             params.qstring.args = JSON.parse(params.qstring.args);
@@ -25,23 +23,28 @@ router.all('/i/notes', (req, res) => {
             console.log('Parse %s JSON failed %s', params.apiPath, params.req.url, params.req.body);
         }
     }
+}
 
-    const paths = params.paths;
-    switch (paths[3]) {
-    case 'save':
-        validateCreate(params, 'core', () => {
-            countlyApi.mgmt.users.saveNote(params);
-        });
-        break;
-    case 'delete':
-        validateDelete(params, 'core', () => {
-            countlyApi.mgmt.users.deleteNote(params);
-        });
-        break;
-    }
+// --- Write endpoints: /i/notes ---
+
+router.all('/i/notes/save', (req, res) => {
+    const params = req.countlyParams;
+    parseArgs(params);
+    validateCreate(params, 'core', () => {
+        countlyApi.mgmt.users.saveNote(params);
+    });
 });
 
-// GET /o/notes - fetch notes
+router.all('/i/notes/delete', (req, res) => {
+    const params = req.countlyParams;
+    parseArgs(params);
+    validateDelete(params, 'core', () => {
+        countlyApi.mgmt.users.deleteNote(params);
+    });
+});
+
+// --- Read endpoints: /o/notes ---
+
 router.all('/o/notes', (req, res) => {
     const params = req.countlyParams;
     validateRead(params, 'core', countlyApi.mgmt.users.fetchNotes);

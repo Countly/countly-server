@@ -19,43 +19,39 @@ const countlyApi = {
     }
 };
 
-// GET /o/cms - fetch CMS entries
-router.all('/o/cms', (req, res) => {
-    const params = req.countlyParams;
-    const paths = params.paths;
+// --- Read endpoints: /o/cms ---
 
-    switch (paths[3]) {
-    case 'entries':
-        validateUserForMgmtReadAPI(countlyApi.mgmt.cms.getEntries, params);
-        break;
-    }
+router.all('/o/cms/entries', (req, res) => {
+    const params = req.countlyParams;
+    validateUserForMgmtReadAPI(countlyApi.mgmt.cms.getEntries, params);
 });
 
-// POST/GET /i/cms - save entries, clear cache
-router.all('/i/cms', (req, res) => {
+// --- Write endpoints: /i/cms ---
+
+router.all('/i/cms/save_entries', (req, res) => {
+    const params = req.countlyParams;
+    validateUserForWrite(params, countlyApi.mgmt.cms.saveEntries);
+});
+
+router.all('/i/cms/clear', (req, res) => {
+    const params = req.countlyParams;
+    validateUserForWrite(countlyApi.mgmt.cms.clearCache, params);
+});
+
+// Catch-all for /i/cms/* - dispatches to plugins or returns error
+router.all('/i/cms/:action', (req, res) => {
     const params = req.countlyParams;
     const paths = params.paths;
-    const apiPath = params.apiPath;
-
-    switch (paths[3]) {
-    case 'save_entries':
-        validateUserForWrite(params, countlyApi.mgmt.cms.saveEntries);
-        break;
-    case 'clear':
-        validateUserForWrite(countlyApi.mgmt.cms.clearCache, params);
-        break;
-    default:
-        if (!plugins.dispatch(apiPath, {
-            params: params,
-            validateUserForDataReadAPI: validateUserForDataReadAPI,
-            validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
-            paths: paths,
-            validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-            validateUserForGlobalAdmin: validateUserForGlobalAdmin
-        })) {
-            common.returnMessage(params, 400, 'Invalid path, must be one of /save_entries or /clear');
-        }
-        break;
+    const apiPath = '/i/cms';
+    if (!plugins.dispatch(apiPath, {
+        params: params,
+        validateUserForDataReadAPI: validateUserForDataReadAPI,
+        validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+        paths: paths,
+        validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+        validateUserForGlobalAdmin: validateUserForGlobalAdmin
+    })) {
+        common.returnMessage(params, 400, 'Invalid path, must be one of /save_entries or /clear');
     }
 });
 

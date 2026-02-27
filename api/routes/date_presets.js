@@ -19,62 +19,66 @@ const countlyApi = {
     }
 };
 
-// GET /o/date_presets - fetch date presets
-router.all('/o/date_presets', (req, res) => {
+// --- Read endpoints: /o/date_presets ---
+
+router.all('/o/date_presets/getAll', (req, res) => {
+    const params = req.countlyParams;
+    validateUserForMgmtReadAPI(countlyApi.mgmt.datePresets.getAll, params);
+});
+
+router.all('/o/date_presets/getById', (req, res) => {
+    const params = req.countlyParams;
+    validateUserForMgmtReadAPI(countlyApi.mgmt.datePresets.getById, params);
+});
+
+// Catch-all for /o/date_presets/* - dispatches to plugins or returns error
+router.all('/o/date_presets/:action', (req, res) => {
     const params = req.countlyParams;
     const paths = params.paths;
-    const apiPath = params.apiPath;
-
-    switch (paths[3]) {
-    case 'getAll':
-        validateUserForMgmtReadAPI(countlyApi.mgmt.datePresets.getAll, params);
-        break;
-    case 'getById':
-        validateUserForMgmtReadAPI(countlyApi.mgmt.datePresets.getById, params);
-        break;
-    default:
-        if (!plugins.dispatch(apiPath, {
-            params: params,
-            validateUserForDataReadAPI: validateUserForDataReadAPI,
-            validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
-            paths: paths,
-            validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-            validateUserForGlobalAdmin: validateUserForGlobalAdmin
-        })) {
-            common.returnMessage(params, 400, 'Invalid path, must be one of /getAll /getById');
-        }
-        break;
+    const apiPath = '/o/date_presets';
+    if (!plugins.dispatch(apiPath, {
+        params: params,
+        validateUserForDataReadAPI: validateUserForDataReadAPI,
+        validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+        paths: paths,
+        validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+        validateUserForGlobalAdmin: validateUserForGlobalAdmin
+    })) {
+        common.returnMessage(params, 400, 'Invalid path, must be one of /getAll /getById');
     }
 });
 
-// POST/GET /i/date_presets - create, update, delete date presets
-router.all('/i/date_presets', (req, res) => {
+// --- Write endpoints: /i/date_presets ---
+
+router.all('/i/date_presets/create', (req, res) => {
+    const params = req.countlyParams;
+    validateUserForWrite(params, countlyApi.mgmt.datePresets.create);
+});
+
+router.all('/i/date_presets/update', (req, res) => {
+    const params = req.countlyParams;
+    validateUserForWrite(params, countlyApi.mgmt.datePresets.update);
+});
+
+router.all('/i/date_presets/delete', (req, res) => {
+    const params = req.countlyParams;
+    validateUserForWrite(params, countlyApi.mgmt.datePresets.delete);
+});
+
+// Catch-all for /i/date_presets/* - dispatches to plugins or returns error
+router.all('/i/date_presets/:action', (req, res) => {
     const params = req.countlyParams;
     const paths = params.paths;
-    const apiPath = params.apiPath;
-
-    switch (paths[3]) {
-    case 'create':
-        validateUserForWrite(params, countlyApi.mgmt.datePresets.create);
-        break;
-    case 'update':
-        validateUserForWrite(params, countlyApi.mgmt.datePresets.update);
-        break;
-    case 'delete':
-        validateUserForWrite(params, countlyApi.mgmt.datePresets.delete);
-        break;
-    default:
-        if (!plugins.dispatch(apiPath, {
-            params: params,
-            validateUserForDataReadAPI: validateUserForDataReadAPI,
-            validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
-            paths: paths,
-            validateUserForDataWriteAPI: validateUserForDataWriteAPI,
-            validateUserForGlobalAdmin: validateUserForGlobalAdmin
-        })) {
-            common.returnMessage(params, 400, 'Invalid path, must be one of /create /update or /delete');
-        }
-        break;
+    const apiPath = '/i/date_presets';
+    if (!plugins.dispatch(apiPath, {
+        params: params,
+        validateUserForDataReadAPI: validateUserForDataReadAPI,
+        validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+        paths: paths,
+        validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+        validateUserForGlobalAdmin: validateUserForGlobalAdmin
+    })) {
+        common.returnMessage(params, 400, 'Invalid path, must be one of /create /update or /delete');
     }
 });
 
