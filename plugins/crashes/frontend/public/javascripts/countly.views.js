@@ -1,5 +1,5 @@
 /* eslint-disable no-unreachable */
-/* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV, countlyAuth */
+/* globals _, app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV, countlyAuth */
 
 (function() {
     var groupId, crashId;
@@ -693,6 +693,25 @@
             },
             closeDeleteForm: function() {
                 this.showDeleteDialog = false;
+            },
+            crashgroupUrl: function(crashgroupId) {
+                var lastRequest = this.$store.getters['countlyCrashes/crashgroupsLastSuccessfulRequest'];
+                var lastQuery = {};
+
+                try {
+                    lastQuery = JSON.parse(lastRequest.data.query);
+                }
+                catch (_) {
+                    // do nothing, lastQuery is {}
+                }
+
+                var urlHash = '#/crashes/' + crashgroupId;
+
+                if (!_.isEmpty(lastQuery)) {
+                    urlHash += '/filter/' + JSON.stringify({ query: lastQuery });
+                }
+
+                return urlHash;
             },
         },
         beforeCreate: function() {
@@ -1509,6 +1528,11 @@
     });
 
     app.route("/crashes/:group", "crashgroup", function(group) {
+        groupId = group;
+        this.renderWhenReady(getCrashgroupView());
+    });
+
+    app.route("/crashes/:group/filter/*query", "crashgroup", function(group) {
         groupId = group;
         this.renderWhenReady(getCrashgroupView());
     });
