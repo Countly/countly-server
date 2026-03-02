@@ -17,7 +17,7 @@
         <!-- ClickHouse Consumer Section -->
         <template v-if="hasFetched">
             <!-- Connect monitoring not enabled -->
-            <cly-section v-if="!connectEnabled && sinkConsumers.length === 0" :title="i18n('ingestion-status.clickhouse-consumer.title')" :tooltip="i18n('ingestion-status.clickhouse-consumer.tooltip')">
+            <cly-section v-if="!connectEnabled && (!sinkConsumers || sinkConsumers.length === 0)" :title="i18n('ingestion-status.clickhouse-consumer.title')" :tooltip="i18n('ingestion-status.clickhouse-consumer.tooltip')">
                 <div class="bu-has-text-centered bu-p-5 color-cool-gray-50">
                     <i class="el-icon-warning-outline bu-mr-2"></i>
                     <span>{{ i18n('ingestion-status.not-enabled') }}</span>
@@ -47,7 +47,7 @@
                 </cly-section>
 
                 <!-- Sink Lag History Chart -->
-                <cly-section v-if="throughputHistory.length > 0" :title="i18n('ingestion-status.lag-history.title')" :tooltip="i18n('ingestion-status.lag-history.tooltip')">
+                <cly-section v-if="throughputHistory && throughputHistory.length > 0" :title="i18n('ingestion-status.lag-history.title')" :tooltip="i18n('ingestion-status.lag-history.tooltip')">
                     <cly-chart-line
                         :option="throughputChartOption"
                         :height="300"
@@ -107,7 +107,7 @@
                 </cly-section>
 
                 <!-- Sink Consumer Group Details -->
-                <cly-section v-if="sinkConsumers.length > 0" :title="i18n('ingestion-status.consumer-group.title')" :tooltip="i18n('ingestion-status.consumer-group.tooltip')">
+                <cly-section v-if="sinkConsumers && sinkConsumers.length > 0" :title="i18n('ingestion-status.consumer-group.title')" :tooltip="i18n('ingestion-status.consumer-group.tooltip')">
                     <cly-datatable-n :rows="sinkConsumers" :resizable="true" :force-loading="isLoading">
                         <template v-slot="scope">
                             <el-table-column column-key="groupId" prop="groupId" sortable="custom" :label="i18n('aggregator-status.table.group-id')" min-width="180">
@@ -163,7 +163,7 @@
                 </cly-section>
 
                 <!-- Sink Processing Stats -->
-                <cly-section v-if="sinkPartitions.length > 0" :title="i18n('ingestion-status.processing-stats.title')" :tooltip="i18n('ingestion-status.processing-stats.tooltip')">
+                <cly-section v-if="sinkPartitions && sinkPartitions.length > 0" :title="i18n('ingestion-status.processing-stats.title')" :tooltip="i18n('ingestion-status.processing-stats.tooltip')">
                     <cly-datatable-n :rows="sinkPartitions" :resizable="true" :force-loading="isLoading">
                         <template v-slot="scope">
                             <el-table-column column-key="consumerGroup" prop="consumerGroup" sortable="custom" :label="i18n('aggregator-status.table.consumer-group')" min-width="150">
