@@ -44,8 +44,8 @@ function createApiApp({countlyConfig, processRequest, plugins, rateLimitMiddlewa
     app.use(rateLimitMiddleware);
 
     // Core routes migrated from requestProcessor.js switch/case
+    app.use(require('../routes/jwt.ts').default);
     app.use(require('../routes/ping'));
-    app.use(require('../routes/jwt'));
     app.use(require('../routes/token'));
     app.use(require('../routes/notes'));
     app.use(require('../routes/cms'));

@@ -7,11 +7,10 @@
 
 import { createRequire } from 'module';
 import type { Params } from '../../types/requestProcessor';
-import type { Request } from 'express';
+import express from "express";
 
 // @ts-expect-error TS1470 - import.meta is valid at runtime
 const require = createRequire(import.meta.url);
-const express = require('express');
 const router = express.Router();
 const jwtTokens = require('../parts/mgmt/jwt_tokens.js') as {
     login(params: Params): void;
@@ -19,12 +18,8 @@ const jwtTokens = require('../parts/mgmt/jwt_tokens.js') as {
     revoke(params: Params): void;
 };
 
-interface CountlyRequest {
-    countlyParams: Params;
-}
-
 // POST /o/jwt/token - Login with username/password, receive JWT tokens
-router.post('/o/jwt/token', (req: Request) => {
+router.post('/o/jwt/token', (req) => {
     jwtTokens.login(req.countlyParams);
 });
 
