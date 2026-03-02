@@ -202,10 +202,15 @@ class ColdPartitionMergingJob extends job.Job {
      * Executes a ClickHouse query and returns the result as JSON.
      * @param {object} client - ClickHouse client instance
      * @param {string} query - SQL query string
+     * @param {Object} [queryParams] - Optional parameterized query values
      * @returns {Promise<Array>} - Resulting rows as an array of objects
      */
-    async #queryJSON(client, query) {
-        const res = await client.query({ query, format: 'JSONEachRow' });
+    async #queryJSON(client, query, queryParams) {
+        const opts = { query, format: 'JSONEachRow' };
+        if (queryParams) {
+            opts.query_params = queryParams;
+        }
+        const res = await client.query(opts);
         return res.json();
     }
 
@@ -232,12 +237,12 @@ class ColdPartitionMergingJob extends job.Job {
         const q = `
             SELECT p.partition_id, sum(p.rows) AS rows, min(p.min_time) AS part_min_time, max(p.max_time) AS part_max_time
             FROM system.parts AS p
-            WHERE p.active = 1 AND database = '${db}' AND table = '${table}'
+            WHERE p.active = 1 AND database = {db:String} AND table = {tbl:String}
             GROUP BY p.partition_id
             HAVING part_max_time < now() - INTERVAL ${Number(daysOld)} DAY
             ORDER BY part_min_time ASC;
         `;
-        return this.#queryJSON(client, q);
+        return this.#queryJSON(client, q, { db, tbl: table });
     }
 
     /**
@@ -360,7 +365,7 @@ class ColdPartitionMergingJob extends job.Job {
     async #getColdRollupStats(client, db, table, daysOld, canonExpr) {
         const q = `
             WITH COLD AS (
-              SELECT *
+              SELECT a, uid, uid_canon
               FROM ${db}.${table}
               WHERE ts < now() - INTERVAL ${Number(daysOld)} DAY
             )
