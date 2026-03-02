@@ -62,6 +62,9 @@
         }
     };
 
+    // Flag to prevent multiple session expired dialogs from concurrent failed requests
+    let sessionExpiredDialogShown = false;
+
     var _$ = {
         ajax: function(request, options) {
             options = options || {};
@@ -71,7 +74,28 @@
             if (!options.disableAutoCatch) {
                 return ajaxP.catch(function(jqXHR) {
                     if (jqXHR.responseJSON && jqXHR.responseJSON.result === 'Token not valid') {
-                        CountlyHelpers.logout();
+                        // Prevent multiple dialogs from concurrent failed requests
+                        if (sessionExpiredDialogShown) {
+                            return;
+                        }
+                        sessionExpiredDialogShown = true;
+                        // Show alert with callback - dispatching directly to store allows callback on message intent
+                        const currentStore = window.countlyVue?.vuex?.getGlobalStore();
+                        if (currentStore) {
+                            currentStore.dispatch('countlyCommon/onAddDialog', {
+                                intent: 'message',
+                                title: jQuery.i18n.map['common.session-expired'],
+                                message: jQuery.i18n.map['common.session-expired-message'],
+                                type: 'danger',
+                                confirmLabel: jQuery.i18n.map['common.go-to-login'],
+                                callback: () => CountlyHelpers.logout()
+                            });
+                        }
+                        else {
+                            // Fallback if store not available
+                            CountlyHelpers.logout();
+                        }
+                        return;
                     }
                     if (jqXHR.abort_reason === "duplicate" || (jqXHR.statusText !== "abort" && jqXHR.statusText !== "canceled")) {
                         app.activeView.onError(jqXHR);

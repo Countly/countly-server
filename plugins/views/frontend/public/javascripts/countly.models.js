@@ -172,7 +172,7 @@
                 action: 'getTable',
                 visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols),
                 "period": countlyCommon.getPeriodAsDateStrings(),
-                "periodOffset": new Date().getTimezoneOffset(),
+                "periodOffset": new Date().getTimezoneOffset()
             };
             data = data || {};
             var selectedInfo = context.getters.selectedData;
@@ -714,11 +714,11 @@
     //graphData['appID'][]
     //Public Methods
     countlyViews.initialize = function() {
-        if (_initialized && _period === countlyCommon.getPeriodForAjax() && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
+        if (_initialized && _period === countlyCommon.getPeriodAsDateStrings() && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
             return this.refresh();
         }
 
-        countlyCommon.getPeriodAsDateStrings(),
+        _period = countlyCommon.getPeriodAsDateStrings();
         this.reset();
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;

@@ -476,7 +476,7 @@ function streamExport(
             params.res.write(processedValues.join(',') + '\r\n');
         });
 
-        stream.once('end', function() {
+        stream.once('close', function() {
             setTimeout(function() {
                 if (listAtEnd) {
                     for (let p = 0; p < paramList.length; p++) {
@@ -502,7 +502,7 @@ function streamExport(
             xc.write(values);
         });
 
-        stream.once('end', function() {
+        stream.once('close', function() {
             setTimeout(function() {
                 if (listAtEnd) {
                     xc.write(paramList);
@@ -525,7 +525,7 @@ function streamExport(
             }
         });
 
-        stream.once('end', function() {
+        stream.once('close', function() {
             setTimeout(function() {
                 params.res.write(']');
                 params.res.end();
@@ -837,7 +837,8 @@ const exportsModule = {
     fromDatabase,
     fromRequest,
     fromRequestQuery,
-    fromData
+    fromData,
+    transformValuesInObject
 };
 
 export default exportsModule;
@@ -850,6 +851,7 @@ export {
     fromDatabase,
     fromRequest,
     fromRequestQuery,
-    fromData
+    fromData,
+    transformValuesInObject
 };
 export type { ExportOptions, Params, Mapper };

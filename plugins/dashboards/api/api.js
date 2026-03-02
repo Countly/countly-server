@@ -2089,11 +2089,11 @@ var ejs = require("ejs");
     });
 
     plugins.register("/import", async function({params, importData}) {
-        if (importData.name === 'dashboards') {
+        if (importData && importData.name === 'dashboards') {
             await importDashboard(params, importData);
             return true;
         }
-        else if (importData.name === 'dashboard.widgets') {
+        else if (importData && importData.name === 'dashboard.widgets') {
             await importWidgets(params, importData);
             return true;
         }
