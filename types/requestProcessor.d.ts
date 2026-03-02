@@ -1,9 +1,13 @@
 import { ServerResponse, IncomingMessage } from "http";
 import { ObjectId } from "mongodb";
 import { TimeObject } from "./common";
+
+// this is required because of the name conflict with Params here and the one
+// inside express-serve-static-core.
+type CountlyParams = Params;
 declare module 'express-serve-static-core' {
   export interface Request {
-    countlyParams?: Params;
+    countlyParams: CountlyParams;
   }
 }
 
@@ -302,7 +306,7 @@ export interface CountlyAPI {
  *         }
  *     }
  * };
- * 
+ *
  * // processing request
  * processRequest(params);
  */
@@ -317,9 +321,9 @@ export declare function processRequest(params: Params): void;
  * @returns Promise that resolves when user processing is complete
  */
 export declare function processUserFunction(
-    params: Params, 
-    initiator: any, 
-    done: (error?: any) => void, 
+    params: Params,
+    initiator: any,
+    done: (error?: any) => void,
     try_times?: number
 ): Promise<void>;
 
