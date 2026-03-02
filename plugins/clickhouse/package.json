@@ -20,7 +20,7 @@
     "high-performance"
   ],
   "dependencies": {
-    "@clickhouse/client": "^1.13.0"
+    "@clickhouse/client": "^1.17.0"
   },
   "private": true
 }
