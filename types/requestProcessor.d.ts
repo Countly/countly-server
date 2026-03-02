@@ -1,12 +1,6 @@
 import { ServerResponse, IncomingMessage } from "http";
 import { ObjectId } from "mongodb";
 import { TimeObject } from "./common";
-declare module 'express-serve-static-core' {
-  export interface Request {
-    countlyParams?: Params;
-  }
-}
-
 /** Application user interface representing a document from the app_users collection */
 export interface AppUser {
     /** MongoDB document ID */
