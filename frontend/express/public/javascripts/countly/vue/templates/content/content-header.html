@@ -99,6 +99,7 @@
                 {{ toggleLocalValue ? 'Pause': 'Publish' }}
             </button>
         </div>
+        <slot name="header-actions"></slot>
         <cly-more-options
             v-if="isOptionsButtonVisible"
             class="cly-vue-content-builder-header__options-button"
