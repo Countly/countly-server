@@ -13,6 +13,6 @@
   "private": true,
   "dependencies": {
     "kafkajs": "^2.2.4",
-    "lz4-napi": "^2.8.0"
+    "lz4-napi": "^2.9.0"
   }
 }
