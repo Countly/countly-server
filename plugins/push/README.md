@@ -10,3 +10,4 @@ These URLs need to be accessible by the Countly instance:
 	- api.push.apple.com
 - for Huawei
 	- push-api.cloud.huawei.com
+    - oauth-login.cloud.huawei.com
