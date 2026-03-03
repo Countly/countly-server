@@ -1,15 +1,12 @@
-/**
- * @typedef {import('./types/queue.ts').PushEvent} PushEvent
- * @typedef {import('./types/queue.ts').ResultEvent} ResultEvent
- * @typedef {import('./types/utils.ts').ErrorObject} ErrorObject
- */
+import type { PushEvent, ResultEvent } from "./types/queue";
+import type { ErrorObject } from "./types/utils";
+import { send as androidSend } from "./platforms/android";
+import { send as iosSend } from "./platforms/ios";
+import { send as huaweiSend } from "./platforms/huawei";
+import { sendResultEvents } from "./lib/kafka";
+import { SendError, TooLateToSend } from "./lib/error";
 
-const { send: androidSend } = require("./platforms/android.js");
-const { send: iosSend } = require("./platforms/ios.js");
-const { send: huaweiSend } = require("./platforms/huawei.js");
-const { sendResultEvents } = require("./lib/kafka.js");
-const { SendError, TooLateToSend } = require("./lib/error.js");
-const log = require('../../../../api/utils/common').log('push:sender');
+const log: any = require('../../../../api/utils/common').log('push:sender');
 
 /**
  * Sends an array of push events to the appropriate platform handlers.
@@ -17,13 +14,9 @@ const log = require('../../../../api/utils/common').log('push:sender');
  * The function waits for all push events to be processed and returns an array of result events.
  * If any push event fails, it captures the error and includes it in the result.
  * If `autoHandleResults` is false, the function will not send the results to Kafka.
- * @param {PushEvent[]} pushes - Array of push events to send
- * @param {boolean} autoHandleResults - If false, the function will not send the results to Kafka.
- * @returns {Promise<ResultEvent[]>} A promise that resolves to an array of result events.
  */
-async function sendAllPushes(pushes, autoHandleResults = true) {
-    /** @type {Promise<string>[]} */
-    const promises = [];
+export async function sendAllPushes(pushes: PushEvent[], autoHandleResults = true): Promise<ResultEvent[]> {
+    const promises: Promise<string>[] = [];
     for (let i = 0; i < pushes.length; i++) {
         const push = pushes[i];
         if (push.sendBefore && push.sendBefore.getTime() < Date.now()) {
@@ -43,8 +36,7 @@ async function sendAllPushes(pushes, autoHandleResults = true) {
         }
     }
     const results = await Promise.allSettled(promises);
-    /** @type {ResultEvent[]} */
-    const resultEvents = results.map((result, i) => {
+    const resultEvents: ResultEvent[] = results.map((result, i) => {
         const pushEvent = pushes[i];
         if (result.status === "fulfilled") {
             return {
@@ -54,10 +46,8 @@ async function sendAllPushes(pushes, autoHandleResults = true) {
             };
         }
         else {
-            /** @type {string=} */
-            let response;
-            /** @type {ErrorObject} */
-            let error = { name: "UnkownError", message: "UnkownError" };
+            let response: string | undefined;
+            let error: ErrorObject = { name: "UnkownError", message: "UnkownError" };
             if (result.reason instanceof Error) {
                 const { name, message, stack } = result.reason;
                 error = { name, message, stack };
@@ -85,7 +75,3 @@ async function sendAllPushes(pushes, autoHandleResults = true) {
     }
     return resultEvents;
 }
-
-module.exports = {
-    sendAllPushes
-};

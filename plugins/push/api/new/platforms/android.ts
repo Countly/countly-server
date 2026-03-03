@@ -1,48 +1,30 @@
-/**
- * @typedef {import("../types/queue").PushEvent} PushEvent
- * @typedef {import("../types/message").Content} Content
- * @typedef {import("../types/message").Message} Message
- * @typedef {import("../types/user").User} User
- * @typedef {import("../types/queue").AndroidMessagePayload} AndroidMessagePayload
- * @typedef {import("../types/utils").ProxyConfiguration} ProxyConfiguration
- * @typedef {{ proxy?: ProxyConfiguration, serviceAccount: string }} FirebaseAppConfiguration
- * @typedef {import("../types/credentials").FCMCredentials} FCMCredentials
- * @typedef {import("../types/credentials").UnvalidatedFCMCredentials} UnvalidatedFCMCredentials
- * @typedef {import("firebase-admin").FirebaseError} FirebaseError
- * @typedef {import("../lib/template").TemplateContext} TemplateContext
- */
-const firebaseAdmin = require("firebase-admin");
-const { HttpsProxyAgent } = require("https-proxy-agent");
-const { buildProxyUrl, serializeProxyConfig, flattenObject, removeUPFromUserPropertyKey } = require("../lib/utils.js");
-const { PROXY_CONNECTION_TIMEOUT } = require("../constants/proxy-config.json");
-const { InvalidCredentials, SendError, FCMErrors } = require("../lib/error.js");
-const { createHash } = require("crypto");
-const { ObjectId } = require("mongodb");
+import firebaseAdmin from "firebase-admin";
+import { HttpsProxyAgent } from "https-proxy-agent";
+import { ObjectId } from "mongodb";
+import { createHash } from "crypto";
+import type { PushEvent, AndroidMessagePayload } from "../types/queue";
+import type { Content, Message } from "../types/message";
+import type { ProxyConfiguration } from "../types/utils";
+import type { FCMCredentials, UnvalidatedFCMCredentials } from "../types/credentials";
+import type { TemplateContext } from "../lib/template";
+import { buildProxyUrl, serializeProxyConfig, flattenObject, removeUPFromUserPropertyKey } from "../lib/utils";
+import { InvalidCredentials, SendError, FCMErrors } from "../lib/error";
+import { PROXY_CONNECTION_TIMEOUT } from "../constants/proxy-config.json";
 
-/** @type {WeakMap<firebaseAdmin.app.App, ProxyConfiguration>} */
-const appProxyMap = new WeakMap();
+interface FirebaseError extends Error {
+    code: string;
+}
 
-/**
- * Checks weather a previously used proxy configuration for an app is updated or not
- * @param {firebaseAdmin.app.App} app - Previously created FCM application object
- * @param {ProxyConfiguration=} newProxy - Proxy configuration for the given PushEvent
- * @returns {boolean} true if proxy configuration changed
- */
-function isProxyConfigurationUpdated(app, newProxy) {
+const appProxyMap = new WeakMap<firebaseAdmin.app.App, ProxyConfiguration>();
+
+export function isProxyConfigurationUpdated(app: firebaseAdmin.app.App, newProxy?: ProxyConfiguration): boolean {
     const oldSerialized = serializeProxyConfig(appProxyMap.get(app));
     const newSerialized = serializeProxyConfig(newProxy);
     return oldSerialized !== newSerialized;
 }
 
-/**
- * Sends a push notification using Firebase Cloud Messaging (FCM)
- * @param {PushEvent} pushEvent - Push event object
- * @returns {Promise<string>} Promise that resolves to the message ID string
- */
-async function send(pushEvent) {
-    const creds = /** @type {FCMCredentials} */(
-        pushEvent.credentials
-    );
+export async function send(pushEvent: PushEvent): Promise<string> {
+    const creds = pushEvent.credentials as FCMCredentials;
     const appName = creds.hash;
     let firebaseApp = firebaseAdmin.apps.find(
         app => app ? app.name === appName : false
@@ -62,8 +44,7 @@ async function send(pushEvent) {
             "base64"
         );
         const serviceAccountObject = JSON.parse(buffer.toString("utf8"));
-        /** @type {HttpsProxyAgent<"proxy-address">=} */
-        let agent;
+        let agent: HttpsProxyAgent<string> | undefined;
         if (pushEvent.proxy) {
             agent = new HttpsProxyAgent(buildProxyUrl(pushEvent.proxy), {
                 keepAlive: true,
@@ -75,7 +56,7 @@ async function send(pushEvent) {
             httpAgent: agent,
             credential: firebaseAdmin.credential.cert(
                 serviceAccountObject,
-                agent
+                agent as any
             ),
         }, appName);
         // save proxy object to track its state
@@ -91,9 +72,8 @@ async function send(pushEvent) {
         return messageId;
     }
     catch (error) {
-        // if ("code" in  && error.code in FCMErrors) {
-        if ("code" in /** @type {FirebaseError} */(error)) {
-            const err = /** @type {FirebaseError} */(error);
+        if (error && typeof error === "object" && "code" in error) {
+            const err = error as FirebaseError;
             const firebaseError = FCMErrors[err.code];
             if (!firebaseError) {
                 throw error;
@@ -113,14 +93,10 @@ async function send(pushEvent) {
     }
 }
 
-/**
- * Validates the FCM credentials, hashes the service account file, and returns the credentials with a view object.
- * @param {UnvalidatedFCMCredentials} unvalidatedCreds - FCM credentials object
- * @param {ProxyConfiguration=} proxyConfig - FCM credentials object
- * @returns {Promise<{ creds: FCMCredentials, view: FCMCredentials }>} credentials with validated and hashed service account file and its view object
- * @throws {InvalidCredentials} if credentials are invalid
- */
-async function validateCredentials(unvalidatedCreds, proxyConfig) {
+export async function validateCredentials(
+    unvalidatedCreds: UnvalidatedFCMCredentials,
+    proxyConfig?: ProxyConfiguration
+): Promise<{ creds: FCMCredentials; view: FCMCredentials }> {
     const { serviceAccountFile, type } = unvalidatedCreds;
     if (type !== "fcm") {
         throw new InvalidCredentials("Invalid credentials type");
@@ -141,7 +117,7 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
         serviceAccountFile.substring(serviceAccountFile.indexOf(',') + 1),
         'base64'
     ).toString('utf8');
-    let serviceAccountObject;
+    let serviceAccountObject: any;
     try {
         serviceAccountObject = JSON.parse(serviceAccountJSON);
     }
@@ -159,7 +135,7 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
         || !serviceAccountObject.client_email) {
         throw new InvalidCredentials("Service account file is not a valid Firebase service account JSON");
     }
-    const credentials = {
+    const credentials: FCMCredentials = {
         ...unvalidatedCreds,
         _id: new ObjectId,
         serviceAccountFile,
@@ -195,8 +171,6 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
         });
     }
     catch (error) {
-        // normally, we expect an INVALID_REGISTRATION_TOKEN or REGISTRATION_TOKEN_NOT_REGISTERED
-        // but for some reason fcm returns with INVALID_ARGUMENT:
         const invalidTokenErrorMessage = "INVALID_ARGUMENT: The registration token is not a valid FCM registration token";
         if (error instanceof SendError && error.message === invalidTokenErrorMessage) {
             return {
@@ -212,16 +186,8 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
     throw new InvalidCredentials("Test connection failed for an unknown reason.");
 }
 
-/**
- * Maps message contents to an FCM request payload
- * @param {Message} messageDoc - Message document
- * @param {Content} content - Content object built from message contents in template builder
- * @param {TemplateContext} context - User object or a map of custom properties
- * @returns {AndroidMessagePayload} Android message payload
- */
-function mapMessageToPayload(messageDoc, content, context) {
-    /** @type {AndroidMessagePayload} */
-    const payload = {
+export function mapMessageToPayload(messageDoc: Message, content: Content, context: TemplateContext): AndroidMessagePayload {
+    const payload: AndroidMessagePayload = {
         data: {
             "c.i": messageDoc._id.toString(),
         }
@@ -278,7 +244,7 @@ function mapMessageToPayload(messageDoc, content, context) {
             specific => typeof specific.large_icon === "string"
         );
         if (largeIconItem) {
-            payload.data["c.li"] = /** @type {string} */(largeIconItem.large_icon);
+            payload.data["c.li"] = largeIconItem.large_icon as string;
         }
     }
     if (content.expiration) {
@@ -289,10 +255,3 @@ function mapMessageToPayload(messageDoc, content, context) {
     }
     return payload;
 }
-
-module.exports = {
-    send,
-    isProxyConfigurationUpdated,
-    validateCredentials,
-    mapMessageToPayload,
-};

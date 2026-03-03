@@ -1,59 +1,42 @@
-/**
- * @typedef {import("../types/message.ts").Message} Message
- * @typedef {import("../types/message.ts").Content} Content
- * @typedef {import("../types/queue.ts").IOSMessagePayload} IOSMessagePayload
- * @typedef {import("../types/user.ts").User} User
- * @typedef {import("../types/queue.ts").PushEvent} PushEvent
- * @typedef {import("../types/queue.ts").IOSConfig} IOSConfig
- * @typedef {import("../types/credentials.ts").APNCredentials} APNCredentials
- * @typedef {import("../types/credentials.ts").APNP12Credentials} APNP12Credentials
- * @typedef {import("../types/credentials.ts").APNP8Credentials} APNP8Credentials
- * @typedef {import("../types/utils.ts").ProxyConfiguration} ProxyConfiguration
- * @typedef {{ token: string; createdAt: number; }} JWTCache
- * @typedef {{ agent: http2Wrapper.proxies.Http2OverHttp; lastUsedAt: number; }} ProxyCache
- * @typedef {import("../types/credentials.ts").TLSKeyPair} TLSKeyPair
- * @typedef {{ keyPair: TLSKeyPair; lastUsedAt: number; }} TLSKeyPairCache
- * @typedef {Omit<APNP12Credentials, "type"|"_id"|"cert"|"secret"|"hash">&TLSKeyPair} P12CertificateContents
- * @typedef {import("http2").OutgoingHttpHeaders} OutgoingHttpHeaders
- * @typedef {import("../types/credentials.ts").UnvalidatedAPNCredentials} UnvalidatedAPNCredentials
- * @typedef {import("../types/credentials.ts").UnvalidatedAPNP8Credentials} UnvalidatedAPNP8Credentials
- * @typedef {import("../lib/template.js").TemplateContext} TemplateContext
- */
+import jwt from "jsonwebtoken";
+import http2Wrapper from "http2-wrapper";
+import nodeForge from "node-forge";
+import { URL } from "url";
+import { ObjectId } from "mongodb";
+import { createHash } from "crypto";
+import type { OutgoingHttpHeaders } from "http2";
+import type { PushEvent, IOSMessagePayload, IOSConfig } from "../types/queue";
+import type { Content, Message } from "../types/message";
+import type { APNCredentials, APNP12Credentials, APNP8Credentials, UnvalidatedAPNCredentials, UnvalidatedAPNP8Credentials, TLSKeyPair } from "../types/credentials";
+import type { ProxyConfiguration } from "../types/utils";
+import type { TemplateContext } from "../lib/template";
+import { serializeProxyConfig, removeUPFromUserPropertyKey } from "../lib/utils";
+import { InvalidCredentials, SendError, InvalidResponse, APNSErrors, InvalidDeviceToken } from "../lib/error";
+import { PROXY_CONNECTION_TIMEOUT } from "../constants/proxy-config.json";
 
-const jwt = require("jsonwebtoken");
-const http2Wrapper = require("http2-wrapper");
-const nodeForge = require("node-forge");
-const { URL } = require("url");
-const { ObjectId } = require("mongodb");
-const { PROXY_CONNECTION_TIMEOUT } = require("../constants/proxy-config.json");
-const {
-    serializeProxyConfig,
-    removeUPFromUserPropertyKey
-} = require("../lib/utils.js");
-const {
-    InvalidCredentials,
-    SendError,
-    InvalidResponse,
-    APNSErrors,
-    InvalidDeviceToken
-} = require("../lib/error.js");
-const { createHash } = require("crypto");
-/** @type {{[serializedProxyConfig: string]: ProxyCache}} */
-const PROXY_CACHE = {};
-/** @type {{[credentialHash: string]: JWTCache }} */
-const TOKEN_CACHE = {};
+interface JWTCache {
+    token: string;
+    createdAt: number;
+}
+
+interface ProxyCache {
+    agent: any;
+    lastUsedAt: number;
+}
+
+interface TLSKeyPairCache {
+    keyPair: TLSKeyPair;
+    lastUsedAt: number;
+}
+
+type P12CertificateContents = Omit<APNP12Credentials, "type" | "_id" | "cert" | "secret" | "hash"> & TLSKeyPair;
+
+const PROXY_CACHE: { [serializedProxyConfig: string]: ProxyCache } = {};
+const TOKEN_CACHE: { [credentialHash: string]: JWTCache } = {};
 const TOKEN_TTL = 20 * 60 * 1000; // 20 mins
-/** @type {{[hash: string]: TLSKeyPairCache}} */
-const TLS_KEY_PAIR_CACHE = {};
+const TLS_KEY_PAIR_CACHE: { [hash: string]: TLSKeyPairCache } = {};
 
-/**
- * This function caches created tokens for a 20 mins. This is required because
- * APNs doesn't like changing tokens more than twice in 20 mins on the same
- * TCP connection.
- * @param {APNCredentials} credentials - APN Token credentials
- * @returns {string|undefined} JWT Token
- */
-function getAuthToken(credentials) {
+export function getAuthToken(credentials: APNCredentials): string | undefined {
     if (credentials.type !== "apn_token") {
         return;
     }
@@ -70,12 +53,7 @@ function getAuthToken(credentials) {
     return token;
 }
 
-/**
- * Creates a proxy agent with the given configuration, then caches it.
- * @param {ProxyConfiguration=} config - Proxy configuration
- * @returns {http2Wrapper.proxies.Http2OverHttp|undefined} Proxy agent
- */
-function getProxyAgent(config) {
+export function getProxyAgent(config?: ProxyConfiguration): any {
     if (!config) {
         return;
     }
@@ -84,8 +62,7 @@ function getProxyAgent(config) {
         PROXY_CACHE[serializedProxyConfig].lastUsedAt = Date.now();
         return PROXY_CACHE[serializedProxyConfig].agent;
     }
-    /** @type {http2Wrapper.ProxyOptions} */
-    const proxyOptions = {
+    const proxyOptions: any = {
         url: "http://" + config.host + ":" + config.port,
         headers: { connection: "keep-alive" }
     };
@@ -96,7 +73,7 @@ function getProxyAgent(config) {
             proxyOptions.headers["Proxy-Authorization"] = "Basic " + basicAuth;
         }
     }
-    const agent = new http2Wrapper.proxies.Http2OverHttp({
+    const agent = new (http2Wrapper as any).proxies.Http2OverHttp({
         timeout: PROXY_CONNECTION_TIMEOUT,
         proxyOptions
     });
@@ -107,12 +84,7 @@ function getProxyAgent(config) {
     return agent;
 }
 
-/**
- * Gets TLS Key Pair from the given credentials, caches it.
- * @param {APNP12Credentials} credentials - APN P12 credentials
- * @returns {TLSKeyPair} TLS Key Pair
- */
-function getTlsKeyPair(credentials) {
+export function getTlsKeyPair(credentials: APNP12Credentials): TLSKeyPair {
     const cache = TLS_KEY_PAIR_CACHE[credentials.hash];
     if (cache) {
         cache.lastUsedAt = Date.now();
@@ -121,21 +93,13 @@ function getTlsKeyPair(credentials) {
     const { cert, key } = parseP12Certificate(
         credentials.cert, credentials.secret
     );
-    const keyPair = { cert, key };
+    const keyPair: TLSKeyPair = { cert, key };
     TLS_KEY_PAIR_CACHE[credentials.hash] = { keyPair, lastUsedAt: Date.now() };
     return keyPair;
 }
 
-/**
- * Parses the given P12 certificate, extracts topics, bundle id, notBefore and
- * notAfter dates.
- * @param {string} certificate - Base64 encoded P12 certificate
- * @param {string=} secret - Passphrase for the P12 certificate
- * @returns {P12CertificateContents} Parsed certificate contents
- */
-function parseP12Certificate(certificate, secret) {
-    /** @type {Partial<P12CertificateContents>&{topics: string[]}} */
-    const result = {
+export function parseP12Certificate(certificate: string, secret?: string): P12CertificateContents {
+    const result: Partial<P12CertificateContents> & { topics: string[] } = {
         cert: undefined,
         key: undefined,
         notBefore: undefined,
@@ -143,7 +107,6 @@ function parseP12Certificate(certificate, secret) {
         bundle: undefined,
         topics: [],
     };
-    // parse the key pair
     const buffer = nodeForge.util.decode64(certificate);
     const asn1 = nodeForge.asn1.fromDer(buffer);
     const p12 = nodeForge.pkcs12.pkcs12FromAsn1(asn1, false, secret);
@@ -158,7 +121,6 @@ function parseP12Certificate(certificate, secret) {
     }
     result.cert = nodeForge.pki.certificateToPem(cert.cert);
     result.key = nodeForge.pki.privateKeyToPem(pk.key);
-    // parse extensions for topics, bundle, notBefore and notAfter:
     p12.safeContents.forEach(safeContents => {
         safeContents.safeBags.forEach(safeBag => {
             if (safeBag.cert) {
@@ -171,26 +133,14 @@ function parseP12Certificate(certificate, secret) {
                     }
                 }
                 var tpks = safeBag.cert.getExtension({
-                    // @ts-ignore
                     id: '1.2.840.113635.100.6.3.6'
-                });
-                // @ts-ignore
-                if (tpks && tpks.value) {
-                    // @ts-ignore
-                    let strValue = /** @type {string} */(tpks.value)
+                } as any);
+                if (tpks && (tpks as any).value) {
+                    let strValue = ((tpks as any).value as string)
                         .replace(/0[\x00-\x1f\(\)!]/gi, '');
                     strValue = strValue.replace('\f\f', '\f');
                     let value = strValue.split('\f')
                         .map(s => s.replace(/[^A-Za-z\-\.]/gi, '').trim());
-                    // next line is a workaround for a p12 file not being parsed
-                    // correctly. in the problematic file, first topic was
-                    // starting with a "-". full value of the extension was
-                    // something like this:
-                    //   - 0\x82\x01\x05\f-ly.count.CountlySwift0\x07\f
-                    //   - \x05topic\f2ly.count.CountlySwift.voip0\x06\
-                    //   - f\x04voip\f:ly.count.CountlySwift.complicati
-                    //   - on0\x0E\f\fcomplication\f6ly.count.CountlySw
-                    //   - ift.voip-ptt0\x0B\f\t.voip-ptt
                     value = value.map(
                         s => s.replace(/^[^A-Za-z\.]/, "").trim()
                     );
@@ -227,34 +177,23 @@ function parseP12Certificate(certificate, secret) {
     }
     result.topics.sort((a, b) => a.length - b.length);
     result.bundle = result.topics[0];
-    return /** @type {P12CertificateContents} */(result);
+    return result as P12CertificateContents;
 }
 
-/**
- * Sends the given push event to APNs service and returns the raw response.
- * @param {PushEvent} pushEvent - Push event to send
- * @returns {Promise<string>} Raw response from APNs
- * @throws Unknown connection errors
- * @throws {SendError} on known APNs errors
- * @throws {InvalidDeviceToken} if the device token is invalid
- * @throws {InvalidResponse} if the response is invalid
- */
-async function send(pushEvent) {
+export async function send(pushEvent: PushEvent): Promise<string> {
     const hostname = pushEvent.env === "d"
         ? "api.development.push.apple.com"
         : "api.push.apple.com";
     const url = new URL("https://" + hostname + ":2197");
-    const credentials = /** @type {APNCredentials} */(pushEvent.credentials);
-    /** @type {OutgoingHttpHeaders} */
-    const headers = {
+    const credentials = pushEvent.credentials as APNCredentials;
+    const headers: OutgoingHttpHeaders = {
         ":method": "POST",
         ":path": "/3/device/" + pushEvent.token,
         ":scheme": url.protocol.replace(/:$/, ""),
         ":authority": url.host,
         "apns-topic": credentials.bundle,
     };
-    /** @type {http2Wrapper.RequestOptions} */
-    const options = {
+    const options: any = {
         headers,
         agent: getProxyAgent(pushEvent.proxy)
     };
@@ -266,33 +205,29 @@ async function send(pushEvent) {
         options.key = keyPair.key;
         options.cert = keyPair.cert;
     }
-    const platformConfig = /** @type {IOSConfig} */(
-        pushEvent.platformConfiguration
-    );
+    const platformConfig = pushEvent.platformConfiguration as IOSConfig;
     if (platformConfig.setContentAvailable) {
         headers["apns-priority"] = 5;
     }
 
-    const request = http2Wrapper.request(url, options);
+    const request = (http2Wrapper as any).request(url, options);
 
-    return new Promise((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
         request.on("error", reject);
-        request.on("response", (response) => {
+        request.on("response", (response: any) => {
             let data = "";
-            response.on("data", chunk => data += chunk);
+            response.on("data", (chunk: string) => data += chunk);
             response.on("end", () => {
-                const raw = Object.entries(response.headers)
+                const raw = Object.entries(response.headers as Record<string, string>)
                     .map(([key, value]) => key + ": " + value)
                     .join("\n")
                     + "\n\n" + data;
                 const status = response.statusCode;
 
-                // Success:
                 if (status === 200) {
                     return resolve(raw);
                 }
 
-                // Error:
                 if (!status) {
                     return reject(new InvalidResponse(
                         "APNs response doesn't have a valid status code",
@@ -325,14 +260,10 @@ async function send(pushEvent) {
     });
 }
 
-/**
- * Validates the given unvalidated credentials, returns the validated
- * @param {UnvalidatedAPNCredentials} unvalidatedCreds - Unvalidated credentials
- * @param {ProxyConfiguration=} proxyConfig - Optional proxy configuration
- * @returns {Promise<{ creds: APNCredentials, view: APNCredentials }>} Validated credentials and a view object
- * @throws {Error} if credentials are invalid
- */
-async function validateCredentials(unvalidatedCreds, proxyConfig) {
+export async function validateCredentials(
+    unvalidatedCreds: UnvalidatedAPNCredentials,
+    proxyConfig?: ProxyConfiguration
+): Promise<{ creds: APNCredentials; view: APNCredentials }> {
     if (unvalidatedCreds.type === "apn_universal") {
         if (typeof unvalidatedCreds.cert !== "string" || !unvalidatedCreds.cert) {
             throw new InvalidCredentials(
@@ -379,8 +310,7 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
             throw new InvalidCredentials('Certificate is expired');
         }
         const _creds = { ...unvalidatedCreds, ...content, cert: cleanedCert };
-        /** @type {APNP12Credentials} */
-        const creds = {
+        const creds: APNP12Credentials = {
             ..._creds,
             _id: new ObjectId,
             hash: createHash("sha256").update(JSON.stringify(_creds))
@@ -394,9 +324,7 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
         return { creds, view };
     }
     else { // creds.type === "apn_token"
-        const requiredFields = /** @type {Array<keyof UnvalidatedAPNP8Credentials>} */(
-            ["key", "keyid", "bundle", "team"]
-        );
+        const requiredFields: Array<keyof UnvalidatedAPNP8Credentials> = ["key", "keyid", "bundle", "team"];
         for (const field of requiredFields) {
             if (!unvalidatedCreds[field] || typeof unvalidatedCreds[field] !== "string") {
                 throw new InvalidCredentials(
@@ -432,8 +360,7 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
             unvalidatedCreds.key.indexOf(',') + 1
         );
         const _creds = { ...unvalidatedCreds };
-        /** @type {APNP8Credentials} */
-        const creds = {
+        const creds: APNP8Credentials = {
             ..._creds,
             _id: new ObjectId,
             hash: createHash("sha256").update(JSON.stringify(_creds))
@@ -445,13 +372,7 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
     }
 }
 
-/**
- * Tests the APN credentials by sending a test message to a random device token.
- * @param {APNCredentials} creds - Validated APN credentials
- * @param {ProxyConfiguration=} proxyConfig - Optional proxy configuration
- * @returns {Promise<boolean>} Returns true if the credentials are valid, throws otherwise
- */
-async function credentialTest(creds, proxyConfig) {
+export async function credentialTest(creds: APNCredentials, proxyConfig?: ProxyConfiguration): Promise<boolean> {
     try {
         await send({
             credentials: creds,
@@ -494,16 +415,8 @@ async function credentialTest(creds, proxyConfig) {
     throw new InvalidCredentials("Test connection failed for an unknown reason.");
 }
 
-/**
- * Maps message contents to an APNS request payload
- * @param {Message} messageDoc - Message document
- * @param {Content} content - Content object built from message contents in template builder
- * @param {TemplateContext} context - User object or a map of custom properties
- * @returns {IOSMessagePayload} IOS message payload
- */
-function mapMessageToPayload(messageDoc, content, context) {
-    /** @type {IOSMessagePayload} */
-    const payload = {
+export function mapMessageToPayload(messageDoc: Message, content: Content, context: TemplateContext): IOSMessagePayload {
+    const payload: IOSMessagePayload = {
         aps: {},
         c: { i: messageDoc._id.toString() }
     };
@@ -557,12 +470,10 @@ function mapMessageToPayload(messageDoc, content, context) {
     }
     if (content.specific && content.specific.length) {
         const platformSpecifics = content.specific
-            .reduce((acc, item) => ({ ...acc, ...item }), {});
+            .reduce((acc, item) => ({ ...acc, ...item }), {} as { [key: string]: string | number | boolean });
         if (platformSpecifics.subtitle) {
             payload.aps.alert = payload.aps.alert || {};
-            payload.aps.alert.subtitle = /** @type {string} */(
-                platformSpecifics.subtitle
-            );
+            payload.aps.alert.subtitle = platformSpecifics.subtitle as string;
         }
         if (platformSpecifics.setContentAvailable) {
             payload.aps["content-available"] = 1;
@@ -570,14 +481,3 @@ function mapMessageToPayload(messageDoc, content, context) {
     }
     return payload;
 }
-
-module.exports = {
-    send,
-    parseP12Certificate,
-    getTlsKeyPair,
-    getAuthToken,
-    getProxyAgent,
-    mapMessageToPayload,
-    validateCredentials,
-    credentialTest,
-};

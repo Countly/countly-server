@@ -1,35 +1,33 @@
-/**
- * @typedef {import('./types/queue.ts').ResultEvent} ResultEvent
- * @typedef {import('./types/queue.ts').ScheduleEvent} ScheduleEvent
- * @typedef {import('./types/message.ts').Result} Result
- * @typedef {import("mongodb").Db} MongoDb
- * @typedef {import("mongodb").AnyBulkWriteOperation} AnyBulkWriteOperation
- * @typedef {import("mongodb").BulkWriteResult} BulkWriteResult
- * @typedef {import("mongodb").SetFields<{[key: string]: any}>} SetFields
- * @typedef {import('./types/message.ts').PlatformKey} PlatformKey
- * @typedef {import('./types/schedule.ts').Schedule} Schedule
- * @typedef {"total"|"sent"|"failed"|"actioned"} Stat
- * @typedef {{ appId: string; uid: string; platformAndEnv: string; }} InvalidTokenInfo
- * @typedef {{ [key: string]: number; }} StatIncrementQuery
- */
+import { ObjectId } from "mongodb";
+import type { Db, AnyBulkWriteOperation, BulkWriteResult, SetFields } from "mongodb";
+import type { ResultEvent } from "./types/queue";
+import type { Result, PlatformKey } from "./types/message";
+import { InvalidDeviceToken } from "./lib/error";
+import { updateInternalsWithResults, sanitizeMongoPath } from "./lib/utils";
 
-const { ObjectId } = require("mongodb");
-const { InvalidDeviceToken } = require('./lib/error.js');
-const { updateInternalsWithResults, sanitizeMongoPath } = require("./lib/utils.js");
-const log = require('../../../../api/utils/common').log('push:resultor');
-/** @type {Stat[]} */
-const STAT_KEYS = ["total", "sent", "failed", "actioned"];
+const log: any = require('../../../../api/utils/common').log('push:resultor');
+
+type Stat = "total" | "sent" | "failed" | "actioned";
+
+interface InvalidTokenInfo {
+    appId: string;
+    uid: string;
+    platformAndEnv: string;
+}
+
+interface StatIncrementQuery {
+    [key: string]: number;
+}
+
+export const STAT_KEYS: Stat[] = ["total", "sent", "failed", "actioned"];
 
 /**
  * Processes the given results, updates the relevant Schedule and Message
  * documents, saves the results into message_results collection, clears
  * invalid tokens from app_users{appId} and push_{appId} collections and
  * records sent dates into push_{appId} collections.
- * @param {MongoDb} db - MongoDB database instance
- * @param {ResultEvent[]} results - Array of result events to process
- * @returns {Promise<void>} Promise that resolves when all operations are complete
  */
-async function saveResults(db, results) {
+export async function saveResults(db: Db, results: ResultEvent[]): Promise<void> {
     try {
         updateInternalsWithResults(results, log);
     }
@@ -37,8 +35,7 @@ async function saveResults(db, results) {
         log.e("Error while updating internals with results", results, error);
     }
 
-    /** @type {{[scheduleId: string]: { resultObject: Result; messageId: ObjectId; }}} */
-    const scheduleMap = {};
+    const scheduleMap: { [scheduleId: string]: { resultObject: Result; messageId: ObjectId } } = {};
     for (let i = 0; i < results.length; i++) {
         const result = results[i];
         const scheduleId = result.scheduleId.toString();
@@ -48,10 +45,8 @@ async function saveResults(db, results) {
                 messageId: result.messageId
             };
         }
-        /** @type {"total"|"sent"|"failed"|"actioned"} */
-        let stat = "sent";
-        /** @type {string|undefined} */
-        let error = undefined;
+        let stat: Stat = "sent";
+        let error: string | undefined = undefined;
         if (result.error) {
             stat = "failed";
             error = result.error.name + ": " + result.error.message;
@@ -83,7 +78,7 @@ async function saveResults(db, results) {
         // clean up the relevant information of invalid tokens inside
         // app_users{appId} and push_{appId}
         const tokenError = new InvalidDeviceToken("Adhoc error");
-        const invalidTokens = results
+        const invalidTokens: InvalidTokenInfo[] = results
             .filter(r => r.error?.name === tokenError.name)
             .map(r => ({
                 appId: r.appId.toString(),
@@ -109,15 +104,10 @@ async function saveResults(db, results) {
  * (eg: "tkap" for an android production token) from app_users{appId} collection.
  * This should be ran after receving an InvalidDeviceToken error from the
  * provider during PushEvent processing.
- * @param {MongoDb} db - MongoDB database instance
- * @param {InvalidTokenInfo[]} invalidTokens - Array of invalid tokens to clear
- * @returns {Promise<BulkWriteResult[]|undefined>} Promise resolving to the result of bulk write operations
  */
-async function clearInvalidTokens(db, invalidTokens) {
-    /** @type {{[appId: string]: { [platformAndEnv: string]: string[] }}} */
-    const mappedUserIds = {};
-    /** @type {{[collection: string]: AnyBulkWriteOperation[]}} */
-    const bulkWrites = {};
+export async function clearInvalidTokens(db: Db, invalidTokens: InvalidTokenInfo[]): Promise<BulkWriteResult[] | undefined> {
+    const mappedUserIds: { [appId: string]: { [platformAndEnv: string]: string[] } } = {};
+    const bulkWrites: { [collection: string]: AnyBulkWriteOperation[] } = {};
     for (let i = 0; i < invalidTokens.length; i++) {
         const { appId, uid, platformAndEnv } = invalidTokens[i];
         if (!(appId in mappedUserIds)) {
@@ -144,9 +134,7 @@ async function clearInvalidTokens(db, invalidTokens) {
                         _id: {
                             // this is actualy an array of strings (user ids are not ObjectId)
                             // but to overcome the type error, we cast it to ObjectId[]
-                            $in: /** @type {ObjectId[]} */(
-                                /** @type {unknown} */(mappedUserIds[appId][platformAndEnv])
-                            )
+                            $in: mappedUserIds[appId][platformAndEnv] as unknown as ObjectId[]
                         }
                     },
                     update: {
@@ -166,7 +154,7 @@ async function clearInvalidTokens(db, invalidTokens) {
             });
         }
     }
-    const promises = [];
+    const promises: Promise<BulkWriteResult>[] = [];
     for (const collectionName in bulkWrites) {
         promises.push(
             db.collection(collectionName).bulkWrite(bulkWrites[collectionName])
@@ -178,27 +166,10 @@ async function clearInvalidTokens(db, invalidTokens) {
 /**
  * Records sent dates for the given PushEvents into push_{appId}
  * collection (msg property).
- * example document from push_{appId}:
- * {
- *   _id: "123",
- *   msg: {
- *     "67bc694e4f89382bb2dcea5c": [1740400976395]
- *     "67bcd5736cb172aa14cfdea0": [1740428661597, 1740400976395]
- *   },
- *   tk: {
- *     id: "ios development token"
- *   }
- * }
- * @param {MongoDb} db - MongoDB database instance
- * @param {ResultEvent[]} sentPushEvents - Array of sent push events
- * @param {number=} date - Date to record as sent date (default: current date
- * @returns {Promise<BulkWriteResult[]|undefined>} Promise resolving to the result of bulk write operations
  */
-async function recordSentDates(db, sentPushEvents, date = Date.now()) {
-    /** @type {{[appId: string]: { [messageId: string]: string[] }}} */
-    const mappedUserIds = {};
-    /** @type {{[collection: string]: AnyBulkWriteOperation[]}} */
-    const bulkWrites = {};
+export async function recordSentDates(db: Db, sentPushEvents: ResultEvent[], date: number = Date.now()): Promise<BulkWriteResult[] | undefined> {
+    const mappedUserIds: { [appId: string]: { [messageId: string]: string[] } } = {};
+    const bulkWrites: { [collection: string]: AnyBulkWriteOperation[] } = {};
 
     for (let i = 0; i < sentPushEvents.length; i++) {
         const { appId: _appId, messageId: _messageId, uid } = sentPushEvents[i];
@@ -225,22 +196,20 @@ async function recordSentDates(db, sentPushEvents, date = Date.now()) {
                         _id: {
                             // this is actualy an array of strings (user ids are not ObjectId)
                             // but to overcome the type error, we cast it to ObjectId[]
-                            $in: /** @type {ObjectId[]} */(
-                                /** @type {unknown} */(mappedUserIds[appId][messageId])
-                            )
+                            $in: mappedUserIds[appId][messageId] as unknown as ObjectId[]
                         }
                     },
                     update: {
-                        $addToSet: /** @type {SetFields} */({
+                        $addToSet: {
                             ['msgs.' + messageId]: date
-                        })
+                        } as SetFields<{ [key: string]: any }>
                     }
                 }
             });
         }
     }
 
-    const promises = [];
+    const promises: Promise<BulkWriteResult>[] = [];
     for (const collectionName in bulkWrites) {
         promises.push(
             db.collection(collectionName).bulkWrite(bulkWrites[collectionName])
@@ -252,9 +221,8 @@ async function recordSentDates(db, sentPushEvents, date = Date.now()) {
 /**
  * Builds and returns a new Result object with all stats initialized to zero
  * and empty errors and sub results.
- * @returns {Result} New Result object
  */
-function buildResultObject() {
+export function buildResultObject(): Result {
     return {
         total: 0,
         sent: 0,
@@ -267,25 +235,16 @@ function buildResultObject() {
 
 /**
  * Increases the specified stat in the given Result object and its
- * sub-results for the specified platform and language. If the stat is "failed",
- * it also increments the count for the given error message in the errors object.
- * If the platform or language sub-results do not exist, they are created.
- * @param {Result} resultObject - The Result object to update
- * @param {PlatformKey} platform - The platform key (e.g., "i", "a", "h")
- * @param {string} language - The language code (e.g., "en")
- * @param {Stat} stat - The stat to increase ("total", "sent", "failed", or "actioned")
- * @param {string=} error - The error message (required if stat is "failed")
- * @param {number=} amount - The amount to increase the stat by (default is 1)
- * @returns {void}
+ * sub-results for the specified platform and language.
  */
-function increaseResultStat(
-    resultObject,
-    platform,
-    language,
-    stat,
-    error,
-    amount = 1
-) {
+export function increaseResultStat(
+    resultObject: Result,
+    platform: PlatformKey,
+    language: string,
+    stat: Stat,
+    error?: string,
+    amount: number = 1
+): void {
     if (!resultObject.subs) {
         resultObject.subs = {};
     }
@@ -321,13 +280,8 @@ function increaseResultStat(
 /**
  * Recursively builds an update query object for MongoDB to increment
  * the stats and errors of the given Result object and its sub-results.
- * The query object can be used with the $inc operator in an update operation.
- * @param {Result} result - The Result object to build the query from
- * @param {StatIncrementQuery} query - The query object to populate (default is an empty object)
- * @param {string} path - The current path in the Result object (default is "result")
- * @returns {StatIncrementQuery} The populated query object
  */
-function buildUpdateQueryForResult(result, query = {}, path = "result") {
+export function buildUpdateQueryForResult(result: Result, query: StatIncrementQuery = {}, path: string = "result"): StatIncrementQuery {
     for (let i = 0; i < STAT_KEYS.length; i++) {
         const stat = STAT_KEYS[i];
         query[path + "." + stat] = result[stat];
@@ -348,13 +302,8 @@ function buildUpdateQueryForResult(result, query = {}, path = "result") {
 /**
  * Applies the given Result object to the Schedule and Message documents
  * identified by the provided scheduleId and messageId.
- * @param {MongoDb} db - MongoDB database instance
- * @param {ObjectId} scheduleId - The ID of the Schedule document to update
- * @param {ObjectId} messageId - The ID of the Message document to update
- * @param {Result} resultObject - The Result object containing stats to apply
- * @returns {Promise<void>} Promise that resolves when the operation is complete
  */
-async function applyResultObject(db, scheduleId, messageId, resultObject) {
+export async function applyResultObject(db: Db, scheduleId: ObjectId, messageId: ObjectId, resultObject: Result): Promise<void> {
     // update the result object
     const $inc = buildUpdateQueryForResult(resultObject);
     await db.collection("message_schedules")
@@ -406,14 +355,3 @@ async function applyResultObject(db, scheduleId, messageId, resultObject) {
         }
     }]);
 }
-
-module.exports = {
-    STAT_KEYS,
-    saveResults,
-    clearInvalidTokens,
-    recordSentDates,
-    buildResultObject,
-    buildUpdateQueryForResult,
-    increaseResultStat,
-    applyResultObject,
-};

@@ -1,13 +1,15 @@
-/**
- * @typedef {import("../types/message").PlatformKey} PlatformKey
- * @typedef {import("../types/message").PlatformEnvKey} PlatformEnvKey
- * @typedef {import("../types/message").PlatformCombinedKeys} PlatformCombinedKeys
- */
-/**
- * Platform keymap for different environments.
- * @type {Record<PlatformKey, { title: string; aliasFor: PlatformKey[]; environments: PlatformEnvKey[]; environmentMap: Record<string, PlatformEnvKey>; combined: PlatformCombinedKeys[]; environmentTitles: Record<PlatformEnvKey, string> }>}
- */
-module.exports = {
+import type { PlatformKey, PlatformEnvKey, PlatformCombinedKeys } from "../types/message";
+
+interface PlatformKeymapEntry {
+    title: string;
+    aliasFor: PlatformKey[];
+    environments: PlatformEnvKey[];
+    environmentMap: Record<string, PlatformEnvKey>;
+    combined: PlatformCombinedKeys[];
+    environmentTitles: Partial<Record<PlatformEnvKey, string>>;
+}
+
+const PLATFORM_KEYMAP: Record<PlatformKey, PlatformKeymapEntry> = {
     "a": {
         "title": "Android",
         "aliasFor": ["a", "h"],
@@ -49,3 +51,5 @@ module.exports = {
         }
     }
 };
+
+export = PLATFORM_KEYMAP;

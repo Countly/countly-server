@@ -1,51 +1,51 @@
-/**
- * @typedef {import('mongodb').ObjectId} ObjectId
- * @typedef {import('./types/queue.ts').ScheduleEvent} ScheduleEvent
- * @typedef {import('./types/queue.ts').PushEvent} PushEvent
- * @typedef {import('./types/queue.ts').IOSConfig} IOSConfig
- * @typedef {import('./types/queue.ts').AndroidConfig} AndroidConfig
- * @typedef {import('./types/queue.ts').HuaweiConfig} HuaweiConfig
- * @typedef {import('./types/message.ts').MessageCollection} MessageCollection
- * @typedef {import('./types/message.ts').Message} Message
- * @typedef {import('./types/message.ts').PlatformKey} PlatformKey
- * @typedef {import('./types/message.ts').PlatformEnvKey} PlatformEnvKey
- * @typedef {import('./types/message.ts').PlatformCombinedKeys} PlatformCombinedKeys
- * @typedef {import("./types/queue.ts").AndroidPushEvent} AndroidPushEvent
- * @typedef {import('./types/credentials.ts').PlatformCredential} PlatformCredential
- * @typedef {import('./types/utils.ts').PluginConfiguration} PluginConfiguration
- * @typedef {import('./types/utils.ts').ErrorObject} ErrorObject
- * @typedef {import("mongodb").Db} MongoDb
- * @typedef {import('./types/schedule.ts').Schedule} Schedule
- * @typedef {import('./types/schedule.ts').ScheduleCollection} ScheduleCollection
- * @typedef {import('./types/schedule.ts').AudienceFilter} AudienceFilter
- * @typedef {import('./types/user.ts').User} User
- * @typedef {import('stream').Readable} Readable
- * @typedef {{_id: ObjectId; timezone: string;}} App
- * @typedef {import("mongodb").Collection<{ radius: number; unit: "mi"|"km"; geo: { coordinates: [number, number]; } }>} GeosCollection
- * @typedef {import("mongodb").Collection<App>} AppCollection
- * @typedef {import("mongodb").Document} Document
- * @typedef {{ $match: { [key: string]: any } }} MatchStage
- * @typedef {{[key: string]: PlatformCredential}} PlatformCredentialsMap
- * @typedef {{[key: string]: any}} UserPropertiesProjection
- */
+import { ObjectId } from "mongodb";
+import type { Db, Collection, Document } from "mongodb";
+import type {
+    ScheduleEvent, PushEvent, IOSConfig, AndroidConfig, HuaweiConfig,
+} from "./types/queue";
+import type {
+    MessageCollection, Message, PlatformKey, PlatformEnvKey, PlatformCombinedKeys,
+} from "./types/message";
+import type { PlatformCredential } from "./types/credentials";
+import type { PluginConfiguration, ErrorObject } from "./types/utils";
+import type { Schedule, ScheduleCollection, AudienceFilter } from "./types/schedule";
+import type { MessageTemplateFunction } from "./lib/template";
+import * as queue from "./lib/kafka"; // do not import by destructuring; it's being mocked in the tests
+import { createTemplate, getUserPropertiesUsedInsideMessage } from "./lib/template";
+import PLATFORM_KEYMAP from "./constants/platform-keymap";
+import { buildResultObject, increaseResultStat, applyResultObject } from "./resultor";
+import { loadDrillAPI, loadPluginConfiguration } from "./lib/utils";
+import { RESCHEDULABLE_DATE_TRIGGERS, scheduleMessageByDateTrigger } from "./scheduler";
 
-const queue = require("./lib/kafka.js"); // do not import by destructuring; it's being mocked in the tests
-const { createTemplate, getUserPropertiesUsedInsideMessage } = require("./lib/template.js");
-const PLATFORM_KEYMAP = require("./constants/platform-keymap.js");
-const { buildResultObject, increaseResultStat, applyResultObject } = require("./resultor.js");
-const common = require("../../../../api/utils/common.js");
-const { loadDrillAPI, loadPluginConfiguration } = require("./lib/utils.js");
-const log = require('../../../../api/utils/common').log('push:composer');
-const { RESCHEDULABLE_DATE_TRIGGERS, scheduleMessageByDateTrigger } = require("./scheduler.js");
+const common: any = require("../../../../api/utils/common.js");
+const log: any = require('../../../../api/utils/common').log('push:composer');
+
 const QUEUE_WRITE_BATCH_SIZE = 100;
+
+interface App {
+    _id: ObjectId;
+    timezone: string;
+}
+
+type GeosCollection = Collection<{ radius: number; unit: "mi" | "km"; geo: { coordinates: [number, number] } }>;
+type AppCollection = Collection<App>;
+
+interface MatchStage {
+    $match: { [key: string]: any };
+}
+
+interface PlatformCredentialsMap {
+    [key: string]: PlatformCredential;
+}
+
+interface UserPropertiesProjection {
+    [key: string]: any;
+}
 
 /**
  * Composes push notifications for all given schedule events.
- * @param {MongoDb} db - MongoDB database instance
- * @param {ScheduleEvent[]} scheduleEvents - Array of schedule events to process
- * @returns {Promise<number>} Total number of composed push notifications
  */
-async function composeAllScheduledPushes(db, scheduleEvents) {
+export async function composeAllScheduledPushes(db: Db, scheduleEvents: ScheduleEvent[]): Promise<number> {
     let totalNumberOfPushes = 0;
     for (let i = 0; i < scheduleEvents.length; i++) {
         const scheduleEvent = scheduleEvents[i];
@@ -55,8 +55,7 @@ async function composeAllScheduledPushes(db, scheduleEvents) {
         }
         catch (err) {
             log.e("Error while composing scheduleEvents", scheduleEvent, err);
-            /** @type {ErrorObject} */
-            let error = {
+            let error: ErrorObject = {
                 name: "UnknownError",
                 message: "Unknown error occured while composing the scheduled push messages"
             };
@@ -88,19 +87,13 @@ async function composeAllScheduledPushes(db, scheduleEvents) {
  * Composes push notifications for a single schedule event.
  * Loads necessary documents, builds aggregation pipeline, creates push events,
  * sends them to the queue, and updates the schedule and message documents.
- * @param {MongoDb} db - MongoDB database instance
- * @param {ScheduleEvent} scheduleEvent - Schedule event to process
- * @returns {Promise<number>} Number of composed push notifications
  */
-async function composeScheduledPushes(db, scheduleEvent) {
+export async function composeScheduledPushes(db: Db, scheduleEvent: ScheduleEvent): Promise<number> {
     const { appId, scheduleId, messageId, timezone, scheduledTo } = scheduleEvent;
     // load necessary documents:
-    /** @type {MessageCollection} */
-    const messageCol = db.collection("messages");
-    /** @type {ScheduleCollection} */
-    const scheduleCol = db.collection("message_schedules");
-    /** @type {AppCollection} */
-    const appCol = db.collection("apps");
+    const messageCol: MessageCollection = db.collection("messages");
+    const scheduleCol: ScheduleCollection = db.collection("message_schedules");
+    const appCol: AppCollection = db.collection("apps");
     // in case the schedule was deleted, canceled, already sent or
     // already processed by the state fixing job, we do nothing
     const scheduleDoc = await scheduleCol.findOne({
@@ -158,8 +151,7 @@ async function composeScheduledPushes(db, scheduleEvent) {
                 messageId.toString());
         }
     }
-    /** @type {PushEvent[]} */
-    let events = [];
+    let events: PushEvent[] = [];
     const resultObject = buildResultObject();
     const stream = createPushStream(
         db, appDoc, messageDoc, scheduleDoc, scheduledTo, creds, pluginConfig,
@@ -202,29 +194,18 @@ async function composeScheduledPushes(db, scheduleEvent) {
 /**
  * Creates a stream of push events for the given app, message, schedule and credentials.
  * Pipeline needs to be built before this function is called.
- * The stream will yield `PushEvent` objects for each user that matches the pipeline.
- * @param {MongoDb} db - MongoDB database instance
- * @param {App} appDoc - Application document
- * @param {Message} messageDoc - Message document
- * @param {Schedule} scheduleDoc - Schedule document
- * @param {Date} scheduledTo - Actual scheduled time
- * @param {Awaited<ReturnType<loadCredentials>>} creds - Credentials for each platform
- * @param {PluginConfiguration|undefined} pluginConfig - Plugin configuration
- * @param {ReturnType<createTemplate>} template - Function to create message template
- * @param {Document[]} pipeline - Aggregation pipeline to filter users
- * @returns {AsyncGenerator<PushEvent, void, void>} Push event stream
  */
-async function* createPushStream(
-    db,
-    appDoc,
-    messageDoc,
-    scheduleDoc,
-    scheduledTo,
-    creds,
-    pluginConfig,
-    template,
-    pipeline
-) {
+export async function* createPushStream(
+    db: Db,
+    appDoc: App,
+    messageDoc: Message,
+    scheduleDoc: Schedule,
+    scheduledTo: Date,
+    creds: PlatformCredentialsMap,
+    pluginConfig: PluginConfiguration | undefined,
+    template: MessageTemplateFunction,
+    pipeline: Document[]
+): AsyncGenerator<PushEvent, void, void> {
     const stream = db.collection("app_users" + appDoc._id.toString())
         .aggregate(pipeline, { allowDiskUse: true })
         .stream();
@@ -234,14 +215,12 @@ async function* createPushStream(
             continue;
         }
         for (let combined in tokenObj) {
-            const platform = /** @type {PlatformKey} */(combined[0]);
+            const platform = combined[0] as PlatformKey;
             if (!(platform in creds)) {
                 continue;
             }
-            const env = /** @type {PlatformEnvKey} */(combined[1]);
-            const token = /** @type {string} */(
-                tokenObj[/** @type {PlatformCombinedKeys} */(combined)]
-            );
+            const env = combined[1] as PlatformEnvKey;
+            const token = tokenObj[combined as PlatformCombinedKeys] as string;
             const language = user.la ?? "default";
             let variables = {
                 ...user,
@@ -250,7 +229,7 @@ async function* createPushStream(
             const sendBefore = typeof pluginConfig?.messageTimeout === "number"
                 ? new Date(scheduledTo.getTime() + pluginConfig?.messageTimeout)
                 : undefined;
-            yield /** @type {PushEvent} */({
+            yield {
                 appId: appDoc._id,
                 messageId: messageDoc._id,
                 scheduleId: scheduleDoc._id,
@@ -267,26 +246,23 @@ async function* createPushStream(
                 platformConfiguration: getPlatformConfiguration(platform, messageDoc),
                 trigger: messageDoc.triggers[0],
                 appTimezone: appDoc.timezone,
-            });
+            } as PushEvent;
         }
     }
 }
 
 /**
  * Builds an aggregation pipeline to filter users based on the message and audience filters.
- * The pipeline includes matching by platform, timezone, cohorts, geos, user-defined filters,
- * drill queries, and capping rules.
- * @param {MongoDb} db - MongoDB database instance
- * @param {Message} message - Message document
- * @param {string=} appTimezone - Application timezone
- * @param {string=} timezone - User timezone to filter by
- * @param {AudienceFilter=} filters - Audience filters from the schedule
- * @returns {Promise<Document[]>} Aggregation pipeline
  */
-async function buildUserAggregationPipeline(db, message, appTimezone, timezone, filters) {
+export async function buildUserAggregationPipeline(
+    db: Db,
+    message: Message,
+    appTimezone?: string,
+    timezone?: string,
+    filters?: AudienceFilter
+): Promise<Document[]> {
     const appId = message.app.toString();
-    /** @type {{ [key: string]: any }} non-user-defined filters */
-    const $match = {};
+    const $match: { [key: string]: any } = {};
     const $project = { uid: 1, tk: 1, la: 1, ...userPropsProjection(message) };
     const $lookup = {
         from: "push_" + appId,
@@ -295,7 +271,7 @@ async function buildUserAggregationPipeline(db, message, appTimezone, timezone, 
         as: "tk"
     };
     // Platforms:
-    const platformFilters = [];
+    const platformFilters: { [key: string]: { $exists: true } }[] = [];
     for (let platformKey of message.platforms) {
         const combinedKeys = PLATFORM_KEYMAP[platformKey].combined;
         for (let combinedKey of combinedKeys) {
@@ -309,8 +285,7 @@ async function buildUserAggregationPipeline(db, message, appTimezone, timezone, 
     if (timezone) {
         $match.tz = timezone;
     }
-    /** @type {Array<{ $match: { [key: string]: any } }>} */
-    let filterPipeline = [];
+    let filterPipeline: MatchStage[] = [];
     if (filters) {
         filterPipeline = await convertAudienceFiltersToMatchStage(db, filters, appId, appTimezone);
     }
@@ -319,25 +294,21 @@ async function buildUserAggregationPipeline(db, message, appTimezone, timezone, 
 
 /**
  * Converts audience filters into MongoDB aggregation match stages.
- * Supports filtering by user IDs, cohort statuses, cohorts, geos, user-defined filters,
- * drill queries, and capping rules.
- * @param {MongoDb} db - MongoDB database instance
- * @param {AudienceFilter} filters - Audience filters
- * @param {string} appIdStr - Application ID as string
- * @param {string=} appTimezone - Application timezone
- * @returns {Promise<MatchStage[]>} Aggregation match stages
  */
-async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTimezone) {
-    /** @type {Array<{ $match: { [key: string]: any } }>} */
-    const pipeline = [];
+export async function convertAudienceFiltersToMatchStage(
+    db: Db,
+    filters: AudienceFilter,
+    appIdStr: string,
+    appTimezone?: string
+): Promise<MatchStage[]> {
+    const pipeline: MatchStage[] = [];
     // User ids:
     if (Array.isArray(filters.uids)) {
         pipeline.push({ $match: { uid: { $in: filters.uids } } });
     }
     // User ids with cohort status:
     if (Array.isArray(filters.userCohortStatuses)) {
-        /** @type {{[key: string]: string|{$exists: false;};}[]} */
-        const $or = [];
+        const $or: { [key: string]: string | { $exists: false } }[] = [];
         for (let i = 0; i < filters.userCohortStatuses.length; i++) {
             const { uid, cohort } = filters.userCohortStatuses[i];
             $or.push({
@@ -351,8 +322,7 @@ async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTime
     }
     // Cohorts:
     if (Array.isArray(filters.cohorts) && filters.cohorts.length) {
-        /** @type {{ [cohortPath: string]: "true" }} */
-        const $match = {};
+        const $match: { [cohortPath: string]: "true" } = {};
         for (let i = 0; i < filters.cohorts.length; i++) {
             $match["chr." + filters.cohorts[i] + ".in"] = "true";
         }
@@ -360,8 +330,7 @@ async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTime
     }
     // Geos:
     if (Array.isArray(filters.geos) && filters.geos.length) {
-        /** @type {GeosCollection} */
-        const col = db.collection("geos");
+        const col: GeosCollection = db.collection("geos");
         const geoDocs = await col.find({
             "geo.type": "Point",
             unit: { $in: ["mi", "km"] },
@@ -418,8 +387,7 @@ async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTime
             const drillQuery = JSON.parse(filters.drill);
             if (drillQuery.queryObject && drillQuery.queryObject.chr
                 && Object.keys(drillQuery.queryObject).length === 1) {
-                /** @type {{ [key: string]: any }} */
-                let cohorts = {};
+                let cohorts: { [key: string]: any } = {};
                 let chr = drillQuery.queryObject.chr, i;
                 if (chr.$in && chr.$in.length) {
                     for (i = 0; i < chr.$in.length; i++) {
@@ -445,8 +413,8 @@ async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTime
                     delete params.qstring.queryObject.chr;
                 }
                 log.d('Drilling: %j', params);
-                let userIdArray = await new Promise(
-                    (resolve, reject) => drillAPI.fetchUsers(params, (err, uids) => {
+                let userIdArray = await new Promise<string[]>(
+                    (resolve, reject) => drillAPI.fetchUsers(params, (err: any, uids: string[]) => {
                         log.i("Done drilling:",
                             err ? 'error %j' : '%d uids',
                             err || (uids && uids.length) || 0);
@@ -494,23 +462,18 @@ async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTime
 /**
  * Loads platform credentials configured for the given app.
  * Skips missing or demo credentials.
- * @param {MongoDb} db - MongoDB database instance
- * @param {ObjectId} appId - Application ID
- * @returns {Promise<PlatformCredentialsMap>} Platform credentials
  */
-async function loadCredentials(db, appId) {
+export async function loadCredentials(db: Db, appId: ObjectId): Promise<PlatformCredentialsMap> {
     const app = await db.collection("apps").findOne({ _id: appId });
     const configuredCreds = app?.plugins?.push || {};
 
-    const creds = /** @type {{[key: string]: PlatformCredential}} */({});
+    const creds: PlatformCredentialsMap = {};
     for (let pKey in configuredCreds) {
         const credId = configuredCreds?.[pKey]?._id;
         if (!credId || credId === "demo") {
             continue;
         }
-        const cred = /** @type {PlatformCredential|null} */(
-            await db.collection("creds").findOne({ _id: credId })
-        );
+        const cred = await db.collection("creds").findOne({ _id: credId }) as PlatformCredential | null;
         if (cred) {
             creds[pKey] = cred;
         }
@@ -520,12 +483,8 @@ async function loadCredentials(db, appId) {
 
 /**
  * Extracts platform-specific configuration from the message document.
- * Currently, only iOS configuration is supported.
- * @param {PlatformKey} platform - Platform key (e.g., "i" for iOS)
- * @param {Message} message - Message document
- * @returns {IOSConfig|AndroidConfig|HuaweiConfig} Platform configuration
  */
-function getPlatformConfiguration(platform, message) {
+function getPlatformConfiguration(platform: PlatformKey, message: Message): IOSConfig | AndroidConfig | HuaweiConfig {
     if (platform === "i") {
         let setContentAvailable = false;
         const contentItem = message.contents.find(i => Array.isArray(i.specific));
@@ -543,25 +502,12 @@ function getPlatformConfiguration(platform, message) {
 
 /**
  * Generates a projection object for user properties used in the message.
- * @param {Message} message - Message document
- * @returns {UserPropertiesProjection} Projection object for user properties
  */
-function userPropsProjection(message) {
+export function userPropsProjection(message: Message): UserPropertiesProjection {
     const props = getUserPropertiesUsedInsideMessage(message);
-    /** @type {{[key: string]: 1}} */
-    const result = {};
+    const result: { [key: string]: 1 } = {};
     for (let i = 0; i < props.length; i++) {
         result[props[i].replace(/\..+$/, "")] = 1;
     }
     return result;
 }
-
-module.exports = {
-    composeAllScheduledPushes,
-    composeScheduledPushes,
-    createPushStream,
-    loadCredentials,
-    buildUserAggregationPipeline,
-    userPropsProjection,
-    convertAudienceFiltersToMatchStage,
-};

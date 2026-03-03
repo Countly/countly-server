@@ -1,105 +1,77 @@
-/**
- * @typedef {{[name: string]: { status: number; message: string; mapsTo?: typeof InvalidDeviceToken; }}} APNSPushErrorMap
- * @typedef {{[name: string]: { libraryKey: string; message: string; mapsTo?: typeof InvalidDeviceToken; }}} FCMPushErrorMap
- * @typedef {{[code: string]: { message: string; mapsTo?: typeof InvalidDeviceToken; }}} HMSPushErrorMap
- */
-/**
- * Base class for all push related errors.
- */
-class PushError extends Error {
-    /**
-     * Creates an instance of PushError.
-     *
-     * @param {string} message - Error message
-     */
-    constructor(message) {
+export class PushError extends Error {
+    constructor(message: string) {
         super(message);
         this.name = this.constructor.name;
     }
 }
-/**
- * Being thrown in the `validateCredentials()` function inside platform files.
- */
-class InvalidCredentials extends PushError {}
-/**
- * Being thrown in the `send()` functions inside platform files.
- */
-class SendError extends PushError {
-    /**
-     * Creates an instance of SendError.
-     *
-     * @param {string} message - Error message
-     * @param {string=} response - Response from the push provider
-     */
-    constructor(message, response) {
+
+export class InvalidCredentials extends PushError {}
+
+export class SendError extends PushError {
+    response?: string;
+    constructor(message: string, response?: string) {
         super(message);
         this.response = response;
     }
 }
-/**
- * This error indicates that the notification could not be sent in time.
- * Being thrown in the `sender`.
- */
-class TooLateToSend extends SendError {
-    /**
-     * Creates an instance of TooLateToSend.
-     *
-     * @param {string} [message] - Error message
-     * @param {string=} response - Response from the push provider
-     */
+
+export class TooLateToSend extends SendError {
     constructor(message = "The notification could not be sent in time.", response = "Not sent") {
         super(message, response);
     }
 }
-/**
- * Generic unexpected error when we cannot make any sense of the response from the provider.
- */
-class InvalidResponse extends SendError {}
-/**
- * This error indicates that the device token needs to be cleaned up from database.
- */
-class InvalidDeviceToken extends SendError {}
 
-/**
- * @type {APNSPushErrorMap}
- */
-const APNSErrors = {
+export class InvalidResponse extends SendError {}
+
+export class InvalidDeviceToken extends SendError {}
+
+export type APNSPushErrorMap = {
+    [name: string]: { status: number; message: string; mapsTo?: typeof InvalidDeviceToken };
+};
+
+export type FCMPushErrorMap = {
+    [name: string]: { libraryKey: string; message: string; mapsTo?: typeof InvalidDeviceToken };
+};
+
+export type HMSPushErrorMap = {
+    [code: string]: { message: string; mapsTo?: typeof InvalidDeviceToken };
+};
+
+export const APNSErrors: APNSPushErrorMap = {
     BadCollapseId: { status: 400, message: "The collapse identifier exceeds the maximum allowed size." },
     BadDeviceToken: { status: 400, mapsTo: InvalidDeviceToken, message: "The specified device token is invalid. Verify that the request contains a valid token and that the token matches the environment." },
     BadExpirationDate: { status: 400, message: "The apns-expiration value is invalid." },
     BadMessageId: { status: 400, message: "The apns-id value is invalid." },
     BadPriority: { status: 400, message: "The apns-priority value is invalid." },
     BadTopic: { status: 400, message: "The apns-topic value is invalid." },
-    DeviceTokenNotForTopic: { status: 400, mapsTo: InvalidDeviceToken, message: "The device token doesn’t match the specified topic." },
+    DeviceTokenNotForTopic: { status: 400, mapsTo: InvalidDeviceToken, message: "The device token doesn't match the specified topic." },
     DuplicateHeaders: { status: 400, message: "One or more headers are repeated." },
     IdleTimeout: { status: 400, message: "Idle timeout." },
     InvalidPushType: { status: 400, message: "The apns-push-type value is invalid." },
-    MissingDeviceToken: { status: 400, message: "The device token isn’t specified in the request :path. Verify that the :path header contains the device token." },
-    MissingTopic: { status: 400, message: "The apns-topic header of the request isn’t specified and is required. The apns-topic header is mandatory when the client is connected using a certificate that supports multiple topics." },
+    MissingDeviceToken: { status: 400, message: "The device token isn't specified in the request :path. Verify that the :path header contains the device token." },
+    MissingTopic: { status: 400, message: "The apns-topic header of the request isn't specified and is required. The apns-topic header is mandatory when the client is connected using a certificate that supports multiple topics." },
     PayloadEmpty: { status: 400, message: "The message payload is empty." },
     TopicDisallowed: { status: 400, message: "Pushing to this topic is not allowed." },
     BadCertificate: { status: 403, message: "The certificate is invalid." },
     BadCertificateEnvironment: { status: 403, message: "The client certificate is for the wrong environment." },
     ExpiredProviderToken: { status: 403, message: "The provider token is stale and a new token should be generated." },
     Forbidden: { status: 403, message: "The specified action is not allowed." },
-    InvalidProviderToken: { status: 403, message: "The provider token is not valid, or the token signature can’t be verified." },
+    InvalidProviderToken: { status: 403, message: "The provider token is not valid, or the token signature can't be verified." },
     MissingProviderToken: { status: 403, message: "No provider certificate was used to connect to APNs, and the authorization header is missing or no provider token is specified." },
-    UnrelatedKeyIdInToken: { status: 403, message: "The key ID in the provider token isn’t related to the key ID of the token used in the first push of this connection. To use this token, open a new connection." },
+    UnrelatedKeyIdInToken: { status: 403, message: "The key ID in the provider token isn't related to the key ID of the token used in the first push of this connection. To use this token, open a new connection." },
     BadPath: { status: 404, message: "The request contained an invalid :path value." },
-    MethodNotAllowed: { status: 405, message: "The specified :method value isn’t POST." },
+    MethodNotAllowed: { status: 405, message: "The specified :method value isn't POST." },
     ExpiredToken: { status: 410, mapsTo: InvalidDeviceToken, message: "The device token has expired." },
     Unregistered: { status: 410, mapsTo: InvalidDeviceToken, message: "The device token is inactive for the specified topic. There is no need to send further pushes to the same device token, unless your application retrieves the same device token, refer to https://developer.apple.com/documentation/usernotifications/registering-your-app-with-apns" },
     PayloadTooLarge: { status: 413, message: "The message payload is too large. For information about the allowed payload size, refer to Create a POST request to APNs in https://developer.apple.com/documentation/usernotifications/sending-notification-requests-to-apns" },
-    TooManyProviderTokenUpdates: { status: 429, message: "The provider’s authentication token is being updated too often. Update the authentication token no more than once every 20 minutes." },
+    TooManyProviderTokenUpdates: { status: 429, message: "The provider's authentication token is being updated too often. Update the authentication token no more than once every 20 minutes." },
     TooManyRequests: { status: 429, message: "Too many requests were made consecutively to the same device token." },
     InternalServerError: { status: 500, message: "An internal server error occurred." },
     ServiceUnavailable: { status: 503, message: "The service is unavailable." },
     Shutdown: { status: 503, message: "The APNs server is shutting down." },
 };
-/**
- * @type {FCMPushErrorMap}
- */
-const FCMErrors = {
+
+export const FCMErrors: FCMPushErrorMap = {
     'messaging/invalid-argument': { libraryKey: "INVALID_ARGUMENT", message: 'Invalid argument provided.' },
     'messaging/invalid-recipient': { libraryKey: "INVALID_RECIPIENT", message: 'Invalid message recipient provided.' },
     'messaging/invalid-payload': { libraryKey: "INVALID_PAYLOAD", message: 'Invalid message payload provided.' },
@@ -121,10 +93,7 @@ const FCMErrors = {
     'messaging/unknown-error': { libraryKey: "UNKNOWN_ERROR", message: 'An unknown server error was returned.' },
 };
 
-/**
- * @type {HMSPushErrorMap}
- */
-const HMSErrors = {
+export const HMSErrors: HMSPushErrorMap = {
     "80000000": { message: "Success." },
     "80100000": { mapsTo: InvalidDeviceToken, message: "The message is successfully sent to some tokens" },
     "80100001": { message: "Some request parameters are incorrect" },
@@ -141,18 +110,4 @@ const HMSErrors = {
     "80300013": { message: "Invalid receipt URL." },
     "80600003": { message: "Failed to request the OAuth service." },
     "81000001": { message: "An internal error of the system occurs." },
-};
-
-module.exports = {
-    PushError,
-    InvalidCredentials,
-
-    SendError,
-    TooLateToSend,
-    InvalidResponse,
-    InvalidDeviceToken,
-
-    APNSErrors,
-    FCMErrors,
-    HMSErrors,
 };

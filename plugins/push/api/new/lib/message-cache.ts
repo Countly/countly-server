@@ -1,26 +1,18 @@
-/**
- * @typedef {import("mongodb").Db} MongoDb
- * @typedef {import("mongodb").ObjectId} ObjectId
- */
+import type { ObjectId } from "mongodb";
 
-const common = require("../../../../../api/utils/common");
+const common: any = require("../../../../../api/utils/common");
 const log = common.log("push:message-cache");
 
-/** @type {{
+interface AutoTriggerMessagesCache {
     [appId: string]: {
         event: { [eventKey: string]: string[] };
-        cohort: { [cohortId: string]: { enter: string[]; exit: string[]; } };
-    }
-}} */
-let AUTO_TRIGGER_MESSAGES = {};
+        cohort: { [cohortId: string]: { enter: string[]; exit: string[] } };
+    };
+}
 
-/**
- * Loads auto-trigger messages from the database into memory.
- * This function is called periodically to refresh the cache.
- *
- * @returns {Promise<void>} Promise that resolves when messages are loaded
- */
-async function loadAutoMessages() {
+let AUTO_TRIGGER_MESSAGES: AutoTriggerMessagesCache = {};
+
+async function loadAutoMessages(): Promise<void> {
     const now = new Date;
     const messages = await common.db.collection("messages")
         .find({
@@ -48,7 +40,7 @@ async function loadAutoMessages() {
         try {
             const trigger = messages[i].triggers[0];
             if (trigger.kind === "cohort") {
-                const cache = AUTO_TRIGGER_MESSAGES[appId][/** @type {"cohort"} */(trigger.kind)];
+                const cache = AUTO_TRIGGER_MESSAGES[appId].cohort;
                 for (let j = 0; j < trigger.cohorts.length; j++) {
                     const direction = trigger.entry ? "enter" : "exit";
                     const cohortId = trigger.cohorts[j];
@@ -59,7 +51,7 @@ async function loadAutoMessages() {
                 }
             }
             else if (trigger.kind === "event") {
-                const cache = AUTO_TRIGGER_MESSAGES[appId][/** @type {"event"} */(trigger.kind)];
+                const cache = AUTO_TRIGGER_MESSAGES[appId].event;
                 for (let j = 0; j < trigger.events.length; j++) {
                     const eventKey = trigger.events[j];
                     if (!(eventKey in cache)) {
@@ -71,7 +63,6 @@ async function loadAutoMessages() {
         }
         catch (err) {
             log.e("Malformed message", err);
-            // do nothing...
         }
     }
 }
@@ -82,35 +73,19 @@ setInterval(
         : 5 * 60 * 1000
 );
 
-module.exports = {
-    /**
-     * Checks if there are any messages for the given cohort event.
-     *
-     * @param {string|ObjectId} appId - Application ID
-     * @param {string} cohortId - Cohort ID
-     * @param {"enter"|"exit"} direction - Direction of cohort event
-     * @returns {boolean} Whether messages exist for the given cohort event
-     */
-    cohortMessageExists(appId, cohortId, direction) {
-        const numberOfMessages = AUTO_TRIGGER_MESSAGES
-            ?.[appId.toString()]
-            ?.cohort
-            ?.[cohortId]
-            ?.[direction]?.length ?? 0;
-        return numberOfMessages > 0;
-    },
-    /**
-     * Checks if there are any messages for the given event.
-     *
-     * @param {string|ObjectId} appId - Application ID
-     * @param {string} eventKey - Event key
-     * @returns {boolean} Whether messages exist for the given event
-     */
-    eventMessageExists(appId, eventKey) {
-        const numberOfMessages = AUTO_TRIGGER_MESSAGES
-            ?.[appId.toString()]
-            ?.event
-            ?.[eventKey]?.length ?? 0;
-        return numberOfMessages > 0;
-    },
-};
+export function cohortMessageExists(appId: string | ObjectId, cohortId: string, direction: "enter" | "exit"): boolean {
+    const numberOfMessages = AUTO_TRIGGER_MESSAGES
+        ?.[appId.toString()]
+        ?.cohort
+        ?.[cohortId]
+        ?.[direction]?.length ?? 0;
+    return numberOfMessages > 0;
+}
+
+export function eventMessageExists(appId: string | ObjectId, eventKey: string): boolean {
+    const numberOfMessages = AUTO_TRIGGER_MESSAGES
+        ?.[appId.toString()]
+        ?.event
+        ?.[eventKey]?.length ?? 0;
+    return numberOfMessages > 0;
+}

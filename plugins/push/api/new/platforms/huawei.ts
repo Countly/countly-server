@@ -1,43 +1,27 @@
-/**
- * @typedef {import("../types/message.ts").Message} Message
- * @typedef {import("../types/message.ts").Content} Content
- * @typedef {import("../types/user.ts").User} User
- * @typedef {import("../types/queue.ts").HuaweiMessagePayload} HuaweiMessagePayload
- * @typedef {import("../types/credentials.ts").HMSCredentials} HMSCredentials
- * @typedef {import("../types/credentials.ts").UnvalidatedHMSCredentials} UnvalidatedHMSCredentials
- * @typedef {import("../types/utils.ts").ProxyConfiguration} ProxyConfiguration
- * @typedef {import("../types/queue.ts").PushEvent} PushEvent
- * @typedef {{ token?: string; expiryDate?: number; promise?: Promise<string>; }} TokenCache
- * @typedef {import("../lib/template.js").TemplateContext} TemplateContext
- */
-const https = require("https");
-const { ObjectId } = require("mongodb");
-const { URLSearchParams } = require("url");
-const { HttpsProxyAgent } = require("https-proxy-agent");
-const { buildProxyUrl } = require("../lib/utils.js");
-const { createHash } = require("crypto");
-const {
-    mapMessageToPayload: mapMessageToAndroidPayload
-} = require("./android.js");
-const { PROXY_CONNECTION_TIMEOUT } = require("../constants/proxy-config.json");
-const {
-    InvalidCredentials,
-    SendError,
-    InvalidResponse,
-    InvalidDeviceToken,
-    HMSErrors
-} = require("../lib/error.js");
-/** @type {{[credentialHash: string]: TokenCache}} */
-const TOKEN_CACHE = {};
+import https from "https";
+import { ObjectId } from "mongodb";
+import { URLSearchParams } from "url";
+import { HttpsProxyAgent } from "https-proxy-agent";
+import { createHash } from "crypto";
+import type { PushEvent, HuaweiMessagePayload, AndroidMessagePayload } from "../types/queue";
+import type { Content, Message } from "../types/message";
+import type { HMSCredentials, UnvalidatedHMSCredentials } from "../types/credentials";
+import type { ProxyConfiguration } from "../types/utils";
+import type { TemplateContext } from "../lib/template";
+import { buildProxyUrl } from "../lib/utils";
+import { mapMessageToPayload as mapMessageToAndroidPayload } from "./android";
+import { InvalidCredentials, SendError, InvalidResponse, InvalidDeviceToken, HMSErrors } from "../lib/error";
+import { PROXY_CONNECTION_TIMEOUT } from "../constants/proxy-config.json";
 
-/**
- * Gets an auth token for the given HMS credentials
- *
- * @param {HMSCredentials} credentials - HMS Credentials
- * @param {ProxyConfiguration=} proxy - Optional proxy configuration
- * @returns {Promise<string>} Resolves with auth token
- */
-async function getAuthToken(credentials, proxy) {
+interface TokenCache {
+    token?: string;
+    expiryDate?: number;
+    promise?: Promise<string>;
+}
+
+const TOKEN_CACHE: { [credentialHash: string]: TokenCache } = {};
+
+export async function getAuthToken(credentials: HMSCredentials, proxy?: ProxyConfiguration): Promise<string> {
     if (credentials.hash in TOKEN_CACHE) {
         const cache = TOKEN_CACHE[credentials.hash];
         if (cache.token) {
@@ -58,8 +42,7 @@ async function getAuthToken(credentials, proxy) {
         client_secret: credentials.secret
     })).toString();
 
-    /** @type {HttpsProxyAgent<"proxy-address">=} */
-    let agent;
+    let agent: HttpsProxyAgent<string> | undefined;
     if (proxy) {
         agent = new HttpsProxyAgent(buildProxyUrl(proxy), {
             keepAlive: true,
@@ -68,7 +51,7 @@ async function getAuthToken(credentials, proxy) {
         });
     }
 
-    const promise = new Promise((resolve, reject) => {
+    const promise = new Promise<string>((resolve, reject) => {
         let request = https.request({
             agent,
             hostname: 'oauth-login.cloud.huawei.com',
@@ -81,15 +64,14 @@ async function getAuthToken(credentials, proxy) {
             }
         }, response => {
             let data = '';
-            response.on('data', chunk => data = data + chunk);
+            response.on('data', (chunk: string) => data = data + chunk);
             response.on('end', () => {
-                // raw response to attach to error
                 const raw = Object.entries(response.headers)
                     .map(([key, value]) => key + ": " + value)
                     .join("\n")
                     + "\n\n" + data;
 
-                let parsed;
+                let parsed: any;
                 try {
                     parsed = JSON.parse(data);
                 }
@@ -103,7 +85,7 @@ async function getAuthToken(credentials, proxy) {
                 if (response.statusCode === 200 && parsed?.access_token) {
                     const expiryDate = parsed.expires_in
                         ? Date.now() + Number(parsed.expires_in) * 1000 - 5 * 60 * 1000
-                        : Date.now() + 30 * 60 * 1000; // default 30 mins
+                        : Date.now() + 30 * 60 * 1000;
                     TOKEN_CACHE[credentials.hash].token = parsed.access_token;
                     TOKEN_CACHE[credentials.hash].expiryDate = expiryDate;
                     return resolve(parsed.access_token);
@@ -127,17 +109,11 @@ async function getAuthToken(credentials, proxy) {
     return promise;
 }
 
-/**
- * Sends a push notification via HMS
- * @param {PushEvent} pushEvent - Push event object
- * @returns {Promise<string>} Resolves with raw HMS response
- */
-async function send(pushEvent) {
-    const credentials = /** @type {HMSCredentials} */(pushEvent.credentials);
+export async function send(pushEvent: PushEvent): Promise<string> {
+    const credentials = pushEvent.credentials as HMSCredentials;
     const authToken = await getAuthToken(credentials, pushEvent.proxy);
 
-    /** @type {HttpsProxyAgent<"proxy-address">=} */
-    let agent;
+    let agent: HttpsProxyAgent<string> | undefined;
     if (pushEvent.proxy) {
         agent = new HttpsProxyAgent(buildProxyUrl(pushEvent.proxy), {
             keepAlive: true,
@@ -145,14 +121,12 @@ async function send(pushEvent) {
             rejectUnauthorized: pushEvent.proxy.auth,
         });
     }
-    const huaweiContent = /** @type {HuaweiMessagePayload} */(
-        pushEvent.payload
-    );
+    const huaweiContent = pushEvent.payload as HuaweiMessagePayload;
     huaweiContent.message.token = [pushEvent.token];
     const payload = JSON.stringify(huaweiContent);
     delete huaweiContent.message.token;
 
-    return new Promise((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
         const request = https.request({
             agent: agent,
             hostname: 'push-api.cloud.huawei.com',
@@ -166,15 +140,14 @@ async function send(pushEvent) {
             },
         }, (response) => {
             let data = "";
-            response.on("data", chunk => data += chunk);
+            response.on("data", (chunk: string) => data += chunk);
             response.on("end", () => {
-                // raw response to attach to error
                 const raw = Object.entries(response.headers)
                     .map(([key, value]) => key + ": " + value)
                     .join("\n")
                     + "\n\n" + data;
 
-                let parsed;
+                let parsed: any;
                 try {
                     parsed = JSON.parse(data);
                 }
@@ -207,20 +180,14 @@ async function send(pushEvent) {
     });
 }
 
-/**
- * Validates the given unvalidated credentials, returns the validated
- * @param {UnvalidatedHMSCredentials} unvalidatedCreds - Unvalidated credentials
- * @param {ProxyConfiguration=} proxyConfig - Optional proxy configuration
- * @returns {Promise<{ creds: HMSCredentials, view: HMSCredentials }>} Validated credentials and a view object
- * @throws {Error} if credentials are invalid
- */
-async function validateCredentials(unvalidatedCreds, proxyConfig) {
+export async function validateCredentials(
+    unvalidatedCreds: UnvalidatedHMSCredentials,
+    proxyConfig?: ProxyConfiguration
+): Promise<{ creds: HMSCredentials; view: HMSCredentials }> {
     if (unvalidatedCreds.type !== "hms") {
         throw new InvalidCredentials("Invalid credentials type");
     }
-    const requiredFields = /** @type {Array<keyof UnvalidatedHMSCredentials>} */(
-        ["app", "secret"]
-    );
+    const requiredFields: Array<keyof UnvalidatedHMSCredentials> = ["app", "secret"];
     for (const field of requiredFields) {
         if (!unvalidatedCreds[field] || typeof unvalidatedCreds[field] !== "string") {
             throw new InvalidCredentials(
@@ -238,15 +205,13 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
             "Invalid HMSCredentials: secret length must be 64 characters"
         );
     }
-    /** @type {HMSCredentials} */
-    const creds = {
+    const creds: HMSCredentials = {
         ...unvalidatedCreds,
         _id: new ObjectId(),
         hash: createHash("sha256").update(JSON.stringify(unvalidatedCreds))
             .digest("hex")
     };
-    /** @type {HMSCredentials} */
-    const view = {
+    const view: HMSCredentials = {
         ...creds,
         secret: `HPK secret "${creds.secret.slice(0, 10)}...${creds.secret.slice(-10)}"`,
     };
@@ -286,17 +251,9 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
     throw new InvalidCredentials("Test connection failed for an unknown reason.");
 }
 
-/**
- * Maps message contents to an HMS request payload
- * @param {Message} messageDoc - Message document
- * @param {Content} content - Content object built from message contents in template builder
- * @param {TemplateContext} context - User object or a map of custom properties
- * @returns {HuaweiMessagePayload} Huawei message payload
- */
-function mapMessageToPayload(messageDoc, content, context) {
+export function mapMessageToPayload(messageDoc: Message, content: Content, context: TemplateContext): HuaweiMessagePayload {
     const androidPayload = mapMessageToAndroidPayload(messageDoc, content, context);
-    /** @type {HuaweiMessagePayload} */
-    const payload = {
+    const payload: HuaweiMessagePayload = {
         message: {
             data: JSON.stringify(androidPayload.data),
             android: {},
@@ -304,10 +261,3 @@ function mapMessageToPayload(messageDoc, content, context) {
     };
     return payload;
 }
-
-module.exports = {
-    send,
-    getAuthToken,
-    mapMessageToPayload,
-    validateCredentials,
-};
