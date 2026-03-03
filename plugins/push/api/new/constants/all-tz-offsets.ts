@@ -1,4 +1,4 @@
-[
+export default [
     { "tz": "-12:00", "offset": -720 },
     { "tz": "-11:00", "offset": -660 },
     { "tz": "-10:00", "offset": -600 },

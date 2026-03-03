@@ -15,7 +15,7 @@ const { ObjectId } = require("mongodb");
 const sinon = require("sinon");
 const proxyquire = require("proxyquire");
 const { createMockedMongoDb } = require("../mock/mongo.js");
-const timezones = require("../../api/new/constants/all-tz-offsets.json");
+const timezones = require("../../api/new/constants/all-tz-offsets.ts");
 const mockData = require("../mock/data.js");
 const { buildResultObject } = require("../../api/new/resultor.js");
 let {
@@ -35,7 +35,7 @@ const {
     mergeAutoTriggerEvents,
     scheduleMessageByAutoTriggers,
 } = proxyquire("../../api/new/scheduler", {
-    "../../api/new/lib/kafka.js": {
+    "../../api/new/lib/kafka.ts": {
         sendScheduleEvents: mockSendScheduleEvents
     }
 });

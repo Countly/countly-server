@@ -21,8 +21,8 @@ const {
     setupTopicsAndPartitions,
     setupProducer,
     initPushQueue
-} = /** @type {import("../../../api/new/lib/kafka.js")} */(
-    proxyquire("../../../api/new/lib/kafka.js", {
+} = /** @type {import("../../../api/new/lib/kafka.ts")} */(
+    proxyquire("../../../api/new/lib/kafka.ts", {
         "../../../../../api/utils/common": { log }
     })
 );

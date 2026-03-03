@@ -8,8 +8,13 @@ import {
     resultEventDTOToObject,
     autoTriggerEventDTOToObject,
 } from "./dto.ts";
-import kafkaConfig from "../constants/kafka-config.json";
+import kafkaConfig from "../constants/kafka-config.ts";
 
+import { createRequire } from 'module';
+
+// createRequire needed for CJS modules without ES exports
+// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
+const require = createRequire(import.meta.url);
 const common: any = require('../../../../../api/utils/common');
 const log = common.log('push:kafka');
 

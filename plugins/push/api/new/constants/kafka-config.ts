@@ -1,4 +1,4 @@
-{
+export default {
     "consumerGroupId": "countly-push-consumers",
     "topics": {
         "SEND": {

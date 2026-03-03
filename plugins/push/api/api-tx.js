@@ -9,7 +9,7 @@ const { Filter, Content, ValidationError } = require("./send"),
     common = require("../../../api/utils/common"),
     log = common.log("push:api:tx");
 
-const { createSchedule } = require("./new/scheduler");
+const { createSchedule } = require("./new/scheduler.ts");
 
 /**
  * Add notification to API message

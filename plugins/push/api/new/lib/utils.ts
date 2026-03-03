@@ -4,6 +4,11 @@ import type { PluginConfigDocument, PluginConfiguration, ProxyConfiguration } fr
 import type { PlatformKey, PlatformEnvKey } from "../types/message.ts";
 import type { ResultEvent } from "../types/queue.ts";
 import PLATFORM_KEYMAP from "../constants/platform-keymap.ts";
+import { createRequire } from 'module';
+
+// createRequire needed for CJS modules without ES exports
+// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
+const require = createRequire(import.meta.url);
 
 const common: any = require('../../../../../api/utils/common');
 const { processEvents: processInternalEvents } = require('../../../../../api/parts/data/events');

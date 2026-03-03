@@ -7,7 +7,7 @@ const common = require('../../../api/utils/common');
 const crypto = require('crypto');
 const moment = require('moment-timezone');
 const log = common.log('push:api:dashboard');
-const { isProducerInitialized, verifyKafka } = require("./new/lib/kafka.js");
+const { isProducerInitialized, verifyKafka } = require("./new/lib/kafka.ts");
 const platforms = require("./new/constants/platform-keymap.ts").default;
 const platformKeys = /** @type {PlatformKey[]} */(Object.keys(platforms));
 

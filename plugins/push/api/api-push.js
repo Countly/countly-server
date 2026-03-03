@@ -9,12 +9,7 @@ const { ValidationError, DBMAP } = require('./send');
 const { validateCredentials: validateAndroidCredentials } = require("./new/platforms/android.ts");
 const { validateCredentials: validateIOSCredentials } = require("./new/platforms/ios.ts");
 const { validateCredentials: validateHuaweiCredentials } = require("./new/platforms/huawei.ts");
-console.log(
-    validateAndroidCredentials,
-    validateIOSCredentials,
-    validateHuaweiCredentials,
-);
-const { extractTokenFromQuerystring, loadPluginConfiguration } = require('./new/lib/utils');
+const { extractTokenFromQuerystring, loadPluginConfiguration } = require('./new/lib/utils.ts');
 const platforms = require("./new/constants/platform-keymap.ts").default;
 const platformKeys = /** @type {PlatformKey[]} */(Object.keys(platforms));
 const allAppUserFields = [...new Set(

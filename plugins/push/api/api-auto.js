@@ -9,8 +9,8 @@ const common = require('../../../api/utils/common'),
     logCohorts = log.sub('cohorts'),
     logEvents = log.sub('events');
 
-const { cohortMessageExists, eventMessageExists } = require("./new/lib/message-cache.js");
-const { sendAutoTriggerEvents } = require("./new/lib/kafka.js");
+const { cohortMessageExists, eventMessageExists } = require("./new/lib/message-cache.ts");
+const { sendAutoTriggerEvents } = require("./new/lib/kafka.ts");
 
 /**
  * Handler function for /cohort/enter (/cohort/exit) hooks

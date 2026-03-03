@@ -7,7 +7,7 @@ const { guessThePlatformFromUserAgentHeader } = require("./new/lib/utils.js");
 const { autoOnEvent } = require('./api-auto');
 const common = require('../../../api/utils/common');
 const log = common.log('push:ingestor');
-const { loadKafka, setupProducer } = require('./new/lib/kafka.js');
+const { loadKafka, setupProducer } = require('./new/lib/kafka.ts');
 
 (async() => {
     try {

@@ -1,5 +1,5 @@
 const { createTemplate, createContentMap, compilePersonalizableContent, getUserPropertiesUsedInsideMessage } = require("../../../api/new/lib/template");
-const { removeUPFromUserPropertyKey } = require("../../../api/new/lib/utils");
+const { removeUPFromUserPropertyKey } = require("../../../api/new/lib/utils.ts");
 const assert = require("assert");
 const { describe, it } = require("mocha");
 const mockData = require("../../mock/data");

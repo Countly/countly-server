@@ -5,6 +5,11 @@ import type { Result, PlatformKey } from "./types/message.ts";
 import { InvalidDeviceToken } from "./lib/error.ts";
 import { updateInternalsWithResults, sanitizeMongoPath } from "./lib/utils.ts";
 
+import { createRequire } from 'module';
+
+// createRequire needed for CJS modules without ES exports
+// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
+const require = createRequire(import.meta.url);
 const log: any = require('../../../../api/utils/common').log('push:resultor');
 
 type Stat = "total" | "sent" | "failed" | "actioned";

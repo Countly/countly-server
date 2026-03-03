@@ -4,18 +4,18 @@
  * @typedef {import("./new/types/queue.ts").ScheduleEventHandler} ScheduleEventHandler
  * @typedef {import("./new/types/queue.ts").ResultEventHandler} ResultEventHandler
  */
-const plugins = require('../../pluginManager'),
-    common = require('../../../api/utils/common'),
+const plugins = require('../../pluginManager.ts'),
+    common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
-    { ValidationError, PushError } = require('./send'),
+    { ValidationError, PushError } = require('./send/index.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
-    { onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push'),
-    { autoOnCohort, /*autoOnCohortDeletion,*/ } = require('./api-auto'),
-    { apiPush } = require('./api-tx'),
-    { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
-    { estimate, test, create, update, toggle, remove, all, one, mime, user, periodicStats } = require('./api-message'),
-    { dashboard } = require('./api-dashboard'),
-    { clear, reset, removeUsers } = require('./api-reset'),
+    { onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push.js'),
+    { autoOnCohort, /*autoOnCohortDeletion,*/ } = require('./api-auto.js'),
+    { apiPush } = require('./api-tx.js'),
+    { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill.js'),
+    { estimate, test, create, update, toggle, remove, all, one, mime, user, periodicStats } = require('./api-message.js'),
+    { dashboard } = require('./api-dashboard.js'),
+    { clear, reset, removeUsers } = require('./api-reset.js'),
     FEATURE_NAME = 'push',
     PUSH = {
         FEATURE_NAME
@@ -44,11 +44,11 @@ const plugins = require('../../pluginManager'),
         }
     };
 
-const { initPushQueue, loadKafka } = require("./new/lib/kafka.js");
-const { composeAllScheduledPushes } = require('./new/composer.js');
-const { sendAllPushes } = require('./new/sender.js');
-const { saveResults } = require("./new/resultor.js");
-const { scheduleMessageByAutoTriggers } = require("./new/scheduler.js");
+const { initPushQueue, loadKafka } = require("./new/lib/kafka.ts");
+const { composeAllScheduledPushes } = require('./new/composer.ts');
+const { sendAllPushes } = require('./new/sender.ts');
+const { saveResults } = require("./new/resultor.ts");
+const { scheduleMessageByAutoTriggers } = require("./new/scheduler.ts");
 
 plugins.register("/master", async function() {
     try {

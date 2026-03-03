@@ -17,6 +17,11 @@ import { buildResultObject, increaseResultStat, applyResultObject } from "./resu
 import { loadDrillAPI, loadPluginConfiguration } from "./lib/utils.ts";
 import { RESCHEDULABLE_DATE_TRIGGERS, scheduleMessageByDateTrigger } from "./scheduler.ts";
 
+import { createRequire } from 'module';
+
+// createRequire needed for CJS modules without ES exports
+// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
+const require = createRequire(import.meta.url);
 const common: any = require("../../../../api/utils/common.js");
 const log: any = require('../../../../api/utils/common').log('push:composer');
 

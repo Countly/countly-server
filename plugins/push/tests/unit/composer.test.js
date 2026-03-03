@@ -32,7 +32,7 @@ const {
     buildUserAggregationPipeline,
     convertAudienceFiltersToMatchStage
 } = proxyquire("../../api/new/composer", {
-    "../../api/new/lib/kafka.js": {
+    "../../api/new/lib/kafka.ts": {
         sendPushEvents: mockSendPushEvents
     },
     "../../../../api/utils/common": common
