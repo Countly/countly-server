@@ -2,7 +2,7 @@
 
 const log = require('../../../api/utils/common.js').log('push:frontend');
 
-const platformEnvCombinedKeys = Object.values(require("../api/new/constants/platform-keymap.js")).map(k => k.combined).flat();
+const platformEnvCombinedKeys = Object.values(require("../api/new/constants/platform-keymap.ts").default).map(k => k.combined).flat();
 
 module.exports = {
     init: (app, db) => {

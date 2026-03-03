@@ -1,0 +1,1 @@
+export const PROXY_CONNECTION_TIMEOUT = 5000;

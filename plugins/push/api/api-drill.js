@@ -7,7 +7,7 @@ const common = require('../../../api/utils/common'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     log = common.log('push:api:drill');
 
-const platforms = require("./new/constants/platform-keymap.js");
+const platforms = require("./new/constants/platform-keymap.ts").default;
 
 module.exports.drillAddPushEvents = ({uid, params, events, event}) => {
     return new Promise((res, rej) => {

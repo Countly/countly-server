@@ -10,7 +10,7 @@ const { State, Status, STATUSES, Mongoable } = require('./const'),
     { Info } = require('./info'),
     db = require('./db');
 
-const platforms = require("../../new/constants/platform-keymap.js");
+const PLATFORM_KEYMAP = require("../../new/constants/platform-keymap.ts").default;
 
 /**
  * Message class encapsulating all the message-related data
@@ -44,7 +44,7 @@ class Message extends Mongoable {
             _id: { required: false, type: 'ObjectID' },
             app: { required: true, type: 'ObjectID' },
             saveResults: { required: false, type: 'Boolean' },
-            platforms: { required: true, type: 'String[]', in: () => Object.keys(platforms) },
+            platforms: { required: true, type: 'String[]', in: () => Object.keys(PLATFORM_KEYMAP) },
             state: { type: 'Number' },
             status: { type: 'String', in: Object.values(Status) },
             filter: {

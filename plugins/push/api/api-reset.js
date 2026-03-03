@@ -2,7 +2,7 @@ const common = require('../../../api/utils/common'),
     plugins = require('../../pluginManager'),
     { Creds, dbext, PushError } = require('./send');
 
-const platforms = require("./new/constants/platform-keymap.js");
+const platforms = require("./new/constants/platform-keymap.ts").default;
 const allAppUserFields = [...new Set(
     Object.values(platforms)
         .map(platform => platform.combined)

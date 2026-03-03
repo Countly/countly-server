@@ -6,12 +6,16 @@
 const common = require('../../../api/utils/common');
 const log = common.log('push:api:push');
 const { ValidationError, DBMAP } = require('./send');
-const { validateCredentials: validateAndroidCredentials } = require("./new/platforms/android");
-const { validateCredentials: validateIOSCredentials } = require("./new/platforms/ios");
-const { validateCredentials: validateHuaweiCredentials } = require("./new/platforms/huawei");
-const { loadPluginConfiguration } = require('./new/lib/utils');
-const { extractTokenFromQuerystring } = require("./new/lib/utils");
-const platforms = require("./new/constants/platform-keymap.js");
+const { validateCredentials: validateAndroidCredentials } = require("./new/platforms/android.ts");
+const { validateCredentials: validateIOSCredentials } = require("./new/platforms/ios.ts");
+const { validateCredentials: validateHuaweiCredentials } = require("./new/platforms/huawei.ts");
+console.log(
+    validateAndroidCredentials,
+    validateIOSCredentials,
+    validateHuaweiCredentials,
+);
+const { extractTokenFromQuerystring, loadPluginConfiguration } = require('./new/lib/utils');
+const platforms = require("./new/constants/platform-keymap.ts").default;
 const platformKeys = /** @type {PlatformKey[]} */(Object.keys(platforms));
 const allAppUserFields = [...new Set(
     Object.values(platforms)

@@ -1,9 +1,9 @@
 import { ObjectId } from "mongodb";
 import type { Db, AnyBulkWriteOperation, BulkWriteResult, SetFields } from "mongodb";
-import type { ResultEvent } from "./types/queue";
-import type { Result, PlatformKey } from "./types/message";
-import { InvalidDeviceToken } from "./lib/error";
-import { updateInternalsWithResults, sanitizeMongoPath } from "./lib/utils";
+import type { ResultEvent } from "./types/queue.ts";
+import type { Result, PlatformKey } from "./types/message.ts";
+import { InvalidDeviceToken } from "./lib/error.ts";
+import { updateInternalsWithResults, sanitizeMongoPath } from "./lib/utils.ts";
 
 const log: any = require('../../../../api/utils/common').log('push:resultor');
 

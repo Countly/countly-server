@@ -1,8 +1,8 @@
 import { ObjectId } from "mongodb";
-import { PlatformCredential } from "./credentials";
-import { ProxyConfiguration, ErrorObject } from "./utils";
-import { AutoTrigger, MessageTrigger } from "./message";
-import { PlatformKey, PlatformEnvKey } from "./message";
+import { PlatformCredential } from "./credentials.ts";
+import { ProxyConfiguration, ErrorObject } from "./utils.ts";
+import { AutoTrigger, MessageTrigger } from "./message.ts";
+import { PlatformKey, PlatformEnvKey } from "./message.ts";
 
 export interface AndroidMessagePayload {
     data: {

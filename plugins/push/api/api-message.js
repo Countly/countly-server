@@ -28,8 +28,8 @@ const { buildUserAggregationPipeline, createPushStream, loadCredentials } = requ
 const { loadPluginConfiguration, buildProxyUrl } = require("./new/lib/utils");
 const { createTemplate } = require("./new/lib/template");
 const { sendAllPushes } = require("./new/sender.js");
-const platforms = require("./new/constants/platform-keymap.js");
-const { PROXY_CONNECTION_TIMEOUT } = require("./new/constants/proxy-config.json");
+const platforms = require("./new/constants/platform-keymap.ts").default;
+const { PROXY_CONNECTION_TIMEOUT } = require("./new/constants/proxy-config.ts");
 
 /**
  * Decide which status to use for scheduling based on message and last schedule

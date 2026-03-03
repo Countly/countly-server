@@ -1,5 +1,5 @@
 import { ObjectId, Collection } from "mongodb";
-import { ErrorObject } from "./utils";
+import { ErrorObject } from "./utils.ts";
 
 export type PlatformKey = "a"|"i"|"h"; // android|ios|huawei
 export type PlatformEnvKey = "p"|"d"|"a"; // production|debug|adhoc

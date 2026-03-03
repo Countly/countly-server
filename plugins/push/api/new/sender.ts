@@ -1,10 +1,10 @@
-import type { PushEvent, ResultEvent } from "./types/queue";
-import type { ErrorObject } from "./types/utils";
-import { send as androidSend } from "./platforms/android";
-import { send as iosSend } from "./platforms/ios";
-import { send as huaweiSend } from "./platforms/huawei";
-import { sendResultEvents } from "./lib/kafka";
-import { SendError, TooLateToSend } from "./lib/error";
+import type { PushEvent, ResultEvent } from "./types/queue.ts";
+import type { ErrorObject } from "./types/utils.ts";
+import { send as androidSend } from "./platforms/android.ts";
+import { send as iosSend } from "./platforms/ios.ts";
+import { send as huaweiSend } from "./platforms/huawei.ts";
+import { sendResultEvents } from "./lib/kafka.ts";
+import { SendError, TooLateToSend } from "./lib/error.ts";
 
 const log: any = require('../../../../api/utils/common').log('push:sender');
 

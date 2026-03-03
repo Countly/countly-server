@@ -1,6 +1,6 @@
 const { onTokenSession } = require('./api-push');
 const plugins = require('../../pluginManager');
-const platforms = require("./new/constants/platform-keymap.js");
+const platforms = require("./new/constants/platform-keymap.ts").default;
 const ALL_PLATFORM_KEYS = Object.keys(platforms);
 const { Message, TriggerKind } = require('./send');
 const { guessThePlatformFromUserAgentHeader } = require("./new/lib/utils.js");

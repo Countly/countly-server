@@ -2,20 +2,20 @@ import { ObjectId } from "mongodb";
 import type { Db, Collection, Document } from "mongodb";
 import type {
     ScheduleEvent, PushEvent, IOSConfig, AndroidConfig, HuaweiConfig,
-} from "./types/queue";
+} from "./types/queue.ts";
 import type {
     MessageCollection, Message, PlatformKey, PlatformEnvKey, PlatformCombinedKeys,
-} from "./types/message";
-import type { PlatformCredential } from "./types/credentials";
-import type { PluginConfiguration, ErrorObject } from "./types/utils";
-import type { Schedule, ScheduleCollection, AudienceFilter } from "./types/schedule";
-import type { MessageTemplateFunction } from "./lib/template";
-import * as queue from "./lib/kafka"; // do not import by destructuring; it's being mocked in the tests
-import { createTemplate, getUserPropertiesUsedInsideMessage } from "./lib/template";
-import PLATFORM_KEYMAP from "./constants/platform-keymap";
-import { buildResultObject, increaseResultStat, applyResultObject } from "./resultor";
-import { loadDrillAPI, loadPluginConfiguration } from "./lib/utils";
-import { RESCHEDULABLE_DATE_TRIGGERS, scheduleMessageByDateTrigger } from "./scheduler";
+} from "./types/message.ts";
+import type { PlatformCredential } from "./types/credentials.ts";
+import type { PluginConfiguration, ErrorObject } from "./types/utils.ts";
+import type { Schedule, ScheduleCollection, AudienceFilter } from "./types/schedule.ts";
+import type { MessageTemplateFunction } from "./lib/template.ts";
+import * as queue from "./lib/kafka.ts"; // do not import by destructuring; it's being mocked in the tests
+import { createTemplate, getUserPropertiesUsedInsideMessage } from "./lib/template.ts";
+import PLATFORM_KEYMAP from "./constants/platform-keymap.ts";
+import { buildResultObject, increaseResultStat, applyResultObject } from "./resultor.ts";
+import { loadDrillAPI, loadPluginConfiguration } from "./lib/utils.ts";
+import { RESCHEDULABLE_DATE_TRIGGERS, scheduleMessageByDateTrigger } from "./scheduler.ts";
 
 const common: any = require("../../../../api/utils/common.js");
 const log: any = require('../../../../api/utils/common').log('push:composer');

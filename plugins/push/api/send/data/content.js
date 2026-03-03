@@ -3,7 +3,7 @@
 const { PushError } = require('./error'),
     { Validatable, PERS_TYPES } = require('./const');
 
-const platforms = require('../../new/constants/platform-keymap');
+const PLATFORM_KEYMAP = require('../../new/constants/platform-keymap.ts').default;
 
 /**
  * Message `contents` array consists of Content objects, it's to be defined the following way (each line below is an element of `contents` array):
@@ -52,7 +52,7 @@ class Content extends Validatable {
             p: {
                 type: 'String',
                 required: false,
-                in: () => Object.keys(platforms),
+                in: () => Object.keys(PLATFORM_KEYMAP),
             },
             la: {type: 'String', required: false},
             title: {type: 'String', required: false, trim: true},

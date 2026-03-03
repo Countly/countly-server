@@ -5,14 +5,14 @@ import { URL } from "url";
 import { ObjectId } from "mongodb";
 import { createHash } from "crypto";
 import type { OutgoingHttpHeaders } from "http2";
-import type { PushEvent, IOSMessagePayload, IOSConfig } from "../types/queue";
-import type { Content, Message } from "../types/message";
-import type { APNCredentials, APNP12Credentials, APNP8Credentials, UnvalidatedAPNCredentials, UnvalidatedAPNP8Credentials, TLSKeyPair } from "../types/credentials";
-import type { ProxyConfiguration } from "../types/utils";
-import type { TemplateContext } from "../lib/template";
-import { serializeProxyConfig, removeUPFromUserPropertyKey } from "../lib/utils";
-import { InvalidCredentials, SendError, InvalidResponse, APNSErrors, InvalidDeviceToken } from "../lib/error";
-import { PROXY_CONNECTION_TIMEOUT } from "../constants/proxy-config.json";
+import type { PushEvent, IOSMessagePayload, IOSConfig } from "../types/queue.ts";
+import type { Content, Message } from "../types/message.ts";
+import type { APNCredentials, APNP12Credentials, APNP8Credentials, UnvalidatedAPNCredentials, UnvalidatedAPNP8Credentials, TLSKeyPair } from "../types/credentials.ts";
+import type { ProxyConfiguration } from "../types/utils.ts";
+import type { TemplateContext } from "../lib/template.ts";
+import { serializeProxyConfig, removeUPFromUserPropertyKey } from "../lib/utils.ts";
+import { InvalidCredentials, SendError, InvalidResponse, APNSErrors, InvalidDeviceToken } from "../lib/error.ts";
+import { PROXY_CONNECTION_TIMEOUT } from "../constants/proxy-config.ts";
 
 interface JWTCache {
     token: string;

@@ -1,9 +1,9 @@
 import { URL } from "url";
 import type { Db } from "mongodb";
-import type { PluginConfigDocument, PluginConfiguration, ProxyConfiguration } from "../types/utils";
-import type { PlatformKey, PlatformEnvKey } from "../types/message";
-import type { ResultEvent } from "../types/queue";
-import platforms from "../constants/platform-keymap";
+import type { PluginConfigDocument, PluginConfiguration, ProxyConfiguration } from "../types/utils.ts";
+import type { PlatformKey, PlatformEnvKey } from "../types/message.ts";
+import type { ResultEvent } from "../types/queue.ts";
+import PLATFORM_KEYMAP from "../constants/platform-keymap.ts";
 
 const common: any = require('../../../../../api/utils/common');
 const { processEvents: processInternalEvents } = require('../../../../../api/parts/data/events');
@@ -168,10 +168,10 @@ export function extractTokenFromQuerystring(qstring: PlainObject): [PlatformKey,
             common.md5Hash(JSON.stringify(token))
         ];
     }
-    else if (qstring.ios_token !== undefined && qstring.test_mode in platforms.i.environmentMap) {
+    else if (qstring.ios_token !== undefined && qstring.test_mode in PLATFORM_KEYMAP.i.environmentMap) {
         return [
             "i",
-            platforms.i.environmentMap[qstring.test_mode],
+            PLATFORM_KEYMAP.i.environmentMap[qstring.test_mode],
             qstring.ios_token,
             common.md5Hash(JSON.stringify(qstring.ios_token))
         ];

@@ -1,4 +1,4 @@
-import type { PlatformKey, PlatformEnvKey, PlatformCombinedKeys } from "../types/message";
+import type { PlatformKey, PlatformEnvKey, PlatformCombinedKeys } from "../types/message.ts";
 
 interface PlatformKeymapEntry {
     title: string;
@@ -9,7 +9,7 @@ interface PlatformKeymapEntry {
     environmentTitles: Partial<Record<PlatformEnvKey, string>>;
 }
 
-const PLATFORM_KEYMAP: Record<PlatformKey, PlatformKeymapEntry> = {
+export default {
     "a": {
         "title": "Android",
         "aliasFor": ["a", "h"],
@@ -50,6 +50,4 @@ const PLATFORM_KEYMAP: Record<PlatformKey, PlatformKeymapEntry> = {
             "p": "Android Huawei Token"
         }
     }
-};
-
-export = PLATFORM_KEYMAP;
+} as Record<PlatformKey, PlatformKeymapEntry>;

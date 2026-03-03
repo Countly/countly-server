@@ -2,14 +2,14 @@ import firebaseAdmin from "firebase-admin";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { ObjectId } from "mongodb";
 import { createHash } from "crypto";
-import type { PushEvent, AndroidMessagePayload } from "../types/queue";
-import type { Content, Message } from "../types/message";
-import type { ProxyConfiguration } from "../types/utils";
-import type { FCMCredentials, UnvalidatedFCMCredentials } from "../types/credentials";
-import type { TemplateContext } from "../lib/template";
-import { buildProxyUrl, serializeProxyConfig, flattenObject, removeUPFromUserPropertyKey } from "../lib/utils";
-import { InvalidCredentials, SendError, FCMErrors } from "../lib/error";
-import { PROXY_CONNECTION_TIMEOUT } from "../constants/proxy-config.json";
+import type { PushEvent, AndroidMessagePayload } from "../types/queue.ts";
+import type { Content, Message } from "../types/message.ts";
+import type { ProxyConfiguration } from "../types/utils.ts";
+import type { FCMCredentials, UnvalidatedFCMCredentials } from "../types/credentials.ts";
+import type { TemplateContext } from "../lib/template.ts";
+import { buildProxyUrl, serializeProxyConfig, flattenObject, removeUPFromUserPropertyKey } from "../lib/utils.ts";
+import { InvalidCredentials, SendError, FCMErrors } from "../lib/error.ts";
+import { PROXY_CONNECTION_TIMEOUT } from "../constants/proxy-config.ts";
 
 interface FirebaseError extends Error {
     code: string;

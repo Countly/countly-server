@@ -1,13 +1,13 @@
 import type {
     ScheduleEvent, PushEvent, ResultEvent, AutoTriggerEvent,
     PushEventHandler, ScheduleEventHandler, ResultEventHandler, AutoTriggerEventHandler,
-} from "../types/queue";
+} from "../types/queue.ts";
 import {
     scheduleEventDTOToObject,
     pushEventDTOToObject,
     resultEventDTOToObject,
     autoTriggerEventDTOToObject,
-} from "./dto";
+} from "./dto.ts";
 import kafkaConfig from "../constants/kafka-config.json";
 
 const common: any = require('../../../../../api/utils/common');

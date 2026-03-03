@@ -5,8 +5,8 @@ import type {
     ResultEvent, ResultEventDTO,
     AutoTriggerEvent, AutoTriggerEventDTO,
     CredentialsDTO,
-} from "../types/queue";
-import type { PlatformCredential } from "../types/credentials";
+} from "../types/queue.ts";
+import type { PlatformCredential } from "../types/credentials.ts";
 
 export function scheduleEventDTOToObject(scheduleEventDTO: ScheduleEventDTO): ScheduleEvent {
     return {

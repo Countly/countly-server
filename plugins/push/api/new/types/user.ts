@@ -1,4 +1,4 @@
-import { PlatformCombinedKeys } from "./message";
+import { PlatformCombinedKeys } from "./message.ts";
 
 // contains only the required properties. other ones are denoted with "[key: string]: any". which are
 // only populated from app_user to be used inside the template.

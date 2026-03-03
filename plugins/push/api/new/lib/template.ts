@@ -1,10 +1,10 @@
-import type { PersonalizationObject, Content, Message, PlatformKey } from "../types/message";
-import type { PlatformMessagePayload } from "../types/queue";
-import type { User } from "../types/user";
-import { mapMessageToPayload as mapMessageToAndroidPayload } from "../platforms/android";
-import { mapMessageToPayload as mapMessageToIOSPayload } from "../platforms/ios";
-import { mapMessageToPayload as mapMessageToHuaweiPayload } from "../platforms/huawei";
-import { removeUPFromUserPropertyKey } from "./utils";
+import type { PersonalizationObject, Content, Message, PlatformKey } from "../types/message.ts";
+import type { PlatformMessagePayload } from "../types/queue.ts";
+import type { User } from "../types/user.ts";
+import { mapMessageToPayload as mapMessageToAndroidPayload } from "../platforms/android.ts";
+import { mapMessageToPayload as mapMessageToIOSPayload } from "../platforms/ios.ts";
+import { mapMessageToPayload as mapMessageToHuaweiPayload } from "../platforms/huawei.ts";
+import { removeUPFromUserPropertyKey } from "./utils.ts";
 
 const { dot } = require('../../../../../api/utils/common');
 
