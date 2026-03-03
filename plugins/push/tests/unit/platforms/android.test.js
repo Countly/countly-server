@@ -1,7 +1,7 @@
 /**
  * @typedef {import("../../../api/new/types/credentials").FCMCredentials} FCMCredentials
  * @typedef {import("../../../api/new/types/queue").PushEvent} PushEvent
- * @typedef {import("../../../api/new/types/utils").ProxyConfiguration} ProxyConfiguration
+ * @typedef {import("../../../api/new/lib/utils").ProxyConfiguration} ProxyConfiguration
  */
 const assert = require("assert");
 const { ObjectId } = require("mongodb");
@@ -19,7 +19,7 @@ describe("Android platform", () => {
         credential: { cert: sinon.stub() },
         apps: /** @type {{messaging: sinon.SinonStub, name: string}[]} */([]),
     };
-    const { send, validateCredentials, mapMessageToPayload } = proxyquire("../../../api/new/platforms/android", {
+    const { send, validateCredentials, mapMessageToPayload } = proxyquire("../../../api/new/platforms/android.ts", {
         "firebase-admin": mockFirebaseAdmin,
         "https-proxy-agent": { HttpsProxyAgent: MockHttpsProxyAgent }
     });

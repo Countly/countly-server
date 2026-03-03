@@ -5,7 +5,7 @@
 const assert = require("assert");
 const { describe, it } = require("mocha");
 const { ObjectId } = require("mongodb");
-const { send, validateCredentials } = require("../../../api/new/platforms/android");
+const { send, validateCredentials } = require("../../../api/new/platforms/android.ts");
 const { credentialsDTOToObject } = require("../../../api/new/lib/dto");
 const mockedData = require("../../mock/data");
 const { ANDROID_TEST_TOKEN, ANDROID_TEST_CREDENTIALS } = process.env;

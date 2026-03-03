@@ -1,11 +1,11 @@
-import type { PlatformKey, PlatformEnvKey, PlatformCombinedKeys } from "../types/message.ts";
+import type { PlatformKey, PlatformEnvKey, PlatformCombinedKey } from "../types/message.ts";
 
 interface PlatformKeymapEntry {
     title: string;
     aliasFor: PlatformKey[];
     environments: PlatformEnvKey[];
     environmentMap: Record<string, PlatformEnvKey>;
-    combined: PlatformCombinedKeys[];
+    combined: PlatformCombinedKey[];
     environmentTitles: Partial<Record<PlatformEnvKey, string>>;
 }
 

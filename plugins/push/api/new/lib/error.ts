@@ -1,3 +1,9 @@
+export interface ErrorObject {
+    name: string;
+    message: string;
+    stack?: string;
+}
+
 export class PushError extends Error {
     constructor(message: string) {
         super(message);

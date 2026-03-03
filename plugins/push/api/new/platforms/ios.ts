@@ -8,7 +8,7 @@ import type { OutgoingHttpHeaders } from "http2";
 import type { PushEvent, IOSMessagePayload, IOSConfig } from "../types/queue.ts";
 import type { Content, Message } from "../types/message.ts";
 import type { APNCredentials, APNP12Credentials, APNP8Credentials, UnvalidatedAPNCredentials, UnvalidatedAPNP8Credentials, TLSKeyPair } from "../types/credentials.ts";
-import type { ProxyConfiguration } from "../types/utils.ts";
+import type { ProxyConfiguration } from "../lib/utils.ts";
 import type { TemplateContext } from "../lib/template.ts";
 import { serializeProxyConfig, removeUPFromUserPropertyKey } from "../lib/utils.ts";
 import { InvalidCredentials, SendError, InvalidResponse, APNSErrors, InvalidDeviceToken } from "../lib/error.ts";

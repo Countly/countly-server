@@ -4,10 +4,10 @@ import type {
     ScheduleEvent, PushEvent, IOSConfig, AndroidConfig, HuaweiConfig,
 } from "./types/queue.ts";
 import type {
-    MessageCollection, Message, PlatformKey, PlatformEnvKey, PlatformCombinedKeys,
+    MessageCollection, Message, PlatformKey, PlatformEnvKey, PlatformCombinedKey,
 } from "./types/message.ts";
 import type { PlatformCredential } from "./types/credentials.ts";
-import type { PluginConfiguration, ErrorObject } from "./types/utils.ts";
+import type { ErrorObject } from "./lib/error.ts";
 import type { Schedule, ScheduleCollection, AudienceFilter } from "./types/schedule.ts";
 import type { MessageTemplateFunction } from "./lib/template.ts";
 import * as queue from "./lib/kafka.ts"; // do not import by destructuring; it's being mocked in the tests
@@ -207,7 +207,7 @@ export async function* createPushStream(
     scheduleDoc: Schedule,
     scheduledTo: Date,
     creds: PlatformCredentialsMap,
-    pluginConfig: PluginConfiguration | undefined,
+    pluginConfig: Awaited<ReturnType<typeof loadPluginConfiguration>> | undefined,
     template: MessageTemplateFunction,
     pipeline: Document[]
 ): AsyncGenerator<PushEvent, void, void> {
@@ -225,7 +225,7 @@ export async function* createPushStream(
                 continue;
             }
             const env = combined[1] as PlatformEnvKey;
-            const token = tokenObj[combined as PlatformCombinedKeys] as string;
+            const token = tokenObj[combined as PlatformCombinedKey] as string;
             const language = user.la ?? "default";
             let variables = {
                 ...user,

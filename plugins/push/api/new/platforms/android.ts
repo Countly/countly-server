@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import { createHash } from "crypto";
 import type { PushEvent, AndroidMessagePayload } from "../types/queue.ts";
 import type { Content, Message } from "../types/message.ts";
-import type { ProxyConfiguration } from "../types/utils.ts";
+import type { ProxyConfiguration } from "../lib/utils.ts";
 import type { FCMCredentials, UnvalidatedFCMCredentials } from "../types/credentials.ts";
 import type { TemplateContext } from "../lib/template.ts";
 import { buildProxyUrl, serializeProxyConfig, flattenObject, removeUPFromUserPropertyKey } from "../lib/utils.ts";

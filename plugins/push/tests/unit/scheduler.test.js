@@ -15,7 +15,7 @@ const { ObjectId } = require("mongodb");
 const sinon = require("sinon");
 const proxyquire = require("proxyquire");
 const { createMockedMongoDb } = require("../mock/mongo.js");
-const timezones = require("../../api/new/constants/all-tz-offsets.ts");
+const timezones = require("../../api/new/constants/all-tz-offsets.ts").default;
 const mockData = require("../mock/data.js");
 const { buildResultObject } = require("../../api/new/resultor.js");
 let {

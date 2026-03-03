@@ -1,5 +1,5 @@
 import type { PushEvent, ResultEvent } from "./types/queue.ts";
-import type { ErrorObject } from "./types/utils.ts";
+import type { ErrorObject } from "./lib/error.ts";
 import { send as androidSend } from "./platforms/android.ts";
 import { send as iosSend } from "./platforms/ios.ts";
 import { send as huaweiSend } from "./platforms/huawei.ts";

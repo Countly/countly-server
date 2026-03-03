@@ -1,6 +1,5 @@
-import type { PersonalizationObject, Content, Message, PlatformKey } from "../types/message.ts";
+import type { PersonalizationObject, Content, Message, PlatformKey, PlatformCombinedKey } from "../types/message.ts";
 import type { PlatformMessagePayload } from "../types/queue.ts";
-import type { User } from "../types/user.ts";
 import { mapMessageToPayload as mapMessageToAndroidPayload } from "../platforms/android.ts";
 import { mapMessageToPayload as mapMessageToIOSPayload } from "../platforms/ios.ts";
 import { mapMessageToPayload as mapMessageToHuaweiPayload } from "../platforms/huawei.ts";
@@ -12,6 +11,26 @@ import { createRequire } from 'module';
 // @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
 const require = createRequire(import.meta.url);
 const { dot } = require('../../../../../api/utils/common');
+
+// contains only the required properties. other ones are denoted with "[key: string]: any". which are
+// only populated from app_user to be used inside the template.
+export interface User {
+    [key: string]: any;
+    _id: string;
+    uid: string;
+    did: string;
+    la?: string;
+    tz?: string;
+    tk?: TokenRecord[]; // populated from push_{APPID}
+}
+
+// document from push_{APPID}
+export interface TokenRecord {
+    _id: string; // matches with User.uid
+    tk: {
+        [key in PlatformCombinedKey]?: string;
+    }
+}
 
 type PersonalizableField = "title" | "message";
 

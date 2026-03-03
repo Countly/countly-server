@@ -1,6 +1,6 @@
 import { ObjectId, Collection } from "mongodb";
 import { Result, Content, MessageAudienceFilter } from "./message.ts";
-import { ErrorObject } from "./utils.ts";
+import { ErrorObject } from "../lib/error.ts";
 
 export interface AudienceFilter extends MessageAudienceFilter {
     // these are inherited from MessageAudienceFilter

@@ -1,6 +1,5 @@
 import { URL } from "url";
 import type { Db } from "mongodb";
-import type { PluginConfigDocument, PluginConfiguration, ProxyConfiguration } from "../types/utils.ts";
 import type { PlatformKey, PlatformEnvKey } from "../types/message.ts";
 import type { ResultEvent } from "../types/queue.ts";
 import PLATFORM_KEYMAP from "../constants/platform-keymap.ts";
@@ -18,10 +17,34 @@ export interface DrillAPI {
     fetchUsers(params: any, cb: (err: Error, uids: string[]) => void, db: Db): void;
 }
 
+export interface PluginConfiguration {
+    messageTimeout?: number;
+    messageResultsTTL?: number;
+    proxy?: ProxyConfiguration;
+}
+
+export interface ProxyConfiguration {
+    host: string;
+    port: string;
+    pass?: string;
+    user?: string;
+    auth: boolean;
+}
+
+export interface PushPluginConfig {
+    message_timeout?: number; // should be 3600000 by default. timeout for a message not sent yet (for TooLateToSend errors)
+    message_results_ttl?: number; // should be 7776000000 (90 days) by default. how long to keep message results
+    proxyhost?: string;
+    proxyport?: string;
+    proxyuser?: string;
+    proxypass?: string;
+    proxyunauthorized?: boolean;
+}
+
 type PlainObject = { [key: string]: any };
 
 export async function loadPluginConfiguration(): Promise<PluginConfiguration> {
-    const pushConfig = common.plugins.getConfig("push") as PluginConfigDocument;
+    const pushConfig = common.plugins.getConfig("push") as PushPluginConfig;
     const config: PluginConfiguration = {
         messageResultsTTL: pushConfig.message_results_ttl,
         messageTimeout: pushConfig.message_timeout
