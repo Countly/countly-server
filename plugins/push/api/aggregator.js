@@ -1,6 +1,6 @@
-const plugins = require('../../pluginManager.js');
+const plugins = require('../../pluginManager.ts');
 const { loadKafka, setupProducer } = require('./new/lib/kafka.ts');
-const { autoOnCohort } = require('./api-auto.js');
+const { autoOnCohort } = require('./api-auto.ts');
 const common = require('../../../api/utils/common.js');
 const log = common.log('push:aggregator');
 
