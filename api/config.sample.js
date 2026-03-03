@@ -420,6 +420,28 @@ var countlyConfig = {
     encryption: {},
 
     /**
+     * JWT (JSON Web Token) authentication configuration
+     * Provides stateless API authentication using access and refresh tokens
+     *
+     * IMPORTANT: Set COUNTLY_JWT_SECRET environment variable with a secure secret (minimum 32 characters)
+     * JWT authentication will not work without this secret configured.
+     *
+     * @type {object}
+     * @property {string} secret - JWT signing secret. MUST be set via COUNTLY_JWT_SECRET env variable (min 32 chars)
+     * @property {number} [accessTokenExpiry=900] - Access token expiration in seconds (default: 15 minutes)
+     * @property {number} [refreshTokenExpiry=604800] - Refresh token expiration in seconds (default: 7 days)
+     * @property {string} [issuer=countly] - Token issuer claim
+     * @property {string} [algorithm=HS256] - JWT signing algorithm
+     */
+    jwt: {
+        secret: '', // Set via COUNTLY_JWT_SECRET environment variable
+        accessTokenExpiry: 900, // 15 minutes
+        refreshTokenExpiry: 604800, // 7 days
+        issuer: 'countly',
+        algorithm: 'HS256'
+    },
+
+    /**
     * Specifies where to store files. Value "fs" means file system or basically storing files on hard drive. Another currently supported option is "gridfs" storing files in MongoDB database using GridFS. By default fallback to "fs";
     * @type {string} [default=fs]
     */
