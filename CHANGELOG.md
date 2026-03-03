@@ -1,6 +1,7 @@
 ## Version 25.03.X
 Fixes:
 - [core] Update home page download notification text
+- [data-manager] Add search and checkboxes in event selector when creating event group
 
 ## Version 25.03.36
 Enterprise fixes:
