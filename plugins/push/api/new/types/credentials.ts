@@ -1,55 +1,131 @@
+import { z } from "zod";
 import { ObjectId } from "mongodb";
 import { SecureContextOptions } from "node:tls";
 
-export interface FCMCredentials {
-    _id: ObjectId;
-    type: "fcm";
-    serviceAccountFile: string;
-    hash: string;
-}
+// ---------------------------------------------------------------------------
+// ObjectId helper
+// ---------------------------------------------------------------------------
 
-export type UnvalidatedFCMCredentials = Omit<FCMCredentials, "_id" | "hash">;
+const ObjectIdSchema = z.instanceof(ObjectId);
 
-export interface APNP12Credentials {
-    _id: ObjectId;
-    type: "apn_universal";
-    cert: string;
-    secret: string;
-    bundle: string;
-    notAfter: Date;
-    notBefore: Date;
-    topics: string[];
-    hash: string;
-}
+// ---------------------------------------------------------------------------
+// FCM
+// ---------------------------------------------------------------------------
 
-export type UnvalidatedAPNP12Credentials = Omit<APNP12Credentials, "_id" | "bundle" | "notAfter" | "notBefore" | "topics" | "hash"> & { fileType?: "p12" };
+export const FCMCredentialsSchema = z.object({
+    _id: ObjectIdSchema,
+    type: z.literal("fcm"),
+    serviceAccountFile: z.string(),
+    hash: z.string(),
+});
+export type FCMCredentials = z.infer<typeof FCMCredentialsSchema>;
 
-export interface APNP8Credentials {
-    _id: ObjectId;
-    type: "apn_token";
-    bundle: string;
-    key: string;
-    keyid: string;
-    team: string;
-    hash: string;
-}
+export const RawFCMCredentialsSchema = z.object({
+    type: z.literal("fcm"),
+    serviceAccountFile: z.string(),
+});
+export type RawFCMCredentials = z.infer<typeof RawFCMCredentialsSchema>;
 
-export type UnvalidatedAPNP8Credentials = Omit<APNP8Credentials, "_id" | "hash"> & { fileType?: "p8" };
+// ---------------------------------------------------------------------------
+// APN P12
+// ---------------------------------------------------------------------------
 
-export type APNCredentials = APNP12Credentials | APNP8Credentials;
+export const APNP12CredentialsSchema = z.object({
+    _id: ObjectIdSchema,
+    type: z.literal("apn_universal"),
+    cert: z.string(),
+    secret: z.string(),
+    bundle: z.string(),
+    notAfter: z.date(),
+    notBefore: z.date(),
+    topics: z.array(z.string()),
+    hash: z.string(),
+});
+export type APNP12Credentials = z.infer<typeof APNP12CredentialsSchema>;
 
-export type UnvalidatedAPNCredentials = UnvalidatedAPNP12Credentials | UnvalidatedAPNP8Credentials;
+export const RawAPNP12CredentialsSchema = z.object({
+    type: z.literal("apn_universal"),
+    cert: z.string(),
+    secret: z.string(),
+    fileType: z.literal("p12").optional(),
+});
+export type RawAPNP12Credentials = z.infer<typeof RawAPNP12CredentialsSchema>;
 
-export type TLSKeyPair = Required<Pick<SecureContextOptions, "key"|"cert">>;
+// ---------------------------------------------------------------------------
+// APN P8
+// ---------------------------------------------------------------------------
 
-export interface HMSCredentials {
-    _id: ObjectId;
-    type: "hms";
-    app: string;
-    secret: string;
-    hash: string;
-}
+export const APNP8CredentialsSchema = z.object({
+    _id: ObjectIdSchema,
+    type: z.literal("apn_token"),
+    bundle: z.string(),
+    key: z.string(),
+    keyid: z.string(),
+    team: z.string(),
+    hash: z.string(),
+});
+export type APNP8Credentials = z.infer<typeof APNP8CredentialsSchema>;
 
-export type UnvalidatedHMSCredentials = Omit<HMSCredentials, "_id" | "hash"> ;
+export const RawAPNP8CredentialsSchema = z.object({
+    type: z.literal("apn_token"),
+    bundle: z.string(),
+    key: z.string(),
+    keyid: z.string(),
+    team: z.string(),
+    fileType: z.literal("p8").optional(),
+});
+export type RawAPNP8Credentials = z.infer<typeof RawAPNP8CredentialsSchema>;
 
-export type PlatformCredential = FCMCredentials | APNCredentials | HMSCredentials;
+// ---------------------------------------------------------------------------
+// APN (union)
+// ---------------------------------------------------------------------------
+
+export const APNCredentialsSchema = z.discriminatedUnion("type", [
+    APNP12CredentialsSchema,
+    APNP8CredentialsSchema,
+]);
+export type APNCredentials = z.infer<typeof APNCredentialsSchema>;
+
+export const RawAPNCredentialsSchema = z.discriminatedUnion("type", [
+    RawAPNP12CredentialsSchema,
+    RawAPNP8CredentialsSchema,
+]);
+export type RawAPNCredentials = z.infer<typeof RawAPNCredentialsSchema>;
+
+// ---------------------------------------------------------------------------
+// TLSKeyPair (plain type — depends on node:tls SecureContextOptions)
+// ---------------------------------------------------------------------------
+
+export type TLSKeyPair = Required<Pick<SecureContextOptions, "key" | "cert">>;
+
+// ---------------------------------------------------------------------------
+// HMS
+// ---------------------------------------------------------------------------
+
+export const HMSCredentialsSchema = z.object({
+    _id: ObjectIdSchema,
+    type: z.literal("hms"),
+    app: z.string(),
+    secret: z.string(),
+    hash: z.string(),
+});
+export type HMSCredentials = z.infer<typeof HMSCredentialsSchema>;
+
+export const RawHMSCredentialsSchema = z.object({
+    type: z.literal("hms"),
+    app: z.string(),
+    secret: z.string(),
+});
+export type RawHMSCredentials = z.infer<typeof RawHMSCredentialsSchema>;
+
+// ---------------------------------------------------------------------------
+// PlatformCredential (union)
+// ---------------------------------------------------------------------------
+
+export const PlatformCredentialSchema = z.discriminatedUnion("type", [
+    FCMCredentialsSchema,
+    APNP12CredentialsSchema,
+    APNP8CredentialsSchema,
+    HMSCredentialsSchema,
+]);
+export type PlatformCredential = z.infer<typeof PlatformCredentialSchema>;

@@ -5,7 +5,7 @@ import { HttpsProxyAgent } from "https-proxy-agent";
 import { createHash } from "crypto";
 import type { PushEvent, HuaweiMessagePayload, AndroidMessagePayload } from "../types/queue.ts";
 import type { Content, Message } from "../types/message.ts";
-import type { HMSCredentials, UnvalidatedHMSCredentials } from "../types/credentials.ts";
+import type { HMSCredentials, RawHMSCredentials } from "../types/credentials.ts";
 import type { ProxyConfiguration } from "../lib/utils.ts";
 import type { TemplateContext } from "../lib/template.ts";
 import { buildProxyUrl } from "../lib/utils.ts";
@@ -181,13 +181,13 @@ export async function send(pushEvent: PushEvent): Promise<string> {
 }
 
 export async function validateCredentials(
-    unvalidatedCreds: UnvalidatedHMSCredentials,
+    unvalidatedCreds: RawHMSCredentials,
     proxyConfig?: ProxyConfiguration
 ): Promise<{ creds: HMSCredentials; view: HMSCredentials }> {
     if (unvalidatedCreds.type !== "hms") {
         throw new InvalidCredentials("Invalid credentials type");
     }
-    const requiredFields: Array<keyof UnvalidatedHMSCredentials> = ["app", "secret"];
+    const requiredFields: Array<keyof RawHMSCredentials> = ["app", "secret"];
     for (const field of requiredFields) {
         if (!unvalidatedCreds[field] || typeof unvalidatedCreds[field] !== "string") {
             throw new InvalidCredentials(

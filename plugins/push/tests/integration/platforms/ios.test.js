@@ -2,7 +2,7 @@
  * @typedef {import("../../../api/new/types/queue").PushEvent} PushEvent
  * @typedef {import("../../../api/new/types/credentials").APNP8Credentials} APNP8Credentials
  * @typedef {import("../../../api/new/types/credentials").APNP12Credentials} APNP12Credentials
- * @typedef {import("../../../api/new/types/credentials").UnvalidatedAPNP12Credentials} UnvalidatedAPNP12Credentials
+ * @typedef {import("../../../api/new/types/credentials").RawAPNP12Credentials} RawAPNP12Credentials
  */
 const assert = require("assert");
 const { describe, it } = require("mocha");

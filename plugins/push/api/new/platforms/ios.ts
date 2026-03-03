@@ -7,7 +7,7 @@ import { createHash } from "crypto";
 import type { OutgoingHttpHeaders } from "http2";
 import type { PushEvent, IOSMessagePayload, IOSConfig } from "../types/queue.ts";
 import type { Content, Message } from "../types/message.ts";
-import type { APNCredentials, APNP12Credentials, APNP8Credentials, UnvalidatedAPNCredentials, UnvalidatedAPNP8Credentials, TLSKeyPair } from "../types/credentials.ts";
+import type { APNCredentials, APNP12Credentials, APNP8Credentials, RawAPNCredentials, RawAPNP8Credentials, TLSKeyPair } from "../types/credentials.ts";
 import type { ProxyConfiguration } from "../lib/utils.ts";
 import type { TemplateContext } from "../lib/template.ts";
 import { serializeProxyConfig, removeUPFromUserPropertyKey } from "../lib/utils.ts";
@@ -261,7 +261,7 @@ export async function send(pushEvent: PushEvent): Promise<string> {
 }
 
 export async function validateCredentials(
-    unvalidatedCreds: UnvalidatedAPNCredentials,
+    unvalidatedCreds: RawAPNCredentials,
     proxyConfig?: ProxyConfiguration
 ): Promise<{ creds: APNCredentials; view: APNCredentials }> {
     if (unvalidatedCreds.type === "apn_universal") {
@@ -324,7 +324,7 @@ export async function validateCredentials(
         return { creds, view };
     }
     else { // creds.type === "apn_token"
-        const requiredFields: Array<keyof UnvalidatedAPNP8Credentials> = ["key", "keyid", "bundle", "team"];
+        const requiredFields: Array<keyof RawAPNP8Credentials> = ["key", "keyid", "bundle", "team"];
         for (const field of requiredFields) {
             if (!unvalidatedCreds[field] || typeof unvalidatedCreds[field] !== "string") {
                 throw new InvalidCredentials(
