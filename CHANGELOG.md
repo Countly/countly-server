@@ -1,7 +1,12 @@
-## Version 25.03.X
+## Version 25.03.37
 Fixes:
 - [core] Update home page download notification text
 - [data-manager] Add search and checkboxes in event selector when creating event group
+
+Enterprise fixes:
+- [funnels] Use lsid in same session funnel calculation
+- [users] Export drill data on user export
+- [users] Fix export query when there is profile group filter
 
 ## Version 25.03.36
 Enterprise fixes:
