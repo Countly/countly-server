@@ -66,6 +66,8 @@ const verifyStaticElementsOfPage = () => {
         elementText: "percentage",
     });
 
+    cy.scrollPageToBottom();
+
     clickSDKsTab();
 
     cy.verifyElement({
