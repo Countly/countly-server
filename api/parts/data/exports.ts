@@ -476,7 +476,7 @@ function streamExport(
             params.res.write(processedValues.join(',') + '\r\n');
         });
 
-        stream.once('close', function() {
+        stream.once('end', function() {
             setTimeout(function() {
                 if (listAtEnd) {
                     for (let p = 0; p < paramList.length; p++) {
@@ -502,7 +502,7 @@ function streamExport(
             xc.write(values);
         });
 
-        stream.once('close', function() {
+        stream.once('end', function() {
             setTimeout(function() {
                 if (listAtEnd) {
                     xc.write(paramList);
@@ -525,7 +525,7 @@ function streamExport(
             }
         });
 
-        stream.once('close', function() {
+        stream.once('end', function() {
             setTimeout(function() {
                 params.res.write(']');
                 params.res.end();
