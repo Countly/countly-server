@@ -8,6 +8,22 @@ Enterprise fixes:
 - [users] Export drill data on user export
 - [users] Fix export query when there is profile group filter
 
+Dependencies:
+- Bump @faker-js/faker from 10.2.0 to 10.3.0 in /ui-tests
+- Bump axios from 1.13.2 to 1.13.5
+- Bump basic-ftp from 5.1.0 to 5.2.0
+- Bump cypress from 15.10.0 to 15.11.0 in /ui-tests
+- Bump fast-xml-parser and @google-cloud/storage in /plugins/push
+- Bump geoip-lite from 1.4.10 to 2.0.0 
+- Bump minimatch from 9.0.5 to 9.0.9 in /api/utils/countly-request
+- Bump minimatch from 9.0.5 to 9.0.9 in /plugins/hooks 
+- Bump nodemailer from 7.0.13 to 8.0.1
+- Bump qs from 6.14.1 to 6.14.2
+- Bump rollup from 4.56.0 to 4.59.0 in /plugins/journey_engine
+- Bump swiper from 12.0.3 to 12.1.2 in /plugins/content
+- Bump systeminformation from 5.30.5 to 5.31.1 in /ui-tests
+- Bump tar-stream from 3.1.7 to 3.1.8 in /plugins/system-utility 
+
 ## Version 25.03.36
 Enterprise fixes:
 - [journey] Workflow fixes
