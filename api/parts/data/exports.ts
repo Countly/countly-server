@@ -463,7 +463,7 @@ function streamExport(
             params.res.write(head.join(',') + '\r\n');
         }
 
-        stream.stream(options.streamOptions).on('data', function(doc: unknown) {
+        stream.on('data', function(doc: unknown) {
             doc = transformFunction(doc);
             const values: unknown[] = [];
             const valuesMap: Record<string, boolean> = {};
@@ -476,7 +476,7 @@ function streamExport(
             params.res.write(processedValues.join(',') + '\r\n');
         });
 
-        stream.once('close', function() {
+        stream.once('end', function() {
             setTimeout(function() {
                 if (listAtEnd) {
                     for (let p = 0; p < paramList.length; p++) {
@@ -494,7 +494,7 @@ function streamExport(
         if (listAtEnd === false) {
             xc.write(paramList);
         }
-        stream.stream(options.streamOptions).on('data', function(doc: unknown) {
+        stream.on('data', function(doc: unknown) {
             doc = transformFunction(doc);
             const values: unknown[] = [];
             const valuesMap: Record<string, boolean> = {};
@@ -502,7 +502,7 @@ function streamExport(
             xc.write(values);
         });
 
-        stream.once('close', function() {
+        stream.once('end', function() {
             setTimeout(function() {
                 if (listAtEnd) {
                     xc.write(paramList);
@@ -514,7 +514,7 @@ function streamExport(
     else {
         params.res.write('[');
         let first = false;
-        stream.stream(options.streamOptions).on('data', function(doc: unknown) {
+        stream.on('data', function(doc: unknown) {
             doc = transformFunction(doc);
             if (!first) {
                 first = true;
@@ -525,7 +525,7 @@ function streamExport(
             }
         });
 
-        stream.once('close', function() {
+        stream.once('end', function() {
             setTimeout(function() {
                 params.res.write(']');
                 params.res.end();
