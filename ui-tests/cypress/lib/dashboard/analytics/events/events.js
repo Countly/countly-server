@@ -212,7 +212,7 @@ const verifyFullDataPageElements = () => {
 
     verifyStaticElementsOfCompareEventsPage();
 
-    selectEventsToCompare('Credit Card Application');
+    selectEventsToCompare('Credit Card Payment');
     clickCompare();
 
     verifyCompareEventsEChartElements({
