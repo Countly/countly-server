@@ -388,7 +388,7 @@ const verifyEventStatsDataTableElements = ({
 
 const verifyCompareEventsEChartElements = ({
     isEmpty = false,
-    eventName = 'Credit Card Application',
+    eventName = 'Credit Card Payment',
 }) => {
 
     if (isEmpty) {
