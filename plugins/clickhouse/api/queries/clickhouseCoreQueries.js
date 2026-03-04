@@ -99,14 +99,15 @@ const queryHelpers = require('../QueryHelpers');
                 ];
             }
             else {
+                ch_params.ts_boundary = ts.$gt / 1000;
                 fields = [
                     `${segmentation} AS _id`,
-                    `sum(multiIf(ts > ${ts.$gt}, c, 0)) AS c`,
-                    `sum(multiIf(ts <= ${ts.$gt}, c, 0)) AS prev_c`,
-                    `sum(multiIf(ts > ${ts.$gt}, s, 0)) AS s`,
-                    `sum(multiIf(ts <= ${ts.$gt}, s, 0)) AS prev_s`,
-                    `sum(multiIf(ts > ${ts.$gt}, dur, 0)) AS dur`,
-                    `sum(multiIf(ts <= ${ts.$gt}, dur, 0)) AS prev_dur`
+                    `sum(multiIf(ts > {ts_boundary:DateTime64(3)}, c, 0)) AS c`,
+                    `sum(multiIf(ts <= {ts_boundary:DateTime64(3)}, c, 0)) AS prev_c`,
+                    `sum(multiIf(ts > {ts_boundary:DateTime64(3)}, s, 0)) AS s`,
+                    `sum(multiIf(ts <= {ts_boundary:DateTime64(3)}, s, 0)) AS prev_s`,
+                    `sum(multiIf(ts > {ts_boundary:DateTime64(3)}, dur, 0)) AS dur`,
+                    `sum(multiIf(ts <= {ts_boundary:DateTime64(3)}, dur, 0)) AS prev_dur`
                 ];
             }
 
@@ -280,12 +281,11 @@ const queryHelpers = require('../QueryHelpers');
 
         return {
             _queryMeta: {
-                adapter: 'mongodb',
+                adapter: 'clickhouse',
                 query: qq
             },
             data: data
         };
-        //Group by hour
     };
 
     agg.getSegmentedEventModelData = async function(options) {
@@ -326,8 +326,7 @@ const queryHelpers = require('../QueryHelpers');
         }
 
         let segmentation = "`" + options.segmentation.replaceAll(".", "`.`") + "`";
-        qq = `SELECT ${segmentation}::String AS sg, sum(c) as cn FROM ${queryHelpers.resolveTable('drill_events')} ${whereSQL} GROUP BY sg ORDER BY cn DESC LIMIT ${options.limit || 100}`;
-        qq = `SELECT ${segmentation}::String AS sg,${bucketExpr(options.bucket, options.timezone)} AS _id, sum(c) AS c, sum(s) AS s, sum(dur) AS dur FROM ${queryHelpers.resolveTable('drill_events')} ${whereSQL} AND sg IN (SELECT sg FROM (${qq})) GROUP BY _id,sg`;
+        qq = `WITH filtered AS (SELECT ${segmentation}::String AS sg, ${bucketExpr(options.bucket, options.timezone)} AS _id, c, s, dur FROM ${queryHelpers.resolveTable('drill_events')} ${whereSQL}), top_sg AS (SELECT sg FROM filtered GROUP BY sg ORDER BY sum(c) DESC LIMIT ${options.limit || 100}) SELECT sg, _id, sum(c) AS c, sum(s) AS s, sum(dur) AS dur FROM filtered WHERE sg IN (SELECT sg FROM top_sg) GROUP BY _id, sg`;
 
         const appIDSeg = options.appID || undefined;
         var data = await common.clickhouseQueryService.aggregate({query: qq, params: ch_params, appID: appIDSeg}, {});
@@ -437,7 +436,8 @@ const queryHelpers = require('../QueryHelpers');
         const converter = new WhereClauseConverter();
         const { sql: whereSQL, params: ch_params } = converter.queryObjToWhere(match);
 
-        var qq = `SELECT ${options.field} AS _id, COUNT(*) AS c FROM ${queryHelpers.resolveTable('drill_events')} ${whereSQL} GROUP BY ${options.field} ORDER BY c DESC LIMIT ${options.limit || 1000}`;
+        let quotedField = "`" + options.field.replaceAll(".", "`.`") + "`";
+        var qq = `SELECT ${quotedField} AS _id, COUNT(*) AS c FROM ${queryHelpers.resolveTable('drill_events')} ${whereSQL} GROUP BY ${quotedField} ORDER BY c DESC LIMIT ${options.limit || 1000}`;
 
         const appIDField = options.appID || undefined;
         const rawResult = await common.clickhouseQueryService.aggregate({query: qq, params: ch_params, appID: appIDField}, {});

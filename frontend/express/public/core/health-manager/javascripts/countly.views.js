@@ -577,7 +577,7 @@ var AggregatorStatusView = countlyVue.views.create({
             ];
         },
         hasKafkaData: function() {
-            return this.kafkaEnabled && (this.aggregatorPartitions.length > 0 || this.aggregatorConsumers.length > 0);
+            return this.kafkaEnabled && ((this.aggregatorPartitions && this.aggregatorPartitions.length > 0) || (this.aggregatorConsumers && this.aggregatorConsumers.length > 0));
         },
         hasAggregatorData: function() {
             return this.aggregatorData && this.aggregatorData.length > 0;
