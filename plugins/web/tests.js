@@ -124,7 +124,7 @@ describe('Testing Web UA and Client Hints parsing', function() {
                     }
                     var ob = JSON.parse(res.text);
                     validateResponseHasMetaArray(ob, 'browser_version');
-                    ob.meta.browser_version.should.containEql('[chrome]_120.0.2222.2');
+                    ob.meta.browser_version.should.containEql('[chrome]_120:0:2222:2');
                     done();
                 });
         });
@@ -246,13 +246,24 @@ describe('Testing Web UA and Client Hints parsing', function() {
                     }
                     var ob = JSON.parse(res.text);
                     validateResponseHasMetaArray(ob, 'browser_version');
-                    ob.meta.browser_version.should.containEql('[edge]_120.0.2210.91');
-                    ob.meta.browser_version.should.containEql('[chrome]_120.0.6099.230');
+                    ob.meta.browser_version.should.containEql('[edge]_120:0:2210:91');
+                    ob.meta.browser_version.should.containEql('[chrome]_120:0:6099:230');
                     done();
                 });
         });
 
-        it('should infer desktop device type when Sec-CH-UA-Mobile is ?0', function(done) {
+        it('should map Sec-CH-UA-Mobile ?0 to tablet when UA device type is tablet', function(done) {
+            sendSession(DEVICE_ID + '-ch-tablet', {
+                'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1',
+                'Sec-CH-UA': '"Chromium";v="120", "Google Chrome";v="120", "Not=A?Brand";v="99"',
+                'Sec-CH-UA-Mobile': '?0',
+                'Sec-CH-UA-Platform': '"iOS"',
+                'Sec-CH-UA-Platform-Version': '"15.5.0"',
+                'Sec-CH-UA-Model': '"iPad"'
+            }, done);
+        });
+
+        it('should include tablet in device type metrics for Sec-CH-UA-Mobile ?0 tablet UA', function(done) {
             request
                 .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=device_details')
                 .expect(200)
@@ -262,7 +273,7 @@ describe('Testing Web UA and Client Hints parsing', function() {
                     }
                     var ob = JSON.parse(res.text);
                     validateResponseHasMetaArray(ob, 'device_type');
-                    ob.meta.device_type.should.containEql('desktop');
+                    ob.meta.device_type.should.containEql('tablet');
                     done();
                 });
         });
