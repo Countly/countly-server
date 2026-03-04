@@ -93,14 +93,46 @@ function parseClientHints(headers) {
         }
     }
 
-    // Parse full version if available
-    var secChUaFullVersion = headers['sec-ch-ua-full-version'] || headers['sec-ch-ua-full-version-list'];
-    if (secChUaFullVersion && !secChUaFullVersion.includes('Not')) {
-        if (secChUaFullVersion.startsWith('"')) {
-            var versionMatch = secChUaFullVersion.match(/"([^"]+)"/);
-            if (versionMatch) {
-                hints.browserVersion = versionMatch[1];
+    // Parse full version if available.
+    // `sec-ch-ua-full-version` is a single quoted version string (e.g. "120.0.6099.230").
+    var secChUaFullVersion = headers['sec-ch-ua-full-version'];
+    if (secChUaFullVersion && secChUaFullVersion.startsWith('"')) {
+        var fullVersionMatch = secChUaFullVersion.match(/"([^"]+)"/);
+        if (fullVersionMatch) {
+            hints.browserVersion = fullVersionMatch[1];
+        }
+    }
+
+    // `sec-ch-ua-full-version-list` is a brand list (e.g. "Chromium";v="120", "Google Chrome";v="120").
+    // Parse it like sec-ch-ua and pick the version for the preferred browser brand.
+    var secChUaFullVersionList = headers['sec-ch-ua-full-version-list'];
+    if (secChUaFullVersionList) {
+        var fullVersionBrands = secChUaFullVersionList.split(',').map(function(brand) {
+            var match = brand.trim().match(/"([^"]+)";v="([^"]+)"/);
+            if (match) {
+                return { name: match[1], version: match[2] };
             }
+            return null;
+        }).filter(Boolean).filter(function(brand) {
+            return !brand.name.includes('Not') && !brand.name.includes('?');
+        });
+
+        if (fullVersionBrands.length > 0) {
+            var preferredFullVersionBrand = null;
+
+            if (hints.browser) {
+                preferredFullVersionBrand = fullVersionBrands.find(function(b) {
+                    return b.name === hints.browser;
+                });
+            }
+
+            if (!preferredFullVersionBrand) {
+                preferredFullVersionBrand = fullVersionBrands.find(function(b) {
+                    return b.name !== 'Chromium';
+                }) || fullVersionBrands[0];
+            }
+
+            hints.browserVersion = preferredFullVersionBrand.version;
         }
     }
 
@@ -176,13 +208,13 @@ function parseClientHints(headers) {
         var isMobile = data.mobile !== null ? data.mobile : (data.os === "iOS" || data.os === "Android");
 
         if (isMobile || data.os === "iOS" || data.os === "Android") {
-            if (data.browser === "Firefox" || agent.browser.name === "Firefox") {
+            if (data.browser === "Firefox") {
                 data.browser = "Firefox Mobile";
             }
-            else if (data.browser === "Chrome" || data.browser === "Google Chrome" || agent.browser.name === "Chrome") {
+            else if (data.browser === "Chrome" || data.browser === "Google Chrome") {
                 data.browser = "Chrome Mobile";
             }
-            else if (data.browser === "Edge" || data.browser === "Microsoft Edge" || agent.browser.name === "Edge") {
+            else if (data.browser === "Edge" || data.browser === "Microsoft Edge") {
                 data.browser = "Edge Mobile";
             }
         }
@@ -246,9 +278,6 @@ function parseClientHints(headers) {
                 // Determine device type from client hints mobile flag or user agent
                 if (data.mobile === true) {
                     params.qstring.metrics._device_type = "mobile";
-                }
-                else if (data.mobile === false) {
-                    params.qstring.metrics._device_type = "desktop";
                 }
                 else {
                     params.qstring.metrics._device_type = agent.device.type;

@@ -99,6 +99,32 @@ describe('Testing Web UA and Client Hints parsing', function() {
             }, done);
         });
 
+        it('should parse Sec-CH-UA-Full-Version-List using preferred brand version', function(done) {
+            sendSession(DEVICE_ID + '-ch-full-version-list', {
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0',
+                'Sec-CH-UA': '"Chromium";v="120", "Google Chrome";v="120", "Not=A?Brand";v="99"',
+                'Sec-CH-UA-Mobile': '?0',
+                'Sec-CH-UA-Platform': '"Linux"',
+                'Sec-CH-UA-Full-Version-List': '"Chromium";v="120.0.1111.1", "Google Chrome";v="120.0.2222.2", "Not=A?Brand";v="99.0.0.0"'
+            }, done);
+        });
+
+        it('should store browser version from preferred brand in full version list', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=browser_version')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('meta');
+                    ob.meta.should.have.property('browser_version');
+                    ob.meta.browser_version.should.containEql('[chrome]_120.0.2222.2');
+                    done();
+                });
+        });
+
         it('should have Chrome Mobile in browser metrics', function(done) {
             request
                 .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=browser')
