@@ -2,7 +2,6 @@ const { onTokenSession } = require('./api-push');
 const plugins = require('../../pluginManager');
 const platforms = require("./new/constants/platform-keymap.ts").default;
 const ALL_PLATFORM_KEYS = Object.keys(platforms);
-const { TriggerKind } = require('./send');
 const { guessThePlatformFromUserAgentHeader } = require("./new/lib/utils.js");
 const { autoOnEvent } = require('./api-auto.ts');
 const common = require('../../../api/utils/common');
@@ -64,8 +63,8 @@ const { loadKafka, setupProducer } = require('./new/lib/kafka.ts');
 
                             const language = appUser.la;
                             let p = event.segmentation.p,
-                                a = msg.triggers.filter(tr => tr.kind === TriggerKind.Cohort || tr.kind === TriggerKind.Event).length > 0,
-                                t = msg.triggers.filter(tr => tr.kind === TriggerKind.API).length > 0,
+                                a = msg.triggers.filter(tr => tr.kind === 'cohort' || tr.kind === 'event').length > 0,
+                                t = msg.triggers.filter(tr => tr.kind === 'api').length > 0,
                                 msgId = msg._id.toString(),
                                 upd = updates[msgId];
                             if (upd) {

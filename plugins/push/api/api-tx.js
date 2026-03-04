@@ -4,13 +4,12 @@
  * @typedef {import('../../../types/requestProcessor').Params} Params
  */
 
-const { ValidationError } = require("./send"),
-    common = require("../../../api/utils/common"),
-    log = common.log("push:api:tx");
-
+const common = require("../../../api/utils/common");
+const log = common.log("push:api:tx");
 const { createSchedule } = require("./new/scheduler.ts");
 const { zodValidate } = require("./new/lib/utils.ts");
 const { ApiPushSchema } = require("./new/types/message.ts");
+const { ValidationError } = require("./new/lib/error.ts");
 
 /**
  * Add notification to API message

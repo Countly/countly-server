@@ -11,7 +11,7 @@ import type { TemplateContext } from "../lib/template.ts";
 import { buildProxyUrl } from "../lib/utils.ts";
 import { mapMessageToPayload as mapMessageToAndroidPayload } from "./android.ts";
 import { InvalidCredentials, SendError, InvalidResponse, InvalidDeviceToken, HMSErrors } from "../lib/error.ts";
-import { PROXY_CONNECTION_TIMEOUT } from "../constants/proxy-config.ts";
+import { PROXY_CONNECTION_TIMEOUT } from "../constants/configs.ts";
 
 interface TokenCache {
     token?: string;

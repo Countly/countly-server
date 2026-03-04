@@ -7,7 +7,6 @@
 const plugins = require('../../pluginManager.ts'),
     common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
-    { ValidationError, PushError } = require('./send/index.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
     { onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push.js'),
     { autoOnCohort, /*autoOnCohortDeletion,*/ } = require('./api-auto.ts'),
@@ -44,6 +43,7 @@ const plugins = require('../../pluginManager.ts'),
         }
     };
 
+const { ValidationError, PushError } = require('./new/lib/error.ts');
 const { initPushQueue, loadKafka } = require("./new/lib/kafka.ts");
 const { composeAllScheduledPushes } = require('./new/composer.ts');
 const { sendAllPushes } = require('./new/sender.ts');
@@ -119,15 +119,18 @@ function apiCall(apisObj, ob) {
 function endpoint(method, fn) {
     return params => fn(params).catch(e => {
         log.e('Error during API request /%s', method, e);
-        if (e instanceof ValidationError) {
-            common.returnMessage(params, 400, {kind: 'ValidationError', errors: e.errors}, null, true);
+        let errors = ['Server Error'];
+        let name = 'ServerError';
+
+        if (e instanceof PushError) {
+            name = e.name;
+            errors = [e.message];
+            if (e instanceof ValidationError) {
+                errors = e.errors;
+            }
         }
-        else if (e instanceof PushError) {
-            common.returnMessage(params, 400, {kind: 'PushError', errors: [e.message]}, null, true);
-        }
-        else {
-            common.returnMessage(params, 500, {kind: 'ServerError', errors: ['Server error']}, null, true);
-        }
+
+        common.returnMessage(params, 500, { name, errors }, null, true);
     });
 }
 

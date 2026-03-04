@@ -10,11 +10,11 @@ let protos = {
 
 /**
  * Create new Agent subclass
- * 
+ *
  * @param {string} url url to construct Agent for
  * @param {obejct} proxy push plugin proxy configuration object (user, pass, host, port, http, auth, http2)
  * @param {obejct|undefined} agentConfig standard proxy configuration object
- * 
+ *
  * @returns {Agent} Agent subclass with support for this particular request
  */
 function proxyAgent(url, proxy, agentConfig = {}) {
@@ -137,7 +137,7 @@ function proxyAgent(url, proxy, agentConfig = {}) {
 
 /**
  * Request either with proxy or without it, depending on conf
- * 
+ *
  * @param {string} url url to request
  * @param {string} method method
  * @param {object} conf proxy config
@@ -179,152 +179,3 @@ module.exports = {
     proxyAgent,
     request
 };
-
-// /**
-//  * 
-//  * @param {string} url url
-//  * @param {object} proxy push config
-//  * @param {object} agentConfig http/https agent config
-//  * @param {object} requestConfig request config
-//  * @returns {Promise} promise
-//  */
-// function test(url, proxy, agentConfig = {}, requestConfig = {}) {
-//     return new Promise((resolve, reject) => {
-//         // let Agent = proxyAgent(url, proxy),
-//         //     agent = new Agent(agentConfig),
-//         //     request,
-//         //     /**
-//         //      * response handler
-//         //      * 
-//         //      * @param {object} res response
-//         //      */
-//         //     response = res => {
-//         //         let data = '';
-//         //         res.on('data', dt => {
-//         //             data += dt;
-//         //         });
-//         //         res.on('end', () => {
-//         //             console.log(`${url} result: ${res.statusCode}`);
-//         //             request.removeAllListeners();
-//         //             agent.destroy();
-//         //             resolve({status: res.statusCode, data});
-//         //         });
-//         //     };
-
-//         // requestConfig = Object.assign({}, requestConfig, {agent});
-//         // if (url.startsWith('http:')) {
-//         //     request = protos.http.request(url, requestConfig, response);
-//         // }
-//         // else if (url.startsWith('https:')) {
-//         //     requestConfig.rejectUnauthorized = proxy.auth;
-//         //     request = protos.https.request(url, requestConfig, response);
-//         // }
-
-//         // request.on('error', err => {
-//         //     request.removeAllListeners();
-//         //     reject(err);
-//         // });
-//         // request.end();
-
-//         let req = request(url, 'HEAD', proxy);
-//         req.once('error', err => {
-//             req.removeAllListeners();
-//             reject(err);
-//         });
-//         req.once('response', res => {
-//             console.log(`${url} result: ${res.statusCode}`);
-//         });
-//         req.end();
-//     });
-// }
-
-// // Promise.all([
-// //     // test('https://count.ly/images/home/countly-overview.png', {host: 'doclet.io', port: 8080, auth: false}),
-// //     // test('http://count.ly/images/home/countly-overview.png', {host: 'doclet.io', port: 8080, http: true, auth: false}),
-
-// //     // test('https://count.ly/images/home/countly-overview.png', {host: 'doclet.io', port: 9090}),
-// //     // test('http://count.ly/images/home/countly-overview.png', {host: 'doclet.io', port: 9090}),
-
-// //     test('https://api.push.apple.com/4/1123', {host: 'doclet.io', port: 9090, http2: true}),
-// // ]).then(function() {
-// //     console.log('done');
-// // }, err => {
-// //     console.error(err);
-// // });
-
-
-// Promise.all([
-//     test('https://count.ly/images/home/countly-overview.png', {proxyhost: 'doclet.io', proxyport: 8080, proxyunauthorized: true}),
-//     // test('http://count.ly/images/home/countly-overview.png', {proxyhost: 'doclet.io', proxyport: 8080, http: true, proxyunauthorized: true}),
-
-//     // test('https://count.ly/images/home/countly-overview.png', {proxyhost: 'doclet.io', proxyport: 9090}),
-//     // test('http://count.ly/images/home/countly-overview.png', {proxyhost: 'doclet.io', proxyport: 9090}),
-
-//     // test('https://api.push.apple.com/4/1123', {host: 'doclet.io', port: 9090, http2: true}),
-// ]).then(function() {
-//     console.log('done');
-// }, err => {
-//     console.error(err);
-// });
-
-
-
-// /**
-//  * 
-//  * @param {Agent} agent agent instance
-//  * @param {Socket} s socket instance
-//  * @param {object} options socket options
-//  */
-// function installListeners(agent, s, options) {
-//     /**
-//      * onFree
-//      */
-//     function onFree() {
-//         agent.emit('free', s, options);
-//     }
-//     s.on('free', onFree);
-
-//     /**
-//      * onClose
-//      * @param {Error} err error
-//      */
-//     function onClose(/*err*/) {
-//         // This is the only place where sockets get removed from the Agent.
-//         // If you want to remove a socket from the pool, just close it.
-//         // All socket errors end in a close event anyway.
-//         agent.totalSocketCount--;
-//         agent.removeSocket(s, options);
-//     }
-//     s.on('close', onClose);
-
-//     /**
-//      * onTimeout
-//      */
-//     function onTimeout() {
-//         // Destroy if in free list.
-//         // TODO(ronag): Always destroy, even if not in free list.
-//         const sockets = agent.freeSockets;
-//         for (let name in sockets) {
-//             if (sockets[name].includes(s)) {
-//                 s.destroy();
-//             }
-//         }
-//     }
-//     s.on('timeout', onTimeout);
-
-//     /**
-//      * onRemove
-//      */
-//     function onRemove() {
-//         // We need this function for cases like HTTP 'upgrade'
-//         // (defined by WebSockets) where we need to remove a socket from the
-//         // pool because it'll be locked up indefinitely
-//         agent.totalSocketCount--;
-//         agent.removeSocket(s, options);
-//         s.removeListener('close', onClose);
-//         s.removeListener('free', onFree);
-//         s.removeListener('timeout', onTimeout);
-//         s.removeListener('agentRemove', onRemove);
-//     }
-//     s.on('agentRemove', onRemove);
-// }

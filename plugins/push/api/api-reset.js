@@ -1,8 +1,10 @@
-const common = require('../../../api/utils/common'),
-    plugins = require('../../pluginManager'),
-    { Creds, dbext, PushError } = require('./send');
-
+/**
+ * @typedef {{ appId: ObjectId|string|undefined; }} ResetClearArg
+ */
+const common = require('../../../api/utils/common');
+const { PushError } = require("./new/lib/error.ts");
 const platforms = require("./new/constants/platform-keymap.ts").default;
+const { ObjectId } = require("mongodb");
 const allAppUserFields = [...new Set(
     Object.values(platforms)
         .map(platform => platform.combined)
@@ -13,21 +15,22 @@ const allAppUserFields = [...new Set(
 /**
  * Reset the app by removing all push artifacts
  *
- * @param {object} ob ob
+ * @param {ResetClearArg} ob ob
  */
 async function reset(ob) {
-    let aid = dbext.oid(ob.appId);
+    if (!ob?.appId) {
+        return;
+    }
+    const aid = new ObjectId(ob.appId);
     await Promise.all([
-        plugins.getPluginsApis().push.cache.purgeAll(),
         common.db.collection('messages').deleteMany({app: aid}).catch(() => {}),
         common.db.collection('push').deleteMany({a: aid}).catch(() => {}),
-        common.db.collection('jobs').deleteMany({name: 'push:schedule', 'data.aid': aid}).catch(() => {}),
         common.db.collection(`push_${aid}`).drop().catch(() => {}),
         common.db.collection('apps').findOne({_id: aid}).catch(() => {}).then(app => {
             if (app && app.plugins && app.plugins.push) {
                 return Promise.all(Object.values(app.plugins.push).map(async cfg => {
                     if (cfg && cfg._id) {
-                        return common.db.collection(Creds.collection).deleteOne({_id: cfg._id});
+                        return common.db.collection('creds').deleteOne({_id: cfg._id});
                     }
                 }).concat([
                     common.db.collection('apps').updateOne({a: aid}, {$unset: {'plugins.push': 1}}).catch(() => {})
@@ -40,16 +43,17 @@ async function reset(ob) {
 /**
  * Reset the app by removing all push data (clear queue for the app, remove messages and remove tokens while leaving credentials)
  *
- * @param {object} ob ob
+ * @param {ResetClearArg} ob ob
  */
 async function clear(ob) {
-    let aid = dbext.oid(ob.appId);
+    if (!ob?.appId) {
+        return;
+    }
+    const aid = new ObjectId(ob.appId);
     await Promise.all([
-        plugins.getPluginsApis().push.cache.purgeAll(),
         common.db.collection('messages').deleteMany({app: aid}).catch(() => {}),
         common.db.collection(`push_${aid}`).drop().catch(() => {}),
         common.db.collection('push').deleteMany({a: aid}).catch(() => {}),
-        common.db.collection('jobs').deleteMany({name: 'push:schedule', 'data.aid': aid}).catch(() => {}),
     ]);
 }
 

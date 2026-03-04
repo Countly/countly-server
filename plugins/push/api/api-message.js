@@ -8,17 +8,14 @@
  * @typedef {{ url: string; status?: number; headers: IncomingHttpHeaders; }} MimeInfo
  * @typedef {import('../../../types/requestProcessor').Params} Params
  */
-const { Message, Result, Creds, Status, ValidationError, TriggerKind, MEDIA_MIME_ALL } = require('./send'),
-    crypto = require("crypto"),
-    { DEFAULTS, RecurringType } = require('./send/data/const'),
-    common = require('../../../api/utils/common'),
-    log = common.log('push:api:message'),
-    moment = require('moment-timezone'),
-    {ObjectId} = require("mongodb");
 
+const crypto = require('crypto');
+const common = require('../../../api/utils/common');
+const log = common.log('push:api:message');
+const moment = require('moment-timezone');
+const { ObjectId } = require("mongodb");
 const { zodValidate } = require("./new/lib/utils.ts");
 const { CreateMessageSchema, DraftMessageSchema } = require("./new/types/message.ts");
-
 const { HttpProxyAgent } = require("http-proxy-agent");
 const { HttpsProxyAgent } = require("https-proxy-agent");
 const { URL } = require('node:url');
@@ -32,7 +29,11 @@ const { loadPluginConfiguration, buildProxyUrl } = require("./new/lib/utils.ts")
 const { createTemplate } = require("./new/lib/template.ts");
 const { sendAllPushes } = require("./new/sender.ts");
 const platforms = require("./new/constants/platform-keymap.ts").default;
-const { PROXY_CONNECTION_TIMEOUT } = require("./new/constants/proxy-config.ts");
+const { PROXY_CONNECTION_TIMEOUT, MEDIA_MIME_TYPE_ALL, MEDIA_MAX_SIZE } = require("./new/constants/configs.ts");
+const { ValidationError } = require("./new/lib/error.ts");
+
+/** @type {Array<import("./new/types/message.ts").BaseTrigger["kind"]>} */
+const allTriggerKinds = ["api", "cohort", "event", "multi", "plain", "rec"];
 
 /**
  * Decide which status to use for scheduling based on message and last schedule
@@ -84,10 +85,10 @@ async function validate(args, draft = false) {
     }
 
     for (let trigger of msg.triggers) {
-        if (trigger.kind === TriggerKind.Plain && trigger.tz === false && typeof trigger.sctz === 'number') {
+        if (trigger.kind === 'plain' && trigger.tz === false && typeof trigger.sctz === 'number') {
             throw new ValidationError('Please remove tz parameter from trigger definition');
         }
-        if (trigger.kind === TriggerKind.Recurring && (trigger.bucket === RecurringType.Monthly || trigger.bucket === RecurringType.Weekly) && !trigger.on) {
+        if (trigger.kind === 'rec' && (trigger.bucket === 'monthly' || trigger.bucket === "weekly") && !trigger.on) {
             throw new ValidationError('"on" is required for monthly and weekly recurring triggers');
         }
     }
@@ -106,7 +107,7 @@ async function validate(args, draft = false) {
                     throw new ValidationError(`No push credentials for ${platforms[/** @type {PlatformKey} */(p)].title} platform`);
                 }
             }
-            let creds = await common.db.collection(Creds.collection).find({
+            let creds = await common.db.collection('creds').find({
                 _id: {
                     $in: msg.platforms
                         .map(p => common.dot(app, `plugins.push.${p}._id`))
@@ -233,7 +234,14 @@ module.exports.test = async params => {
     }
     catch (error) {
         log.e('Error while sending test message', error);
-        common.returnMessage(params, 400, {errors: error.errors || [error.message || 'Unknown error']}, null, true);
+        let errors = ['Unkown error'];
+        if (error instanceof ValidationError) {
+            errors = error.errors;
+        }
+        else if (error instanceof Error) {
+            errors = [error.message];
+        }
+        common.returnMessage(params, 400, { errors });
     }
 };
 
@@ -255,7 +263,7 @@ module.exports.test = async params => {
  * @apiUse PushError
  */
 module.exports.create = async params => {
-    let msg = await validate(params.qstring, params.qstring.status === Status.Draft),
+    let msg = await validate(params.qstring, params.qstring.status === 'draft'),
         demo = params.qstring.demo === undefined ? params.qstring.args ? params.qstring.args.demo : false : params.qstring.demo;
     msg._id = common.db.ObjectID();
     if (!msg.info) {
@@ -269,13 +277,13 @@ module.exports.create = async params => {
         msg.info.title = params.qstring.args && params.qstring.args.info && params.qstring.args.info.title ? params.qstring.args.info.title : "";
     }
 
-    if (params.qstring.status === Status.Draft) {
-        msg.status = Status.Draft;
+    if (params.qstring.status === 'draft') {
+        msg.status = 'draft';
         await common.db.collection("messages").updateOne({_id: msg._id}, {$set: msg}, {upsert: true});
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_draft', data: msg});
     }
     else {
-        msg.status = Status.Active;
+        msg.status = 'active';
         await common.db.collection("messages").updateOne({_id: msg._id}, {$set: msg}, {upsert: true});
         if (common.plugins.isPluginEnabled("push_approver")) {
             // this might change the status of the message:
@@ -294,8 +302,7 @@ module.exports.create = async params => {
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg});
     }
     if (demo && demo !== 'no-data') {
-        const msgInstance = new Message(msg);
-        await generateDemoData(msgInstance, demo);
+        await generateDemoData(msg, demo);
     }
 
     common.returnOutput(params, msg);
@@ -657,10 +664,10 @@ module.exports.mime = async params => {
                 return common.returnMessage(params, 400, {errors: ['No content-length while HEADing the url']}, null, true);
             }
         }
-        if (MEDIA_MIME_ALL.indexOf(info.headers['content-type']) === -1) {
+        if (MEDIA_MIME_TYPE_ALL.indexOf(info.headers['content-type']) === -1) {
             common.returnMessage(params, 400, {errors: [`Media mime type "${info.headers['content-type']}" is not supported`]}, null, true);
         }
-        else if (parseInt(info.headers['content-length'], 10) > DEFAULTS.max_media_size) {
+        else if (parseInt(info.headers['content-length'], 10) > MEDIA_MAX_SIZE) {
             common.returnMessage(params, 400, {errors: [`Media size (${info.headers['content-length']}) is too large`]}, null, true);
         }
         else {
@@ -975,7 +982,7 @@ module.exports.all = async params => {
         api: {type: 'BooleanString', required: false},
         multi: {type: 'BooleanString', required: false},
         rec: {type: 'BooleanString', required: false},
-        kind: {type: 'String[]', required: false, in: Object.values(TriggerKind)}, // not required for backwards compatibility only
+        kind: {type: 'String[]', required: false, in: allTriggerKinds}, // not required for backwards compatibility only
         removed: {type: 'BooleanString', required: false},
         sSearch: {type: 'RegExp', required: false, mods: 'gi'},
         iDisplayStart: {type: 'IntegerString', required: false},
@@ -989,20 +996,20 @@ module.exports.all = async params => {
     if (!data.kind) {
         data.kind = [];
         if (data.api) {
-            data.kind.push(TriggerKind.API);
+            data.kind.push('api');
         }
         else if (data.auto) {
-            data.kind.push(TriggerKind.Event);
-            data.kind.push(TriggerKind.Cohort);
+            data.kind.push('event');
+            data.kind.push('cohort');
         }
         else if (data.multi) {
-            data.kind.push(TriggerKind.Multi);
+            data.kind.push('multi');
         }
         else if (data.rec) {
-            data.kind.push(TriggerKind.Recurring);
+            data.kind.push('rec');
         }
         else {
-            data.kind = Object.values(TriggerKind);
+            data.kind = allTriggerKinds;
         }
     }
 
@@ -1085,19 +1092,19 @@ module.exports.all = async params => {
             if (sortcol === 'triggers.start') {
                 //gets right trigger object
                 if (data.auto) {
-                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", [TriggerKind.Event, TriggerKind.Cohort]]}, "as": "item"}}}}});
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", ['event', 'cohort']]}, "as": "item"}}}}});
                 }
                 else if (data.api) {
-                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", 'api']}, as: "item"}}}}});
                 }
                 else if (data.multi) {
-                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Multi]}, as: "item"}}}}});
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", 'multi']}, as: "item"}}}}});
                 }
                 else if (data.rec) {
-                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Recurring]}, as: "item"}}}}});
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", 'rec']}, as: "item"}}}}});
                 }
                 else {
-                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", Object.values(TriggerKind)]}, as: "item"}}}}});
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", allTriggerKinds]}, as: "item"}}}}});
                 }
 
                 dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}, "info.isDraft": {"$cond": [{"$eq": ["$status", "draft"]}, 1, 0]}}});
@@ -1122,19 +1129,19 @@ module.exports.all = async params => {
         }
         if (sortcol !== 'triggers.start') { //add triggers start fields
             if (data.auto) {
-                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", [TriggerKind.Event, TriggerKind.Cohort]]}, "as": "item"}}}}});
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", ['event', 'cohort']]}, "as": "item"}}}}});
             }
             else if (data.api) {
-                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", 'api']}, as: "item"}}}}});
             }
             else if (data.multi) {
-                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Multi]}, as: "item"}}}}});
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", 'multi']}, as: "item"}}}}});
             }
             else if (data.rec) {
-                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Recurring]}, as: "item"}}}}});
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", 'rec']}, as: "item"}}}}});
             }
             else {
-                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", Object.values(TriggerKind)]}, as: "item"}}}}});
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", allTriggerKinds]}, as: "item"}}}}});
             }
             dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}}});
         }
@@ -1193,12 +1200,31 @@ function periodicDateRange(start, end, timezone, period = "day") {
 }
 
 /**
+ * Get or create a sub-result entry in result.subs for the given key.
+ *
+ * @param {object} result plain result object
+ * @param {string} key sub result key (e.g. platform key)
+ * @returns {object} the sub-result object for the given key
+ */
+function resultSub(result, key) {
+    if (!result.subs) {
+        result.subs = {};
+    }
+    if (!result.subs[key]) {
+        result.subs[key] = buildResultObject();
+    }
+    return result.subs[key];
+}
+
+/**
  * Generate demo data for populator
  *
- * @param {Message} msg message instance
+ * @param {object} msg plain message document
  * @param {int} demo demo type
  */
 async function generateDemoData(msg, demo) {
+    const msgId = msg._id.toString();
+
     await common.db.collection('apps').updateOne({_id: msg.app, 'plugins.push.i._id': {$exists: false}}, {$set: {'plugins.push.i._id': 'demo'}});
     await common.db.collection('apps').updateOne({_id: msg.app, 'plugins.push.a._id': {$exists: false}}, {$set: {'plugins.push.a._id': 'demo'}});
     await common.db.collection('apps').updateOne({_id: msg.app, 'plugins.push.h._id': {$exists: false}}, {$set: {'plugins.push.h._id': 'demo'}});
@@ -1206,17 +1232,19 @@ async function generateDemoData(msg, demo) {
     let app = await common.db.collection('apps').findOne({_id: msg.app}),
         count = await common.db.collection('app_users' + msg.app).count(),
         events = [],
-        result = msg.result || new Result();
+        result = msg.result || buildResultObject();
 
-    if (msg.triggerAutoOrApi()) {
-        msg.status = Status.Active;
+    const isAutoOrApi = msg.triggers.some(t => t.kind === 'cohort' || t.kind === 'event' || t.kind === 'api');
+
+    if (isAutoOrApi) {
+        msg.status = 'active';
 
         let total = Math.floor(count * 0.72),
             sent = Math.floor(total * 0.92),
             actioned = Math.floor(sent * 0.17),
             offset = moment.tz(app.timezone).utcOffset(),
             now = Date.now() - 3600000,
-            a = !!msg.triggerAuto(),
+            a = !!msg.triggers.some(t => t.kind === 'cohort' || t.kind === 'event'),
             t = !a,
             p = msg.platforms[0],
             p1 = msg.platforms[1];
@@ -1232,41 +1260,41 @@ async function generateDemoData(msg, demo) {
             actioned -= ea;
 
             if (es) {
-                result.processed += es;
+                result.processed = (result.processed || 0) + es;
                 result.total += es;
                 result.sent += es;
 
                 let es_p0 = Math.floor(es * 2 / 3),
                     es_p1 = es - es_p0;
                 if (es_p0 && es_p1 && p1) {
-                    result.sub(p).processed += es_p0;
-                    result.sub(p).total += es_p0;
-                    result.sub(p).sent += es_p0;
-                    result.sub(p1).processed += es_p1;
-                    result.sub(p1).total += es_p1;
-                    result.sub(p1).sent += es_p1;
-                    events.push({timestamp: date, key: '[CLY]_push_sent', count: es_p0, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
-                    events.push({timestamp: date, key: '[CLY]_push_sent', count: es_p1, segmentation: {i: msg.id, a, t, p: p1, ap: a + p1, tp: t + p1}});
+                    resultSub(result, p).processed = (resultSub(result, p).processed || 0) + es_p0;
+                    resultSub(result, p).total += es_p0;
+                    resultSub(result, p).sent += es_p0;
+                    resultSub(result, p1).processed = (resultSub(result, p1).processed || 0) + es_p1;
+                    resultSub(result, p1).total += es_p1;
+                    resultSub(result, p1).sent += es_p1;
+                    events.push({timestamp: date, key: '[CLY]_push_sent', count: es_p0, segmentation: {i: msgId, a, t, p, ap: a + p, tp: t + p}});
+                    events.push({timestamp: date, key: '[CLY]_push_sent', count: es_p1, segmentation: {i: msgId, a, t, p: p1, ap: a + p1, tp: t + p1}});
                 }
                 else {
-                    result.sub(p).processed += es;
-                    result.sub(p).total += es;
-                    result.sub(p).sent += es;
-                    events.push({timestamp: date, key: '[CLY]_push_sent', count: es, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
+                    resultSub(result, p).processed = (resultSub(result, p).processed || 0) + es;
+                    resultSub(result, p).total += es;
+                    resultSub(result, p).sent += es;
+                    events.push({timestamp: date, key: '[CLY]_push_sent', count: es, segmentation: {i: msgId, a, t, p, ap: a + p, tp: t + p}});
                 }
             }
             if (ea) {
                 let ea_p0 = Math.floor(ea * 2 / 3),
                     ea_p1 = ea - ea_p0;
                 if (ea_p0 && ea_p1 && p1) {
-                    result.sub(p).actioned += ea_p0;
-                    result.sub(p1).actioned += ea_p1;
-                    events.push({timestamp: date, key: '[CLY]_push_action', count: ea_p0, segmentation: {i: msg.id, b: 1, a, t, p, ap: a + p, tp: t + p}});
-                    events.push({timestamp: date, key: '[CLY]_push_action', count: ea_p1, segmentation: {i: msg.id, b: 1, a, t, p: p1, ap: a + p1, tp: t + p1}});
+                    resultSub(result, p).actioned += ea_p0;
+                    resultSub(result, p1).actioned += ea_p1;
+                    events.push({timestamp: date, key: '[CLY]_push_action', count: ea_p0, segmentation: {i: msgId, b: 1, a, t, p, ap: a + p, tp: t + p}});
+                    events.push({timestamp: date, key: '[CLY]_push_action', count: ea_p1, segmentation: {i: msgId, b: 1, a, t, p: p1, ap: a + p1, tp: t + p1}});
                 }
                 else {
-                    result.sub(p).actioned += ea;
-                    events.push({timestamp: date, key: '[CLY]_push_action', count: ea, segmentation: {i: msg.id, b: 1, a, t, p, ap: a + p, tp: t + p}});
+                    resultSub(result, p).actioned += ea;
+                    events.push({timestamp: date, key: '[CLY]_push_action', count: ea, segmentation: {i: msgId, b: 1, a, t, p, ap: a + p, tp: t + p}});
                 }
             }
         }
@@ -1275,35 +1303,35 @@ async function generateDemoData(msg, demo) {
             at = Math.floor(actioned / 3);
 
         if (st) {
-            result.processed += st;
+            result.processed = (result.processed || 0) + st;
             result.total += st;
             result.sent += st;
-            result.sub(p).processed += st;
-            result.sub(p).total += st;
-            events.push({timestamp: now - 24 * 3600000 - offset, key: '[CLY]_push_sent', count: st, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
+            resultSub(result, p).processed = (resultSub(result, p).processed || 0) + st;
+            resultSub(result, p).total += st;
+            events.push({timestamp: now - 24 * 3600000 - offset, key: '[CLY]_push_sent', count: st, segmentation: {i: msgId, a, t, p, ap: a + p, tp: t + p}});
         }
         if (at) {
             result.actioned += at;
-            result.sub(p).actioned += at;
-            events.push({timestamp: now - 24 * 3600000 - offset, key: '[CLY]_push_action', count: at, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
+            resultSub(result, p).actioned += at;
+            events.push({timestamp: now - 24 * 3600000 - offset, key: '[CLY]_push_action', count: at, segmentation: {i: msgId, a, t, p, ap: a + p, tp: t + p}});
         }
 
         sent = sent - st;
         actioned = actioned - at;
 
-        result.processed += sent;
+        result.processed = (result.processed || 0) + sent;
         result.total += sent;
         result.sent += sent;
         result.actioned += actioned;
-        result.sub(p).processed += sent;
-        result.sub(p).total += sent;
-        result.sub(p).sent += sent;
-        result.sub(p).actioned += actioned;
-        events.push({timestamp: now - offset, key: '[CLY]_push_sent', count: sent, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
-        events.push({timestamp: now - offset, key: '[CLY]_push_action', count: actioned, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
+        resultSub(result, p).processed = (resultSub(result, p).processed || 0) + sent;
+        resultSub(result, p).total += sent;
+        resultSub(result, p).sent += sent;
+        resultSub(result, p).actioned += actioned;
+        events.push({timestamp: now - offset, key: '[CLY]_push_sent', count: sent, segmentation: {i: msgId, a, t, p, ap: a + p, tp: t + p}});
+        events.push({timestamp: now - offset, key: '[CLY]_push_action', count: actioned, segmentation: {i: msgId, a, t, p, ap: a + p, tp: t + p}});
     }
     else {
-        msg.status = Status.Active;
+        msg.status = 'active';
 
         let total = demo === 1 ? Math.floor(count * 0.92) : Math.floor(Math.floor(count * 0.92) * 0.87),
             sent = demo === 1 ? Math.floor(total * 0.87) : total,
@@ -1328,44 +1356,44 @@ async function generateDemoData(msg, demo) {
             a1_p1 = Math.floor((a_p1 - a0_p1) * 2 / 3),
             a2_p1 = a_p1 - a0_p1 - a1_p1;
 
-        log.d('msggggggg %s: sent %d, actioned %d (%d %d-%d-%d / %d %d-%d-%d)', msg.id, sent, actioned, a_p0, a0_p0, a1_p0, a2_p0, a_p1, a0_p1, a1_p1, a2_p1);
+        log.d('msggggggg %s: sent %d, actioned %d (%d %d-%d-%d / %d %d-%d-%d)', msgId, sent, actioned, a_p0, a0_p0, a1_p0, a2_p0, a_p1, a0_p1, a1_p1, a2_p1);
 
-        result.processed += sent;
+        result.processed = (result.processed || 0) + sent;
         result.total += sent;
         result.sent += sent;
         result.actioned += a0_p0 + a1_p0 + a2_p0 + a0_p1 + a1_p1 + a2_p1;
-        result.sub(p).processed += s_p0;
-        result.sub(p).total += s_p0;
-        result.sub(p).sent += s_p0;
-        result.sub(p).actioned += a0_p0 + a1_p0 + a2_p0;
-        result.sub(msg.platforms[1]).processed += s_p1;
-        result.sub(msg.platforms[1]).total += s_p1;
-        result.sub(msg.platforms[1]).sent += s_p1;
-        result.sub(msg.platforms[1]).actioned += a0_p1 + a1_p1 + a2_p1;
+        resultSub(result, p).processed = (resultSub(result, p).processed || 0) + s_p0;
+        resultSub(result, p).total += s_p0;
+        resultSub(result, p).sent += s_p0;
+        resultSub(result, p).actioned += a0_p0 + a1_p0 + a2_p0;
+        resultSub(result, p1).processed = (resultSub(result, p1).processed || 0) + s_p1;
+        resultSub(result, p1).total += s_p1;
+        resultSub(result, p1).sent += s_p1;
+        resultSub(result, p1).actioned += a0_p1 + a1_p1 + a2_p1;
 
         if (s_p0) {
-            events.push({key: '[CLY]_push_sent', count: s_p0, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
+            events.push({key: '[CLY]_push_sent', count: s_p0, segmentation: {i: msgId, a, t, p, ap: a + p, tp: t + p}});
         }
         if (a0_p0) {
-            events.push({key: '[CLY]_push_action', count: a0_p0, segmentation: {i: msg.id, b: 0, a, t, p, ap: a + p, tp: t + p}});
+            events.push({key: '[CLY]_push_action', count: a0_p0, segmentation: {i: msgId, b: 0, a, t, p, ap: a + p, tp: t + p}});
         }
         if (a1_p0) {
-            events.push({key: '[CLY]_push_action', count: a1_p0, segmentation: {i: msg.id, b: 1, a, t, p, ap: a + p, tp: t + p}});
+            events.push({key: '[CLY]_push_action', count: a1_p0, segmentation: {i: msgId, b: 1, a, t, p, ap: a + p, tp: t + p}});
         }
         if (a2_p0) {
-            events.push({key: '[CLY]_push_action', count: a2_p0, segmentation: {i: msg.id, b: 2, a, t, p, ap: a + p, tp: t + p}});
+            events.push({key: '[CLY]_push_action', count: a2_p0, segmentation: {i: msgId, b: 2, a, t, p, ap: a + p, tp: t + p}});
         }
         if (s_p1) {
-            events.push({key: '[CLY]_push_sent', count: s_p1, segmentation: {i: msg.id, a, t, p: p1, ap: a + p1, tp: t + p1}});
+            events.push({key: '[CLY]_push_sent', count: s_p1, segmentation: {i: msgId, a, t, p: p1, ap: a + p1, tp: t + p1}});
         }
         if (a0_p1) {
-            events.push({key: '[CLY]_push_action', count: a0_p1, segmentation: {i: msg.id, b: 0, a, t, p: p1, ap: a + p1, tp: t + p1}});
+            events.push({key: '[CLY]_push_action', count: a0_p1, segmentation: {i: msgId, b: 0, a, t, p: p1, ap: a + p1, tp: t + p1}});
         }
         if (a1_p1) {
-            events.push({key: '[CLY]_push_action', count: a1_p1, segmentation: {i: msg.id, b: 1, a, t, p: p1, ap: a + p1, tp: t + p1}});
+            events.push({key: '[CLY]_push_action', count: a1_p1, segmentation: {i: msgId, b: 1, a, t, p: p1, ap: a + p1, tp: t + p1}});
         }
         if (a2_p1) {
-            events.push({key: '[CLY]_push_action', count: a2_p1, segmentation: {i: msg.id, b: 2, a, t, p: p1, ap: a + p1, tp: t + p1}});
+            events.push({key: '[CLY]_push_action', count: a2_p1, segmentation: {i: msgId, b: 2, a, t, p: p1, ap: a + p1, tp: t + p1}});
         }
     }
 
@@ -1376,9 +1404,11 @@ async function generateDemoData(msg, demo) {
         time: common.initTimeObj(app.timezone)
     });
 
-    await msg.update({$set: {result: result.json, state: msg.state, status: msg.status}}, () => {
-        msg.result = result;
-    });
+    msg.result = result;
+    await common.db.collection('messages').updateOne(
+        {_id: msg._id},
+        {$set: {result: result, state: msg.state, status: msg.status}}
+    );
 }
 
 /**

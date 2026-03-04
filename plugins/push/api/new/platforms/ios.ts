@@ -12,7 +12,7 @@ import type { ProxyConfiguration } from "../lib/utils.ts";
 import type { TemplateContext } from "../lib/template.ts";
 import { serializeProxyConfig, removeUPFromUserPropertyKey } from "../lib/utils.ts";
 import { InvalidCredentials, SendError, InvalidResponse, APNSErrors, InvalidDeviceToken } from "../lib/error.ts";
-import { PROXY_CONNECTION_TIMEOUT } from "../constants/proxy-config.ts";
+import { PROXY_CONNECTION_TIMEOUT } from "../constants/configs.ts";
 
 interface JWTCache {
     token: string;

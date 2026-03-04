@@ -11,6 +11,21 @@ export class PushError extends Error {
     }
 }
 
+export class ValidationError extends PushError {
+    errors: string[]; // validationErrors
+    constructor(validationErrors: string|string[]) {
+        if (typeof validationErrors === "string") {
+            validationErrors = [validationErrors];
+        }
+        super(validationErrors.join("; "));
+        this.errors = validationErrors;
+    }
+
+    toString() {
+        return `${this.name}: ${this.message}`;
+    }
+}
+
 export class InvalidCredentials extends PushError {}
 
 export class SendError extends PushError {

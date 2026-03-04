@@ -5,7 +5,8 @@
 /* eslint-disable no-inner-declarations */
 const common = require('../../../api/utils/common');
 const log = common.log('push:api:push');
-const { ValidationError, DBMAP } = require('./send');
+const { DBMAP_MESSAGING_ENABLED } = require('./new/constants/configs.ts');
+const { ValidationError } = require("./new/lib/error.ts");
 const { validateCredentials: validateAndroidCredentials } = require("./new/platforms/android.ts");
 const { validateCredentials: validateIOSCredentials } = require("./new/platforms/ios.ts");
 const { validateCredentials: validateHuaweiCredentials } = require("./new/platforms/huawei.ts");
@@ -106,28 +107,28 @@ module.exports.onSessionUser = ({params, dbAppUser}) => {
             secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
         if (userLastSeenTimestamp < (params.time.timestamp - secInMin)) {
-            updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + DBMAP.MESSAGING_ENABLED] = 1;
-            platfs.forEach(p => updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + DBMAP.MESSAGING_ENABLED + p] = 1);
+            updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + DBMAP_MESSAGING_ENABLED] = 1;
+            platfs.forEach(p => updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + DBMAP_MESSAGING_ENABLED + p] = 1);
         }
 
         if (userLastSeenTimestamp < (params.time.timestamp - secInHour)) {
-            updateUsersMonth['d.' + params.time.day + '.' + DBMAP.MESSAGING_ENABLED] = 1;
-            platfs.forEach(p => updateUsersMonth['d.' + params.time.day + '.' + DBMAP.MESSAGING_ENABLED + p] = 1);
+            updateUsersMonth['d.' + params.time.day + '.' + DBMAP_MESSAGING_ENABLED] = 1;
+            platfs.forEach(p => updateUsersMonth['d.' + params.time.day + '.' + DBMAP_MESSAGING_ENABLED + p] = 1);
         }
 
         if (userLastSeenDate.year() === parseInt(params.time.yearly, 10) && Math.ceil(userLastSeenDate.format('DDD') / 7) < params.time.weekly) {
-            updateUsersZero['d.w' + params.time.weekly + '.' + DBMAP.MESSAGING_ENABLED] = 1;
-            platfs.forEach(p => updateUsersZero['d.w' + params.time.weekly + '.' + DBMAP.MESSAGING_ENABLED + p] = 1);
+            updateUsersZero['d.w' + params.time.weekly + '.' + DBMAP_MESSAGING_ENABLED] = 1;
+            platfs.forEach(p => updateUsersZero['d.w' + params.time.weekly + '.' + DBMAP_MESSAGING_ENABLED + p] = 1);
         }
 
         if (userLastSeenTimestamp < (params.time.timestamp - secInMonth)) {
-            updateUsersZero['d.' + params.time.month + '.' + DBMAP.MESSAGING_ENABLED] = 1;
-            platfs.forEach(p => updateUsersZero['d.' + params.time.month + '.' + DBMAP.MESSAGING_ENABLED + p] = 1);
+            updateUsersZero['d.' + params.time.month + '.' + DBMAP_MESSAGING_ENABLED] = 1;
+            platfs.forEach(p => updateUsersZero['d.' + params.time.month + '.' + DBMAP_MESSAGING_ENABLED + p] = 1);
         }
 
         if (userLastSeenTimestamp < (params.time.timestamp - secInYear)) {
-            updateUsersZero['d.' + DBMAP.MESSAGING_ENABLED] = 1;
-            platfs.forEach(p => updateUsersZero['d.' + DBMAP.MESSAGING_ENABLED + p] = 1);
+            updateUsersZero['d.' + DBMAP_MESSAGING_ENABLED] = 1;
+            platfs.forEach(p => updateUsersZero['d.' + DBMAP_MESSAGING_ENABLED + p] = 1);
         }
 
         if (Object.keys(updateUsersZero).length) {
