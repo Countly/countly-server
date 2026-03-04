@@ -36,45 +36,50 @@ Cypress.on('uncaught:exception', (err, runnable) => {
 // making it difficult to understand where and why a test failed.
 // This formatter provides a structured and readable failure output
 // without requiring changes in existing test cases.
-import { getDebugContext } from './debugContext'
-
 Cypress.on('fail', (err, runnable) => {
 
-  const ctx = getDebugContext()
+    const ctx = getDebugContext();
 
-  console.error('\n========== CYPRESS FAILURE ==========')
+    console.error('\n========== CYPRESS FAILURE ==========');
 
-  if (Cypress.spec?.name)
-    console.error(`SPEC     : ${Cypress.spec.name}`)
+    if (Cypress.spec?.name) {
+        console.error(`SPEC     : ${Cypress.spec.name}`);
+    }
 
-  if (runnable?.parent?.title)
-    console.error(`SUITE    : ${runnable.parent.title}`)
+    if (runnable?.parent?.title) {
+        console.error(`SUITE    : ${runnable.parent.title}`);
+    }
 
-  if (runnable?.title)
-    console.error(`TEST     : ${runnable.title}`)
+    if (runnable?.title) {
+        console.error(`TEST     : ${runnable.title}`);
+    }
 
-  try {
-    const url = Cypress.state('window')?.location?.href
-    console.error(`URL      : ${url}`)
-  }
-  catch {
-    console.error(`URL      : unavailable`)
-  }
+    try {
+        const url = Cypress.state('window')?.location?.href;
+        console.error(`URL      : ${url}`);
+    }
+    catch {
+        console.error(`URL      : unavailable`);
+    }
 
-  if (ctx.selector)
-    console.error(`SELECTOR : ${ctx.selector}`)
+    if (ctx.selector) {
+        console.error(`SELECTOR : ${ctx.selector}`);
+    }
 
-  if (ctx.assertion)
-    console.error(`ASSERT   : ${ctx.assertion}`)
+    if (ctx.assertion) {
+        console.error(`ASSERT   : ${ctx.assertion}`);
+    }
 
-  if (ctx.expected !== undefined)
-    console.error(`EXPECTED : ${ctx.expected}`)
+    if (ctx.expected !== undefined) {
+        console.error(`EXPECTED : ${ctx.expected}`);
+    }
 
-  if (ctx.actual !== undefined)
-    console.error(`ACTUAL   : ${ctx.actual}`)
+    if (ctx.actual !== undefined) {
+        console.error(`ACTUAL   : ${ctx.actual}`);
+    }
 
-  console.error(`ERROR    : ${err.message}`)
-  console.error('=====================================\n')
+    console.error(`ERROR    : ${err.message}`);
+    console.error('=====================================\n');
 
-  throw err
-})
+    throw err;
+});
