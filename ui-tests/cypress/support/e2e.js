@@ -40,46 +40,32 @@ Cypress.on('fail', (err, runnable) => {
 
     const ctx = getDebugContext();
 
-    console.error('\n========== CYPRESS FAILURE ==========');
+    const url = Cypress.state('window')?.location?.href;
 
-    if (Cypress.spec?.name) {
-        console.error(`SPEC     : ${Cypress.spec.name}`);
-    }
+    const message = `
+========== CYPRESS FAILURE ==========
 
-    if (runnable?.parent?.title) {
-        console.error(`SUITE    : ${runnable.parent.title}`);
-    }
+SPEC     : ${Cypress.spec?.name}
+SUITE    : ${runnable?.parent?.title}
+TEST     : ${runnable?.title}
+URL      : ${url}
 
-    if (runnable?.title) {
-        console.error(`TEST     : ${runnable.title}`);
-    }
+SELECTOR : ${ctx.selector}
+ASSERT   : ${ctx.assertion}
+EXPECTED : ${ctx.expected}
+ACTUAL   : ${ctx.actual}
 
-    try {
-        const url = Cypress.state('window')?.location?.href;
-        console.error(`URL      : ${url}`);
-    }
-    catch {
-        console.error(`URL      : unavailable`);
-    }
+ERROR    : ${err.message}
 
-    if (ctx.selector) {
-        console.error(`SELECTOR : ${ctx.selector}`);
-    }
+=====================================
+`;
 
-    if (ctx.assertion) {
-        console.error(`ASSERT   : ${ctx.assertion}`);
-    }
+    Cypress.log({
+        name: "FAIL",
+        message
+    });
 
-    if (ctx.expected !== undefined) {
-        console.error(`EXPECTED : ${ctx.expected}`);
-    }
-
-    if (ctx.actual !== undefined) {
-        console.error(`ACTUAL   : ${ctx.actual}`);
-    }
-
-    console.error(`ERROR    : ${err.message}`);
-    console.error('=====================================\n');
+    console.error(message);
 
     throw err;
 });
