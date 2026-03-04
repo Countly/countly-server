@@ -1310,7 +1310,7 @@ common.returnRaw = function(params, returnCode, body, heads) {
     }
     const defaultHeaders = {
         'Accept-CH': 'Sec-CH-UA, Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version, Sec-CH-UA-Model',
-        'Critical-CH': 'Sec-CH-UA-Mobile, Sec-CH-UA-Platform',
+        'Critical-CH': 'Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version',
         'X-Countly': 'api'
     };
     //set provided in configuration headers
@@ -1362,7 +1362,7 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
     const defaultHeaders = {
         'Content-Type': 'application/json; charset=utf-8',
         'Accept-CH': 'Sec-CH-UA, Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version, Sec-CH-UA-Model',
-        'Critical-CH': 'Sec-CH-UA-Mobile, Sec-CH-UA-Platform',
+        'Critical-CH': 'Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version',
         'X-Countly': 'api'
     };
     let headers = { ...defaultHeaders };
@@ -1440,7 +1440,7 @@ common.returnOutput = function(params, output, noescape, heads) {
     const defaultHeaders = {
         'Content-Type': 'application/json; charset=utf-8',
         'Accept-CH': 'Sec-CH-UA, Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version, Sec-CH-UA-Model',
-        'Critical-CH': 'Sec-CH-UA-Mobile, Sec-CH-UA-Platform',
+        'Critical-CH': 'Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version',
         'X-Countly': 'api'
     };
     let headers = { ...defaultHeaders };

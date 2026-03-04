@@ -8,6 +8,24 @@ var API_KEY_ADMIN = '';
 var APP_ID = '';
 var DEVICE_ID = 'web-ua-client-hints';
 
+function sendSession(deviceId, headers, done) {
+    var req = request
+        .get('/i?device_id=' + deviceId + '&app_key=' + APP_KEY + '&begin_session=1');
+
+    Object.keys(headers).forEach(function(headerName) {
+        req.set(headerName, headers[headerName]);
+    });
+
+    req.expect(200).end(function(err, res) {
+        if (err) {
+            return done(err);
+        }
+        var ob = JSON.parse(res.text);
+        ob.should.have.property('result', 'Success');
+        setTimeout(done, 300 * testUtils.testScalingFactor);
+    });
+}
+
 describe('Testing Web UA and Client Hints parsing', function() {
     describe('Init', function() {
         it('should load app credentials', function(done) {
@@ -70,24 +88,15 @@ describe('Testing Web UA and Client Hints parsing', function() {
 
     describe('Client Hints parsing', function() {
         it('should prioritize client hints and detect Chrome Mobile', function(done) {
-            request
-                .get('/i?device_id=' + DEVICE_ID + '-ch&app_key=' + APP_KEY + '&begin_session=1')
-                .set('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0')
-                .set('Sec-CH-UA', '"Chromium";v="120", "Google Chrome";v="120", "Not=A?Brand";v="99"')
-                .set('Sec-CH-UA-Mobile', '?1')
-                .set('Sec-CH-UA-Platform', '"Android"')
-                .set('Sec-CH-UA-Platform-Version', '"14.0.0"')
-                .set('Sec-CH-UA-Full-Version', '"120.0.6099.230"')
-                .set('Sec-CH-UA-Model', '"Pixel 8"')
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Success');
-                    setTimeout(done, 300 * testUtils.testScalingFactor);
-                });
+            sendSession(DEVICE_ID + '-ch', {
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0',
+                'Sec-CH-UA': '"Chromium";v="120", "Google Chrome";v="120", "Not=A?Brand";v="99"',
+                'Sec-CH-UA-Mobile': '?1',
+                'Sec-CH-UA-Platform': '"Android"',
+                'Sec-CH-UA-Platform-Version': '"14.0.0"',
+                'Sec-CH-UA-Full-Version': '"120.0.6099.230"',
+                'Sec-CH-UA-Model': '"Pixel 8"'
+            }, done);
         });
 
         it('should have Chrome Mobile in browser metrics', function(done) {
@@ -118,6 +127,136 @@ describe('Testing Web UA and Client Hints parsing', function() {
                     ob.should.have.property('meta');
                     ob.meta.should.have.property('os');
                     ob.meta.os.should.containEql('Android');
+                    done();
+                });
+        });
+
+        it('should normalize Microsoft Edge and Windows 13 to Edge + Windows 11', function(done) {
+            sendSession(DEVICE_ID + '-ch-edge-win11', {
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0',
+                'Sec-CH-UA': '"Chromium";v="120", "Microsoft Edge";v="120", "Not=A?Brand";v="99"',
+                'Sec-CH-UA-Mobile': '?0',
+                'Sec-CH-UA-Platform': '"Windows"',
+                'Sec-CH-UA-Platform-Version': '"13.0.0"',
+                'Sec-CH-UA-Full-Version': '"120.0.2210.91"'
+            }, done);
+        });
+
+        it('should store normalized Edge/Windows values for the session user', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=os_versions')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('meta');
+                    ob.meta.should.have.property('os_versions');
+                    ob.meta.os_versions.should.containEql('mw11');
+                    done();
+                });
+        });
+
+        it('should normalize Windows 6.1 to Windows 7', function(done) {
+            sendSession(DEVICE_ID + '-ch-win7', {
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0',
+                'Sec-CH-UA': '"Chromium";v="120", "Not=A?Brand";v="99"',
+                'Sec-CH-UA-Mobile': '?0',
+                'Sec-CH-UA-Platform': '"Windows"',
+                'Sec-CH-UA-Platform-Version': '"6.1.0"'
+            }, done);
+        });
+
+        it('should store Windows 7 normalized platform version', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=os_versions')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('meta');
+                    ob.meta.should.have.property('os_versions');
+                    ob.meta.os_versions.should.containEql('mw7');
+                    done();
+                });
+        });
+
+        it('should normalize macOS and Google Chrome names', function(done) {
+            sendSession(DEVICE_ID + '-ch-mac-chrome', {
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0',
+                'Sec-CH-UA': '"Chromium";v="120", "Google Chrome";v="120", "Not=A?Brand";v="99"',
+                'Sec-CH-UA-Mobile': '?0',
+                'Sec-CH-UA-Platform': '"macOS"',
+                'Sec-CH-UA-Platform-Version': '"14.2.0"',
+                'Sec-CH-UA-Full-Version': '"120.0.6099.230"'
+            }, done);
+        });
+
+        it('should store normalized Mac/Chrome values for the session user', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=os')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('meta');
+                    ob.meta.should.have.property('os');
+                    ob.meta.os.should.containEql('Mac');
+                    done();
+                });
+        });
+
+        it('should store normalized browser version prefixes', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=browser_version')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('meta');
+                    ob.meta.should.have.property('browser_version');
+                    ob.meta.browser_version.should.containEql('[edge]_120.0.2210.91');
+                    ob.meta.browser_version.should.containEql('[chrome]_120.0.6099.230');
+                    done();
+                });
+        });
+
+        it('should infer desktop device type when Sec-CH-UA-Mobile is ?0', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=device_type')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('meta');
+                    ob.meta.should.have.property('device_type');
+                    ob.meta.device_type.should.containEql('desktop');
+                    done();
+                });
+        });
+
+        it('should not expose non-normalized browser names in browser metrics', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=browser')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('meta');
+                    ob.meta.should.have.property('browser');
+                    ob.meta.browser.should.not.containEql('Google Chrome');
+                    ob.meta.browser.should.not.containEql('Microsoft Edge');
                     done();
                 });
         });

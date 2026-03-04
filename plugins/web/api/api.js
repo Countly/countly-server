@@ -3,6 +3,54 @@ var pluginOb = {},
     plugins = require('../../pluginManager.js');
 
 /**
+ * Normalize client hints OS version to user-facing values where needed
+ * @param {string} os - OS name
+ * @param {string} version - OS version from client hints
+ * @returns {string|null} normalized OS version
+ */
+function normalizeClientHintsOsVersion(os, version) {
+    if (!version) {
+        return version;
+    }
+
+    if (os === 'Windows') {
+        var versionParts = (version + '').split('.');
+        var major = parseInt(versionParts[0], 10);
+        var minor = parseInt(versionParts[1], 10);
+        if (!isNaN(major)) {
+            if (major >= 13) {
+                return '11';
+            }
+            if (major >= 10) {
+                return '10';
+            }
+            if (major === 6) {
+                if (minor >= 3) {
+                    return '8.1';
+                }
+                if (minor === 2) {
+                    return '8';
+                }
+                if (minor === 1) {
+                    return '7';
+                }
+                if (minor === 0) {
+                    return 'Vista';
+                }
+            }
+            if (major === 5) {
+                if (minor >= 1) {
+                    return 'XP';
+                }
+                return '2000';
+            }
+        }
+    }
+
+    return version;
+}
+
+/**
  * Parse client hints headers to extract browser, OS, and device information
  * @param {object} headers - HTTP request headers
  * @returns {object} Parsed client hints data
@@ -79,7 +127,7 @@ function parseClientHints(headers) {
     // Parse platform version
     var secChUaPlatformVersion = headers['sec-ch-ua-platform-version'];
     if (secChUaPlatformVersion) {
-        hints.osVersion = secChUaPlatformVersion.replace(/"/g, '');
+        hints.osVersion = normalizeClientHintsOsVersion(hints.os, secChUaPlatformVersion.replace(/"/g, ''));
     }
 
     // Parse mobile indicator
