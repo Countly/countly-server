@@ -3258,7 +3258,9 @@ class DataTable {
      */
     _getSearchField() {
         if (this.searchStrategy === "regex") {
-            return {$regex: this.searchTerm, $options: 'i'};
+            const term = String(this.searchTerm);
+            const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return ({$regex: escaped, $options: 'i'});
         }
         return this.searchTerm;
     }

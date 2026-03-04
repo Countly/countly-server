@@ -4559,10 +4559,11 @@
         * @memberof countlyCommon
         * @param {number} second  number
         * @param {number} [trimTo=5]  number [1,5]
+        * @param {number} [digitsAfterComma=1]  number of digits after comma for seconds, default is 1, if seconds is less than 0.1 it will be shown as 0
         * @returns {string} return format "Xh Xm Xs", if trimTo is specified the length of the result is trimmed
         * @example trimTo = 2, "Xh Xm Xs" result will be trimmed to "Xh Xm"
         */
-        countlyCommon.formatSecond = function(second, trimTo = 5) {
+        countlyCommon.formatSecond = function(second, trimTo = 5, digitsAfterComma = 1) {
             var timeLeft = parseFloat(second);
             var dict = [
                 {k: 'year', v: 31536000},
@@ -4571,16 +4572,15 @@
                 {k: 'minute', v: 60},
                 {k: 'second', v: 1}
             ];
+            if (digitsAfterComma < 0 || digitsAfterComma > 10) {
+                digitsAfterComma = 0;
+            }
             var result = {year: 0, day: 0, hour: 0, minute: 0, second: 0};
             var resultStrings = [];
             for (var i = 0; i < dict.length && resultStrings.length < 3; i++) {
                 if (dict[i].k === "second") {
-                    if (timeLeft < 0.1) {
-                        result.second = 0;
-                    }
-                    else {
-                        result.second = Math.round(timeLeft * 10) / 10;
-                    }
+
+                    result.second = parseFloat(timeLeft.toFixed(digitsAfterComma));
                 }
                 else {
                     result[dict[i].k] = Math.floor(timeLeft / dict[i].v);
