@@ -15,7 +15,7 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
-import { getDebugContext } from './debugContext'
+import { getDebugContext } from './debugContext';
 
 //When Cypress detects uncaught errors originating from application it will automatically fail the current test.
 //This behavior is configurable, and you can choose to turn this off by listening to the uncaught:exception event.
@@ -36,6 +36,8 @@ Cypress.on('uncaught:exception', (err, runnable) => {
 // making it difficult to understand where and why a test failed.
 // This formatter provides a structured and readable failure output
 // without requiring changes in existing test cases.
+import { getDebugContext } from './debugContext'
+
 Cypress.on('fail', (err, runnable) => {
 
   const ctx = getDebugContext()
@@ -52,8 +54,10 @@ Cypress.on('fail', (err, runnable) => {
     console.error(`TEST     : ${runnable.title}`)
 
   try {
-    console.error(`URL      : ${window.location.href}`)
-  } catch {
+    const url = Cypress.state('window')?.location?.href
+    console.error(`URL      : ${url}`)
+  }
+  catch {
     console.error(`URL      : unavailable`)
   }
 

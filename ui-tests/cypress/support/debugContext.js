@@ -1,11 +1,11 @@
-let context = {}
+let context = {};
 
 export const setDebugContext = (data) => {
-  context = { ...context, ...data }
-}
+    context = { ...context, ...data };
+};
 
-export const getDebugContext = () => context
+export const getDebugContext = () => context;
 
 export const clearDebugContext = () => {
-  context = {}
-}
+    context = {};
+};
