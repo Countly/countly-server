@@ -139,7 +139,6 @@ Cypress.Commands.add("shouldTooltipContainText", (element, text) => {
 });
 
 Cypress.Commands.add("shouldBeVisible", (element) => {
-
     cy.getElement(element)
         .should('exist')
         .should('be.visible')
@@ -150,12 +149,10 @@ Cypress.Commands.add("shouldBeVisible", (element) => {
                 expected: true,
                 actual: Cypress.$($el).is(':visible')
             });
-
         });
 });
 
 Cypress.Commands.add("shouldBeDisabled", (element) => {
-
     cy.getElement(element)
         .should('exist')
         .should('be.disabled')
@@ -166,12 +163,10 @@ Cypress.Commands.add("shouldBeDisabled", (element) => {
                 expected: true,
                 actual: $el.prop('disabled')
             });
-
         });
 });
 
 Cypress.Commands.add("shouldNotBeDisabled", (element) => {
-
     cy.getElement(element)
         .should('exist')
         .should('not.be.disabled')
@@ -182,12 +177,10 @@ Cypress.Commands.add("shouldNotBeDisabled", (element) => {
                 expected: false,
                 actual: $el.prop('disabled')
             });
-
         });
 });
 
 Cypress.Commands.add("shouldBeHasDisabledClass", (element) => {
-
     cy.get(`[data-test-id="${element}"].is-disabled`)
         .should('exist')
         .then(() => {
@@ -195,9 +188,7 @@ Cypress.Commands.add("shouldBeHasDisabledClass", (element) => {
             setDebugContext({
                 assertion: 'have disabled class'
             });
-
         });
-
 });
 
 Cypress.Commands.add("shouldNotBeHasDisabledClass", (element) => {
@@ -208,12 +199,10 @@ Cypress.Commands.add("shouldNotBeHasDisabledClass", (element) => {
             setDebugContext({
                 assertion: 'not have disabled class'
             });
-
         });
 });
 
 Cypress.Commands.add("shouldContainText", (element, text) => {
-
     cy.getElement(element)
         .should('exist')
         .should('contain', text)
@@ -226,12 +215,10 @@ Cypress.Commands.add("shouldContainText", (element, text) => {
                 expected: text,
                 actual
             });
-
         });
 });
 
 Cypress.Commands.add("shouldNotContainText", (element, text) => {
-
     cy.getElement(element)
         .should('exist')
         .should('not.contain', text)
@@ -244,13 +231,11 @@ Cypress.Commands.add("shouldNotContainText", (element, text) => {
                 expected: text,
                 actual
             });
-
         });
 });
 
 Cypress.Commands.add("shouldBeEqual", (element, text) => {
     cy.getElement(element)
-        .should('exist')
         .should(($el) => {
 
             const actual = $el.text().trim();
@@ -285,11 +270,9 @@ Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
 Cypress.Commands.add("shouldPlaceholderContainText", (element, text) => {
 
     cy.getElement(element)
-        .should('have.attr', 'placeholder')
-        .and('contain', text)
-        .then(($el) => {
-
-            const actual = $el.attr("placeholder");
+        .invoke('attr', 'placeholder')
+        .should('contain', text)
+        .then((actual) => {
 
             setDebugContext({
                 assertion: 'placeholder contain text',
@@ -298,17 +281,14 @@ Cypress.Commands.add("shouldPlaceholderContainText", (element, text) => {
             });
 
         });
-
 });
 
 Cypress.Commands.add("shouldDataOriginalTitleContainText", (element, text) => {
 
     cy.getElement(element)
-        .should('have.attr', 'data-original-title')
-        .and('contain', text)
-        .then(($el) => {
-
-            const actual = $el.attr("data-original-title");
+        .invoke('attr', 'data-original-title')
+        .should('contain', text)
+        .then((actual) => {
 
             setDebugContext({
                 assertion: 'data-original-title contain text',
@@ -317,26 +297,21 @@ Cypress.Commands.add("shouldDataOriginalTitleContainText", (element, text) => {
             });
 
         });
-
 });
 
 Cypress.Commands.add("shouldHrefContainUrl", (element, url) => {
 
     cy.getElement(element)
-        .should('have.attr', 'href')
-        .and('contain', url)
-        .then(($el) => {
-
-            const actual = $el.attr("href");
+        .invoke('attr', 'href')
+        .should('contain', url)
+        .then((actual) => {
 
             setDebugContext({
                 assertion: 'href contain url',
                 expected: url,
                 actual
             });
-
         });
-
 });
 
 Cypress.Commands.add("shouldHaveValue", (element, value) => {
@@ -351,7 +326,6 @@ Cypress.Commands.add("shouldHaveValue", (element, value) => {
                 expected: value,
                 actual: $el.val()
             });
-
         });
 });
 
@@ -366,7 +340,6 @@ Cypress.Commands.add("shouldUrlInclude", (url) => {
                 expected: url,
                 actual
             });
-
         });
 
 });
@@ -385,7 +358,6 @@ Cypress.Commands.add('elementExists', (selector, { parent = 'body' } = {}) => {
 });
 
 Cypress.Commands.add("shouldBeExist", (element) => {
-
     cy.getElement(element)
         .should('exist')
         .then(() => {
@@ -393,12 +365,10 @@ Cypress.Commands.add("shouldBeExist", (element) => {
             setDebugContext({
                 assertion: 'exist'
             });
-
         });
 });
 
 Cypress.Commands.add("shouldNotExist", (element) => {
-
     cy.getElement(element)
         .should('not.exist')
         .then(() => {
@@ -406,7 +376,6 @@ Cypress.Commands.add("shouldNotExist", (element) => {
             setDebugContext({
                 assertion: 'not exist'
             });
-
         });
 });
 
