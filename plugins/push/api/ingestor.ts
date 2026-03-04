@@ -1,12 +1,19 @@
-const { onTokenSession } = require('./api-push');
-const plugins = require('../../pluginManager');
-const platforms = require("./new/constants/platform-keymap.ts").default;
-const ALL_PLATFORM_KEYS = Object.keys(platforms);
-const { guessThePlatformFromUserAgentHeader } = require("./new/lib/utils.js");
-const { autoOnEvent } = require('./api-auto.ts');
-const common = require('../../../api/utils/common');
+import { onTokenSession } from './api-push.ts';
+import platforms from "./new/constants/platform-keymap.ts";
+import { guessThePlatformFromUserAgentHeader } from "./new/lib/utils.ts";
+import { autoOnEvent } from './api-auto.ts';
+import { loadKafka, setupProducer } from './new/lib/kafka.ts';
+
+import { createRequire } from 'module';
+
+// createRequire needed for CJS modules without ES exports
+// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
+const require = createRequire(import.meta.url);
+const plugins: any = require('../../pluginManager.ts');
+const common: any = require('../../../api/utils/common');
 const log = common.log('push:ingestor');
-const { loadKafka, setupProducer } = require('./new/lib/kafka.ts');
+
+const ALL_PLATFORM_KEYS = Object.keys(platforms);
 
 (async() => {
     try {
@@ -14,7 +21,7 @@ const { loadKafka, setupProducer } = require('./new/lib/kafka.ts');
         await setupProducer(kafkaInstance, Partitioners.DefaultPartitioner);
         log.i("Kafka producer for push notifications set up successfully.");
 
-        plugins.register('/sdk/process_request', async ob => {
+        plugins.register('/sdk/process_request', async(ob: any) => {
             const params = ob.params;
             const qstring = params?.qstring;
             const appUser = params?.app_user;
@@ -25,13 +32,13 @@ const { loadKafka, setupProducer } = require('./new/lib/kafka.ts');
 
             if (Array.isArray(qstring?.events)) {
                 let events = qstring.events,
-                    keys = events.map(e => e.key);
-                keys = keys.filter((k, i) => keys.indexOf(k) === i);
+                    keys = events.map((e: any) => e.key);
+                keys = keys.filter((k: any, i: any) => keys.indexOf(k) === i);
 
                 autoOnEvent(params.app_id, appUser.uid, keys, events);
 
                 let push = events.filter(
-                    e => e.key
+                    (e: any) => e.key
                         && e.key.indexOf('[CLY]_push_action') === 0
                         && e.segmentation
                         && e.segmentation.i
@@ -40,12 +47,12 @@ const { loadKafka, setupProducer } = require('./new/lib/kafka.ts');
 
                 if (push.length) {
                     try {
-                        let ids = push.map(e => common.db.ObjectID(e.segmentation.i)),
+                        let ids = push.map((e: any) => common.db.ObjectID(e.segmentation.i)),
                             msgs = await common.db.collection('messages').find({ _id: { $in: ids } }).toArray(),
-                            updates = {};
+                            updates: any = {};
                         for (let i = 0; i < push.length; i++) {
                             let event = push[i],
-                                msg = msgs.filter(m => m._id.toString() === event.segmentation.i)[0],
+                                msg = msgs.filter((m: any) => m._id.toString() === event.segmentation.i)[0],
                                 count = parseInt(event.count, 10);
                             if (!msg || count !== 1) {
                                 log.i(
@@ -63,8 +70,8 @@ const { loadKafka, setupProducer } = require('./new/lib/kafka.ts');
 
                             const language = appUser.la;
                             let p = event.segmentation.p,
-                                a = msg.triggers.filter(tr => tr.kind === 'cohort' || tr.kind === 'event').length > 0,
-                                t = msg.triggers.filter(tr => tr.kind === 'api').length > 0,
+                                a = msg.triggers.filter((tr: any) => tr.kind === 'cohort' || tr.kind === 'event').length > 0,
+                                t = msg.triggers.filter((tr: any) => tr.kind === 'api').length > 0,
                                 msgId = msg._id.toString(),
                                 upd = updates[msgId];
                             if (upd) {
@@ -107,7 +114,7 @@ const { loadKafka, setupProducer } = require('./new/lib/kafka.ts');
 
                         await Promise.all(
                             Object.keys(updates).map(
-                                mid => common.db
+                                (mid: any) => common.db
                                     .collection('messages')
                                     .updateOne(
                                         { _id: common.db.ObjectID(mid) },

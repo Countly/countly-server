@@ -6,7 +6,7 @@
  */
 
 const { Job } = require('../../../../jobServer/index.js');
-const { loadPluginConfiguration } = require("../new/lib/utils.js");
+const { loadPluginConfiguration } = require("../new/lib/utils.ts");
 
 /**
  * Job to clear old message results based on TTL configuration.

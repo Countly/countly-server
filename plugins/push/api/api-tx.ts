@@ -1,20 +1,16 @@
-/**
- * @typedef {import("./new/types/message").Message} Message
- * @typedef {import("mongodb").Collection<Message>} MessageCollection
- * @typedef {import('../../../types/requestProcessor').Params} Params
- */
+import { createSchedule } from "./new/scheduler.ts";
+import { zodValidate } from "./new/lib/utils.ts";
+import { ApiPushSchema } from "./new/types/message.ts";
+import { ValidationError } from "./new/lib/error.ts";
+import { createRequire } from 'module';
 
-const common = require("../../../api/utils/common");
+// @ts-expect-error TS1470
+const require = createRequire(import.meta.url);
+const common: any = require("../../../api/utils/common");
 const log = common.log("push:api:tx");
-const { createSchedule } = require("./new/scheduler.ts");
-const { zodValidate } = require("./new/lib/utils.ts");
-const { ApiPushSchema } = require("./new/types/message.ts");
-const { ValidationError } = require("./new/lib/error.ts");
 
 /**
  * Add notification to API message
- *
- * @param {Params} params params object
  *
  * @api {POST} i/push/message/push Message / API / add users
  * @apiName message push
@@ -48,12 +44,11 @@ const { ValidationError } = require("./new/lib/error.ts");
  *          "errors": ["Message start date is later than start date"]
  *      }
  */
-module.exports.apiPush = async(params) => {
+export async function apiPush(params: any) {
     let data = zodValidate(ApiPushSchema, params.qstring);
     if (!data.result) {
         throw new ValidationError(data.errors);
     }
-    /** @type {MessageCollection} */
     const collection = common.db.collection("messages");
     const message = await collection.findOne({
         _id: data.obj._id,
@@ -64,7 +59,7 @@ module.exports.apiPush = async(params) => {
             errors: ["Message not found"]
         });
     }
-    const trigger = message.triggers.find((t) => t.kind === "api");
+    const trigger = message.triggers.find((t: any) => t.kind === "api");
     if (!trigger) {
         return common.returnMessage(params, 400, {
             errors: ["Message is not transactional"]
@@ -94,10 +89,10 @@ module.exports.apiPush = async(params) => {
         );
         common.returnOutput(params, { schedule });
     }
-    catch (err) {
+    catch (err: any) {
         log.e("Error while scheduling the message", err);
         return common.returnMessage(params, 500, {
             errors: "Error while scheduling the message: " + err.message
         });
     }
-};
+}

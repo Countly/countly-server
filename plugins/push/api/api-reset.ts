@@ -1,10 +1,12 @@
-/**
- * @typedef {{ appId: ObjectId|string|undefined; }} ResetClearArg
- */
-const common = require('../../../api/utils/common');
-const { PushError } = require("./new/lib/error.ts");
-const platforms = require("./new/constants/platform-keymap.ts").default;
-const { ObjectId } = require("mongodb");
+import { ObjectId } from "mongodb";
+import { PushError } from "./new/lib/error.ts";
+import platforms from "./new/constants/platform-keymap.ts";
+import { createRequire } from 'module';
+
+// @ts-expect-error TS1470
+const require = createRequire(import.meta.url);
+const common: any = require('../../../api/utils/common');
+
 const allAppUserFields = [...new Set(
     Object.values(platforms)
         .map(platform => platform.combined)
@@ -12,12 +14,7 @@ const allAppUserFields = [...new Set(
         .map(combined => `tk${combined}`)
 )];
 
-/**
- * Reset the app by removing all push artifacts
- *
- * @param {ResetClearArg} ob ob
- */
-async function reset(ob) {
+async function reset(ob: any) {
     if (!ob?.appId) {
         return;
     }
@@ -26,9 +23,9 @@ async function reset(ob) {
         common.db.collection('messages').deleteMany({app: aid}).catch(() => {}),
         common.db.collection('push').deleteMany({a: aid}).catch(() => {}),
         common.db.collection(`push_${aid}`).drop().catch(() => {}),
-        common.db.collection('apps').findOne({_id: aid}).catch(() => {}).then(app => {
+        common.db.collection('apps').findOne({_id: aid}).catch(() => {}).then((app: any) => {
             if (app && app.plugins && app.plugins.push) {
-                return Promise.all(Object.values(app.plugins.push).map(async cfg => {
+                return Promise.all(Object.values(app.plugins.push).map(async(cfg: any) => {
                     if (cfg && cfg._id) {
                         return common.db.collection('creds').deleteOne({_id: cfg._id});
                     }
@@ -40,12 +37,7 @@ async function reset(ob) {
     ]);
 }
 
-/**
- * Reset the app by removing all push data (clear queue for the app, remove messages and remove tokens while leaving credentials)
- *
- * @param {ResetClearArg} ob ob
- */
-async function clear(ob) {
+async function clear(ob: any) {
     if (!ob?.appId) {
         return;
     }
@@ -57,19 +49,8 @@ async function clear(ob) {
     ]);
 }
 
-/**
- * Remove push data for given users
- *
- * @param {string|ObjectID} appId app id
- * @param {string[]} uids user uids to remove
- * @param {string} error error code (consent is default)
- */
-async function removeUsers(appId, uids, error = 'consent') {
-    /**
-     * @type {{[key: string]: 1}}
-     * @example { "tkap": 1, "tkhp": 1, "tkip": 1, "tkid": 1, "tkia": 1 }
-     */
-    const $unset = Object.fromEntries(allAppUserFields.map(field => [field, 1]));
+async function removeUsers(appId: string | ObjectId, uids: string[], error: string = 'consent') {
+    const $unset: Record<string, 1> = Object.fromEntries(allAppUserFields.map(field => [field, 1]));
     await common.db.collection(`app_users${appId}`).updateMany({uid: {$in: uids}}, {$unset});
 
     if (error === 'consent') {
@@ -83,4 +64,4 @@ async function removeUsers(appId, uids, error = 'consent') {
     }
 }
 
-module.exports = { reset, clear, removeUsers };
+export { reset, clear, removeUsers };

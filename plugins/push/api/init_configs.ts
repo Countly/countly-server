@@ -1,10 +1,15 @@
-var plugins = require('../../pluginManager.ts');
+import { createRequire } from 'module';
+
+// @ts-expect-error TS1470
+const require = createRequire(import.meta.url);
+const plugins: any = require('../../pluginManager.ts');
+
 const FEATURE_NAME = 'push';
 plugins.internalEvents.push('[CLY]_push_sent');
 plugins.internalEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_sent');
 plugins.internalDrillEvents.push('[CLY]_push_action');
-plugins.register("/permissions/features", function(ob) {
+plugins.register("/permissions/features", function(ob: any) {
     ob.features.push(FEATURE_NAME);
 });
 plugins.setConfigs(FEATURE_NAME, {

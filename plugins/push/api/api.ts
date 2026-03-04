@@ -1,54 +1,53 @@
-/**
- * @typedef {import("mongodb").Db} MongoDb
- * @typedef {import("./new/types/queue.ts").PushEventHandler} PushEventHandler
- * @typedef {import("./new/types/queue.ts").ScheduleEventHandler} ScheduleEventHandler
- * @typedef {import("./new/types/queue.ts").ResultEventHandler} ResultEventHandler
- */
-const plugins = require('../../pluginManager.ts'),
-    common = require('../../../api/utils/common.js'),
-    log = common.log('push:api'),
-    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
-    { onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push.js'),
-    { autoOnCohort, /*autoOnCohortDeletion,*/ } = require('./api-auto.ts'),
-    { apiPush } = require('./api-tx.js'),
-    { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill.js'),
-    { estimate, test, create, update, toggle, remove, all, one, mime, user, periodicStats } = require('./api-message.js'),
-    { dashboard } = require('./api-dashboard.js'),
-    { clear, reset, removeUsers } = require('./api-reset.js'),
-    FEATURE_NAME = 'push',
-    PUSH = {
-        FEATURE_NAME
-    },
-    apis = {
-        o: {
-            dashboard: [validateRead, dashboard],
-            mime: [validateRead, mime],
-            message: {
-                estimate: [validateRead, estimate],
-                all: [validateRead, all],
-                GET: [validateRead, one, '_id'],
-                stats: [validateRead, periodicStats],
-            },
-            user: [validateRead, user],
-        },
-        i: {
-            message: {
-                test: [validateCreate, test],
-                create: [validateCreate, create],
-                update: [validateUpdate, update],
-                toggle: [validateUpdate, toggle],
-                remove: [validateDelete, remove],
-                push: [validateUpdate, apiPush],
-            }
-        }
-    };
+import { onSessionUser, onAppPluginsUpdate, onMerge } from './api-push.ts';
+import { autoOnCohort } from './api-auto.ts';
+import { apiPush } from './api-tx.ts';
+import { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } from './api-drill.ts';
+import { estimate, test, create, update, toggle, remove, all, one, mime, user, periodicStats } from './api-message.ts';
+import { dashboard } from './api-dashboard.ts';
+import { clear, reset, removeUsers } from './api-reset.ts';
+import { ValidationError, PushError } from './new/lib/error.ts';
+import { initPushQueue, loadKafka } from './new/lib/kafka.ts';
+import { composeAllScheduledPushes } from './new/composer.ts';
+import { sendAllPushes } from './new/sender.ts';
+import { saveResults } from './new/resultor.ts';
+import { scheduleMessageByAutoTriggers } from './new/scheduler.ts';
+import { createRequire } from 'module';
 
-const { ValidationError, PushError } = require('./new/lib/error.ts');
-const { initPushQueue, loadKafka } = require("./new/lib/kafka.ts");
-const { composeAllScheduledPushes } = require('./new/composer.ts');
-const { sendAllPushes } = require('./new/sender.ts');
-const { saveResults } = require("./new/resultor.ts");
-const { scheduleMessageByAutoTriggers } = require("./new/scheduler.ts");
+// @ts-expect-error TS1470
+const require = createRequire(import.meta.url);
+const plugins: any = require('../../pluginManager.ts');
+const common: any = require('../../../api/utils/common.js');
+const log = common.log('push:api');
+const { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'push';
+const PUSH = {
+    FEATURE_NAME
+};
+
+const apis: any = {
+    o: {
+        dashboard: [validateRead, dashboard],
+        mime: [validateRead, mime],
+        message: {
+            estimate: [validateRead, estimate],
+            all: [validateRead, all],
+            GET: [validateRead, one, '_id'],
+            stats: [validateRead, periodicStats],
+        },
+        user: [validateRead, user],
+    },
+    i: {
+        message: {
+            test: [validateCreate, test],
+            create: [validateCreate, create],
+            update: [validateUpdate, update],
+            toggle: [validateUpdate, toggle],
+            remove: [validateDelete, remove],
+            push: [validateUpdate, apiPush],
+        }
+    }
+};
 
 plugins.register("/master", async function() {
     try {
@@ -56,10 +55,10 @@ plugins.register("/master", async function() {
         await initPushQueue(
             kafkaInstance,
             Partitioners.DefaultPartitioner,
-            pushes => sendAllPushes(pushes),
-            schedules => composeAllScheduledPushes(common.db, schedules),
-            results => saveResults(common.db, results),
-            autoTriggerEvents => scheduleMessageByAutoTriggers(common.db, autoTriggerEvents),
+            (pushes: any) => sendAllPushes(pushes),
+            (schedules: any) => composeAllScheduledPushes(common.db, schedules),
+            (results: any) => saveResults(common.db, results),
+            (autoTriggerEvents: any) => scheduleMessageByAutoTriggers(common.db, autoTriggerEvents),
         );
         log.i("Push queue initialized successfully");
     }
@@ -71,11 +70,11 @@ plugins.register("/master", async function() {
 /**
  * Handy function for handling api calls (see apis obj above)
  *
- * @param {object} apisObj - apis.i or apis.o
- * @param {object} ob - object from pluginManager ({params, qstring, ...})
- * @returns {true|undefined} true - if the call has been handled
+ * @param apisObj - apis.i or apis.o
+ * @param ob - object from pluginManager
+ * @returns true - if the call has been handled
  */
-function apiCall(apisObj, ob) {
+function apiCall(apisObj: any, ob: any): true | undefined {
     let {params, paths} = ob,
         method = paths[3],
         sub = paths[4];
@@ -112,14 +111,14 @@ function apiCall(apisObj, ob) {
 /**
  * Wrap push endpoint catching any push-specific errors from it
  *
- * @param {string} method endpoint name
- * @param {function} fn actual endpoint returning a promise
- * @returns {function} CRUD callback
+ * @param method endpoint name
+ * @param fn actual endpoint returning a promise
+ * @returns CRUD callback
  */
-function endpoint(method, fn) {
-    return params => fn(params).catch(e => {
+function endpoint(method: string, fn: (params: any) => Promise<any>) {
+    return (params: any) => fn(params).catch((e: any) => {
         log.e('Error during API request /%s', method, e);
-        let errors = ['Server Error'];
+        let errors: string[] = ['Server Error'];
         let name = 'ServerError';
 
         if (e instanceof PushError) {
@@ -138,13 +137,12 @@ function endpoint(method, fn) {
 plugins.register('/session/user', onSessionUser);
 
 // API
-plugins.register('/i/push', ob => apiCall(apis.i, ob));
-plugins.register('/o/push', ob => apiCall(apis.o, ob));
+plugins.register('/i/push', (ob: any) => apiCall(apis.i, ob));
+plugins.register('/o/push', (ob: any) => apiCall(apis.o, ob));
 
 // Cohort hooks for cohorted auto push
-plugins.register('/cohort/enter', ({cohort, uids}) => autoOnCohort(true, cohort, uids));
-plugins.register('/cohort/exit', ({cohort, uids}) => autoOnCohort(false, cohort, uids));
-// plugins.register('/cohort/delete', ({_id, ack}) => autoOnCohortDeletion(_id, ack));
+plugins.register('/cohort/enter', ({cohort, uids}: any) => autoOnCohort(true, cohort, uids));
+plugins.register('/cohort/exit', ({cohort, uids}: any) => autoOnCohort(false, cohort, uids));
 
 // Drill hooks for user profiles
 plugins.register('/drill/add_push_events', drillAddPushEvents);
@@ -159,15 +157,15 @@ plugins.register('/i/apps/update/plugins/push', onAppPluginsUpdate);
 plugins.register('/i/apps/reset', reset);
 plugins.register('/i/apps/clear_all', clear);
 plugins.register('/i/apps/delete', reset);
-plugins.register('/i/app_users/delete', async({app_id, uids}) => {
+plugins.register('/i/app_users/delete', async({app_id, uids}: any) => {
     await removeUsers(app_id, uids, 'purge');
 });
-plugins.register('/consent/change', ({params, changes}) => {
+plugins.register('/consent/change', ({params, changes}: any) => {
     if (changes && changes.push === false && params.app_id && params.app_user && params.app_user.uid !== undefined) {
         return removeUsers(params.app_id, [params.app_user.uid], 'consent');
     }
 });
-plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs, export_folder}) => {
+plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs, export_folder}: any) => {
     if (uids && uids.length) {
         if (!export_commands.push) {
             export_commands.push = [{cmd: 'mongoexport', args: [...dbargs, '--collection', `push_${app_id}`, '-q', `{"_id": {"$in": ${JSON.stringify(uids)}}}`, '--out', `${export_folder}/push_${app_id}.json`]}];
@@ -332,4 +330,4 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiSuccess {Boolean} [info.demo] Whether the message was created using populator plugin
  */
 
-module.exports = PUSH;
+export default PUSH;

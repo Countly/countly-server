@@ -1,26 +1,28 @@
-/**
- * @typedef {import('./new/types/credentials').PlatformCredential} PlatformCredential
- * @typedef {import('./new/types/message').PlatformKey} PlatformKey
- */
-/* eslint-disable no-inner-declarations */
-const common = require('../../../api/utils/common');
+import type { PlatformKey } from './new/types/message.ts';
+import { DBMAP_MESSAGING_ENABLED } from './new/constants/configs.ts';
+import { ValidationError } from "./new/lib/error.ts";
+import { validateCredentials as validateAndroidCredentials } from "./new/platforms/android.ts";
+import { validateCredentials as validateIOSCredentials } from "./new/platforms/ios.ts";
+import { validateCredentials as validateHuaweiCredentials } from "./new/platforms/huawei.ts";
+import { extractTokenFromQuerystring, loadPluginConfiguration } from './new/lib/utils.ts';
+import platforms from "./new/constants/platform-keymap.ts";
+import { createRequire } from 'module';
+
+// createRequire needed for CJS modules without ES exports
+// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
+const require = createRequire(import.meta.url);
+const common: any = require('../../../api/utils/common');
 const log = common.log('push:api:push');
-const { DBMAP_MESSAGING_ENABLED } = require('./new/constants/configs.ts');
-const { ValidationError } = require("./new/lib/error.ts");
-const { validateCredentials: validateAndroidCredentials } = require("./new/platforms/android.ts");
-const { validateCredentials: validateIOSCredentials } = require("./new/platforms/ios.ts");
-const { validateCredentials: validateHuaweiCredentials } = require("./new/platforms/huawei.ts");
-const { extractTokenFromQuerystring, loadPluginConfiguration } = require('./new/lib/utils.ts');
-const platforms = require("./new/constants/platform-keymap.ts").default;
-const platformKeys = /** @type {PlatformKey[]} */(Object.keys(platforms));
+
+const platformKeys = Object.keys(platforms) as PlatformKey[];
 const allAppUserFields = [...new Set(
     Object.values(platforms)
-        .map(platform => platform.combined)
+        .map((platform: any) => platform.combined)
         .flat()
-        .map(combined => `tk${combined}`)
+        .map((combined: any) => `tk${combined}`)
 )];
 
-module.exports.onTokenSession = async(dbAppUser, params) => {
+export async function onTokenSession(dbAppUser: any, params: any) {
     let stuff = extractTokenFromQuerystring(params.qstring);
     if (stuff) {
         const [p, f, token, hash] = stuff;
@@ -39,24 +41,24 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
             appusersCollection.updateOne({_id: app_user_id}, {$set: {[appusersField]: hash}}, () => {}); // don't wait
             pushCollection.updateOne({_id: uid}, {$set: {[pushField]: token}}, {upsert: true}, () => {});
 
-            appusersCollection.find({[appusersField]: hash, _id: {$ne: app_user_id}}, {uid: 1}).toArray(function(err, docs) {
+            appusersCollection.find({[appusersField]: hash, _id: {$ne: app_user_id}}, {uid: 1}).toArray(function(err: any, docs: any) {
                 if (err) {
                     log.e('Failed to look for same tokens', err);
                 }
                 else if (docs && docs.length) {
                     log.d('Found %d hash duplicates for token %s', docs.length, token);
                     // the hash is 32 bit, not enough randomness for strict decision to unset tokens, comparing actual token strings
-                    pushCollection.find({_id: {$in: docs.map(d => d.uid)}}, {[`tk.${p + f}`]: 1}).toArray(function(err2, pushes) {
+                    pushCollection.find({_id: {$in: docs.map((d: any) => d.uid)}}, {[`tk.${p + f}`]: 1}).toArray(function(err2: any, pushes: any) {
                         if (err2) {
                             log.e('Failed to look for same tokens', err2);
                         }
                         else if (pushes && pushes.length) {
-                            pushes = pushes.filter(user => user._id !== uid && user.tk[p + f] === token);
+                            pushes = pushes.filter((user: any) => user._id !== uid && user.tk[p + f] === token);
                             if (pushes.length) {
-                                log.d('Unsetting same tokens (%s) for users %j', token, pushes.map(x => x._id));
+                                log.d('Unsetting same tokens (%s) for users %j', token, pushes.map((x: any) => x._id));
 
-                                appusersCollection.updateMany({uid: {$in: pushes.map(x => x._id)}}, {$unset: {[appusersField]: 1}}, () => {});
-                                pushCollection.updateOne({_id: {$in: pushes.map(x => x._id)}}, {$unset: {[pushField]: 1}}, () => {});
+                                appusersCollection.updateMany({uid: {$in: pushes.map((x: any) => x._id)}}, {$unset: {[appusersField]: 1}}, () => {});
+                                pushCollection.updateOne({_id: {$in: pushes.map((x: any) => x._id)}}, {$unset: {[pushField]: 1}}, () => {});
                             }
                         }
                     });
@@ -64,7 +66,7 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
             });
 
             setTimeout(() => {
-                common.db.collection(`app_users${app_id}`).findOne({_id: app_user_id}, {projection: {_id: 1}}, (er, user) => {
+                common.db.collection(`app_users${app_id}`).findOne({_id: app_user_id}, {projection: {_id: 1}}, (er: any, user: any) => {
                     if (er) {
                         log.e('Error while loading user', er);
                     }
@@ -76,13 +78,13 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
             }, 10000);
         }
     }
-};
+}
 
-module.exports.onSessionUser = ({params, dbAppUser}) => {
+export function onSessionUser({params, dbAppUser}: {params: any, dbAppUser: any}) {
     if (dbAppUser && dbAppUser[common.dbUserMap.first_seen]) {
         let hasTokens = false,
-            platfs = [];
-        allAppUserFields.forEach(f => {
+            platfs: any[] = [];
+        allAppUserFields.forEach((f: any) => {
             if (dbAppUser[f]) {
                 hasTokens = true;
                 platfs.push(f.substring(0, 1));
@@ -95,8 +97,8 @@ module.exports.onSessionUser = ({params, dbAppUser}) => {
 
         platfs = platfs.filter((p, i) => platfs.indexOf(p) === i);
 
-        let updateUsersZero = {},
-            updateUsersMonth = {},
+        let updateUsersZero: any = {},
+            updateUsersMonth: any = {},
             dbDateIds = common.getDateIds(params),
             userLastSeenTimestamp = dbAppUser[common.dbUserMap.last_seen],
             currDate = common.getDate(params.time.timestamp, params.appTimezone),
@@ -141,9 +143,9 @@ module.exports.onSessionUser = ({params, dbAppUser}) => {
             common.writeBatcher.add('users', params.app_id + '_' + dbDateIds.month + '_' + postfix, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth});
         }
     }
-};
+}
 
-module.exports.onAppPluginsUpdate = async({params, app, config}) => {
+export async function onAppPluginsUpdate({params, app, config}: {params: any, app: any, config: any}) {
     log.d('Updating app %s config: %j', app._id, config);
     if (!app.plugins) {
         app.plugins = {};
@@ -172,7 +174,6 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
         }
         // new credentials
         else if (c && c.type && !c.hash) {
-            /** @type {Array<PlatformCredential["type"]>} */
             const credentialTypes = ["apn_token", "apn_universal", "fcm", "hms"];
             if (credentialTypes.includes(c.type)) {
                 let creds, view;
@@ -201,7 +202,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
                         $set: { [`plugins.push.${p}`]: view }
                     });
                 }
-                catch (error) {
+                catch (error: any) {
                     log.e("error while updating credentials", error);
                     throw new ValidationError(error.message || 'Invalid credentials');
                 }
@@ -213,7 +214,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
     }
 
     if (config.rate !== undefined) {
-        let update = {};
+        let update: any = {};
         if (config.rate) {
             pushcfg.rate = pushcfg.rate || {};
             config.rate.rate = config.rate.rate ? parseInt(config.rate.rate, 10) : 0;
@@ -247,18 +248,18 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
     }
 
     if (config.test !== undefined) {
-        let uids = [], cohorts = [];
+        let uids: any = [], cohorts: any = [];
         if (config.test && config.test.uids) {
             uids = await common.db.collection(`app_users${app._id}`).find({uid: {$in: config.test.uids.split(',')}}, {uid: 1}).toArray();
-            uids = uids.map(u => u.uid).join(',');
+            uids = uids.map((u: any) => u.uid).join(',');
         }
 
         if (config.test && config.test.cohorts) {
             cohorts = await common.db.collection(`cohorts`).find({app_id: app._id.toString(), _id: {$in: config.test.cohorts.split(',')}}, {_id: 1}).toArray();
-            cohorts = cohorts.map(c => c._id).join(',');
+            cohorts = cohorts.map((c: any) => c._id).join(',');
         }
 
-        let update = {};
+        let update: any = {};
         if (cohorts.length || uids.length) {
             pushcfg.test = pushcfg.test || {};
             if (uids.length) {
@@ -291,26 +292,26 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
     if (old !== neo) {
         common.plugins.dispatch('/systemlogs', {params: params, action: 'plugin_push_config_updated', data: {before: JSON.parse(old), after: JSON.parse(neo)}});
     }
-};
+}
 
-module.exports.onMerge = ({app_id, oldUser, newUser}) => {
+export function onMerge({app_id, oldUser, newUser}: {app_id: any, oldUser: any, newUser: any}) {
     let ouid = oldUser.uid,
         nuid = newUser.uid;
 
     if (ouid && nuid) {
         return new Promise(function(resolve, reject) {
             log.d(`Merging push data of ${ouid} into ${nuid}`);
-            common.db.collection(`push_${app_id}`).find({_id: {$in: [ouid, nuid]}}).toArray((err, users) => {
+            common.db.collection(`push_${app_id}`).find({_id: {$in: [ouid, nuid]}}).toArray((err: any, users: any) => {
                 if (err || !users) {
                     log.e('Couldn\'t load users to merge', err);
                     reject();
                     return;
                 }
 
-                let ou = users.filter(u => u._id === ouid)[0],
-                    nu = users.filter(u => u._id === nuid)[0],
-                    update = {},
-                    opts = {};
+                let ou = users.filter((u: any) => u._id === ouid)[0],
+                    nu = users.filter((u: any) => u._id === nuid)[0],
+                    update: any = {},
+                    opts: any = {};
 
                 if (ou && nu) {
                     log.d('Merging %j into %j', ou, nu);
@@ -322,10 +323,10 @@ module.exports.onMerge = ({app_id, oldUser, newUser}) => {
                         }
                     }
                     if (ou.msgs && ou.msgs.length) {
-                        let ids = nu.msgs && nu.msgs.map(m => m[0].toString()) || [],
-                            msgs = [];
+                        let ids = nu.msgs && nu.msgs.map((m: any) => m[0].toString()) || [],
+                            msgs: any[] = [];
 
-                        ou.msgs.forEach(m => {
+                        ou.msgs.forEach((m: any) => {
                             if (ids.indexOf(m[0].toString()) === -1) {
                                 msgs.push(m);
                             }
@@ -356,19 +357,19 @@ module.exports.onMerge = ({app_id, oldUser, newUser}) => {
                 }
                 if (ou) {
                     log.d('Removing old push data for %s', ouid);
-                    common.db.collection(`push_${app_id}`).deleteOne({_id: ouid}, e => e && log.e('Error while deleting old uid push data', e));
+                    common.db.collection(`push_${app_id}`).deleteOne({_id: ouid}, (e: any) => e && log.e('Error while deleting old uid push data', e));
                 }
                 if (Object.keys(update).length) {
                     log.d('Updating push data for %s: %j', nuid, update);
-                    common.db.collection(`push_${app_id}`).updateOne({_id: nuid}, update, opts, function(ee) {
+                    common.db.collection(`push_${app_id}`).updateOne({_id: nuid}, update, opts, function(ee: any) {
                         if (ee) {
                             log.e('Error while updating new uid with push data', ee);
                             reject();
                         }
                         else {
-                            resolve();
+                            resolve(undefined);
                             setTimeout(() => {
-                                common.db.collection(`app_users${app_id}`).findOne({_id: newUser._id}, (er, user) => {
+                                common.db.collection(`app_users${app_id}`).findOne({_id: newUser._id}, (er: any, user: any) => {
                                     if (er) {
                                         log.e('Error while loading user', er);
                                     }
@@ -382,9 +383,9 @@ module.exports.onMerge = ({app_id, oldUser, newUser}) => {
                     });
                 }
                 else {
-                    resolve();
+                    resolve(undefined);
                 }
             });
         });
     }
-};
+}

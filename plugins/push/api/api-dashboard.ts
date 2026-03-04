@@ -1,56 +1,35 @@
-/**
- * @typedef {import("./new/types/message").PlatformKey} PlatformKey
- * @typedef {import('../../../types/requestProcessor').Params} Params
- */
+import type { PlatformKey } from "./new/types/message.ts";
+import { isProducerInitialized, verifyKafka } from "./new/lib/kafka.ts";
+import platforms from "./new/constants/platform-keymap.ts";
+import { createRequire } from 'module';
+import crypto from 'crypto';
+import moment from 'moment-timezone';
 
-const common = require('../../../api/utils/common');
-const crypto = require('crypto');
-const moment = require('moment-timezone');
+// @ts-expect-error TS1470
+const require = createRequire(import.meta.url);
+const common: any = require('../../../api/utils/common');
 const log = common.log('push:api:dashboard');
-const { isProducerInitialized, verifyKafka } = require("./new/lib/kafka.ts");
-const platforms = require("./new/constants/platform-keymap.ts").default;
-const platformKeys = /** @type {PlatformKey[]} */(Object.keys(platforms));
 
-/**
- * Add chart data from from to to
- * @param {object} from from obj
- * @param {object} to to obj
- */
-function add(from, to) {
-    from.data.forEach((n, i) => {
+const platformKeys = Object.keys(platforms) as PlatformKey[];
+
+function add(from: any, to: any) {
+    from.data.forEach((n: any, i: any) => {
         to.data[i] += n;
     });
 }
 
-/**
- * Generate event ids for event docs query
- * @param {string} event event name
- * @param {string} app_id application id
- * @param {number} agy ago year
- * @param {number} agm ago month
- * @param {number} noy now year
- * @param {number[]} mts month numbers array
- * @param {number} nom now month
- * @returns {string[]} event doc ids
- */
-function eventIdFilter(event, app_id, agy, agm, noy, mts, nom) {
+function eventIdFilter(event: string, app_id: string, agy: number, agm: number, noy: number, mts: number[], nom: number): string[] {
     const eventHash = crypto
         .createHash('sha1')
         .update(common.fixEventKey(event) + app_id)
         .digest('hex');
     const prefix = app_id + "_" + eventHash + "_";
-    /**
-     * Generate ids of event docs
-     * @param {string} seg segment name
-     * @param {string} val segment value
-     * @returns {string[]} event doc ids
-     */
-    const ids = (seg, val) => ([
+    const ids = (seg: string, val: string) => ([
         prefix + seg + '_' + noy + ':' + (nom + 1) + '_' + crypto.createHash('md5').update(val + '').digest('base64')[0],
         prefix + seg + '_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + '_' + crypto.createHash('md5').update(val + '').digest('base64')[0]
     ]);
-    return mts.map((m, i) => prefix + 'no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m)
-        .concat(platformKeys.map(p => mts.map((m, i) => prefix + 'p_' + (agm + i >= 12 ? noy : agy) + ':' + m + '_' + crypto.createHash('md5').update(p).digest('base64')[0])).flat())
+    return mts.map((m: number, i: number) => prefix + 'no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m)
+        .concat(platformKeys.map(p => mts.map((m: number, i: number) => prefix + 'p_' + (agm + i >= 12 ? noy : agy) + ':' + m + '_' + crypto.createHash('md5').update(p).digest('base64')[0])).flat())
         .concat(ids('a', 'true'))
         .concat(ids('t', 'true'))
         .concat(platformKeys.map(p => ids('ap', 'true' + p)).flat())
@@ -59,8 +38,6 @@ function eventIdFilter(event, app_id, agy, agm, noy, mts, nom) {
 
 /**
  * Dashboard request handler
- *
- * @param {Params} params params object
  *
  * @api {get} o/push/dashboard Get dashboard data
  * @apiName dashboard
@@ -88,52 +65,10 @@ function eventIdFilter(event, app_id, agy, agm, noy, mts, nom) {
  * @apiSuccess {Object} platforms Map of platform key to platform title for all supported platforms
  * @apiSuccess {Object} tokens Map of token key to token title for all supported platforms / modes
  *
- * @apiSuccessExample {json} Success-Response
- *     HTTP/1.1 200 OK
- *     {
- *          sent: {
- *              total: 100,
- *              weekly: {
- *                  keys: ["W22", "W23", "W24"],
- *                  data: [0, 10, 2]
- *              },
- *              monthly: {
- *                  keys: ["2021 May", "2021 Jun", "2021 Jul"],
- *                  data: [0, 10, 2]
- *              },
- *              platforms: {
- *                  i: {total, weekly, monthly},
- *                  a: {total, weekly, monthly}
- *              }
- *          },
- *          sent_automated: { /* same as sent *\/ },
- *          sent_tx:  { /* same as sent *\/ },
- *          actions: { /* same as sent *\/ },
- *          actions_automated:  { /* same as sent *\/ },
- *          actions_tx:  { /* same as sent *\/ },
- *          enabled: {
- *              total: 100,
- *              i: 40,
- *              a: 60,
- *              h: 20
- *          },
- *          users: 200,
- *          platforms: {
- *              a: "Android",
- *              i: "iOS"
- *          },
- *          tokens: {
- *              tkap: "FCM Token",
- *              tkip: "APN Production Token",
- *              tkid: "APN Development Token",
- *              tkia: "APN AdHoc / TestFlight Token"
- *          }
- *      }
- *
  * @apiUse PushValidationError
  */
-module.exports.dashboard = async function(params) {
-    let app_id = common.validateArgs(params.qstring, {
+export async function dashboard(params: any) {
+    let app_id: any = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
     }, true);
     if (app_id.result) {
@@ -149,22 +84,20 @@ module.exports.dashboard = async function(params) {
         noy = not.getFullYear(),
         nom = not.getMonth(),
         nod = not.getDate(),
-        // now = mom.isoWeek(),
         ago = mom.clone().add(-365 * 24 * 3600 * 1000),
         agy = noy - 1,
         agm = nom,
         agd = nod,
-        // agw = ago.isoWeek(),
 
         // month numbers (Jan is 1)
         mts = [...Array(13).keys()].map((k, i) => ((agm + i) % 12) + 1),
         // week numbers
-        wks = [...new Set([...Array(common.getDaysInYear(agy)).keys()].map((k, i) => ago.clone().add(i * 24 * 3600 * 1000).isoWeek()))],
+        wks: any[] = [...new Set([...Array(common.getDaysInYear(agy)).keys()].map((k: any, i: any) => ago.clone().add(i * 24 * 3600 * 1000).isoWeek()))],
 
         // month titles for mts
         mtt = mts.map((m, i) => (i === 0 || m > mts[0] ? agy : noy) + ' ' + moment.localeData().monthsShort(moment([0, m - 1]), '')),
         // week titles for wks
-        wkt = wks.map(w => 'W' + w),
+        wkt: any[] = wks.map((w: any) => 'W' + w),
 
         // event docs query
         sentQuery = {
@@ -178,22 +111,18 @@ module.exports.dashboard = async function(params) {
 
         app = 'app_users' + app_id,
 
-        // platform token queries ({$or: [{tkip: true}, {tkia: true}, {tkid: true}]}, {$or: [{tkap: true}, {tkat: true}]})
-        ptq = [],
-
-        // any token query (same as above but $or of any token)
-        any = {$or: []},
-
+        ptq: any[] = [],
+        any_q: any = {$or: []},
         rxp = /([0-9]{4}):([0-9]{1,2})/;
 
     platformKeys.forEach(p => {
-        const filters = platforms[p].combined.map(combined => ({
+        const filters = platforms[p].combined.map((combined: string) => ({
             ["tk" + combined]: {
                 $exists: true
             }
         }));
         ptq.push({ $or: filters });
-        any.$or.push(...filters);
+        any_q.$or.push(...filters);
     });
 
     if (moment().isoWeek() === wks[0]) {
@@ -206,11 +135,11 @@ module.exports.dashboard = async function(params) {
     log.d('sentQuery', JSON.stringify(sentQuery));
     log.d('actionQuery', JSON.stringify(actionQuery));
     log.d('ptq', JSON.stringify(ptq));
-    log.d('any', JSON.stringify(any));
+    log.d('any', JSON.stringify(any_q));
 
     let results = await Promise.all(
-        ptq.map(q => common.dbPromise(app, 'count', q))
-            .concat([common.dbPromise(app, 'count', any)])
+        ptq.map((q: any) => common.dbPromise(app, 'count', q))
+            .concat([common.dbPromise(app, 'count', any_q)])
             .concat([
                 common.dbPromise("events_data", 'find', sentQuery),
                 common.dbPromise("events_data", 'find', actionQuery),
@@ -220,26 +149,26 @@ module.exports.dashboard = async function(params) {
 
     try {
         let counts = results.splice(0, ptq.length + 1),
-            enabled = {total: counts[counts.length - 1]};
+            enabled: any = {total: counts[counts.length - 1]};
 
         platformKeys.forEach((p, i) => {
             enabled[p] = counts[i] || 0;
         });
 
-        let events = results.slice(0, 2).map(events1 => {
-            let ret = {
+        let events = results.slice(0, 2).map((events1: any) => {
+            let ret: any = {
                     weekly: {data: Array(wks.length).fill(0), keys: wkt},
                     monthly: {data: Array(mts.length).fill(0), keys: mtt},
                     total: 0,
                     platforms: {}
                 },
-                retAuto = {
-                    daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)},
+                retAuto: any = {
+                    daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((_x: any, k: any) => k)},
                     total: 0,
                     platforms: {}
                 },
-                retTx = {
-                    daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)},
+                retTx: any = {
+                    daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((_x: any, k: any) => k)},
                     total: 0,
                     platforms: {}
                 };
@@ -251,23 +180,21 @@ module.exports.dashboard = async function(params) {
                     total: 0
                 };
                 retAuto.platforms[p] = {
-                    daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)},
+                    daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((_x: any, k: any) => k)},
                     total: 0
                 };
                 retTx.platforms[p] = {
-                    daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)},
+                    daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((_x: any, k: any) => k)},
                     total: 0
                 };
             });
 
-            // log.d('events', events);
-            events1.forEach(e => {
-                // log.d('event', e);
+            events1.forEach((e: any) => {
                 var par = e._id.match(rxp),
                     yer = parseInt(par[1], 10),
                     mon = parseInt(par[2], 10) - 1;
 
-                Object.keys(e.d).forEach(d => {
+                Object.keys(e.d).forEach((d: any) => {
                     d = parseInt(d, 10);
                     if (yer === agy && mon === agm && d < agd) {
                         return;
@@ -276,14 +203,12 @@ module.exports.dashboard = async function(params) {
                         return;
                     }
 
-                    // current week & month numbers are first and last in wks / mts arrays
                     var we = moment(new Date(yer, mon, d)).isoWeek(),
                         wi = wks[yer === agy ? 'indexOf' : 'lastIndexOf'](we),
                         mi = mts[yer === agy ? 'indexOf' : 'lastIndexOf'](mon + 1),
-                        date, diff, target;
+                        date: any, diff: any, target: any;
 
                     if (e.s === 'no-segment') {
-                        // log.d('%s / %d: %d', e.s, d, e.d[d].c);
                         ret.weekly.data[wi] += e.d[d].c;
                         ret.monthly.data[mi] += e.d[d].c;
                         ret.total += e.d[d].c;
@@ -378,7 +303,7 @@ module.exports.dashboard = async function(params) {
         });
 
         let isKafkaAvailable = true;
-        let errorMessage;
+        let errorMessage: string | undefined;
         try {
             verifyKafka();
         }
@@ -412,19 +337,19 @@ module.exports.dashboard = async function(params) {
             users: results[2] ? results[2] : 0,
             platforms: Object.fromEntries(
                 Object.entries(platforms)
-                    .map(([platformKey, { title }]) => [platformKey, title])
+                    .map(([platformKey, { title }]: [string, any]) => [platformKey, title])
             ),
             tokens: Object.fromEntries(Object.entries(platforms).map(
-                ([platformKey, { environmentTitles }]) => {
+                ([platformKey, { environmentTitles }]: [string, any]) => {
                     return Object.entries(environmentTitles)
-                        .map(([envKey, envTitle]) => [`tk${platformKey}${envKey}`, envTitle]);
+                        .map(([envKey, envTitle]: [string, any]) => [`tk${platformKey}${envKey}`, envTitle]);
                 }
             ).flat()),
         });
     }
-    catch (error) {
+    catch (error: any) {
         log.e(error, error.stack);
         common.returnMessage(params, 500, 'Error: ' + error);
     }
     return true;
-};
+}

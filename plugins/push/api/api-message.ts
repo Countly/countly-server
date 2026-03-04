@@ -1,36 +1,29 @@
-/**
- * @typedef {import("./new/types/message").PlatformKey} PlatformKey
- * @typedef {import("./new/types/message").Message} IMessage
- * @typedef {import("./new/types/schedule").Schedule} ISchedule
- * @typedef {IMessage["status"]|ISchedule["status"]} MessageStatus
- * @typedef {import("mongodb").Db} Db
- * @typedef {import("http").IncomingHttpHeaders} IncomingHttpHeaders
- * @typedef {{ url: string; status?: number; headers: IncomingHttpHeaders; }} MimeInfo
- * @typedef {import('../../../types/requestProcessor').Params} Params
- */
+import { ObjectId } from 'mongodb';
+import { zodValidate } from './new/lib/utils.ts';
+import { CreateMessageSchema, DraftMessageSchema } from './new/types/message.ts';
+import { buildResultObject } from './new/resultor.ts';
+import { scheduleIfEligible, DATE_TRIGGERS } from './new/scheduler.ts';
+import { buildUserAggregationPipeline, createPushStream, loadCredentials } from './new/composer.ts';
+import { loadPluginConfiguration, buildProxyUrl } from './new/lib/utils.ts';
+import { createTemplate } from './new/lib/template.ts';
+import { sendAllPushes } from './new/sender.ts';
+import platforms from './new/constants/platform-keymap.ts';
+import { PROXY_CONNECTION_TIMEOUT, MEDIA_MIME_TYPE_ALL, MEDIA_MAX_SIZE } from './new/constants/configs.ts';
+import { ValidationError } from './new/lib/error.ts';
+import { createRequire } from 'module';
+import crypto from 'crypto';
+import moment from 'moment-timezone';
+import { HttpProxyAgent } from 'http-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { URL } from 'node:url'
+import https from 'node:https'
+import http from 'node:http'
 
-const crypto = require('crypto');
-const common = require('../../../api/utils/common');
+// @ts-expect-error TS1470
+const require = createRequire(import.meta.url);
+const common: any = require('../../../api/utils/common');
 const log = common.log('push:api:message');
-const moment = require('moment-timezone');
-const { ObjectId } = require("mongodb");
-const { zodValidate } = require("./new/lib/utils.ts");
-const { CreateMessageSchema, DraftMessageSchema } = require("./new/types/message.ts");
-const { HttpProxyAgent } = require("http-proxy-agent");
-const { HttpsProxyAgent } = require("https-proxy-agent");
-const { URL } = require('node:url');
-const https = require("node:https");
-const http = require("node:http");
-const countlyFetch = require("../../../api/parts/data/fetch.js");
-const { buildResultObject } = require("./new/resultor.ts");
-const { scheduleIfEligible, DATE_TRIGGERS } = require("./new/scheduler.ts");
-const { buildUserAggregationPipeline, createPushStream, loadCredentials } = require("./new/composer.ts");
-const { loadPluginConfiguration, buildProxyUrl } = require("./new/lib/utils.ts");
-const { createTemplate } = require("./new/lib/template.ts");
-const { sendAllPushes } = require("./new/sender.ts");
-const platforms = require("./new/constants/platform-keymap.ts").default;
-const { PROXY_CONNECTION_TIMEOUT, MEDIA_MIME_TYPE_ALL, MEDIA_MAX_SIZE } = require("./new/constants/configs.ts");
-const { ValidationError } = require("./new/lib/error.ts");
+const countlyFetch: any = require("../../../api/parts/data/fetch.js");
 
 /** @type {Array<import("./new/types/message.ts").BaseTrigger["kind"]>} */
 const allTriggerKinds = ["api", "cohort", "event", "multi", "plain", "rec"];
@@ -42,7 +35,7 @@ const allTriggerKinds = ["api", "cohort", "event", "multi", "plain", "rec"];
  * @param {ISchedule=} lastSchedule - last schedule object
  * @returns {MessageStatus} message status to use
  */
-function getMessageStatus(message, lastSchedule) {
+function getMessageStatus(message: any, lastSchedule: any) {
     const trigger = message.triggers[0];
     const useMessage = !DATE_TRIGGERS.includes(trigger.kind) // if the trigger is not a date trigger
         || message.status !== "active" // if the message is not active
@@ -61,8 +54,8 @@ function getMessageStatus(message, lastSchedule) {
  * @throws {ValidationError} in case of error
  * @apiUse PushMessageBody
  */
-async function validate(args, draft = false) {
-    let msg;
+async function validate(args: any, draft = false) {
+    let msg: any;
     if (draft) {
         let data = zodValidate(DraftMessageSchema, args);
         if (data.result) {
@@ -104,14 +97,14 @@ async function validate(args, draft = false) {
             for (let p of msg.platforms) {
                 let id = common.dot(app, `plugins.push.${p}._id`);
                 if (!id || id === 'demo') {
-                    throw new ValidationError(`No push credentials for ${platforms[/** @type {PlatformKey} */(p)].title} platform`);
+                    throw new ValidationError(`No push credentials for ${platforms[p as keyof typeof platforms].title} platform`);
                 }
             }
             let creds = await common.db.collection('creds').find({
                 _id: {
                     $in: msg.platforms
-                        .map(p => common.dot(app, `plugins.push.${p}._id`))
-                        .map(oid => new ObjectId(oid.toString())) // cast to ObjectId (it gets broken after an update in app settings page)
+                        .map((p: any) => common.dot(app, `plugins.push.${p}._id`))
+                        .map((oid: any) => new ObjectId(oid.toString())) // cast to ObjectId (it gets broken after an update in app settings page)
                 }
             }).toArray();
             if (creds.length !== msg.platforms.length) {
@@ -147,7 +140,7 @@ async function validate(args, draft = false) {
             throw new ValidationError('Message app cannot be changed');
         }
 
-        if (existing.platforms.length !== msg.platforms.length || existing.platforms.filter(p => msg.platforms.indexOf(p) === -1).length) {
+        if (existing.platforms.length !== msg.platforms.length || existing.platforms.filter((p: any) => msg.platforms.indexOf(p) === -1).length) {
             throw new ValidationError('Message platforms cannot be changed');
         }
 
@@ -187,7 +180,7 @@ async function validate(args, draft = false) {
  * @apiUse PushValidationError
  * @apiUse PushError
  */
-module.exports.test = async params => {
+export async function test(params: any) {
     let msg = await validate(params.qstring),
         cfg = params.app.plugins && params.app.plugins.push || {},
         test_uids = cfg && cfg.test && cfg.test.uids ? cfg.test.uids.split(',') : undefined,
@@ -221,9 +214,9 @@ module.exports.test = async params => {
         const template = createTemplate(msg);
         const creds = await loadCredentials(common.db, msg.app);
         const pluginConfig = await loadPluginConfiguration();
-        const schedule = { _id: common.db.ObjectID() };
+        const schedule: any = { _id: common.db.ObjectID() };
         const stream = createPushStream(common.db, app, msg, schedule,
-            creds, new Date, pluginConfig, template, pipeline);
+            new Date(), creds, pluginConfig, template, pipeline);
         let results = [];
         for await (const push of stream) {
             results.push(await sendAllPushes([push], false));
@@ -262,7 +255,7 @@ module.exports.test = async params => {
  * @apiUse PushValidationError
  * @apiUse PushError
  */
-module.exports.create = async params => {
+export async function create(params: any) {
     let msg = await validate(params.qstring, params.qstring.status === 'draft'),
         demo = params.qstring.demo === undefined ? params.qstring.args ? params.qstring.args.demo : false : params.qstring.demo;
     msg._id = common.db.ObjectID();
@@ -293,7 +286,7 @@ module.exports.create = async params => {
         try {
             await scheduleIfEligible(common.db, msg);
         }
-        catch (error) {
+        catch (error: any) {
             log.e('Error while scheduling message', error);
             return common.returnMessage(params, 500, "Error while scheduling the message: " + error.message);
         }
@@ -324,7 +317,7 @@ module.exports.create = async params => {
  * @apiUse PushValidationError
  * @apiUse PushError
  */
-module.exports.update = async params => {
+export async function update(params: any) {
     let msg = await validate(params.qstring, params.qstring.status === "draft");
 
     if (msg.status === "deleted") {
@@ -391,7 +384,7 @@ module.exports.update = async params => {
  *      }
  * @apiUse PushError
  */
-module.exports.remove = async params => {
+export async function remove(params: any) {
     let data = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
     }, true);
@@ -464,7 +457,7 @@ module.exports.remove = async params => {
  *      }
  * @apiUse PushError
  */
-module.exports.toggle = async params => {
+export async function toggle(params: any) {
     const toggleableTriggers = ["api", "cohort", "event", "multi", "rec"];
     let data = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
@@ -483,7 +476,7 @@ module.exports.toggle = async params => {
         common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
         return true;
     }
-    if (!msg.triggers.find(t => toggleableTriggers.includes(t.kind))) {
+    if (!msg.triggers.find((t: any) => toggleableTriggers.includes(t.kind))) {
         throw new ValidationError(`The message doesn't have API, Cohort, Event, Multi or Recurring trigger`);
     }
 
@@ -557,7 +550,7 @@ module.exports.toggle = async params => {
  *          "errors": ["No push credentials for Android platform"]
  *      }
  */
-module.exports.estimate = async params => {
+export async function estimate(params: any) {
     let data = common.validateArgs(params.qstring, {
         app: {type: 'ObjectID', required: true},
         platforms: {type: 'String[]', required: true, in: () => Object.keys(platforms), 'min-length': 1},
@@ -599,7 +592,7 @@ module.exports.estimate = async params => {
     for (let p of data.platforms) {
         let id = common.dot(app, `plugins.push.${p}._id`);
         if (!id || id === 'demo') {
-            throw new ValidationError(`No push credentials for ${platforms[/** @type {PlatformKey} */(p)]} platform `);
+            throw new ValidationError(`No push credentials for ${platforms[p as keyof typeof platforms]} platform `);
         }
     }
     const pipeline = await buildUserAggregationPipeline(common.db, data, undefined, undefined, data.filter);
@@ -615,7 +608,7 @@ module.exports.estimate = async params => {
             ])
         )
         .toArray();
-    const locales = las.reduce((a, b) => {
+    const locales = las.reduce((a: any, b: any) => {
         a[b._id || 'default'] = b.count;
         return a;
     }, {default: 0});
@@ -641,9 +634,9 @@ module.exports.estimate = async params => {
  *
  * @apiUse PushValidationError
  */
-module.exports.mime = async params => {
+export async function mime(params: any) {
     try {
-        let info = await mimeInfo(params.qstring.url);
+        let info: any = await mimeInfo(params.qstring.url);
         if ((info.status === 301 || info.status === 302) && info.headers.location) {
             log.d('Following redirect to', info.headers.location);
             info = await mimeInfo(info.headers.location);
@@ -682,7 +675,7 @@ module.exports.mime = async params => {
             });
         }
     }
-    catch (err) {
+    catch (err: any) {
         if (!err.errors) {
             log.e('Mime request error', err);
         }
@@ -712,7 +705,7 @@ module.exports.mime = async params => {
  *          "errors": ["Message not found"]
  *      }
  */
-module.exports.one = async params => {
+export async function one(params: any) {
     let data = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
     }, true);
@@ -785,8 +778,8 @@ module.exports.one = async params => {
  *          ]
  *      }
  */
-module.exports.periodicStats = async params => {
-    const dateDeltaMap = {
+export async function periodicStats(params: any) {
+    const dateDeltaMap: Record<string, (string | number)[]> = {
         "30days": [30, "day"],
         "24weeks": [24, "week"],
         "12months": [12, "month"]
@@ -815,12 +808,12 @@ module.exports.periodicStats = async params => {
     };
     const endDate = moment().tz(app.timezone).toDate();
     const startDate = moment(endDate).subtract(...delta);
-    const dateRange = periodicDateRange(startDate.toDate(), endDate, app.timezone, delta[1]);
+    const dateRange = periodicDateRange(startDate.toDate(), endDate, app.timezone, delta[1] as string);
     const ob = { app_id, appTimezone: app.timezone, qstring: { period, segmentation: "i" } };
-    const results = {};
+    const results: any = {};
     for (const colName in cols) {
         results[colName] = await new Promise(res => {
-            countlyFetch.getTimeObjForEvents(cols[colName], ob, (doc) => {
+            countlyFetch.getTimeObjForEvents((cols as any)[colName], ob, (doc: any) => {
                 const result = [];
                 if (delta[1] === "week") {
                     for (const startDayOfTheWeek of dateRange) {
@@ -888,7 +881,7 @@ module.exports.periodicStats = async params => {
  *          "errors": ["User with the did specified is not found"]
  *      }
  */
-module.exports.user = async params => {
+export async function user(params: any) {
     let data = common.validateArgs(params.qstring, {
         id: {type: 'String', required: false},
         did: {type: 'String', required: false},
@@ -974,7 +967,7 @@ module.exports.user = async params => {
  *
  * @apiUse PushValidationError
  */
-module.exports.all = async params => {
+export async function all(params: any) {
     let data = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
         platform: {type: 'String', required: false, in: () => Object.keys(platforms)},
@@ -1016,7 +1009,7 @@ module.exports.all = async params => {
     if (data.result) {
         data = data.obj;
 
-        let query = {
+        let query: any = {
             app: data.app_id,
             status: { $ne: 'deleted' },
             'triggers.kind': {$in: data.kind}
@@ -1036,7 +1029,7 @@ module.exports.all = async params => {
                 {'contents.title': data.sSearch},
             ];
         }
-        var pipeline = [{
+        var pipeline: any[] = [{
             $lookup: {
                 from: "message_schedules",
                 localField: "_id",
@@ -1184,7 +1177,7 @@ module.exports.all = async params => {
  * @param   {String} period   Period interval: day|month|week|year
  * @returns {Date[]}          Array of dates in between start and end (both start and end included)
  */
-function periodicDateRange(start, end, timezone, period = "day") {
+function periodicDateRange(start: any, end: any, timezone: any, period = "day") {
     const startFrom = period === "week" ? "isoWeek" : period;
     const startObj = moment(start).tz(timezone).startOf("day").startOf(startFrom);
     const endObj = moment(end).tz(timezone).startOf("day").startOf(startFrom);
@@ -1206,7 +1199,7 @@ function periodicDateRange(start, end, timezone, period = "day") {
  * @param {string} key sub result key (e.g. platform key)
  * @returns {object} the sub-result object for the given key
  */
-function resultSub(result, key) {
+function resultSub(result: any, key: any) {
     if (!result.subs) {
         result.subs = {};
     }
@@ -1222,7 +1215,7 @@ function resultSub(result, key) {
  * @param {object} msg plain message document
  * @param {int} demo demo type
  */
-async function generateDemoData(msg, demo) {
+async function generateDemoData(msg: any, demo: any) {
     const msgId = msg._id.toString();
 
     await common.db.collection('apps').updateOne({_id: msg.app, 'plugins.push.i._id': {$exists: false}}, {$set: {'plugins.push.i._id': 'demo'}});
@@ -1234,7 +1227,7 @@ async function generateDemoData(msg, demo) {
         events = [],
         result = msg.result || buildResultObject();
 
-    const isAutoOrApi = msg.triggers.some(t => t.kind === 'cohort' || t.kind === 'event' || t.kind === 'api');
+    const isAutoOrApi = msg.triggers.some((t: any) => t.kind === 'cohort' || t.kind === 'event' || t.kind === 'api');
 
     if (isAutoOrApi) {
         msg.status = 'active';
@@ -1244,7 +1237,7 @@ async function generateDemoData(msg, demo) {
             actioned = Math.floor(sent * 0.17),
             offset = moment.tz(app.timezone).utcOffset(),
             now = Date.now() - 3600000,
-            a = !!msg.triggers.some(t => t.kind === 'cohort' || t.kind === 'event'),
+            a = !!msg.triggers.some((t: any) => t.kind === 'cohort' || t.kind === 'event'),
             t = !a,
             p = msg.platforms[0],
             p1 = msg.platforms[1];
@@ -1418,7 +1411,7 @@ async function generateDemoData(msg, demo) {
  * @param {string} method - http method to use
  * @returns {Promise<MimeInfo>} resolves to mime info object
  */
-async function mimeInfo(url, method = 'HEAD') {
+async function mimeInfo(url: any, method = 'HEAD') {
     const ok = common.validateArgs({url}, {
         url: {type: 'URLString', required: true},
     }, true);
@@ -1451,7 +1444,7 @@ async function mimeInfo(url, method = 'HEAD') {
         const req = isHttps
             ? https.request(urlObj, { method, agent })
             : http.request(urlObj, { method, agent });
-        req.on('response', res => {
+        req.on('response', (res: any) => {
             let status = res.statusCode,
                 headers = res.headers,
                 data = 0;
@@ -1459,7 +1452,7 @@ async function mimeInfo(url, method = 'HEAD') {
                 resolve({ url: url.toString(), status, headers });
             }
             else {
-                res.on('data', dt => {
+                res.on('data', (dt: any) => {
                     if (typeof dt === 'string') {
                         data += dt.length;
                     }
@@ -1475,7 +1468,7 @@ async function mimeInfo(url, method = 'HEAD') {
                 });
             }
         });
-        req.on('error', err => {
+        req.on('error', (err: any) => {
             log.e('error when HEADing ' + url, err);
             reject(new ValidationError('Cannot access proxied URL'));
         });
@@ -1483,4 +1476,4 @@ async function mimeInfo(url, method = 'HEAD') {
     });
 }
 
-module.exports.mimeInfo = mimeInfo;
+export { mimeInfo };
