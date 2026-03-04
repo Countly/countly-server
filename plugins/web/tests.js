@@ -26,6 +26,12 @@ function sendSession(deviceId, headers, done) {
     });
 }
 
+function validateResponseHasMetaArray(ob, key) {
+    ob.should.have.property('meta');
+    ob.meta.should.have.property(key);
+    Array.isArray(ob.meta[key]).should.equal(true);
+}
+
 describe('Testing Web UA and Client Hints parsing', function() {
     describe('Init', function() {
         it('should load app credentials', function(done) {
@@ -78,8 +84,7 @@ describe('Testing Web UA and Client Hints parsing', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('meta');
-                    ob.meta.should.have.property('browser');
+                    validateResponseHasMetaArray(ob, 'browser');
                     ob.meta.browser.should.containEql('Chrome');
                     done();
                 });
@@ -111,15 +116,14 @@ describe('Testing Web UA and Client Hints parsing', function() {
 
         it('should store browser version from preferred brand in full version list', function(done) {
             request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=browser_version')
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=browser')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('meta');
-                    ob.meta.should.have.property('browser_version');
+                    validateResponseHasMetaArray(ob, 'browser_version');
                     ob.meta.browser_version.should.containEql('[chrome]_120.0.2222.2');
                     done();
                 });
@@ -134,8 +138,7 @@ describe('Testing Web UA and Client Hints parsing', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('meta');
-                    ob.meta.should.have.property('browser');
+                    validateResponseHasMetaArray(ob, 'browser');
                     ob.meta.browser.should.containEql('Chrome Mobile');
                     done();
                 });
@@ -143,15 +146,14 @@ describe('Testing Web UA and Client Hints parsing', function() {
 
         it('should have Android in os metrics', function(done) {
             request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=os')
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=device_details')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('meta');
-                    ob.meta.should.have.property('os');
+                    validateResponseHasMetaArray(ob, 'os');
                     ob.meta.os.should.containEql('Android');
                     done();
                 });
@@ -170,15 +172,14 @@ describe('Testing Web UA and Client Hints parsing', function() {
 
         it('should store normalized Edge/Windows values for the session user', function(done) {
             request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=os_versions')
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=device_details')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('meta');
-                    ob.meta.should.have.property('os_versions');
+                    validateResponseHasMetaArray(ob, 'os_versions');
                     ob.meta.os_versions.should.containEql('mw11');
                     done();
                 });
@@ -196,15 +197,14 @@ describe('Testing Web UA and Client Hints parsing', function() {
 
         it('should store Windows 7 normalized platform version', function(done) {
             request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=os_versions')
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=device_details')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('meta');
-                    ob.meta.should.have.property('os_versions');
+                    validateResponseHasMetaArray(ob, 'os_versions');
                     ob.meta.os_versions.should.containEql('mw7');
                     done();
                 });
@@ -223,15 +223,14 @@ describe('Testing Web UA and Client Hints parsing', function() {
 
         it('should store normalized Mac/Chrome values for the session user', function(done) {
             request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=os')
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=device_details')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('meta');
-                    ob.meta.should.have.property('os');
+                    validateResponseHasMetaArray(ob, 'os');
                     ob.meta.os.should.containEql('Mac');
                     done();
                 });
@@ -239,15 +238,14 @@ describe('Testing Web UA and Client Hints parsing', function() {
 
         it('should store normalized browser version prefixes', function(done) {
             request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=browser_version')
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=browser')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('meta');
-                    ob.meta.should.have.property('browser_version');
+                    validateResponseHasMetaArray(ob, 'browser_version');
                     ob.meta.browser_version.should.containEql('[edge]_120.0.2210.91');
                     ob.meta.browser_version.should.containEql('[chrome]_120.0.6099.230');
                     done();
@@ -256,15 +254,14 @@ describe('Testing Web UA and Client Hints parsing', function() {
 
         it('should infer desktop device type when Sec-CH-UA-Mobile is ?0', function(done) {
             request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=device_type')
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=device_details')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('meta');
-                    ob.meta.should.have.property('device_type');
+                    validateResponseHasMetaArray(ob, 'device_type');
                     ob.meta.device_type.should.containEql('desktop');
                     done();
                 });
@@ -279,8 +276,7 @@ describe('Testing Web UA and Client Hints parsing', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('meta');
-                    ob.meta.should.have.property('browser');
+                    validateResponseHasMetaArray(ob, 'browser');
                     ob.meta.browser.should.not.containEql('Google Chrome');
                     ob.meta.browser.should.not.containEql('Microsoft Edge');
                     done();
