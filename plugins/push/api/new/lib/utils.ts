@@ -4,6 +4,7 @@ import type { PlatformKey, PlatformEnvKey } from "../types/message.ts";
 import type { ResultEvent } from "../types/queue.ts";
 import PLATFORM_KEYMAP from "../constants/platform-keymap.ts";
 import { createRequire } from 'module';
+import { z } from "zod";
 
 // createRequire needed for CJS modules without ES exports
 // @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
@@ -213,4 +214,25 @@ export function extractTokenFromQuerystring(qstring: PlainObject): [PlatformKey,
             common.md5Hash(JSON.stringify(token))
         ];
     }
+}
+
+interface ValidateResult<T> {
+    result: boolean;
+    errors: string[];
+    obj: T;
+}
+
+export function zodValidate<T>(schema: z.ZodType<T>, data: unknown): ValidateResult<T> {
+    const parsed = schema.safeParse(data);
+    if (parsed.success) {
+        return { result: true, errors: [], obj: parsed.data };
+    }
+    return {
+        result: false,
+        errors: parsed.error.issues.map(issue => {
+            const path = issue.path.length ? issue.path.join(".") + ": " : "";
+            return path + issue.message;
+        }),
+        obj: undefined as unknown as T,
+    };
 }

@@ -158,6 +158,7 @@ export function compilePersonalizableContent(contentPers: ContentWithPersonaliza
 }
 
 export function getUserPropertiesUsedInsideMessage(message: Message): string[] {
+    console.log(JSON.stringify(message, null, 2));
     let keys = message.contents
         .map(content => ([
             ...Object.values(content.messagePers ?? {}).map(({ k }) => k),

@@ -2,7 +2,7 @@ const { onTokenSession } = require('./api-push');
 const plugins = require('../../pluginManager');
 const platforms = require("./new/constants/platform-keymap.ts").default;
 const ALL_PLATFORM_KEYS = Object.keys(platforms);
-const { Message, TriggerKind } = require('./send');
+const { TriggerKind } = require('./send');
 const { guessThePlatformFromUserAgentHeader } = require("./new/lib/utils.js");
 const { autoOnEvent } = require('./api-auto.ts');
 const common = require('../../../api/utils/common');
@@ -42,11 +42,11 @@ const { loadKafka, setupProducer } = require('./new/lib/kafka.ts');
                 if (push.length) {
                     try {
                         let ids = push.map(e => common.db.ObjectID(e.segmentation.i)),
-                            msgs = await Message.findMany({ _id: { $in: ids } }),
+                            msgs = await common.db.collection('messages').find({ _id: { $in: ids } }).toArray(),
                             updates = {};
                         for (let i = 0; i < push.length; i++) {
                             let event = push[i],
-                                msg = msgs.filter(m => m.id === event.segmentation.i)[0],
+                                msg = msgs.filter(m => m._id.toString() === event.segmentation.i)[0],
                                 count = parseInt(event.count, 10);
                             if (!msg || count !== 1) {
                                 log.i(
@@ -59,19 +59,20 @@ const { loadKafka, setupProducer } = require('./new/lib/kafka.ts');
                                 continue;
                             }
                             else {
-                                log.d('Recording push action: [%s] (%s) {%d}, %j', msg.id, appUser.uid, count, event);
+                                log.d('Recording push action: [%s] (%s) {%d}, %j', msg._id.toString(), appUser.uid, count, event);
                             }
 
                             const language = appUser.la;
                             let p = event.segmentation.p,
                                 a = msg.triggers.filter(tr => tr.kind === TriggerKind.Cohort || tr.kind === TriggerKind.Event).length > 0,
                                 t = msg.triggers.filter(tr => tr.kind === TriggerKind.API).length > 0,
-                                upd = updates[msg.id];
+                                msgId = msg._id.toString(),
+                                upd = updates[msgId];
                             if (upd) {
                                 upd.$inc['result.actioned'] += count;
                             }
                             else {
-                                upd = updates[msg.id] = {$inc: {'result.actioned': count}};
+                                upd = updates[msgId] = {$inc: {'result.actioned': count}};
                             }
 
                             if (!p && params.req.headers['user-agent']) {

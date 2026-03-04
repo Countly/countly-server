@@ -8,13 +8,16 @@
  * @typedef {{ url: string; status?: number; headers: IncomingHttpHeaders; }} MimeInfo
  * @typedef {import('../../../types/requestProcessor').Params} Params
  */
-const { Message, Result, Creds, Status, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info } = require('./send'),
+const { Message, Result, Creds, Status, ValidationError, TriggerKind, MEDIA_MIME_ALL } = require('./send'),
     crypto = require("crypto"),
     { DEFAULTS, RecurringType } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
     moment = require('moment-timezone'),
     {ObjectId} = require("mongodb");
+
+const { zodValidate } = require("./new/lib/utils.ts");
+const { CreateMessageSchema, DraftMessageSchema } = require("./new/types/message.ts");
 
 const { HttpProxyAgent } = require("http-proxy-agent");
 const { HttpsProxyAgent } = require("https-proxy-agent");
@@ -60,51 +63,28 @@ function getMessageStatus(message, lastSchedule) {
 async function validate(args, draft = false) {
     let msg;
     if (draft) {
-        let data = common.validateArgs(args, {
-            _id: { required: false, type: 'ObjectID' },
-            app: { required: true, type: 'ObjectID' },
-            platforms: { required: true, type: 'String[]', in: () => Object.keys(platforms) },
-            status: { type: 'String', in: Object.values(Status) },
-            filter: {
-                type: Filter.scheme,
-            },
-            triggers: {
-                type: Trigger.scheme,
-                discriminator: Trigger.discriminator.bind(Trigger),
-                array: true,
-                'min-length': 1
-            },
-            contents: {
-                type: Content.scheme,
-                array: true,
-                nonempty: true,
-                'min-length': 1,
-            },
-            info: {
-                type: Info.scheme,
-            }
-        }, true);
+        let data = zodValidate(DraftMessageSchema, args);
         if (data.result) {
-            msg = new Message(data.obj);
+            msg = data.obj;
         }
         else {
             throw new ValidationError(data.errors);
         }
-        msg.status = Status.Draft;
+        msg.status = "draft";
     }
     else {
         args.result = buildResultObject();
-        msg = Message.validate(args);
-        if (msg.result) {
-            msg = new Message(msg.obj);
+        let data = zodValidate(CreateMessageSchema, args);
+        if (data.result) {
+            msg = data.obj;
         }
         else {
-            throw new ValidationError(msg.errors);
+            throw new ValidationError(data.errors);
         }
     }
 
     for (let trigger of msg.triggers) {
-        if (trigger.kind === TriggerKind.Plain && trigger._data.tz === false && typeof trigger._data.sctz === 'number') {
+        if (trigger.kind === TriggerKind.Plain && trigger.tz === false && typeof trigger.sctz === 'number') {
             throw new ValidationError('Please remove tz parameter from trigger definition');
         }
         if (trigger.kind === TriggerKind.Recurring && (trigger.bucket === RecurringType.Monthly || trigger.bucket === RecurringType.Weekly) && !trigger.on) {
@@ -114,6 +94,9 @@ async function validate(args, draft = false) {
 
     let app = await common.db.collection('apps').findOne(msg.app);
     if (app) {
+        if (!msg.info) {
+            msg.info = {};
+        }
         msg.info.appName = app.name;
 
         if (!args.demo && !(args.args && args.args.demo)) {
@@ -139,14 +122,14 @@ async function validate(args, draft = false) {
         throw new ValidationError('No such app');
     }
 
-    if (msg.filter.geos.length) {
+    if (msg.filter?.geos?.length) {
         let geos = await common.db.collection('geos').find({_id: {$in: msg.filter.geos.map(common.db.ObjectID)}}).toArray();
         if (geos.length !== msg.filter.geos.length) {
             throw new ValidationError('No such geo');
         }
     }
 
-    if (msg.filter.cohorts.length) {
+    if (msg.filter?.cohorts?.length) {
         let cohorts = await common.db.collection('cohorts').find({_id: {$in: msg.filter.cohorts}}).toArray();
         if (cohorts.length !== msg.filter.cohorts.length) {
             throw new ValidationError('No such cohort');
@@ -154,7 +137,7 @@ async function validate(args, draft = false) {
     }
 
     if (msg._id) {
-        let existing = await Message.findOne({_id: msg._id});
+        let existing = await common.db.collection("messages").findOne({_id: msg._id});
         if (!existing) {
             throw new ValidationError('No message with such _id');
         }
@@ -168,12 +151,13 @@ async function validate(args, draft = false) {
         }
 
         // only 4 props of info can updated
-        msg.info = new Info(Object.assign(existing.info.json, {
-            title: msg.info.title,
-            silent: msg.info.silent,
-            scheduled: msg.info.scheduled,
-            locales: msg.info.locales,
-        }));
+        msg.info = {
+            ...existing.info,
+            title: msg.info?.title,
+            silent: msg.info?.silent,
+            scheduled: msg.info?.scheduled,
+            locales: msg.info?.locales,
+        };
 
         // status cannot be changed by api
         msg.status = existing.status;
@@ -209,20 +193,20 @@ module.exports.test = async params => {
         test_cohorts = cfg && cfg.test && cfg.test.cohorts ? cfg.test.cohorts.split(',') : undefined;
 
     if (test_uids) {
-        msg.filter = new Filter({user: JSON.stringify({uid: {$in: test_uids}})});
+        msg.filter = {user: JSON.stringify({uid: {$in: test_uids}})};
     }
     else if (test_cohorts) {
-        msg.filter = new Filter({cohorts: test_cohorts});
+        msg.filter = {cohorts: test_cohorts};
     }
     else {
         throw new ValidationError('Please define test users in Push plugin configuration');
     }
     msg._id = common.db.ObjectID();
-    msg.triggers = [new PlainTrigger({start: new Date()})];
+    msg.triggers = [{kind: "plain", start: new Date()}];
     msg.status = "active";
     try {
         const pipeline = await buildUserAggregationPipeline(common.db,
-            msg._data, undefined, undefined, msg.filter._data);
+            msg, undefined, undefined, msg.filter);
         const numberOfUsers = await common.db.collection(`app_users${msg.app.toString()}`)
             .aggregate(pipeline.concat([{ $count: 'count' }]))
             .toArray();
@@ -233,7 +217,7 @@ module.exports.test = async params => {
         if (!app) {
             throw new ValidationError('No such app');
         }
-        const template = createTemplate(msg._data);
+        const template = createTemplate(msg);
         const creds = await loadCredentials(common.db, msg.app);
         const pluginConfig = await loadPluginConfiguration();
         const schedule = { _id: common.db.ObjectID() };
@@ -274,6 +258,9 @@ module.exports.create = async params => {
     let msg = await validate(params.qstring, params.qstring.status === Status.Draft),
         demo = params.qstring.demo === undefined ? params.qstring.args ? params.qstring.args.demo : false : params.qstring.demo;
     msg._id = common.db.ObjectID();
+    if (!msg.info) {
+        msg.info = {};
+    }
     msg.info.created = msg.info.updated = new Date();
     msg.info.createdBy = msg.info.updatedBy = params.member._id;
     msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
@@ -284,12 +271,12 @@ module.exports.create = async params => {
 
     if (params.qstring.status === Status.Draft) {
         msg.status = Status.Draft;
-        await msg.save();
-        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_draft', data: msg.json});
+        await common.db.collection("messages").updateOne({_id: msg._id}, {$set: msg}, {upsert: true});
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_draft', data: msg});
     }
     else {
         msg.status = Status.Active;
-        await msg.save();
+        await common.db.collection("messages").updateOne({_id: msg._id}, {$set: msg}, {upsert: true});
         if (common.plugins.isPluginEnabled("push_approver")) {
             // this might change the status of the message:
             await common.plugins.getPluginsApis()
@@ -303,18 +290,15 @@ module.exports.create = async params => {
             return common.returnMessage(params, 500, "Error while scheduling the message: " + error.message);
         }
 
-        // if (!demo && msg.status === Status.Active) {
-        //     await msg.schedule(log, params);
-        // }
-
-        log.i('Created message %s: %j / %j / %j', msg.id, msg.status, msg.result.json);
-        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
+        log.i('Created message %s: %j / %j / %j', msg._id.toString(), msg.status, msg.result);
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg});
     }
     if (demo && demo !== 'no-data') {
-        await generateDemoData(msg, demo);
+        const msgInstance = new Message(msg);
+        await generateDemoData(msgInstance, demo);
     }
 
-    common.returnOutput(params, msg.json);
+    common.returnOutput(params, msg);
 };
 
 /**
@@ -346,7 +330,7 @@ module.exports.update = async params => {
 
     if (msg.status === "draft" && params.qstring.status === "active") {
         msg.status = "active";
-        await msg.save();
+        await common.db.collection("messages").updateOne({_id: msg._id}, {$set: msg}, {upsert: true});
         if (common.plugins.isPluginEnabled("push_approver")) {
             await common.plugins.getPluginsApis()
                 .push_approver.onMessageActivated(params, msg);
@@ -361,20 +345,20 @@ module.exports.update = async params => {
         common.plugins.dispatch('/systemlogs', {
             params,
             action: 'push_message_updated_draft',
-            data: msg.json
+            data: msg
         });
     }
     else {
-        await msg.save();
+        await common.db.collection("messages").updateOne({_id: msg._id}, {$set: msg}, {upsert: true});
         common.plugins.dispatch('/systemlogs', {
             params,
             action: 'push_message_updated',
-            data: msg.json
+            data: msg
         });
     }
 
-    log.i('Updated message %s: %j / %j / %j', msg.id, msg.status, msg.result.json);
-    common.returnOutput(params, msg.json);
+    log.i('Updated message %s: %j / %j / %j', msg._id.toString(), msg.status, msg.result);
+    common.returnOutput(params, msg);
 };
 
 /**
@@ -526,7 +510,7 @@ module.exports.toggle = async params => {
     else {
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_activated', data: msg});
     }
-    log.i('Toggled message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
+    log.i('Toggled message %s: %j / %j / %j', msg._id.toString(), msg.state, msg.status, msg.result);
 
     common.returnOutput(params, msg);
 };
@@ -591,6 +575,9 @@ module.exports.estimate = async params => {
         if (!data.filter.cohorts) {
             data.filter.cohorts = [];
         }
+        if (!data.contents) {
+            data.contents = [];
+        }
     }
     else {
         common.returnMessage(params, 400, {errors: data.errors}, null, true);
@@ -608,8 +595,7 @@ module.exports.estimate = async params => {
             throw new ValidationError(`No push credentials for ${platforms[/** @type {PlatformKey} */(p)]} platform `);
         }
     }
-    const message = new Message(data);
-    const pipeline = await buildUserAggregationPipeline(common.db, message, undefined, undefined, message.filter);
+    const pipeline = await buildUserAggregationPipeline(common.db, data, undefined, undefined, data.filter);
     const cnt = await common.db.collection(`app_users${data.app}`)
         .aggregate(pipeline.concat([{ $count: 'count' }]))
         .toArray();
@@ -1156,7 +1142,7 @@ module.exports.all = async params => {
         pipeline.push({"$facet": {"total": totalPipeline, "data": dataPipeline}});
 
 
-        let res = (await common.db.collection(Message.collection).aggregate(pipeline).toArray() || [])[0] || {},
+        let res = (await common.db.collection("messages").aggregate(pipeline).toArray() || [])[0] || {},
             items = res.data || [],
             total = res.total && res.total[0] && res.total[0].cn || 0;
 

@@ -1,15 +1,16 @@
 /**
- * @typedef {import("./new/types/schedule").AudienceFilter} AudienceFilter
  * @typedef {import("./new/types/message").Message} Message
  * @typedef {import("mongodb").Collection<Message>} MessageCollection
  * @typedef {import('../../../types/requestProcessor').Params} Params
  */
 
-const { Filter, Content, ValidationError } = require("./send"),
+const { ValidationError } = require("./send"),
     common = require("../../../api/utils/common"),
     log = common.log("push:api:tx");
 
 const { createSchedule } = require("./new/scheduler.ts");
+const { zodValidate } = require("./new/lib/utils.ts");
+const { ApiPushSchema } = require("./new/types/message.ts");
 
 /**
  * Add notification to API message
@@ -49,26 +50,7 @@ const { createSchedule } = require("./new/scheduler.ts");
  *      }
  */
 module.exports.apiPush = async(params) => {
-    let data = common.validateArgs(
-        params.qstring,
-        {
-            app_id: { type: "ObjectID", required: true },
-            _id: { type: "ObjectID", required: true },
-            start: { type: "Date", required: false },
-            filter: { type: Filter.scheme, required: true },
-            contents: {
-                type: Content.scheme,
-                array: true,
-                required: false,
-                nonempty: true,
-                "min-length": 1,
-            },
-            variables: {
-                type: "Object",
-            },
-        },
-        true,
-    );
+    let data = zodValidate(ApiPushSchema, params.qstring);
     if (!data.result) {
         throw new ValidationError(data.errors);
     }

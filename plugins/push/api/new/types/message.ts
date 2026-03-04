@@ -15,10 +15,34 @@ export const PlatformCombinedKeySchema = z.enum(["ap", "hp", "ip", "id", "ia"]);
 export type PlatformCombinedKey = z.infer<typeof PlatformCombinedKeySchema>;
 
 // ---------------------------------------------------------------------------
-// ObjectId helper
+// ObjectId helper (coerces strings to ObjectId)
 // ---------------------------------------------------------------------------
 
-const ObjectIdSchema = z.instanceof(ObjectId);
+const ObjectIdSchema = z.preprocess(
+    (val) => {
+        if (val instanceof ObjectId) return val;
+        if (typeof val === "string" && /^[a-fA-F0-9]{24}$/.test(val)) return new ObjectId(val);
+        return val;
+    },
+    z.instanceof(ObjectId),
+);
+
+// ---------------------------------------------------------------------------
+// Date helper (coerces numbers and strings to Date)
+// ---------------------------------------------------------------------------
+
+const CoercedDateSchema = z.preprocess(
+    (val) => {
+        if (val instanceof Date) return val;
+        if (typeof val === "number") return new Date(val);
+        if (typeof val === "string") {
+            const d = new Date(val);
+            return isNaN(d.getTime()) ? val : d;
+        }
+        return val;
+    },
+    z.date(),
+);
 
 // ---------------------------------------------------------------------------
 // ErrorObject (local schema matching the interface in utils.ts)
@@ -95,7 +119,7 @@ export type MessageAudienceFilter = z.infer<typeof MessageAudienceFilterSchema>;
 
 const PlainTriggerSchema = z.object({
     kind: z.literal("plain"),
-    start: z.date(),
+    start: CoercedDateSchema,
     tz: z.boolean().optional(),
     sctz: z.number().optional(),
     delayed: z.boolean().optional(),
@@ -104,8 +128,8 @@ const PlainTriggerSchema = z.object({
 
 const EventTriggerSchema = z.object({
     kind: z.literal("event"),
-    start: z.date(),
-    end: z.date().optional(),
+    start: CoercedDateSchema,
+    end: CoercedDateSchema.optional(),
     time: z.number().min(0).max(86399999).optional(),
     reschedule: z.boolean().optional(),
     delay: z.number().optional(),
@@ -116,8 +140,8 @@ const EventTriggerSchema = z.object({
 
 const CohortTriggerSchema = z.object({
     kind: z.literal("cohort"),
-    start: z.date(),
-    end: z.date().optional(),
+    start: CoercedDateSchema,
+    end: CoercedDateSchema.optional(),
     time: z.number().min(0).max(86399999).optional(),
     reschedule: z.boolean().optional(),
     delay: z.number().optional(),
@@ -130,8 +154,8 @@ const CohortTriggerSchema = z.object({
 
 const APITriggerSchema = z.object({
     kind: z.literal("api"),
-    start: z.date(),
-    end: z.date().optional(),
+    start: CoercedDateSchema,
+    end: CoercedDateSchema.optional(),
     time: z.number().min(0).max(86399999).optional(),
     reschedule: z.boolean().optional(),
     delay: z.number().optional(),
@@ -141,10 +165,10 @@ const APITriggerSchema = z.object({
 
 const RecurringTriggerSchema = z.object({
     kind: z.literal("rec"),
-    start: z.date(),
+    start: CoercedDateSchema,
     delayed: z.boolean().optional(),
     reschedule: z.boolean().optional(),
-    end: z.date().optional(),
+    end: CoercedDateSchema.optional(),
     bucket: z.enum(["daily", "weekly", "monthly"]),
     time: z.number().min(0).max(86399999),
     every: z.number(),
@@ -155,10 +179,10 @@ const RecurringTriggerSchema = z.object({
 
 const MultiTriggerSchema = z.object({
     kind: z.literal("multi"),
-    start: z.date(),
+    start: CoercedDateSchema,
     delayed: z.boolean().optional(),
     reschedule: z.boolean().optional(),
-    dates: z.array(z.date()),
+    dates: z.array(CoercedDateSchema),
     tz: z.boolean().optional(),
     sctz: z.number().optional(),
 });
@@ -221,23 +245,23 @@ export const InfoSchema = z.object({
     silent: z.boolean().optional(),
     scheduled: z.boolean().optional(),
     locales: z.record(z.string(), z.number()).optional(),
-    created: z.date().optional(),
+    created: CoercedDateSchema.optional(),
     createdBy: ObjectIdSchema.optional(),
     createdByName: z.string().optional(),
-    updated: z.date().optional(),
+    updated: CoercedDateSchema.optional(),
     updatedBy: ObjectIdSchema.optional(),
     updatedByName: z.string().optional(),
-    removed: z.date().optional(),
+    removed: CoercedDateSchema.optional(),
     removedBy: ObjectIdSchema.optional(),
     removedByName: z.string().optional(),
-    started: z.date().optional(),
-    startedLast: z.date().optional(),
-    finished: z.date().optional(),
+    started: CoercedDateSchema.optional(),
+    startedLast: CoercedDateSchema.optional(),
+    finished: CoercedDateSchema.optional(),
     demo: z.boolean().optional(),
-    approved: z.date().optional(),
+    approved: CoercedDateSchema.optional(),
     approvedBy: ObjectIdSchema.optional(),
     approvedByName: z.string().optional(),
-    rejectedAt: z.date().optional(),
+    rejectedAt: CoercedDateSchema.optional(),
     rejectedBy: ObjectIdSchema.optional(),
     rejectedByName: z.string().optional(),
 });
@@ -260,6 +284,45 @@ export const MessageSchema = z.object({
     info: InfoSchema,
 });
 export type Message = z.infer<typeof MessageSchema>;
+
+// ---------------------------------------------------------------------------
+// DraftMessage (no result required, _id optional)
+// ---------------------------------------------------------------------------
+
+export const DraftMessageSchema = z.object({
+    _id: ObjectIdSchema.optional(),
+    app: ObjectIdSchema,
+    platforms: z.array(PlatformKeySchema).min(1),
+    status: z.enum(["active", "inactive", "rejected", "draft", "stopped", "deleted"]).optional(),
+    filter: MessageAudienceFilterSchema.optional(),
+    triggers: z.array(MessageTriggerSchema).min(1),
+    contents: z.array(ContentSchema).min(1),
+    info: InfoSchema.optional(),
+});
+export type DraftMessage = z.infer<typeof DraftMessageSchema>;
+
+// ---------------------------------------------------------------------------
+// CreateMessage (like Draft but with result for non-draft creation)
+// ---------------------------------------------------------------------------
+
+export const CreateMessageSchema = DraftMessageSchema.extend({
+    result: ResultSchema,
+});
+export type CreateMessage = z.infer<typeof CreateMessageSchema>;
+
+// ---------------------------------------------------------------------------
+// ApiPush (for transactional push endpoint)
+// ---------------------------------------------------------------------------
+
+export const ApiPushSchema = z.object({
+    app_id: ObjectIdSchema,
+    _id: ObjectIdSchema,
+    start: CoercedDateSchema.optional(),
+    filter: MessageAudienceFilterSchema,
+    contents: z.array(ContentSchema).min(1).optional(),
+    variables: z.record(z.string(), z.unknown()).optional(),
+});
+export type ApiPush = z.infer<typeof ApiPushSchema>;
 
 // ---------------------------------------------------------------------------
 // Collection type alias
