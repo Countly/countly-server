@@ -19,9 +19,8 @@ import { URL } from 'node:url'
 import https from 'node:https'
 import http from 'node:http'
 
-// @ts-expect-error TS1470
 const require = createRequire(import.meta.url);
-const common: any = require('../../../api/utils/common');
+const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common');
 const log = common.log('push:api:message');
 const countlyFetch: any = require("../../../api/parts/data/fetch.js");
 
@@ -385,7 +384,7 @@ export async function update(params: any) {
  * @apiUse PushError
  */
 export async function remove(params: any) {
-    let data = common.validateArgs(params.qstring, {
+    let data: any = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
     }, true);
 
@@ -459,7 +458,7 @@ export async function remove(params: any) {
  */
 export async function toggle(params: any) {
     const toggleableTriggers = ["api", "cohort", "event", "multi", "rec"];
-    let data = common.validateArgs(params.qstring, {
+    let data: any = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
         active: {type: 'BooleanString', required: true}
     }, true);
@@ -551,7 +550,7 @@ export async function toggle(params: any) {
  *      }
  */
 export async function estimate(params: any) {
-    let data = common.validateArgs(params.qstring, {
+    let data: any = common.validateArgs(params.qstring, {
         app: {type: 'ObjectID', required: true},
         platforms: {type: 'String[]', required: true, in: () => Object.keys(platforms), 'min-length': 1},
         filter: {
@@ -706,7 +705,7 @@ export async function mime(params: any) {
  *      }
  */
 export async function one(params: any) {
-    let data = common.validateArgs(params.qstring, {
+    let data: any = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
     }, true);
     if (data.result) {
@@ -784,7 +783,7 @@ export async function periodicStats(params: any) {
         "24weeks": [24, "week"],
         "12months": [12, "month"]
     };
-    const validation = common.validateArgs(params.qstring, {
+    const validation: any = common.validateArgs(params.qstring, {
         _id: { type: "ObjectID", required: true },
         period: { type: 'String', required: false, in: Object.keys(dateDeltaMap) },
     }, true);
@@ -808,7 +807,7 @@ export async function periodicStats(params: any) {
     };
     const endDate = moment().tz(app.timezone).toDate();
     const startDate = moment(endDate).subtract(...delta);
-    const dateRange = periodicDateRange(startDate.toDate(), endDate, app.timezone, delta[1] as string);
+    const dateRange = periodicDateRange(startDate.toDate(), endDate, app.timezone, delta[1] as moment.unitOfTime.StartOf);
     const ob = { app_id, appTimezone: app.timezone, qstring: { period, segmentation: "i" } };
     const results: any = {};
     for (const colName in cols) {
@@ -882,7 +881,7 @@ export async function periodicStats(params: any) {
  *      }
  */
 export async function user(params: any) {
-    let data = common.validateArgs(params.qstring, {
+    let data: any = common.validateArgs(params.qstring, {
         id: {type: 'String', required: false},
         did: {type: 'String', required: false},
         app_id: {type: 'String', required: true},
@@ -968,7 +967,7 @@ export async function user(params: any) {
  * @apiUse PushValidationError
  */
 export async function all(params: any) {
-    let data = common.validateArgs(params.qstring, {
+    let data: any = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
         platform: {type: 'String', required: false, in: () => Object.keys(platforms)},
         auto: {type: 'BooleanString', required: false},
@@ -1177,17 +1176,17 @@ export async function all(params: any) {
  * @param   {String} period   Period interval: day|month|week|year
  * @returns {Date[]}          Array of dates in between start and end (both start and end included)
  */
-function periodicDateRange(start: any, end: any, timezone: any, period = "day") {
-    const startFrom = period === "week" ? "isoWeek" : period;
+function periodicDateRange(start: any, end: any, timezone: any, period: moment.unitOfTime.StartOf = "day") {
+    const startFrom: moment.unitOfTime.StartOf = period === "week" ? "isoWeek" : period;
     const startObj = moment(start).tz(timezone).startOf("day").startOf(startFrom);
     const endObj = moment(end).tz(timezone).startOf("day").startOf(startFrom);
-    const result = [];
+    const result: Date[] = [];
     if (startObj.isAfter(endObj)) {
         return [];
     }
     while (startObj.isSameOrBefore(endObj, period)) {
         result.push(startObj.toDate());
-        startObj.add(1, period);
+        startObj.add(1, period as moment.unitOfTime.DurationConstructor);
     }
     return result;
 }
@@ -1412,7 +1411,7 @@ async function generateDemoData(msg: any, demo: any) {
  * @returns {Promise<MimeInfo>} resolves to mime info object
  */
 async function mimeInfo(url: any, method = 'HEAD') {
-    const ok = common.validateArgs({url}, {
+    const ok: any = common.validateArgs({url}, {
         url: {type: 'URLString', required: true},
     }, true);
     if (ok.result) {

@@ -9,9 +9,8 @@ import platforms from "./new/constants/platform-keymap.ts";
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
-// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
 const require = createRequire(import.meta.url);
-const common: any = require('../../../api/utils/common');
+const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common');
 const log = common.log('push:api:push');
 
 const platformKeys = Object.keys(platforms) as PlatformKey[];
@@ -118,7 +117,7 @@ export function onSessionUser({params, dbAppUser}: {params: any, dbAppUser: any}
             platfs.forEach(p => updateUsersMonth['d.' + params.time.day + '.' + DBMAP_MESSAGING_ENABLED + p] = 1);
         }
 
-        if (userLastSeenDate.year() === parseInt(params.time.yearly, 10) && Math.ceil(userLastSeenDate.format('DDD') / 7) < params.time.weekly) {
+        if (userLastSeenDate.year() === parseInt(params.time.yearly, 10) && Math.ceil(parseInt(userLastSeenDate.format('DDD'), 10) / 7) < params.time.weekly) {
             updateUsersZero['d.w' + params.time.weekly + '.' + DBMAP_MESSAGING_ENABLED] = 1;
             platfs.forEach(p => updateUsersZero['d.w' + params.time.weekly + '.' + DBMAP_MESSAGING_ENABLED + p] = 1);
         }

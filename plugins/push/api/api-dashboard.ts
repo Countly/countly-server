@@ -5,9 +5,8 @@ import { createRequire } from 'module';
 import crypto from 'crypto';
 import moment from 'moment-timezone';
 
-// @ts-expect-error TS1470
 const require = createRequire(import.meta.url);
-const common: any = require('../../../api/utils/common');
+const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common');
 const log = common.log('push:api:dashboard');
 
 const platformKeys = Object.keys(platforms) as PlatformKey[];

@@ -13,12 +13,11 @@ import { saveResults } from './new/resultor.ts';
 import { scheduleMessageByAutoTriggers } from './new/scheduler.ts';
 import { createRequire } from 'module';
 
-// @ts-expect-error TS1470
 const require = createRequire(import.meta.url);
-const plugins: any = require('../../pluginManager.ts');
-const common: any = require('../../../api/utils/common.js');
+const plugins: import('../../pluginManager.js').IPluginManager = require('../../pluginManager.ts');
+const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common.js');
+const { validateCreate, validateRead, validateUpdate, validateDelete }: typeof import('../../../api/utils/rights.js') = require('../../../api/utils/rights.js');
 const log = common.log('push:api');
-const { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'push';
 const PUSH = {
@@ -137,20 +136,20 @@ function endpoint(method: string, fn: (params: any) => Promise<any>) {
 plugins.register('/session/user', onSessionUser);
 
 // API
-plugins.register('/i/push', (ob: any) => apiCall(apis.i, ob));
-plugins.register('/o/push', (ob: any) => apiCall(apis.o, ob));
+plugins.register('/i/push', (ob: any) => { apiCall(apis.i, ob); });
+plugins.register('/o/push', (ob: any) => { apiCall(apis.o, ob); });
 
 // Cohort hooks for cohorted auto push
 plugins.register('/cohort/enter', ({cohort, uids}: any) => autoOnCohort(true, cohort, uids));
 plugins.register('/cohort/exit', ({cohort, uids}: any) => autoOnCohort(false, cohort, uids));
 
 // Drill hooks for user profiles
-plugins.register('/drill/add_push_events', drillAddPushEvents);
-plugins.register('/drill/preprocess_query', drillPreprocessQuery);
-plugins.register('/drill/postprocess_uids', drillPostprocessUids);
+plugins.register('/drill/add_push_events', (ob: any) => { drillAddPushEvents(ob); });
+plugins.register('/drill/preprocess_query', (ob: any) => { drillPreprocessQuery(ob); });
+plugins.register('/drill/postprocess_uids', (ob: any) => { drillPostprocessUids(ob); });
 
 // Hook to move data to new uid on user merge
-plugins.register('/i/device_id', onMerge);
+plugins.register('/i/device_id', (ob: any) => { onMerge(ob); });
 
 // Data clears/resets/deletes
 plugins.register('/i/apps/update/plugins/push', onAppPluginsUpdate);

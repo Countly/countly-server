@@ -20,10 +20,9 @@ import { RESCHEDULABLE_DATE_TRIGGERS, scheduleMessageByDateTrigger } from "./sch
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
-// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
 const require = createRequire(import.meta.url);
-const common: any = require("../../../../api/utils/common.js");
-const log: any = require('../../../../api/utils/common').log('push:composer');
+const common: import('../../../../types/common.d.ts').Common = require("../../../../api/utils/common.js");
+const log: import('../../../../types/log.d.ts').Logger = require('../../../../api/utils/common').log('push:composer');
 
 const QUEUE_WRITE_BATCH_SIZE = 100;
 

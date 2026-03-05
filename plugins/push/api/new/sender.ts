@@ -9,9 +9,8 @@ import { SendError, TooLateToSend } from "./lib/error.ts";
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
-// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
 const require = createRequire(import.meta.url);
-const log: any = require('../../../../api/utils/common').log('push:sender');
+const log: import('../../../../types/log.d.ts').Logger = require('../../../../api/utils/common').log('push:sender');
 
 /**
  * Sends an array of push events to the appropriate platform handlers.

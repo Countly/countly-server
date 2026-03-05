@@ -38,13 +38,13 @@ export function credentialsDTOToObject(credentialsDTO: CredentialsDTO): Platform
             notAfter: new Date(credentialsDTO.notAfter),
             notBefore: new Date(credentialsDTO.notBefore),
             _id: new ObjectId(credentialsDTO._id)
-        } as PlatformCredential;
+        }
     }
     else {
         return {
             ...credentialsDTO,
             _id: new ObjectId(credentialsDTO._id)
-        } as PlatformCredential;
+        }
     }
 }
 
@@ -55,23 +55,16 @@ export function resultEventDTOToObject(resultEventDTO: ResultEventDTO): ResultEv
         messageId: new ObjectId(resultEventDTO.messageId),
         scheduleId: new ObjectId(resultEventDTO.scheduleId),
         credentials: credentialsDTOToObject(resultEventDTO.credentials),
+        sentAt: new Date(resultEventDTO.sentAt),
         sendBefore: resultEventDTO.sendBefore
             ? new Date(resultEventDTO.sendBefore)
             : undefined,
-    } as unknown as ResultEvent;
+    };
 }
 
 export function autoTriggerEventDTOToObject(autoTriggerEvent: AutoTriggerEventDTO): AutoTriggerEvent {
-    switch (autoTriggerEvent.kind) {
-    case "cohort":
-        return {
-            ...autoTriggerEvent,
-            appId: new ObjectId(autoTriggerEvent.appId),
-        };
-    case "event":
-        return {
-            ...autoTriggerEvent,
-            appId: new ObjectId(autoTriggerEvent.appId),
-        };
+    return {
+        ...autoTriggerEvent,
+        appId: new ObjectId(autoTriggerEvent.appId),
     }
 }

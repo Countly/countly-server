@@ -11,9 +11,8 @@ import { buildResultObject } from "./resultor.ts";
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
-// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
 const require = createRequire(import.meta.url);
-const log: any = require('../../../../api/utils/common').log('push:scheduler');
+const log: import('../../../../types/log.d.ts').Logger = require('../../../../api/utils/common').log('push:scheduler');
 
 type MessageTriggerFilter = Filter<MessageTrigger>;
 

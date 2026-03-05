@@ -3,9 +3,8 @@ import { PushError } from "./new/lib/error.ts";
 import platforms from "./new/constants/platform-keymap.ts";
 import { createRequire } from 'module';
 
-// @ts-expect-error TS1470
 const require = createRequire(import.meta.url);
-const common: any = require('../../../api/utils/common');
+const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common');
 
 const allAppUserFields = [...new Set(
     Object.values(platforms)

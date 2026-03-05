@@ -8,9 +8,8 @@ import { removeUPFromUserPropertyKey } from "./utils.ts";
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
-// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
 const require = createRequire(import.meta.url);
-const { dot } = require('../../../../../api/utils/common');
+const { dot }: import('../../../../../types/common.d.ts').Common = require('../../../../../api/utils/common');
 
 // contains only the required properties. other ones are denoted with "[key: string]: any". which are
 // only populated from app_user to be used inside the template.

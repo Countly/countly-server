@@ -7,10 +7,9 @@ import { loadKafka, setupProducer } from './new/lib/kafka.ts';
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
-// @ts-expect-error TS1470 - import.meta is valid at runtime (Node 22 treats .ts with imports as ESM)
 const require = createRequire(import.meta.url);
-const plugins: any = require('../../pluginManager.ts');
-const common: any = require('../../../api/utils/common');
+const plugins: import('../../pluginManager.js').IPluginManager = require('../../pluginManager.ts');
+const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common');
 const log = common.log('push:ingestor');
 
 const ALL_PLATFORM_KEYS = Object.keys(platforms);

@@ -4,9 +4,8 @@ import { ApiPushSchema } from "./new/types/message.ts";
 import { ValidationError } from "./new/lib/error.ts";
 import { createRequire } from 'module';
 
-// @ts-expect-error TS1470
 const require = createRequire(import.meta.url);
-const common: any = require("../../../api/utils/common");
+const common: import('../../../types/common.d.ts').Common = require("../../../api/utils/common");
 const log = common.log("push:api:tx");
 
 /**

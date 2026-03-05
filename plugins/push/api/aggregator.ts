@@ -2,10 +2,9 @@ import { autoOnCohort } from './api-auto.ts';
 import { loadKafka, setupProducer } from './new/lib/kafka.ts';
 import { createRequire } from 'module';
 
-// @ts-expect-error TS1470
 const require = createRequire(import.meta.url);
-const plugins: any = require('../../pluginManager.ts');
-const common: any = require('../../../api/utils/common.js');
+const plugins: import('../../pluginManager.js').IPluginManager = require('../../pluginManager.ts');
+const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common.js');
 const log = common.log('push:aggregator');
 
 (async() => {
