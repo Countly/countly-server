@@ -872,10 +872,14 @@ function transformAppVersion(inpVersion) {
             return state.userFilter;
         };
 
+        _crashgroupSubmodule.getters.crashesQuery = function(state) {
+            return state.crashesQuery;
+        };
+
         _crashgroupSubmodule.actions.initialize = function(context, payload) {
             context.state.isLoading = true;
             context.state.crashgroup._id = payload.crashgroupId;
-            context.state.crashgroup.crashesQuery = payload.crashesQuery || {};
+            context.state.crashesQuery = payload.crashesQuery || {};
             context.dispatch("fetchBarData", {value: "os_version", period: "7days"});
             return context.dispatch("refresh");
         };
@@ -938,7 +942,7 @@ function transformAppVersion(inpVersion) {
                         period: countlyCommon.getPeriodForAjax(),
                         method: 'crashes',
                         group: context.state.crashgroup._id,
-                        crashes_query: JSON.stringify(context.state.crashgroup.crashesQuery),
+                        crashes_query: JSON.stringify(countlyCrashes.modifyCrashesDrillQuery(context.state.crashesQuery)),
                         display_loader: true
                     },
                     dataType: 'json',
@@ -1455,6 +1459,21 @@ function transformAppVersion(inpVersion) {
             }
 
             resultQuery.$and.push({$or: group});
+        });
+
+        return resultQuery;
+    };
+
+    countlyCrashes.modifyCrashesDrillQuery = function(inpQuery) {
+        var resultQuery = {};
+
+        Object.keys(inpQuery).forEach(function(key) {
+            if (key === 'app_version_list') {
+                resultQuery['sg.app_version'] = inpQuery[key];
+            }
+            else {
+                resultQuery['sg.' + key] = inpQuery[key];
+            }
         });
 
         return resultQuery;

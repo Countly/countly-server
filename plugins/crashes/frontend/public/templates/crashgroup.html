@@ -12,6 +12,9 @@
                 <div class="bu-mt-4 bu-is-flex">
                     <crash-badge :type="badge.type" v-html="badge.content" v-for="badge in badges"></crash-badge>
                 </div>
+                <div class="bu-mt-4 bu-is-flex" v-if="hasCrashesQuery">
+                    <cly-qb-bar feature="crashes" v-model="crashesQuery" :property-source-config="{drill: false}" queryStore="crashgroups" :additionalProperties="crashesQueryProperties" :additionalRules="crashesQueryRules" format="crashgroups" :disabled="true" :hide-controls="true"></cly-qb-bar>
+                </div>
             </div>
         </template>
         <template v-slot:header-right>
