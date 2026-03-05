@@ -35,12 +35,15 @@ module.exports.autoOnCohort = function(entry, cohort, uids) {
         // },
         typ = entry ? 'enter' : 'exit';
 
-    let pushApi = plugins.getPluginsApis().push;
-    if (!pushApi || !pushApi.cache || typeof pushApi.cache.iterate !== 'function') {
+    let apis = plugins.getPluginsApis && plugins.getPluginsApis();
+    let pushApi = apis && apis.push;
+    let cache = pushApi && pushApi.cache;
+
+    if (!cache || typeof cache.iterate !== 'function') {
         return;
     }
 
-    pushApi.cache.iterate((k, msg) => {
+    cache.iterate((k, msg) => {
         if (msg.app.toString() === aid) {
             let trigger = msg.triggerFind(t =>
                     t.kind === TriggerKind.Cohort &&
@@ -179,12 +182,15 @@ module.exports.autoOnEvent = function(appId, uid, keys, events) {
 
     logEvents.d('Checking event keys %j', keys);
 
-    let pushApi = plugins.getPluginsApis().push;
-    if (!pushApi || !pushApi.cache || typeof pushApi.cache.iterate !== 'function') {
+    let apis = plugins.getPluginsApis && plugins.getPluginsApis();
+    let pushApi = apis && apis.push;
+    let cache = pushApi && pushApi.cache;
+
+    if (!cache || typeof cache.iterate !== 'function') {
         return;
     }
 
-    pushApi.cache.iterate((k, msg) => {
+    cache.iterate((k, msg) => {
         logEvents.d('Checking message %s (triggers %j)', k, msg.triggers.map(t => t.kind));
         if (msg.app.toString() === aid) {
             let trigger = msg.triggerFind(t =>
