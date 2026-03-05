@@ -127,15 +127,37 @@ Cypress.Commands.add('uploadFile', (filePath) => {
 });
 
 Cypress.Commands.add("shouldTooltipContainText", (element, text) => {
-    cy.getElement(element)
-        .eq(0).invoke('show')
-        .trigger('mouseenter');
 
-    cy.shouldContainText('.tooltip-inner', text);
+    setDebugContext({
+        selector: `[data-test-id="${element}"]`,
+        assertion: 'tooltip contain text',
+        expected: text
+    });
 
     cy.getElement(element)
-        .eq(0).invoke('show')
-        .trigger('mouseleave');
+        .eq(0)
+        .trigger('mouseenter', { force: true });
+
+    cy.get('.tooltip-inner:visible')
+        .last()
+        .should(($el) => {
+
+            const actual = $el.text().trim();
+
+            setDebugContext({
+                selector: `[data-test-id="${element}"]`,
+                assertion: 'tooltip contain text',
+                expected: text,
+                actual
+            });
+
+            expect(actual).to.contain(text);
+        });
+
+    cy.getElement(element)
+        .eq(0)
+        .trigger('mouseleave', { force: true });
+
 });
 
 Cypress.Commands.add("shouldBeVisible", (element) => {
@@ -200,19 +222,19 @@ Cypress.Commands.add("shouldContainText", (element, text) => {
 
     cy.getElement(element).then(($el) => {
 
-        const actual = $el.text().trim()
+        const actual = $el.text().trim();
 
         setDebugContext({
             assertion: 'contain text',
             expected: text,
             actual
-        })
+        });
 
-        expect(actual).to.contain(text)
+        expect(actual).to.contain(text);
 
-    })
+    });
 
-})
+});
 
 Cypress.Commands.add("shouldNotContainText", (element, text) => {
 
