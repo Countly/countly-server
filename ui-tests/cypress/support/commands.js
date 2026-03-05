@@ -198,15 +198,21 @@ Cypress.Commands.add("shouldNotBeHasDisabledClass", (element) => {
 
 Cypress.Commands.add("shouldContainText", (element, text) => {
 
-    setDebugContext({
-        assertion: 'contain text',
-        expected: text
-    });
+    cy.getElement(element).then(($el) => {
 
-    cy.getElement(element)
-        .should('contain', text);
+        const actual = $el.text().trim()
 
-});
+        setDebugContext({
+            assertion: 'contain text',
+            expected: text,
+            actual
+        })
+
+        expect(actual).to.contain(text)
+
+    })
+
+})
 
 Cypress.Commands.add("shouldNotContainText", (element, text) => {
 
