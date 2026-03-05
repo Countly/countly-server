@@ -15,7 +15,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         element: applicationsPageElements.LISTBOX_SEARCH_INPUT,
-        elementPlaceHolder: "Search in 1 App"
+        elementPlaceHolder: "Search in 2 App"
     });
 
     cy.verifyElement({

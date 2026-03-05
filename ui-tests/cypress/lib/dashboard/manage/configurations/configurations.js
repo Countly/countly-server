@@ -1291,7 +1291,7 @@ const verifyPageElements = () => {
     cy.verifyElement({
         element: configurationsListBoxElements({ subFeature: SETTINGS.INCOMING_DATA_LOGS.DATA_LOGGING_STATE }).SELECTED_SUBFEATURE_SELECT,
         elementPlaceHolder: "Select",
-        value: "Automatic"
+        value: "Automatic2"
 
     });
 

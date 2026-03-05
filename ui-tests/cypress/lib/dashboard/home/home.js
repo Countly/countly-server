@@ -77,7 +77,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.AUDIENCE.AVG_SESSION_DURATION_LABEL,
         labelText: "Avg. Session Duration",
         tooltipElement: homePageElements.AUDIENCE.AVG_SESSION_DURATION_TOOLTIP,
-        tooltipText: "The average amount of time spent per session on your application. It is calculated by dividing total duration spent across sessions by the total number of sessions."
+        tooltipText: "T2he average amount of time spent per session on your application. It is calculated by dividing total duration spent across sessions by the total number of sessions."
     });
 
     cy.verifyElement({

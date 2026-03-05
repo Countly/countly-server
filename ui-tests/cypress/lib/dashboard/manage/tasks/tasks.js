@@ -333,7 +333,6 @@ const verifyReportManagerAutomaticallyCreatedDataTable = ({
 };
 
 const clickManuallyCreatedTab = () => {
-    cy.scrollPageToTop();
     cy.clickElement(reportManagerPageElements.TAB_MANUALLY_CREATED);
 };
 

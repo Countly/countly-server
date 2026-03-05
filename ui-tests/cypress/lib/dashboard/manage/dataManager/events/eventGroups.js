@@ -38,7 +38,7 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.verifyElement({
-        isElementVisible: false,
+        isElementVisible: true,
         element: eventsGroupsDataTableElements().COLUMN_NAME_EVENT_GROUP_NAME_SORTABLE_ICON,
     });
 
