@@ -15,7 +15,6 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
-import { getDebugContext } from './debugContext';
 
 //When Cypress detects uncaught errors originating from application it will automatically fail the current test.
 //This behavior is configurable, and you can choose to turn this off by listening to the uncaught:exception event.
@@ -36,36 +35,31 @@ Cypress.on('uncaught:exception', (err, runnable) => {
 // making it difficult to understand where and why a test failed.
 // This formatter provides a structured and readable failure output
 // without requiring changes in existing test cases.
+import { getDebugContext } from './debugContext'
+
 Cypress.on('fail', (err, runnable) => {
 
-    const ctx = getDebugContext();
+  const ctx = getDebugContext()
 
-    const url = Cypress.state('window')?.location?.href;
+  const url = Cypress.state('window')?.location?.href || 'unknown'
 
-    const message = `
+  const formattedError = `
 ========== CYPRESS FAILURE ==========
 
-SPEC     : ${Cypress.spec?.name}
-SUITE    : ${runnable?.parent?.title}
-TEST     : ${runnable?.title}
+SPEC     : ${Cypress.spec?.name || 'unknown'}
+SUITE    : ${runnable?.parent?.title || 'unknown'}
+TEST     : ${runnable?.title || 'unknown'}
 URL      : ${url}
 
-SELECTOR : ${ctx.selector}
-ASSERT   : ${ctx.assertion}
-EXPECTED : ${ctx.expected}
-ACTUAL   : ${ctx.actual}
+SELECTOR : ${ctx.selector || 'unknown'}
+ASSERT   : ${ctx.assertion || 'unknown'}
+EXPECTED : ${ctx.expected ?? 'unknown'}
+ACTUAL   : ${ctx.actual ?? 'unknown'}
 
-ERROR    : ${err.message}
+ORIGINAL : ${err.message}
 
 =====================================
-`;
+`
 
-    Cypress.log({
-        name: "FAIL",
-        message
-    });
-
-    console.error(message);
-
-    throw err;
-});
+  throw new Error(formattedError)
+})
