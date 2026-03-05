@@ -49,6 +49,9 @@
     <cly-main>
         <div v-loading="isLoading" v-if="isLoading" class="bu-mt-6"></div>
         <div v-else>
+            <div class="bu-mb-5 bu-is-flex" v-if="hasCrashesQuery">
+                <cly-qb-bar feature="crashes" v-model="crashesQuery" :property-source-config="{drill: false}" queryStore="crashgroups" :additionalProperties="crashesQueryProperties" :additionalRules="crashesQueryRules" format="crashgroups" :disabled="true" :hide-controls="true"></cly-qb-bar>
+            </div>
             <cly-section class="crashgroup-common-metrics" v-if="!!commonMetrics">
                 <div class="crashgroup-common-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                     <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-platform')"
