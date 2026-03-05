@@ -139,45 +139,60 @@ Cypress.Commands.add("shouldTooltipContainText", (element, text) => {
 });
 
 Cypress.Commands.add("shouldBeVisible", (element) => {
+
     cy.getElement(element)
-        .should('exist')
-        .should('be.visible')
-        .then(($el) => {
+        .should(($el) => {
+
+            const actual = Cypress.$($el).is(':visible');
 
             setDebugContext({
                 assertion: 'be visible',
                 expected: true,
-                actual: Cypress.$($el).is(':visible')
+                actual
             });
+
+            expect(actual).to.equal(true);
+
         });
+
 });
 
 Cypress.Commands.add("shouldBeDisabled", (element) => {
+
     cy.getElement(element)
-        .should('exist')
-        .should('be.disabled')
-        .then(($el) => {
+        .should(($el) => {
+
+            const actual = $el.prop('disabled');
 
             setDebugContext({
                 assertion: 'be disabled',
                 expected: true,
-                actual: $el.prop('disabled')
+                actual
             });
+
+            expect(actual).to.equal(true);
+
         });
+
 });
 
 Cypress.Commands.add("shouldNotBeDisabled", (element) => {
+
     cy.getElement(element)
-        .should('exist')
-        .should('not.be.disabled')
-        .then(($el) => {
+        .should(($el) => {
+
+            const actual = $el.prop('disabled');
 
             setDebugContext({
                 assertion: 'not be disabled',
                 expected: false,
-                actual: $el.prop('disabled')
+                actual
             });
+
+            expect(actual).to.equal(false);
+
         });
+
 });
 
 Cypress.Commands.add("shouldBeHasDisabledClass", (element) => {
@@ -203,10 +218,9 @@ Cypress.Commands.add("shouldNotBeHasDisabledClass", (element) => {
 });
 
 Cypress.Commands.add("shouldContainText", (element, text) => {
+
     cy.getElement(element)
-        .should('exist')
-        .should('contain', text)
-        .then(($el) => {
+        .should(($el) => {
 
             const actual = $el.text().trim();
 
@@ -215,14 +229,17 @@ Cypress.Commands.add("shouldContainText", (element, text) => {
                 expected: text,
                 actual
             });
+
+            expect(actual).to.contain(text);
+
         });
+
 });
 
 Cypress.Commands.add("shouldNotContainText", (element, text) => {
+
     cy.getElement(element)
-        .should('exist')
-        .should('not.contain', text)
-        .then(($el) => {
+        .should(($el) => {
 
             const actual = $el.text().trim();
 
@@ -231,7 +248,11 @@ Cypress.Commands.add("shouldNotContainText", (element, text) => {
                 expected: text,
                 actual
             });
+
+            expect(actual).not.to.contain(text);
+
         });
+
 });
 
 Cypress.Commands.add("shouldBeEqual", (element, text) => {
@@ -252,19 +273,22 @@ Cypress.Commands.add("shouldBeEqual", (element, text) => {
 });
 
 Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
-    cy.getElement(element).then(($el) => {
 
-        const actual = $el.text().trim();
+    cy.getElement(element)
+        .should(($el) => {
 
-        setDebugContext({
-            assertion: 'not be equal',
-            expected: text,
-            actual
+            const actual = $el.text().trim();
+
+            setDebugContext({
+                assertion: 'not be equal',
+                expected: text,
+                actual
+            });
+
+            expect(actual).not.to.equal(text);
+
         });
 
-        expect(actual).not.to.equal(text);
-
-    });
 });
 
 Cypress.Commands.add("shouldPlaceholderContainText", (element, text) => {
@@ -317,16 +341,20 @@ Cypress.Commands.add("shouldHrefContainUrl", (element, url) => {
 Cypress.Commands.add("shouldHaveValue", (element, value) => {
 
     cy.getElement(element)
-        .should('exist')
-        .should('have.value', value)
-        .then(($el) => {
+        .should(($el) => {
+
+            const actual = $el.val();
 
             setDebugContext({
                 assertion: 'have value',
                 expected: value,
-                actual: $el.val()
+                actual
             });
+
+            expect(actual).to.equal(value);
+
         });
+
 });
 
 Cypress.Commands.add("shouldUrlInclude", (url) => {
@@ -497,7 +525,7 @@ Cypress.Commands.add('verifyElement', ({
         }
 
         if (selectedIconColor != null) {
-            var selector;
+            let selector;
             unVisibleElement != null ? selector = unVisibleElement : selector = element;
             cy.getElement(`[data-test-id="${selector}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedIconColor));
         }

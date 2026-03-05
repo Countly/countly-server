@@ -35,15 +35,15 @@ Cypress.on('uncaught:exception', (err, runnable) => {
 // making it difficult to understand where and why a test failed.
 // This formatter provides a structured and readable failure output
 // without requiring changes in existing test cases.
-import { getDebugContext } from './debugContext'
+import { getDebugContext } from './debugContext';
 
 Cypress.on('fail', (err, runnable) => {
 
-  const ctx = getDebugContext()
+    const ctx = getDebugContext();
 
-  const url = Cypress.state('window')?.location?.href || 'unknown'
+    const url = Cypress.state('window')?.location?.href || 'unknown';
 
-  const formattedError = `
+    const formattedError = `
 ========== CYPRESS FAILURE ==========
 
 SPEC     : ${Cypress.spec?.name || 'unknown'}
@@ -59,7 +59,7 @@ ACTUAL   : ${ctx.actual ?? 'unknown'}
 ORIGINAL : ${err.message}
 
 =====================================
-`
+`;
 
-  throw new Error(formattedError)
-})
+    throw new Error(formattedError);
+});
