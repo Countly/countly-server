@@ -2,7 +2,7 @@
 /* globals _, app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV, countlyAuth */
 
 (function() {
-    var groupId, crashId;
+    var crashId;
     var FEATURE_NAME = 'crashes';
 
     var CrashStatisticsTabLabelView = countlyVue.views.create({
@@ -1196,7 +1196,17 @@
             },
         },
         beforeCreate: function() {
-            return this.$store.dispatch("countlyCrashes/crashgroup/initialize", groupId);
+            var crashgroupId = (this.$route.params && this.$route.params.crashgroupId) || '';
+            var crashesQuery = undefined;
+            if (this.$route.params && this.$route.params.query) {
+                var tmpQuery = countlyCrashes.modifyQueries(this.$route.params.query.query);
+                crashesQuery = countlyCrashes.modifyExistsQueries(tmpQuery);
+            }
+
+            return this.$store.dispatch("countlyCrashes/crashgroup/initialize", {
+                crashgroupId: crashgroupId,
+                crashesQuery: crashesQuery,
+            });
         },
         mounted: function() {
             if (this.symbolicationEnabled) {
@@ -1528,17 +1538,34 @@
     });
 
     app.route("/crashes/:group", "crashgroup", function(group) {
-        groupId = group;
-        this.renderWhenReady(getCrashgroupView());
+        var view = getCrashgroupView();
+        view.params = {
+            crashgroupId: group,
+        };
+
+        this.renderWhenReady(view);
     });
 
-    app.route("/crashes/:group/filter/*query", "crashgroup", function(group) {
-        groupId = group;
-        this.renderWhenReady(getCrashgroupView());
+    app.route("/crashes/:group/filter/*query", "crashgroup", function(group, rawQuery) {
+        var parsedQuery = {};
+
+        try {
+            parsedQuery = JSON.parse(rawQuery);
+        }
+        catch (err) {
+            // no need to do anything, default parsedQuery is {}
+        }
+
+        var view = getCrashgroupView();
+        view.params = {
+            crashgroupId: group,
+            query: parsedQuery,
+        };
+
+        this.renderWhenReady(view);
     });
 
     app.route("/crashes/:group/binary-images/:crash", "crashgroup", function(group, crash) {
-        groupId = group;
         crashId = crash;
         this.renderWhenReady(getBinaryImagesView());
     });

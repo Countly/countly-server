@@ -657,7 +657,8 @@ function transformAppVersion(inpVersion) {
                         version: "all",
                     },
                     isLoading: true,
-                    isGraphLoading: true
+                    isGraphLoading: true,
+                    crashesQuery: {},
                 };
             },
             getters: {},
@@ -871,9 +872,10 @@ function transformAppVersion(inpVersion) {
             return state.userFilter;
         };
 
-        _crashgroupSubmodule.actions.initialize = function(context, groupId) {
+        _crashgroupSubmodule.actions.initialize = function(context, payload) {
             context.state.isLoading = true;
-            context.state.crashgroup._id = groupId;
+            context.state.crashgroup._id = payload.crashgroupId;
+            context.state.crashgroup.crashesQuery = payload.crashesQuery || {};
             context.dispatch("fetchBarData", {value: "os_version", period: "7days"});
             return context.dispatch("refresh");
         };
@@ -923,22 +925,23 @@ function transformAppVersion(inpVersion) {
         };
 
         _crashgroupSubmodule.actions.refresh = function(context) {
-            if (typeof context.state.crashgroup._id === "undefined") {
+            if (typeof context.state.crashgroup._id === 'undefined') {
                 return;
             }
 
             return new Promise(function(resolve, reject) {
                 countlyVue.$.ajax({
-                    type: "GET",
+                    type: 'GET',
                     url: countlyCommon.API_PARTS.data.r,
                     data: {
-                        "app_id": countlyCommon.ACTIVE_APP_ID,
-                        "period": countlyCommon.getPeriodForAjax(),
-                        "method": "crashes",
-                        "group": context.state.crashgroup._id,
-                        "display_loader": true
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        period: countlyCommon.getPeriodForAjax(),
+                        method: 'crashes',
+                        group: context.state.crashgroup._id,
+                        crashes_query: JSON.stringify(context.state.crashgroup.crashesQuery),
+                        display_loader: true
                     },
-                    dataType: "json",
+                    dataType: 'json',
                     success: function(crashgroupJson) {
                         if (crashgroupJson.data && crashgroupJson.data.length > 0) {
                             var userIds = {};
