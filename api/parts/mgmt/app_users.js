@@ -1230,6 +1230,7 @@ usersApi.export = function(app_id, query, params, callback) {
                         export_commands: export_commands,
                         query: query,
                         uids: res[0].uid,
+                        export_id: export_id,
                         export_folder: export_folder
                     }, function() {
                         var commands = [];
