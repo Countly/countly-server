@@ -239,12 +239,24 @@ const FEATURE_NAME = 'crashes';
                                             }
                                         }
                                     }
+
                                     //Fetch from drill. If not enough - check old collections.
+                                    let crashesQuery = {};
+                                    if (params.qstring.crashes_query && params.qstring.crashes_query !== "") {
+                                        try {
+                                            crashesQuery = JSON.parse(params.qstring.crashes_query);
+                                        }
+                                        catch (ex) {
+                                            // Just log the error, crashesQuery will default to {}
+                                            log.d('Cannot parse crashes query', params.qstring.crashes_query);
+                                        }
+                                    }
 
                                     var query = {
-                                        "a": (params.app_id + ""),
-                                        "n": params.qstring.group,
-                                        "e": "[CLY]_crash"
+                                        a: (params.app_id + ''),
+                                        n: params.qstring.group,
+                                        e: '[CLY]_crash',
+                                        ...crashesQuery,
                                     };
 
                                     var limit = plugins.getConfig("crashes").report_limit;
