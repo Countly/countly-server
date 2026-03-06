@@ -43,6 +43,11 @@ Cypress.on('fail', (err, runnable) => {
 
     const url = Cypress.state('window')?.location?.href || 'unknown';
 
+    const actual =
+        ctx.actual !== undefined
+            ? ctx.actual
+            : 'not evaluated';
+
     const formattedError = `
 ========== CYPRESS FAILURE ==========
 
@@ -54,7 +59,7 @@ URL      : ${url}
 SELECTOR : ${ctx.selector || 'unknown'}
 ASSERT   : ${ctx.assertion || 'element exists'}
 EXPECTED : ${ctx.expected ?? 'element should exist'}
-ACTUAL   : ${ctx.actual ?? 'not found'}
+ACTUAL   : ${actual}
 
 ORIGINAL : ${err.message}
 
