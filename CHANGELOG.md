@@ -1,3 +1,7 @@
+## Version 25.03.xx
+Fixes:
+- [web] Use Client Hints
+
 ## Version 25.03.37
 Fixes:
 - [core] Update home page download notification text
