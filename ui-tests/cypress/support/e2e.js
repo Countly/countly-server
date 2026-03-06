@@ -52,9 +52,9 @@ TEST     : ${runnable?.title || 'unknown'}
 URL      : ${url}
 
 SELECTOR : ${ctx.selector || 'unknown'}
-ASSERT   : ${ctx.assertion || 'unknown'}
-EXPECTED : ${ctx.expected ?? 'unknown'}
-ACTUAL   : ${ctx.actual ?? 'unknown'}
+ASSERT   : ${ctx.assertion || 'element exists'}
+EXPECTED : ${ctx.expected ?? 'element should exist'}
+ACTUAL   : ${ctx.actual ?? 'not found'}
 
 ORIGINAL : ${err.message}
 
