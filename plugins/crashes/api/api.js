@@ -1496,16 +1496,23 @@ plugins.setConfigs("crashes", {
             break;
         case 'add_comment':
             validateCreate(obParams, FEATURE_NAME, function() {
+                var args = obParams.qstring.args || {};
+
+                if (!args.app_id || !args.crash_id) {
+                    common.returnMessage(obParams, 400, 'Missing params');
+                    return true;
+                }
+
                 var comment = {};
-                if (obParams.qstring.args.time) {
-                    comment.time = obParams.qstring.args.time;
+                if (args.time) {
+                    comment.time = args.time;
                 }
                 else {
                     comment.time = new Date().getTime();
                 }
 
-                if (obParams.qstring.args.text) {
-                    comment.text = obParams.qstring.args.text;
+                if (args.text) {
+                    comment.text = args.text;
                 }
                 else {
                     comment.text = "";
@@ -1513,9 +1520,9 @@ plugins.setConfigs("crashes", {
 
                 comment.author = obParams.member.full_name;
                 comment.author_id = obParams.member._id + "";
-                comment._id = common.crypto.createHash('sha1').update(obParams.qstring.args.app_id + obParams.qstring.args.crash_id + JSON.stringify(comment) + "").digest('hex');
-                common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).update({'_id': obParams.qstring.args.crash_id }, {"$push": {'comments': comment}}, function() {
-                    plugins.dispatch("/systemlogs", {params: obParams, action: "crash_added_comment", data: {app_id: obParams.qstring.args.app_id, crash_id: obParams.qstring.args.crash_id, comment: comment}});
+                comment._id = common.crypto.createHash('sha1').update(args.app_id + args.crash_id + JSON.stringify(comment) + "").digest('hex');
+                common.db.collection('app_crashgroups' + args.app_id).update({'_id': args.crash_id }, {"$push": {'comments': comment}}, function() {
+                    plugins.dispatch("/systemlogs", {params: obParams, action: "crash_added_comment", data: {app_id: args.app_id, crash_id: args.crash_id, comment: comment}});
                     common.returnMessage(obParams, 200, 'Success');
                     return true;
                 });
@@ -1523,11 +1530,18 @@ plugins.setConfigs("crashes", {
             break;
         case 'edit_comment':
             validateUpdate(obParams, FEATURE_NAME, function() {
-                common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).findOne({'_id': obParams.qstring.args.crash_id }, function(err, crash) {
+                var args = obParams.qstring.args || {};
+
+                if (!args.app_id || !args.crash_id || !args.comment_id) {
+                    common.returnMessage(obParams, 400, 'Missing params');
+                    return true;
+                }
+
+                common.db.collection('app_crashgroups' + args.app_id).findOne({'_id': args.crash_id }, function(err, crash) {
                     var comment;
                     if (crash && crash.comments) {
                         for (var i = 0; i < crash.comments.length; i++) {
-                            if (crash.comments[i]._id === obParams.qstring.args.comment_id) {
+                            if (crash.comments[i]._id === args.comment_id) {
                                 comment = crash.comments[i];
                                 break;
                             }
@@ -1535,19 +1549,19 @@ plugins.setConfigs("crashes", {
                     }
                     if (comment && (comment.author_id === obParams.member._id + "" || obParams.member.global_admin)) {
                         var commentBefore = JSON.parse(JSON.stringify(comment));
-                        if (obParams.qstring.args.time) {
-                            comment.edit_time = obParams.qstring.args.time;
+                        if (args.time) {
+                            comment.edit_time = args.time;
                         }
                         else {
                             comment.edit_time = new Date().getTime();
                         }
 
-                        if (obParams.qstring.args.text) {
-                            comment.text = obParams.qstring.args.text;
+                        if (args.text) {
+                            comment.text = args.text;
                         }
 
-                        common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).update({'_id': obParams.qstring.args.crash_id, "comments._id": obParams.qstring.args.comment_id}, {$set: {"comments.$": comment}}, function() {
-                            plugins.dispatch("/systemlogs", {params: obParams, action: "crash_edited_comment", data: {app_id: obParams.qstring.args.app_id, crash_id: obParams.qstring.args.crash_id, _id: obParams.qstring.args.comment_id, before: commentBefore, update: comment}});
+                        common.db.collection('app_crashgroups' + args.app_id).update({'_id': args.crash_id, "comments._id": args.comment_id}, {$set: {"comments.$": comment}}, function() {
+                            plugins.dispatch("/systemlogs", {params: obParams, action: "crash_edited_comment", data: {app_id: args.app_id, crash_id: args.crash_id, _id: args.comment_id, before: commentBefore, update: comment}});
                             common.returnMessage(obParams, 200, 'Success');
                             return true;
                         });
@@ -1561,20 +1575,27 @@ plugins.setConfigs("crashes", {
             break;
         case 'delete_comment':
             validateDelete(obParams, FEATURE_NAME, function() {
-                common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).findOne({'_id': obParams.qstring.args.crash_id }, function(err, crash) {
+                var args = obParams.qstring.args || {};
+
+                if (!args.app_id || !args.crash_id || !args.comment_id) {
+                    common.returnMessage(obParams, 400, 'Missing params');
+                    return true;
+                }
+
+                common.db.collection('app_crashgroups' + args.app_id).findOne({'_id': args.crash_id }, function(err, crash) {
                     var comment;
 
                     if (crash && crash.comments) {
                         for (var i = 0; i < crash.comments.length; i++) {
-                            if (crash.comments[i]._id === obParams.qstring.args.comment_id) {
+                            if (crash.comments[i]._id === args.comment_id) {
                                 comment = crash.comments[i];
                                 break;
                             }
                         }
                     }
                     if (comment && (comment.author_id === obParams.member._id + "" || obParams.member.global_admin)) {
-                        common.db.collection('app_crashgroups' + obParams.qstring.args.app_id).update({'_id': obParams.qstring.args.crash_id }, { $pull: { comments: { _id: obParams.qstring.args.comment_id } } }, function() {
-                            plugins.dispatch("/systemlogs", {params: obParams, action: "crash_deleted_comment", data: {app_id: obParams.qstring.args.app_id, crash_id: obParams.qstring.args.crash_id, comment: comment}});
+                        common.db.collection('app_crashgroups' + args.app_id).update({'_id': args.crash_id }, { $pull: { comments: { _id: args.comment_id } } }, function() {
+                            plugins.dispatch("/systemlogs", {params: obParams, action: "crash_deleted_comment", data: {app_id: args.app_id, crash_id: args.crash_id, comment: comment}});
                             common.returnMessage(obParams, 200, 'Success');
                             return true;
                         });
