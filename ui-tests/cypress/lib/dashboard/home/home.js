@@ -203,7 +203,7 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.scrollPageToBottom('.main-view');
-    
+
     cy.verifyElement({
         labelElement: homePageElements.COUNTRIES.LABEL,
         labelText: "Countries",
