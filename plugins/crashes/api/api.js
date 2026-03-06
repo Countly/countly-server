@@ -1299,13 +1299,32 @@ plugins.setConfigs("crashes", {
     plugins.register("/i/crashes", function(ob) {
         var obParams = ob.params;
         var paths = ob.paths;
-        if (obParams.qstring.args) {
-            try {
+
+        // Standard args parsing & normalization pattern
+        if (!obParams.qstring.args) {
+            common.returnMessage(obParams, 400, 'Error: args not found');
+            return true;
+        }
+
+        try {
+            if (typeof obParams.qstring.args === "string") {
                 obParams.qstring.args = JSON.parse(obParams.qstring.args);
             }
-            catch (SyntaxError) {
-                console.log('Parse ' + obParams.apiPath + ' JSON failed');
-            }
+        }
+        catch (SyntaxError) {
+            console.log('Parse %s JSON failed %s', obParams.apiPath, obParams.req && obParams.req.url, obParams.req && obParams.req.body);
+            common.returnMessage(obParams, 400, 'Error: could not parse args');
+            return true;
+        }
+
+        // Normalize / validate app_id between query string and args
+        if (obParams.qstring.app_id && obParams.qstring.args.app_id && obParams.qstring.app_id !== obParams.qstring.args.app_id) {
+            common.returnMessage(obParams, 400, 'Error: app_id mismatch');
+            return true;
+        }
+
+        if (!obParams.qstring.app_id && obParams.qstring.args.app_id) {
+            obParams.qstring.app_id = obParams.qstring.args.app_id;
         }
 
         switch (paths[3]) {
@@ -1497,9 +1516,15 @@ plugins.setConfigs("crashes", {
         case 'add_comment':
             validateCreate(obParams, FEATURE_NAME, function() {
                 var args = obParams.qstring.args || {};
+                var appId = obParams.qstring.app_id;
 
-                if (!args.app_id || !args.crash_id) {
+                if (!appId || !args.crash_id) {
                     common.returnMessage(obParams, 400, 'Missing params');
+                    return true;
+                }
+
+                if (args.app_id && args.app_id !== appId) {
+                    common.returnMessage(obParams, 403, 'Error: app_id mismatch');
                     return true;
                 }
 
@@ -1520,9 +1545,9 @@ plugins.setConfigs("crashes", {
 
                 comment.author = obParams.member.full_name;
                 comment.author_id = obParams.member._id + "";
-                comment._id = common.crypto.createHash('sha1').update(args.app_id + args.crash_id + JSON.stringify(comment) + "").digest('hex');
-                common.db.collection('app_crashgroups' + args.app_id).update({'_id': args.crash_id }, {"$push": {'comments': comment}}, function() {
-                    plugins.dispatch("/systemlogs", {params: obParams, action: "crash_added_comment", data: {app_id: args.app_id, crash_id: args.crash_id, comment: comment}});
+                comment._id = common.crypto.createHash('sha1').update(appId + args.crash_id + JSON.stringify(comment) + "").digest('hex');
+                common.db.collection('app_crashgroups' + appId).update({'_id': args.crash_id }, {"$push": {'comments': comment}}, function() {
+                    plugins.dispatch("/systemlogs", {params: obParams, action: "crash_added_comment", data: {app_id: appId, crash_id: args.crash_id, comment: comment}});
                     common.returnMessage(obParams, 200, 'Success');
                     return true;
                 });
@@ -1531,13 +1556,19 @@ plugins.setConfigs("crashes", {
         case 'edit_comment':
             validateUpdate(obParams, FEATURE_NAME, function() {
                 var args = obParams.qstring.args || {};
+                var appId = obParams.qstring.app_id;
 
-                if (!args.app_id || !args.crash_id || !args.comment_id) {
+                if (!appId || !args.crash_id || !args.comment_id) {
                     common.returnMessage(obParams, 400, 'Missing params');
                     return true;
                 }
 
-                common.db.collection('app_crashgroups' + args.app_id).findOne({'_id': args.crash_id }, function(err, crash) {
+                if (args.app_id && args.app_id !== appId) {
+                    common.returnMessage(obParams, 403, 'Error: app_id mismatch');
+                    return true;
+                }
+
+                common.db.collection('app_crashgroups' + appId).findOne({'_id': args.crash_id }, function(err, crash) {
                     var comment;
                     if (crash && crash.comments) {
                         for (var i = 0; i < crash.comments.length; i++) {
@@ -1560,8 +1591,8 @@ plugins.setConfigs("crashes", {
                             comment.text = args.text;
                         }
 
-                        common.db.collection('app_crashgroups' + args.app_id).update({'_id': args.crash_id, "comments._id": args.comment_id}, {$set: {"comments.$": comment}}, function() {
-                            plugins.dispatch("/systemlogs", {params: obParams, action: "crash_edited_comment", data: {app_id: args.app_id, crash_id: args.crash_id, _id: args.comment_id, before: commentBefore, update: comment}});
+                        common.db.collection('app_crashgroups' + appId).update({'_id': args.crash_id, "comments._id": args.comment_id}, {$set: {"comments.$": comment}}, function() {
+                            plugins.dispatch("/systemlogs", {params: obParams, action: "crash_edited_comment", data: {app_id: appId, crash_id: args.crash_id, _id: args.comment_id, before: commentBefore, update: comment}});
                             common.returnMessage(obParams, 200, 'Success');
                             return true;
                         });
@@ -1576,13 +1607,19 @@ plugins.setConfigs("crashes", {
         case 'delete_comment':
             validateDelete(obParams, FEATURE_NAME, function() {
                 var args = obParams.qstring.args || {};
+                var appId = obParams.qstring.app_id;
 
-                if (!args.app_id || !args.crash_id || !args.comment_id) {
+                if (!appId || !args.crash_id || !args.comment_id) {
                     common.returnMessage(obParams, 400, 'Missing params');
                     return true;
                 }
 
-                common.db.collection('app_crashgroups' + args.app_id).findOne({'_id': args.crash_id }, function(err, crash) {
+                if (args.app_id && args.app_id !== appId) {
+                    common.returnMessage(obParams, 403, 'Error: app_id mismatch');
+                    return true;
+                }
+
+                common.db.collection('app_crashgroups' + appId).findOne({'_id': args.crash_id }, function(err, crash) {
                     var comment;
 
                     if (crash && crash.comments) {
@@ -1594,8 +1631,8 @@ plugins.setConfigs("crashes", {
                         }
                     }
                     if (comment && (comment.author_id === obParams.member._id + "" || obParams.member.global_admin)) {
-                        common.db.collection('app_crashgroups' + args.app_id).update({'_id': args.crash_id }, { $pull: { comments: { _id: args.comment_id } } }, function() {
-                            plugins.dispatch("/systemlogs", {params: obParams, action: "crash_deleted_comment", data: {app_id: args.app_id, crash_id: args.crash_id, comment: comment}});
+                        common.db.collection('app_crashgroups' + appId).update({'_id': args.crash_id }, { $pull: { comments: { _id: args.comment_id } } }, function() {
+                            plugins.dispatch("/systemlogs", {params: obParams, action: "crash_deleted_comment", data: {app_id: appId, crash_id: args.crash_id, comment: comment}});
                             common.returnMessage(obParams, 200, 'Success');
                             return true;
                         });
