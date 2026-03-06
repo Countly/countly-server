@@ -1,4 +1,4 @@
-/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, countlySession, CV, $ */
+/* globals _, app, countlyCrashSymbols, jQuery, countlyCommon, countlyAuth, countlyGlobal, countlyVue, countlyCrashesEventLogs, countlySession, CV, $ */
 
 /**
  *  Check if a version string follows some kind of scheme (there is only semantic versioning (semver) for now)
@@ -857,15 +857,40 @@ function transformAppVersion(inpVersion) {
         };
 
         _crashgroupSubmodule.getters.appVersions = function(state) {
-            return "data" in state.crashgroup ? Object.keys(state.crashgroup.app_version).map(function(version) {
-                return version.replaceAll(':', '.');
-            }) : [];
+            var crashesQuery = state.crashesQuery;
+
+            if ('data' in state.crashgroup) {
+                if (_.isEmpty(crashesQuery)) {
+                    return Object.keys(state.crashgroup.app_version).map(function(version) {
+                        return version.replaceAll(':', '.');
+                    });
+                }
+                else {
+                    var appVersionHash = {};
+
+                    state.crashgroup.data.forEach(function(item) {
+                        appVersionHash[item.app_version.replaceAll(':', '.')] = 1;
+                    });
+
+                    return Object.keys(appVersionHash);
+                }
+            }
+
+            return [];
         };
 
         _crashgroupSubmodule.getters.platforms = function(state) {
-            return "data" in state.crashgroup ? Object.keys(state.crashgroup.os_version).map(function(version) {
-                return state.crashgroup.os + ' ' + version.replaceAll(':', '.');
-            }) : [];
+            if ('data' in state.crashgroup) {
+                var platformHash = {};
+
+                state.crashgroup.data.forEach(function(item) {
+                    platformHash[state.crashgroup.os + ' ' + item.os_version.replaceAll(':', '.')] = 1;
+                });
+
+                return Object.keys(platformHash);
+            }
+
+            return [];
         };
 
         _crashgroupSubmodule.getters.userFilter = function(state) {
