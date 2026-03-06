@@ -53,7 +53,7 @@ Cypress.on('fail', (err, runnable) => {
     const actual =
         ctx.actual !== undefined
             ? ctx.actual
-            : 'not evaluated';
+            : 'assertion failed before evaluation';
 
     const formattedError = `
 ========== CYPRESS FAILURE ==========
