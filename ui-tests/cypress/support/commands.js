@@ -129,29 +129,24 @@ Cypress.Commands.add('uploadFile', (filePath) => {
 Cypress.Commands.add("shouldTooltipContainText", (element, text) => {
 
     setDebugContext({
-        selector: `[data-test-id="${element}"]`,
         assertion: 'tooltip contain text',
-        expected: text
+        expected: text,
+        actual: undefined
     });
 
     cy.getElement(element)
         .eq(0)
         .trigger('mouseenter', { force: true });
 
-    cy.get('.tooltip-inner:visible')
+    cy.get('.tooltip-inner:visible', { timeout: 4000 })
         .last()
-        .should(($el) => {
+        .should('contain', text)
+        .then(($el) => {
 
             const actual = $el.text().trim();
 
-            setDebugContext({
-                selector: `[data-test-id="${element}"]`,
-                assertion: 'tooltip contain text',
-                expected: text,
-                actual
-            });
+            setDebugContext({ actual });
 
-            expect(actual).to.contain(text);
         });
 
     cy.getElement(element)
@@ -164,7 +159,8 @@ Cypress.Commands.add("shouldBeVisible", (element) => {
 
     setDebugContext({
         assertion: 'be visible',
-        expected: true
+        expected: true,
+        actual: undefined
     });
 
     cy.getElement(element)
@@ -173,9 +169,7 @@ Cypress.Commands.add("shouldBeVisible", (element) => {
 
             const actual = Cypress.$($el).is(':visible');
 
-            setDebugContext({
-                actual
-            });
+            setDebugContext({ actual });
 
         });
 
@@ -185,11 +179,19 @@ Cypress.Commands.add("shouldBeDisabled", (element) => {
 
     setDebugContext({
         assertion: 'be disabled',
-        expected: true
+        expected: true,
+        actual: undefined
     });
 
     cy.getElement(element)
-        .should('be.disabled');
+        .should('be.disabled')
+        .then(($el) => {
+
+            const actual = $el.prop('disabled');
+
+            setDebugContext({ actual });
+
+        });
 
 });
 
@@ -197,11 +199,19 @@ Cypress.Commands.add("shouldNotBeDisabled", (element) => {
 
     setDebugContext({
         assertion: 'not be disabled',
-        expected: false
+        expected: false,
+        actual: undefined
     });
 
     cy.getElement(element)
-        .should('not.be.disabled');
+        .should('not.be.disabled')
+        .then(($el) => {
+
+            const actual = $el.prop('disabled');
+
+            setDebugContext({ actual });
+
+        });
 
 });
 
@@ -231,20 +241,17 @@ Cypress.Commands.add("shouldContainText", (element, text) => {
 
     setDebugContext({
         assertion: 'contain text',
-        expected: text
+        expected: text,
+        actual: undefined
     });
 
     cy.getElement(element)
         .should('contain', text)
-        .then($el => {
+        .then(($el) => {
 
             const actual = $el.text().trim();
 
-            setDebugContext({
-                assertion: 'contain text',
-                expected: text,
-                actual
-            });
+            setDebugContext({ actual });
 
         });
 
@@ -254,43 +261,60 @@ Cypress.Commands.add("shouldNotContainText", (element, text) => {
 
     setDebugContext({
         assertion: 'not contain text',
-        expected: text
+        expected: text,
+        actual: undefined
     });
 
     cy.getElement(element)
-        .should('not.contain', text);
+        .should('not.contain', text)
+        .then(($el) => {
+
+            const actual = $el.text().trim();
+
+            setDebugContext({ actual });
+
+        });
 
 });
 
 Cypress.Commands.add("shouldBeEqual", (element, text) => {
+
+    setDebugContext({
+        assertion: 'be equal',
+        expected: text,
+        actual: undefined
+    });
+
     cy.getElement(element)
-        .should(($el) => {
+        .should('exist')
+        .invoke('text')
+        .then((actual) => {
 
-            const actual = $el.text().trim();
+            actual = actual.trim();
 
-            setDebugContext({
-                assertion: 'be equal',
-                expected: text,
-                actual
-            });
+            setDebugContext({ actual });
 
             expect(actual).to.equal(text);
 
         });
+
 });
 
 Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
 
+    setDebugContext({
+        assertion: 'not be equal',
+        expected: text,
+        actual: undefined
+    });
+
     cy.getElement(element)
-        .should(($el) => {
+        .invoke('text')
+        .then((actual) => {
 
-            const actual = $el.text().trim();
+            actual = actual.trim();
 
-            setDebugContext({
-                assertion: 'not be equal',
-                expected: text,
-                actual
-            });
+            setDebugContext({ actual });
 
             expect(actual).not.to.equal(text);
 
@@ -349,11 +373,19 @@ Cypress.Commands.add("shouldHaveValue", (element, value) => {
 
     setDebugContext({
         assertion: 'have value',
-        expected: value
+        expected: value,
+        actual: undefined
     });
 
     cy.getElement(element)
-        .should('have.value', value);
+        .should('have.value', value)
+        .then(($el) => {
+
+            const actual = $el.val();
+
+            setDebugContext({ actual });
+
+        });
 
 });
 
@@ -361,10 +393,17 @@ Cypress.Commands.add("shouldUrlInclude", (url) => {
 
     setDebugContext({
         assertion: 'url include',
-        expected: url
+        expected: url,
+        actual: undefined
     });
 
-    cy.url().should('include', url);
+    cy.url()
+        .should('include', url)
+        .then((actual) => {
+
+            setDebugContext({ actual });
+
+        });
 
 });
 
@@ -580,8 +619,6 @@ Cypress.Commands.add('getElement', (selector, parent = null) => {
     setDebugContext({
         selector: finalSelector
     });
-
-    console.log(`SELECTOR: ${finalSelector}`);
 
     return cy.get(finalSelector);
 });

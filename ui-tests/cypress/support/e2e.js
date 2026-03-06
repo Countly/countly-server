@@ -20,10 +20,7 @@ import './commands';
 //This behavior is configurable, and you can choose to turn this off by listening to the uncaught:exception event.
 //Open the below code block after the "Cannot read properties of undefined..." errors occurred.
 //But firstly open an issue about the error.
-Cypress.on('uncaught:exception', (err, runnable) => {
-    // returning false here prevents Cypress from failing the test
-    return false;
-});
+Cypress.on('uncaught:exception', () => false);
 
 // Global Cypress error formatter.
 // This handler intercepts test failures and enriches the CI logs with
@@ -35,13 +32,23 @@ Cypress.on('uncaught:exception', (err, runnable) => {
 // making it difficult to understand where and why a test failed.
 // This formatter provides a structured and readable failure output
 // without requiring changes in existing test cases.
-import { getDebugContext } from './debugContext';
+import { getDebugContext, clearDebugContext } from './debugContext';
+
+beforeEach(() => {
+    clearDebugContext();
+});
 
 Cypress.on('fail', (err, runnable) => {
 
     const ctx = getDebugContext();
 
-    const url = Cypress.state('window')?.location?.href || 'unknown';
+    clearDebugContext();
+
+    const url =
+        Cypress.state('window') &&
+        Cypress.state('window').location
+            ? Cypress.state('window').location.href
+            : 'unknown';
 
     const actual =
         ctx.actual !== undefined
@@ -66,5 +73,7 @@ ORIGINAL : ${err.message}
 =====================================
 `;
 
-    throw new Error(formattedError);
+    err.message = formattedError;
+
+    throw err;
 });
