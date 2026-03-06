@@ -19,7 +19,7 @@ const verifyEmptyPageElements = () => {
 
     cy.verifyElement({
         labelElement: feedbackRatingWidgetsPageElements.RATING_WIDGETS_HEADER_TITLE_LABEL,
-        labelText: "Rating Widgets2",
+        labelText: "Rating Widgets",
         element: feedbackRatingWidgetsPageElements.ADD_NEW_WIDGET_BUTTON,
         elementText: 'Add New Widget'
     });

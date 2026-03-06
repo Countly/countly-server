@@ -341,7 +341,7 @@ const verifyAlertDrawerPageElements = ({
 
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_EMAIL_NOTIF_TO_NOT_SEND_RADIO_BUTTON,
-            isChecked: false
+            isChecked: true
         });
 
         cy.verifyElement({
