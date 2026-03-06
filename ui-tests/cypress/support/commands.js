@@ -1,5 +1,5 @@
 import 'cypress-file-upload';
-import { setDebugContext } from './debugContext';
+import { setDebugContext, clearDebugContext } from './debugContext';
 const helper = require('./helper');
 const chai = require('chai');
 const expect = chai.expect;
@@ -596,6 +596,8 @@ Cypress.Commands.add('dropMongoDatabase', () => {
 });
 
 Cypress.Commands.add('getElement', (selector, parent = null) => {
+
+    clearDebugContext();
 
     if (!selector || typeof selector !== 'string') {
         throw new Error('getElement: selector must be a non-empty string');
