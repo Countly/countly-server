@@ -114,7 +114,7 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.scrollPageToCenter('.main-view');
-    
+
     cy.verifyElement({
         labelElement: homePageElements.VIEWS.LABEL,
         labelText: "Views",
@@ -202,6 +202,8 @@ const verifyStaticElementsOfPage = () => {
         tooltipText: "The top 5 device types of your users based on their sessions within the selected time period."
     });
 
+    cy.scrollPageToBottom('.main-view');
+    
     cy.verifyElement({
         labelElement: homePageElements.COUNTRIES.LABEL,
         labelText: "Countries",
