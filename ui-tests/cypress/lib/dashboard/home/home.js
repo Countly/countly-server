@@ -113,6 +113,8 @@ const verifyStaticElementsOfPage = () => {
         hrefContainUrl: "#/analytics/acquisition",
     });
 
+    cy.scrollPageToCenter('.main-view');
+    
     cy.verifyElement({
         labelElement: homePageElements.VIEWS.LABEL,
         labelText: "Views",
