@@ -100,7 +100,7 @@
     "sqlite3": "^5.1.7",
     "tslib": "^2.6.3",
     "uglify-js": "3.19.3",
-    "underscore": "1.13.7",
+    "underscore": "1.13.8",
     "xlsx-write-stream": "^1.0.0"
   },
   "overrides": {
