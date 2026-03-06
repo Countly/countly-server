@@ -20,7 +20,60 @@ import './commands';
 //This behavior is configurable, and you can choose to turn this off by listening to the uncaught:exception event.
 //Open the below code block after the "Cannot read properties of undefined..." errors occurred.
 //But firstly open an issue about the error.
-Cypress.on('uncaught:exception', (err, runnable) => {
-    // returning false here prevents Cypress from failing the test
-    return false;
+Cypress.on('uncaught:exception', () => false);
+
+// Global Cypress error formatter.
+// This handler intercepts test failures and enriches the CI logs with
+// additional debugging context such as spec name, suite, test title,
+// current URL, selector used, assertion type, and expected vs actual values.
+//
+// Purpose:
+// Cypress default error messages in CI often lack sufficient context,
+// making it difficult to understand where and why a test failed.
+// This formatter provides a structured and readable failure output
+// without requiring changes in existing test cases.
+import { getDebugContext, clearDebugContext } from './debugContext';
+
+beforeEach(() => {
+    clearDebugContext();
+});
+
+Cypress.on('fail', (err, runnable) => {
+
+    const ctx = getDebugContext();
+
+    clearDebugContext();
+
+    const url =
+        Cypress.state('window') &&
+        Cypress.state('window').location
+            ? Cypress.state('window').location.href
+            : 'unknown';
+
+    const actual =
+        ctx.actual !== undefined
+            ? ctx.actual
+            : 'assertion failed before evaluation';
+
+    const formattedError = `
+========== CYPRESS FAILURE ==========
+
+SPEC     : ${Cypress.spec?.name || 'unknown'}
+SUITE    : ${runnable?.parent?.title || 'unknown'}
+TEST     : ${runnable?.title || 'unknown'}
+URL      : ${url}
+
+SELECTOR : ${ctx.selector || 'unknown'}
+ASSERT   : ${ctx.assertion || 'element exists'}
+EXPECTED : ${ctx.expected ?? 'element should exist'}
+ACTUAL   : ${actual}
+
+ORIGINAL : ${err.message}
+
+=====================================
+`;
+
+    err.message = formattedError;
+
+    throw err;
 });
