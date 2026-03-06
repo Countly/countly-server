@@ -168,7 +168,16 @@ Cypress.Commands.add("shouldBeVisible", (element) => {
     });
 
     cy.getElement(element)
-        .should('be.visible');
+        .should('be.visible')
+        .then(($el) => {
+
+            const actual = Cypress.$($el).is(':visible');
+
+            setDebugContext({
+                actual
+            });
+
+        });
 
 });
 
