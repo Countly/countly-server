@@ -1280,9 +1280,9 @@ class PluginManager {
                 if (initConfigPath) {
                     require(initConfigPath);
                 }
-                const appPath = path.resolve(__dirname, pluginNames[i] + '/frontend/app.js');
+                const appPath = resolveWithExtension(path.resolve(__dirname, pluginNames[i] + '/frontend/'), 'app');
                 let plugin: any;
-                if (fs.existsSync(appPath)) {
+                if (appPath) {
                     plugin = require(appPath);
                     this.plugs.push({ 'name': pluginNames[i], 'plugin': plugin });
                     app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + '/frontend/public', { maxAge: 31557600000 }));

@@ -1,6 +1,10 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId, type Document } from 'mongodb';
 import { zodValidate } from './new/lib/utils.ts';
-import { CreateMessageSchema, DraftMessageSchema } from './new/types/message.ts';
+import {
+    CreateMessageSchema, DraftMessageSchema,
+    type Message, type PlatformKey, type Result, type MessageTrigger,
+} from './new/types/message.ts';
+import type { Schedule } from './new/types/schedule.ts';
 import { buildResultObject } from './new/resultor.ts';
 import { scheduleIfEligible, DATE_TRIGGERS } from './new/scheduler.ts';
 import { buildUserAggregationPipeline, createPushStream, loadCredentials } from './new/composer.ts';
@@ -29,12 +33,8 @@ const allTriggerKinds = ["api", "cohort", "event", "multi", "plain", "rec"];
 
 /**
  * Decide which status to use for scheduling based on message and last schedule
- *
- * @param {IMessage} message - message object
- * @param {ISchedule=} lastSchedule - last schedule object
- * @returns {MessageStatus} message status to use
  */
-function getMessageStatus(message: any, lastSchedule: any) {
+function getMessageStatus(message: Pick<Message, 'triggers' | 'status'>, lastSchedule?: Pick<Schedule, 'status'>) {
     const trigger = message.triggers[0];
     const useMessage = !DATE_TRIGGERS.includes(trigger.kind) // if the trigger is not a date trigger
         || message.status !== "active" // if the message is not active
@@ -102,8 +102,8 @@ async function validate(args: any, draft = false) {
             let creds = await common.db.collection('creds').find({
                 _id: {
                     $in: msg.platforms
-                        .map((p: any) => common.dot(app, `plugins.push.${p}._id`))
-                        .map((oid: any) => new ObjectId(oid.toString())) // cast to ObjectId (it gets broken after an update in app settings page)
+                        .map((p: string) => common.dot(app, `plugins.push.${p}._id`))
+                        .map((oid: string) => new ObjectId(oid.toString())) // cast to ObjectId (it gets broken after an update in app settings page)
                 }
             }).toArray();
             if (creds.length !== msg.platforms.length) {
@@ -139,7 +139,7 @@ async function validate(args: any, draft = false) {
             throw new ValidationError('Message app cannot be changed');
         }
 
-        if (existing.platforms.length !== msg.platforms.length || existing.platforms.filter((p: any) => msg.platforms.indexOf(p) === -1).length) {
+        if (existing.platforms.length !== msg.platforms.length || existing.platforms.filter((p: string) => msg.platforms.indexOf(p) === -1).length) {
             throw new ValidationError('Message platforms cannot be changed');
         }
 
@@ -213,7 +213,7 @@ export async function test(params: any) {
         const template = createTemplate(msg);
         const creds = await loadCredentials(common.db, msg.app);
         const pluginConfig = await loadPluginConfiguration();
-        const schedule: any = { _id: common.db.ObjectID() };
+        const schedule = { _id: common.db.ObjectID() } as Schedule;
         const stream = createPushStream(common.db, app, msg, schedule,
             new Date(), creds, pluginConfig, template, pipeline);
         let results = [];
@@ -475,7 +475,7 @@ export async function toggle(params: any) {
         common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
         return true;
     }
-    if (!msg.triggers.find((t: any) => toggleableTriggers.includes(t.kind))) {
+    if (!msg.triggers.find((t: MessageTrigger) => toggleableTriggers.includes(t.kind))) {
         throw new ValidationError(`The message doesn't have API, Cohort, Event, Multi or Recurring trigger`);
     }
 
@@ -607,10 +607,10 @@ export async function estimate(params: any) {
             ])
         )
         .toArray();
-    const locales = las.reduce((a: any, b: any) => {
+    const locales = las.reduce((a: Record<string, number>, b: { _id: string | null; count: number }) => {
         a[b._id || 'default'] = b.count;
         return a;
-    }, {default: 0});
+    }, {default: 0} as Record<string, number>);
 
     common.returnOutput(params, { count, locales });
 };
@@ -635,10 +635,10 @@ export async function estimate(params: any) {
  */
 export async function mime(params: any) {
     try {
-        let info: any = await mimeInfo(params.qstring.url);
+        let info = await mimeInfo(params.qstring.url);
         if ((info.status === 301 || info.status === 302) && info.headers.location) {
             log.d('Following redirect to', info.headers.location);
-            info = await mimeInfo(info.headers.location);
+            info = await mimeInfo(info.headers.location as string);
 
             if (info.status !== 200) {
                 return common.returnMessage(params, 400, {errors: [`Invalid status ${info.status} after a redirect`]}, null, true);
@@ -656,7 +656,7 @@ export async function mime(params: any) {
                 return common.returnMessage(params, 400, {errors: ['No content-length while HEADing the url']}, null, true);
             }
         }
-        if (MEDIA_MIME_TYPE_ALL.indexOf(info.headers['content-type']) === -1) {
+        if (MEDIA_MIME_TYPE_ALL.indexOf(info.headers['content-type'] as string) === -1) {
             common.returnMessage(params, 400, {errors: [`Media mime type "${info.headers['content-type']}" is not supported`]}, null, true);
         }
         else if (parseInt(info.headers['content-length'], 10) > MEDIA_MAX_SIZE) {
@@ -809,10 +809,10 @@ export async function periodicStats(params: any) {
     const startDate = moment(endDate).subtract(...delta);
     const dateRange = periodicDateRange(startDate.toDate(), endDate, app.timezone, delta[1] as moment.unitOfTime.StartOf);
     const ob = { app_id, appTimezone: app.timezone, qstring: { period, segmentation: "i" } };
-    const results: any = {};
+    const results: Record<string, [string, number][]> = {};
     for (const colName in cols) {
         results[colName] = await new Promise(res => {
-            countlyFetch.getTimeObjForEvents((cols as any)[colName], ob, (doc: any) => {
+            countlyFetch.getTimeObjForEvents(cols[colName as keyof typeof cols], ob, (doc: any) => {
                 const result = [];
                 if (delta[1] === "week") {
                     for (const startDayOfTheWeek of dateRange) {
@@ -1028,7 +1028,7 @@ export async function all(params: any) {
                 {'contents.title': data.sSearch},
             ];
         }
-        var pipeline: any[] = [{
+        var pipeline: Document[] = [{
             $lookup: {
                 from: "message_schedules",
                 localField: "_id",
@@ -1067,7 +1067,7 @@ export async function all(params: any) {
         }
 
         var totalPipeline = [{"$group": {"_id": null, "cn": {"$sum": 1}}}];
-        var dataPipeline = [];
+        var dataPipeline: Document[] = [];
 
         var columns = ['info.title', 'status', 'result.sent', 'result.actioned', 'info.created', 'triggers.start'];
         var sortcol = 'triggers.start';
@@ -1176,7 +1176,7 @@ export async function all(params: any) {
  * @param   {String} period   Period interval: day|month|week|year
  * @returns {Date[]}          Array of dates in between start and end (both start and end included)
  */
-function periodicDateRange(start: any, end: any, timezone: any, period: moment.unitOfTime.StartOf = "day") {
+function periodicDateRange(start: Date, end: Date, timezone: string, period: moment.unitOfTime.StartOf = "day"): Date[] {
     const startFrom: moment.unitOfTime.StartOf = period === "week" ? "isoWeek" : period;
     const startObj = moment(start).tz(timezone).startOf("day").startOf(startFrom);
     const endObj = moment(end).tz(timezone).startOf("day").startOf(startFrom);
@@ -1191,6 +1191,9 @@ function periodicDateRange(start: any, end: any, timezone: any, period: moment.u
     return result;
 }
 
+/** Result with legacy `processed` field used only by generateDemoData */
+type DemoResult = Result & { processed?: number };
+
 /**
  * Get or create a sub-result entry in result.subs for the given key.
  *
@@ -1198,7 +1201,7 @@ function periodicDateRange(start: any, end: any, timezone: any, period: moment.u
  * @param {string} key sub result key (e.g. platform key)
  * @returns {object} the sub-result object for the given key
  */
-function resultSub(result: any, key: any) {
+function resultSub(result: DemoResult, key: string): DemoResult {
     if (!result.subs) {
         result.subs = {};
     }
@@ -1214,7 +1217,7 @@ function resultSub(result: any, key: any) {
  * @param {object} msg plain message document
  * @param {int} demo demo type
  */
-async function generateDemoData(msg: any, demo: any) {
+async function generateDemoData(msg: any, demo: number | string) {
     const msgId = msg._id.toString();
 
     await common.db.collection('apps').updateOne({_id: msg.app, 'plugins.push.i._id': {$exists: false}}, {$set: {'plugins.push.i._id': 'demo'}});
@@ -1224,9 +1227,9 @@ async function generateDemoData(msg: any, demo: any) {
     let app = await common.db.collection('apps').findOne({_id: msg.app}),
         count = await common.db.collection('app_users' + msg.app).count(),
         events = [],
-        result = msg.result || buildResultObject();
+        result: DemoResult = msg.result || buildResultObject();
 
-    const isAutoOrApi = msg.triggers.some((t: any) => t.kind === 'cohort' || t.kind === 'event' || t.kind === 'api');
+    const isAutoOrApi = msg.triggers.some((t: MessageTrigger) => t.kind === 'cohort' || t.kind === 'event' || t.kind === 'api');
 
     if (isAutoOrApi) {
         msg.status = 'active';
@@ -1236,7 +1239,7 @@ async function generateDemoData(msg: any, demo: any) {
             actioned = Math.floor(sent * 0.17),
             offset = moment.tz(app.timezone).utcOffset(),
             now = Date.now() - 3600000,
-            a = !!msg.triggers.some((t: any) => t.kind === 'cohort' || t.kind === 'event'),
+            a = !!msg.triggers.some((t: { kind: string }) => t.kind === 'cohort' || t.kind === 'event'),
             t = !a,
             p = msg.platforms[0],
             p1 = msg.platforms[1];
@@ -1403,14 +1406,7 @@ async function generateDemoData(msg: any, demo: any) {
     );
 }
 
-/**
- * Get MIME of the file behind url by sending a HEAD request
- *
- * @param {string} url - url to get info from
- * @param {string} method - http method to use
- * @returns {Promise<MimeInfo>} resolves to mime info object
- */
-async function mimeInfo(url: any, method = 'HEAD') {
+export async function mimeInfo(url: string, method = 'HEAD'): Promise<{ url: string; status: number|undefined; headers: http.IncomingHttpHeaders; }> {
     const ok: any = common.validateArgs({url}, {
         url: {type: 'URLString', required: true},
     }, true);
@@ -1443,7 +1439,7 @@ async function mimeInfo(url: any, method = 'HEAD') {
         const req = isHttps
             ? https.request(urlObj, { method, agent })
             : http.request(urlObj, { method, agent });
-        req.on('response', (res: any) => {
+        req.on('response', (res) => {
             let status = res.statusCode,
                 headers = res.headers,
                 data = 0;
@@ -1451,7 +1447,7 @@ async function mimeInfo(url: any, method = 'HEAD') {
                 resolve({ url: url.toString(), status, headers });
             }
             else {
-                res.on('data', (dt: any) => {
+                res.on('data', (dt: Buffer | string) => {
                     if (typeof dt === 'string') {
                         data += dt.length;
                     }
@@ -1467,12 +1463,10 @@ async function mimeInfo(url: any, method = 'HEAD') {
                 });
             }
         });
-        req.on('error', (err: any) => {
+        req.on('error', (err: Error) => {
             log.e('error when HEADing ' + url, err);
             reject(new ValidationError('Cannot access proxied URL'));
         });
         req.end();
     });
 }
-
-export { mimeInfo };

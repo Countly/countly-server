@@ -36,7 +36,7 @@ async function reset(ob: any) {
     ]);
 }
 
-async function clear(ob: any) {
+async function clear(ob: { appId?: string; }) {
     if (!ob?.appId) {
         return;
     }

@@ -1,4 +1,5 @@
 import type { ObjectId } from "mongodb";
+import type { Cohort } from "./api-patches.ts";
 import { cohortMessageExists, eventMessageExists } from "./new/lib/message-cache.ts";
 import { sendAutoTriggerEvents } from "./new/lib/kafka.ts";
 import { createRequire } from 'module';
@@ -9,12 +10,6 @@ const common: import('../../../types/common.d.ts').Common = require('../../../ap
 const log = common.log('push:api:auto');
 const logCohorts = log.sub('cohorts');
 const logEvents = log.sub('events');
-
-interface Cohort {
-    app_id: ObjectId;
-    _id: string;
-    name: string;
-}
 
 /**
  * Handler function for /cohort/enter (/cohort/exit) hooks

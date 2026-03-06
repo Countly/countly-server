@@ -79,7 +79,7 @@ export async function onTokenSession(dbAppUser: any, params: any) {
     }
 }
 
-export function onSessionUser({params, dbAppUser}: {params: any, dbAppUser: any}) {
+export function onSessionUser({ params, dbAppUser }: { params: any, dbAppUser: any }) {
     if (dbAppUser && dbAppUser[common.dbUserMap.first_seen]) {
         let hasTokens = false,
             platfs: any[] = [];
@@ -293,7 +293,7 @@ export async function onAppPluginsUpdate({params, app, config}: {params: any, ap
     }
 }
 
-export function onMerge({app_id, oldUser, newUser}: {app_id: any, oldUser: any, newUser: any}) {
+export function onMerge({ app_id, oldUser, newUser }: { app_id: any; oldUser: any; newUser: any; }) {
     let ouid = oldUser.uid,
         nuid = newUser.uid;
 

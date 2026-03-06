@@ -5,47 +5,23 @@ import { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } from '
 import { estimate, test, create, update, toggle, remove, all, one, mime, user, periodicStats } from './api-message.ts';
 import { dashboard } from './api-dashboard.ts';
 import { clear, reset, removeUsers } from './api-reset.ts';
-import { ValidationError, PushError } from './new/lib/error.ts';
 import { initPushQueue, loadKafka } from './new/lib/kafka.ts';
 import { composeAllScheduledPushes } from './new/composer.ts';
 import { sendAllPushes } from './new/sender.ts';
 import { saveResults } from './new/resultor.ts';
 import { scheduleMessageByAutoTriggers } from './new/scheduler.ts';
 import { createRequire } from 'module';
+import type { CohortHookArg } from './api-patches.ts';
+import { createApi, updateApi, deleteApi, readApi } from './api-patches.ts';
 
 const require = createRequire(import.meta.url);
 const plugins: import('../../pluginManager.js').IPluginManager = require('../../pluginManager.ts');
 const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common.js');
-const { validateCreate, validateRead, validateUpdate, validateDelete }: typeof import('../../../api/utils/rights.js') = require('../../../api/utils/rights.js');
 const log = common.log('push:api');
 
 const FEATURE_NAME = 'push';
 const PUSH = {
     FEATURE_NAME
-};
-
-const apis: any = {
-    o: {
-        dashboard: [validateRead, dashboard],
-        mime: [validateRead, mime],
-        message: {
-            estimate: [validateRead, estimate],
-            all: [validateRead, all],
-            GET: [validateRead, one, '_id'],
-            stats: [validateRead, periodicStats],
-        },
-        user: [validateRead, user],
-    },
-    i: {
-        message: {
-            test: [validateCreate, test],
-            create: [validateCreate, create],
-            update: [validateUpdate, update],
-            toggle: [validateUpdate, toggle],
-            remove: [validateDelete, remove],
-            push: [validateUpdate, apiPush],
-        }
-    }
 };
 
 plugins.register("/master", async function() {
@@ -66,82 +42,36 @@ plugins.register("/master", async function() {
     }
 });
 
-/**
- * Handy function for handling api calls (see apis obj above)
- *
- * @param apisObj - apis.i or apis.o
- * @param ob - object from pluginManager
- * @returns true - if the call has been handled
- */
-function apiCall(apisObj: any, ob: any): true | undefined {
-    let {params, paths} = ob,
-        method = paths[3],
-        sub = paths[4];
-
-    log.d('handling api request %s%s', method, sub ? `/${sub}` : '');
-    if (method in apisObj) {
-        if (!sub) {
-            if (Array.isArray(apisObj[method])) {
-                let [check, fn] = apisObj[method];
-                check(params, FEATURE_NAME, endpoint(method, fn));
-                return true;
-            }
-        }
-        else if (sub in apisObj[method]) {
-            if (Array.isArray(apisObj[method][sub])) {
-                let [check, fn] = apisObj[method][sub];
-                check(params, FEATURE_NAME, endpoint(method + '/' + sub, fn));
-                return true;
-            }
-        }
-        else if (params.req.method in apisObj[method]) {
-            if (Array.isArray(apisObj[method][params.req.method])) {
-                let [check, fn, key] = apisObj[method][params.req.method];
-                if (key) {
-                    params.qstring[key] = sub;
-                }
-                check(params, FEATURE_NAME, endpoint(method, fn));
-                return true;
-            }
-        }
-    }
-}
-
-/**
- * Wrap push endpoint catching any push-specific errors from it
- *
- * @param method endpoint name
- * @param fn actual endpoint returning a promise
- * @returns CRUD callback
- */
-function endpoint(method: string, fn: (params: any) => Promise<any>) {
-    return (params: any) => fn(params).catch((e: any) => {
-        log.e('Error during API request /%s', method, e);
-        let errors: string[] = ['Server Error'];
-        let name = 'ServerError';
-
-        if (e instanceof PushError) {
-            name = e.name;
-            errors = [e.message];
-            if (e instanceof ValidationError) {
-                errors = e.errors;
-            }
-        }
-
-        common.returnMessage(params, 500, { name, errors }, null, true);
-    });
-}
-
 // Token handling, push internal events handling, evented auto push
 plugins.register('/session/user', onSessionUser);
 
-// API
-plugins.register('/i/push', (ob: any) => { apiCall(apis.i, ob); });
-plugins.register('/o/push', (ob: any) => { apiCall(apis.o, ob); });
+// Read API
+plugins.register('/o/push/dashboard', readApi(dashboard));
+plugins.register('/o/push/mime', readApi(mime));
+plugins.register('/o/push/user', readApi(user));
+plugins.register('/o/push/message/estimate', readApi(estimate));
+plugins.register('/o/push/message/all', readApi(all));
+plugins.register('/o/push/message/stats', readApi(periodicStats));
+plugins.register('/o/push/message/GET', readApi(one));
+
+// Write API
+plugins.register('/i/push/message/test', createApi(test));
+plugins.register('/i/push/message/create', createApi(create));
+plugins.register('/i/push/message/update', updateApi(update));
+plugins.register('/i/push/message/toggle', updateApi(toggle));
+plugins.register('/i/push/message/remove', deleteApi(remove));
+plugins.register('/i/push/message/push', updateApi(apiPush));
+
+// Data clears/resets/deletes
+plugins.register('/i/apps/update/plugins/push', onAppPluginsUpdate);
+plugins.register('/i/apps/reset', reset);
+plugins.register('/i/apps/clear_all', clear);
+plugins.register('/i/apps/delete', reset);
+plugins.register('/i/app_users/delete', ({ app_id, uids }: { app_id: string; uids: string[]; }) => removeUsers(app_id, uids, 'purge'));
 
 // Cohort hooks for cohorted auto push
-plugins.register('/cohort/enter', ({cohort, uids}: any) => autoOnCohort(true, cohort, uids));
-plugins.register('/cohort/exit', ({cohort, uids}: any) => autoOnCohort(false, cohort, uids));
+plugins.register('/cohort/enter', ({ cohort, uids }: CohortHookArg) => autoOnCohort(true, cohort, uids));
+plugins.register('/cohort/exit', ({ cohort, uids }: CohortHookArg) => autoOnCohort(false, cohort, uids));
 
 // Drill hooks for user profiles
 plugins.register('/drill/add_push_events', (ob: any) => { drillAddPushEvents(ob); });
@@ -150,24 +80,26 @@ plugins.register('/drill/postprocess_uids', (ob: any) => { drillPostprocessUids(
 
 // Hook to move data to new uid on user merge
 plugins.register('/i/device_id', (ob: any) => { onMerge(ob); });
-
-// Data clears/resets/deletes
-plugins.register('/i/apps/update/plugins/push', onAppPluginsUpdate);
-plugins.register('/i/apps/reset', reset);
-plugins.register('/i/apps/clear_all', clear);
-plugins.register('/i/apps/delete', reset);
-plugins.register('/i/app_users/delete', async({app_id, uids}: any) => {
-    await removeUsers(app_id, uids, 'purge');
-});
-plugins.register('/consent/change', ({params, changes}: any) => {
+plugins.register('/consent/change', ({ params, changes }: any) => {
     if (changes && changes.push === false && params.app_id && params.app_user && params.app_user.uid !== undefined) {
         return removeUsers(params.app_id, [params.app_user.uid], 'consent');
     }
 });
-plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs, export_folder}: any) => {
+plugins.register('/i/app_users/export', ({ app_id, uids, export_commands, dbargs, export_folder }: any) => {
     if (uids && uids.length) {
         if (!export_commands.push) {
-            export_commands.push = [{cmd: 'mongoexport', args: [...dbargs, '--collection', `push_${app_id}`, '-q', `{"_id": {"$in": ${JSON.stringify(uids)}}}`, '--out', `${export_folder}/push_${app_id}.json`]}];
+            export_commands.push = [{
+                cmd: 'mongoexport',
+                args: [
+                    ...dbargs,
+                    '--collection',
+                    `push_${app_id}`,
+                    '-q',
+                    `{"_id": {"$in": ${JSON.stringify(uids)}}}`,
+                    '--out',
+                    `${export_folder}/push_${app_id}.json`
+                ]
+            }];
         }
     }
 });

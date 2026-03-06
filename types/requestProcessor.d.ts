@@ -296,7 +296,7 @@ export interface CountlyAPI {
  *         }
  *     }
  * };
- * 
+ *
  * // processing request
  * processRequest(params);
  */
@@ -311,9 +311,9 @@ export declare function processRequest(params: Params): void;
  * @returns Promise that resolves when user processing is complete
  */
 export declare function processUserFunction(
-    params: Params, 
-    initiator: any, 
-    done: (error?: any) => void, 
+    params: Params,
+    initiator: any,
+    done: (error?: any) => void,
     try_times?: number
 ): Promise<void>;
 

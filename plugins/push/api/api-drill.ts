@@ -8,7 +8,7 @@ const common: import('../../../types/common.d.ts').Common = require('../../../ap
 const countlyCommon: import('../../../types/countly.common.d.ts').CountlyCommon = require('../../../api/lib/countly.common.js');
 const log = common.log('push:api:drill');
 
-export function drillAddPushEvents({uid, params, events, event}: any) {
+export function drillAddPushEvents({ uid, params, events, event }: any) {
     return new Promise((res, rej) => {
         if (event === '[CLY]_push_sent') {
             common.db.collection(`push_${params.app_id}`).findOne({_id: uid, msgs: {$elemMatch: {'1': countlyCommon.getTimestampRangeQuery(params)}}}, (err: any, pu: any) => {
