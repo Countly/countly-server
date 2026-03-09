@@ -39,7 +39,7 @@ const customDashboardElements = {
     DELETE_POPUP_CLOSE_ICON: "el-dialog-test-id-el-dialog-close-button",
     DELETE_POPUP_SUBTITLE: "el-dialog-test-id-el-dialog-content-label",
     DELETE_POPUP_CANCEL_BUTTON: "cly-confirm-test-id-cly-confirm-dialog-cancel-button",
-    DELETE_POPUP_DELETE_BUTTON: "cly-confirm-test-id-cly-confirm-dialog-save-button"
+    DELETE_POPUP_DELETE_BUTTON: "cly-confirm-test-id-cly-confirm-dialog-danger-button"
 };
 
 const customDashboardWidgetElements = (index = 0) => ({

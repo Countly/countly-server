@@ -1,6 +1,38 @@
-## Version 25.03.X
+## Version 25.03.36
+Enterprise fixes:
+- [journey] Workflow fixes
+- [users] UI events table fixes
+
+## Version 25.03.35
+Fixes:
+- [core] Fixes for search bar in standart table component
+
+Enterprise fixes:
+- [journeys] Fixes for journey data updates on incoming data.
+- [surveys] Return error message if invalid widget_id passed on template loading
+- [users] Show content and journey events in user profile
+- [users] Display profile group name in table column
+- [users] When exporting user profiles, replace user name with device id if user name does not exist
+- [users] Use user profile endpoint for exporting data instead of the generic export endpoint
+
+## Version 25.03.34
 Fixes:
 - [core] Fix period calculation
+- [dashboards] Update dialog button color when deleting dashboard/widget
+- [star-rating] Fix rating number when exporting data
+
+Enterprise Fixes:
+- [content] Uniform journey and content block actions
+- [content] Fix overflow and missing translations in content blocks
+- [content] Fix button management when creating fullscreen content blocks
+- [crash_symbolication] Use countlyfs for JavaScript symbolication
+- [funnels] Fix funnel name tooltip content
+- [surveys] Allow surveys to resize and reposition when user rotates devices or adjust browser window
+- [nps] Allow nps to resize and reposition when user rotates devices or adjust browser window
+- [groups] Dealing with invalid values for group permission
+- [geo] Update table row cursor to indicate that it's clickable
+- [users] Change table column min-width to width so it can be resized even smaller
+- [users] Display filtered user count instead of all user count in the table summary
 
 ## Version 25.03.33
 Fixes:

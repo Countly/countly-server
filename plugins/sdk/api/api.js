@@ -32,6 +32,7 @@ const validOptions = [
     "ltl",
     "lt",
     "rcz",
+    "jte",
     "bom",
     "bom_at",
     "bom_rqp",

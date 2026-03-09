@@ -135,26 +135,45 @@ describe('Login in', function() {
                 .expect(302, done);
         });
     });
-    describe('Login out', function() {
-        beforeEach(function(done) {
-            testUtils.loadCSRF(agent, function() {
-                done();
-            });
-        });
-
-        it('should not logout by get method, bu simply redirect to login', function(done) {
+    describe('Login out via GET', function() {
+        it('should logout and redirect to /login', function(done) {
             agent
                 .get('/logout')
                 .expect('location', '/login')
                 .expect(302, done);
         });
+    });
 
-        it('should return 302 & redirect to /login', function(done) {
+    describe('Login out via POST', function() {
+        before(function(done) {
+            // Log back in first since GET /logout invalidated the session
+            agent
+                .get('/login')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    testUtils.CSRFfromBody(res.text);
+                    agent
+                        .post('/login')
+                        .send({username: testUtils.username, password: testUtils.password, _csrf: testUtils.getCSRF()})
+                        .expect(302)
+                        .end(function(err2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            testUtils.loadCSRF(agent, done);
+                        });
+                });
+        });
+
+        it('should logout and redirect to /login with message', function(done) {
             agent
                 .post('/logout?message=content')
                 .send({_csrf: testUtils.getCSRF()})
-                .expect(302, done)
-                .expect('location', '/login?message=content');
+                .expect('location', '/login?message=content')
+                .expect(302, done);
         });
     });
     describe('Getting new CSRF', function() {
