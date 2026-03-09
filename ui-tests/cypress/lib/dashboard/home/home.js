@@ -113,6 +113,8 @@ const verifyStaticElementsOfPage = () => {
         hrefContainUrl: "#/analytics/acquisition",
     });
 
+    cy.scrollPageToCenter('.main-view');
+
     cy.verifyElement({
         labelElement: homePageElements.VIEWS.LABEL,
         labelText: "Views",
@@ -199,6 +201,8 @@ const verifyStaticElementsOfPage = () => {
         tooltipElement: homePageElements.TECHNOLOGY().TOP_DEVICE_TYPES_TOOLTIP,
         tooltipText: "The top 5 device types of your users based on their sessions within the selected time period."
     });
+
+    cy.scrollPageToBottom('.main-view');
 
     cy.verifyElement({
         labelElement: homePageElements.COUNTRIES.LABEL,
