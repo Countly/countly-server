@@ -7,9 +7,7 @@ export const setDebugContext = (data) => {
     };
 };
 
-export const getDebugContext = () => {
-    return { ...debugContext };
-};
+export const getDebugContext = () => ({ ...debugContext });
 
 export const clearDebugContext = () => {
     debugContext = {};

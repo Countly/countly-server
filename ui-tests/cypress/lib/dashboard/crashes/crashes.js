@@ -274,7 +274,7 @@ const verifyStaticElementsOfCrashStatisticsPage = () => {
     });
 
     cy.scrollPageToBottom();
-    
+
     cy.verifyElement({
         element: crashStatisticsEChartElements.CHART_PREVIOUS_TOTAL_OCCURENCES_ICON,
         labelElement: crashStatisticsEChartElements.CHART_PREVIOUS_TOTAL_OCCURENCES_LABEL,
