@@ -805,7 +805,7 @@
                 appId: countlyCommon.ACTIVE_APP_ID,
                 authToken: countlyGlobal.auth_token,
                 chartBy: "os_version",
-                diagnosticsOrder: ["ram", "disk", "battery", "running", "sessions"],
+                diagnosticsOrder: ["ram", "disk", "bat", "run", "session"],
                 eventLogsEnabled: countlyGlobal.plugins.includes("crashes-event-logs"),
                 eventLogsBeingGenerated: [],
                 currentTab: "stacktrace",
