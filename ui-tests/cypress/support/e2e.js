@@ -15,38 +15,27 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
-
-//When Cypress detects uncaught errors originating from application it will automatically fail the current test.
-//This behavior is configurable, and you can choose to turn this off by listening to the uncaught:exception event.
-//Open the below code block after the "Cannot read properties of undefined..." errors occurred.
-//But firstly open an issue about the error.
-Cypress.on('uncaught:exception', () => false);
-
-// Global Cypress error formatter.
-// This handler intercepts test failures and enriches the CI logs with
-// additional debugging context such as spec name, suite, test title,
-// current URL, selector used, assertion type, and expected vs actual values.
-//
-// Purpose:
-// Cypress default error messages in CI often lack sufficient context,
-// making it difficult to understand where and why a test failed.
-// This formatter provides a structured and readable failure output
-// without requiring changes in existing test cases.
 import { getDebugContext, clearDebugContext } from './debugContext';
 
+// When Cypress detects uncaught errors originating from application it will automatically fail the current test.
+// This behavior is configurable, and you can choose to turn this off by listening to the uncaught:exception event.
+// Open the below code block after the "Cannot read properties of undefined..." errors occurred.
+// But firstly open an issue about the error.
+Cypress.on('uncaught:exception', () => false);
+
+// Reset debug context before every test
 beforeEach(() => {
     clearDebugContext();
 });
 
+// Global Cypress error formatter
 Cypress.on('fail', (err, runnable) => {
-
     const ctx = getDebugContext();
 
     clearDebugContext();
 
     const url =
-        Cypress.state('window') &&
-        Cypress.state('window').location
+        Cypress.state('window') && Cypress.state('window').location
             ? Cypress.state('window').location.href
             : 'unknown';
 
@@ -74,6 +63,5 @@ ORIGINAL : ${err.message}
 `;
 
     err.message = formattedError;
-
     throw err;
 });
