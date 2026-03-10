@@ -1,6 +1,7 @@
 ## Version 25.03.xx
 Fixes:
 - [web] Use Client Hints
+- [push] Fixed the property name by changing it from link to url for message buttons for Huawei messages
 
 ## Version 25.03.37
 Fixes:
