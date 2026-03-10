@@ -5,6 +5,36 @@ const lz4 = require('lz4-napi');
 const log = require('../../../../api/utils/log.js')('kafka:producer');
 const countlyConfig = require('../../../../api/config');
 
+// OTel metrics — opt-in, zero overhead when OTEL_ENABLED is not set
+const _otelEnabled = /^(1|true|yes)$/i.test(process.env.OTEL_ENABLED || '');
+let _producerMetrics = null;
+
+/**
+ * Initialize OTel metrics if enabled
+ * @returns {Object|null} OTel metrics object or null if not enabled
+ */
+function getProducerMetrics() {
+    if (_producerMetrics) {
+        return _producerMetrics;
+    }
+    if (!_otelEnabled) {
+        return null;
+    }
+    try {
+        const { metrics } = require('@opentelemetry/api');
+        const meter = metrics.getMeter('countly-kafka-producer');
+        _producerMetrics = {
+            batchesTotal: meter.createCounter('countly_kafka_producer_batches_total'),
+            batchMessages: meter.createHistogram('countly_kafka_producer_batch_messages'),
+            batchDuration: meter.createHistogram('countly_kafka_producer_batch_duration_seconds', { unit: 's' }),
+            timeouts: meter.createCounter('countly_kafka_producer_timeouts_total'),
+            disconnects: meter.createCounter('countly_kafka_producer_disconnects_total'),
+        };
+    }
+    catch (_e) { /* OTel API not installed — no-op */ }
+    return _producerMetrics;
+}
+
 // Register LZ4 compression codec using lz4-napi
 // lz4-napi uses native NAPI bindings with libuv threadpool for async operations,
 // providing better performance and multi-threaded compression/decompression
@@ -45,25 +75,25 @@ log.i('LZ4 codec registered with lz4-napi: native NAPI bindings with libuv threa
 
 /**
  * KafkaProducer - High-performance event producer with transaction support
- * 
+ *
  * Features:
  * - Transactional producers for exactly-once semantics
  * - Automatic partition key generation for even distribution
  * - Configurable retry behavior with exponential backoff
  * - Event metadata headers for observability
  * - Idempotent producers to prevent duplicates
- * 
+ *
  * @example
- * const producer = new KafkaProducer(kafkaClient, { 
+ * const producer = new KafkaProducer(kafkaClient, {
  *   topicName: 'user-events',
  *   transactionalIdPrefix: 'my-app'
  * });
- * 
+ *
  * const events = [
  *   { a: 'app1', uid: 'user123', e: 'button_click', data: {...} },
  *   { a: 'app1', uid: 'user456', e: 'page_view', data: {...} }
  * ];
- * 
+ *
  * const result = await producer.sendEvents(events);
  * console.log(`Sent ${result.sent} events`);
  */
@@ -121,10 +151,10 @@ class KafkaProducer {
 
     /**
      * Load and validate producer configuration from Kafka config and options
-     * 
+     *
      * Applies bounds to timeout and retry values to prevent KafkaJS warnings
      * and ensure reasonable operational limits.
-     * 
+     *
      * @private
      * @param {Object} kafkaConfig - Kafka configuration from countlyConfig
      * @param {KafkaProducerOptions} options - Producer-specific options
@@ -150,17 +180,17 @@ class KafkaProducer {
 
     /**
      * Generate a unique transactional ID for this producer instance
-     * 
+     *
      * Creates a globally unique ID incorporating:
      * - Environment (dev/prod/test)
      * - Hostname and PID for process uniqueness
      * - Container ID for Kubernetes/Docker environments
      * - Timestamp and random bytes for uniqueness
-     * 
+     *
      * @private
      * @param {string} prefix - Prefix to identify the service/application
      * @returns {string} Unique transactional ID
-     * 
+     *
      * @example
      * // Returns: "countly-producer-prod-hostname-1234-container-abc123-1nk2m3-a1b2c3d4e5f6..."
      */
@@ -194,10 +224,10 @@ class KafkaProducer {
 
     /**
      * Ensure the producer is connected, initializing if necessary
-     * 
+     *
      * Uses a promise to ensure only one initialization happens even with
      * concurrent calls. Subsequent calls return the same promise.
-     * 
+     *
      * @private
      * @returns {Promise<void>} Promise that resolves when producer is connected
      */
@@ -211,11 +241,11 @@ class KafkaProducer {
 
     /**
      * Initialize the KafkaJS producer with transactional support
-     * 
+     *
      * Configures the producer based on enableTransactions setting:
      * - Transactional: idempotent=true, transactionalId set, maxInFlightRequests=1
      * - Non-transactional: standard producer configuration
-     * 
+     *
      * @private
      * @returns {Promise<void>} Promise that resolves when producer is connected
      */
@@ -251,31 +281,31 @@ class KafkaProducer {
 
     /**
      * Send events to the configured Kafka topic with optional transactional semantics
-     * 
+     *
      * Features:
      * - Automatic partition key generation based on app ID and user ID
      * - Metadata headers for observability (app-id, event-type, user-id, etc.)
      * - Transactional support for exactly-once delivery guarantees
      * - LZ4 compression for efficient network usage
      * - Automatic retry with exponential backoff
-     * 
+     *
      * @param {Object[]} events - Array of events to send
      * @param {string} events[].a - App ID for partitioning
-     * @param {string} events[].uid - User ID for partitioning  
+     * @param {string} events[].uid - User ID for partitioning
      * @param {string} events[].e - Event name
      * @param {Object} [events[].data] - Event payload data
      * @param {string} [topicName] - Override default topic name
-     * 
+     *
      * @returns {Promise<SendResult>} Result indicating success and count of sent events
-     * 
+     *
      * @throws {Error} If producer fails to send events or transaction fails
-     * 
+     *
      * @example
      * const events = [
      *   { a: 'mobile-app', uid: 'user123', e: 'screen_view', data: { screen: 'home' }},
      *   { a: 'mobile-app', uid: 'user456', e: 'button_click', data: { button: 'submit' }}
      * ];
-     * 
+     *
      * const result = await producer.sendEvents(events, 'user-analytics');
      * if (result.success) {
      *   console.log(`Successfully sent ${result.sent} events`);
@@ -322,10 +352,19 @@ class KafkaProducer {
             }
 
             const duration = Date.now() - startTime;
+            const pm = getProducerMetrics();
+            if (pm) {
+                const transactional = String(this.#config.enableTransactions);
+                pm.batchesTotal.add(1, { topic, result: 'success', transactional });
+                pm.batchMessages.record(messages.length, { topic });
+                pm.batchDuration.record(duration / 1000, { topic, transactional });
+            }
             log.d(`Sent ${messages.length} events to topic: ${topic} in ${duration}ms`);
             return { success: true, sent: messages.length };
         }
         catch (err) {
+            const pm = getProducerMetrics();
+            pm?.batchesTotal.add(1, { topic, result: 'error', transactional: String(this.#config.enableTransactions) });
             log.e(`Failed to send events to topic ${topic}:`, err);
             throw err;
         }
@@ -333,16 +372,16 @@ class KafkaProducer {
 
     /**
      * Convert a Countly event to a Kafka message with headers and partition key
-     * 
+     *
      * Generates:
      * - Partition key: `${appId}-${userId}:${eventType}` for even distribution
      * - Message headers: content-type, app-id, event-type, user-id, event-id, ingestion-time
      * - JSON serialized message body
-     * 
+     *
      * @private
      * @param {Object} event - Countly event object
      * @param {string} event.a - App ID
-     * @param {string} event.uid - User ID  
+     * @param {string} event.uid - User ID
      * @param {string} event.e - Event type
      * @param {string} [event._id] - Event ID
      * @returns {Object} KafkaJS message object with key, value, and headers
@@ -364,12 +403,12 @@ class KafkaProducer {
 
     /**
      * Generate a partition key for even distribution across Kafka partitions
-     * 
+     *
      * Uses app ID and user ID as primary factors to ensure:
      * - Events from the same user go to the same partition (ordering)
      * - Events are distributed across partitions for parallelism
      * - Event type provides additional entropy
-     * 
+     *
      * @private
      * @param {Object} event - Event object
      * @param {string} event.a - App ID
@@ -386,12 +425,12 @@ class KafkaProducer {
 
     /**
      * Disconnect the producer and clean up resources
-     * 
+     *
      * Safely disconnects the KafkaJS producer and resets internal state.
      * Can be called multiple times without error.
-     * 
+     *
      * @returns {Promise<void>} Promise that resolves when disconnected
-     * 
+     *
      * @example
      * await producer.disconnect();
      * console.log('Producer disconnected');
@@ -427,11 +466,13 @@ class KafkaProducer {
 
         this.#producer.on(pe.DISCONNECT, () => {
             log.w(`[producer=${this.#producerId}] DISCONNECT`);
+            getProducerMetrics()?.disconnects.add(1);
         });
 
         this.#producer.on(pe.REQUEST_TIMEOUT, (e) => {
             const payload = e.payload || {};
             log.w(`[producer=${this.#producerId}] REQUEST_TIMEOUT broker=${payload.broker} clientId=${payload.clientId}`);
+            getProducerMetrics()?.timeouts.add(1);
         });
 
         this.#producer.on(pe.REQUEST_QUEUE_SIZE, (e) => {

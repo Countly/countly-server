@@ -58,7 +58,7 @@ RUN useradd -r -M -U -d /opt/countly -s /bin/false countly && \
     \
     # npm dependencies
     ./bin/docker/modify.sh && \
-    HOME=/tmp npm install --unsafe-perm && \
+    HOME=/tmp npm ci --unsafe-perm && \
     ./bin/docker/preinstall.sh && \
     \
     # web sdk
