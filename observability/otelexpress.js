@@ -374,6 +374,7 @@ function initializeOpenTelemetry() {
 
         // Start collecting system metrics
         const metricsInterval = setInterval(collectSystemMetrics, 5000);
+        metricsInterval.unref();
 
         // Setup event loop delay monitoring (Node 18+)
         let eventLoopMonitor;
@@ -412,6 +413,7 @@ function initializeOpenTelemetry() {
                     }
                 }
             }, 5000);
+            eventLoopInterval.unref();
 
             // Clean up interval on shutdown
             process.on('beforeExit', () => clearInterval(eventLoopInterval));
