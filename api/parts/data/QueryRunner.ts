@@ -15,6 +15,28 @@ const require = createRequire(import.meta.url);
 const config = require('../../config.js');
 const logModule = require('../../utils/log.js');
 
+// OTel metrics — opt-in, zero overhead when OTEL_ENABLED is not set
+const _otelEnabled = /^(1|true|yes)$/i.test(process.env.OTEL_ENABLED || '');
+let _queryMetrics: { duration: any; total: any } | null = null;
+function getQueryMetrics() {
+    if (_queryMetrics) {
+        return _queryMetrics;
+    }
+    if (!_otelEnabled) {
+        return null;
+    }
+    try {
+        const { metrics } = require('@opentelemetry/api');
+        const m = metrics.getMeter('countly-query-runner');
+        _queryMetrics = {
+            duration: m.createHistogram('countly_query_duration_seconds', { unit: 's' }),
+            total: m.createCounter('countly_query_total'),
+        };
+    }
+    catch (_e) { /* no-op */ }
+    return _queryMetrics;
+}
+
 const log = logModule('query-runner') as {
     d: (...args: unknown[]) => void;
     e: (...args: unknown[]) => void;
@@ -218,6 +240,7 @@ class QueryRunner {
         transformOptions: TransformOptions = {}
     ): Promise<unknown> {
         const startTime = Date.now();
+        let selectedAdapter = 'unknown';
         try {
             if (!queryDef || !queryDef.adapters) {
                 throw new Error('Invalid query definition: must have adapters');
@@ -237,7 +260,7 @@ class QueryRunner {
                 return await this.executeQueryWithComparison(queryDef, params, options, transformOptions);
             }
 
-            const selectedAdapter = this.selectAdapterForDef(queryDef, options.adapter);
+            selectedAdapter = this.selectAdapterForDef(queryDef, options.adapter);
             let result = await this.executeOnAdapter(queryDef, selectedAdapter, params, options);
 
             // Apply adapter-specific transformation if provided
@@ -261,19 +284,32 @@ class QueryRunner {
                 }
             }
 
-            const duration = Date.now() - startTime;
-            log.d(`Query completed: ${queryName} on ${selectedAdapter} in ${duration}ms`);
-
             // Enforce QueryRunner convention: handlers must return { _queryMeta, data }
+            // Check BEFORE recording success metric to avoid double-counting on throw
             if (!result || typeof result !== 'object' || !Object.prototype.hasOwnProperty.call(result, '_queryMeta') || !Object.prototype.hasOwnProperty.call(result, 'data')) {
                 throw new Error(`Handler for query '${queryName}' on adapter '${selectedAdapter}' must return object with '_queryMeta' and 'data' properties`);
             }
+
+            const duration = Date.now() - startTime;
+            const qm = getQueryMetrics();
+            if (qm) {
+                const attrs = { query_name: queryName, adapter: selectedAdapter, result: 'success' };
+                qm.total.add(1, attrs);
+                qm.duration.record(duration / 1000, attrs);
+            }
+            log.d(`Query completed: ${queryName} on ${selectedAdapter} in ${duration}ms`);
 
             return result.data;
         }
         catch (error) {
             const duration = Date.now() - startTime;
             const queryName = queryDef?.name || 'unnamed_query';
+            const qm = getQueryMetrics();
+            if (qm) {
+                const attrs = { query_name: queryName, adapter: selectedAdapter, result: 'error' };
+                qm.total.add(1, attrs);
+                qm.duration.record(duration / 1000, attrs);
+            }
             log.e(`Query execution failed: ${queryName} after ${duration}ms`, error);
             throw error;
         }
