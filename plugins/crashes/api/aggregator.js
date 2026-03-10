@@ -388,8 +388,8 @@ const setFieldsIfExist = function(fieldList, source, target) {
                                     // Other segment types
                                     else if (props[i] in currEvent.sg && segments.includes(props[i])) {
                                         let safeKey = (currEvent.sg[props[i]] + '').replace(/^\$/, '').replace(/\./g, ':');
-                                        //In meta document for crash groups we store total stats for app_version and os. Need to record in crash group as needed to update meta on delete operation. Once we switch to calculating full data from granular, this can be removed from aggregation.
-                                        if (props[i] === "app_version" || props[i] === "os") {
+                                        //In meta document for crash groups we store total stats for app_version and os_version. Need to record in crash group as needed to update meta on delete operation. Once we switch to calculating full data from granular, this can be removed from aggregation.
+                                        if (props[i] === "app_version" || props[i] === "os_version") {
                                             if (safeKey) {
                                                 if (groupInc[props[i] + '.' + safeKey]) {
                                                     groupInc[props[i] + '.' + safeKey]++;
