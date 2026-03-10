@@ -2,49 +2,251 @@ var pluginOb = {},
     parser = require('ua-parser-js'),
     plugins = require('../../pluginManager.js');
 
+/**
+ * Normalize client hints OS version to user-facing values where needed
+ * @param {string} os - OS name
+ * @param {string} version - OS version from client hints
+ * @returns {string|null} normalized OS version
+ */
+function normalizeClientHintsOsVersion(os, version) {
+    if (!version) {
+        return version;
+    }
+
+    if (os === 'Windows') {
+        var versionParts = (version + '').split('.');
+        var major = parseInt(versionParts[0], 10);
+        var minor = parseInt(versionParts[1], 10);
+        if (!isNaN(major)) {
+            if (major >= 13) {
+                return '11';
+            }
+            if (major >= 10) {
+                return '10';
+            }
+            if (major === 6) {
+                if (minor >= 3) {
+                    return '8.1';
+                }
+                if (minor === 2) {
+                    return '8';
+                }
+                if (minor === 1) {
+                    return '7';
+                }
+                if (minor === 0) {
+                    return 'Vista';
+                }
+            }
+            if (major === 5) {
+                if (minor >= 1) {
+                    return 'XP';
+                }
+                return '2000';
+            }
+        }
+    }
+
+    return version;
+}
+
+/**
+ * Parse client hints headers to extract browser, OS, and device information
+ * @param {object} headers - HTTP request headers
+ * @returns {object} Parsed client hints data
+ */
+function parseClientHints(headers) {
+    var hints = {
+        browser: null,
+        browserVersion: null,
+        os: null,
+        osVersion: null,
+        mobile: null,
+        device: null
+    };
+
+    // Parse Sec-CH-UA header for browser info
+    // Format: "Chromium";v="110", "Google Chrome";v="110", "Not=A?Brand";v="99"
+    var secChUa = headers['sec-ch-ua'];
+    if (secChUa) {
+        var brands = secChUa.split(',').map(function(brand) {
+            var match = brand.trim().match(/"([^"]+)";v="([^"]+)"/);
+            if (match) {
+                return { name: match[1], version: match[2] };
+            }
+            return null;
+        }).filter(Boolean);
+
+        // Filter out placeholder brands
+        var validBrands = brands.filter(function(brand) {
+            return !brand.name.includes('Not') && !brand.name.includes('?');
+        });
+
+        if (validBrands.length > 0) {
+            // Prefer specific browser over Chromium
+            var preferredBrand = validBrands.find(function(b) {
+                return b.name !== 'Chromium';
+            }) || validBrands[0];
+
+            hints.browser = preferredBrand.name;
+            hints.browserVersion = preferredBrand.version;
+        }
+    }
+
+    // Parse full version if available.
+    // `sec-ch-ua-full-version` is a single quoted version string (e.g. "120.0.6099.230").
+    var secChUaFullVersion = headers['sec-ch-ua-full-version'];
+    if (secChUaFullVersion && secChUaFullVersion.startsWith('"')) {
+        var fullVersionMatch = secChUaFullVersion.match(/"([^"]+)"/);
+        if (fullVersionMatch) {
+            hints.browserVersion = fullVersionMatch[1];
+        }
+    }
+
+    // `sec-ch-ua-full-version-list` is a brand list (e.g. "Chromium";v="120", "Google Chrome";v="120").
+    // Parse it like sec-ch-ua and pick the version for the preferred browser brand.
+    var secChUaFullVersionList = headers['sec-ch-ua-full-version-list'];
+    if (secChUaFullVersionList) {
+        var fullVersionBrands = secChUaFullVersionList.split(',').map(function(brand) {
+            var match = brand.trim().match(/"([^"]+)";v="([^"]+)"/);
+            if (match) {
+                return { name: match[1], version: match[2] };
+            }
+            return null;
+        }).filter(Boolean).filter(function(brand) {
+            return !brand.name.includes('Not') && !brand.name.includes('?');
+        });
+
+        if (fullVersionBrands.length > 0) {
+            var preferredFullVersionBrand = null;
+
+            if (hints.browser) {
+                preferredFullVersionBrand = fullVersionBrands.find(function(b) {
+                    return b.name === hints.browser;
+                });
+            }
+
+            if (!preferredFullVersionBrand) {
+                preferredFullVersionBrand = fullVersionBrands.find(function(b) {
+                    return b.name !== 'Chromium';
+                }) || fullVersionBrands[0];
+            }
+
+            hints.browserVersion = preferredFullVersionBrand.version;
+        }
+    }
+
+    // Parse platform (OS)
+    var secChUaPlatform = headers['sec-ch-ua-platform'];
+    if (secChUaPlatform) {
+        hints.os = secChUaPlatform.replace(/"/g, '');
+
+        // Normalize platform names to match ua-parser-js format
+        if (hints.os === 'macOS') {
+            hints.os = 'Mac OS';
+        }
+        else if (hints.os === 'Windows') {
+            hints.os = 'Windows';
+        }
+        else if (hints.os === 'Linux') {
+            hints.os = 'Linux';
+        }
+        else if (hints.os === 'Chrome OS') {
+            hints.os = 'Chrome OS';
+        }
+    }
+
+    // Parse platform version
+    var secChUaPlatformVersion = headers['sec-ch-ua-platform-version'];
+    if (secChUaPlatformVersion) {
+        hints.osVersion = normalizeClientHintsOsVersion(hints.os, secChUaPlatformVersion.replace(/"/g, ''));
+    }
+
+    // Parse mobile indicator
+    var secChUaMobile = headers['sec-ch-ua-mobile'];
+    if (secChUaMobile) {
+        hints.mobile = secChUaMobile === '?1';
+    }
+
+    // Parse device model
+    var secChUaModel = headers['sec-ch-ua-model'];
+    if (secChUaModel) {
+        hints.device = secChUaModel.replace(/"/g, '');
+    }
+
+    return hints;
+}
+
 (function() {
     plugins.appTypes.push("web");
 
     plugins.register("/sdk/pre", function(ob) {
         var params = ob.params;
 
-        var agent = parser((params.qstring.metrics && params.qstring.metrics._ua) ? params.qstring.metrics._ua : params.req.headers['user-agent']);
-        var data = { os: agent.os.name, os_version: agent.os.version };
+        // Parse client hints first (modern approach)
+        var clientHints = parseClientHints(params.req.headers);
 
+        // Parse user agent as fallback
+        var agent = parser((params.qstring.metrics && params.qstring.metrics._ua) ? params.qstring.metrics._ua : params.req.headers['user-agent']);
+
+        // Merge client hints with user agent data (client hints take priority)
+        var data = {
+            os: clientHints.os || agent.os.name,
+            os_version: clientHints.osVersion || agent.os.version,
+            browser: clientHints.browser || agent.browser.name,
+            browser_version: clientHints.browserVersion || agent.browser.version,
+            mobile: clientHints.mobile,
+            device: clientHints.device
+        };
+
+        // Normalize OS name
         if (data.os === "Mac OS") {
             data.os = "Mac";
         }
-        else if (data.os === "iOS" || data.os === "Android") {
-            if (agent.browser.name === "Firefox") {
-                agent.browser.name = "Firefox Mobile";
+
+        // Detect mobile browsers based on OS and mobile flag
+        var isMobile = data.mobile !== null ? data.mobile : (data.os === "iOS" || data.os === "Android");
+
+        if (isMobile || data.os === "iOS" || data.os === "Android") {
+            if (data.browser === "Firefox") {
+                data.browser = "Firefox Mobile";
             }
-            else if (agent.browser.name === "Chrome") {
-                agent.browser.name = "Chrome Mobile";
+            else if (data.browser === "Chrome" || data.browser === "Google Chrome") {
+                data.browser = "Chrome Mobile";
             }
-            else if (agent.browser.name === "Edge") {
-                agent.browser.name = "Edge Mobile";
+            else if (data.browser === "Edge" || data.browser === "Microsoft Edge") {
+                data.browser = "Edge Mobile";
             }
         }
 
-        if (agent.browser.name === "Edge") {
-            if (agent.engine.name === "WebKit") {
-                agent.browser.name = "Edge Chromium";
+        // Detect Edge Chromium
+        if (data.browser === "Edge" || data.browser === "Microsoft Edge" || agent.browser.name === "Edge") {
+            if (agent.engine.name === "WebKit" || agent.engine.name === "Blink") {
+                data.browser = "Edge Chromium";
             }
+        }
+
+        // Normalize browser names from client hints
+        if (data.browser === "Google Chrome") {
+            data.browser = "Chrome";
+        }
+        else if (data.browser === "Microsoft Edge") {
+            data.browser = "Edge";
         }
 
         if (params.qstring.begin_session) {
-            //try to add metrics based on user agent
+            //try to add metrics based on user agent and client hints
             if (!params.qstring.metrics) {
                 params.qstring.metrics = {};
             }
 
-            //if some metrics are not provided, parse them from user agent                
+            //if some metrics are not provided, parse them from client hints or user agent                
             if (!params.qstring.metrics._browser) {
-                params.qstring.metrics._browser = agent.browser.name;
+                params.qstring.metrics._browser = data.browser;
             }
 
             if (!params.qstring.metrics._browser_version) {
-                params.qstring.metrics._browser_version = agent.browser.version;
+                params.qstring.metrics._browser_version = data.browser_version;
             }
 
             if (params.qstring.metrics._browser && params.qstring.metrics._browser_version && !params.qstring.metrics._browser_version.startsWith("[" + params.qstring.metrics._browser.toLowerCase() + "]_")) {
@@ -60,7 +262,11 @@ var pluginOb = {},
             }
 
             if (!params.qstring.metrics._device) {
-                if (typeof agent.device.model !== "undefined") {
+                // Prioritize client hints device model
+                if (data.device) {
+                    params.qstring.metrics._device = data.device;
+                }
+                else if (typeof agent.device.model !== "undefined") {
                     params.qstring.metrics._device = agent.device.model;
                 }
                 else {
@@ -69,7 +275,13 @@ var pluginOb = {},
             }
 
             if (!params.qstring.metrics._device_type) {
-                params.qstring.metrics._device_type = agent.device.type;
+                // Determine device type from client hints mobile flag or user agent
+                if (data.mobile === true) {
+                    params.qstring.metrics._device_type = "mobile";
+                }
+                else {
+                    params.qstring.metrics._device_type = agent.device.type;
+                }
 
                 //if still undefined and app is web then it must be desktop
                 if (!params.qstring.metrics._device_type && params.app.type === "web") {
@@ -118,11 +330,15 @@ var pluginOb = {},
             }
 
             if (!params.qstring.crash._browser) {
-                params.qstring.crash._browser = agent.browser.name;
+                params.qstring.crash._browser = data.browser;
             }
 
             if (!params.qstring.crash._device) {
-                if (typeof agent.device.model !== "undefined") {
+                // Prioritize client hints device model
+                if (data.device) {
+                    params.qstring.crash._device = data.device;
+                }
+                else if (typeof agent.device.model !== "undefined") {
                     params.qstring.crash._device = agent.device.model;
                 }
                 else {
