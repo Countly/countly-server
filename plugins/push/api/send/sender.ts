@@ -1,16 +1,17 @@
-import type { PushEvent, ResultEvent } from "./types/queue.ts";
-import type { ErrorObject } from "./lib/error.ts";
+import type { PushEvent, ResultEvent } from "../types/queue.ts";
+import type { ErrorObject } from "../lib/error.ts";
 import { send as androidSend } from "./platforms/android.ts";
 import { send as iosSend } from "./platforms/ios.ts";
 import { send as huaweiSend } from "./platforms/huawei.ts";
-import { sendResultEvents } from "./lib/kafka.ts";
-import { SendError, TooLateToSend } from "./lib/error.ts";
+import { sendResultEvents } from "../lib/kafka.ts";
+import { SendError, TooLateToSend } from "../lib/error.ts";
 
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-const log: import('../../../../types/log.d.ts').Logger = require('../../../../api/utils/common').log('push:sender');
+const common: import('../../../../types/common.d.ts').Common = require('../../../../api/utils/common.js');
+const log = common.log('push:sender');
 
 /**
  * Sends an array of push events to the appropriate platform handlers.

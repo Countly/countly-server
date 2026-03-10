@@ -1,16 +1,16 @@
-import type { PlatformKey } from './new/types/message.ts';
-import { DBMAP_MESSAGING_ENABLED } from './new/constants/configs.ts';
-import { ValidationError } from "./new/lib/error.ts";
-import { validateCredentials as validateAndroidCredentials } from "./new/platforms/android.ts";
-import { validateCredentials as validateIOSCredentials } from "./new/platforms/ios.ts";
-import { validateCredentials as validateHuaweiCredentials } from "./new/platforms/huawei.ts";
-import { extractTokenFromQuerystring, loadPluginConfiguration } from './new/lib/utils.ts';
-import platforms from "./new/constants/platform-keymap.ts";
+import type { PlatformKey } from './types/message.ts';
+import { DBMAP_MESSAGING_ENABLED } from './constants/configs.ts';
+import { ValidationError } from "./lib/error.ts";
+import { validateCredentials as validateAndroidCredentials } from "./send/platforms/android.ts";
+import { validateCredentials as validateIOSCredentials } from "./send/platforms/ios.ts";
+import { validateCredentials as validateHuaweiCredentials } from "./send/platforms/huawei.ts";
+import { extractTokenFromQuerystring, loadPluginConfiguration } from './lib/utils.ts';
+import platforms from "./constants/platform-keymap.ts";
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common');
+const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common.js');
 const log = common.log('push:api:push');
 
 const platformKeys = Object.keys(platforms) as PlatformKey[];

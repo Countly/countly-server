@@ -1,19 +1,19 @@
 import { ObjectId, type Document } from 'mongodb';
-import { zodValidate } from './new/lib/utils.ts';
+import { zodValidate } from './lib/utils.ts';
 import {
     CreateMessageSchema, DraftMessageSchema,
-    type Message, type PlatformKey, type Result, type MessageTrigger,
-} from './new/types/message.ts';
-import type { Schedule } from './new/types/schedule.ts';
-import { buildResultObject } from './new/resultor.ts';
-import { scheduleIfEligible, DATE_TRIGGERS } from './new/scheduler.ts';
-import { buildUserAggregationPipeline, createPushStream, loadCredentials } from './new/composer.ts';
-import { loadPluginConfiguration, buildProxyUrl } from './new/lib/utils.ts';
-import { createTemplate } from './new/lib/template.ts';
-import { sendAllPushes } from './new/sender.ts';
-import platforms from './new/constants/platform-keymap.ts';
-import { PROXY_CONNECTION_TIMEOUT, MEDIA_MIME_TYPE_ALL, MEDIA_MAX_SIZE } from './new/constants/configs.ts';
-import { ValidationError } from './new/lib/error.ts';
+    type Message, type Result, type MessageTrigger,
+} from './types/message.ts';
+import type { Schedule } from './types/schedule.ts';
+import { buildResultObject } from './send/resultor.ts';
+import { scheduleIfEligible, DATE_TRIGGERS } from './send/scheduler.ts';
+import { buildUserAggregationPipeline, createPushStream, loadCredentials } from './send/composer.ts';
+import { loadPluginConfiguration, buildProxyUrl } from './lib/utils.ts';
+import { createTemplate } from './lib/template.ts';
+import { sendAllPushes } from './send/sender.ts';
+import platforms from './constants/platform-keymap.ts';
+import { PROXY_CONNECTION_TIMEOUT, MEDIA_MIME_TYPE_ALL, MEDIA_MAX_SIZE } from './constants/configs.ts';
+import { ValidationError } from './lib/error.ts';
 import { createRequire } from 'module';
 import crypto from 'crypto';
 import moment from 'moment-timezone';
@@ -23,13 +23,13 @@ import { URL } from 'node:url'
 import https from 'node:https'
 import http from 'node:http'
 
+// createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common');
+const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common.js');
 const log = common.log('push:api:message');
 const countlyFetch: any = require("../../../api/parts/data/fetch.js");
 
-/** @type {Array<import("./new/types/message.ts").BaseTrigger["kind"]>} */
-const allTriggerKinds = ["api", "cohort", "event", "multi", "plain", "rec"];
+const allTriggerKinds: Array<MessageTrigger["kind"]> = ["api", "cohort", "event", "multi", "plain", "rec"];
 
 /**
  * Decide which status to use for scheduling based on message and last schedule

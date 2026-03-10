@@ -9,12 +9,11 @@ import {
     autoTriggerEventDTOToObject,
 } from "./dto.ts";
 import kafkaConfig from "../constants/kafka-config.ts";
-
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-const common: import('../../../../../types/common.d.ts').Common = require('../../../../../api/utils/common');
+const common: import('../../../../types/common.js').Common = require('../../../../api/utils/common.js');
 const log = common.log('push:kafka');
 
 // Types from kafkajs (via kafka plugin)
@@ -46,7 +45,7 @@ export async function loadKafka(): Promise<{ kafkaInstance: KafkaInstance; Parti
     const {
         onReady: onKafkaClientReady,
         kafkajs: { Partitioners }
-    } = require('../../../../kafka/api/api.js');
+    } = require('../../../kafka/api/api.js');
     const clientObject = await new Promise<any>(res => onKafkaClientReady(res));
     const kafkaInstance = clientObject.createKafkaInstance() as KafkaInstance;
     return { kafkaInstance, Partitioners };
@@ -57,8 +56,8 @@ export function verifyKafka(): boolean {
         throw new Error("Kafka is not enabled in the configuration");
     }
     try {
-        require.resolve('../../../../kafka/api/lib/KafkaConsumer');
-        require.resolve('../../../../kafka/api/lib/kafkaClient');
+        require.resolve('../../../kafka/api/lib/KafkaConsumer.js');
+        require.resolve('../../../kafka/api/lib/kafkaClient.js');
     }
     catch (e) {
         throw new Error("Kafka plugin is not available");

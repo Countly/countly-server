@@ -1,15 +1,15 @@
 import { ObjectId } from "mongodb";
 import type { Db, AnyBulkWriteOperation, BulkWriteResult, SetFields } from "mongodb";
-import type { ResultEvent } from "./types/queue.ts";
-import type { Result, PlatformKey } from "./types/message.ts";
-import { InvalidDeviceToken } from "./lib/error.ts";
-import { updateInternalsWithResults, sanitizeMongoPath } from "./lib/utils.ts";
-
+import type { ResultEvent } from "../types/queue.ts";
+import type { Result, PlatformKey } from "../types/message.ts";
+import { InvalidDeviceToken } from "../lib/error.ts";
+import { updateInternalsWithResults, sanitizeMongoPath } from "../lib/utils.ts";
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-const log: import('../../../../types/log.d.ts').Logger = require('../../../../api/utils/common').log('push:resultor');
+const common: import('../../../../types/common.d.ts').Common = require("../../../../api/utils/common.js");
+const log = common.log('push:resultor');
 
 type Stat = "total" | "sent" | "failed" | "actioned";
 

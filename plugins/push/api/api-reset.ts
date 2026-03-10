@@ -1,10 +1,11 @@
 import { ObjectId } from "mongodb";
-import { PushError } from "./new/lib/error.ts";
-import platforms from "./new/constants/platform-keymap.ts";
+import { PushError } from "./lib/error.ts";
+import platforms from "./constants/platform-keymap.ts";
 import { createRequire } from 'module';
 
+// createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common');
+const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common.js');
 
 const allAppUserFields = [...new Set(
     Object.values(platforms)

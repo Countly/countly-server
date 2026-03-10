@@ -2,14 +2,14 @@ import firebaseAdmin from "firebase-admin";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { ObjectId } from "mongodb";
 import { createHash } from "crypto";
-import type { PushEvent, AndroidMessagePayload } from "../types/queue.ts";
-import type { Content, Message } from "../types/message.ts";
-import type { ProxyConfiguration } from "../lib/utils.ts";
-import type { FCMCredentials, RawFCMCredentials } from "../types/credentials.ts";
-import type { TemplateContext } from "../lib/template.ts";
-import { buildProxyUrl, serializeProxyConfig, flattenObject, removeUPFromUserPropertyKey } from "../lib/utils.ts";
-import { InvalidCredentials, SendError, FCMErrors } from "../lib/error.ts";
-import { PROXY_CONNECTION_TIMEOUT } from "../constants/configs.ts";
+import type { PushEvent, AndroidMessagePayload } from "../../types/queue.ts";
+import type { Content, Message } from "../../types/message.ts";
+import type { ProxyConfiguration } from "../../lib/utils.ts";
+import type { FCMCredentials, RawFCMCredentials } from "../../types/credentials.ts";
+import type { TemplateContext } from "../../lib/template.ts";
+import { buildProxyUrl, serializeProxyConfig, flattenObject, removeUPFromUserPropertyKey } from "../../lib/utils.ts";
+import { InvalidCredentials, SendError, FCMErrors } from "../../lib/error.ts";
+import { PROXY_CONNECTION_TIMEOUT } from "../../constants/configs.ts";
 
 interface FirebaseError extends Error {
     code: string;

@@ -1,14 +1,14 @@
 /**
- * @typedef {import("../../../api/new/types/queue").PushEvent} PushEvent
- * @typedef {import("../../../api/new/types/credentials").APNP8Credentials} APNP8Credentials
- * @typedef {import("../../../api/new/types/credentials").APNP12Credentials} APNP12Credentials
- * @typedef {import("../../../api/new/types/credentials").RawAPNP12Credentials} RawAPNP12Credentials
+ * @typedef {import("../../../api/types/queue.ts").PushEvent} PushEvent
+ * @typedef {import("../../../api/types/credentials.ts").APNP8Credentials} APNP8Credentials
+ * @typedef {import("../../../api/types/credentials.ts").APNP12Credentials} APNP12Credentials
+ * @typedef {import("../../../api/types/credentials.ts").RawAPNP12Credentials} RawAPNP12Credentials
  */
 const assert = require("assert");
 const { describe, it } = require("mocha");
 const { ObjectId } = require("mongodb");
-const { send, validateCredentials } = require("../../../api/new/platforms/ios");
-const { credentialsDTOToObject } = require("../../../api/new/lib/dto");
+const { send, validateCredentials } = require("../../../api/send/platforms/ios.ts");
+const { credentialsDTOToObject } = require("../../../api/lib/dto.ts");
 const mockedData = require("../../mock/data");
 const { IOS_TEST_TOKEN, IOS_TEST_CREDENTIALS_P8, IOS_TEST_CREDENTIALS_P12 } = process.env;
 

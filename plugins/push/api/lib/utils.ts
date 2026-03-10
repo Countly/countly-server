@@ -8,10 +8,9 @@ import { z } from "zod";
 
 // createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-
-const common: import('../../../../../types/common.d.ts').Common = require('../../../../../api/utils/common');
-const { processEvents: processInternalEvents } = require('../../../../../api/parts/data/events');
-const { updateDataPoints } = require('../../../../server-stats/api/parts/stats');
+const common: import('../../../../types/common.js').Common = require('../../../../api/utils/common.js');
+const { processEvents: processInternalEvents } = require('../../../../api/parts/data/events.js');
+const { updateDataPoints } = require('../../../server-stats/api/parts/stats.js');
 
 export interface DrillAPI {
     fetchUsers(params: any, cb: (err: Error, uids: string[]) => void, db: Db): void;

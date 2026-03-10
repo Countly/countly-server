@@ -1,12 +1,12 @@
 /**
- * @typedef {import("../../../api/new/types/queue").PushEvent} PushEvent
- * @typedef {import("../../../api/new/types/credentials").HMSCredentials} HMSCredentials
+ * @typedef {import("../../../api/types/queue.ts").PushEvent} PushEvent
+ * @typedef {import("../../../api/types/credentials.ts").HMSCredentials} HMSCredentials
  */
 const assert = require("assert");
 const { describe, it } = require("mocha");
 const { ObjectId } = require("mongodb");
-const { getAuthToken, send, validateCredentials } = require("../../../api/new/platforms/huawei");
-const { credentialsDTOToObject } = require("../../../api/new/lib/dto");
+const { getAuthToken, send, validateCredentials } = require("../../../api/send/platforms/huawei.ts");
+const { credentialsDTOToObject } = require("../../../api/lib/dto.ts");
 const mockedData = require("../../mock/data");
 const { HUAWEI_TEST_TOKEN, HUAWEI_TEST_CREDENTIALS } = process.env;
 

@@ -1,11 +1,12 @@
-import { createSchedule } from "./new/scheduler.ts";
-import { zodValidate } from "./new/lib/utils.ts";
-import { ApiPushSchema } from "./new/types/message.ts";
-import { ValidationError } from "./new/lib/error.ts";
+import { createSchedule } from "./send/scheduler.ts";
+import { zodValidate } from "./lib/utils.ts";
+import { ApiPushSchema } from "./types/message.ts";
+import { ValidationError } from "./lib/error.ts";
 import { createRequire } from 'module';
 
+// createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-const common: import('../../../types/common.d.ts').Common = require("../../../api/utils/common");
+const common: import('../../../types/common.d.ts').Common = require("../../../api/utils/common.js");
 const log = common.log("push:api:tx");
 
 /**

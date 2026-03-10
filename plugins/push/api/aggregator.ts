@@ -1,7 +1,8 @@
 import { autoOnCohort } from './api-auto.ts';
-import { loadKafka, setupProducer } from './new/lib/kafka.ts';
+import { loadKafka, setupProducer } from './lib/kafka.ts';
 import { createRequire } from 'module';
 
+// createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
 const plugins: import('../../pluginManager.js').IPluginManager = require('../../pluginManager.ts');
 const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common.js');

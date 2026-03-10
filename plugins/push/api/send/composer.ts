@@ -2,27 +2,26 @@ import { ObjectId } from "mongodb";
 import type { Db, Collection, Document } from "mongodb";
 import type {
     ScheduleEvent, PushEvent, IOSConfig, AndroidConfig, HuaweiConfig,
-} from "./types/queue.ts";
+} from "../types/queue.ts";
 import type {
     MessageCollection, Message, PlatformKey, PlatformEnvKey, PlatformCombinedKey,
-} from "./types/message.ts";
-import type { PlatformCredential } from "./types/credentials.ts";
-import type { ErrorObject } from "./lib/error.ts";
-import type { Schedule, ScheduleCollection, AudienceFilter } from "./types/schedule.ts";
-import type { MessageTemplateFunction } from "./lib/template.ts";
-import * as queue from "./lib/kafka.ts"; // do not import by destructuring; it's being mocked in the tests
-import { createTemplate, getUserPropertiesUsedInsideMessage } from "./lib/template.ts";
-import PLATFORM_KEYMAP from "./constants/platform-keymap.ts";
+} from "../types/message.ts";
+import type { PlatformCredential } from "../types/credentials.ts";
+import type { ErrorObject } from "../lib/error.ts";
+import type { Schedule, ScheduleCollection, AudienceFilter } from "../types/schedule.ts";
+import type { MessageTemplateFunction } from "../lib/template.ts";
+import * as queue from "../lib/kafka.ts"; // do not import by destructuring; it's being mocked in the tests
+import { createTemplate, getUserPropertiesUsedInsideMessage } from "../lib/template.ts";
+import PLATFORM_KEYMAP from "../constants/platform-keymap.ts";
 import { buildResultObject, increaseResultStat, applyResultObject } from "./resultor.ts";
-import { loadDrillAPI, loadPluginConfiguration } from "./lib/utils.ts";
+import { loadDrillAPI, loadPluginConfiguration } from "../lib/utils.ts";
 import { RESCHEDULABLE_DATE_TRIGGERS, scheduleMessageByDateTrigger } from "./scheduler.ts";
-
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
 const common: import('../../../../types/common.d.ts').Common = require("../../../../api/utils/common.js");
-const log: import('../../../../types/log.d.ts').Logger = require('../../../../api/utils/common').log('push:composer');
+const log = common.log('push:composer');
 
 const QUEUE_WRITE_BATCH_SIZE = 100;
 

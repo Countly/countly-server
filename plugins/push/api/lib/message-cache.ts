@@ -1,10 +1,9 @@
 import type { ObjectId } from "mongodb";
-
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-const common: import('../../../../../types/common.d.ts').Common = require("../../../../../api/utils/common");
+const common: import('../../../../types/common.js').Common = require("../../../../api/utils/common.js");
 const log = common.log("push:message-cache");
 
 interface AutoTriggerMessagesCache {

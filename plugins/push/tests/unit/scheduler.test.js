@@ -1,13 +1,13 @@
 /**
- * @typedef {import("../../api/new/types/queue.js").ScheduleEvent} ScheduleEvent
- * @typedef {import("../../api/new/types/message.ts").RecurringTrigger} RecurringTrigger
- * @typedef {import("../../api/new/types/message.ts").MultiTrigger} MultiTrigger
- * @typedef {import("../../api/new/types/message.ts").EventTrigger} EventTrigger
- * @typedef {import("../../api/new/types/schedule.ts").Schedule} Schedule
+ * @typedef {import("../../api/types/queue.ts").ScheduleEvent} ScheduleEvent
+ * @typedef {import("../../api/types/message.ts").RecurringTrigger} RecurringTrigger
+ * @typedef {import("../../api/types/message.ts").MultiTrigger} MultiTrigger
+ * @typedef {import("../../api/types/message.ts").EventTrigger} EventTrigger
+ * @typedef {import("../../api/types/schedule.ts").Schedule} Schedule
  * @typedef {import("mongodb").Collection} Collection
  * @typedef {import("mongodb").Db} Db
  * @typedef {import("mongodb").FindCursor} FindCursor
- * @typedef {import("../../api/new/types/queue.ts").AutoTriggerEvent} AutoTriggerEvent
+ * @typedef {import("../../api/types/queue.ts").AutoTriggerEvent} AutoTriggerEvent
  */
 const assert = require("assert");
 const { describe, it, afterEach } = require("mocha");
@@ -15,9 +15,9 @@ const { ObjectId } = require("mongodb");
 const sinon = require("sinon");
 const proxyquire = require("proxyquire");
 const { createMockedMongoDb } = require("../mock/mongo.js");
-const timezones = require("../../api/new/constants/all-tz-offsets.ts").default;
+const timezones = require("../../api/constants/all-tz-offsets.ts").default;
 const mockData = require("../mock/data.js");
-const { buildResultObject } = require("../../api/new/resultor.js");
+const { buildResultObject } = require("../../api/send/resultor.ts");
 let {
     collection,
     db,
@@ -34,8 +34,8 @@ const {
     scheduleMessageByDateTrigger,
     mergeAutoTriggerEvents,
     scheduleMessageByAutoTriggers,
-} = proxyquire("../../api/new/scheduler", {
-    "../../api/new/lib/kafka.ts": {
+} = proxyquire("../../api/send/scheduler.ts", {
+    "../../api/lib/kafka.ts": {
         sendScheduleEvents: mockSendScheduleEvents
     }
 });

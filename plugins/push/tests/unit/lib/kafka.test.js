@@ -1,8 +1,8 @@
 /**
- * @typedef {import('../../../api/new/types/queue.ts').PushEvent} PushEvent
- * @typedef {import('../../../api/new/types/queue.ts').ScheduleEvent} ScheduleEvent
- * @typedef {import('../../../api/new/types/queue.ts').ScheduleEventHandler} ScheduleEventHandler
- * @typedef {import('../../../api/new/types/queue.ts').PushEventHandler} PushEventHandler
+ * @typedef {import('../../../api/types/queue.ts').PushEvent} PushEvent
+ * @typedef {import('../../../api/types/queue.ts').ScheduleEvent} ScheduleEvent
+ * @typedef {import('../../../api/types/queue.ts').ScheduleEventHandler} ScheduleEventHandler
+ * @typedef {import('../../../api/types/queue.ts').PushEventHandler} PushEventHandler
  * @typedef {"SEND"|"SCHEDULE"|"COMPOSE"|"RESULT"|"AUTO_TRIGGER"} TopicName
  */
 
@@ -21,8 +21,8 @@ const {
     setupTopicsAndPartitions,
     setupProducer,
     initPushQueue
-} = /** @type {import("../../../api/new/lib/kafka.ts")} */(
-    proxyquire("../../../api/new/lib/kafka.ts", {
+} = /** @type {import("../../../api/lib/kafka.ts")} */(
+    proxyquire("../../../api/lib/kafka.ts", {
         "../../../../../api/utils/common": { log }
     })
 );
@@ -31,7 +31,7 @@ describe("Kafka queue", () => {
     if (!isKafkaPluginAvailable()) {
         return console.log("Kafka plugin is not available, skipping kafka tests.");
     }
-    const kafkaConfig = require("../../../api/new/constants/kafka-config.json");
+    const kafkaConfig = require("../../../api/constants/kafka-config.ts").default;
     const { Partitioners } = loadKafkajs();
     let {
         kafkaInstance,

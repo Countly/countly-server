@@ -3,15 +3,15 @@ import { ObjectId } from "mongodb";
 import { URLSearchParams } from "url";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { createHash } from "crypto";
-import type { PushEvent, HuaweiMessagePayload, AndroidMessagePayload } from "../types/queue.ts";
-import type { Content, Message } from "../types/message.ts";
-import type { HMSCredentials, RawHMSCredentials } from "../types/credentials.ts";
-import type { ProxyConfiguration } from "../lib/utils.ts";
-import type { TemplateContext } from "../lib/template.ts";
-import { buildProxyUrl } from "../lib/utils.ts";
+import type { PushEvent, HuaweiMessagePayload, AndroidMessagePayload } from "../../types/queue.ts";
+import type { Content, Message } from "../../types/message.ts";
+import type { HMSCredentials, RawHMSCredentials } from "../../types/credentials.ts";
+import type { ProxyConfiguration } from "../../lib/utils.ts";
+import type { TemplateContext } from "../../lib/template.ts";
+import { buildProxyUrl } from "../../lib/utils.ts";
 import { mapMessageToPayload as mapMessageToAndroidPayload } from "./android.ts";
-import { InvalidCredentials, SendError, InvalidResponse, InvalidDeviceToken, HMSErrors } from "../lib/error.ts";
-import { PROXY_CONNECTION_TIMEOUT } from "../constants/configs.ts";
+import { InvalidCredentials, SendError, InvalidResponse, InvalidDeviceToken, HMSErrors } from "../../lib/error.ts";
+import { PROXY_CONNECTION_TIMEOUT } from "../../constants/configs.ts";
 
 interface TokenCache {
     token?: string;

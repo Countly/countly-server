@@ -3,13 +3,14 @@ import type { IncomingMessage, ServerResponse } from 'http';
 import type { Url } from "url";
 import { createRequire } from 'module';
 
+// createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
 const validators: {
     validateCreate: (params: RequestParams, feature: string, callback: (params: RequestParams) => Promise<any>) => Promise<any>;
     validateRead: (params: RequestParams, feature: string, callback: (params: RequestParams) => Promise<any>) => Promise<any>;
     validateUpdate: (params: RequestParams, feature: string, callback: (params: RequestParams) => Promise<any>) => Promise<any>;
     validateDelete: (params: RequestParams, feature: string, callback: (params: RequestParams) => Promise<any>) => Promise<any>;
-} = require('../../../api/utils/rights.js');
+} = require('../../../../api/utils/rights.js');
 
 interface AppDocument {
     /** App ID */

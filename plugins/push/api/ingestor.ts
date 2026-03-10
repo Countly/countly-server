@@ -1,17 +1,15 @@
 import { onTokenSession } from './api-push.ts';
-import platforms from "./new/constants/platform-keymap.ts";
-import { guessThePlatformFromUserAgentHeader } from "./new/lib/utils.ts";
+import platforms from "./constants/platform-keymap.ts";
+import { guessThePlatformFromUserAgentHeader } from "./lib/utils.ts";
 import { autoOnEvent } from './api-auto.ts';
-import { loadKafka, setupProducer } from './new/lib/kafka.ts';
-
+import { loadKafka, setupProducer } from './lib/kafka.ts';
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-const plugins: import('../../pluginManager.js').IPluginManager = require('../../pluginManager.ts');
-const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common');
+const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common.js');
 const log = common.log('push:ingestor');
-
+const plugins = common.plugins;
 const ALL_PLATFORM_KEYS = Object.keys(platforms);
 
 (async() => {

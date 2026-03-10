@@ -1,7 +1,7 @@
 /**
- * @typedef {import("../../api/new/types/user").User} User
- * @typedef {import("../../api/new/types/queue").PushEvent} PushEvent
- * @typedef {import("../../api/new/types/credentials").PlatformCredential} PlatformCredential
+ * @typedef {import("../../api/lib/template.ts").User} User
+ * @typedef {import("../../api/types/queue.ts").PushEvent} PushEvent
+ * @typedef {import("../../api/types/credentials.ts").PlatformCredential} PlatformCredential
  * @typedef {import("mongodb").AggregationCursor} AggregationCursor
  * @typedef {import("mongodb").Collection} Collection
  * @typedef {import("mongodb").Db} Db
@@ -25,14 +25,15 @@ let {
 /** @type {sinon.SinonStub<[pushes: PushEvent[]], Promise<void>>} */
 const mockSendPushEvents = sinon.stub();
 common.log = () => createSilentLogger();
+
 const {
     composeScheduledPushes,
     userPropsProjection,
     loadCredentials,
     buildUserAggregationPipeline,
     convertAudienceFiltersToMatchStage
-} = proxyquire("../../api/new/composer", {
-    "../../api/new/lib/kafka.ts": {
+} = proxyquire("../../api/send/composer.ts", {
+    "../../api/lib/kafka.ts": {
         sendPushEvents: mockSendPushEvents
     },
     "../../../../api/utils/common": common

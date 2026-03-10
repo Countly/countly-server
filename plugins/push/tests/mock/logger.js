@@ -1,5 +1,5 @@
 /**
- * @typedef {import("../../../../types/log").Logger} Logger
+ * @typedef {import("../../../../types/log.ts").Logger} Logger
  */
 const sinon = require('sinon');
 

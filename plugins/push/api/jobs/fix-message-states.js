@@ -1,9 +1,9 @@
 /**
- * @typedef {import('../../../../types/pluginManager').Database} Database
- * @typedef {import('../new/types/schedule.ts').Schedule} Schedule
- * @typedef {import('../new/types/schedule.ts').ScheduleCollection} ScheduleCollection
- * @typedef {import('../new/types/message.ts').Message} Message
- * @typedef {import('../new/types/message.ts').MessageCollection} MessageCollection
+ * @typedef {import('mongodb').Db} Database
+ * @typedef {import('../types/schedule.ts').Schedule} Schedule
+ * @typedef {import('../types/schedule.ts').ScheduleCollection} ScheduleCollection
+ * @typedef {import('../types/message.ts').Message} Message
+ * @typedef {import('../types/message.ts').MessageCollection} MessageCollection
  * @typedef {{ type: string; value: string; }} ScheduleConfig
  * @typedef {() => void} DoneCallback
  * @typedef {(i: number, j: number, message: string) => void} ProgressCallback

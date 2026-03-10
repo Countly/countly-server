@@ -1,18 +1,18 @@
 import { ObjectId } from "mongodb";
 import type { Db, Filter } from "mongodb";
 import moment from "moment";
-import type { Message, MessageTrigger, RecurringTrigger, MultiTrigger, MessageCollection } from "./types/message.ts";
-import type { Schedule, AudienceFilter, MessageOverrides, ScheduleCollection } from "./types/schedule.ts";
-import type { ScheduleEvent, AutoTriggerEvent, CohortTriggerEvent } from "./types/queue.ts";
-import * as queue from "./lib/kafka.ts";
-import allTZOffsets from "./constants/all-tz-offsets.ts";
-import { buildResultObject } from "./resultor.ts";
-
+import type { Message, MessageTrigger, RecurringTrigger, MultiTrigger, MessageCollection } from "../types/message.ts";
+import type { Schedule, AudienceFilter, MessageOverrides, ScheduleCollection } from "../types/schedule.ts";
+import type { ScheduleEvent, AutoTriggerEvent, CohortTriggerEvent } from "../types/queue.ts";
+import * as queue from "../lib/kafka.ts";
+import allTZOffsets from "../constants/all-tz-offsets.ts";
+import { buildResultObject } from "../send/resultor.ts";
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-const log: import('../../../../types/log.d.ts').Logger = require('../../../../api/utils/common').log('push:scheduler');
+const common: import('../../../../types/common.d.ts').Common = require('../../../../api/utils/common.js');
+const log = common.log('push:scheduler');
 
 type MessageTriggerFilter = Filter<MessageTrigger>;
 

@@ -1,13 +1,13 @@
 /**
- * @typedef {import("../../../api/new/types/credentials").APNP12Credentials} APNP12Credentials
- * @typedef {import("../../../api/new/types/credentials").APNP8Credentials} APNP8Credentials
- * @typedef {import("../../../api/new/types/credentials").APNCredentials} APNCredentials
+ * @typedef {import("../../../api/types/credentials.ts").APNP12Credentials} APNP12Credentials
+ * @typedef {import("../../../api/types/credentials.ts").APNP8Credentials} APNP8Credentials
+ * @typedef {import("../../../api/types/credentials.ts").APNCredentials} APNCredentials
  */
 const assert = require("assert");
 const path = require("path");
 const fsPromise = require("fs/promises");
 const { describe, it } = require("mocha");
-const { parseP12Certificate } = require("../../../api/new/platforms/ios");
+const { parseP12Certificate } = require("../../../api/send/platforms/ios.ts");
 
 describe("IOS platform", () => {
     describe("Credential validator", () => {

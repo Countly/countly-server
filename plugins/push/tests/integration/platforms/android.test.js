@@ -1,12 +1,12 @@
 /**
- * @typedef {import("../../../api/new/types/queue").PushEvent} PushEvent
- * @typedef {import("../../../api/new/types/credentials").FCMCredentials} FCMCredentials
+ * @typedef {import("../../../api/types/queue.ts").PushEvent} PushEvent
+ * @typedef {import("../../../api/types/credentials.ts").FCMCredentials} FCMCredentials
  */
 const assert = require("assert");
 const { describe, it } = require("mocha");
 const { ObjectId } = require("mongodb");
-const { send, validateCredentials } = require("../../../api/new/platforms/android.ts");
-const { credentialsDTOToObject } = require("../../../api/new/lib/dto");
+const { send, validateCredentials } = require("../../../api/send/platforms/android.ts");
+const { credentialsDTOToObject } = require("../../../api/lib/dto.ts");
 const mockedData = require("../../mock/data");
 const { ANDROID_TEST_TOKEN, ANDROID_TEST_CREDENTIALS } = process.env;
 

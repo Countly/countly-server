@@ -1,15 +1,15 @@
 /**
- * @typedef {import("../../api/new/types/message.ts").Message} Message
- * @typedef {import("../../api/new/types/message.ts").RecurringTrigger} RecurringTrigger
- * @typedef {import("../../api/new/types/message.ts").PlainTrigger} PlainTrigger
- * @typedef {import("../../api/new/types/schedule.ts").Schedule} Schedule
- * @typedef {import("../../api/new/types/queue.ts").ScheduleEvent} ScheduleEvent
- * @typedef {import("../../api/new/types/queue.ts").PushEvent} PushEvent
- * @typedef {import("../../api/new/types/queue.ts").ResultEvent} ResultEvent
- * @typedef {import("../../api/new/types/queue.ts").CohortTriggerEvent} CohortTriggerEvent
- * @typedef {import("../../api/new/types/queue.ts").EventTriggerEvent} EventTriggerEvent
- * @typedef {import("../../api/new/types/user.js").User} User
- * @typedef {import("../../api/new/types/credentials.js").PlatformCredential} PlatformCredential
+ * @typedef {import("../../api/types/message.ts").Message} Message
+ * @typedef {import("../../api/types/message.ts").RecurringTrigger} RecurringTrigger
+ * @typedef {import("../../api/types/message.ts").PlainTrigger} PlainTrigger
+ * @typedef {import("../../api/types/schedule.ts").Schedule} Schedule
+ * @typedef {import("../../api/types/queue.ts").ScheduleEvent} ScheduleEvent
+ * @typedef {import("../../api/types/queue.ts").PushEvent} PushEvent
+ * @typedef {import("../../api/types/queue.ts").ResultEvent} ResultEvent
+ * @typedef {import("../../api/types/queue.ts").CohortTriggerEvent} CohortTriggerEvent
+ * @typedef {import("../../api/types/queue.ts").EventTriggerEvent} EventTriggerEvent
+ * @typedef {import("../../api/lib/template.ts").User} User
+ * @typedef {import("../../api/types/credentials.ts").PlatformCredential} PlatformCredential
  */
 const { ObjectId } = require("mongodb");
 

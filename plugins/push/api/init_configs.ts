@@ -1,9 +1,10 @@
 import { createRequire } from 'module';
+import { FEATURE_NAME } from './constants/configs.ts';
 
+// createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
 const plugins: import('../../pluginManager.js').IPluginManager = require('../../pluginManager.ts');
 
-const FEATURE_NAME = 'push';
 plugins.internalEvents.push('[CLY]_push_sent');
 plugins.internalEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_sent');

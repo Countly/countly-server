@@ -1,12 +1,12 @@
 /**
- * @typedef {import("../../api/new/types/message.ts").Result} Result
+ * @typedef {import("../../api/types/message.ts").Result} Result
  * @typedef {import("mongodb").Collection} Collection
  * @typedef {import("mongodb").Db} Db
  * @typedef {import("mongodb").FindCursor} FindCursor
  */
 const assert = require("assert");
 const { describe, it } = require("mocha");
-const { buildUpdateQueryForResult } = require("../../api/new/resultor.js");
+const { buildUpdateQueryForResult } = require("../../api/send/resultor.ts");
 
 describe("Resultor", () => {
     it("should build the $inc operator recursively", () => {

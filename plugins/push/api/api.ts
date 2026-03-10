@@ -5,19 +5,20 @@ import { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } from '
 import { estimate, test, create, update, toggle, remove, all, one, mime, user, periodicStats } from './api-message.ts';
 import { dashboard } from './api-dashboard.ts';
 import { clear, reset, removeUsers } from './api-reset.ts';
-import { initPushQueue, loadKafka } from './new/lib/kafka.ts';
-import { composeAllScheduledPushes } from './new/composer.ts';
-import { sendAllPushes } from './new/sender.ts';
-import { saveResults } from './new/resultor.ts';
-import { scheduleMessageByAutoTriggers } from './new/scheduler.ts';
+import { initPushQueue, loadKafka } from './lib/kafka.ts';
+import { composeAllScheduledPushes } from './send/composer.ts';
+import { sendAllPushes } from './send/sender.ts';
+import { saveResults } from './send/resultor.ts';
+import { scheduleMessageByAutoTriggers } from './send/scheduler.ts';
 import { createRequire } from 'module';
-import type { CohortHookArg } from './api-patches.ts';
-import { createApi, updateApi, deleteApi, readApi } from './api-patches.ts';
+import type { CohortHookArg } from './lib/api-patches.ts';
+import { createApi, updateApi, deleteApi, readApi } from './lib/api-patches.ts';
 
+// createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-const plugins: import('../../pluginManager.js').IPluginManager = require('../../pluginManager.ts');
 const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common.js');
 const log = common.log('push:api');
+const plugins = common.plugins;
 
 const FEATURE_NAME = 'push';
 const PUSH = {

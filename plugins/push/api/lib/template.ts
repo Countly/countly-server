@@ -1,15 +1,14 @@
 import type { PersonalizationObject, Content, Message, PlatformKey, PlatformCombinedKey } from "../types/message.ts";
 import type { PlatformMessagePayload } from "../types/queue.ts";
-import { mapMessageToPayload as mapMessageToAndroidPayload } from "../platforms/android.ts";
-import { mapMessageToPayload as mapMessageToIOSPayload } from "../platforms/ios.ts";
-import { mapMessageToPayload as mapMessageToHuaweiPayload } from "../platforms/huawei.ts";
+import { mapMessageToPayload as mapMessageToAndroidPayload } from "../send/platforms/android.ts";
+import { mapMessageToPayload as mapMessageToIOSPayload } from "../send/platforms/ios.ts";
+import { mapMessageToPayload as mapMessageToHuaweiPayload } from "../send/platforms/huawei.ts";
 import { removeUPFromUserPropertyKey } from "./utils.ts";
-
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
-const { dot }: import('../../../../../types/common.d.ts').Common = require('../../../../../api/utils/common');
+const { dot }: import('../../../../types/common.js').Common = require('../../../../api/utils/common.js');
 
 // contains only the required properties. other ones are denoted with "[key: string]: any". which are
 // only populated from app_user to be used inside the template.
