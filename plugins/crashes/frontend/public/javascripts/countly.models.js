@@ -1595,12 +1595,46 @@ function transformAppVersion(inpVersion) {
         return resultQuery;
     };
 
+    countlyCrashes.filterCrashesDrillQuery = function(inpQuery) {
+        var resultQuery = {};
+        var crashgroupOnlyFields = [
+            'is_hidden',
+            'is_new',
+            'is_renewed',
+            'is_resolved',
+            'is_resolving',
+            'users',
+            'reports',
+            'startTs',
+            'lastTs',
+            'latest_version',
+        ];
+
+        Object.keys(inpQuery).forEach(function(key) {
+            if (!crashgroupOnlyFields.includes(key)) {
+                resultQuery[key] = inpQuery[key];
+            }
+        });
+
+        return resultQuery;
+    };
+
     countlyCrashes.modifyCrashesDrillQuery = function(inpQuery) {
         var resultQuery = {};
 
         Object.keys(inpQuery).forEach(function(key) {
             if (key === 'app_version_list') {
                 resultQuery['sg.app_version'] = inpQuery[key];
+            }
+            else if (/\.(max|min)/.test(key)) {
+                var keyParts = key.split('.');
+
+                if (keyParts[0] === 'run') {
+                    resultQuery['sg.' + keyParts[0]] = inpQuery[key];
+                }
+                else {
+                    resultQuery['sg.' + keyParts[0] + '_current'] = inpQuery[key];
+                }
             }
             else {
                 resultQuery['sg.' + key] = inpQuery[key];
