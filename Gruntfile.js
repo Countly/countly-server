@@ -57,6 +57,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/Sortable.min.js',
                     'frontend/express/public/javascripts/utils/vue/vuedraggable.umd.min.js',
                     'frontend/express/public/javascripts/utils/lodash.mergeWith.js',
+                    'frontend/express/public/javascripts/utils/cronstrue.min.js',
                     'frontend/express/public/javascripts/utils/element-tiptap.umd.min.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
