@@ -5,6 +5,33 @@ const DataMaskingService = require('./DataMaskingService');
 const plugins = require('../../pluginManager.ts');
 const QueryHelpers = require('./QueryHelpers');
 
+// OTel metrics — opt-in, zero overhead when OTEL_ENABLED is not set
+const _otelEnabled = /^(1|true|yes)$/i.test(process.env.OTEL_ENABLED || '');
+let _chMetrics = null;
+
+/**
+ * Initialize ClickHouse metrics if OTel is enabled.
+ * @returns {Object|null} ClickHouse metrics object or null if OTel is not enabled.
+ */
+function getChMetrics() {
+    if (_chMetrics) {
+        return _chMetrics;
+    }
+    if (!_otelEnabled) {
+        return null;
+    }
+    try {
+        const { metrics } = require('@opentelemetry/api');
+        const meter = metrics.getMeter('countly-clickhouse');
+        _chMetrics = {
+            requestDuration: meter.createHistogram('countly_clickhouse_request_duration_seconds', { unit: 's' }),
+            requestTotal: meter.createCounter('countly_clickhouse_request_total'),
+        };
+    }
+    catch (_e) { /* no-op */ }
+    return _chMetrics;
+}
+
 // Query size thresholds for max_query_size override
 const QUERY_SIZE_THRESHOLD = 20 * 1024; // 20KB - trigger for large query mode
 const LARGE_QUERY_MAX_SIZE = 16 * 1024 * 1024; // 16MB - for large cohort queries
@@ -75,6 +102,7 @@ class ClickhouseQueryService {
                     });
                     const result = await resultSet.json();
                     const durationOk = Date.now() - startTime;
+                    this.#recordQueryMetric('query', 'success', durationOk);
                     log.d(`ClickHouse query completed in ${durationOk}ms`);
                     return result; // masked at query level, return as-is
                 }
@@ -90,6 +118,7 @@ class ClickhouseQueryService {
                     const maskedResult = shouldMask ? this.maskingService.maskResults(fallback, queryObj.query, projectionKey, queryObj?.options) : fallback;
 
                     const durationFb = Date.now() - startTime;
+                    this.#recordQueryMetric('query', 'success', durationFb);
                     log.d(`ClickHouse query completed in ${durationFb}ms (fallback applied)`);
                     return maskedResult;
                 }
@@ -107,6 +136,7 @@ class ClickhouseQueryService {
                 const maskedResult = shouldMask ? this.maskingService.maskResults(result, queryObj.query, projectionKey, queryObj?.options) : result;
 
                 const duration = Date.now() - startTime;
+                this.#recordQueryMetric('query', 'success', duration);
                 log.d(`ClickHouse query completed in ${duration}ms`);
                 return maskedResult;
             }
@@ -114,8 +144,25 @@ class ClickhouseQueryService {
         }
         catch (e) {
             const duration = Date.now() - startTime;
+            this.#recordQueryMetric('query', 'error', duration);
             log.e(`ClickHouse query failed after ${duration}ms`, e);
             throw e;
+        }
+    }
+
+    /**
+     * Record ClickHouse request duration and count metrics
+     * @param {string} operation - Operation type (query, aggregate, mutation, insert)
+     * @param {string} result - Result status (success, error)
+     * @param {number} durationMs - Duration in milliseconds
+     * @private
+     */
+    #recordQueryMetric(operation, result, durationMs) {
+        const m = getChMetrics();
+        if (m) {
+            const attrs = { operation, result };
+            m.requestDuration.record(durationMs / 1000, attrs);
+            m.requestTotal.add(1, attrs);
         }
     }
 
@@ -154,7 +201,7 @@ class ClickhouseQueryService {
      * @param {Function} [options.onProgress] - Progress callback. Receives one argument: an object with fields like `read_rows`, `read_bytes`, `total_rows_to_read`, and `elapsed_ns` (values are strings).
      * @param {string} [options.adapter] - Database adapter to use
      * @returns {Promise<any[]>|Stream} Resolves to an array of aggregated results, or returns a readable stream if options.stream is true
-     * 
+     *
      * @example
      * // Regular aggregation (returns Promise)
      * const results = await service.aggregate({
@@ -162,26 +209,26 @@ class ClickhouseQueryService {
      *   params: { start_date: "2025-01-01" },
      *   appID: "your-app-id-here"  // Pass appID for data masking
      * });
-     * 
+     *
      * @example
      * // Streaming aggregation (returns Stream)
      * const stream = service.aggregate({
      *   query: "SELECT bucket_id, uid FROM events WHERE date >= {start_date:String}",
      *   params: { start_date: "2025-01-01" }
      * }, { stream: true });
-     * 
+     *
      * stream.on('data', (row) => {
      *   console.log('Received row:', row);
      * });
-     * 
+     *
      * stream.on('error', (err) => {
      *   console.error('Stream failed:', err);
      * });
-     * 
+     *
      * stream.on('end', () => {
      *   console.log('Stream completed');
      * });
-     * 
+     *
      * @example
      * // Aggregation with progress (non-stream)
      * const result = await service.aggregate(
@@ -332,10 +379,12 @@ class ClickhouseQueryService {
 
                 transformStream.once('end', () => {
                     const duration = Date.now() - startTime;
+                    this.#recordQueryMetric('aggregate', 'success', duration);
                     log.d(`ClickHouse aggregate stream completed in ${duration}ms`);
                 });
                 transformStream.once('error', (err) => {
                     const duration = Date.now() - startTime;
+                    this.#recordQueryMetric('aggregate', 'error', duration);
                     log.e(`ClickHouse aggregate stream failed after ${duration}ms`, err);
                 });
 
@@ -359,11 +408,14 @@ class ClickhouseQueryService {
                 // Mask results if query string masking failed or we fell back
                 const projectionKey = options?.projectionKey || pipeline.projectionKey || null;
                 const maskedResult = (shouldMask && !usedMaskedQuery) ? this.maskingService.maskResults(rows, pipeline.query, projectionKey, options) : rows;
+                const progressDuration = Date.now() - startTime;
+                this.#recordQueryMetric('aggregate', 'success', progressDuration);
                 return maskedResult;
             }
 
             result = await resultSet.json();
             const duration = Date.now() - startTime;
+            this.#recordQueryMetric('aggregate', 'success', duration);
             log.d(`ClickHouse aggregate query completed in ${duration}ms`);
 
             // Mask results if query string masking failed or we fell back
@@ -374,6 +426,7 @@ class ClickhouseQueryService {
         }
         catch (e) {
             const duration = Date.now() - startTime;
+            this.#recordQueryMetric('aggregate', 'error', duration);
             log.e(`ClickHouse aggregate query failed after ${duration}ms`, e);
             throw e;
         }
@@ -416,11 +469,13 @@ class ClickhouseQueryService {
                 query_params: params
             });
             const duration = Date.now() - startTime;
+            this.#recordQueryMetric('mutation', 'success', duration);
             log.d(`ClickHouse mutation completed in ${duration}ms`);
             return true;
         }
         catch (e) {
             const duration = Date.now() - startTime;
+            this.#recordQueryMetric('mutation', 'error', duration);
             log.e(`ClickHouse mutation failed after ${duration}ms`, e);
             throw e;
         }
@@ -501,10 +556,12 @@ class ClickhouseQueryService {
             });
 
             const duration = Date.now() - startTime;
+            this.#recordQueryMetric('insert', 'success', duration);
             log.d(`ClickHouse insert completed: ${docsArray.length} docs to ${targetTable} in ${duration}ms`);
         }
         catch (e) {
             const duration = Date.now() - startTime;
+            this.#recordQueryMetric('insert', 'error', duration);
             log.e(`ClickHouse insert failed after ${duration}ms`, { table: targetTable, docCount: docsArray.length, error: e.message });
             throw e;
         }
@@ -565,7 +622,7 @@ class ClickhouseQueryService {
     }
 
     /**
-     * List all databases 
+     * List all databases
      * @returns {Promise<Array<{name:String}>>} Resolves to an array of database names
      */
     async listDatabases() {

@@ -14,6 +14,28 @@ const EventSinkInterface = require('./EventSinkInterface.ts').default;
 const { transformToKafkaEventFormat } = require('../utils/eventTransformer');
 const Log = require('../utils/log.js');
 
+// OTel metrics — opt-in, zero overhead when OTEL_ENABLED is not set
+const _otelEnabled = /^(1|true|yes)$/i.test(process.env.OTEL_ENABLED || '');
+let _sinkMetrics: { duration: any; eventsTotal: any } | null = null;
+function getSinkMetrics() {
+    if (_sinkMetrics) {
+        return _sinkMetrics;
+    }
+    if (!_otelEnabled) {
+        return null;
+    }
+    try {
+        const { metrics } = require('@opentelemetry/api');
+        const meter = metrics.getMeter('countly-event-sink');
+        _sinkMetrics = {
+            duration: meter.createHistogram('countly_event_sink_duration_seconds', { unit: 's' }),
+            eventsTotal: meter.createCounter('countly_event_sink_events_total'),
+        };
+    }
+    catch (_e) { /* no-op */ }
+    return _sinkMetrics;
+}
+
 /**
  * Logger interface for type safety
  */
@@ -192,6 +214,8 @@ class KafkaEventSink extends EventSinkInterface {
 
             if (result.success) {
                 this.#log.d(`Successfully sent ${result.sent} events to Kafka in ${duration}ms`);
+                getSinkMetrics()?.duration.record(duration / 1000, { sink: 'kafka' });
+                getSinkMetrics()?.eventsTotal.add(result.sent ?? 0, { sink: 'kafka', result: 'success' });
 
                 return this._createResult(true, result.sent ?? 0, 'Events sent to Kafka successfully', {
                     duration,
@@ -205,6 +229,8 @@ class KafkaEventSink extends EventSinkInterface {
         }
         catch (error) {
             const duration = Date.now() - startTime;
+            getSinkMetrics()?.duration.record(duration / 1000, { sink: 'kafka' });
+            getSinkMetrics()?.eventsTotal.add(transformedEvents, { sink: 'kafka', result: 'error' });
             this.#log.e(`Failed to write ${transformedEvents} events to Kafka in ${duration}ms:`);
             this.#log.e('Error writing events to Kafka:', error);
             throw error;
