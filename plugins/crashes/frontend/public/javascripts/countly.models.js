@@ -1011,7 +1011,6 @@ function transformAppVersion(inpVersion) {
             context.state.isLoading = true;
             context.state.crashgroup._id = payload.crashgroupId;
             context.state.crashesQuery = payload.crashesQuery || {};
-            context.dispatch("fetchBarData", {value: "os_version", period: "7days"});
             return context.dispatch("refresh");
         };
 

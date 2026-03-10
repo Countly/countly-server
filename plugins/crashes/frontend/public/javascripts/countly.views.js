@@ -1224,6 +1224,7 @@
             },
         },
         beforeCreate: function() {
+            var self = this;
             var crashgroupId = (this.$route.params && this.$route.params.crashgroupId) || '';
             var crashesQuery = undefined;
             if (this.$route.params && this.$route.params.query) {
@@ -1231,9 +1232,17 @@
                 crashesQuery = countlyCrashes.modifyExistsQueries(tmpQuery);
             }
 
-            return this.$store.dispatch("countlyCrashes/crashgroup/initialize", {
+            this.$store.dispatch('countlyCrashes/crashgroup/initialize', {
                 crashgroupId: crashgroupId,
                 crashesQuery: crashesQuery,
+            }).then(function(crashgroup) {
+                var lastTs = crashgroup.lastTs;
+                if (_.isFinite(lastTs)) {
+                    var tsObj = new moment(lastTs * 1000);
+                    self.pickerDate = [tsObj.subtract(7, 'days').valueOf(), lastTs * 1000];
+                }
+
+                self.$store.dispatch('countlyCrashes/crashgroup/fetchBarData', {value: 'os_version', period: self.pickerDate});
             });
         },
         mounted: function() {
