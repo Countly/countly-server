@@ -723,7 +723,7 @@
                 var urlHash = '#/crashes/' + crashgroupId;
 
                 if (!_.isEmpty(lastQuery)) {
-                    urlHash += '/filter/' + JSON.stringify({ query: lastQuery });
+                    urlHash += '/filter/' + JSON.stringify({ query: countlyCrashes.filterCrashesDrillQuery(lastQuery) });
                 }
 
                 return urlHash;
