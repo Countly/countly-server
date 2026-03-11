@@ -107,7 +107,9 @@ function getUniqArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_
 
         if (weekCounts[key] < 7) {
             for (i = 0; i < weeksArray.length; i++) {
-                weeksArray[i] = weeksArray[i].replace(key, 0);
+                if (weeksArray[i] === key) {
+                    weeksArray[i] = '0';
+                }
             }
         }
     }
@@ -126,7 +128,9 @@ function getUniqArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_
 
         if (monthCounts[key] < tmpDaysInMonth) {
             for (i = 0; i < monthsArray.length; i++) {
-                monthsArray[i] = monthsArray[i].replace(key, 0);
+                if (monthsArray[i] === key) {
+                    monthsArray[i] = '0';
+                }
             }
         }
     }
@@ -226,7 +230,9 @@ function getUniqCheckArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCo
 
         if (weekCounts[key] < 1) {
             for (i = 0; i < weeksArray.length; i++) {
-                weeksArray[i] = weeksArray[i].replace(key, 0);
+                if (weeksArray[i] === key) {
+                    weeksArray[i] = '0';
+                }
             }
         }
     }
@@ -245,7 +251,9 @@ function getUniqCheckArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCo
 
         if (monthCounts[key] < (tmpDaysInMonth * 0.5)) {
             for (i = 0; i < monthsArray.length; i++) {
-                monthsArray[i] = monthsArray[i].replace(key, 0);
+                if (monthsArray[i] === key) {
+                    monthsArray[i] = '0';
+                }
             }
         }
     }

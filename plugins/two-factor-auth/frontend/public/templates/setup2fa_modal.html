@@ -1,44 +1,46 @@
-<div>
-<cly-inline-form-field :label="i18n('two-factor-auth.plugin-title')">
-    <el-switch 
-    @change="onChange($event)"
-    :value="TFAsettings.enabled">
-    </el-switch>
-</cly-inline-form-field>
-<el-dialog :visible.sync="dataModal.showDialog"  :title="i18n('two-factor-auth.setup_auth')" width="55%" :before-close="closeDataModal">
-    <cly-main>
-        <div class="bu-columns bu-is-gapless">
-            <div class="bu-column bu-is-12">
-                <h4 class="bu-mb-4">1. {{i18n('two-factor-auth.install_app')}}</h4>
-                <h4 class="bu-mb-4">2. {{i18n('two-factor-auth.scan_qr')}}</h4>
+<div id="two-factor-auth-setup-modal">
+    <cly-inline-form-field :label="i18n('two-factor-auth.plugin-title')">
+        <el-switch
+            @change="onChange($event)"
+            :value="TFAsettings.enabled">
+        </el-switch>
+    </cly-inline-form-field>
+    <el-dialog :visible.sync="dataModal.showDialog"  :title="i18n('two-factor-auth.setup_auth')" width="55%" :before-close="closeDataModal">
+        <cly-main>
+            <div class="bu-columns bu-is-gapless">
+                <div class="bu-column bu-is-12">
+                    <ol>
+                        <li v-html="i18n('two-factor-auth.install_app')"></li>
+                        <li v-html="i18n('two-factor-auth.scan_qr')"></li>
+                    </ol>
+                </div>
             </div>
-        </div>
-        <div class="bu-columns bu-is-gapless">
-            <div class="bu-column bu-is-4"></div>
-            <div class="bu-column bu-is-4">
-                <span v-html="qrcode_html"></span>
+            <div class="bu-columns bu-is-gapless">
+                <div class="bu-column bu-is-4"></div>
+                <div class="bu-column bu-is-4">
+                    <span v-html="qrcode_html"></span>
+                </div>
+                <div class="bu-column bu-is-4"></div>
             </div>
-            <div class="bu-column bu-is-4"></div>
-        </div>
-        <div class="bu-columns bu-is-gapless">
-            <div class="bu-column bu-is-12">
-                <h4 class="bu-mb-4">{{i18n('two-factor-auth.secret_token')}}: {{ secret_token }}</h4>
+            <div class="bu-columns bu-is-gapless">
+                <div class="bu-column bu-is-12">
+                    <h4 class="bu-mb-4">{{i18n('two-factor-auth.secret_token')}}: <span v-loading="!secret_token">{{ secret_token }}</span></h4>
+                </div>
             </div>
-        </div>
-        <div class="bu-columns bu-is-gapless">
-            <div class="bu-column bu-is-12">
-                <h4 class="bu-mb-4">{{i18n('two-factor-auth.enter_otp')}}</h4>
-                <el-input v-model="secret_code"></el-input>
+            <div class="bu-columns bu-is-gapless">
+                <div class="bu-column bu-is-12">
+                    <h4 class="bu-mb-4">{{i18n('two-factor-auth.enter_otp')}}</h4>
+                    <el-input v-model="secret_code"></el-input>
+                </div>
             </div>
-        </div>
-        <div class="bu-columns bu-is-gapless">
-            <div class="bu-column bu-is-12">
-                <span slot="footer" class="dialog-footer">
-                    <el-button @click="dataModal.showDialog = false">{{i18n('common.cancel')}}</el-button>
-                    <el-button type="primary" @click="confirmDialog">{{i18n('events.general.confirm')}}</el-button>
-                </span>
+            <div class="bu-columns bu-is-gapless">
+                <div class="bu-column bu-is-12">
+                    <span slot="footer" class="dialog-footer">
+                        <el-button @click="dataModal.showDialog = false">{{i18n('common.cancel')}}</el-button>
+                        <el-button type="primary" @click="confirmDialog">{{i18n('events.general.confirm')}}</el-button>
+                    </span>
+                </div>
             </div>
-        </div>
-    </cly-main>
-</el-dialog>
+        </cly-main>
+    </el-dialog>
 </div>

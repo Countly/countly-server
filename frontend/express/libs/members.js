@@ -761,6 +761,10 @@ membersUtility.reset = function(req, callback) {
             var secret = membersUtility.countlyConfig.passwordSecret || "";
             argon2Hash(req.body.password + secret).then(password => {
                 membersUtility.db.collection('password_reset').findOne({ prid: req.body.prid }, function(err, passwordReset) {
+                    if (err || !passwordReset || !passwordReset.user_id) {
+                        callback(false, undefined);
+                        return;
+                    }
                     membersUtility.db.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function(err2, member) {
                         member = member && member.ok ? member.value : null;
                         killOtherSessionsForUser(passwordReset.user_id + "", null, null, membersUtility.db);

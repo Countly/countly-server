@@ -15,19 +15,42 @@
 
 ## 🌟 What is Countly?
 
-Countly is a product analytics platform that helps teams track, analyze and act on their user actions and behaviour on mobile, web and desktop applications. 
+Countly is a **privacy-first, AI-ready analytics and customer engagement platform** built for organizations that require **full data ownership and deployment flexibility**.
 
-Countly is used to track 1.5B unique identities on more than 16,000 applications via 2,000+ servers worldwide. It securely processes billions of data points every day in the cloud and on-premises, enabling teams of all sizes to build better applications and engaging experiences while maintaining full control over their product analytics data flow.
+Unlike traditional SaaS-only analytics tools, Countly can be deployed **on-premises or in a private cloud**, giving you complete control over your data, infrastructure, compliance, and security.
 
-## 🚀 What are the Countly editions?                   
+Teams use Countly to:
+* Understand user behavior across **mobile, web, desktop, and connected devices**
+* Optimize product and customer experiences in **real time**
+* Automate and personalize customer engagement across channels
 
-* **Countly Lite** — Essential plugins/features and a free-to-use, open source, non-commercial license. Available as self-hosted. Suitable for individuals and small organizations.
-* **Countly Enterprise** — Offers a wider range of plugins/features, granular data, an SLA, and direct support. Available as self-hosted or Countly hosted/managed. Suitable for medium and large organizations.
-* **Countly Flex** — Our SaaS platform that offers some Enterprise features as core features, and some others as add-ons. Everyone gets their dedicated and fully-managed Countly server(s) in the region they choose. Suitable for individuals, small and medium-sized organizations.  
+With **flexible data tracking**, **customizable dashboards**, and a **modular plugin-based architecture**, Countly scales with your product while ensuring long-term autonomy and zero vendor lock-in.
+
+**Built for privacy. Designed for flexibility. Ready for AI-driven innovation.**
+
+## 🚀 Countly Plans                  
+
+**Countly Lite**
+* Core analytics and essential features
+* Free to use under an open-source, non-commercial license
+* Self-hosted deployment
+* Ideal for individuals and small teams
+
+**Countly Enterprise**
+* Full analytics and engagement suite
+* Advanced features, granular data access, SLA, and direct support
+* Available as self-hosted or managed/private cloud
+* Ideal for medium and large organizations with advanced compliance needs
+
+**Countly Flex**
+* Fully managed SaaS experience with dedicated Countly servers
+* Region-based hosting selection
+* Enterprise-grade features included, with optional add-ons
+* Ideal for individuals and small-to-medium organizations wanting flexibility without infrastructure management
+
+:pushpin: **Note**: Countly SDKs are identical across all editions.
 
 For a detailed comparison of different editions [please check here](https://countly.com/pricing). To try the Countly Flex [please visit this page]([https://countly.com/flex](https://countly.com/flex)).
-
-Also, please note that SDKs of Countly are the same for all editions.
 
 ## 📦 What is included in this repository?
 
@@ -94,6 +117,15 @@ Security is very important to us. If you discover any issue regarding security, 
 * **Linux** — What we all love using ;-)
 
 Plus lots of [open source libraries](https://support.countly.com/hc/en-us/articles/360037092232-Open-source-components)!         
+
+## 📚 Developer Documentation
+
+* [Coding Guidelines](CODING_GUIDELINES.md) — Development standards and best practices
+* [Security Guidelines](docs/SECURITY.md) — Security requirements for contributions
+* [Vue.js Guidelines](docs/VUEJS_GUIDELINES.md) — Frontend development patterns
+* [CSS Style Guide](docs/CSS_STYLE_GUIDE.md) — SASS, BEM, and Bulma conventions
+* [UI Testing Guide](docs/UI_TESTING.md) — Cypress testing and data-test-id usage
+* [Test Suite Documentation](test/README.md) — Running and writing tests
 
 ## 🤝 How can I help you with your efforts?
 

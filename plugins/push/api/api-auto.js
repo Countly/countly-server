@@ -48,15 +48,8 @@ module.exports.autoOnCohort = function(entry, cohort, uids) {
             // adding messages to queue
             if (trigger) {
                 logCohorts.d('processing %s %s', typ, msg._id);
-                audience.getApp().then(() => {
-                    audience.push(trigger).setUIDs(uids).setStart(new Date()).run().then(result => {
-                        logCohorts.d('processing %s %s, result: %j', typ, msg._id, result);
-                        if (result.total) {
-                            return msg.update({$inc: {'result.total': result.total}}, () => {
-                                msg.result.total += result.total;
-                            });
-                        }
-                    }).then(() => {
+                audience.getApp().then(async() => {
+                    audience.push(trigger).setUIDs(uids).setStart(new Date()).run().then(() => {
                         logCohorts.d('done processing %s %s', typ, msg._id);
                     }).catch(error => {
                         logCohorts.e('Error while pushing users to cohorted message queue %s %s', typ, msg._id, error);

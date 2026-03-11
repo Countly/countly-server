@@ -350,7 +350,7 @@ module.exports.update = async params => {
         }
         else {
             await msg.save();
-            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable))) {
+            if (!params.qstring.demo && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable))) {
                 await msg.schedule(log, params);
             }
             common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});

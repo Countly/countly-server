@@ -392,7 +392,7 @@ const processRequest = (params) => {
                             options.token = token;
                             render.renderView(options, function(err3) {
                                 if (err3) {
-                                    common.returnMessage(params, 400, 'Error creating screenshot: ' + err3);
+                                    common.returnMessage(params, 400, 'Error creating screenshot. Please check logs for more information.');
                                     return false;
                                 }
                                 common.returnOutput(params, {path: common.config.path + "/images/screenshots/" + imageName});

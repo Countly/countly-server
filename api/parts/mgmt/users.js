@@ -861,6 +861,9 @@ usersApi.checkNoteEditPermission = async function(params) {
                     if (error) {
                         return reject(false);
                     }
+                    if (!note) {
+                        return resolve(false);
+                    }
                     const globalAdmin = params.member.global_admin;
                     const isAppAdmin = hasAdminAccess(params.member, params.qstring.app_id);
                     const noteOwner = (note.owner + '' === params.member._id + '');

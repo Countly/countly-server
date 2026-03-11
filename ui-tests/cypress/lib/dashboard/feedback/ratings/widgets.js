@@ -403,7 +403,7 @@ const verifyAppearancePageDefaultElements = () => {
         ratingSymbol: "Emojis",
         isLogoDefault: true,
         selectedMainIconColor: "#0166D6",
-        selectedFontIconColor: "#0166D6",
+        selectedFontIconColor: "#FFFFFF",
         isButtonSizeMedium: true,
         isPositionCenterLeft: true,
         triggerText: "Feedback",

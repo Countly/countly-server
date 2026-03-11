@@ -466,9 +466,6 @@
                         self.calculateAllData();
                         self.isLoading = false;
                     }
-                    else {
-                        setTimeout(self.refresh(), 1000); //we have nothing retry.
-                    }
                 }
                 else {
                     this.$root.$emit("cly-error", {message: errored});//show error

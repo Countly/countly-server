@@ -250,7 +250,6 @@
                         sort = JSON.stringify(this.preparedSortObject);
                     }
                     var apiQueryData = {
-                        api_key: countlyGlobal.member.api_key,
                         app_id: countlyCommon.ACTIVE_APP_ID,
                         //filename: "DBViewer" + moment().format("DD-MMM-YYYY"), - using passed filename from form
                         projection: JSON.stringify(this.preparedProjectionFields),
@@ -259,7 +258,8 @@
                         collection: this.localCollection,
                         db: this.localDb,
                         url: "/o/export/db",
-                        get_index: this.index
+                        get_index: this.index,
+                        api_key: countlyGlobal.member.api_key
                     };
                     return apiQueryData;
                 },
@@ -303,7 +303,7 @@
             },
             computed: {
                 dbviewerAPIEndpoint: function() {
-                    var url = '/db?api_key=' + countlyGlobal.member.api_key + '&app_id=' + countlyCommon.ACTIVE_APP_ID + '&dbs=' + this.localDb + '&collection=' + this.localCollection;
+                    var url = '/db?app_id=' + countlyCommon.ACTIVE_APP_ID + '&dbs=' + this.localDb + '&collection=' + this.localCollection;
                     if (this.queryFilter) {
                         url += '&filter=' + encodeURIComponent(this.queryFilter);
                     }

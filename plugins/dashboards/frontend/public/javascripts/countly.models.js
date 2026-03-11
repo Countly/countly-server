@@ -2,6 +2,13 @@
 
 (function(countlyDashboards) {
 
+    var isRequestCancelled = function(e) {
+        var isCancelled = false;
+        if (e && e.statusText === "abort") {
+            isCancelled = true;
+        }
+        return isCancelled;
+    };
     countlyDashboards.factory = {
         dashboards: {
             getEmpty: function() {
@@ -66,6 +73,9 @@
                 }, {disableAutoCatch: true});
             },
             get: function(dashboardId, isRefresh) {
+                if (!dashboardId) {
+                    return Promise.resolve(null);
+                }
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/dashboards",
@@ -643,11 +653,16 @@
 
                     return dashbaord;
                 }).catch(function(e) {
-                    log(e);
-                    CountlyHelpers.notify({
-                        message: "Something went wrong while fetching the dashbaord!",
-                        type: "error"
-                    });
+                    if (!isRequestCancelled(e)) {
+                        log(e);
+                        CountlyHelpers.notify({
+                            message: "Something went wrong while fetching the dashbaord!",
+                            type: "error"
+                        });
+                    }
+                    else {
+                        log("Request cancelled: " + e);
+                    }
 
                     return false;
                 });

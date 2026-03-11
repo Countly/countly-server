@@ -20,7 +20,10 @@ const path = require('path');
                                 res.download(myfile, req.query.id + '.tar.gz');
                                 return;
                             }
-
+                            else {
+                                res.status(404).send('Export file not found');
+                                return;
+                            }
                         }
                     });
                 }
@@ -28,6 +31,10 @@ const path = require('path');
                     if (fs.existsSync(path.resolve(__dirname, '../../../log/' + req.query.logfile))) {
                         res.set('Content-Type', 'text/plain');
                         res.download(path.resolve(__dirname, '../../../log/' + req.query.logfile), req.query.logfile);
+                        return;
+                    }
+                    else {
+                        res.status(404).send('Log file not found');
                         return;
                     }
 

@@ -285,6 +285,9 @@ function transformValuesInObject(doc, mapper) {
     }
     return doc;
 }
+
+exports.transformValuesInObject = transformValuesInObject;
+
 /**
 * function to collect calues in order based on current order.
 * @param {array} values - arary to collect values

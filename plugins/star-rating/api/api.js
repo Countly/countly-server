@@ -23,7 +23,7 @@ if (cohortsEnabled) {
 if (!surveysEnabled) {
     plugins.setConfigs("feedback", {
         main_color: "#0166D6",
-        font_color: "#0166D6",
+        font_color: "#FFFFFF",
         feedback_logo: ""
 
     });

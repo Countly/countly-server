@@ -267,11 +267,6 @@
                 var countly_newsletter = doc.countly_newsletter;
                 delete doc.countly_newsletter;
 
-                this.$store.dispatch('countlyOnboarding/updateUserNewsletter', {
-                    user_id: countlyGlobal.member._id,
-                    subscribe_newsletter: countly_newsletter,
-                });
-
                 if (countly_newsletter) {
                     this.$store.dispatch('countlyOnboarding/sendNewsletterSubscription', {
                         name: countlyGlobal.member.full_name.split(' ')[0],
@@ -280,9 +275,15 @@
                     });
                 }
 
-                // go home
-                window.location.href = '#/home';
-                window.location.reload();
+                this.$store.dispatch('countlyOnboarding/updateUserNewsletter', {
+                    user_id: countlyGlobal.member._id,
+                    subscribe_newsletter: countly_newsletter,
+                }).finally(function() {
+                    countlyGlobal.member.subscribe_newsletter = countly_newsletter;
+                    // go home
+                    window.location.href = '#/home';
+                    window.location.reload();
+                });
             },
         }
     });
@@ -345,7 +346,14 @@
         }
     });
 
-    if (hasNewsLetter && (typeof countlyGlobal.member.subscribe_newsletter !== 'boolean' && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0))) {
+    if (
+        hasNewsLetter &&
+        (
+            typeof countlyGlobal.member.subscribe_newsletter !== 'boolean' &&
+            store.get('disable_newsletter_prompt') === false &&
+            (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0)
+        )
+    ) {
         if (Backbone.history.fragment !== '/not-subscribed-newsletter' && !/initial-setup|initial-consent/.test(window.location.hash)) {
             app.navigate("/not-subscribed-newsletter", true);
         }

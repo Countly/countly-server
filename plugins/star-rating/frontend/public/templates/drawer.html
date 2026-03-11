@@ -55,7 +55,7 @@
                   <input data-test-id="ratings-drawer-ratingspopup-consent-checkbox" type="checkbox"
                   value="consent" checked
                   >
-                  <span v-html="finalTxt(drawerScope.editedObject.links)" data-test-id="ratings-drawer-ratingspopup-consent-text"></span>
+                  <span v-html="finalTxt(drawerScope.editedObject.links, drawerScope.editedObject.finalText)" data-test-id="ratings-drawer-ratingspopup-consent-text"></span>
                 </label>
               </div>
               <div class="ratings-drawer__rp-action-area">
@@ -190,12 +190,11 @@
           </el-checkbox>
          </div>
          <star-consent-link
-    v-if="drawerScope.editedObject.consent"
-    ref="links"
-    :max-links="3"
-    :read-only="!!drawerScope.editedObject._id"
-    v-model="drawerScope.editedObject.links">
-  </star-consent-link>
+          v-if="drawerScope.editedObject.consent"
+          ref="links"
+          :max-links="3"
+          v-model="drawerScope.editedObject">
+        </star-consent-link>
         <div class="cly-vue-drawer-step__section">
           <div class="text-medium-big bu-has-text-weight-medium bu-pb-2 bu-pt-4">
             {{i18n('feedback.buttons.heading')}}
