@@ -253,7 +253,7 @@ const setFieldsIfExist = function(fieldList, source, target) {
 
                                 groupInsert._id = hash;
                                 groupSet.os = platform;
-                                groupSet.lastTs = moment(currEvent.ts).unix();
+                                groupMax.lastTs = moment(currEvent.ts).unix();
 
                                 if (currEvent.sg.name) {
                                     groupSet.name = ((`${currEvent.sg.name}`).split('\n')[0] + '').trim();
@@ -326,7 +326,7 @@ const setFieldsIfExist = function(fieldList, source, target) {
 
                                 groupInsert.is_new = true;
                                 groupInsert.is_resolved = false;
-                                groupInsert.startTs = moment(currEvent.ts).unix();
+                                groupMin.startTs = moment(currEvent.ts).unix();
                                 groupInsert.latest_version = currEvent.sg.app_version;
                                 groupInsert.latest_version_for_sort = common.transformAppVersion(currEvent.sg.app_version);
                                 groupInsert.lrid = `${currEvent.__id || currEvent._id}`;
