@@ -281,25 +281,37 @@
                     </cly-crashes-dashboard-tile>
                 </div>
             </cly-section>
-            <cly-section>
-                <template v-slot:header>
-                    <span class="bu-mr-2">{{i18n('crashes.crash-occurences-by', crashgroup.nonfatal ?
-                        i18n('crashes.nonfatal') : i18n('crashes.fatal'))}}</span>
-                    <el-select v-model="chartBy" @change="handleChartByChange">
-                        <el-option v-for="item in chartByOptions"  :key="item.value" :label="item.label"
-                            :value="item.value"></el-option>
-                    </el-select>
-                    <cly-date-picker 
+            <div class="bu-mb-3">
+                <span class="bu-mr-2">{{i18n('crashes.crash-occurences-by', crashgroup.nonfatal ?
+                    i18n('crashes.nonfatal') : i18n('crashes.fatal'))}}</span>
+                <el-select v-model="chartBy" @change="handleChartByChange">
+                    <el-option v-for="item in chartByOptions"  :key="item.value" :label="item.label"
+                        :value="item.value"></el-option>
+                </el-select>
+                <cly-date-picker 
                     timestampFormat="ms" 
                     :display-shortcuts="true" 
                     v-model="pickerDate" 
                     label-mode-prop="absolute"
                     :allow-presets="false"
                     @change="handleDatePickerChange"
-                    class="bu-ml-2"
-                >
+                    class="bu-ml-2">
                 </cly-date-picker>
-                </template>
+            </div>
+            <div class="bu-mb-3" v-if="hasCrashesQuery">
+                <cly-qb-bar
+                    feature="crashes"
+                    v-model="crashesQuery"
+                    :property-source-config="{drill: false}"
+                    queryStore="crashgroups"
+                    :additionalProperties="crashesQueryProperties"
+                    :additionalRules="crashesQueryRules"
+                    format="crashgroups"
+                    :disabled="true"
+                    :hide-controls="true">
+                </cly-qb-bar>
+            </div>
+            <cly-section>
                 <p class="text-small color-cool-gray-50 bu-pl-3">{{i18n('crashes.crash-occurences-description')}}</p>
                 <cly-chart-bar  v-loading="isLoadingGraph" :force-loading="isLoadingGraph" :option="chartData(chartBy)" :legend="{show: true}" ></cly-chart-bar>
             </cly-section>
