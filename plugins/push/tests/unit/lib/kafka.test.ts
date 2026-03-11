@@ -1,18 +1,14 @@
-/**
- * @typedef {import('../../../api/types/queue.ts').PushEvent} PushEvent
- * @typedef {import('../../../api/types/queue.ts').ScheduleEvent} ScheduleEvent
- * @typedef {import('../../../api/types/queue.ts').ScheduleEventHandler} ScheduleEventHandler
- * @typedef {import('../../../api/types/queue.ts').PushEventHandler} PushEventHandler
- * @typedef {"SEND"|"SCHEDULE"|"COMPOSE"|"RESULT"|"AUTO_TRIGGER"} TopicName
- */
+import type { PushEvent, ScheduleEvent, ScheduleEventHandler, PushEventHandler } from '../../../api/types/queue.ts';
+import { ObjectId } from 'mongodb';
+import assert from 'assert';
+import esmock from 'esmock';
+import { describe, it, after, afterEach } from 'mocha';
+import { createMockedKafkajs, loadKafkajs, isKafkaPluginAvailable } from '../../mock/kafka.ts';
+import { createSilentLogModule } from '../../mock/logger.ts';
+import * as data from '../../mock/data.ts';
 
-const { ObjectId } = require("mongodb");
-const assert = require("assert");
-const proxyquire = require("proxyquire");
-const { describe, it, after, afterEach } = require("mocha");
-const { createMockedKafkajs, loadKafkajs, isKafkaPluginAvailable } = require("../../mock/kafka.js");
-const { createSilentLogger: log } = require("../../mock/logger.js");
-const data = require("../../mock/data.js");
+type TopicName = "SEND" | "SCHEDULE" | "COMPOSE" | "RESULT" | "AUTO_TRIGGER";
+
 const {
     sendPushEvents,
     sendScheduleEvents,
@@ -21,11 +17,9 @@ const {
     setupTopicsAndPartitions,
     setupProducer,
     initPushQueue
-} = /** @type {import("../../../api/lib/kafka.ts")} */(
-    proxyquire("../../../api/lib/kafka.ts", {
-        "../../../../../api/utils/common": { log }
-    })
-);
+} = await esmock("../../../api/lib/kafka.ts", {
+    "../../../../../api/utils/common.js": { default: { log: createSilentLogModule() } }
+}) as typeof import('../../../api/lib/kafka.ts');
 
 describe("Kafka queue", () => {
     if (!isKafkaPluginAvailable()) {
@@ -73,12 +67,12 @@ describe("Kafka queue", () => {
                 assert.strictEqual(createTopicsArg.topics.length, Object.keys(kafkaConfig.topics).length);
 
                 // Verify SEND topic configuration
-                const sendTopic = createTopicsArg.topics.find((/** @type {any} */ t) => t.topic === kafkaConfig.topics.SEND.name);
+                const sendTopic = createTopicsArg.topics.find((t: any) => t.topic === kafkaConfig.topics.SEND.name);
                 assert(sendTopic);
                 assert.strictEqual(sendTopic.numPartitions, kafkaConfig.topics.SEND.partitions);
 
                 // Verify SCHEDULE topic configuration with cleanup policy
-                const scheduleTopic = createTopicsArg.topics.find((/** @type {any} */ t) => t.topic === kafkaConfig.topics.SCHEDULE.name);
+                const scheduleTopic = createTopicsArg.topics.find((t: any) => t.topic === kafkaConfig.topics.SCHEDULE.name);
                 assert(scheduleTopic);
                 assert.strictEqual(scheduleTopic.numPartitions, kafkaConfig.topics.SCHEDULE.partitions);
                 assert(scheduleTopic.configEntries);
@@ -105,7 +99,7 @@ describe("Kafka queue", () => {
                 const createTopicsArg = adminInstance.createTopics.firstCall.firstArg;
 
                 // Should only create topics that don't exist
-                const topicNames = createTopicsArg.topics.map((/** @type {any} */ t) => t.topic);
+                const topicNames = createTopicsArg.topics.map((t: any) => t.topic);
                 assert(!topicNames.includes(kafkaConfig.topics.SEND.name));
                 assert(!topicNames.includes(kafkaConfig.topics.COMPOSE.name));
                 assert(topicNames.includes(kafkaConfig.topics.SCHEDULE.name));
@@ -156,9 +150,9 @@ describe("Kafka queue", () => {
                 const createTopicsArg = adminInstance.createTopics.firstCall.firstArg;
                 const topics = createTopicsArg.topics;
                 for (const topicName in kafkaConfig.topics) {
-                    const config = kafkaConfig.topics[/** @type {TopicName} */(topicName)];
+                    const config = kafkaConfig.topics[topicName as TopicName];
                     const topic = topics.find(
-                        (/** @type {any} */ t) => t.topic === config.name
+                        (t: any) => t.topic === config.name
                     );
                     assert.strictEqual(
                         topic.numPartitions,
@@ -195,8 +189,8 @@ describe("Kafka queue", () => {
                 assert(consumerInstance.connect.called);
 
                 const topics = Object.values(kafkaConfig.topics)
-                    .filter(i => i.name !== kafkaConfig.topics.SCHEDULE.name)
-                    .map(i => i.name);
+                    .filter((i: any) => i.name !== kafkaConfig.topics.SCHEDULE.name)
+                    .map((i: any) => i.name);
 
                 assert(consumerInstance.subscribe.calledWith({
                     topics,
@@ -209,8 +203,7 @@ describe("Kafka queue", () => {
             it("should handle multiple message types in batch correctly", async() => {
                 adminInstance.listTopics.returns(Promise.resolve([]));
 
-                /** @type {{ push: any[], schedule: any[], result: any[], autoTrigger: any[] }} */
-                const handlers = {
+                const handlers: { push: any[], schedule: any[], result: any[], autoTrigger: any[] } = {
                     push: [],
                     schedule: [],
                     result: [],
@@ -220,16 +213,16 @@ describe("Kafka queue", () => {
                 await initPushQueue(
                     kafkaInstance,
                     Partitioners.DefaultPartitioner,
-                    async(events) => {
+                    async(events: any) => {
                         handlers.push = events;
                     },
-                    async(events) => {
+                    async(events: any) => {
                         handlers.schedule = events;
                     },
-                    async(events) => {
+                    async(events: any) => {
                         handlers.result = events;
                     },
-                    async(events) => {
+                    async(events: any) => {
                         handlers.autoTrigger = events;
                     }
                 );
@@ -246,7 +239,7 @@ describe("Kafka queue", () => {
                 await eachBatch({
                     batch: {
                         topic: kafkaConfig.topics.SEND.name,
-                        messages: testData.map((/** @type {any} */ d) => ({ value: JSON.stringify(d) }))
+                        messages: testData.map((d: any) => ({ value: JSON.stringify(d) }))
                     }
                 });
 
@@ -255,12 +248,12 @@ describe("Kafka queue", () => {
 
             it("should handle null message values gracefully", async() => {
                 adminInstance.listTopics.returns(Promise.resolve([]));
-                let receivedEvents = [];
+                let receivedEvents: any[] = [];
 
                 await initPushQueue(
                     kafkaInstance,
                     Partitioners.DefaultPartitioner,
-                    async(events) => {
+                    async(events: any) => {
                         receivedEvents = events;
                     },
                     async() => {},
@@ -315,8 +308,7 @@ describe("Kafka queue", () => {
                     let noResolves = 2;
                     const pushEvent = data.pushEvent();
                     const scheduleEvent = data.scheduleEvent();
-                    /** @type {PushEventHandler} */
-                    async function pushEventHandler(events) {
+                    const pushEventHandler: PushEventHandler = async(events) => {
                         try {
                             assert(events[0].appId instanceof ObjectId);
                             assert(events[0].messageId instanceof ObjectId);
@@ -331,9 +323,8 @@ describe("Kafka queue", () => {
                         catch (err) {
                             --noResolves || rej(err);
                         }
-                    }
-                    /** @type {ScheduleEventHandler} */
-                    async function scheduleEventHandler(events) {
+                    };
+                    const scheduleEventHandler: ScheduleEventHandler = async(events) => {
                         try {
                             assert(events[0].appId instanceof ObjectId);
                             assert(events[0].messageId instanceof ObjectId);
@@ -349,7 +340,7 @@ describe("Kafka queue", () => {
                         catch (err) {
                             --noResolves || rej(err);
                         }
-                    }
+                    };
                     initPushQueue(
                         kafkaInstance,
                         Partitioners.DefaultPartitioner,
@@ -459,7 +450,7 @@ describe("Kafka queue", () => {
                 async() => {}
             );
             await sendScheduleEvents([scheduleEvent]);
-            const arg = /** @type {any} */(producerInstance.send.args[0][0]);
+            const arg = producerInstance.send.args[0][0] as any;
             assert(typeof arg.messages[0].key === "string");
             delete arg.messages[0].key;
             assert.deepStrictEqual(arg, {

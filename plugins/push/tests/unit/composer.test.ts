@@ -1,30 +1,23 @@
-/**
- * @typedef {import("../../api/lib/template.ts").User} User
- * @typedef {import("../../api/types/queue.ts").PushEvent} PushEvent
- * @typedef {import("../../api/types/credentials.ts").PlatformCredential} PlatformCredential
- * @typedef {import("mongodb").AggregationCursor} AggregationCursor
- * @typedef {import("mongodb").Collection} Collection
- * @typedef {import("mongodb").Db} Db
- * @typedef {import("stream").Readable} Readable
- */
-const { ObjectId } = require("mongodb");
-const { describe, it } = require("mocha");
-const assert = require("assert");
-const mockData = require("../mock/data");
-const sinon = require("sinon");
-const { createMockedMongoDb } = require("../mock/mongo");
-const { createSilentLogger } = require("../mock/logger");
-const common = require("../../../../api/utils/common");
-const proxyquire = require("proxyquire");
+import type { User } from '../../api/lib/template.ts';
+import type { PushEvent } from '../../api/types/queue.ts';
+import type { PlatformCredential } from '../../api/types/credentials.ts';
+import { ObjectId } from 'mongodb';
+import { describe, it, afterEach } from 'mocha';
+import assert from 'assert';
+import * as mockData from '../mock/data.ts';
+import sinon from 'sinon';
+import { createMockedMongoDb } from '../mock/mongo.ts';
+import { createSilentLogModule } from '../mock/logger.ts';
+import esmock from 'esmock';
+
 let {
     collection,
     db,
     sandbox: mongoMockSandbox,
     createMockedCollection
 } = createMockedMongoDb();
-/** @type {sinon.SinonStub<[pushes: PushEvent[]], Promise<void>>} */
-const mockSendPushEvents = sinon.stub();
-common.log = () => createSilentLogger();
+
+const mockSendPushEvents: sinon.SinonStub<[pushes: PushEvent[]], Promise<void>> = sinon.stub();
 
 const {
     composeScheduledPushes,
@@ -32,17 +25,18 @@ const {
     loadCredentials,
     buildUserAggregationPipeline,
     convertAudienceFiltersToMatchStage
-} = proxyquire("../../api/send/composer.ts", {
+} = await esmock("../../api/send/composer.ts", {
     "../../api/lib/kafka.ts": {
         sendPushEvents: mockSendPushEvents
     },
-    "../../../../api/utils/common": common
+    "../../../../api/utils/common.js": {
+        default: { log: createSilentLogModule() }
+    }
 });
 
 describe("Push composer", async() => {
     afterEach(() => {
-        // Reset the sandbox to clear all stubs and spies.
-        // we cannot use resetHistory here because we need to reset the whole sandbox
+        // Reset the sandbox to clear all stubs and spies
         ({
             collection,
             db,
@@ -96,7 +90,7 @@ describe("Push composer", async() => {
             const mockedCreds = mockData.androidCredential();
             const credId = mockedCreds._id;
 
-            collection.findOne.callsFake(({ _id }) => {
+            collection.findOne.callsFake(({ _id }: any) => {
                 let obj;
                 if (_id === appId) {
                     obj = {
@@ -352,7 +346,7 @@ describe("Push composer", async() => {
         it("should handle empty cohorts array", async() => {
             const appId = new ObjectId();
             const filters = {
-                cohorts: []
+                cohorts: [] as string[]
             };
 
             const pipeline = await convertAudienceFiltersToMatchStage(db, filters, appId.toString());
@@ -363,7 +357,7 @@ describe("Push composer", async() => {
         it("should handle empty geos array", async() => {
             const appId = new ObjectId();
             const filters = {
-                geos: []
+                geos: [] as any[]
             };
 
             const pipeline = await convertAudienceFiltersToMatchStage(db, filters, appId.toString());
@@ -410,7 +404,7 @@ describe("Push composer", async() => {
             const parametricMessage = mockData.parametricMessage();
             const pipeline = await buildUserAggregationPipeline(db, parametricMessage);
 
-            const projectStage = pipeline.find((/** @type {any} */ stage) => stage.$project);
+            const projectStage = pipeline.find((stage: any) => stage.$project);
             assert(projectStage);
             assert.deepStrictEqual(projectStage.$project, {
                 uid: 1,
@@ -581,16 +575,14 @@ describe("Push composer", async() => {
                 collection: credsCollection
             } = createMockedCollection("creds");
             const credId = new ObjectId;
-            /** @type {PlatformCredential} */
-            const creds = {
+            const creds: PlatformCredential = {
                 _id: credId,
                 hash: "somethingsomething",
                 serviceAccountFile: "data:application/json;base64,...",
                 type: "fcm"
             };
             const user = mockData.appUser();
-            /** @type {Omit<PushEvent, "payload">} */
-            const event = {
+            const event: Omit<PushEvent, "payload"> = {
                 appId,
                 messageId,
                 scheduleId,
@@ -607,20 +599,17 @@ describe("Push composer", async() => {
                 platformConfiguration: {},
                 sendBefore: undefined,
             };
-            /** @type {User[]} */
-            const users = [
+            const users: User[] = [
                 { ...user, uid: "1", },
                 { ...user, uid: "2", },
                 { ...user, uid: "3", }
             ];
-            /** @type {Array<Omit<PushEvent, "payload">>} */
-            const events = [
-                { ...event, uid: users[0].uid, token: /** @type {string} */(users[0].tk?.[0].tk.ap) },
-                { ...event, uid: users[1].uid, token: /** @type {string} */(users[1].tk?.[0].tk.ap) },
-                { ...event, uid: users[2].uid, token: /** @type {string} */(users[2].tk?.[0].tk.ap) },
+            const events: Array<Omit<PushEvent, "payload">> = [
+                { ...event, uid: users[0].uid, token: users[0].tk?.[0].tk.ap as string },
+                { ...event, uid: users[1].uid, token: users[1].tk?.[0].tk.ap as string },
+                { ...event, uid: users[2].uid, token: users[2].tk?.[0].tk.ap as string },
             ];
-            /** @type {unknown} */
-            const iterator = (async function*() {
+            const iterator: unknown = (async function*() {
                 yield users[0];
                 yield users[1];
                 yield users[2];
@@ -641,14 +630,14 @@ describe("Push composer", async() => {
             messageCollection.findOne.resolves(message);
             scheduleCollection.findOne.resolves(schedule);
             credsCollection.findOne.resolves(creds);
-            aggregationCursor.stream.returns(/** @type {Readable & AsyncIterable<User>} */(iterator));
+            aggregationCursor.stream.returns(iterator as any);
 
             const result = await composeScheduledPushes(db, scheduleEvent);
             const arg = mockSendPushEvents.getCall(0).firstArg?.map(
-                /** @type {(a: PushEvent) => Omit<PushEvent, "paylaod">} */(a => {
+                (a: PushEvent) => {
                     const { payload, ...ret } = a;
                     return ret;
-                })
+                }
             );
 
             assert(arg);

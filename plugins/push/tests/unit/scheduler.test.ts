@@ -1,30 +1,23 @@
-/**
- * @typedef {import("../../api/types/queue.ts").ScheduleEvent} ScheduleEvent
- * @typedef {import("../../api/types/message.ts").RecurringTrigger} RecurringTrigger
- * @typedef {import("../../api/types/message.ts").MultiTrigger} MultiTrigger
- * @typedef {import("../../api/types/message.ts").EventTrigger} EventTrigger
- * @typedef {import("../../api/types/schedule.ts").Schedule} Schedule
- * @typedef {import("mongodb").Collection} Collection
- * @typedef {import("mongodb").Db} Db
- * @typedef {import("mongodb").FindCursor} FindCursor
- * @typedef {import("../../api/types/queue.ts").AutoTriggerEvent} AutoTriggerEvent
- */
-const assert = require("assert");
-const { describe, it, afterEach } = require("mocha");
-const { ObjectId } = require("mongodb");
-const sinon = require("sinon");
-const proxyquire = require("proxyquire");
-const { createMockedMongoDb } = require("../mock/mongo.js");
-const timezones = require("../../api/constants/all-tz-offsets.ts").default;
-const mockData = require("../mock/data.js");
-const { buildResultObject } = require("../../api/send/resultor.ts");
+import type { ScheduleEvent, AutoTriggerEvent } from '../../api/types/queue.ts';
+import type { RecurringTrigger, MultiTrigger, EventTrigger } from '../../api/types/message.ts';
+import assert from 'assert';
+import { describe, it, afterEach } from 'mocha';
+import { ObjectId } from 'mongodb';
+import sinon from 'sinon';
+import esmock from 'esmock';
+import { createMockedMongoDb } from '../mock/mongo.ts';
+import timezones from '../../api/constants/all-tz-offsets.ts';
+import * as mockData from '../mock/data.ts';
+import { buildResultObject } from '../../api/send/resultor.ts';
+import type { Schedule } from '../../api/types/schedule.ts';
+
 let {
     collection,
     db,
     findCursor,
 } = createMockedMongoDb();
-/** @type {sinon.SinonStub<[pushes: ScheduleEvent[]], Promise<void>>} */
-const mockSendScheduleEvents = sinon.stub();
+
+const mockSendScheduleEvents: sinon.SinonStub<[pushes: ScheduleEvent[]], Promise<void>> = sinon.stub();
 const {
     tzOffsetAdjustedTime,
     findNextMatchForRecurring,
@@ -34,7 +27,7 @@ const {
     scheduleMessageByDateTrigger,
     mergeAutoTriggerEvents,
     scheduleMessageByAutoTriggers,
-} = proxyquire("../../api/send/scheduler.ts", {
+} = await esmock("../../api/send/scheduler.ts", {
     "../../api/lib/kafka.ts": {
         sendScheduleEvents: mockSendScheduleEvents
     }
@@ -86,8 +79,7 @@ describe("Scheduler", () => {
             new Date("2024-03-07T14:45:00+03:00"),
         ];
         it("should find all dates", () => {
-            /** @type {Date|undefined} */
-            let nextDate = findNextMatchForRecurring(mockData.dailyRecurringTrigger(), now);
+            let nextDate: Date | undefined = findNextMatchForRecurring(mockData.dailyRecurringTrigger(), now);
             let i = 0;
             while (nextDate) {
                 assert.equal(nextDate.getTime(), matches[i].getTime());
@@ -123,8 +115,7 @@ describe("Scheduler", () => {
             new Date("2024-03-14T14:45:00+03:00"),
         ];
         it("should find all dates", () => {
-            /** @type {Date|undefined} */
-            let nextDate = findNextMatchForRecurring(mockData.weeklyRecurringTrigger(), now);
+            let nextDate: Date | undefined = findNextMatchForRecurring(mockData.weeklyRecurringTrigger(), now);
             let i = 0;
             while (nextDate) {
                 assert.equal(nextDate.getTime(), matches[i].getTime());
@@ -155,8 +146,7 @@ describe("Scheduler", () => {
             new Date("2024-08-31T14:45:00+03:00"),
         ];
         it("should find all dates", () => {
-            /** @type {Date|undefined} */
-            let nextDate = findNextMatchForRecurring(mockData.monthlyRecurringTrigger(), now);
+            let nextDate: Date | undefined = findNextMatchForRecurring(mockData.monthlyRecurringTrigger(), now);
             let i = 0;
             while (nextDate) {
                 assert.equal(nextDate.getTime(), matches[i].getTime());
@@ -182,15 +172,13 @@ describe("Scheduler", () => {
         ];
         const sortedDates = dates.map(d => new Date(d.getTime())).sort((i, j) => i.getTime() - j.getTime());
         const now = new Date("2024-01-10T00:00:00+03:00");
-        /** @type {() => MultiTrigger} */
-        const trigger = () => ({
+        const trigger = (): MultiTrigger => ({
             kind: "multi",
             start: new Date("2024-07-10T00:00:00.000Z"),
             dates,
         });
         it("should find all dates", () => {
-            /** @type {Date|undefined} */
-            let nextDate = findNextMatchForMulti(trigger(), now);
+            let nextDate: Date | undefined = findNextMatchForMulti(trigger(), now);
             let i = 0;
             while (nextDate) {
                 assert.equal(nextDate.getTime(), sortedDates[i].getTime());
@@ -205,20 +193,13 @@ describe("Scheduler", () => {
         it("shouldn't find any date in the past", () => {
             const now = new Date("2024-07-18T09:00:00+03:00");
             const filtered = sortedDates.filter(d => d.getTime() > now.getTime());
-            /**
-             * @param {Date} a
-             * @param {Date} b
-             * @returns {Date}
-             */
-            const later = (a, b) => new Date(Math.max(a.getTime(), b.getTime()));
-            /** @type {() => MultiTrigger} */
-            const trigger = () => ({
+            const later = (a: Date, b: Date): Date => new Date(Math.max(a.getTime(), b.getTime()));
+            const trigger = (): MultiTrigger => ({
                 kind: "multi",
                 start: new Date("2024-07-10T00:00:00.000Z"),
                 dates,
             });
-            /** @type {Date|undefined} */
-            let nextDate = findNextMatchForMulti(trigger(), now);
+            let nextDate: Date | undefined = findNextMatchForMulti(trigger(), now);
             let i = 0;
             while (nextDate) {
                 assert.equal(nextDate.getTime(), filtered[i].getTime());
@@ -241,11 +222,11 @@ describe("Scheduler", () => {
             const minute = 60 * 1000;
             const utcTime = schedule.scheduledTo.getTime() - schedule.schedulerTimezone * minute;
             const timezoneAdjusted = timezones
-                .map(({ offset }) => utcTime - offset * minute)
-                .filter((time) => time > Date.now());
+                .map(({ offset }: any) => utcTime - offset * minute)
+                .filter((time: number) => time > Date.now());
             await createScheduleEvents(schedule);
             const arg = mockSendScheduleEvents.getCall(0).args[0];
-            const dates = arg.map((event) => event.scheduledTo.getTime());
+            const dates = arg.map((event: any) => event.scheduledTo.getTime());
             assert.strictEqual(arg.length, timezoneAdjusted.length);
             assert.deepEqual(dates, timezoneAdjusted);
         });
@@ -276,7 +257,7 @@ describe("Scheduler", () => {
             assert(db.collection.calledWith("message_schedules"));
             const arg = collection.insertOne.getCall(0)?.args[0];
             const actualScheduleDate = arg?.events?.scheduled?.[0]?.date;
-            const expectedArg = {
+            const expectedArg: Schedule = {
                 _id: result._id,
                 appId,
                 messageId,
@@ -288,14 +269,13 @@ describe("Scheduler", () => {
                 audienceFilter: undefined,
                 messageOverrides: undefined,
                 result: buildResultObject(),
-                events: {
-                    scheduled: [{
+                events: [
+                    {
                         scheduledTo,
-                        date: actualScheduleDate,
+                        status: "scheduled",
                         timezone: undefined,
-                    }],
-                    composed: []
-                }
+                    }
+                 ]
             };
             assert.deepStrictEqual(expectedArg, arg);
         });
@@ -305,10 +285,10 @@ describe("Scheduler", () => {
         it("should throw an error if it cannot find a schedulable trigger", async() => {
             const mockMessage = mockData.message();
             mockMessage.triggers = [
-                /** @type {EventTrigger} */({
+                {
                     kind: "event",
                     events: ["lorem", "ipsum"]
-                })
+                } as EventTrigger
             ];
             collection.findOne.resolves(mockMessage);
             assert.rejects(scheduleMessageByDateTrigger(db, mockMessage._id));
@@ -323,8 +303,7 @@ describe("Scheduler", () => {
             const cohort2 = "67b868f115891e7800e2f565";
             const event1 = "test-event-1";
             const event2 = "test-event-2";
-            /** @type {AutoTriggerEvent[]} */
-            const events = [
+            const events: AutoTriggerEvent[] = [
                 { "kind": "event", "appId": app1, "eventKeys": [event1], "uid": "7" },
                 { "kind": "event", "appId": app2, "eventKeys": [event2], "uid": "11" },
                 { "kind": "cohort", "appId": app1, "direction": "enter", "cohortId": cohort1, "uids": ["1", "2"] },
@@ -352,8 +331,7 @@ describe("Scheduler", () => {
         });
 
         it("should ....", async() => {
-            /** @type {AutoTriggerEvent} */
-            const event = {
+            const event: AutoTriggerEvent = {
                 kind: "event",
                 appId: new ObjectId("67b868f115891e7800e2f563"),
                 eventKeys: [

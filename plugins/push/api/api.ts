@@ -31,10 +31,10 @@ plugins.register("/master", async function() {
         await initPushQueue(
             kafkaInstance,
             Partitioners.DefaultPartitioner,
-            (pushes: any) => sendAllPushes(pushes),
-            (schedules: any) => composeAllScheduledPushes(common.db, schedules),
-            (results: any) => saveResults(common.db, results),
-            (autoTriggerEvents: any) => scheduleMessageByAutoTriggers(common.db, autoTriggerEvents),
+            pushes => sendAllPushes(pushes),
+            schedules => composeAllScheduledPushes(common.db, schedules),
+            results => saveResults(common.db, results),
+            autoTriggerEvents => scheduleMessageByAutoTriggers(common.db, autoTriggerEvents),
         );
         log.i("Push queue initialized successfully");
     }

@@ -1,4 +1,4 @@
-import PLATFORM_KEYMAP from "../api/new/constants/platform-keymap.ts";
+import PLATFORM_KEYMAP from "../api/constants/platform-keymap.ts";
 import { createRequire } from 'module';
 import type { Db } from "mongodb";
 import type { Application } from "express"

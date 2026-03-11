@@ -1,17 +1,11 @@
-/**
- * @typedef {import("../../api/types/message.ts").Result} Result
- * @typedef {import("mongodb").Collection} Collection
- * @typedef {import("mongodb").Db} Db
- * @typedef {import("mongodb").FindCursor} FindCursor
- */
-const assert = require("assert");
-const { describe, it } = require("mocha");
-const { buildUpdateQueryForResult } = require("../../api/send/resultor.ts");
+import type { Result } from '../../api/types/message.ts';
+import assert from 'assert';
+import { describe, it } from 'mocha';
+import { buildUpdateQueryForResult } from '../../api/send/resultor.ts';
 
 describe("Resultor", () => {
     it("should build the $inc operator recursively", () => {
-        /** @type {Result} */
-        const resultObject = {
+        const resultObject: Result = {
             total: 155,
             sent: 138,
             actioned: 48,

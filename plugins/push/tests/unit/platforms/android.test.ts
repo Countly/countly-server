@@ -1,28 +1,27 @@
-/**
- * @typedef {import("../../../api/types/credentials.ts").FCMCredentials} FCMCredentials
- * @typedef {import("../../../api/types/queue.ts").PushEvent} PushEvent
- * @typedef {import("../../../api/lib/utils.ts").ProxyConfiguration} ProxyConfiguration
- */
-const assert = require("assert");
-const { ObjectId } = require("mongodb");
-const sinon = require("sinon");
-const proxyquire = require("proxyquire").noCallThru();
-const mockData = require("../../mock/data");
+import type { FCMCredentials } from '../../../api/types/credentials.ts';
+import type { PushEvent } from '../../../api/types/queue.ts';
+import type { ProxyConfiguration } from '../../../api/lib/utils.ts';
+import assert from 'assert';
+import { ObjectId } from 'mongodb';
+import sinon from 'sinon';
+import esmock from 'esmock';
+import * as mockData from '../../mock/data.ts';
+
+const mockHttpsProxyAgentInstance = {};
+const MockHttpsProxyAgent = sinon.stub().callsFake(() => mockHttpsProxyAgentInstance);
+const sendStub = sinon.stub();
+const messagingStub = sinon.stub().returns({ send: sendStub });
+const mockFirebaseAdmin = {
+    initializeApp: sinon.stub().returns({ messaging: messagingStub }),
+    credential: { cert: sinon.stub() },
+    apps: [] as {messaging: sinon.SinonStub, name: string}[],
+};
+const { send, validateCredentials, mapMessageToPayload } = await esmock.strict("../../../api/send/platforms/android.ts", {
+    "firebase-admin": { default: mockFirebaseAdmin },
+    "https-proxy-agent": { HttpsProxyAgent: MockHttpsProxyAgent }
+});
 
 describe("Android platform", () => {
-    const mockHttpsProxyAgentInstance = {};
-    const MockHttpsProxyAgent = sinon.stub().callsFake(() => mockHttpsProxyAgentInstance);
-    const sendStub = sinon.stub();
-    const messagingStub = sinon.stub().returns({ send: sendStub });
-    const mockFirebaseAdmin = {
-        initializeApp: sinon.stub().returns({ messaging: messagingStub }),
-        credential: { cert: sinon.stub() },
-        apps: /** @type {{messaging: sinon.SinonStub, name: string}[]} */([]),
-    };
-    const { send, validateCredentials, mapMessageToPayload } = proxyquire("../../../api/send/platforms/android.ts", {
-        "firebase-admin": mockFirebaseAdmin,
-        "https-proxy-agent": { HttpsProxyAgent: MockHttpsProxyAgent }
-    });
 
     describe("Push notification sender", () => {
         const serviceAccount = {
@@ -41,18 +40,14 @@ describe("Android platform", () => {
             universe_domain: 'googleapis.com'
         };
         const jsonDataURIPrefix = "data:application/json;base64,";
-        /** @type {FCMCredentials} */
-        const credentials = {
+        const credentials: FCMCredentials = {
             _id: new ObjectId,
             hash: '0f07c581fd44f570b7b4133c49656c714364f859a36d1f58d13a32338a1e1e11',
             type: 'fcm',
             serviceAccountFile: jsonDataURIPrefix
                 + Buffer.from(JSON.stringify(serviceAccount)).toString("base64"),
         };
-        /**
-        * @type {PushEvent}
-        */
-        const push = {
+        const push: PushEvent = {
             ...mockData.pushEvent(),
             credentials: credentials,
         };
@@ -89,8 +84,7 @@ describe("Android platform", () => {
         });
 
         it("configure the firebase application instance with proxy", async() => {
-            /** @type {ProxyConfiguration} */
-            const proxy = {
+            const proxy: ProxyConfiguration = {
                 auth: false,
                 host: "proxyhost.com",
                 user: "proxyUser",
@@ -98,8 +92,7 @@ describe("Android platform", () => {
                 port: "666"
             };
             const href = "http://" + proxy.user + ":" + proxy.pass + "@" + proxy.host + ":" + proxy.port + "/";
-            /** @type {PushEvent} */
-            const pushWithProxy = { ...push, proxy };
+            const pushWithProxy: PushEvent = { ...push, proxy };
             await send(pushWithProxy);
             assert(MockHttpsProxyAgent.firstCall.firstArg.href === href);
             assert(MockHttpsProxyAgent.firstCall.lastArg.rejectUnauthorized === proxy.auth);
@@ -327,20 +320,20 @@ describe("Android platform", () => {
 
     describe("Credential validator", () => {
         it("should throw when there's a missing property", async() => {
-            let invalidCredentials = /** @type {any} */({type: "apn_universal"});
+            let invalidCredentials: any = {type: "apn_universal"};
             await assert.rejects(validateCredentials(invalidCredentials));
-            invalidCredentials = /** @type {any} */({type: "fcm"});
+            invalidCredentials = {type: "fcm"} as any;
             await assert.rejects(validateCredentials(invalidCredentials));
-            invalidCredentials = /** @type {any} */({type: "fcm", serviceAccountFile: "test"});
+            invalidCredentials = {type: "fcm", serviceAccountFile: "test"} as any;
             await assert.rejects(validateCredentials(invalidCredentials));
         });
 
         it("should throw when serviceAccountFile is not a json", async() => {
-            const invalidCredentials = /** @type {FCMCredentials} */({
+            const invalidCredentials: FCMCredentials = {
                 type: "fcm",
                 serviceAccountFile: "invalid",
                 hash: "invalid"
-            });
+            } as FCMCredentials;
             await assert.rejects(validateCredentials(invalidCredentials));
         });
     });

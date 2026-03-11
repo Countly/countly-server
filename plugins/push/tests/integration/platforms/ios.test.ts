@@ -1,15 +1,12 @@
-/**
- * @typedef {import("../../../api/types/queue.ts").PushEvent} PushEvent
- * @typedef {import("../../../api/types/credentials.ts").APNP8Credentials} APNP8Credentials
- * @typedef {import("../../../api/types/credentials.ts").APNP12Credentials} APNP12Credentials
- * @typedef {import("../../../api/types/credentials.ts").RawAPNP12Credentials} RawAPNP12Credentials
- */
-const assert = require("assert");
-const { describe, it } = require("mocha");
-const { ObjectId } = require("mongodb");
-const { send, validateCredentials } = require("../../../api/send/platforms/ios.ts");
-const { credentialsDTOToObject } = require("../../../api/lib/dto.ts");
-const mockedData = require("../../mock/data");
+import type { PushEvent } from '../../../api/types/queue.ts';
+import type { APNP8Credentials, APNP12Credentials } from '../../../api/types/credentials.ts';
+import assert from 'assert';
+import { describe, it } from 'mocha';
+import { ObjectId } from 'mongodb';
+import { send, validateCredentials } from '../../../api/send/platforms/ios.ts';
+import { credentialsDTOToObject } from '../../../api/lib/dto.ts';
+import * as mockedData from '../../mock/data.ts';
+
 const { IOS_TEST_TOKEN, IOS_TEST_CREDENTIALS_P8, IOS_TEST_CREDENTIALS_P12 } = process.env;
 
 describe("IOS integration", () => {
@@ -18,19 +15,15 @@ describe("IOS integration", () => {
             return console.log("IOS_TEST_TOKEN and/or IOS_TEST_CREDENTIALS_P8 "
                 + "are not defined, skipping sender tests");
         }
-        /** @type {APNP8Credentials} */
-        let credentials;
+        let credentials: APNP8Credentials;
         try {
-            credentials = /** @type {APNP8Credentials} */(
-                credentialsDTOToObject(JSON.parse(IOS_TEST_CREDENTIALS_P8))
-            );
+            credentials = credentialsDTOToObject(JSON.parse(IOS_TEST_CREDENTIALS_P8)) as APNP8Credentials;
         }
         catch (error) {
             return console.log("IOS_TEST_CREDENTIAL couldn't be parsed,"
                 + "skipping tests");
         }
-        /** @type {PushEvent} */
-        const pushEvent = {
+        const pushEvent: PushEvent = {
             appId: new ObjectId,
             messageId: new ObjectId,
             scheduleId: new ObjectId,
@@ -76,8 +69,7 @@ describe("IOS integration", () => {
         it("should send the message successfully through a proxy server", async() => {
             // TODO: Implement a real proxy server test
             console.log("PLACEHOLDER TEST");
-            /** @type {PushEvent} */
-            const pushEventWithProxy = {
+            const pushEventWithProxy: PushEvent = {
                 ...pushEvent,
                 proxy: {
                     host: "localhost",
@@ -111,9 +103,7 @@ describe("IOS integration", () => {
             }
             const creds = JSON.parse(IOS_TEST_CREDENTIALS_P12);
             creds.cert = "data:application/x-pkcs12;base64," + creds.cert;
-            const validCredentials = /** @type {APNP12Credentials} */(
-                credentialsDTOToObject(creds)
-            );
+            const validCredentials = credentialsDTOToObject(creds) as APNP12Credentials;
             await validateCredentials(validCredentials);
         });
 
@@ -124,9 +114,7 @@ describe("IOS integration", () => {
             }
             const creds = JSON.parse(IOS_TEST_CREDENTIALS_P8);
             creds.key = "data:application/x-pkcs8;base64," + creds.key;
-            const validCredentials = /** @type {APNP8Credentials} */(
-                credentialsDTOToObject(creds)
-            );
+            const validCredentials = credentialsDTOToObject(creds) as APNP8Credentials;
             await validateCredentials(validCredentials);
         });
     });

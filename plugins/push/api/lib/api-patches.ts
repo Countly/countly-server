@@ -183,17 +183,29 @@ export interface CohortHookArg {
 }
 
 export function createApi(callback: (params: RequestParams) => Promise<any>) {
-    return (arg: RequestHandlerArg) => validators.validateCreate(arg.params, "push", callback);
+    return (arg: RequestHandlerArg) => {
+        validators.validateCreate(arg.params, "push", callback);
+        return true;
+    }
 }
 
 export function updateApi(callback: (params: RequestParams) => Promise<any>) {
-    return (arg: RequestHandlerArg) => validators.validateUpdate(arg.params, "push", callback);
+    return (arg: RequestHandlerArg) => {
+        validators.validateUpdate(arg.params, "push", callback);
+        return true;
+    }
 }
 
 export function readApi(callback: (params: RequestParams) => Promise<any>) {
-    return (arg: RequestHandlerArg) => validators.validateRead(arg.params, "push", callback);
+    return (arg: RequestHandlerArg) => {
+        validators.validateRead(arg.params, "push", callback);
+        return true;
+    }
 }
 
 export function deleteApi(callback: (params: RequestParams) => Promise<any>) {
-    return (arg: RequestHandlerArg) => validators.validateDelete(arg.params, "push", callback);
+    return (arg: RequestHandlerArg) => {
+        validators.validateDelete(arg.params, "push", callback);
+        return true;
+    }
 }

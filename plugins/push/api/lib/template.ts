@@ -109,7 +109,7 @@ export function createContentMap(messageDoc: Message): {
                         ...personalizations[index],
                     });
                 }
-                persObjects.sort((a, b) => b.i - a.i);
+                persObjects.sort((a, b) => a.i - b.i);
                 personalizationObjects.set(field, persObjects);
             }
             contentsByLanguage.set(
@@ -156,7 +156,6 @@ export function compilePersonalizableContent(contentPers: ContentWithPersonaliza
 }
 
 export function getUserPropertiesUsedInsideMessage(message: Message): string[] {
-    console.log(JSON.stringify(message, null, 2));
     let keys = message.contents
         .map(content => ([
             ...Object.values(content.messagePers ?? {}).map(({ k }) => k),

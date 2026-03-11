@@ -1,13 +1,11 @@
-/**
- * @typedef {import("../../../api/types/credentials.ts").APNP12Credentials} APNP12Credentials
- * @typedef {import("../../../api/types/credentials.ts").APNP8Credentials} APNP8Credentials
- * @typedef {import("../../../api/types/credentials.ts").APNCredentials} APNCredentials
- */
-const assert = require("assert");
-const path = require("path");
-const fsPromise = require("fs/promises");
-const { describe, it } = require("mocha");
-const { parseP12Certificate } = require("../../../api/send/platforms/ios.ts");
+import assert from 'assert';
+import path from 'path';
+import fsPromise from 'fs/promises';
+import { describe, it } from 'mocha';
+import { parseP12Certificate } from '../../../api/send/platforms/ios.ts';
+import { InvalidCredentials } from '../../../api/lib/error.ts';
+
+const __dirname = import.meta.dirname;
 
 describe("IOS platform", () => {
     describe("Credential validator", () => {
@@ -36,7 +34,7 @@ describe("IOS platform", () => {
             );
             assert.throws(
                 () => parseP12Certificate(certificate.toString("base64")),
-                new Error("Not a universal (Sandbox & Production) certificate")
+                new InvalidCredentials("Not a universal (Sandbox & Production) certificate")
             );
         });
 

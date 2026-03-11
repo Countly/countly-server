@@ -1,13 +1,12 @@
-/**
- * @typedef {import("../../../api/types/queue.ts").PushEvent} PushEvent
- * @typedef {import("../../../api/types/credentials.ts").FCMCredentials} FCMCredentials
- */
-const assert = require("assert");
-const { describe, it } = require("mocha");
-const { ObjectId } = require("mongodb");
-const { send, validateCredentials } = require("../../../api/send/platforms/android.ts");
-const { credentialsDTOToObject } = require("../../../api/lib/dto.ts");
-const mockedData = require("../../mock/data");
+import type { PushEvent } from '../../../api/types/queue.ts';
+import type { FCMCredentials } from '../../../api/types/credentials.ts';
+import assert from 'assert';
+import { describe, it } from 'mocha';
+import { ObjectId } from 'mongodb';
+import { send, validateCredentials } from '../../../api/send/platforms/android.ts';
+import { credentialsDTOToObject } from '../../../api/lib/dto.ts';
+import * as mockedData from '../../mock/data.ts';
+
 const { ANDROID_TEST_TOKEN, ANDROID_TEST_CREDENTIALS } = process.env;
 
 describe("Android integration", () => {
@@ -16,19 +15,15 @@ describe("Android integration", () => {
             return console.log("ANDROID_TEST_TOKEN and/or "
                 + "ANDROID_TEST_CREDENTIALS are not defined, skipping tests");
         }
-        /** @type {FCMCredentials} */
-        let credentials;
+        let credentials: FCMCredentials;
         try {
-            credentials = /** @type {FCMCredentials} */(
-                credentialsDTOToObject(JSON.parse(ANDROID_TEST_CREDENTIALS))
-            );
+            credentials = credentialsDTOToObject(JSON.parse(ANDROID_TEST_CREDENTIALS)) as FCMCredentials;
         }
         catch (error) {
             return console.log("ANDROID_TEST_CREDENTIAL couldn't be parsed,"
                 + "skipping tests");
         }
-        /** @type {PushEvent} */
-        const pushEvent = {
+        const pushEvent: PushEvent = {
             appId: new ObjectId,
             messageId: new ObjectId,
             scheduleId: new ObjectId,
@@ -63,8 +58,7 @@ describe("Android integration", () => {
         it("should send the message successfully through a proxy server", async() => {
             // TODO: Implement a real proxy server test
             console.log("PLACEHOLDER TEST");
-            /** @type {PushEvent} */
-            const pushEventWithProxy = {
+            const pushEventWithProxy: PushEvent = {
                 ...pushEvent,
                 proxy: {
                     host: "localhost",
@@ -92,7 +86,7 @@ describe("Android integration", () => {
 
     describe("Credential validator", () => {
         it("should try and send a test message to validate the credential and then fail", async() => {
-            const invalidCredentials = /** @type {FCMCredentials} */({
+            const invalidCredentials: FCMCredentials = {
                 _id: new ObjectId,
                 type: "fcm",
                 hash: "invalid",
@@ -109,7 +103,7 @@ describe("Android integration", () => {
                     "client_x509_cert_url": "...",
                     "universe_domain": "googleapis.com"
                 })).toString('base64')
-            });
+            };
             await assert.rejects(validateCredentials(invalidCredentials));
         });
 
@@ -118,9 +112,7 @@ describe("Android integration", () => {
                 return console.log("ANDROID_TEST_TOKEN and/or "
                     + "ANDROID_TEST_CREDENTIALS are not defined, skipping the test");
             }
-            const validCredentials = /** @type {FCMCredentials} */(
-                credentialsDTOToObject(JSON.parse(ANDROID_TEST_CREDENTIALS))
-            );
+            const validCredentials = credentialsDTOToObject(JSON.parse(ANDROID_TEST_CREDENTIALS)) as FCMCredentials;
             await validateCredentials(validCredentials);
         });
     });

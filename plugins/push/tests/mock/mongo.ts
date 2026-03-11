@@ -1,18 +1,15 @@
-const { Db, Collection, FindCursor, ObjectId, AggregationCursor } = require("mongodb");
-const sinon = require("sinon");
+import { Db, Collection, FindCursor, ObjectId, AggregationCursor } from 'mongodb';
+import sinon from 'sinon';
 
-/**
- * @param {sinon.SinonSandbox} sandbox
- */
-function createMockedCollection(sandbox) {
+function createMockedCollection(sandbox: sinon.SinonSandbox) {
     const findCursor = sandbox.createStubInstance(FindCursor);
     findCursor.limit.returnsThis();
     findCursor.sort.returnsThis();
     const aggregationCursor = sandbox.createStubInstance(AggregationCursor);
     const collection = sandbox.createStubInstance(Collection);
-    collection.find.returns(findCursor);
-    collection.aggregate.returns(aggregationCursor);
-    collection.insertOne.callsFake(doc => {
+    collection.find.returns(findCursor as any);
+    collection.aggregate.returns(aggregationCursor as any);
+    collection.insertOne.callsFake((doc: any) => {
         if (!doc._id) {
             doc._id = new ObjectId;
         }
@@ -25,23 +22,19 @@ function createMockedCollection(sandbox) {
     };
 }
 
-function createMockedMongoDb() {
-    /**
-     * @type {{[collectionName: string]: sinon.SinonStubbedInstance<Collection>}}
-     */
-    const namedCollections = {};
+export function createMockedMongoDb() {
+    const namedCollections: {[collectionName: string]: sinon.SinonStubbedInstance<Collection>} = {};
 
     const sandbox = sinon.createSandbox();
     // generic collection
     const {collection, findCursor, aggregationCursor} = createMockedCollection(sandbox);
     const db = sandbox.createStubInstance(Db);
-    // db.collection.returns(collection);
 
-    db.collection.callsFake((collectionName) => {
+    db.collection.callsFake((collectionName: string) => {
         if (namedCollections[collectionName]) {
-            return namedCollections[collectionName];
+            return namedCollections[collectionName] as any;
         }
-        return collection;
+        return collection as any;
     });
 
     return {
@@ -50,17 +43,10 @@ function createMockedMongoDb() {
         collection,
         db,
         sandbox,
-        /**
-         * @param {string} name
-         */
-        createMockedCollection(name) {
+        createMockedCollection(name: string) {
             const ret = createMockedCollection(sandbox);
             namedCollections[name] = ret.collection;
             return ret;
         }
     };
 }
-
-module.exports = {
-    createMockedMongoDb
-};

@@ -56,7 +56,7 @@ export async function send(pushEvent: PushEvent): Promise<string> {
             httpAgent: agent,
             credential: firebaseAdmin.credential.cert(
                 serviceAccountObject,
-                agent as any
+                agent
             ),
         }, appName);
         // save proxy object to track its state

@@ -296,7 +296,6 @@ export async function create(params: any) {
     if (demo && demo !== 'no-data') {
         await generateDemoData(msg, demo);
     }
-
     common.returnOutput(params, msg);
 };
 

@@ -1,13 +1,12 @@
-/**
- * @typedef {import("../../../api/types/queue.ts").PushEvent} PushEvent
- * @typedef {import("../../../api/types/credentials.ts").HMSCredentials} HMSCredentials
- */
-const assert = require("assert");
-const { describe, it } = require("mocha");
-const { ObjectId } = require("mongodb");
-const { getAuthToken, send, validateCredentials } = require("../../../api/send/platforms/huawei.ts");
-const { credentialsDTOToObject } = require("../../../api/lib/dto.ts");
-const mockedData = require("../../mock/data");
+import type { PushEvent } from '../../../api/types/queue.ts';
+import type { HMSCredentials } from '../../../api/types/credentials.ts';
+import assert from 'assert';
+import { describe, it } from 'mocha';
+import { ObjectId } from 'mongodb';
+import { getAuthToken, send, validateCredentials } from '../../../api/send/platforms/huawei.ts';
+import { credentialsDTOToObject } from '../../../api/lib/dto.ts';
+import * as mockedData from '../../mock/data.ts';
+
 const { HUAWEI_TEST_TOKEN, HUAWEI_TEST_CREDENTIALS } = process.env;
 
 describe("Huawei integration", () => {
@@ -15,12 +14,9 @@ describe("Huawei integration", () => {
         return console.log("HUAWEI_TEST_CREDENTIALS is not defined, "
             + "skipping Huawei integration tests");
     }
-    /** @type {HMSCredentials} */
-    let credentials;
+    let credentials: HMSCredentials;
     try {
-        credentials = /** @type {HMSCredentials} */ (
-            credentialsDTOToObject(JSON.parse(HUAWEI_TEST_CREDENTIALS))
-        );
+        credentials = credentialsDTOToObject(JSON.parse(HUAWEI_TEST_CREDENTIALS)) as HMSCredentials;
     }
     catch (error) {
         return console.log("HUAWEI_TEST_CREDENTIALS couldn't be parsed, "
@@ -40,8 +36,7 @@ describe("Huawei integration", () => {
                 "HUAWEI_TEST_TOKEN are not defined, skipping sender tests",
             );
         }
-        /** @type {PushEvent} */
-        const pushEvent = {
+        const pushEvent: PushEvent = {
             appId: new ObjectId(),
             messageId: new ObjectId(),
             scheduleId: new ObjectId(),
@@ -104,7 +99,7 @@ describe("Huawei integration", () => {
                 app: "invalidapp",
                 secret: Array(64).fill("a").join(""),
                 type: "hms"
-            }));
+            } as any));
         }).timeout(20000);
 
         it("should validate credentials by sending a test message", async() => {
