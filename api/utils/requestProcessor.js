@@ -12,7 +12,6 @@
  */
 
 const Promise = require('bluebird');
-const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
 const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter } = require('./rights.js');
@@ -115,13 +114,14 @@ const processRequest = (params) => {
         return common.returnMessage(params, 400, "Please provide request data");
     }
 
-    const urlParts = url.parse(params.req.url, true),
-        queryString = urlParts.query,
-        paths = urlParts.pathname.split("/");
-    params.href = urlParts.href;
+    // base URL is required by WHATWG URL API for relative paths, only pathname and query are used
+    const parsedUrl = new URL(params.req.url, 'http://localhost'),
+        queryString = Object.fromEntries(parsedUrl.searchParams),
+        paths = parsedUrl.pathname.split("/");
+    params.href = parsedUrl.pathname + parsedUrl.search;
     params.qstring = params.qstring || {};
     params.res = params.res || {};
-    params.urlParts = urlParts;
+    params.urlParts = { pathname: parsedUrl.pathname, path: parsedUrl.pathname + parsedUrl.search };
     params.paths = paths;
 
     //request object fillers
@@ -181,7 +181,7 @@ const processRequest = (params) => {
             validateUserForDataWriteAPI: validateUserForDataWriteAPI,
             validateUserForGlobalAdmin: validateUserForGlobalAdmin,
             paths: paths,
-            urlParts: urlParts
+            urlParts: params.urlParts
         });
 
         if (!params.cancelRequest) {
