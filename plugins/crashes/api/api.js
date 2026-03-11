@@ -189,12 +189,23 @@ const FEATURE_NAME = 'crashes';
                     }
                     else if (params.qstring.breakdown) {
                         //Breakdown of property
-
                         try {
+                            let crashesQuery = {};
+                            if (params.qstring.crashes_query && params.qstring.crashes_query !== "") {
+                                try {
+                                    crashesQuery = JSON.parse(params.qstring.crashes_query);
+                                }
+                                catch (ex) {
+                                    // Just log the error, crashesQuery will default to {}
+                                    log.d('Cannot parse crashes query', params.qstring.crashes_query);
+                                }
+                            }
+
                             var query2 = {
-                                "a": (params.app_id + ""),
-                                "n": params.qstring.group,
-                                "e": "[CLY]_crash"
+                                a: (params.app_id + ''),
+                                n: params.qstring.group,
+                                e: '[CLY]_crash',
+                                ...crashesQuery,
                             };
 
                             var currentTimezone = countlyCommon.getTimezone(params);
@@ -202,7 +213,7 @@ const FEATURE_NAME = 'crashes';
                                 currentTimezone = 'UTC';
                             }
                             query2.ts = countlyCommon.getPeriodRange(params.qstring.period, currentTimezone);
-                            var field = "sg." + (params.qstring.field.replace("custom.", "custom_"));
+                            var field = 'sg.' + (params.qstring.field.replace('custom.', 'custom_'));
 
                             var breakdowndata = await getCrashesBreakdown({
                                 query: query2,
@@ -221,7 +232,7 @@ const FEATURE_NAME = 'crashes';
                             common.returnMessage(params, 200, output);
                         }
                         catch (err) {
-                            log.e("Error getting breakdown for crashes:", err);
+                            log.e('Error getting breakdown for crashes:', err);
                             common.returnMessage(params, 500, 'Error getting breakdown for crashes');
                         }
                     }

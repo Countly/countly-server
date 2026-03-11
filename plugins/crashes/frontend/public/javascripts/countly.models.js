@@ -1015,11 +1015,11 @@ function transformAppVersion(inpVersion) {
         };
 
         _crashgroupSubmodule.actions.fetchBarData = function(context, data) {
-            if (typeof context.state.crashgroup._id === "undefined") {
+            if (typeof context.state.crashgroup._id === 'undefined') {
                 return;
             }
             var metric = data.value;
-            context.commit("setGraphLoading", true);
+            context.commit('setGraphLoading', true);
 
             var userTimezone;
             try {
@@ -1029,31 +1029,32 @@ function transformAppVersion(inpVersion) {
                 userTimezone = undefined;
             }
             var requestParams = {
-                "app_id": countlyCommon.ACTIVE_APP_ID,
-                "method": "crashes",
-                "breakdown": true,
-                "group": context.state.crashgroup._id,
-                "field": metric,
-                "period": countlyCommon.getPeriodAsDateStrings(data.period || "7days"),
-                "periodOffset": new Date().getTimezoneOffset(),
-                "userTimezone": userTimezone
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                method: 'crashes',
+                breakdown: true,
+                group: context.state.crashgroup._id,
+                field: metric,
+                period: countlyCommon.getPeriodAsDateStrings(data.period || '7days'),
+                periodOffset: new Date().getTimezoneOffset(),
+                userTimezone: userTimezone,
+                crashes_query: JSON.stringify(countlyCrashes.modifyCrashesDrillQuery(context.state.crashesQuery)),
             };
 
             countlyVue.$.ajax({
-                type: "GET",
+                type: 'GET',
                 url: countlyCommon.API_PARTS.data.r,
                 data: requestParams,
-                dataType: "json",
+                dataType: 'json',
                 success: function(json) {
                     json = json.result || {};
-                    //Store for current crasgroup
+                    //Store for current crashgroup
                     if (json.field && json.data) {
-                        context.commit("updateBreakdowns", {[json.field]: json.data});
+                        context.commit('updateBreakdowns', {[json.field]: json.data});
                     }
                     else {
-                        context.commit("updateBreakdowns", {[json.field]: {}});
+                        context.commit('updateBreakdowns', {[json.field]: {}});
                     }
-                    context.commit("setGraphLoading", false);
+                    context.commit('setGraphLoading', false);
                 }
             });
         };
