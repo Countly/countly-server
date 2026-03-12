@@ -48,7 +48,7 @@ async function validateSchemaComplete(client, cm) {
     if (cm.isClusterMode()) {
         // Cluster mode requires both local and distributed tables.
         // Note: Distributed tables are only created by SQLExecutor when @sharding metadata is present.
-        // All current SQL files (drill_events, drill_snapshots, uid_map) define @sharding,
+        // All current SQL files (drill_events, drill_snapshots, uid_map, pii_incidents) define @sharding,
         // so distributed tables are expected. If adding a new table without @sharding,
         // update this validation to conditionally require it.
         requiredTables.push(
@@ -57,7 +57,9 @@ async function validateSchemaComplete(client, cm) {
             { db: databaseName, table: 'drill_snapshots_local', description: 'Local snapshots table' },
             { db: databaseName, table: 'drill_snapshots', description: 'Distributed snapshots table' },
             { db: 'identity', table: 'uid_map_local', description: 'Local identity mapping table' },
-            { db: 'identity', table: 'uid_map', description: 'Distributed identity mapping table' }
+            { db: 'identity', table: 'uid_map', description: 'Distributed identity mapping table' },
+            { db: 'countly_pii', table: 'pii_incidents_local', description: 'Local PII incidents table' },
+            { db: 'countly_pii', table: 'pii_incidents', description: 'Distributed PII incidents table' }
         );
     }
     else {
@@ -65,7 +67,8 @@ async function validateSchemaComplete(client, cm) {
         requiredTables.push(
             { db: databaseName, table: 'drill_events', description: 'Events table' },
             { db: databaseName, table: 'drill_snapshots', description: 'Snapshots table' },
-            { db: 'identity', table: 'uid_map', description: 'Identity mapping table' }
+            { db: 'identity', table: 'uid_map', description: 'Identity mapping table' },
+            { db: 'countly_pii', table: 'pii_incidents', description: 'PII incidents table' }
         );
     }
 
@@ -229,7 +232,8 @@ async function bootstrapSchema(client) {
     const requiredObjects = [
         { db: databaseName, table: cm.isClusterMode() ? 'drill_events_local' : 'drill_events' },
         { db: databaseName, table: cm.isClusterMode() ? 'drill_snapshots_local' : 'drill_snapshots' },
-        { db: 'identity', table: cm.isClusterMode() ? 'uid_map_local' : 'uid_map' }
+        { db: 'identity', table: cm.isClusterMode() ? 'uid_map_local' : 'uid_map' },
+        { db: 'countly_pii', table: cm.isClusterMode() ? 'pii_incidents_local' : 'pii_incidents' }
     ];
 
     // In cluster mode, also check distributed tables exist (for tables with sharding)
@@ -237,6 +241,7 @@ async function bootstrapSchema(client) {
         requiredObjects.push({ db: databaseName, table: 'drill_events' }); // distributed
         requiredObjects.push({ db: databaseName, table: 'drill_snapshots' }); // distributed
         requiredObjects.push({ db: 'identity', table: 'uid_map' }); // distributed, uses sipHash64(a, uid) sharding
+        requiredObjects.push({ db: 'countly_pii', table: 'pii_incidents' }); // distributed
     }
 
     let allExist = true;
@@ -342,7 +347,7 @@ async function initializeClickHouse() {
 
         clickhouseQueryService = new ClickhouseQueryService(clickhouseClient);
 
-        // Add query service to common object for use by other plugins 
+        // Add query service to common object for use by other plugins
         common.clickhouseQueryService = clickhouseQueryService;
 
         // Register client with common object via generic database registration event
