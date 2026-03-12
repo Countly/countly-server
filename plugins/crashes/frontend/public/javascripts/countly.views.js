@@ -1236,12 +1236,21 @@
                 crashgroupId: crashgroupId,
                 crashesQuery: crashesQuery,
             }).then(function(crashgroup) {
+                var lastTsObj = new moment();
                 var lastTs = crashgroup.lastTs;
                 if (_.isFinite(lastTs)) {
-                    var tsObj = new moment(lastTs * 1000);
-                    self.pickerDate = [tsObj.subtract(7, 'days').valueOf(), lastTs * 1000];
+                    lastTsObj = new moment(lastTs * 1000);
                 }
 
+                if (crashgroup.data && crashgroup.data.length > 0) {
+                    var tsObj = new moment(crashgroup.data[0].ts);
+
+                    if (lastTsObj.isAfter(tsObj)) {
+                        lastTsObj = tsObj;
+                    }
+                }
+
+                self.pickerDate = [lastTsObj.subtract(7, 'days').valueOf(), lastTsObj.valueOf()];
                 self.$store.dispatch('countlyCrashes/crashgroup/fetchBarData', {value: 'os_version', period: self.pickerDate});
             });
         },
