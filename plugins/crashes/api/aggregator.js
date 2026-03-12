@@ -306,7 +306,7 @@ const setFieldsIfExist = function(fieldList, source, target) {
                                     delete currEvent.sg.session;
                                 }
                                 if (currEvent.up.sc) {
-                                    set.sessions = currEvent.up.sc;
+                                    currEvent.sg.session = currEvent.up.sc;
                                 }
 
                                 const userAll = await common.db.collection('app_crashusers' + params.app_id).findOneAndUpdate({group: 0, 'uid': currEvent.uid}, AllUsersUpdate, {upsert: true, new: false, returnDocument: 'before', returnNewDocument: false});
