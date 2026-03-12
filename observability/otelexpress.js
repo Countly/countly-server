@@ -249,45 +249,87 @@ function initializeOpenTelemetry() {
                             httpMetrics.requestInFlight.add(1, metricAttrs);
                             httpMetrics.requestTotal.add(1, metricAttrs);
 
-                            request.on('response', (response) => {
-                                try {
-                                    const responseTime = Date.now();
-                                    const responseAttrs = getMetricAttributes(request, response);
-                                    httpMetrics.responseStatusTotal.add(1, responseAttrs);
-                                    if (serverDurationMetric) {
-                                        serverDurationMetric.record(responseTime - startTime, responseAttrs);
-                                    }
-                                    if (response.statusCode >= 400) {
-                                        httpMetrics.errorTotal.add(1, responseAttrs);
-                                    }
-                                    response.on('end', () => {
-                                        try {
-                                            const duration = Date.now() - startTime;
-                                            httpMetrics.requestDuration.record(duration, responseAttrs);
-                                            httpMetrics.requestInFlight.add(-1, metricAttrs);
-                                        }
-                                        catch (endError) {
-                                            console.error('Error recording end metrics:', endError);
-                                        }
-                                    });
-                                }
-                                catch (responseError) {
-                                    console.error('Error handling response metrics:', responseError);
-                                }
-                            });
+                            // ClientRequest (outgoing) has getHeader(); IncomingMessage (incoming) does not
+                            const isOutgoing = typeof request.getHeader === 'function';
 
-                            request.on('error', (err) => {
-                                try {
-                                    httpMetrics.errorTotal.add(1, { ...metricAttrs, 'error_type': err.name || 'unknown' });
-                                }
-                                catch (errorMetricError) {
-                                    console.error('Error handling error metrics:', errorMetricError);
-                                }
-                            });
+                            if (isOutgoing) {
+                                // Outgoing: response event fires when remote server responds
+                                request.on('response', (response) => {
+                                    try {
+                                        const responseTime = Date.now();
+                                        const responseAttrs = getMetricAttributes(request, response);
+                                        httpMetrics.responseStatusTotal.add(1, responseAttrs);
+                                        if (serverDurationMetric) {
+                                            serverDurationMetric.record(responseTime - startTime, responseAttrs);
+                                        }
+                                        if (response.statusCode >= 400) {
+                                            httpMetrics.errorTotal.add(1, responseAttrs);
+                                        }
+                                        response.on('end', () => {
+                                            try {
+                                                const duration = Date.now() - startTime;
+                                                httpMetrics.requestDuration.record(duration, responseAttrs);
+                                                httpMetrics.requestInFlight.add(-1, metricAttrs);
+                                            }
+                                            catch (endError) {
+                                                console.error('Error recording end metrics:', endError);
+                                            }
+                                        });
+                                    }
+                                    catch (responseError) {
+                                        console.error('Error handling response metrics:', responseError);
+                                    }
+                                });
+
+                                request.on('error', (err) => {
+                                    try {
+                                        httpMetrics.errorTotal.add(1, { ...metricAttrs, 'error_type': err.name || 'unknown' });
+                                    }
+                                    catch (errorMetricError) {
+                                        console.error('Error handling error metrics:', errorMetricError);
+                                    }
+                                });
+                            }
+                            else {
+                                // Incoming: store startTime for responseHook to use
+                                request._otelStartTime = startTime;
+                            }
                         }
                     }
                     catch (error) {
                         console.error('Error in request hook:', error);
+                    }
+                },
+                responseHook: (span, response) => {
+                    try {
+                        // ServerResponse (incoming) has .req; IncomingMessage (outgoing response) does not
+                        if (!response.req || !httpMetrics) {
+                            return;
+                        }
+                        const request = response.req;
+                        const startTime = request._otelStartTime;
+                        if (!startTime) {
+                            return;
+                        }
+
+                        const duration = Date.now() - startTime;
+                        const metricAttrs = getMetricAttributes(request);
+                        const responseAttrs = getMetricAttributes(request, response);
+
+                        httpMetrics.responseStatusTotal.add(1, responseAttrs);
+                        httpMetrics.requestDuration.record(duration, responseAttrs);
+                        if (serverDurationMetric) {
+                            serverDurationMetric.record(duration, responseAttrs);
+                        }
+
+                        if (response.statusCode >= 400) {
+                            httpMetrics.errorTotal.add(1, responseAttrs);
+                        }
+
+                        httpMetrics.requestInFlight.add(-1, metricAttrs);
+                    }
+                    catch (error) {
+                        console.error('Error in response hook:', error);
                     }
                 },
             }),
@@ -356,7 +398,6 @@ function initializeOpenTelemetry() {
         // Create SDK with enhanced configuration
         sdkInstance = new NodeSDK({
             resource: resource,
-            traceExporter: traceExporter,
             metricReader: metricReader,
             instrumentations: instrumentations,
             spanProcessor: new BatchSpanProcessor(traceExporter, {
@@ -364,7 +405,7 @@ function initializeOpenTelemetry() {
                 maxExportBatchSize: OTEL_CONFIG.MAX_EXPORT_BATCH_SIZE,
                 scheduledDelayMillis: OTEL_CONFIG.BATCH_TIMEOUT,
             }),
-            propagator: new CompositePropagator({
+            textMapPropagator: new CompositePropagator({
                 propagators: [
                     new W3CTraceContextPropagator(),
                     new W3CBaggagePropagator(),
