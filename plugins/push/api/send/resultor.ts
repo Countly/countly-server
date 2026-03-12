@@ -136,7 +136,7 @@ export async function clearInvalidTokens(db: Db, invalidTokens: InvalidTokenInfo
                 updateMany: {
                     filter: {
                         _id: {
-                            // this is actualy an array of strings (user ids are not ObjectId)
+                            // this is actually an array of strings (user ids are not ObjectId)
                             // but to overcome the type error, we cast it to ObjectId[]
                             $in: mappedUserIds[appId][platformAndEnv] as unknown as ObjectId[]
                         }
@@ -198,7 +198,7 @@ export async function recordSentDates(db: Db, sentPushEvents: ResultEvent[], dat
                 updateMany: {
                     filter: {
                         _id: {
-                            // this is actualy an array of strings (user ids are not ObjectId)
+                            // this is actually an array of strings (user ids are not ObjectId)
                             // but to overcome the type error, we cast it to ObjectId[]
                             $in: mappedUserIds[appId][messageId] as unknown as ObjectId[]
                         }

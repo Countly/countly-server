@@ -52,7 +52,7 @@ export async function sendAllPushes(pushes: PushEvent[], autoHandleResults = tru
         }
         else {
             let response: string | undefined;
-            let error: ErrorObject = { name: "UnkownError", message: "UnkownError" };
+            let error: ErrorObject = { name: "UnknownError", message: "UnknownError" };
             if (result.reason instanceof Error) {
                 const { name, message, stack } = result.reason;
                 error = { name, message, stack };

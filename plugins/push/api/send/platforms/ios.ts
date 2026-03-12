@@ -117,7 +117,7 @@ export function parseP12Certificate(certificate: string, secret?: string): P12Ce
         bagType: nodeForge.pki.oids.pkcs8ShroudedKeyBag
     })?.[nodeForge.pki.oids.pkcs8ShroudedKeyBag]?.[0];
     if (!cert || !pk || !cert.cert || !pk.key) {
-        throw new InvalidCredentials('Failed to get TLS key pairs from crededentials');
+        throw new InvalidCredentials('Failed to get TLS key pairs from credentials');
     }
     result.cert = nodeForge.pki.certificateToPem(cert.cert);
     result.key = nodeForge.pki.privateKeyToPem(pk.key);

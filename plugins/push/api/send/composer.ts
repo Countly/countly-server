@@ -60,7 +60,7 @@ export async function composeAllScheduledPushes(db: Db, scheduleEvents: Schedule
             log.e("Error while composing scheduleEvents", scheduleEvent, err);
             let error: ErrorObject = {
                 name: "UnknownError",
-                message: "Unknown error occured while composing the scheduled push messages"
+                message: "Unknown error occurred while composing the scheduled push messages"
             };
             if (err instanceof Error) {
                 error = {
