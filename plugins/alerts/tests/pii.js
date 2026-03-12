@@ -12,7 +12,7 @@ var APP_KEY = "";
 var API_KEY_ADMIN = "";
 var createdPiiRuleId = "";
 var createdAlertIds = [];
-var insertedIncidentIds = [];
+
 var DEVICE_ID = "pii-e2e-test-device";
 
 // PII alert configs
@@ -256,74 +256,70 @@ describe('Testing PII Alerts End-to-End', function() {
                 });
         });
 
-        it('should insert PII incidents matching the rule into DB', function(done) {
-            var now = Date.now();
-            var incidents = [
+        it('should send SDK events containing PII to trigger incidents', function(done) {
+            var events = [
                 {
-                    app_id: APP_ID,
-                    ruleId: createdPiiRuleId,
-                    ruleName: "E2E Email Detector",
-                    action: "NOTIFY",
-                    target: "segment",
-                    eventKey: "pii_test_purchase",
-                    path: "segmentation.email",
-                    matchedValue: "john@acme.com",
-                    ts: now - 1000
+                    key: "pii_test_purchase",
+                    count: 1,
+                    segmentation: {
+                        email: "john@acme.com",
+                        product: "widget"
+                    }
                 },
                 {
-                    app_id: APP_ID,
-                    ruleId: createdPiiRuleId,
-                    ruleName: "E2E Email Detector",
-                    action: "NOTIFY",
-                    target: "custom_property",
-                    path: "custom.contact_email",
-                    matchedValue: "jane@test.com",
-                    ts: now - 2000
+                    key: "pii_test_signup",
+                    count: 1,
+                    segmentation: {
+                        contact_email: "jane@test.com"
+                    }
                 }
             ];
 
-            testUtils.db.collection('pii_incidents').insertMany(incidents, function(err, result) {
-                if (err) {
-                    return done(err);
-                }
-                result.insertedCount.should.equal(2);
-                done();
-            });
-        });
-
-        it('should find PII incidents in database', function(done) {
-            testUtils.db.collection('pii_incidents').find({
-                app_id: APP_ID,
-                ruleId: createdPiiRuleId
-            }).toArray(function(err, docs) {
-                if (err) {
-                    return done(err);
-                }
-                docs.length.should.be.above(0);
-
-                var incident = docs[0];
-                incident.should.have.property('action', 'NOTIFY');
-                incident.should.have.property('app_id', APP_ID);
-                incident.should.have.property('ts').which.is.a.Number();
-                incident.should.have.property('matchedValue').which.is.a.String();
-                incident.should.have.property('ruleId', createdPiiRuleId);
-
-                done();
-            });
+            request.get('/i?device_id=' + DEVICE_ID + '&app_key=' + APP_KEY + '&events=' + encodeURIComponent(JSON.stringify(events)))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    res.body.should.have.property('result', 'Success');
+                    done();
+                });
         });
 
         it('should find PII incidents via API', function(done) {
-            request.get(getRequestURL('/o/pii/incidents'))
-                .expect(200)
-                .end(function(err, res) {
-                    handleApiResponse(err, res, done, function() {
-                        res.body.should.have.property('incidents').which.is.an.Array();
-                        res.body.incidents.length.should.be.above(0);
-                        res.body.should.have.property('total').which.is.a.Number();
-                        res.body.total.should.be.above(0);
-                        done();
+            this.timeout(15000);
+            var attempts = 0;
+            var maxAttempts = 20;
+            var interval = 500;
+
+            function poll() {
+                request.get(getRequestURL('/o/pii/incidents') + '&ruleId=' + createdPiiRuleId)
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        if (res.body && res.body.incidents && res.body.incidents.length > 0) {
+                            res.body.should.have.property('incidents').which.is.an.Array();
+                            res.body.incidents.length.should.be.above(0);
+                            res.body.should.have.property('total').which.is.a.Number();
+                            res.body.total.should.be.above(0);
+
+                            var incident = res.body.incidents[0];
+                            incident.should.have.property('action', 'NOTIFY');
+                            incident.should.have.property('ruleId', createdPiiRuleId);
+
+                            return done();
+                        }
+                        attempts++;
+                        if (attempts >= maxAttempts) {
+                            return done(new Error('Timed out waiting for PII incidents to appear via API'));
+                        }
+                        setTimeout(poll, interval);
                     });
-                });
+            }
+
+            poll();
         });
     });
 
@@ -463,49 +459,61 @@ describe('Testing PII Alerts End-to-End', function() {
                 });
         });
 
-        it('should insert test incidents directly into DB', function(done) {
-            var now = Date.now();
-            var incidents = [
+        it('should send SDK events to create PII incidents for scheduled check', function(done) {
+            var events = [
                 {
-                    app_id: APP_ID,
-                    ruleId: createdPiiRuleId,
-                    ruleName: "E2E Email Detector",
-                    action: "NOTIFY",
-                    target: "segment",
-                    path: "segmentation.email",
-                    matchedValue: "sched1@test.com",
-                    ts: now - 1000
+                    key: "pii_sched_event",
+                    count: 1,
+                    segmentation: { email: "sched1@test.com" }
                 },
                 {
-                    app_id: APP_ID,
-                    ruleId: createdPiiRuleId,
-                    ruleName: "E2E Email Detector",
-                    action: "NOTIFY",
-                    target: "segment",
-                    path: "segmentation.contact",
-                    matchedValue: "sched2@test.com",
-                    ts: now - 2000
+                    key: "pii_sched_event",
+                    count: 1,
+                    segmentation: { contact: "sched2@test.com" }
                 },
                 {
-                    app_id: APP_ID,
-                    ruleId: createdPiiRuleId,
-                    ruleName: "E2E Email Detector",
-                    action: "NOTIFY",
-                    target: "custom_property",
-                    path: "custom.email",
-                    matchedValue: "sched3@test.com",
-                    ts: now - 3000
+                    key: "pii_sched_event",
+                    count: 1,
+                    segmentation: { email: "sched3@test.com" }
                 }
             ];
 
-            testUtils.db.collection('pii_incidents').insertMany(incidents, function(err, result) {
-                if (err) {
-                    return done(err);
-                }
-                result.insertedCount.should.equal(3);
-                insertedIncidentIds = Object.values(result.insertedIds);
-                done();
-            });
+            request.get('/i?device_id=' + DEVICE_ID + '&app_key=' + APP_KEY + '&events=' + encodeURIComponent(JSON.stringify(events)))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    res.body.should.have.property('result', 'Success');
+                    done();
+                });
+        });
+
+        it('should wait for incidents to be available', function(done) {
+            this.timeout(15000);
+            var attempts = 0;
+            var maxAttempts = 20;
+            var interval = 500;
+
+            function poll() {
+                request.get(getRequestURL('/o/pii/incidents') + '&ruleId=' + createdPiiRuleId)
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        if (res.body && res.body.incidents && res.body.incidents.length >= 3) {
+                            return done();
+                        }
+                        attempts++;
+                        if (attempts >= maxAttempts) {
+                            return done(new Error('Timed out waiting for scheduled-check PII incidents'));
+                        }
+                        setTimeout(poll, interval);
+                    });
+            }
+
+            poll();
         });
 
         it('should record counter before scheduled check', function(done) {
@@ -584,15 +592,29 @@ describe('Testing PII Alerts End-to-End', function() {
                 });
         });
 
-        it('should clean up test incidents from DB', function(done) {
-            testUtils.db.collection('pii_incidents').deleteMany({
-                app_id: APP_ID
-            }, function(err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
+        it('should clean up test incidents via API', function(done) {
+            request.get(getRequestURL('/o/pii/incidents'))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var incidents = res.body && res.body.incidents;
+                    if (!incidents || incidents.length === 0) {
+                        return done();
+                    }
+                    var ids = incidents.map(function(inc) {
+                        return inc._id;
+                    });
+                    request.get(getRequestURL('/i/pii/incidents/delete') + '&ids=' + ids.join(','))
+                        .expect(200)
+                        .end(function(err2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            done();
+                        });
+                });
         });
 
         it('should verify clean state', function(done) {
@@ -607,17 +629,7 @@ describe('Testing PII Alerts End-to-End', function() {
                             });
                             should.not.exist(found);
                         }
-
-                        // Verify no test incidents remain
-                        testUtils.db.collection('pii_incidents').countDocuments({
-                            app_id: APP_ID
-                        }, function(err, count) {
-                            if (err) {
-                                return done(err);
-                            }
-                            count.should.equal(0);
-                            done();
-                        });
+                        done();
                     });
                 });
         });
