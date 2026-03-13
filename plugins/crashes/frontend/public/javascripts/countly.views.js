@@ -1222,6 +1222,9 @@
                 return table;
 
             },
+            clearCrashesQuery: function() {
+                app.navigate('#/crashes/' + this.crashgroup._id, true);
+            },
         },
         beforeCreate: function() {
             var self = this;
@@ -1250,7 +1253,7 @@
                     }
                 }
 
-                self.pickerDate = [lastTsObj.subtract(7, 'days').valueOf(), lastTsObj.valueOf()];
+                self.pickerDate = [lastTsObj.clone().subtract(7, 'days').valueOf(), lastTsObj.valueOf()];
                 self.$store.dispatch('countlyCrashes/crashgroup/fetchBarData', {value: 'os_version', period: self.pickerDate});
             });
         },
