@@ -61,6 +61,7 @@
                     :disabled="true"
                     :hide-controls="true">
                 </cly-qb-bar>
+                <el-button size="small" icon="ion-android-remove-circle" @click="clearCrashesQuery" class="bu-ml-2">{{i18n('crashes.clear')}}</el-button>
             </div>
             <cly-section class="crashgroup-common-metrics" v-if="!!commonMetrics">
                 <div class="crashgroup-common-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
