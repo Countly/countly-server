@@ -9,7 +9,6 @@ import { createRequire } from 'module';
 
 import usage from './usage.js';
 import common from '../utils/common.js';
-import url from 'url';
 import logModule from '../utils/log.js';
 import crypto from 'crypto';
 import { ignorePossibleDevices, checksumSaltVerification, validateRedirect } from '../utils/requestProcessorCommon.js';
@@ -378,7 +377,7 @@ interface RequestParams {
     /** Href */
     href?: string;
     /** URL parts */
-    urlParts?: ReturnType<typeof url.parse>;
+    urlParts?: { pathname: string; path: string };
     /** Path segments */
     paths?: string[];
     /** API path */
@@ -1246,14 +1245,15 @@ const processRequest = (params: RequestParams): boolean | void => {
     }
 
     params.tt = Date.now().valueOf();
-    const urlParts = url.parse(params.req.url, true);
-    const queryString = urlParts.query;
-    const paths = urlParts.pathname.split('/');
+    // base URL is required by WHATWG URL API for relative paths, only pathname and query are used
+    const parsedUrl = new URL(params.req.url, 'http://localhost');
+    const queryString = Object.fromEntries(parsedUrl.searchParams);
+    const paths = parsedUrl.pathname.split('/');
 
-    params.href = urlParts.href;
+    params.href = parsedUrl.pathname + parsedUrl.search;
     params.qstring = params.qstring || {};
     params.res = params.res || {} as ServerResponse;
-    params.urlParts = urlParts;
+    params.urlParts = { pathname: parsedUrl.pathname, path: parsedUrl.pathname + parsedUrl.search };
     params.paths = paths;
 
     params.req.headers = params.req.headers || {};
