@@ -1,4 +1,7 @@
 ## Version 25.03.X
+Fixes:
+- [dashboards] Unescape event segment values in meta
+
 Enterprise fixes:
 - [data-manager] Fix validation approval button label
 - [data-manager] Fix validation table column names
