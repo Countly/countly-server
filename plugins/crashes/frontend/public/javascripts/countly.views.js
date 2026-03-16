@@ -861,8 +861,13 @@
 
                 return _.isEmpty(crashesQuery) !== true;
             },
-            crashesQuery: function() {
-                return { query: this.$store.getters["countlyCrashes/crashgroup/crashesQuery"] };
+            crashesQuery: {
+                get: function() {
+                    return { query: this.$store.getters["countlyCrashes/crashgroup/crashesQuery"] };
+                },
+                set: function() {
+                    // no-op, crashesQuery is read-only
+                }
             },
             crashes: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/crashes"];
