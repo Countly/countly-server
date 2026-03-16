@@ -426,9 +426,6 @@
             countlyVue.mixins.auth(FEATURE_NAME)
         ],
         data: function() {
-            var filterProperties = getFilterProperties(this);
-            var filterRules = getFilterRules();
-
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
                 currentTab: (this.$route.params && this.$route.params.tab) || "crash-groups",
@@ -461,8 +458,8 @@
                     default: true
                 }],
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyCrashes", "crashgroups"),
-                crashgroupsFilterProperties: filterProperties,
-                crashgroupsFilterRules: filterRules,
+                crashgroupsFilterProperties: [],
+                crashgroupsFilterRules: [],
                 formatDate: function(row, col, cell) {
                     return moment(cell * 1000).format("lll");
                 },
@@ -741,7 +738,11 @@
             }
 
             this.$store.dispatch("countlyCrashes/overview/refresh", true);
-        }
+        },
+        created: function() {
+            this.crashgroupsFilterProperties = getFilterProperties(this);
+            this.crashgroupsFilterRules = getFilterRules();
+        },
     });
 
     var getOverviewView = function() {
@@ -820,8 +821,8 @@
                 hasUserPermission: countlyAuth.validateRead('users'),
                 showSymbolicated: false,
                 activeThreadPanels: [],
-                crashesQueryProperties: getFilterProperties(this),
-                crashesQueryRules: getFilterRules(),
+                crashesQueryProperties: [],
+                crashesQueryRules: [],
                 symbolicationErrorDialog: {
                     show: false,
                     msg: '',
@@ -1258,15 +1259,19 @@
                     }
                 }
 
-                self.pickerDate = [lastTsObj.clone().subtract(7, 'days').valueOf(), lastTsObj.valueOf()];
+                self.pickerDate = [lastTsObj.clone().subtract(7, 'days').valueOf(), lastTsObj.add(12, 'hours').valueOf()];
                 self.$store.dispatch('countlyCrashes/crashgroup/fetchBarData', {value: 'os_version', period: self.pickerDate});
             });
+        },
+        created: function() {
+            this.crashesQueryProperties = getFilterProperties(this);
+            this.crashesQueryRules = getFilterRules();
         },
         mounted: function() {
             if (this.symbolicationEnabled) {
                 this.showSymbolicated = true;
             }
-        }
+        },
     });
 
     var getCrashgroupView = function() {
