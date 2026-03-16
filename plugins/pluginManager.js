@@ -23,7 +23,8 @@ var pluginDependencies = require('./pluginDependencies.js'),
     logDriverDb = log('driver:db'),
     exec = cp.exec,
     spawn = cp.spawn,
-    configextender = require('../api/configextender');
+    configextender = require('../api/configextender'),
+    { ConnectionString } = require("mongodb-connection-string-url");
 var pluginConfig = {};
 
 /**
@@ -1768,31 +1769,10 @@ var pluginManager = function pluginManager() {
     * @param {string} db - database name
     * @returns {string} modified connection string
     **/
-    this.replaceDatabaseString = function(str, db) {
-        if (!db) {
-            db = "countly";
-        }
-        var i = str.lastIndexOf('/countly');
-        var k = str.lastIndexOf('/' + db);
-        if (i !== k && i !== -1 && db) {
-            return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
-        }
-        else if (i === -1 && k === -1) {
-            //no db found in the string, we should insert the needed one
-            var urlparts = str.split("://");
-            if (typeof urlparts[1] === "string") {
-                var parts = urlparts[1].split("/");
-                if (parts.length === 1) {
-                    parts[0] += "/" + db;
-                }
-                else {
-                    parts[parts.length - 1] = db + parts[parts.length - 1];
-                }
-                urlparts[1] = parts.join("/");
-            }
-            return urlparts.join("://");
-        }
-        return str;
+    this.replaceDatabaseString = function(str, db = "countly") {
+        const connectionString = new ConnectionString(str);
+        connectionString.pathname = "/" + db;
+        return connectionString.toString();
     };
 
     this.connectToAllDatabases = async() => {
