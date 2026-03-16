@@ -100,6 +100,5 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         navigationHelpers.goToApplicationsPage();
         appHelper.searchApp(app.appName);
         appHelper.verifyAppShouldBeDeleted();
-
     });
 });
