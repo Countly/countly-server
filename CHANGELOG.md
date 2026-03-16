@@ -1,5 +1,14 @@
-## Version 25.03.xx
+## Version 25.03.X
 Fixes:
+- [dashboards] Unescape event segment values in meta
+
+Enterprise fixes:
+- [data-manager] Fix validation approval button label
+- [data-manager] Fix validation table column names
+
+## Version 25.03.38
+Fixes:
+- [push] Fixed the property name by changing it from link to url for message buttons for Huawei messages
 - [web] Use Client Hints
 
 ## Version 25.03.37
