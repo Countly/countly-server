@@ -447,7 +447,7 @@ describe("Common API utility functions", function() {
                     var timezone = "America/New_York";
                     var offset = 300;
                     var range = countlyCommon.getPeriodRange(getPeriod(), timezone, offset);
-                    assertRange(range, timezone);
+                    assertRange(range, timezone, offset);
                 });
 
                 describe("with different server default timezone", function() {
