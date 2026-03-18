@@ -1,12 +1,12 @@
-## Version 25.03.X
+## Version 25.03.39
 Fixes:
+- [core] Fixed replaceDatabaseString incorrectly replacing "countly" in the MongoDB username when it appears in the connection URL
 - [dashboards] Unescape event segment values in meta
+- [push] Using Android specific content for Huawei messages as well
 
 Enterprise fixes:
-- [core] Fixed replaceDatabaseString incorrectly replacing "countly" in the MongoDB username when it appears in the connection URL
 - [data-manager] Fix validation approval button label
 - [data-manager] Fix validation table column names
-- [push] Using Android specific content for Huawei messages as well
 
 ## Version 25.03.38
 Fixes:
