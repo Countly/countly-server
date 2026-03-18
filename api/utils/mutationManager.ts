@@ -137,6 +137,32 @@ plugins.register('/core/update_granular_data', async function(ob: { db: string; 
     });
 });
 
+plugins.register('/core/execute_native_ch_mutation', async function(ob: { sql: string; db: string; collection: string; metadata?: Record<string, unknown> }) {
+    const { sql, db, collection, metadata } = ob;
+    if (!sql || typeof sql !== 'string') {
+        log.e('Native CH mutation rejected: missing sql');
+        return;
+    }
+    // Only allow ALTER TABLE mutations to prevent arbitrary DDL
+    if (!/^\s*ALTER\s+TABLE\s+/i.test(sql)) {
+        log.e('Native CH mutation rejected: sql must start with ALTER TABLE');
+        return;
+    }
+    log.d('Mutation (native_ch) queued:' + JSON.stringify({ db, collection }));
+    const now = Date.now();
+
+    await common.db.collection('mutation_manager').insertOne({
+        db,
+        collection,
+        type: 'native_ch',
+        native_sql: sql,
+        query: metadata || {},
+        ts: now,
+        status: MUTATION_STATUS.QUEUED,
+        running: false
+    });
+});
+
 plugins.register('/system/observability/collect', async function(ob: { params?: Params }): Promise<ObservabilityResult> {
     try {
         const filters = buildQueueFilters(ob && ob.params);

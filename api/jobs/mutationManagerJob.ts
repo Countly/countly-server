@@ -26,11 +26,12 @@ interface JobConfig {
 
 interface MutationTask extends Document {
     _id: ObjectId | string;
-    type: 'delete' | 'update';
+    type: 'delete' | 'update' | 'native_ch';
     db: string;
     collection: string;
     query: Record<string, unknown>;
     update?: Record<string, unknown>;
+    native_sql?: string;
     running: boolean;
     status: string;
     hb?: number;
@@ -272,7 +273,7 @@ class MutationManagerJob extends Job {
      */
     async processTask(task: MutationTask, summary: SummaryEntry[], jobConfig: JobConfig = jobConfigState || DEFAULT_JOB_CONFIG): Promise<void> {
         const type = task.type;
-        if (type !== 'delete' && type !== 'update') {
+        if (type !== 'delete' && type !== 'update' && type !== 'native_ch') {
             await common.db.collection('mutation_manager').updateOne(
                 { _id: task._id },
                 {
@@ -288,7 +289,7 @@ class MutationManagerJob extends Job {
         const clickhouseEnabled = mutationManager.isClickhouseEnabled();
         const hasClickhouseDelete = clickhouseEnabled && !!(clickHouseRunner && clickHouseRunner.deleteGranularDataByQuery);
         const hasClickhouseUpdate = clickhouseEnabled && !!(clickHouseRunner && clickHouseRunner.updateGranularDataByQuery);
-        const hasClickhouse = (type === 'update' ? hasClickhouseUpdate : hasClickhouseDelete);
+        const hasClickhouse = type === 'native_ch' ? clickhouseEnabled : (type === 'update' ? hasClickhouseUpdate : hasClickhouseDelete);
 
         if (!mongoDb && !hasClickhouse) {
             const reason = `mongo_db_unavailable:${task.db || 'missing'}`;
@@ -317,7 +318,11 @@ class MutationManagerJob extends Job {
         }
 
         let mongoOk = true;
-        if (mongoDb) {
+        if (type === 'native_ch') {
+            // Native CH mutations skip MongoDB entirely
+            log.d('Native CH mutation - skipping MongoDB', { taskId: task._id });
+        }
+        else if (mongoDb) {
             if (type === 'update') {
                 mongoOk = await this.updateMongo(task, mongoDb);
             }
@@ -330,7 +335,10 @@ class MutationManagerJob extends Job {
         }
 
         let chScheduledOk = true;
-        if (type === 'update' && hasClickhouseUpdate) {
+        if (type === 'native_ch' && clickhouseEnabled) {
+            chScheduledOk = await this.executeNativeClickhouse(task);
+        }
+        else if (type === 'update' && hasClickhouseUpdate) {
             chScheduledOk = await this.updateClickhouse(task);
         }
         else if (type === 'delete' && hasClickhouseDelete) {
@@ -422,8 +430,10 @@ class MutationManagerJob extends Job {
         for (const task of awaiting) {
             try {
                 if (chHealth && typeof chHealth.getMutationStatus === 'function') {
-                    // In cluster mode, mutations target _local tables, so validation must check _local
-                    const validationTable = isClusterMode ? task.collection + '_local' : task.collection;
+                    // In cluster mode, mutations target _local tables, so validation must check _local.
+                    // native_ch tasks may already have _local in collection name — avoid doubling.
+                    const needsLocalSuffix = isClusterMode && !task.collection.endsWith('_local');
+                    const validationTable = needsLocalSuffix ? task.collection + '_local' : task.collection;
                     const status = await chHealth.getMutationStatus({ validation_command_id: task.validation_command_id, table: validationTable, database: task.db });
                     if (status && status.is_done) {
                         await common.db.collection('mutation_manager').updateOne(
@@ -673,6 +683,52 @@ class MutationManagerJob extends Job {
                 error: (err as Error) && (err as Error).message ? (err as Error).message : String(err)
             });
             await this.markFailedOrRetry(task, 'clickhouse_update_error: ' + ((err as Error)?.message || err + ''));
+            return false;
+        }
+    }
+
+    /**
+     * Executes a native ClickHouse SQL mutation directly.
+     * Used for complex mutations (e.g., deduplication) that cannot be expressed as Mongo-style queries.
+     * Embeds validation_command_id for tracking via system.mutations.
+     * @param task - The mutation task with native_sql field
+     */
+    async executeNativeClickhouse(task: MutationTask): Promise<boolean> {
+        if (!task.native_sql || typeof task.native_sql !== 'string') {
+            log.e('Skipping native CH mutation (empty sql)', { taskId: task._id });
+            await this.markFailedOrRetry(task, 'empty_native_sql');
+            return false;
+        }
+
+        if (!common.clickhouseQueryService) {
+            log.e('ClickHouse query service not available for native mutation', { taskId: task._id });
+            await this.markFailedOrRetry(task, 'ch_query_service_unavailable');
+            return false;
+        }
+
+        try {
+            const retryIndex = Number(task.fail_count || 0);
+            const commandId = `nm_${String(task._id)}_${retryIndex}`;
+
+            // Embed command_id as tautological AND clause for system.mutations tracking.
+            // Append at end of SQL (callers must NOT include SETTINGS clause).
+            let sql = task.native_sql + ` AND '${commandId}' = '${commandId}'`;
+
+            await common.clickhouseQueryService.executeMutation({ query: sql });
+
+            await common.db.collection('mutation_manager').updateOne(
+                { _id: task._id },
+                { $set: { validation_command_id: commandId } }
+            );
+            log.d('Native CH mutation scheduled', { taskId: task._id, commandId });
+            return true;
+        }
+        catch (err) {
+            log.e('Native CH mutation failed', {
+                taskId: task._id,
+                error: (err as Error)?.message || String(err)
+            });
+            await this.markFailedOrRetry(task, 'native_ch_error: ' + ((err as Error)?.message || err + ''));
             return false;
         }
     }
