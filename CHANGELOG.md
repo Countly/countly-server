@@ -1,3 +1,7 @@
+## Version 25.03.X
+Fixes:
+- [hooks] Implement domain/ip address validation for hooks with http effect
+
 ## Version 25.03.39
 Fixes:
 - [core] Fixed replaceDatabaseString incorrectly replacing "countly" in the MongoDB username when it appears in the connection URL
