@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="25.06"
+VER="26.01"
 
 CONTINUE="$(countly check before upgrade db "$VER")"
 
@@ -31,8 +31,10 @@ then
     nodejs "$DIR/scripts/add_indexes.js"
 
     #run upgrade scripts
-    nodejs "$SCRIPTS/scripts/merge_events_collections.js"
-
+    nodejs "$SCRIPTS/scripts/add_creation_date_for_existing_alerts.js"
+    nodejs "$SCRIPTS/scripts/merge_views_collections.js"
+    nodejs "$SCRIPTS/scripts/remove_unused_configs.js"
+    nodejs "$SCRIPTS/scripts/update_content_cooldown_settings.js"
 
     if [ "$1" != "combined" ]; then
         countly upgrade;

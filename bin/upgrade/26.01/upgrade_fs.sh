@@ -2,7 +2,7 @@
 
 echo "Running filesystem modifications"
 
-VER="25.06"
+VER="26.01"
 
 CONTINUE="$(countly check before upgrade fs "$VER")"
 
@@ -23,6 +23,7 @@ then
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
     rm -rf "$DIR/../plugins/old-ui-compatibility"
+
 
     countly plugin enable content;
     countly plugin enable journey_engine;
