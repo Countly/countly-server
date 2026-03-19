@@ -21,9 +21,9 @@ const ClusterManager = require('../managers/ClusterManager');
 const countlyConfig = require('../../../../api/config');
 
 const BATCH_SIZE = 1000;
-const MAX_BATCHES = 50;
-const ANOMALY_THRESHOLD = 0.05;
-const WINDOW_HOURS = 25;
+const MAX_BATCHES = 100;
+const ANOMALY_THRESHOLD = 0.1;
+const WINDOW_HOURS = 26;
 
 /**
  * Get cluster-aware table configuration.
@@ -59,7 +59,7 @@ class EventDeduplicationJob extends job.Job {
      * @returns {GetScheduleConfig} The schedule configuration object.
      * @property {string} type - The type of schedule. In this case, it's 'schedule'.
      * @property {string} value - The cron expression defining the job's schedule.
-     * The expression specifies when the job should run, in this case every 30 minutes starting at 3 AM.
+     * The expression specifies when the job should run: once per day at 03:30.
      */
     getSchedule() {
         return { type: 'schedule', value: '30 3 * * *' };
@@ -181,6 +181,12 @@ class EventDeduplicationJob extends job.Job {
                 }
                 batchNum++;
 
+                // Stop if we've reached the batch limit
+                if (batchNum >= MAX_BATCHES) {
+                    this.log.w(`Stopping after MAX_BATCHES=${MAX_BATCHES} — remaining duplicates may exist`);
+                    break;
+                }
+
                 // Discover next batch
                 const nextBatch = await this.#discoverDuplicatesWithExcess(
                     queryService, tableConfig, windowParams, processedIds
@@ -189,8 +195,10 @@ class EventDeduplicationJob extends job.Job {
             }
 
             // ---- 5) Result ----
+            const maxBatchesReached = batchNum >= MAX_BATCHES;
             const result = {
-                status: 'completed',
+                status: maxBatchesReached ? 'max_batches_reached' : 'completed',
+                maxBatchesReached,
                 batchesProcessed: batchNum,
                 mutationsDispatched,
                 totalDuplicateIds,
@@ -233,15 +241,16 @@ class EventDeduplicationJob extends job.Job {
 
     /**
      * Compute the rolling deduplication window (now minus WINDOW_HOURS to now).
-     * Timestamps are formatted as ClickHouse-compatible DateTime64 strings (UTC, no 'T'/'Z').
-     * @returns {{windowStart: string, windowEnd: string}} Start and end of the scan window
+     * Returns epoch seconds (UTC) to avoid timezone-dependent string parsing in ClickHouse.
+     * Queries use {start:Float64} and toDateTime64(start, 3, 'UTC') for explicit UTC.
+     * @returns {{windowStart: number, windowEnd: number}} Start and end as epoch seconds (UTC)
      */
     #getWindowBounds() {
-        const now = new Date();
-        const start = new Date(now.getTime() - WINDOW_HOURS * 60 * 60 * 1000);
+        const nowMs = Date.now();
+        const startMs = nowMs - WINDOW_HOURS * 60 * 60 * 1000;
         return {
-            windowStart: start.toISOString().replace('T', ' ').replace('Z', ''),
-            windowEnd: now.toISOString().replace('T', ' ').replace('Z', '')
+            windowStart: startMs / 1000,
+            windowEnd: nowMs / 1000
         };
     }
 
@@ -249,14 +258,14 @@ class EventDeduplicationJob extends job.Job {
      * Count total rows in the scan window. Used for anomaly-ratio calculation.
      * @param {object} queryService - ClickHouse query service instance
      * @param {object} tableConfig - Table configuration from {@link getTableConfig}
-     * @param {{start: string, end: string}} windowParams - Window bounds for parameterized query
+     * @param {{start: number, end: number}} windowParams - Window bounds as epoch seconds (UTC)
      * @returns {Promise<number>} Total row count in the cd window
      */
     async #getTotalRowsInWindow(queryService, tableConfig, windowParams) {
         const q = `
             SELECT count() AS total
             FROM ${tableConfig.selectFull}
-            WHERE cd >= {start:DateTime64(3)} AND cd < {end:DateTime64(3)}
+            WHERE cd >= toDateTime64({start:Float64}, 3, 'UTC') AND cd < toDateTime64({end:Float64}, 3, 'UTC')
         `;
         const [row] = await this.#queryJSON(queryService, q, windowParams);
         return Number(row?.total || 0);
@@ -270,7 +279,7 @@ class EventDeduplicationJob extends job.Job {
      * query size limits with large exclusion lists.
      * @param {object} queryService - ClickHouse query service instance
      * @param {object} tableConfig - Table configuration from {@link getTableConfig}
-     * @param {{start: string, end: string}} windowParams - Window bounds for parameterized query
+     * @param {{start: number, end: number}} windowParams - Window bounds as epoch seconds (UTC)
      * @param {string[]} excludeIds - _id values already processed in prior batches
      * @returns {Promise<{rows: object[], totalExcess: number}>} Duplicate groups (with _id, cnt, keep_ts, keep_cd) and total excess count
      */
@@ -289,7 +298,7 @@ class EventDeduplicationJob extends job.Job {
                     toString(argMin(ts, (ts, cd))) AS keep_ts,
                     toString(argMin(cd, (ts, cd))) AS keep_cd
                 FROM ${tableConfig.selectFull}
-                WHERE cd >= {start:DateTime64(3)} AND cd < {end:DateTime64(3)}
+                WHERE cd >= toDateTime64({start:Float64}, 3, 'UTC') AND cd < toDateTime64({end:Float64}, 3, 'UTC')
                   ${excludeClause}
                 GROUP BY _id
                 HAVING cnt > 1
@@ -313,8 +322,8 @@ class EventDeduplicationJob extends job.Job {
      * Does NOT include command_id or SETTINGS — those are appended by mutationManager.
      * @param {object} tableConfig - Table configuration from {@link getTableConfig}
      * @param {object[]} duplicates - Duplicate group rows, each with _id, keep_ts, keep_cd
-     * @param {string} windowStart - Window start timestamp (ClickHouse DateTime64 format)
-     * @param {string} windowEnd - Window end timestamp (ClickHouse DateTime64 format)
+     * @param {number} windowStart - Window start as epoch seconds (UTC)
+     * @param {number} windowEnd - Window end as epoch seconds (UTC)
      * @returns {string} ALTER TABLE DELETE SQL statement
      */
     #buildDeleteSQL(tableConfig, duplicates, windowStart, windowEnd) {
@@ -332,8 +341,8 @@ class EventDeduplicationJob extends job.Job {
 
         return `ALTER TABLE ${tableConfig.mutationFull} ${tableConfig.onCluster}
             DELETE WHERE
-                cd >= toDateTime64('${esc(windowStart)}', 3)
-                AND cd < toDateTime64('${esc(windowEnd)}', 3)
+                cd >= toDateTime64(${windowStart}, 3, 'UTC')
+                AND cd < toDateTime64(${windowEnd}, 3, 'UTC')
                 AND _id IN (${idList})
                 AND NOT (
                     ${keeperConditions}

@@ -688,6 +688,40 @@ class MutationManagerJob extends Job {
     }
 
     /**
+     * Build validated ClickHouse mutation SQL with an embedded command-id for tracking.
+     * - Strips trailing semicolon
+     * - Validates ALTER TABLE ... DELETE/UPDATE ... WHERE ... shape
+     * - Injects tautological AND before any SETTINGS clause
+     * @returns Final SQL string, or null if the shape is invalid
+     */
+    private buildValidatedNativeClickhouseSql(baseSql: string, commandId: string): string | null {
+        if (!baseSql || typeof baseSql !== 'string') {
+            return null;
+        }
+        let sql = baseSql.trim();
+        if (sql.endsWith(';')) {
+            sql = sql.slice(0, -1).trimEnd();
+        }
+        const upper = sql.toUpperCase();
+        if (!upper.startsWith('ALTER TABLE ')) {
+            return null;
+        }
+        if (!/\b(DELETE|UPDATE)\b/.test(upper)) {
+            return null;
+        }
+        if (!upper.includes(' WHERE ')) {
+            return null;
+        }
+        // Find SETTINGS clause (if any) — inject command-id BEFORE it
+        const settingsIdx = upper.indexOf(' SETTINGS');
+        const injection = ` AND '${commandId}' = '${commandId}'`;
+        if (settingsIdx !== -1) {
+            return sql.slice(0, settingsIdx) + injection + sql.slice(settingsIdx);
+        }
+        return sql + injection;
+    }
+
+    /**
      * Executes a native ClickHouse SQL mutation directly.
      * Used for complex mutations (e.g., deduplication) that cannot be expressed as Mongo-style queries.
      * Embeds validation_command_id for tracking via system.mutations.
@@ -710,16 +744,24 @@ class MutationManagerJob extends Job {
             const retryIndex = Number(task.fail_count || 0);
             const commandId = `nm_${String(task._id)}_${retryIndex}`;
 
-            // Embed command_id as tautological AND clause for system.mutations tracking.
-            // Append at end of SQL (callers must NOT include SETTINGS clause).
-            let sql = task.native_sql + ` AND '${commandId}' = '${commandId}'`;
+            const sql = this.buildValidatedNativeClickhouseSql(task.native_sql, commandId);
+            if (!sql) {
+                log.e('Skipping native CH mutation (invalid SQL shape)', {
+                    taskId: task._id,
+                    native_sql: task.native_sql
+                });
+                await this.markFailedOrRetry(task, 'invalid_native_sql_shape');
+                return false;
+            }
 
-            await common.clickhouseQueryService.executeMutation({ query: sql });
-
+            // Persist command_id BEFORE executing mutation (crash safety: if we crash
+            // between execution and this update, validation can still find the command_id)
             await common.db.collection('mutation_manager').updateOne(
                 { _id: task._id },
                 { $set: { validation_command_id: commandId } }
             );
+
+            await common.clickhouseQueryService.executeMutation({ query: sql });
             log.d('Native CH mutation scheduled', { taskId: task._id, commandId });
             return true;
         }
