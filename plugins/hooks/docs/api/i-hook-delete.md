@@ -121,7 +121,7 @@ Requires `hooks` `Delete` permission.
 
 ```json
 {
-  "result": "Failed to delete an hookERROR_DETAILS"
+  "result": "Failed to delete a hookMongoServerError: write conflict"
 }
 ```
 

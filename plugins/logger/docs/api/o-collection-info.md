@@ -22,6 +22,7 @@ Countly API supports three authentication methods:
 2. Auth token query parameter: `auth_token=YOUR_AUTH_TOKEN`
 3. Auth token header: `countly-token: YOUR_AUTH_TOKEN`
 
+
 ## Permissions
 
 Requires `logger` `Read` permission.
@@ -141,8 +142,8 @@ Fallback path (when count query fails):
 
 | Mode | Trigger | Processing Path | Response Shape |
 |---|---|---|---|
-| Count success | `countDocuments()` succeeds | Reads count from `logs{appId}` and returns cap/count/max values. | Raw object: `{ "capped": 1000, "count": N, "max": 1000 }` |
-| Count fallback | `countDocuments()` throws | Returns fallback object with cap values and `status: "error"`. | Raw object: `{ "capped": 1000, "count": 1000, "max": 1000, "status": "error" }` |
+| Stats success | `$collStats` aggregation succeeds | Reads `storageStats.count` from `logs{appId}` and returns cap/count/max values. | Raw object: `{ "capped": 1000, "count": N, "max": 1000 }` |
+| Stats fallback | `$collStats` aggregation throws | Returns fallback object with cap values and `status: "error"`. | Raw object: `{ "capped": 1000, "count": 1000, "max": 1000, "status": "error" }` |
 
 ### Impact on Other Data
 
@@ -171,8 +172,8 @@ Fallback path (when count query fails):
 
 ## Operational Considerations
 
-- This endpoint is lightweight but still performs a live `countDocuments` query on the app log collection.
-- If count fails, response still returns `200` with `status: "error"` and fallback numeric values.
+- This endpoint uses a live `$collStats` query on the app log collection.
+- If stats lookup fails, response still returns `200` with `status: "error"` and fallback numeric values.
 
 ## Limitations
 

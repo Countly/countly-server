@@ -26,19 +26,18 @@ The Star Rating feature enables in-app feedback collection using customizable st
 
 ## API Endpoints
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| [Get Ratings Widgets](./o-sdk.md) | GET/POST | Retrieve feedback widgets for mobile SDK |
-| [Upload Logo](./i-feedback-upload.md) | POST | Upload global feedback logo |
-| [Set Widget Logo](./i-feedback-logo.md) | POST | Set logo for specific widget |
-| [Record Feedback](./i-feedback-input.md) | POST | Receive and store user feedback submission |
-| [Toggle Widget Status](./i-feedback-widgets-status.md) | POST | Enable/disable specific widget |
-| [Edit Widget](./i-feedback-widgets-edit.md) | POST | Edit feedback widget |
-| [Edit Widget](./i-feedback-widgets-edit.md) | POST | Update widget configuration |
-| [Get Feedback Data](./o-feedback-data.md) | GET | Retrieve feedback submissions and ratings |
-| [Get Multiple Widgets](./o-feedback-multiple-widgets-by-id.md) | GET | Fetch multiple widgets by ID |
-| [List All Widgets](./o-feedback-widgets.md) | GET | Get all widgets for application |
-| [Get Widget Details](./o-feedback-widget.md) | GET | Retrieve single widget configuration |
+| Endpoint | Purpose |
+|----------|---------|
+| [Get Ratings Widgets](./o-sdk.md) | Retrieve feedback widgets for SDK runtime rendering |
+| [Upload Logo](./i-feedback-upload.md) | Upload global feedback logo |
+| [Set Widget Logo](./i-feedback-logo.md) | Set logo for specific widget |
+| [Record Feedback](./i-feedback-input.md) | Receive and store user feedback submission |
+| [Toggle Widget Status](./i-feedback-widgets-status.md) | Enable/disable specific widget |
+| [Edit Widget](./i-feedback-widgets-edit.md) | Update widget configuration |
+| [Get Feedback Data](./o-feedback-data.md) | Retrieve feedback submissions and ratings |
+| [Get Multiple Widgets](./o-feedback-multiple-widgets-by-id.md) | Fetch multiple widgets by ID |
+| [List All Widgets](./o-feedback-widgets.md) | Get all widgets for application |
+| [Get Widget Details](./o-feedback-widget.md) | Retrieve single widget configuration |
 
 ---
 
@@ -117,10 +116,8 @@ The Star Rating feature enables in-app feedback collection using customizable st
 
 | Collection | Purpose |
 |-----------|---------|
-| `feedback_widgets` | Stores widget configurations and settings |
-| `feedback` | Stores user feedback submissions |
-| `feedback_ratings` | Aggregated rating statistics |
-| `feedback_comments` | Indexed comment data for search |
+| `countly.feedback_widgets` | Stores star-rating widget configurations, targeting setup, status, and display counters. |
+| `countly_drill.drill_events` | Stores per-submission star rating events (`[CLY]_star_rating`) with segmentation fields (rating, comment, contact data). |
 
 ---
 

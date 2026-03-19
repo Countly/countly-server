@@ -39,6 +39,7 @@ Returns grouped task counts for tasks visible to current user.
 
 - Visibility filter is always enforced: global tasks or tasks created by current member.
 - `query` parsing failures fall back to `{}`.
+- Unlike `/o/tasks/all` and `/o/tasks/list`, this endpoint does not add a `subtask` exclusion filter by default.
 
 ## Response
 
@@ -80,6 +81,7 @@ Returns grouped task counts for tasks visible to current user.
 |---|---|---|---|
 | Default count mode | Default call with or without `query` | Applies visibility filter (`global` or creator-owned), aggregates counts grouped by `app_id`. | Raw array of `{ _id, c }` rows |
 | Period mode | `period` is provided | Adds `ts` range filter before count aggregation. | Raw array of `{ _id, c }` rows |
+| Subtask-included mode | `query` does not explicitly filter `subtask` | Subtasks can be included in group counts. | Raw array of `{ _id, c }` rows |
 
 ### Impact on Other Data
 
@@ -123,6 +125,10 @@ Returns grouped task counts for tasks visible to current user.
 
 - [Tasks - Read All Tasks](./o-tasks-all.md)
 - [Tasks - List Tasks](./o-tasks-list.md)
+
+## Limitations
+
+- Counts may include subtasks unless caller explicitly filters them out in `query`.
 
 ## Last Updated
 

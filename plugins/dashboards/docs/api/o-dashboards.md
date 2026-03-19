@@ -40,7 +40,7 @@ No separate feature permission flag is checked. Access is controlled by dashboar
 
 | Setting | Default | Affects | User-visible impact |
 |---|---|---|---|
-| `dashboards.allow_public_dashboards` | `true` | Access checks | If disabled, non-owner users may lose view/edit access to dashboards shared as `all-users`. |
+| `dashboards.sharing_status` | `true` | Dashboard sharing model | Controls whether dashboards can be shared broadly (`all-users` / selected sharing). This changes who can access a dashboard in read flows. |
 
 ## Response
 

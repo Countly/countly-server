@@ -24,7 +24,7 @@ Ingestion endpoints collect SDK traffic for sessions, events, user properties, a
 
 | Setting | Affects | Impact |
 |---|---|---|
-| `api.trim_trailing_ending_spaces` | `/i`, `/i/bulk` | Trims leading/trailing spaces in request values before processing. |
+| `api.trim_trailing_ending_spaces` | `/i` | Trims leading/trailing spaces in request values before processing. |
 | `api.prevent_duplicate_requests` | `/i`, `/i/bulk` | Enables duplicate-request suppression in ingestion handling. |
 
 ## Database Collections

@@ -131,7 +131,7 @@ Requires `Update` permission for the Populator feature.
 
 ```json
 {
-  "result": "DATABASE_ERROR_MESSAGE"
+  "result": "Database error: operation failed"
 }
 ```
 

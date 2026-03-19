@@ -94,7 +94,7 @@ Returns all dashboard users as an object map keyed by user id.
 {}
 ```
 
-Returned when internal member or failed-login queries fail in this handler.
+Returned when user or failed-login queries fail while building the response.
 
 ## Behavior/Processing
 

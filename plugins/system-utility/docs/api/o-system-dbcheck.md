@@ -2,104 +2,79 @@
 sidebar_label: "Database Check"
 ---
 
-# /o/system/dbCheck
-
-## Overview
-
-Verify database connectivity and retrieve connection status. Checks if MongoDB is accessible and responsive.
-
----
+# System Utility - Database Check
 
 ## Endpoint
 
-
 ```plaintext
-/o/system/dbCheck
+/o/system/dbcheck
 ```
+
+## Overview
+
+Checks MongoDB connectivity by reading a known document from `plugins` collection.
 
 ## Authentication
 
-- **Required**: Global admin permission (required)
-- **HTTP Method**: GET or POST
-- **Permission**: Global Admin only
+Countly API supports three authentication methods:
 
-## Response
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
-### Success Response
-
-```json
-{"status": "connected", "latency_ms": 2.5, "timestamp": "2024-02-13T10:30:00Z"}
-```
-
----
-
-
-### Response Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
-
-### Error Responses
-
-```json
-{
-  "result": "Error"
-}
-```
 
 ## Permissions
 
-- Required: Global admin permission (required)
-
+Requires Global Admin access.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `api_key` | String | Yes | Global admin API key. |
-| `auth_token` | String | No | Global admin auth token as query parameter or `Authorization: Bearer <token>` header. |
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
 
+## Response
+
+### Success Response
+
+```json
+{
+  "result": true
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `result` | Boolean | `true` when database connectivity probe succeeds; `false` otherwise. |
+
+### Error Responses
+
+```json
+{
+  "result": false
+}
+```
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
-
+- Reads `countly.plugins` with `{_id:"plugins"}`.
+- Returns boolean DB connectivity result via wrapped `result`.
 
 ## Database Collections
 
-This endpoint does not read or write database collections.
+| Collection | Used for | Data touched by this endpoint |
+|---|---|---|
+| `countly.plugins` | Connectivity probe | Reads one document for DB reachability check. |
 
 ## Examples
 
-### Example 1: Check database
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/o/system/dbCheck?api_key=YOUR_GLOBAL_ADMIN_KEY"
+```plaintext
+/o/system/dbcheck?api_key=YOUR_API_KEY
 ```
-
----
-
-## Related Endpoints
-
-- [Health Check](./o-system-healthcheck.md) - Overall system health
-- [Get Database Stats](./o-system-database.md) - Database disk usage
-
----
-
-## Implementation Notes
-
-1. **Admin-only**: Requires global admin API key
-2. **Connectivity test**: Verifies database access
-3. **Latency measured**: Shows response time
 
 ## Last Updated
 
-February 2026
+2026-03-07

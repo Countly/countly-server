@@ -94,7 +94,7 @@ Updates event groups through one of three branches: full update (`args`), reorde
 **Status Code**: `500 Internal Server Error`
 ```json
 {
-  "result": "error: <db error>"
+  "result": "error: duplicate key error collection: event_groups index: _id_ dup key"
 }
 ```
 
@@ -104,7 +104,7 @@ Updates event groups through one of three branches: full update (`args`), reorde
 
 | Mode | Trigger | Processing Path | Response Shape |
 |---|---|---|---|
-| Full object update | `args` is provided | Parses `args`, then updates one group by `_id` + `app_id` with `$set`. | Wrapped string: `{ "result": "Success" }` |
+| Full object update | `args` is provided | Parses `args`, then updates one group by `_id` with `$set`. | Wrapped string: `{ "result": "Success" }` |
 | Reorder update | `event_order` is provided (and `args` is not) | Parses array and bulk-updates `order` for each listed group. | Wrapped string: `{ "result": "Success" }` |
 | Bulk status update | `update_status` is provided (and previous branches not used) | Parses IDs and `status`, updates status for listed groups. | Wrapped string: `{ "result": "Success" }` |
 | Disable-status cleanup | `update_status` branch with `status=false` | After status update, removes matching keys from `events.overview`. | Wrapped string: `{ "result": "Success" }` |
@@ -118,7 +118,7 @@ Updates event groups through one of three branches: full update (`args`), reorde
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
 | `countly.members` | Authentication and permission validation | Reads member identity and app-level update permissions. |
-| `countly.event_groups` | Group definition updates | Updates group payload, order, or status depending on selected branch. |
+| `countly.event_groups` | Group definition updates | Updates group payload, order, or status by group IDs provided in request payload. |
 | `countly.events` | Event overview cleanup | Reads and updates `overview` when disabling group status. |
 
 ## Examples

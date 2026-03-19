@@ -142,7 +142,7 @@ Authenticated dashboard user credentials are required (`api_key` or `auth_token`
 
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
-| `countly.members` | Authentication validation | Reads member account and lock status during `validateUser` authentication. |
+| `countly.members` | Authentication validation | Reads member account and lock status during `authenticated-user validation` authentication. |
 | `countly.server_stats_data_points` | Stores monthly and hourly datapoint metrics per app | Reads period-matching metric documents and aggregates counters for output. |
 
 ---

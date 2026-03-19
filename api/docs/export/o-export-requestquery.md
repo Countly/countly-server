@@ -12,7 +12,7 @@ sidebar_label: "Export Request Query"
 
 ## Overview
 
-Creates an asynchronous export task from an internal request query and returns a task ID immediately.
+Creates an asynchronous export task from a target API query and returns a task ID immediately.
 
 ## Authentication
 
@@ -31,9 +31,9 @@ Creates an asynchronous export task from an internal request query and returns a
 | `api_key` | String | Yes (or use `auth_token`) | Dashboard API authentication key. |
 | `auth_token` | String | Yes (or use `api_key`) | Dashboard auth token. |
 | `app_id` | String | No | Optional app ID attached to created export task metadata. |
-| `path` | String | Yes | Internal API path to query. |
-| `method` | String | No | Optional method value forwarded to internal request pipeline. |
-| `data` | JSON String (Object) | No | Request payload for internal query. |
+| `path` | String | Yes | Target API path to query. |
+| `method` | String | No | Optional method value forwarded to request pipeline. |
+| `data` | JSON String (Object) | No | Request payload for target query. |
 | `db` | String | No | Database context for export cursor resolution (for example `countly_drill`). |
 | `type` | String | No | Export format (`json`, `csv`, `xls`, `xlsx`). |
 | `filename` | String | No | Export base file name (extension is appended from `type`). |

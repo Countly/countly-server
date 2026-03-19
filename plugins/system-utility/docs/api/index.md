@@ -27,8 +27,8 @@ The System Utility feature provides server-side diagnostics and performance moni
 
 | Collection | Purpose |
 |---|---|
-| `jobs` | Background job queue for async tasks |
-| `health_checks` | System health monitoring data |
+| `countly.plugins` | Used only by `/o/system/dbcheck` as a lightweight connectivity probe (`{ _id: "plugins" }`). |
+| _No dedicated System Utility feature collections_ | Most endpoints read host/runtime state and do not persist feature-specific data in MongoDB. |
 
 
 ## Configuration & Settings
@@ -150,7 +150,7 @@ System utilities use core configuration. See `api/config.js` for settings.
 
 **Permission structure**:
 ```javascript
-validateUserForGlobalAdmin(params, () => {
+global-admin validation(params, () => {
   // Execute endpoint logic
 });
 ```

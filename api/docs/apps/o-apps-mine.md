@@ -58,8 +58,8 @@ Return apps accessible to the authenticated user, split by admin scope and user 
 |---|---|---|
 | `admin_of` | Object | Packed app map for apps where user has admin-level access. |
 | `user_of` | Object | Packed app map for apps where user has user-level access. |
-| `admin_of.<appId>` | Object | Packed app record for admin scope. |
-| `user_of.<appId>` | Object | Packed app record for user scope. |
+| `admin_of.[appId]` | Object | Packed app record for admin scope. |
+| `user_of.[appId]` | Object | Packed app record for user scope. |
 
 ### Error Responses
 

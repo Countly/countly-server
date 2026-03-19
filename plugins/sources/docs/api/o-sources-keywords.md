@@ -22,6 +22,7 @@ Countly API supports three authentication methods:
 2. Auth token query parameter: `auth_token=YOUR_AUTH_TOKEN`
 3. Auth token header: `countly-token: YOUR_AUTH_TOKEN`
 
+
 ## Permissions
 
 Requires `sources` `Read` permission.

@@ -2,7 +2,7 @@
 sidebar_label: "Crash Share"
 ---
 
-# /i/crashes/share
+# Crashes - Share Crash Group
 
 ## Endpoint
 
@@ -10,105 +10,87 @@ sidebar_label: "Crash Share"
 /i/crashes/share
 ```
 
-
 ## Overview
 
-Make a crash group publicly shareable. Enables a public URL that can be shared with external stakeholders without requiring authentication.
-
----
+Enables public sharing for a crash group by creating a share record and marking the group as public.
 
 ## Authentication
-- **Required Permission**: `Update` (crashes feature)
-- **HTTP Method**: POST
-- **Content-Type**: application/x-www-form-urlencoded
 
----
+Countly API supports three authentication methods:
+
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
 
 ## Permissions
 
-- Required Permission: Update (crashes feature)
+Requires `crashes` `Update` permission.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes (or use auth_token) | API key for authentication |
-| `app_id` | String | Yes | Application ID |
-| `args` | JSON | Yes | Arguments with crash_id |
-| `args.crash_id` | String | Yes | Crash group ID to share |
-
----
+|---|---|---|---|
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
+| `app_id` | String | Yes | Target app ID. |
+| `args` | JSON String (Object) | Yes | Action payload. |
+| `args.crash_id` | String | Yes | Crash group ID to share. |
 
 ## Response
 
 ### Success Response
 
 ```json
-{"result": "Success"}
+{
+  "result": "Success"
+}
 ```
-
----
-
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `result` | String | `Success` when operation completes. |
 
 ### Error Responses
 
+- `400`
+
 ```json
 {
-  "result": "Error"
+  "result": "Please provide args parameter"
 }
 ```
 
-## Examples
-
-### Example 1: Share a crash
-
-**Request**:
-```bash
-curl -X POST "https://your-server.com/i/crashes/share" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID" \
-  -d 'args={"crash_id":"crash_123"}'
-```
-
----
-
-## Processing Details
-
-1. Generates share token via SHA1 hash of app_id + crash_id
-2. Inserts into `crash_share` collection
-3. Sets `is_public = true` on crash group
-4. Logs crash_shared systemlogs event
-
----
-
+Standard auth/permission errors from update validation can also be returned.
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
+- Computes share record ID as SHA1 hash of `app_id + crash_id`.
+- Inserts a record into `crash_share`.
+- Sets `is_public=true` on the crash group document.
+- Emits system log action `crash_shared`.
 
 ## Database Collections
 
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
-| `crash_share` | Crash data domain | Stores crash reports, groups, comments, and crash-related metadata touched by this endpoint. |
-| `app_crashgroups` | Crash data domain | Stores crash reports, groups, comments, and crash-related metadata touched by this endpoint. |
+| `countly.crash_share` | Public share mapping | Inserts share record for app/crash pair. |
+| `countly.app_crashgroups{appId}` | Crash group visibility | Updates `is_public=true` for the crash group. |
+| `countly.systemlogs` | Audit trail | Receives `crash_shared` action. |
 
----
+## Examples
+
+```plaintext
+/i/crashes/share?api_key=YOUR_API_KEY&app_id=6991c75b024cb89cdc04efd2&args={"crash_id":"crash_group_1"}
+```
 
 ## Related Endpoints
 
-- [/i/crashes/unshare](./i-crashes-unshare.md) - Disable public sharing
-- [/i/crashes/modify_share](./i-crashes-modify-share.md) - Modify share settings
+- [Crashes - Unshare Crash Group](./i-crashes-unshare.md)
+- [Crashes - Modify Share Data](./i-crashes-modify-share.md)
 
 ## Last Updated
 
-February 2026
+2026-03-07

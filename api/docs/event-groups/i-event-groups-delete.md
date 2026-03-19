@@ -82,7 +82,7 @@ Deletes one or more event groups and removes their keys from `events.overview`.
 **Status Code**: `500 Internal Server Error`
 ```json
 {
-  "result": "error: <db error>"
+  "result": "error: write conflict while deleting event group"
 }
 ```
 
@@ -92,7 +92,7 @@ Deletes one or more event groups and removes their keys from `events.overview`.
 
 | Mode | Trigger | Processing Path | Response Shape |
 |---|---|---|---|
-| Standard delete | Valid `args` array and permissions | Parses IDs, deletes matching groups by `_id` + `app_id`, then updates `events.overview`. | Wrapped string: `{ "result": "Success" }` |
+| Standard delete | Valid `args` array and permissions | Parses IDs, deletes matching groups by `_id`, then updates `events.overview`. | Wrapped string: `{ "result": "Success" }` |
 | Overview cleanup | `events.overview` contains removed group keys | Removes matching keys from `overview` and persists updated array. | Wrapped string: `{ "result": "Success" }` |
 
 ### Impact on Other Data
@@ -104,7 +104,7 @@ Deletes one or more event groups and removes their keys from `events.overview`.
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
 | `countly.members` | Authentication and permission validation | Reads member identity and app-level delete permissions. |
-| `countly.event_groups` | Group definition deletion | Removes event-group documents matching provided IDs and app scope. |
+| `countly.event_groups` | Group definition deletion | Removes event-group documents matching provided IDs. |
 | `countly.events` | Event overview cleanup | Reads and updates `overview` after group deletion. |
 
 ## Examples

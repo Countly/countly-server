@@ -24,7 +24,7 @@ Countly API supports three authentication methods:
 
 ## Permissions
 
-No explicit dashboard share permission check is implemented in this handler. It only requires authenticated user context.
+This endpoint requires authenticated user context but does not enforce dashboard sharing access checks.
 
 ## Request Parameters
 
@@ -78,7 +78,7 @@ This handler does not return explicit structured error payloads for dashboard lo
 
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
-| `countly.members` | Authentication | Reads current member record via `validateUser` before dashboard query. |
+| `countly.members` | Authentication | Reads current member record via `authenticated-user validation` before dashboard query. |
 | `countly.dashboards` | Dashboard widget reference lookup | Reads dashboard `widgets` array. |
 | `countly.widgets` | Layout metadata lookup | Reads `_id`, `position`, and `size` for referenced widgets. |
 

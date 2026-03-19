@@ -2,7 +2,7 @@
 sidebar_label: "Record Feedback"
 ---
 
-# /i/feedback/input
+# Star Rating - Record Feedback
 
 ## Endpoint
 
@@ -10,131 +10,83 @@ sidebar_label: "Record Feedback"
 /i/feedback/input
 ```
 
-
 ## Overview
 
-Receive and store user feedback submission from web or mobile clients. Endpoint handles incoming star ratings, comments, and contact information. Automatically validates data and aggregates feedback metrics. Non-checksum protected endpoint for client-side submission
-
----
-
-## /i/feedback/input
+Ingests one `[CLY]_star_rating` event through Countly write pipeline.
 
 ## Authentication
 
-- **Required Permission**: Feature access
-- **HTTP Methods**: All methods supported (GET, POST, PUT, DELETE)
-- **Content-Type**: application/x-www-form-urlencoded or JSON
+Uses SDK ingestion authentication in the proxied `/i` request (`app_key`, `device_id`, and write parameters).
 
-**HTTP Method Flexibility:**  
-All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchangeably. You can use GET for simpler queries or POST for large payloads. All examples show the conventional method, but any method works identically.
+## Permissions
+
+Request access is validated by the underlying `/i` ingestion path.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes | Your API authentication key |
-| `app_id` | String | Yes | Target application ID |
+|---|---|---|---|
+| `events` | String (JSON Array) | Yes | Must contain exactly one event with key `[CLY]_star_rating`. |
+| `app_key` | String | Yes | App key for ingestion validation (passed to proxied `/i`). |
+| `device_id` | String | Yes | Device ID for ingestion validation (passed to proxied `/i`). |
+| `timestamp` | Number | No | Optional event timestamp passed to ingestion. |
+| `hour` | Number | No | Optional event hour passed to ingestion. |
+| `dow` | Number | No | Optional event day-of-week passed to ingestion. |
 
 ## Response
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
 ### Success Response
 
 ```json
-{"result": "success", "data": {}}
+{
+  "result": "Success"
+}
 ```
-
-#### Error Response
-**Status Code**: `400 Bad Request` or `500 Internal Server Error`
-
-**Body**:
-```json
-{"result": "error", "message": "Error description"}
-```
-
----
-
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `result` | String | Ingestion pipeline result for proxied write request. |
 
 ### Error Responses
 
+- `400`
+
 ```json
 {
-  "result": "Error"
+  "result": "invalid_event_request"
 }
 ```
 
-## Permissions
-
-- Required Permission: Feature access
+- non-200 responses from proxied `/i` request are forwarded using returned `result` payload.
 
 ## Behavior/Processing
 
-- Validates request parameters
-- Processes the operation
-- Returns appropriate response
-
----
-
-## Examples
-
-### Example 1: Basic Request
-
-**Description**: Standard request using POST method
-
-**Request** (POST):
-```bash
-curl -X POST "https://your-server.com/i/feedback/input" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
-### Example 2: Alternative GET Method
-
-**Description**: Same request using GET (both methods work identically)
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/i/feedback/input?api_key=YOUR_API_KEY&app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
----
-
-## Technical Notes
+- Parses `events` JSON.
+- Rejects when payload is not exactly one event or event key is not `[CLY]_star_rating`.
+- Proxies to `/i?...` with `no_checksum=true` via `requestProcessor.processRequest`.
+- Forwards proxied response body/status back to client.
 
 ## Database Collections
 
-This endpoint does not read or write database collections.
+This handler does not directly read/write collections; writes occur in underlying ingestion pipeline collections (events/drill paths) after proxying.
+
+## Examples
+
+### Ingest one star-rating event
+
+```plaintext
+/i/feedback/input?
+  app_key=YOUR_APP_KEY&
+  device_id=device_123&
+  events=[{"key":"[CLY]_star_rating","count":1,"segmentation":{"rating":5,"widget_id":"67a3d2f5c1a23b0f4d6c0201","comment":"Great app"}}]
+```
+
 ## Related Endpoints
 
-- See feature documentation for related operations
-
----
-
-## Enterprise
-
-Plugin: star-rating
-Endpoint: /i/feedback/input
+- [Star Rating - Get Feedback Data](o-feedback-data.md)
 
 ## Last Updated
 
-February 2026
+2026-03-07

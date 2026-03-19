@@ -1,79 +1,67 @@
 ---
-sidebar_label: "Take Heap Snapshot"
+sidebar_label: "Heap Snapshot"
 ---
 
-# /i/profiler/take-heap-snapshot
-
-## Overview
-
-Capture Node.js heap memory snapshot for memory analysis. Returns binary heap snapshot file (.heapsnapshot).
-
----
+# System Utility - Take Heap Snapshot
 
 ## Endpoint
-
 
 ```plaintext
 /i/profiler/take-heap-snapshot
 ```
 
+## Overview
+
+Streams a heap snapshot file as download.
+
 ## Authentication
 
-- **Required**: Global admin permission (required)
-- **HTTP Method**: GET
-- **Permission**: Global Admin only
+Countly API supports three authentication methods:
 
-## Response
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**: Binary .heapsnapshot file
-
-**Headers**:
-### Success Response
-
-```
-Content-Type: plain/text
-Content-Disposition: attachment; filename=heap.heapsnapshot
-```
-
----
-
-
-### Response Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
-
-### Error Responses
-
-```json
-{
-  "result": "Error"
-}
-```
 
 ## Permissions
 
-- Required: Global admin permission (required)
-
+Requires Global Admin access.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `api_key` | String | Yes | Global admin API key. |
-| `auth_token` | String | No | Global admin auth token as query parameter or `Authorization: Bearer <token>` header. |
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
 
+## Response
+
+### Success Response
+
+Binary stream download with headers:
+
+- `Content-Type: plain/text; charset=utf-8`
+- `Content-Disposition: attachment; filename=heap.heapsnapshot`
+
+### Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `(stream body)` | Text stream | Heap snapshot content for the running process. |
+| `Content-Type` | Header | `plain/text; charset=utf-8` |
+| `Content-Disposition` | Header | `attachment; filename=heap.heapsnapshot` |
+
+### Error Responses
+
+```json
+{
+  "result": "...error text..."
+}
+```
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
-
+- Writes response headers and streams heap snapshot content.
 
 ## Database Collections
 
@@ -81,28 +69,10 @@ This endpoint does not read or write database collections.
 
 ## Examples
 
-### Example 1: Get heap snapshot
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/i/profiler/take-heap-snapshot?api_key=YOUR_GLOBAL_ADMIN_KEY" \
-  -o heap.heapsnapshot
+```plaintext
+/i/profiler/take-heap-snapshot?api_key=YOUR_API_KEY
 ```
-
----
-
-## Related Endpoints
-
-- [Start Profiler](./i-profiler-start.md) - Start profiling
-
----
-
-## Implementation Notes
-
-1. **Binary output**: Save as .heapsnapshot file
-2. **Chrome compatible**: Open in DevTools Memory tab
-3. **Memory intensive**: Snapshot size = heap size
 
 ## Last Updated
 
-February 2026
+2026-03-07

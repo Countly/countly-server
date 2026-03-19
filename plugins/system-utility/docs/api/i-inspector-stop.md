@@ -1,74 +1,66 @@
 ---
-sidebar_label: "Stop Inspector"
+sidebar_label: "Inspector Stop"
 ---
 
-# /i/inspector/stop
-
-## Overview
-
-Disable Node.js inspector debugging. Closes the debugging port and terminates all active debug sessions. Clears the 2-hour timeout.
-
----
+# System Utility - Stop Inspector
 
 ## Endpoint
-
 
 ```plaintext
 /i/inspector/stop
 ```
 
+## Overview
+
+Stops inspector mode.
+
 ## Authentication
 
-- **Required**: Global admin permission (required)
-- **HTTP Method**: GET or POST
-- **Permission**: Global Admin only
+Countly API supports three authentication methods:
+
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
+
+
+## Permissions
+
+Requires Global Admin access.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes | Global admin API key |
+|---|---|---|---|
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
 
 ## Response
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
 ### Success Response
 
 ```json
-{"result": "Stoping inspector for all processes"}
+{
+  "result": "Stoping inspector for all processes"
+}
 ```
-
----
-
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `result` | String | Success message when inspector is stopped. |
 
 ### Error Responses
 
 ```json
 {
-  "result": "Error"
+  "result": "Error: Inspector needs to be started"
 }
 ```
 
-## Permissions
-
-- Required: Global admin permission (required)
-
-
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
-
+- Stops inspector and clears running timeout state.
 
 ## Database Collections
 
@@ -76,28 +68,10 @@ This endpoint does not read or write database collections.
 
 ## Examples
 
-### Example 1: Stop inspector
-
-**Request** (POST):
-```bash
-curl -X POST "https://your-server.com/i/inspector/stop" \
-  -d "api_key=YOUR_GLOBAL_ADMIN_KEY"
+```plaintext
+/i/inspector/stop?api_key=YOUR_API_KEY
 ```
-
----
-
-## Related Endpoints
-
-- [Start Inspector](./i-inspector-start.md) - Enable debugging
-
----
-
-## Implementation Notes
-
-1. **Admin-only**: Requires global admin API key
-2. **Requires active**: Must be started first
-3. **Immediate effect**: Closes debugging connections
 
 ## Last Updated
 
-February 2026
+2026-03-07

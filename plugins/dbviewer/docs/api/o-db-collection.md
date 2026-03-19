@@ -1,8 +1,8 @@
 ---
-sidebar_label: "Query Documents"
+sidebar_label: "Collection Query"
 ---
 
-# /o/db - Query Collection
+# DB Viewer - Collection Query
 
 ## Endpoint
 
@@ -10,45 +10,48 @@ sidebar_label: "Query Documents"
 /o/db?db=countly&collection=members
 ```
 
-
 ## Overview
 
-Query and list documents from a collection with optional filtering, sorting, and pagination. Supports MongoDB and ClickHouse. Results streamed with pagination for large datasets.
-
----
+Queries documents from a MongoDB collection or ClickHouse table, with filtering, projection, sorting, and pagination.
 
 ## Authentication
-- **Required Permission**: User must have dbviewer access for the app; Global admin has full access
-- **HTTP Methods**: GET or POST
-- **Content-Type**: application/x-www-form-urlencoded or JSON
-- **Restrictions**: Sensitive fields (password, api_key, auth_tokens._id) automatically redacted
 
----
+Countly API supports three authentication methods:
+
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
 
 ## Permissions
 
-- Required Permission: User must have dbviewer access for the app; Global admin has full access
+Requires DB Viewer access (`dbviewer` read right for app-scoped users).
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes (or use auth_token) | API key for authentication |
-| `db` / `dbs` | String | Yes | Database name: `countly`, `countly_drill`, `countly_out`, `countly_fs`, or `clickhouse_*` |
-| `collection` | String | Yes | Collection/table name to query |
-| `limit` | Integer | No | Results per page (default: 20) |
-| `skip` | Integer | No | Number of documents to skip (default: 0) |
-| `filter` / `query` | JSON String | No | MongoDB query filter: `{"status": "active"}` or `{"email": {"$regex": "@example.com"}}` |
-| `projection` / `project` | JSON String | No | Field inclusion/exclusion: `{"name": 1, "password": 0}` |
-| `sort` | JSON String | No | Sort order: `{"_id": -1, "created": 1}` |
-| `sSearch` | String | No | Regex search on `_id` field (shorthand for `_id` regexp) |
+|---|---|---|---|
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
+| `db` / `dbs` | String | Yes | Database name (`countly`, `countly_drill`, `countly_out`, `countly_fs`, or `clickhouse_*`). |
+| `collection` | String | Yes | Collection/table name. |
+| `limit` | Number | No | MongoDB default `20`; ClickHouse default `10`. |
+| `skip` | Number | No | MongoDB offset. Default `0`. |
+| `filter` / `query` | JSON String | No | Query filter object. |
+| `projection` / `project` | JSON String | No | Field projection object. |
+| `sort` | JSON String | No | Sort object. |
+| `sSearch` | String | No | MongoDB `_id` regex shortcut. |
+| `cursor` | String | No | ClickHouse cursor pagination token. |
+| `paginationMode` | String | No | ClickHouse pagination mode. |
 
----
+## Configuration Impact
+
+| Setting | Default | Affects | User-visible impact |
+|---|---|---|---|
+| `security.api_additional_headers` | Empty | HTTP response headers | Additional configured headers are appended to streamed MongoDB collection responses. |
+| `drill.clickhouse_use_approximate_uniq` | Plugin config | ClickHouse query behavior | Affects ClickHouse uniqueness calculations used by DB Viewer table query path. |
 
 ## Response
-
-**Status Code**: `200 OK`
 
 ### Success Response
 
@@ -56,230 +59,111 @@ Query and list documents from a collection with optional filtering, sorting, and
 {
   "limit": 20,
   "start": 1,
-  "end": 4,
-  "total": 4,
-  "pages": 1,
+  "end": 20,
+  "total": 138,
+  "pages": 7,
   "curPage": 1,
   "collections": [
     {
-      "_id": "507f1f77bcf86cd799439011",
+      "_id": "ObjectId(507f1f77bcf86cd799439011)",
       "name": "Test User",
-      "email": "user@example.com",
-      "created_at": "2026-02-12T10:00:00Z"
-    },
-    {
-      "_id": "507f1f77bcf86cd799439012",
-      "name": "Another User",
-      "email": "another@example.com",
-      "created_at": "2026-02-11T15:30:00Z"
+      "email": "user@example.com"
     }
   ]
 }
 ```
 
-**Response Structure**:
-- `limit` - Records per page
-- `start` - First record number (1-indexed)
-- `end` - Last record number on this page
-- `total` - Total matching documents
-- `pages` - Total number of pages
-- `curPage` - Current page number
-- `collections` - Array of documents (field names depend on collection)
-
----
-
-
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `limit` | Number | Page size. |
+| `start` | Number | Start row index (1-based in this response contract). |
+| `end` | Number | End row index. |
+| `total` | Number | Total matching rows. |
+| `pages` | Number | Total pages. |
+| `curPage` | Number | Current page number. |
+| `collections` | Array | Collection/table records. |
+| `hasNextPage` | Boolean | ClickHouse cursor mode only. |
+| `nextCursor` | String | ClickHouse cursor mode only. |
+| `paginationMode` | String | ClickHouse mode reported by backend. |
 
 ### Error Responses
 
+- `400`
+
 ```json
 {
-  "result": "Error"
+  "result": "Failed to parse query. ..."
 }
 ```
 
-## Processing Details
+- `400`
 
-### Query Execution Flow
-
-```javascript
-// 1. Parse EJSON filter, projection, sort
-// 2. ObjectID conversion: "507f..." string → ObjectID if 24-char hex
-// 3. Apply permission filters automatically (non-admins)
-// 4. Validate collection name (no '$' allowed)
-// 5. Find with projection
-// 6. Apply sort, skip, limit
-// 7. Stream results with count
-// 8. Return EJSON-serialized documents
-```
-
-### Permission-Based Filtering
-
-```javascript
-// Global admins: Full access
-if (params.member.global_admin) {
-  return dbGetCollection()
-}
-
-// Regular users: Auto-filtered by app assignment
-if (userHasAccess(params, collection)) {
-  base_filter = getBaseAppFilter(params.member, db, collection)
-  // Merged into query with $and
-  return dbGetCollection()
+```json
+{
+  "result": "Invalid collection name: Collection names can not contain '$' or other invalid characters"
 }
 ```
 
-### Sensitive Data Redaction
+- `401`
 
-Fields automatically removed for security:
-- **members** collection: Removes `password`, `api_key`
-- **auth_tokens** collection: Redacts `_id` value
+```json
+{
+  "result": "User does not have right to view this collection"
+}
+```
 
-### Streaming & Performance
+- `404`
 
-- Large result sets streamed to prevent memory overflow
-- Pagination metadata sent before document stream
-- EJSON format preserves MongoDB types (ObjectId, Binary, Timestamp)
-- Supports MongoDB and ClickHouse via database abstraction layer
+```json
+{
+  "result": "Database not found."
+}
+```
 
----
+- `404`
 
-## Error Handling
-
-| Condition | HTTP Status | Response |
-|-----------|------------|----------|
-| Missing `db` or `collection` | 400 | Error message |
-| Invalid JSON in filter | 400 | "Failed to parse query. SyntaxError: ..." |
-| Collection contains '$' | 400 | "Invalid collection name: Collection names can not contain '$'..." |
-| Database not found | 404 | "Database not found." |
-| Unauthorized | 401 | "User does not have right to view this collection" |
-
----
-
+```json
+{
+  "result": "ClickHouse plugin is disabled."
+}
+```
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
-
+- MongoDB path parses `filter/query`, `projection/project`, and `sort` as EJSON.
+- Invalid MongoDB `filter/query` JSON returns `400`; invalid `projection`/`sort` falls back to `{}`.
+- For non-admin users, app-level base filters are merged into MongoDB query.
+- For `members` collection, `password` and `api_key` are removed.
+- For `auth_tokens` collection, `_id` is redacted to `***redacted***`.
+- ClickHouse path supports plain object filter or `filter.rows` format and returns the same pagination envelope plus cursor fields.
 
 ## Database Collections
 
-This endpoint does not read or write database collections.
+This endpoint reads from the collection/table specified by `db` and `collection`.
 
 ## Examples
 
-### Example 1: Simple Collection Query
+### Query collection (MongoDB)
 
-**Request**:
-```bash
-curl "https://your-server.com/o/db" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "db=countly" \
-  -d "collection=members" \
-  -d "limit=10"
+```plaintext
+/o/db?api_key=YOUR_API_KEY&db=countly&collection=members&limit=20&skip=0&sort={"_id":-1}
 ```
 
-**Response**: First 10 members with pagination info
+### Query table (ClickHouse)
 
-### Example 2: Filter with Projection
-
-**Request**:
-```bash
-curl "https://your-server.com/o/db" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "db=countly" \
-  -d "collection=members" \
-  -d 'query={"global_admin": true}' \
-  -d 'projection={"email": 1, "full_name": 1}' \
-  -d "limit=20"
+```plaintext
+/o/db?api_key=YOUR_API_KEY&db=clickhouse_countly_drill&collection=events_data&limit=50&filter={"a":"6991c75b024cb89cdc04efd2"}
 ```
-
-**Response**: Global admins with only email and full_name fields
-
-### Example 3: Sort and Pagination
-
-**Request**:
-```bash
-curl "https://your-server.com/o/db" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "db=countly" \
-  -d "collection=members" \
-  -d 'sort={"created": -1}' \
-  -d "skip=20" \
-  -d "limit=10"
-```
-
-**Response**: Records 21-30 sorted by newest first
-
-### Example 4: Regex Search on _id
-
-**Request**:
-```bash
-curl "https://your-server.com/o/db" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "db=countly" \
-  -d "collection=members" \
-  -d "sSearch=admin" \
-  -d "limit=5"
-```
-
-**Response**: Up to 5 members with _id matching 'admin' pattern
-
-### Example 5: Complex Filter Query
-
-**Request**:
-```bash
-curl -X POST "https://your-server.com/o/db" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "db=countly" \
-  -d "collection=members" \
-  -d 'query={"$or": [{"global_admin": true}, {"email": {"$regex": "@company"}}]}' \
-  -d "limit=50"
-```
-
-**Response**: Members who are global admins OR have company email
-
----
-
-## MongoDB Query Operators
-
-Supported operators in `filter` parameter:
-- Comparison: `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`
-- Logical: `$and`, `$or`, `$nor`, `$not`
-- Element: `$exists`, `$type`
-- Evaluation: `$regex`, `$text`, `$where`
-- Array: `$all`, `$elemMatch`, `$size`
-- Geospatial: `$geoWithin`, `$geoIntersects`, `$near`
-
----
 
 ## Related Endpoints
 
-- [/o/db](o-db.md) - List all databases and collections
-- [/o/db?document=](o-db-document.md) - Get single document by _id
-- [/o/db?action=get_indexes](o-db-indexes.md) - List collection indexes
-- [/o/db?aggregation=](o-db-aggregation.md) - Aggregation pipeline
-- [/o/db/mongotop](o-db-mongotop.md) - MongoDB operation statistics
-- [/o/db/mongostat](o-db-mongostat.md) - MongoDB server statistics
-
----
-
-## Implementation Notes
-
-- **Streaming**: Results streamed for memory efficiency with large datasets
-- **Permission Inheritance**: Non-admin users automatically limited to their app data
-- **EJSON Format**: Preserves MongoDB type information through JSON
-- **ClickHouse Support**: Works with ClickHouse databases (prefix: `clickhouse_`)
-- **Collection Restrictions**: Automatically excludes `system.indexes` and `sessions_*` collections
-- **Default Limit**: 20 documents if limit not specified (configurable per instance)
+- [DB Viewer - Databases List](o-db.md)
+- [DB Viewer - Document Read](o-db-document.md)
+- [DB Viewer - Indexes Read](o-db-indexes.md)
+- [DB Viewer - Aggregation Query](o-db-aggregation.md)
 
 ## Last Updated
 
-February 2026
+2026-03-07

@@ -38,7 +38,7 @@ Converts a provided payload into an export file without querying a collection.
 ## Parameter Semantics
 
 - If `data` is a string and `raw` is not set, it must be valid JSON.
-- Object payloads are converted to array form internally for export conversion.
+- Object payloads are converted to array form before export conversion.
 
 ## Response
 

@@ -71,7 +71,7 @@ Requires `Read` permission for the Populator feature.
 |---|---|---|
 | `sEcho` | String/Number | Echo value from request. |
 | `iTotalRecords` | Number | Total matching users for the environment filter. |
-| `iTotalDisplayRecords` | Number | Same value as `iTotalRecords` in this handler. |
+| `iTotalDisplayRecords` | Number | Same value as `iTotalRecords` in this response. |
 | `aaData` | Array (Object) | Page of matching environment-user records. |
 | `aaData[]. _id` | String | Composite generated-user ID (`appId_templateId_environmentId_deviceId`). |
 | `aaData[].userName` | String | Generated user name. |
@@ -119,7 +119,7 @@ Requires `Read` permission for the Populator feature.
 
 ```json
 {
-  "result": "DATABASE_ERROR_MESSAGE"
+  "result": "Database error: operation failed"
 }
 ```
 
@@ -184,12 +184,12 @@ https://your-server.com/o/populator/environment/get?
 
 - For large environments, this endpoint executes both a count query and an aggregation query.
 - Filtering is regex-based (`sSearch`), which may be expensive on large datasets.
-- No explicit sort is applied, so returned order is database natural order.
+- No sort is applied, so returned order follows database natural order.
 
 ## Limitations
 
 - Requires all three identifiers (`app_id`, `template_id`, `environment_id`) before auth/permission checks continue.
-- `iTotalRecords` and `iTotalDisplayRecords` are the same value in this handler.
+- `iTotalRecords` and `iTotalDisplayRecords` are the same value.
 
 ---
 

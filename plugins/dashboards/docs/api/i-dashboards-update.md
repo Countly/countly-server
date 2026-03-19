@@ -59,7 +59,6 @@ Examples of decoded JSON arrays:
 
 | Setting | Default | Affects | User-visible impact |
 |---|---|---|---|
-| `dashboards.allow_public_dashboards` | `true` | Validation | If `false`, `share_with=all-users` is rejected with `400` and `Public dashboards are disabled`. |
 | `dashboards.sharing_status` | `true` | Processing flow | If disabled, sharing fields may not be updated for non-eligible users even when other dashboard fields are updated. |
 
 ## Response
@@ -115,14 +114,6 @@ Examples of decoded JSON arrays:
 ```json
 {
   "result": "Parameter needs to be an array: shared_email_edit"
-}
-```
-
-- `400`
-
-```json
-{
-  "result": "Public dashboards are disabled"
 }
 ```
 

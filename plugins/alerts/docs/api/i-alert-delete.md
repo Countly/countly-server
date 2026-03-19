@@ -105,7 +105,7 @@ Requires `alerts` `Update` permission.
 
 ```json
 {
-  "result": "Failed to delete an alertERROR_DETAILS"
+  "result": "Failed to delete an alertMongoServerError: write conflict"
 }
 ```
 

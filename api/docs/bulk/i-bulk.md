@@ -54,7 +54,6 @@ Processes multiple ingestion payloads in one request. Each valid item is handled
 
 | Setting | Default | Affects | User-visible impact |
 |---|---|---|---|
-| `api.trim_trailing_ending_spaces` | `false` | Request normalization | When enabled, leading/trailing whitespace in request values is trimmed before processing each item. |
 | `api.prevent_duplicate_requests` | `false` | Duplicate detection | When enabled, duplicate payloads can be ignored during ingestion processing. |
 
 ## Response

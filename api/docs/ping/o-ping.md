@@ -16,11 +16,11 @@ Performs a minimal database-read probe and returns service reachability status.
 
 ## Authentication
 
-- No explicit endpoint-level authentication check in handler.
+This endpoint accepts requests without API authentication parameters.
 
 ## Permissions
 
-- No explicit endpoint-level permission check in handler.
+This endpoint does not enforce role-based permission checks.
 
 ## Request Parameters
 

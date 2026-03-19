@@ -1,76 +1,84 @@
 ---
-sidebar_label: "Get Database Stats"
+sidebar_label: "Database Stats"
 ---
 
-# /o/system/database
-
-## Overview
-
-Retrieve database directory disk usage. Returns space consumed by MongoDB data directory.
-
----
+# System Utility - Database Stats
 
 ## Endpoint
-
 
 ```plaintext
 /o/system/database
 ```
 
+## Overview
+
+Returns MongoDB filesystem usage from `dbStats`.
+
 ## Authentication
 
-- **Required**: Global admin permission (required)
-- **HTTP Method**: GET or POST
-- **Permission**: Global Admin only
+Countly API supports three authentication methods:
 
-## Response
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
-### Success Response
-
-```json
-{"overall": {"total": "100 GB", "used": "75 GB", "usage": "75%"}}
-```
-
----
-
-
-### Response Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
-
-### Error Responses
-
-```json
-{
-  "result": "Error"
-}
-```
 
 ## Permissions
 
-- Required: Global admin permission (required)
-
+Requires Global Admin access.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `api_key` | String | Yes | Global admin API key. |
-| `auth_token` | String | No | Global admin auth token as query parameter or `Authorization: Bearer <token>` header. |
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
 
+## Response
+
+### Success Response
+
+```json
+{
+  "result": {
+    "overall": {
+      "usage": 75.0
+    },
+    "details": [
+      {
+        "id": "db",
+        "usage": 75.0,
+        "total": 214748364800,
+        "used": 161061273600,
+        "free": 53687091200,
+        "units": "Byte"
+      }
+    ]
+  }
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `result` | Object | Database-size usage payload. |
+| `result.overall.usage` | Number | Used/total percentage based on dbStats and disk total. |
+| `result.details[]` | Array | Database usage detail rows. |
+| `result.details[].id` | String | Database row identifier (`db`). |
+| `result.details[].total/used/free` | Number | Size values in bytes. |
+
+### Error Responses
+
+```json
+{
+  "result": "...error message..."
+}
+```
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
-
+- Reads MongoDB database statistics and formats them for API output.
 
 ## Database Collections
 
@@ -78,28 +86,10 @@ This endpoint does not read or write database collections.
 
 ## Examples
 
-### Example 1: Get database disk usage
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/o/system/database?api_key=YOUR_GLOBAL_ADMIN_KEY"
+```plaintext
+/o/system/database?api_key=YOUR_API_KEY
 ```
-
----
-
-## Related Endpoints
-
-- [Get Disk Stats](./o-system-disks.md) - All filesystem usage
-- [Database Check](./o-system-dbcheck.md) - DB connection status
-
----
-
-## Implementation Notes
-
-1. **Admin-only**: Requires global admin API key
-2. **MongoDB-specific**: Database data directory size
-3. **Capacity planning**: Track growth over time
 
 ## Last Updated
 
-February 2026
+2026-03-07

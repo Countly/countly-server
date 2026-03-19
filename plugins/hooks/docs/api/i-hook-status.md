@@ -146,7 +146,7 @@ true
 
 ```json
 {
-  "result": "Failed to update hook statuses: ERROR_DETAILS"
+  "result": "Failed to update hook statuses: MongoServerError: write conflict"
 }
 ```
 

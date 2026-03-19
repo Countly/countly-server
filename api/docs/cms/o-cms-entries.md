@@ -84,7 +84,7 @@ Read CMS cache entries for a supported API ID.
 **Status Code**: `500 Internal Server Error`
 ```json
 {
-  "result": "An error occured while fetching CMS entries from DB: <error>"
+  "result": "An error occured while fetching CMS entries from DB: Database query failed"
 }
 ```
 

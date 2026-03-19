@@ -1,80 +1,76 @@
 ---
-sidebar_label: "Get Overall Stats"
+sidebar_label: "Overall Stats"
 ---
 
-# /o/system/overall
-
-## Overview
-
-Get combined system statistics including memory, CPU, and disk information in a single request.
-
----
+# System Utility - Overall Stats
 
 ## Endpoint
-
 
 ```plaintext
 /o/system/overall
 ```
 
+## Overview
+
+Returns combined system summary: host id, platform, cpu, memory, disks, and database stats.
+
 ## Authentication
 
-- **Required**: Global admin permission (required)
-- **HTTP Method**: GET or POST
-- **Permission**: Global Admin only
+Countly API supports three authentication methods:
 
-## Response
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**: Combined memory, CPU, disk, and database stats
-
----
-
-
-### Success Response
-
-```json
-{
-  "result": "Success"
-}
-```
-
-
-### Response Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
-
-### Error Responses
-
-```json
-{
-  "result": "Error"
-}
-```
 
 ## Permissions
 
-- Required: Global admin permission (required)
-
+Requires Global Admin access.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `api_key` | String | Yes | Global admin API key. |
-| `auth_token` | String | No | Global admin auth token as query parameter or `Authorization: Bearer <token>` header. |
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
 
+## Response
+
+### Success Response
+
+```json
+{
+  "result": {
+    "id": "SYSTEM-ID",
+    "platform": "linux",
+    "cpu": {"overall": {"usage": 45.2}, "details": []},
+    "memory": {"overall": {"usage": 72.9}, "details": []},
+    "disks": {"overall": {"usage": 70.0}, "details": []},
+    "database": {"overall": {"usage": 75.0}, "details": []}
+  }
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `result` | Object | Consolidated system snapshot. |
+| `result.id` | String | Host identifier. |
+| `result.platform` | String | Host platform (`linux`, `darwin`, etc.). |
+| `result.cpu/memory/disks/database` | Object | Nested payloads from individual system utility collectors. |
+
+### Error Responses
+
+```json
+{
+  "result": "...error message..."
+}
+```
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
-
+- Aggregates `id`, `cpu`, `memory`, `disks`, `database` via parallel async calls.
 
 ## Database Collections
 
@@ -82,28 +78,10 @@ This endpoint does not read or write database collections.
 
 ## Examples
 
-### Example 1: Get overall stats
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/o/system/overall?api_key=YOUR_GLOBAL_ADMIN_KEY"
+```plaintext
+/o/system/overall?api_key=YOUR_API_KEY
 ```
-
----
-
-## Related Endpoints
-
-- [Get Memory Stats](./o-system-memory.md)
-- [Get CPU Stats](./o-system-cpu.md)
-- [Get Disk Stats](./o-system-disks.md)
-
----
-
-## Implementation Notes
-
-1. **Admin-only**: Requires global admin API key
-2. **Combined data**: All metrics in one request
 
 ## Last Updated
 
-February 2026
+2026-03-07

@@ -12,7 +12,7 @@ sidebar_label: "Export Request"
 
 ## Overview
 
-Calls another API path internally, transforms the returned payload, and returns it as a downloadable export file.
+Calls another API path, transforms the returned payload, and returns it as a downloadable export file.
 
 ## Authentication
 
@@ -30,10 +30,10 @@ Calls another API path internally, transforms the returned payload, and returns 
 |---|---|---|---|
 | `api_key` | String | Yes (or use `auth_token`) | Dashboard API authentication key. |
 | `auth_token` | String | Yes (or use `api_key`) | Dashboard auth token. |
-| `path` | String | Yes | Internal API path to call (for example `/o/analytics/dashboard`). |
+| `path` | String | Yes | Target API path to call (for example `/o/analytics/dashboard`). |
 | `method` | String | No | Optional request method value passed into export pipeline. |
-| `data` | JSON String (Object) | No | Request payload passed to the internal path. |
-| `prop` | String | No | Dot path to extract a nested property from internal response before export. |
+| `data` | JSON String (Object) | No | Request payload passed to the target path. |
+| `prop` | String | No | Dot path to extract a nested property from target response before export. |
 | `projection` | JSON String (Object) | No | Include-only projection applied to returned objects. |
 | `columnNames` | JSON String (Object) | No | Field rename map for output columns. |
 | `mapper` | JSON String (Object) | No | Value transformation map for exported fields. |
@@ -45,7 +45,7 @@ Calls another API path internally, transforms the returned payload, and returns 
 - `path` is normalized to start with `/`.
 - If `data` parsing fails, an empty object is used.
 - If `projection`, `columnNames`, or `mapper` parsing fails, empty/default processing is used.
-- `prop` is applied after internal response is received.
+- `prop` is applied after target response is received.
 
 ## Response
 
@@ -97,7 +97,7 @@ JSON export example (file content):
 
 | Mode | Trigger | Processing Path | Response Shape |
 |---|---|---|---|
-| Direct export mode | `path` is provided without mapping transforms | Calls target internal endpoint and converts returned payload to requested format. | Download stream/body (format depends on `type`) |
+| Direct export mode | `path` is provided without mapping transforms | Calls target API path and converts returned payload to requested format. | Download stream/body (format depends on `type`) |
 | Field-mapped export mode | `projection`, `columnNames`, or `mapper` is provided | Applies field filtering/renaming/value transforms before export conversion. | Download stream/body (format depends on `type`) |
 | Property extraction mode | `prop` is provided | Extracts nested property from target response before export conversion. | Download stream/body (format depends on `type`) |
 
@@ -114,7 +114,7 @@ JSON export example (file content):
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
 | `countly.members` | Authentication validation | Reads caller identity for management-read access validation. |
-| Depends on `path` | Internal request data source | Reads whatever the referenced internal API path reads. |
+| Depends on `path` | Target request data source | Reads whatever the referenced target API path reads. |
 
 ---
 

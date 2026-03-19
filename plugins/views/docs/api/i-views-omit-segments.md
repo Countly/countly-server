@@ -118,7 +118,7 @@ Requires `views` `Delete` permission.
 
 | Action | Trigger | Payload |
 |---|---|---|
-| `view_segments_ommit` | Omit operation starts after root update | `{ update: <omit_list> }` |
+| `view_segments_ommit` | Omit operation starts after root update | `{ update: [omit_list] }` |
 | `view_segments_ommit_complete` | Omit processing finishes | `{ app_id, update, error? }` |
 
 ## Database Collections

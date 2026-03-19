@@ -1,5 +1,5 @@
 ---
-sidebar_label: "User Create"
+sidebar_label: "Dashboard User Create"
 ---
 
 # Users Management - User Create

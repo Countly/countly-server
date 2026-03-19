@@ -1,8 +1,8 @@
 ---
-sidebar_label: "Crashes List Read"
+sidebar_label: "Crash Groups Read"
 ---
 
-# /o?method=crashes
+# Crashes - Crash Groups Read
 
 ## Endpoint
 
@@ -10,234 +10,203 @@ sidebar_label: "Crashes List Read"
 /o?method=crashes
 ```
 
-
 ## Overview
 
-Fetch crash group list or details. Supports multiple query modes: list all crash groups, get details for a specific crash group, fetch users affected by a crash group, get breakdown by property, or retrieve aggregated crash metrics.
-
----
+Reads crash data in different modes: crash groups table, single crash group detail, affected user list, simple group list, or crash graph summary.
 
 ## Authentication
-- **Required Permission**: `Read` (crashes feature)
-- **HTTP Method**: GET or POST
-- **Content-Type**: application/x-www-form-urlencoded
 
----
+Countly API supports three authentication methods:
+
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
 
 ## Permissions
 
-- Required Permission: Read (crashes feature)
+Requires `crashes` `Read` permission.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes (or use auth_token) | API key for authentication |
-| `app_id` | String | Yes | Application ID |
-| `group` | String | No | Crash group ID (for specific group operations) |
-| `list` | Boolean | No | Return list of all crash groups |
-| `userlist` | Boolean | No | Return list of affected user UIDs for a group |
-| `breakdown` | Boolean | No | Get property breakdown for a group |
-| `field` | String | No | Property field for breakdown (used with `breakdown=true`) |
-| `graph` | Boolean | No | Return aggregated crash metrics and trends |
-| `period` | String | No | Time period for graph data |
-| `query` | JSON | No | Search/filter crashes by properties |
-| `sSearch` | String | No | Text search on crash name |
-| `filter` | String | No | Filter by status (crash-resolved, crash-hidden, crash-unresolved, crash-nonfatal, crash-fatal, crash-new, crash-viewed) |
-
----
+|---|---|---|---|
+| `method` | String | Yes | Must be `crashes`. |
+| `api_key` | String | Yes (or use `auth_token`) | API key for authentication. |
+| `auth_token` | String | No | Auth token as query parameter or `countly-token` header. |
+| `app_id` | String | Yes | App id. |
+| `group` | String | No | Crash group id for group modes. |
+| `userlist` | Boolean/String | No | With `group`, returns affected user ids array. |
+| `list` | Boolean/String | No | Returns simplified crash groups list. |
+| `graph` | Boolean/String | No | Returns aggregate crashes/users counters and trend data. |
+| `query` | String (JSON Object) | No | Filter object for table mode. |
+| `sSearch` | String | No | Regex search on crash name in table mode. |
+| `filter` | String | No | Table mode preset (`crash-resolved`, `crash-hidden`, `crash-unresolved`, `crash-nonfatal`, `crash-fatal`, `crash-new`, `crash-viewed`, `crash-reoccurred`, `crash-resolving`). |
+| `iDisplayStart` | Number | No | Table mode offset. |
+| `iDisplayLength` | Number | No | Table mode page size. |
+| `iSortCol_0` | Number | No | Table mode sort column index. |
+| `sSortDir_0` | String | No | Table mode sort direction (`asc`/`desc`). |
+| `sEcho` | String | No | Echo id returned in table mode response. |
 
 ## Configuration Impact
 
 | Setting | Default | Affects | User-visible impact |
 |---|---|---|---|
-| `api.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `crashes.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `dashboards.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `security.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.cdn.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.conditions_per_paramaeters.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.device_id.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.html.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.js.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.maximum_allowed_parameters.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.passwordSecret.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.path.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.report_limit.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.web.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `tracking.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `white-labeling.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `COUNTLY_CONFIG_HOSTNAME` | Environment-defined | Runtime environment control used by endpoint execution path. | Incorrect values can change runtime behavior, callback routing, or error conditions. |
-| `COUNTLY_CONFIG_PROTOCOL` | Environment-defined | Runtime environment control used by endpoint execution path. | Incorrect values can change runtime behavior, callback routing, or error conditions. |
-| `COUNTLY_CONTAINER` | Environment-defined | Runtime environment control used by endpoint execution path. | Incorrect values can change runtime behavior, callback routing, or error conditions. |
+| `crashes.report_limit` | Plugin config | Group detail mode | Limits number of latest reports included in `data` for single group response. |
 
 ## Response
 
-### List Mode
 ### Success Response
+
+Table mode:
+
+```json
+{
+  "sEcho": "1",
+  "iTotalRecords": 42,
+  "iTotalDisplayRecords": 12,
+  "aaData": [
+    {
+      "_id": "crash_group_1",
+      "name": "NullPointerException",
+      "reports": 7,
+      "users": 5,
+      "is_resolved": false,
+      "nonfatal": true
+    }
+  ]
+}
+```
+
+Group detail mode (`group`):
+
+```json
+{
+  "_id": "crash_group_1",
+  "name": "NullPointerException",
+  "reports": 7,
+  "users": 5,
+  "total": 1200,
+  "url": "b2b5...",
+  "data": [
+    {
+      "_id": "65f1f7b2ad5b9b001f12ab34",
+      "group": "crash_group_1",
+      "uid": "user-123"
+    }
+  ]
+}
+```
+
+Group user list mode (`group` + `userlist=true`):
 
 ```json
 [
-  {"_id": "group_id_1", "name": "NullPointerException"},
-  {"_id": "group_id_2", "name": "OutOfMemoryError"}
+  "user-123",
+  "user-456"
 ]
 ```
 
-### User List Mode
-```json
-["user_123", "user_456", "user_789"]
-```
+Simple list mode (`list=true`):
 
-### Breakdown Mode
 ```json
-{
-  "app_id": "YOUR_APP_ID",
-  "group": "group_id",
-  "field": "os",
-  "data": {
-    "iOS": 45,
-    "Android": 32,
-    "Windows": 12
+[
+  {
+    "_id": "crash_group_1",
+    "name": "NullPointerException"
   }
-}
+]
 ```
 
-### Graph/Details Mode
+Graph mode (`graph=true`):
+
 ```json
 {
-  "users": {"total": 500, "affected": 120, "fatal": 30, "nonfatal": 90},
-  "crashes": {
-    "total": 450,
-    "unique": 15,
-    "resolved": 3,
-    "unresolved": 12,
-    "fatal": 40,
-    "nonfatal": 410,
-    "news": 2,
-    "renewed": 1
+  "users": {
+    "total": 1200,
+    "affected": 180,
+    "fatal": 20,
+    "nonfatal": 160
   },
-  "data": {...}
+  "crashes": {
+    "total": 420,
+    "unique": 35,
+    "resolved": 10,
+    "unresolved": 25
+  },
+  "data": {}
 }
 ```
-
----
-
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `(root)` | Object or Array | Response shape depends on mode. |
+| `aaData` | Array | Crash groups rows in table mode. |
+| `data` | Array/Object | Group report items (group detail mode) or time object (graph mode). |
 
 ### Error Responses
 
+- `400`
+
 ```json
 {
-  "result": "Error"
+  "result": "Crash group not found"
 }
 ```
 
-## Examples
-
-### Example 1: Get list of all crash groups
-
-**Request**:
-```bash
-curl -X GET "https://your-server.com/o?method=crashes" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID" \
-  -d "list=true"
-```
-
-### Example 2: Get details for a specific crash group
-
-**Request**:
-```bash
-curl -X GET "https://your-server.com/o?method=crashes" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID" \
-  -d "group=crash_group_123"
-```
-
-### Example 3: Get users affected by a crash
-
-**Request**:
-```bash
-curl -X GET "https://your-server.com/o?method=crashes" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID" \
-  -d "group=crash_group_123" \
-  -d "userlist=true"
-```
-
-### Example 4: Get crash breakdown by OS
-
-**Request**:
-```bash
-curl -X GET "https://your-server.com/o?method=crashes" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID" \
-  -d "group=crash_group_123" \
-  -d "breakdown=true" \
-  -d "field=os"
-```
-
-### Example 5: Get crash graph/metrics
-
-**Request**:
-```bash
-curl -X GET "https://your-server.com/o?method=crashes" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID" \
-  -d "graph=true" \
-  -d "period=month"
-```
-
----
-
-## Processing Details
-
-- `list=true`: Returns sanitized list of crash groups
-- `group` + `userlist=true`: Fetches UIDs from app_crashusers collection
-- `group` + `breakdown=true`: Aggregates drill_events by specified property
-- `group` (no params): Returns full crash group details with latest reports
-- `graph=true`: Returns aggregated statistics across all crash groups
-
----
-
+Standard authentication/authorization errors from read validation.
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
+- Default mode is DataTables-style crash group table.
+- `group` mode loads one crash group plus latest drill reports.
+- `list=true` returns simplified list only when app user count is below `10000`; otherwise returns empty array.
+- Hidden crashes are excluded by default in table mode unless explicitly filtered.
 
 ## Database Collections
 
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
-| `app_crashgroups` | Crash data domain | Stores crash reports, groups, comments, and crash-related metadata touched by this endpoint. |
-| `app_crashusers` | User/member aggregates | Stores user and member records used by this endpoint. |
-| `drill_events` | Drill event rows | Stores granular event records queried or updated by this endpoint. |
+| `countly.app_crashgroups{appId}` | Crash groups source | Reads group documents, metadata, and counters. |
+| `countly.app_crashusers{appId}` | Affected users source | Reads user ids for crash group userlist mode. |
+| `countly.app_users{appId}` | Total users source | Reads total user count for several modes. |
+| `countly_drill.drill_events` | Crash report source | Reads latest crash reports for group detail mode. |
 
 ---
 
-## Error Handling
+## Examples
 
-| Status | Message | Cause |
-|--------|---------|-------|
-| 401 | Unauthorized | Insufficient read permissions |
-| 400 | Missing parameter | Missing required parameters |
-| 500 | Server error | Database failure |
+### Table mode query
 
----
+```plaintext
+/o?method=crashes&api_key=YOUR_API_KEY&app_id=6991c75b024cb89cdc04efd2&iDisplayStart=0&iDisplayLength=20&sEcho=1
+```
+
+### Group detail query
+
+```plaintext
+/o?method=crashes&api_key=YOUR_API_KEY&app_id=6991c75b024cb89cdc04efd2&group=crash_group_1
+```
+
+### Group users query
+
+```plaintext
+/o?method=crashes&api_key=YOUR_API_KEY&app_id=6991c75b024cb89cdc04efd2&group=crash_group_1&userlist=true
+```
+
+### Graph summary query
+
+```plaintext
+/o?method=crashes&api_key=YOUR_API_KEY&app_id=6991c75b024cb89cdc04efd2&graph=true&period=30days
+```
 
 ## Related Endpoints
 
-- [/o?method=reports](./o-reports.md) - Fetch specific report details
-- [/o?method=user_crashes](./o-user-crashes.md) - Get crashes for a specific user
+- [Crashes - Reports Read](o-reports.md)
+- [Crashes - User Crashes Read](o-user-crashes.md)
 
 ## Last Updated
 
-February 2026
+2026-03-05

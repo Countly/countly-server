@@ -105,6 +105,7 @@ Returns all presets visible to the current user, including ownership and sharing
 |---|---|---|---|
 | Global admin listing | Caller is global admin | Returns all presets without ownership/share filtering. | Raw array of preset objects |
 | Scoped listing | Caller is not global admin | Returns only presets visible by owner/share rules (owner, all-users, shared emails, or shared groups). | Raw array of preset objects |
+| Empty/error branch | Aggregation returns no rows or DB error occurs | Handler returns error branch instead of empty array. | Wrapped object: `{ "result": "Error getting presets" }` |
 
 ### Impact on Other Data
 
@@ -125,6 +126,10 @@ Returns all presets visible to the current user, including ownership and sharing
 ```plaintext
 /o/date_presets/getAll?api_key=YOUR_API_KEY
 ```
+
+## Limitations
+
+- Current implementation returns `500` with `Error getting presets` when no presets are visible, instead of returning an empty `[]`.
 
 ---
 

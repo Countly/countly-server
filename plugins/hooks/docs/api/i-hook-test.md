@@ -276,7 +276,7 @@ Decoded `mock_data` example:
 
 ```json
 {
-  "result": "Hook test failed.ERROR_DETAILS"
+  "result": "Hook test failed. ECONNREFUSED: connection refused"
 }
 ```
 

@@ -22,6 +22,7 @@ Countly API supports three authentication methods:
 2. **Auth Token** (parameter): `auth_token=YOUR_AUTH_TOKEN`
 3. **Auth Token** (header): `countly-token: YOUR_AUTH_TOKEN`
 
+
 ## Permissions
 
 - Required permission: Global Admin.
@@ -64,7 +65,12 @@ Countly API supports three authentication methods:
 
 ```json
 {
-  "result": "filesystem error value"
+  "result": {
+    "errno": -2,
+    "code": "ENOENT",
+    "syscall": "open",
+    "path": "/path/to/log/countly-api.log"
+  }
 }
 ```
 

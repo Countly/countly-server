@@ -85,8 +85,8 @@ This endpoint supports two authentication modes:
 
 | Field | Type | Description |
 |---|---|---|
-| `types` | Array | Reserved array in response envelope (returned empty in this handler path). |
-| `domains` | Array | Reserved array in response envelope (returned empty in this handler path). |
+| `types` | Array | Reserved array in response envelope (returned empty in this response path). |
+| `domains` | Array | Reserved array in response envelope (returned empty in this response path). |
 | `data` | Array | Matching heatmap interaction entries. |
 | `data[].c` | Number | Interaction count for entry. |
 | `data[].sg.type` | String | Interaction type (`click` or `scroll`). |
@@ -151,10 +151,10 @@ This endpoint supports two authentication modes:
 
 | Mode | Trigger | Processing Path | Response Shape |
 |---|---|---|---|
-| Standard auth mode | No `countly-token` header | Uses `validateRead` then runs heatmap query. | Raw object: `{ types, data, domains }`. |
+| Standard auth mode | No `countly-token` header | Uses `read-permission validation` then runs heatmap query. | Raw object: `{ types, data, domains }`. |
 | Token auth mode | `countly-token` header present | Resolves app by `app_key`, verifies token, optionally extends token, then runs heatmap query. | Raw object: `{ types, data, domains }` (with token headers when extended). |
-| Scroll mode | `actionType=scroll` | Matches `sg.view=<view>`, returns scroll positions (`y`). | Same raw object shape. |
-| Click mode | `actionType=click` | Matches `up.lv=<view>`, returns click coordinates (`x`,`y`). | Same raw object shape. |
+| Scroll mode | `actionType=scroll` | Matches `sg.view=[view]`, returns scroll positions (`y`). | Same raw object shape. |
+| Click mode | `actionType=click` | Matches `up.lv=[view]`, returns click coordinates (`x`,`y`). | Same raw object shape. |
 
 ### Impact on Other Data
 

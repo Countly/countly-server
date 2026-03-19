@@ -1,82 +1,84 @@
 ---
-sidebar_label: "Get CPU Stats"
+sidebar_label: "CPU Stats"
 ---
 
-# /o/system/cpu
-
-## Overview
-
-Retrieve CPU usage statistics. Returns system-wide average, per-core breakdown, and utilization percentage.
-
----
+# System Utility - CPU Stats
 
 ## Endpoint
-
 
 ```plaintext
 /o/system/cpu
 ```
 
+## Overview
+
+Returns CPU usage sampled from `/proc/stat` over a short interval.
+
 ## Authentication
 
-- **Required**: Global admin permission (required)
-- **HTTP Method**: GET or POST
-- **Permission**: Global Admin only
+Countly API supports three authentication methods:
 
-## Response
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
-### Success Response
-
-```json
-{
-  "overall": {"usage": "45.2%", "cores": 8},
-  "cores": [
-    {"id": "cpu0", "usage": "42.1%"},
-    {"id": "cpu1", "usage": "48.3%"}
-  ]
-}
-```
-
----
-
-
-### Response Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
-
-### Error Responses
-
-```json
-{
-  "result": "Error"
-}
-```
 
 ## Permissions
 
-- Required: Global admin permission (required)
-
+Requires Global Admin access.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `api_key` | String | Yes | Global admin API key. |
-| `auth_token` | String | No | Global admin auth token as query parameter or `Authorization: Bearer <token>` header. |
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
 
+## Response
+
+### Success Response
+
+```json
+{
+  "result": {
+    "overall": {
+      "usage": 45.2
+    },
+    "details": [
+      {
+        "id": "cpu0",
+        "usage": 42.1,
+        "total": 12345,
+        "free": 6789,
+        "used": 5556,
+        "units": "Difference"
+      }
+    ]
+  }
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `result` | Object | CPU usage payload. |
+| `result.overall.usage` | Number | Overall CPU usage percentage across sampled interval. |
+| `result.details[]` | Array | Per-CPU detail rows. |
+| `result.details[].id` | String | CPU identifier (for example `cpu0`). |
+| `result.details[].usage` | Number | Usage percentage for the CPU row. |
+
+### Error Responses
+
+```json
+{
+  "result": "...error message..."
+}
+```
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
-
+- Reads `/proc/stat` twice with ~1s delay and computes usage delta.
 
 ## Database Collections
 
@@ -84,28 +86,10 @@ This endpoint does not read or write database collections.
 
 ## Examples
 
-### Example 1: Get CPU usage
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/o/system/cpu?api_key=YOUR_GLOBAL_ADMIN_KEY"
+```plaintext
+/o/system/cpu?api_key=YOUR_API_KEY
 ```
-
----
-
-## Related Endpoints
-
-- [Get Memory Stats](./o-system-memory.md) - Memory information
-- [Health Check](./o-system-healthcheck.md) - System health
-
----
-
-## Implementation Notes
-
-1. **Admin-only**: Requires global admin API key
-2. **Real-time data**: Fresh on each call
-3. **Per-core info**: Detailed breakdown available
 
 ## Last Updated
 
-February 2026
+2026-03-07

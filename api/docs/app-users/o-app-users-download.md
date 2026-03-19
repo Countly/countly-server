@@ -88,6 +88,11 @@ HTTP 200 with streamed file content
 | Exports collection fallback | Archive size resolves to `0` | Streams rows from `countly.exports` as JSON documents. | HTTP stream response (JSON stream) |
 | Task-ID resolution | `id` is a task ID | Looks up task result, maps to export filename, then runs archive/fallback flow. | Same as stream modes above |
 
+### Response Header Notes
+
+- The fallback JSON stream branch still sends `Content-Type: application/x-gzip` in current implementation.
+- Consumers should treat fallback payload as JSON stream by body format, not only by content-type header.
+
 ## Database Collections
 
 | Collection | Used for | Data touched by this endpoint |
@@ -121,6 +126,7 @@ HTTP 200 with streamed file content
 ## Limitations
 
 - Successful response is file/stream output, not a standard JSON payload.
+- Fallback JSON stream uses a legacy gzip content-type header.
 
 ---
 ## Related Endpoints

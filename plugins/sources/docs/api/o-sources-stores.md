@@ -20,7 +20,7 @@ This endpoint does not require API authentication parameters.
 
 ## Permissions
 
-No explicit permission check is applied by this handler.
+This endpoint does not require role-based permission checks.
 
 ## Request Parameters
 

@@ -2,7 +2,7 @@
 sidebar_label: "Get Multiple Widgets"
 ---
 
-# /o/feedback/multiple-widgets-by-id
+# Star Rating - Get Multiple Widgets
 
 ## Endpoint
 
@@ -10,133 +10,98 @@ sidebar_label: "Get Multiple Widgets"
 /o/feedback/multiple-widgets-by-id
 ```
 
-
 ## Overview
 
-Fetch multiple feedback widgets by their IDs. Efficient bulk retrieval for specific widgets. Returns complete widget configurations including appearance and targeting
-
----
-
-## /o/feedback/multiple-widgets-by-id
+Returns multiple widgets by ID list.
 
 ## Authentication
 
-- **Required Permission**: Feature access
-- **HTTP Methods**: All methods supported (GET, POST, PUT, DELETE)
-- **Content-Type**: application/x-www-form-urlencoded or JSON
+This endpoint accepts requests without API authentication parameters.
 
-**HTTP Method Flexibility:**  
-All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchangeably. You can use GET for simpler queries or POST for large payloads. All examples show the conventional method, but any method works identically.
+## Permissions
+
+This endpoint does not enforce role-based feature permission checks.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes | Your API authentication key |
-| `app_id` | String | Yes | Target application ID |
+|---|---|---|---|
+| `widgets` | String (JSON Array) | Yes | Array of widget ID strings. |
 
 ## Response
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
 ### Success Response
 
 ```json
-{"result": "success", "data": {}}
+[
+  {
+    "_id": "67a3d2f5c1a23b0f4d6c0201",
+    "app_id": "6991c75b024cb89cdc04efd2",
+    "type": "rating",
+    "status": true
+  }
+]
 ```
-
-#### Error Response
-**Status Code**: `400 Bad Request` or `500 Internal Server Error`
-
-**Body**:
-```json
-{"result": "error", "message": "Error description"}
-```
-
----
-
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `(root)` | Array | Widget list for requested IDs. |
+| `[]` | Object | One widget document. |
 
 ### Error Responses
 
+- `500`
+
 ```json
 {
-  "result": "Error"
+  "result": "You should provide widget ids array."
 }
 ```
 
-## Permissions
+- `500`
 
-- Required Permission: Feature access
+```json
+{
+  "result": "database error message"
+}
+```
+
+- `404` (only in `from_survey` branch)
+
+```json
+{
+  "result": "Widgets not found."
+}
+```
 
 ## Behavior/Processing
 
-- Validates request parameters
-- Processes the operation
-- Returns appropriate response
-
----
-
-## Examples
-
-### Example 1: Basic Request
-
-**Description**: Standard request using POST method
-
-**Request** (POST):
-```bash
-curl -X POST "https://your-server.com/o/feedback/multiple-widgets-by-id" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
-### Example 2: Alternative GET Method
-
-**Description**: Same request using GET (both methods work identically)
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/o/feedback/multiple-widgets-by-id?api_key=YOUR_API_KEY&app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
----
-
-## Technical Notes
+- Parses `widgets` JSON array.
+- Converts each item to ObjectID and queries `feedback_widgets` with `$in`.
+- Returns empty array when no docs found in normal branch.
 
 ## Database Collections
 
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
-| `countly.feedback_widgets` | Stores feedback/NPS widget configuration and metadata per app. | Reads multiple widget documents by ID for bulk widget retrieval. |
+| `countly.feedback_widgets` | Widget source | Reads widgets by provided ID list. |
+
+## Examples
+
+### Read two widgets by IDs
+
+```plaintext
+/o/feedback/multiple-widgets-by-id?
+  widgets=["67a3d2f5c1a23b0f4d6c0201","67a3d2f5c1a23b0f4d6c0202"]
+```
+
 ## Related Endpoints
 
-- See feature documentation for related operations
-
----
-
-## Enterprise
-
-Plugin: star-rating
-Endpoint: /o/feedback/multiple-widgets-by-id
+- [Star Rating - Get Widget Details](o-feedback-widget.md)
+- [Star Rating - List All Widgets](o-feedback-widgets.md)
 
 ## Last Updated
 
-February 2026
+2026-03-07

@@ -82,7 +82,7 @@ Renders a dashboard view and returns the saved screenshot path.
 
 ```json
 {
-  "result": "Error creating screenshot. Please check logs for more information."
+  "result": "Error creating screenshot: Browser context closed"
 }
 ```
 

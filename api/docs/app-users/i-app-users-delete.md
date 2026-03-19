@@ -1,5 +1,5 @@
 ---
-sidebar_label: "User Delete"
+sidebar_label: "App User Delete"
 ---
 
 # /i/app_users/delete

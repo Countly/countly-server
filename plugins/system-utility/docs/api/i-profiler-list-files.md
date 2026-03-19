@@ -1,79 +1,70 @@
 ---
-sidebar_label: "List Profiler Files"
+sidebar_label: "Profiler Files"
 ---
 
-# /i/profiler/list-files
-
-## Overview
-
-List all available profiler output files from previous profiling sessions. Returns array of file names with metadata.
-
----
+# System Utility - List Profiler Files
 
 ## Endpoint
-
 
 ```plaintext
 /i/profiler/list-files
 ```
 
+## Overview
+
+Returns profiler output file list from profile directory.
+
 ## Authentication
 
-- **Required**: Global admin permission (required)
-- **HTTP Method**: GET or POST
-- **Permission**: Global Admin only
+Countly API supports three authentication methods:
 
-## Response
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
-### Success Response
-
-```json
-[
-  "master-12345.cpuprofile",
-  "master-12346.cpuprofile"
-]
-```
-
----
-
-
-### Response Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
-
-### Error Responses
-
-```json
-{
-  "result": "Error"
-}
-```
 
 ## Permissions
 
-- Required: Global admin permission (required)
-
+Requires Global Admin access.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `api_key` | String | Yes | Global admin API key. |
-| `auth_token` | String | No | Global admin auth token as query parameter or `Authorization: Bearer <token>` header. |
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
 
+## Response
+
+### Success Response
+
+```json
+{
+  "result": [
+    "master-12345.cpuprofile",
+    "master-12345.heapprofile",
+    "master-12345.coverage"
+  ]
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `result` | Array of String | Profiler artifact file names currently available for download. |
+
+### Error Responses
+
+```json
+{
+  "result": "Profiler files couldn't be found"
+}
+```
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
-
+- Returns file list from profiler directory when present.
 
 ## Database Collections
 
@@ -81,26 +72,10 @@ This endpoint does not read or write database collections.
 
 ## Examples
 
-### Example 1: List profiler files
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/i/profiler/list-files?api_key=YOUR_GLOBAL_ADMIN_KEY"
+```plaintext
+/i/profiler/list-files?api_key=YOUR_API_KEY
 ```
-
----
-
-## Related Endpoints
-
-- [Download All](./i-profiler-download-all.md) - Get all files
-
----
-
-## Implementation Notes
-
-1. **Admin-only**: Requires global admin API key
-2. **File listing**: Shows available results
 
 ## Last Updated
 
-February 2026
+2026-03-07

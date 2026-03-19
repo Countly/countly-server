@@ -68,7 +68,7 @@ Clear CMS cache entries from `countly.cms_cache`.
 **Status Code**: `500 Internal Server Error`
 ```json
 {
-  "result": "An error occured while clearing CMS cache: <error>"
+  "result": "An error occured while clearing CMS cache: Delete operation failed"
 }
 ```
 

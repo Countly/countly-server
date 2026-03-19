@@ -71,13 +71,6 @@ Create a grouped event definition in `countly.event_groups`.
 **Status Code**: `400 Bad Request`
 ```json
 {
-  "result": "Error: could not parse args"
-}
-```
-
-**Status Code**: `400 Bad Request`
-```json
-{
   "result": "Error: Invalid type for source_events"
 }
 ```
@@ -99,7 +92,7 @@ Create a grouped event definition in `countly.event_groups`.
 **Status Code**: `500 Internal Server Error`
 ```json
 {
-  "result": "error: <db error>"
+  "result": "error: duplicate key error collection: event_groups index: _id_ dup key"
 }
 ```
 
@@ -140,6 +133,7 @@ Create a grouped event definition in `countly.event_groups`.
 ## Limitations
 
 - `args` must be valid JSON.
+- JSON parse failures for `args` are not handled by a dedicated endpoint error branch.
 - Group ID generation includes timestamp input, so repeated create calls produce different IDs even with the same payload.
 
 ---

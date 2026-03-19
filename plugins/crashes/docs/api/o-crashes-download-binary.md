@@ -2,7 +2,7 @@
 sidebar_label: "Binary Download"
 ---
 
-# /o/crashes/download_binary
+# Crashes - Download Binary Dump
 
 ## Endpoint
 
@@ -10,126 +10,101 @@ sidebar_label: "Binary Download"
 /o/crashes/download_binary
 ```
 
-
 ## Overview
 
-Download the binary crash dump file (minidump) for a crash report. Returns the binary dump content with appropriate HTTP headers for file download.
-
----
+Downloads binary minidump for one crash report.
 
 ## Authentication
-- **Required Permission**: `Read` (crashes feature)
-- **HTTP Method**: GET or POST
-- **Content-Type**: application/x-www-form-urlencoded
 
----
+Countly API supports three authentication methods:
+
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
 
 ## Permissions
 
-- Required Permission: Read (crashes feature)
+Requires `crashes` `Read` permission.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes (or use auth_token) | API key for authentication |
-| `app_id` | String | Yes | Application ID |
-| `crash_id` | String | Yes | Crash/Report ID to download binary for |
-
----
+|---|---|---|---|
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
+| `app_id` | String | Yes | Target app ID for validation context. |
+| `crash_id` | String | Yes | Crash report `_id` in `drill_events`. |
 
 ## Response
 
-**HTTP Headers**:
 ### Success Response
 
-```
-Content-Type: application/octet-stream
-Content-Disposition: attachment;filename=crash_id_bin.dmp
-Content-Length: <file_size>
-```
+Binary stream download headers:
 
-**Body**: Binary crash dump file (base64 decoded)
+- `Content-Type: application/octet-stream`
+- `Content-Disposition: attachment;filename={crash_id}_bin.dmp`
 
----
-
+Body contains decoded bytes from `binary_crash_dump` field.
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `(stream body)` | Binary | Decoded binary dump bytes from `binary_crash_dump`. |
+| `Content-Type` | Header | `application/octet-stream` |
+| `Content-Disposition` | Header | Attachment filename `{crash_id}_bin.dmp`. |
 
 ### Error Responses
 
+- `400`
+
 ```json
 {
-  "result": "Error"
+  "result": "Please provide crash_id parameter"
 }
 ```
 
-## Examples
+- `400`
 
-### Example 1: Download crash binary dump
-
-**Request**:
-```bash
-curl -X GET "https://your-server.com/o/crashes/download_binary" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID" \
-  -d "crash_id=crash_123" \
-  --output crash_123_bin.dmp
+```json
+{
+  "result": "Crash not found"
+}
 ```
 
----
+- `400`
 
-## Processing Details
+```json
+{
+  "result": "Crash does not have binary_dump"
+}
+```
 
-The endpoint:
-1. Validates read permissions
-2. Requires `crash_id` parameter
-3. Fetches crash document from drill_events
-4. Checks if binary_crash_dump exists and is base64 encoded
-5. Decodes base64 to binary
-6. Sends as downloadable file with .dmp extension
-7. Filename: `{crash_id}_bin.dmp`
-
----
-
+Standard auth/permission errors from read validation can also be returned.
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
+- Reads crash report from `countly_drill.drill_events` by `_id`.
+- Decodes base64 `binary_crash_dump` and streams as `.dmp` file.
 
 ## Database Collections
 
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
-| `drill_events` | Drill event rows | Stores granular event records queried or updated by this endpoint. |
-| `binary_crash_dump` | Crash data domain | Stores crash reports, groups, comments, and crash-related metadata touched by this endpoint. |
+| `countly_drill.drill_events` | Crash report source | Reads crash record by `_id` and streams `binary_crash_dump`. |
 
----
+## Examples
 
-## Error Handling
+### Download binary dump for a crash event
 
-| Status | Message | Cause |
-|--------|---------|-------|
-| 401 | Unauthorized | Insufficient read permissions |
-| 400 | Please provide crash_id parameter | crash_id missing |
-| 400 | Crash not found | crash_id doesn't exist |
-| 400 | Crash does not have binary_dump | binary_crash_dump field is empty |
-| 500 | Crash fetching error | Database failure |
-
----
-
-## Related Endpoints
-
-- [/o/crashes/download_stacktrace](./o-crashes-download-stacktrace.md) - Download stacktrace text file
-- [/o?method=reports](./o-reports.md) - Fetch crash report details
+```plaintext
+/o/crashes/download_binary?
+  api_key=YOUR_API_KEY&
+  app_id=6991c75b024cb89cdc04efd2&
+  crash_id=67a3d2f5c1a23b0f4d6c0001
+```
 
 ## Last Updated
 
-February 2026
+2026-03-07

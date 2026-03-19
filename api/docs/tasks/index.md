@@ -32,7 +32,7 @@ Tasks endpoints manage asynchronous jobs stored in the task manager (create/reru
 ## Behavior Notes
 
 - Task execution can be synchronous to caller (status response) but usually results are asynchronous.
-- Some endpoints return wrapped `result` payloads (`returnMessage`), while others return raw objects (`returnOutput`).
+- Some endpoints return wrapped `result` payloads, while others return raw objects.
 - Visibility rules combine task ownership (`creator`) and global-task visibility.
 
 ## Related Endpoints

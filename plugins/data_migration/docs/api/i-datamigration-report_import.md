@@ -16,14 +16,14 @@ Receives import status updates from the target server and updates the originatin
 
 ## Authentication
 
-No user authentication validator is called in this handler. Access is controlled by matching:
+Request authorization for this endpoint is based on token matching rather than API user authentication. Access is controlled by matching:
 
 - `exportid` and
 - `token` (`server_token` stored in migration record).
 
 ## Permissions
 
-No explicit permission check in this handler.
+No user role permission check is required for this callback endpoint.
 
 ## Request Parameters
 
@@ -92,7 +92,7 @@ No explicit permission check in this handler.
 | Mode | Trigger | Processing Path | Response Shape |
 |---|---|---|---|
 | Finalized import callback | `status=finished` and valid token/export | Updates migration progress to `finished`, optionally applies app redirect URLs. | Wrapped `{ "result": "ok" }` |
-| Non-finished callback | `status` present but not `finished` | Updates migration progress state using provided status/message. | No explicit success payload in this branch |
+| Non-finished callback | `status` present but not `finished` | Updates migration progress state using provided status/message. | No success payload in this branch |
 | Invalid callback | Missing/invalid `exportid`, `token`, or `status` | Stops and returns error key. | Wrapped error key in `result` |
 
 ### Impact on Other Data

@@ -69,7 +69,7 @@ Single plugin response:
 | Field | Type | Description |
 |---|---|---|
 | `plugins` | Object | App plugin configuration object. |
-| `plugins.<pluginName>` | Object | Configuration for each plugin key. |
+| `plugins.[pluginName]` | Object | Configuration for each plugin key. |
 
 ### Error Responses
 

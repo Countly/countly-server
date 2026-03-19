@@ -1,58 +1,51 @@
 ---
-sidebar_label: "Fetch Remote Config (Legacy)"
+sidebar_label: "SDK Fetch (Legacy)"
 ---
 
-# /o/sdk?method=fetch_remote_config
-
-## Overview
-
-**Legacy alias** for retrieving remote configuration values. This endpoint provides identical functionality to `/o/sdk?method=rc` and exists for backwards compatibility. Fetches parameter values based on AB test enrollment, matching conditions, or default values.
-
-**Recommended**: Use `/o/sdk?method=rc` instead. This endpoint will continue to work but is considered legacy.
-
----
+# Remote Config - SDK Fetch (Legacy Alias)
 
 ## Endpoint
-
 
 ```plaintext
 /o/sdk?method=fetch_remote_config
 ```
 
+## Overview
+
+Legacy alias for SDK remote config read. This endpoint uses the same runtime path as `method=rc` and returns the same value payload format.
+
 ## Authentication
 
-- **Required Parameter**: `app_key` (public app key, not API key)
-- **HTTP Methods**: GET recommended (all methods supported)
+SDK authentication is used.
+
+Required SDK identity parameters:
+- `app_key`
+- `device_id`
+
+## Permissions
+
+No dashboard permission check is applied. Access is determined by SDK app/device context.
 
 ## Request Parameters
 
-All parameters are **identical** to `/o/sdk?method=rc`.
-
-**Core Parameters**:
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `app_key` | String | Yes | Application key (public, used by SDK) |
-| `device_id` | String | Yes | Unique device identifier |
-| `keys` | String (JSON Array) | No | Specific parameter keys to fetch |
-| `omit_keys` | String (JSON Array) | No | Parameter keys to exclude |
-| `metrics` | String (JSON Object) | No | User metrics/properties for condition matching |
-| `oi` | String | No | Enroll in AB tests if eligible ("1" = enable) |
-
-## Configuration Impact
-
-| Setting | Default | Affects | User-visible impact |
 |---|---|---|---|
-| `remote-config.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.condition.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.data.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.js.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.parameters.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
+| `method` | String | Yes | Must be `fetch_remote_config`. |
+| `app_key` | String | Yes | App key used by SDK endpoints. |
+| `device_id` | String | Yes | Device/user identifier for config resolution. |
+| `keys` | String (JSON Array) | No | Include only listed parameter keys. |
+| `omit_keys` | String (JSON Array) | No | Exclude listed parameter keys. |
+| `metrics` | String (JSON Object) or Object | No | User properties used for condition matching. |
+| `oi` | Number/String | No | Enrollment toggle used by RC/AB flow when supported by SDK request context. |
+| `timestamp` | Number | No | Optional event timestamp context. |
+| `city` | String | No | Optional location context. |
+| `country_code` | String | No | Optional location context. |
+| `location` | String | No | Optional location context. |
+| `tz` | String | No | Optional timezone context. |
+| `ip_address` | String | No | Optional IP override for geo-derived properties. |
 
 ## Response
 
-**Identical** to `/o/sdk?method=rc`. Returns JSON object with parameter key-value pairs.
-
-**Success Response Example**:
 ### Success Response
 
 ```json
@@ -63,142 +56,70 @@ All parameters are **identical** to `/o/sdk?method=rc`.
 }
 ```
 
----
-
-
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `(root)` | Object | Remote config key-value map for matched parameters. |
+| `{parameter_key}` | String/Number/Boolean/Object/Array | Resolved parameter value. |
 
 ### Error Responses
 
+- `400`
+
 ```json
 {
-  "result": "Error"
+  "result": "Error while fetching remote config data."
 }
 ```
 
-## Permissions
-
-- No dashboard permission check is applied. Access is validated by SDK app credentials (`app_key` and `device_id`).
-
-
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
-
+- Alias behavior: `fetch_remote_config` is routed through the same remote config resolver as `method=rc`.
+- Value priority for each parameter: A/B-tested value first, then first matching condition value, then default value.
+- `keys`/`omit_keys` are parsed from JSON strings. Parse failures are ignored and request continues without that filter.
 
 ## Database Collections
 
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
-| `countly.apps` | Application metadata/config | Stores app-level settings and metadata read/updated by this endpoint. |
-
-## Examples
-
-### Example 1: Fetch all parameters (legacy method)
-
-**Description**: Fetch all remote config parameters using legacy endpoint
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/o/sdk?method=fetch_remote_config&app_key=YOUR_APP_KEY&device_id=user12345"
-```
-
-**Response** (200):
-```json
-{
-  "button_color": "#FF5733",
-  "max_items": 50,
-  "feature_enabled": true
-}
-```
-
-### Example 2: Comparison with preferred endpoint
-
-**Legacy endpoint**:
-```bash
-curl "...method=fetch_remote_config&app_key=KEY&device_id=ID"
-```
-
-**Preferred endpoint** (identical result):
-```bash
-curl "...method=rc&app_key=KEY&device_id=ID"
-```
-
-**Response** (both return identical):
-```json
-{
-  "button_color": "#FF5733",
-  "max_items": 50
-}
-```
+| `countly_out.remoteconfig_parameters{appId}` | Parameter definitions and defaults | Reads parameter definitions and associated condition values. |
+| `countly_out.remoteconfig_conditions{appId}` | Condition definitions | Reads condition rules used for per-user matching. |
 
 ---
 
-## Technical Notes
+## Examples
 
-### Implementation
+### Fetch all available parameters
 
-Internally, this endpoint:
-1. Recognizes `method=fetch_remote_config`
-2. **Calls same handler** as `method=rc`
-3. Returns identical response
+```plaintext
+/o/sdk?method=fetch_remote_config&app_key=YOUR_APP_KEY&device_id=device-123
+```
 
-### Legacy Status
+### Fetch selected keys only
 
-**Why it exists**:
-- Early SDK versions used `fetch_remote_config` method
-- Endpoint maintained for backwards compatibility
-- Prevents breaking existing SDK integrations
+```plaintext
+/o/sdk?method=fetch_remote_config&app_key=YOUR_APP_KEY&device_id=device-123&keys=["button_color","max_items"]
+```
 
-**Migration recommendation**:
-- Update SDKs to use `method=rc` when possible
-- No functionality difference
-- `method=rc` is shorter and clearer
+### Fetch while excluding keys
 
-### Performance
+```plaintext
+/o/sdk?method=fetch_remote_config&app_key=YOUR_APP_KEY&device_id=device-123&omit_keys=["debug_flag"]
+```
 
-**Identical** to `/o/sdk?method=rc`:
-- Typical response time: 50-150ms
-- Same database queries
-- Same processing overhead
+## Limitations
+
+- Legacy alias kept for compatibility; use `method=rc` for new integrations.
+- If there are no matching parameters, response is an empty object.
 
 ---
 
 ## Related Endpoints
 
-- [Get Remote Config](./o-sdk-rc.md) - **Use this instead** (preferred endpoint)
-- [Enroll in AB Tests](./o-sdk-ab.md) - Explicit AB test enrollment
-- [Get All Configs](./o-remote-config.md) - Dashboard endpoint
-
----
-
-## Error Handling
-
-| Status Code | Condition | Response |
-|-------------|-----------|----------|
-| `200` | Success - config returned | JSON object with key-value pairs |
-| `200` | Success - no matching params | `{}` (empty object) |
-| `400` | Invalid app_key | `{"result": 400, "message": "..."}` |
-
----
-
-## Implementation Notes
-
-1. **Perfect alias**: 100% functionally identical to `/o/sdk?method=rc`
-2. **Same request parameters**: All parameters work identically
-3. **Same response format**: JSON key-value pairs
-4. **Same value resolution**: AB testing > Conditions > Default
-5. **Maintained indefinitely**: No deprecation/removal planned
-6. **Prefer `method=rc`**: Simpler, clearer, recommended for new code
-
-For complete functionality documentation, parameters, examples, and behavior details, see: [Get Remote Config (`/o/sdk?method=rc`)](./o-sdk-rc.md)
+- [Remote Config - SDK Read](o-sdk-rc.md)
+- [Remote Config - AB Enrollment](o-sdk-ab.md)
 
 ## Last Updated
 
-February 2026
+2026-03-05

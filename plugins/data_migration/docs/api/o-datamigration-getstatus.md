@@ -86,7 +86,7 @@ Requires `data_migration` `Read` permission.
 | Mode | Trigger | Processing Path | Response Shape |
 |---|---|---|---|
 | Status found | Valid `exportid` with existing record | Returns migration record. | Wrapped status object |
-| Missing ID | `exportid` omitted | Returns raw string via `returnOutput`. | Raw root string |
+| Missing ID | `exportid` omitted | Returns raw string via raw response body. | Raw root string |
 | Invalid ID | Record not found | Returns invalid-export key. | Wrapped string |
 
 ### Impact on Other Data

@@ -152,7 +152,7 @@ Example payload:
 
 ```json
 {
-  "result": "DATABASE_ERROR_MESSAGE"
+  "result": "Database error: operation failed"
 }
 ```
 
@@ -162,7 +162,7 @@ Example payload:
 
 | Mode | Trigger | Processing Path | Response Shape |
 |---|---|---|---|
-| Template created | Valid payload and unique `name` | Normalizes values, sets `generatedOn`, inserts template. | Wrapped object: `{ "result": "Successfully created <id>" }` |
+| Template created | Valid payload and unique `name` | Normalizes values, sets `generatedOn`, inserts template. | Wrapped object: `{ "result": "Successfully created [id]" }` |
 | Duplicate name | Existing template already uses `name` | Stops before insert. | Wrapped object: `{ "result": "Template with name ... already exists" }` |
 
 ### Impact on Other Data
@@ -213,7 +213,7 @@ https://your-server.com/i/populator/templates/create?
 
 ## Limitations
 
-- Template name uniqueness is checked globally in this handler.
+- Template name uniqueness is checked globally.
 - `behavior.sequences=[]` is normalized to an empty `behavior` object.
 
 ---

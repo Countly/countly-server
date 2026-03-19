@@ -5,154 +5,52 @@ sidebar_label: "Overview"
 
 # Push Notifications API
 
-This feature enables sending push notifications to mobile and web platforms. It supports various trigger types (scheduled, event-based, cohort-based, API-triggered), audience targeting, message personalization, and comprehensive analytics.
-
----
+Ⓔ Enterprise Only
 
 ## Overview
 
-The Push feature provides endpoints for:
-- Creating and managing push notification campaigns
-- Audience estimation and targeting
-- Message testing and analytics
-- User-level push token management
-- Dashboard metrics
+Push Notifications supports campaign creation, targeting, scheduling, API-triggered sends, user-level delivery history, and aggregate reporting.
 
----
+## Quick Links
 
+- [Message Create](./message-create.md)
+- [Message Update](./message-update.md)
+- [Message Remove](./message-remove.md)
+- [Message Toggle](./message-toggle.md)
+- [Message Test](./message-test.md)
+- [Message Push](./message-push.md)
+- [Message List](./message-all.md)
+- [Message Get](./message-get.md)
+- [Message Estimate](./message-estimate.md)
+- [User History](./user.md)
+- [MIME Info](./mime.md)
+- [Read Dashboard](./dashboard.md)
 
 ## Database Collections
 
 | Collection | Purpose |
 |---|---|
-| `messages` | Push notification campaign definitions with targeting and content |
-| `app_users{appId}` | User profiles with push tokens and notification preferences |
-| `push_{messageID}` | Delivery status tracking for individual push campaigns |
-
+| `countly.messages` | Push message definitions, content, trigger config, and result counters |
+| `countly.message_schedules` | Message schedule state used by scheduling/status workflows |
+| `countly.app_users{appId}` | User token fields and audience base for push delivery |
+| `countly.push_{appId}` | Per-user push delivery history (`msgs`) |
+| `countly.events_data` | Aggregated push sent/action event data for dashboard calculations |
+| `countly.creds` | Push provider credentials and legacy FCM detection |
 
 ## Configuration & Settings
 
-Push notification settings from `features.setConfigs`:
-- **APN Credentials**: Apple Push Notification certificates
-- **FCM Key**: Firebase Cloud Messaging API key
-- **Rate Limiting**: Max push notifications per second
+Push runtime settings affect delivery behavior:
+- Proxy settings (`proxyhost`, `proxyport`, `proxyuser`, `proxypass`, `proxyunauthorized`) affect media URL metadata checks.
+- Test audience settings (`test.uids`, `test.cohorts`) control `/i/push/message/test` execution scope.
+- Sending pool and retry settings (`connection_*`, `pool_*`) affect push processing throughput.
+- `message_timeout` affects when unsent notifications are treated as too late to send.
 
-## API Endpoints
+## Trigger Types
 
-### Message Management
-
-- [Message Create](./message-create.md) - `/i/push/message/create` - Create push notification campaign
-- [Message Update](./message-update.md) - `/i/push/message/update` - Update existing campaign
-- [Message Delete](./message-remove.md) - `/i/push/message/remove` - Delete campaign
-- [Message Toggle](./message-toggle.md) - `/i/push/message/toggle` - Start/stop automated campaign
-- [Message Test](./message-test.md) - `/i/push/message/test` - Send test notification to test users
-- [Message Push](./message-push.md) - `/i/push/message/push` - Trigger API-based push
-
-### Message Analytics & Retrieval
-
-- [Message List](./message-all.md) - `/o/push/message/all` - List all campaigns with filtering
-- [Message Get](./message-get.md) - `/o/push/message/{_id}` - Get single campaign details
-- [Message Stats](./message-stats.md) - `/o/push/message/stats` - Get periodic statistics
-- [Message Estimate](./message-estimate.md) - `/o/push/message/estimate` - Estimate audience reach
-
-### User & Configuration
-
-- [User Push Data](./user.md) - `/o/push/user` - Get user's push tokens and subscription status
-- [MIME Info](./mime.md) - `/o/push/mime` - Get MIME type information for media URLs
-- [Dashboard](./dashboard.md) - `/o/push/dashboard` - Get push notification dashboard metrics
-
----
-
-## Internal Events
-
-The following are internal system events, not user-facing API endpoints:
-
-- `/master` - Push queue initialization (server startup)
-- `/session/user` - Token handling on user session
-- `/cohort/enter`, `/cohort/exit` - Cohort-triggered push automation
-- `/drill/add_push_events`, `/drill/preprocess_query`, `/drill/postprocess_uids` - Drill integration
-- `/i/device_id` - User merge handling
-- `/i/apps/upda../plugins/push`, `/i/apps/reset`, `/i/apps/delete` - App lifecycle events
-- `/i/app_users/delete`, `/i/app_users/export` - User data management
-- `/consent/change` - GDPR consent handling
-
----
-
-## Key Concepts
-
-### Trigger Types
-
-- **Plain**: Scheduled for specific date/time
-- **Event**: Triggered when users perform specific events
-- **Cohort**: Triggered on cohort entry/exit
-- **API**: Triggered via API call (`/i/push/message/push`)
-- **Recurring**: Scheduled to repeat at intervals
-
-### Platforms
-
-Supported platforms: `i` (iOS), `a` (Android), `w` (Web), `h` (Huawei)
-
-### Message Status
-
-- `draft` - Not ready to send (editable)
-- `created` - Created but not scheduled yet
-- `inactive` - Waiting for approval (Push Approver feature)
-- `scheduled` - Scheduled for sending
-- `sending` - Currently sending
-- `sent` - Completed successfully
-- `stopped` - Automated message stopped
-- `failed` - Send failed
-
----
-
-## Common Parameters
-
-All endpoints use standard Countly authentication:
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes | API authentication key |
-| `app_id` | String | Yes | Application ID |
-
----
-
-## Error Handling
-
-The Push API uses two custom error types:
-
-**ValidationError** (400): Invalid request parameters
-```json
-{
-  "kind": "ValidationError",
-  "errors": ["app_id is required", "Invalid platform"]
-}
-```
-
-**PushError** (400): Push feature-specific errors
-```json
-{
-  "kind": "PushError",
-  "errors": ["No push credentials configured"]
-}
-```
-
-**ServerError** (500): Internal server error
-```json
-{
-  "kind": "ServerError",
-  "errors": ["Server error"]
-}
-```
-
----
-
-## Related Documentation
-
-- Message Object Schema
-- Trigger Types Reference
-- Content Personalization
-
+- Plain (scheduled)
+- Cohort/Event (automated)
+- API-triggered
 
 ## Last Updated
 
-2026-02-17
+2026-03-07

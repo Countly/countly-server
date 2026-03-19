@@ -34,7 +34,10 @@ The Features API manages feature enablement, global configuration, user-scoped c
 ## Configuration & Settings
 
 - `frontend.session_timeout` affects token TTL/expiration update behavior in config-update endpoints.
-- `member.lang` affects localized title/description fallback for disabled features in feature list output.
+
+## Processing Factors
+
+- Authenticated member language (`member.lang`) affects localized title/description fallback for disabled features in feature list output.
 
 ## Last Updated
 

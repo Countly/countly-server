@@ -26,12 +26,9 @@ Create a new push notification campaign. Supports various trigger types (schedul
 
 ## Authentication
 
-- **Required Permission**: Create access to `push` feature (`validateCreate`)
+- **Required Permission**: Create access to `push` feature (`create-permission validation`)
 - **HTTP Methods**: POST recommended (GET supported but not practical due to payload size)
 - **Content-Type**: application/x-www-form-urlencoded or JSON
-
-**HTTP Method Flexibility:**  
-All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchangeably. However, due to the complex payload size of push messages, POST is strongly recommended.
 
 ## Request Parameters
 
@@ -178,7 +175,12 @@ All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchang
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
+| `(root)` | Object | Full created message object returned by push message model. |
+| `_id` | String | Created message ID. |
+| `status` | String | Initial runtime status after creation. |
+| `triggers` | Array | Trigger definitions stored for the message. |
+| `contents` | Array | Push content blocks stored for the message. |
+| `result` | Object | Runtime counters and tracking fields. |
 
 
 ### Error Responses
@@ -191,7 +193,7 @@ All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchang
 
 ## Permissions
 
-- Required Permission: Create access to push feature (validateCreate)
+- Required Permission: Create access to push feature (create-permission validation)
 
 ## Behavior/Processing
 

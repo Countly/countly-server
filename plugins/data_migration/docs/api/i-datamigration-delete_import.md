@@ -61,14 +61,6 @@ Requires `data_migration` `Delete` permission.
 }
 ```
 
-- `404`
-
-```json
-{
-  "result": "data-migration.no-export-id-given"
-}
-```
-
 ## Behavior/Processing
 
 ### Behavior Modes

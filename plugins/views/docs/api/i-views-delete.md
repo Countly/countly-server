@@ -1,5 +1,5 @@
 ---
-sidebar_label: "Delete"
+sidebar_label: "View Delete"
 ---
 
 # Views - Delete
@@ -82,7 +82,7 @@ Requires `views` `Delete` permission.
 ### Impact on Other Data
 
 - Removes matching view rows from `countly.app_viewdata` and `countly.app_viewsmeta`.
-- Unsets deleted view IDs from user-view maps in `countly.app_userviews` and `countly.app_userviews{appId}`.
+- Runs `$unset` on a literal `viewid` field in user-view maps in `countly.app_userviews` and `countly.app_userviews{appId}`.
 - Dispatches granular deletes for `[CLY]_view` and `[CLY]_action` in drill events.
 - Dispatches `/view/delete` hook for downstream cleanup in other features.
 

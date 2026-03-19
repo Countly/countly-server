@@ -2,7 +2,7 @@
 sidebar_label: "Toggle Widget Status"
 ---
 
-# /i/feedback/widgets/status
+# Star Rating - Toggle Widget Status
 
 ## Endpoint
 
@@ -10,133 +10,109 @@ sidebar_label: "Toggle Widget Status"
 /i/feedback/widgets/status
 ```
 
-
 ## Overview
 
-Enable or disable a specific feedback widget. Toggle widget availability without deleting configuration. Controlled by `enabled` parameter (true/false)
-
----
-
-## /i/feedback/widgets/status
+Bulk-updates `status` field for multiple feedback widgets.
 
 ## Authentication
 
-- **Required Permission**: Feature access
-- **HTTP Methods**: All methods supported (GET, POST, PUT, DELETE)
-- **Content-Type**: application/x-www-form-urlencoded or JSON
+Countly API supports three authentication methods:
 
-**HTTP Method Flexibility:**  
-All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchangeably. You can use GET for simpler queries or POST for large payloads. All examples show the conventional method, but any method works identically.
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
+
+
+## Permissions
+
+Requires `star_rating` `Update` permission.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes | Your API authentication key |
-| `app_id` | String | Yes | Target application ID |
+|---|---|---|---|
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
+| `data` | String (JSON Object) | Yes | Map of widget IDs to boolean-like status values. |
+| `data.[widgetId]` | Boolean/String | Yes | `true` or `false` status for the widget. |
 
 ## Response
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
 ### Success Response
 
 ```json
-{"result": "success", "data": {}}
+{
+  "result": "Success"
+}
 ```
-
-#### Error Response
-**Status Code**: `400 Bad Request` or `500 Internal Server Error`
-
-**Body**:
-```json
-{"result": "error", "message": "Error description"}
-```
-
----
-
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `result` | String | `Success` when bulk status update is applied. |
 
 ### Error Responses
 
+- `500`
+
 ```json
 {
-  "result": "Error"
+  "result": "Invalid parameter 'data'"
 }
 ```
 
-## Permissions
+- `400`
 
-- Required Permission: Feature access
+```json
+{
+  "result": "Nothing to update"
+}
+```
+
+- `400`
+
+```json
+{
+  "result": "bulk error object"
+}
+```
+
+Standard authentication/authorization errors from update validation can also be returned.
 
 ## Behavior/Processing
 
-- Validates request parameters
-- Processes the operation
-- Returns appropriate response
+- Parses `data` JSON object.
+- Converts each value to boolean (`true` or `'true'` => `true`, otherwise `false`).
+- Executes unordered bulk updates on `feedback_widgets.status`.
+- Emits `surveys_widget_status` system log action with submitted status map.
 
----
+### Impact on Other Data
 
-## Examples
-
-### Example 1: Basic Request
-
-**Description**: Standard request using POST method
-
-**Request** (POST):
-```bash
-curl -X POST "https://your-server.com/i/feedback/widgets/status" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
-### Example 2: Alternative GET Method
-
-**Description**: Same request using GET (both methods work identically)
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/i/feedback/widgets/status?api_key=YOUR_API_KEY&app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
----
-
-## Technical Notes
+- Updates status on multiple widget documents.
 
 ## Database Collections
 
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
-| `countly.feedback_widgets` | Stores feedback_widgets documents used by this endpoint. | Creates, updates, or deletes documents in this collection based on request parameters. |
+| `countly.feedback_widgets` | Widget storage | Bulk updates `status` values for provided widget IDs. |
+| `countly.systemlogs` | Audit trail | Receives `surveys_widget_status` action with status payload. |
+
+## Examples
+
+### Disable two widgets in one call
+
+```plaintext
+/i/feedback/widgets/status?
+  api_key=YOUR_API_KEY&
+  data={"67a3d2f5c1a23b0f4d6c0201":false,"67a3d2f5c1a23b0f4d6c0202":false}
+```
+
 ## Related Endpoints
 
-- See feature documentation for related operations
-
----
-
-## Enterprise
-
-Plugin: star-rating
-Endpoint: /i/feedback/widgets/status
+- [Star Rating - Edit Widget](i-feedback-widgets-edit.md)
+- [Star Rating - List All Widgets](o-feedback-widgets.md)
 
 ## Last Updated
 
-February 2026
+2026-03-07

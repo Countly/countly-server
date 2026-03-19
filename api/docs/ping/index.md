@@ -15,7 +15,7 @@ Lightweight liveness endpoint that performs a minimal database probe.
 
 ## Behavior Notes
 
-- No explicit auth validation in handler.
+- Endpoint is accessible without API authentication parameters.
 - Returns `Success` on DB probe success.
 
 ## Last Updated

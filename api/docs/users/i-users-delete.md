@@ -1,5 +1,5 @@
 ---
-sidebar_label: "User Delete"
+sidebar_label: "Dashboard User Delete"
 ---
 
 # Users Management - User Delete

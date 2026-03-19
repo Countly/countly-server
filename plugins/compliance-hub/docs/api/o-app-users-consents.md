@@ -86,7 +86,7 @@ Empty dataset response:
 |---|---|---|
 | `sEcho` | String or Number | Echo value from request. |
 | `iTotalRecords` | Number | Total app-user records for query scope. |
-| `iTotalDisplayRecords` | Number | Displayed total in response (same as total in this handler). |
+| `iTotalDisplayRecords` | Number | Displayed total in response (same as `iTotalRecords`). |
 | `aaData` | Array | App user records with consent and selected profile fields. |
 
 ### Error Responses

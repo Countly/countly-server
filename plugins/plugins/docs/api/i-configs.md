@@ -58,7 +58,9 @@ Example `configs` payload:
 
 | Setting | Default | Affects | User-visible impact |
 |---|---|---|---|
-| `member.settings.frontend.session_timeout` | No user override | Processing flow | If the authenticated user already has a user-level frontend override, global session-timeout token TTL adjustment is skipped for that user. |
+| `frontend.session_timeout` | Server-defined | Auth token lifetime | Updates `ttl` and `ends` for authenticated user's `LoggedInAuth` tokens when no user-level frontend override exists. |
+| `api.country_data` | `true` | Geo data collection behavior | When set to `false`, endpoint also forces `api.city_data=false` in stored config. |
+| `api.city_data` | `true` | Geo data collection behavior | If set to `true` while `api.country_data=false`, endpoint forces `api.country_data=true`. |
 
 ## Response
 

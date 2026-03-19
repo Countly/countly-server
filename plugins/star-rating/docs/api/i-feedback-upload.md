@@ -2,7 +2,7 @@
 sidebar_label: "Upload Logo"
 ---
 
-# /i/feedback/upload
+# Star Rating - Upload Logo
 
 ## Endpoint
 
@@ -10,131 +10,112 @@ sidebar_label: "Upload Logo"
 /i/feedback/upload
 ```
 
-
 ## Overview
 
-Upload global feedback logo image for use across all feedback widgets. Handles image file upload and storage. Requires global feature permissions. Supports PNG, JPEG, and GIF formats
-
----
-
-## /i/feedback/upload
+Uploads a star-rating image asset into plugin storage.
 
 ## Authentication
 
-- **Required Permission**: Feature access
-- **HTTP Methods**: All methods supported (GET, POST, PUT, DELETE)
-- **Content-Type**: application/x-www-form-urlencoded or JSON
+Countly API supports three authentication methods:
 
-**HTTP Method Flexibility:**  
-All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchangeably. You can use GET for simpler queries or POST for large payloads. All examples show the conventional method, but any method works identically.
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
+
+
+## Permissions
+
+Requires `global_plugins` `Update` permission.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes | Your API authentication key |
-| `app_id` | String | Yes | Target application ID |
+|---|---|---|---|
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
+| `feedback_logo` | File | Conditional | Preferred upload field for feedback logo file. |
+| `file` | File | Conditional | Generic fallback upload field (used with `name`). |
+| `name` | String | Conditional | Required with `file`; used as output file identifier. |
 
 ## Response
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
 ### Success Response
 
 ```json
-{"result": "success", "data": {}}
+{
+  "result": "Success"
+}
 ```
-
-#### Error Response
-**Status Code**: `400 Bad Request` or `500 Internal Server Error`
-
-**Body**:
-```json
-{"result": "error", "message": "Error description"}
-```
-
----
-
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `result` | String | `Success` when file upload completes. |
 
 ### Error Responses
 
+- `400`
+
 ```json
 {
-  "result": "Error"
+  "result": "Invalid image format. Must be png or jpeg"
 }
 ```
 
-## Permissions
+- `400`
 
-- Required Permission: Feature access
+```json
+{
+  "result": "Invalid file extension. Must be .png, .jpg, .gif or .jpeg"
+}
+```
+
+- `400`
+
+```json
+{
+  "result": "Failed to upload image"
+}
+```
+
+Standard authentication/authorization errors from update validation can also be returned.
 
 ## Behavior/Processing
 
-- Validates request parameters
-- Processes the operation
-- Returns appropriate response
-
----
-
-## Examples
-
-### Example 1: Basic Request
-
-**Description**: Standard request using POST method
-
-**Request** (POST):
-```bash
-curl -X POST "https://your-server.com/i/feedback/upload" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
-### Example 2: Alternative GET Method
-
-**Description**: Same request using GET (both methods work identically)
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/i/feedback/upload?api_key=YOUR_API_KEY&app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
----
-
-## Technical Notes
+- Endpoint is disabled when Surveys plugin is enabled (`surveysEnabled` branch returns `false`).
+- Accepts either `feedback_logo` or fallback `file` + `name` combination.
+- Validates MIME (`image/png`, `image/gif`, `image/jpeg`) and extension (`gif|jpeg|jpg|png`).
+- Stores image through Countly FS with overwrite mode.
 
 ## Database Collections
 
-This endpoint does not read or write database collections.
+This endpoint does not read or write MongoDB collections directly.
+
+## Examples
+
+### Upload logo as `feedback_logo`
+
+```plaintext
+/i/feedback/upload?
+  api_key=YOUR_API_KEY
+```
+
+Multipart form body:
+
+```text
+feedback_logo=@/path/to/logo.png
+```
+
+## Limitations
+
+- Only image formats/extensions listed above are accepted.
+- Endpoint is unavailable when Surveys plugin is active.
+
 ## Related Endpoints
 
-- See feature documentation for related operations
-
----
-
-## Enterprise
-
-Plugin: star-rating
-Endpoint: /i/feedback/upload
+- [Star Rating - Set Widget Logo](i-feedback-logo.md)
 
 ## Last Updated
 
-February 2026
+2026-03-07

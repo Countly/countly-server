@@ -33,12 +33,6 @@ Countly API supports three authentication methods:
 | `api_key` | String | Yes (or use `auth_token`) | API key for authentication. |
 | `auth_token` | String | No | Auth token as query parameter or `countly-token` header. |
 
-## Configuration Impact
-
-| Setting | Default | Affects | User-visible impact |
-|---|---|---|---|
-| `member.lang` | `en` | Response content | For disabled features, localized title/description resolution uses the member language when matching localization files exist. |
-
 ## Response
 
 ### Success Response
@@ -130,7 +124,7 @@ Countly API supports three authentication methods:
 - Reads `_id: "plugins"` state map from database.
 - Enumerates plugin directories and package metadata.
 - Builds response entries only for known plugin keys.
-- Adds localization fallback for disabled features when localization files are present.
+- Adds localization fallback for disabled features when localization files are present. Localization file selection uses authenticated member language (`params.member.lang`) when available.
 - Returns metadata array as raw root output.
 
 ## Database Collections

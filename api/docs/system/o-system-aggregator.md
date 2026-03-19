@@ -62,7 +62,7 @@ Returns per-aggregator lag status by comparing aggregator checkpoints with curre
 
 ### Error Responses
 
-**Status Code**: `500 Internal Server Error`
+**Status Code**: `400 Bad Request`
 
 ```json
 {

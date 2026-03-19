@@ -1,5 +1,5 @@
 ---
-sidebar_label: "Read Loyalty"
+sidebar_label: "App User Loyalty Read"
 ---
 
 # /o/app_users/loyalty
@@ -88,6 +88,11 @@ Aggregation-fallback shape (still HTTP `200`):
 | Query parsed | `query` is valid JSON (or omitted) | Applies preprocessors and aggregates loyalty ranges for all, 7-day, and 30-day windows. | Raw object: `{ "all": [...], "7days": [...], "30days": [...] }` |
 | Query parse fallback | `query` JSON parsing fails | Falls back to empty query `{}` and runs aggregation on full app-user scope. | Raw object: `{ "all": [...], "7days": [...], "30days": [...] }` |
 | Aggregation error | Any aggregation promise fails | Returns empty raw object. | Raw object: `{}` |
+
+### Query Enrichment
+
+- If Cohorts is enabled, cohort filters in `query` are preprocessed and merged before aggregation.
+- This can change which users are included in loyalty buckets even when the raw query payload is unchanged.
 
 ## Database Collections
 

@@ -2,7 +2,7 @@
 sidebar_label: "Reports Read"
 ---
 
-# /o?method=reports
+# Crashes - Reports Read
 
 ## Endpoint
 
@@ -10,56 +10,33 @@ sidebar_label: "Reports Read"
 /o?method=reports
 ```
 
-
 ## Overview
 
-Fetch specific crash report details by report IDs. Returns detailed information about individual crash reports including stack traces, context, and metadata.
-
----
+Returns crash report documents by report id(s).
 
 ## Authentication
-- **Required Permission**: `Read` (crashes feature)
-- **HTTP Method**: GET or POST
-- **Content-Type**: application/x-www-form-urlencoded
 
----
+Countly API supports three authentication methods:
+
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
 
 ## Permissions
 
-- Required Permission: Read (crashes feature)
+Requires `crashes` `Read` permission.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes (or use auth_token) | API key for authentication |
-| `app_id` | String | Yes | Application ID |
-| `report_ids` | JSON Array | No | Array of report IDs to fetch (alternative: `report_id` for single report) |
-| `report_id` | String | No | Single report ID to fetch |
-
----
-
-## Configuration Impact
-
-| Setting | Default | Affects | User-visible impact |
 |---|---|---|---|
-| `api.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `apps.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `crashes.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `dashboards.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `security.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.cdn.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.js.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.json.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.passwordSecret.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.path.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.reportField.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.report_limit.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `server.web.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
-| `COUNTLY_CONFIG_HOSTNAME` | Environment-defined | Runtime environment control used by endpoint execution path. | Incorrect values can change runtime behavior, callback routing, or error conditions. |
-| `COUNTLY_CONFIG_PROTOCOL` | Environment-defined | Runtime environment control used by endpoint execution path. | Incorrect values can change runtime behavior, callback routing, or error conditions. |
-| `COUNTLY_CONTAINER` | Environment-defined | Runtime environment control used by endpoint execution path. | Incorrect values can change runtime behavior, callback routing, or error conditions. |
+| `method` | String | Yes | Must be `reports`. |
+| `api_key` | String | Yes (or use `auth_token`) | API key for authentication. |
+| `auth_token` | String | No | Auth token as query parameter or `countly-token` header. |
+| `app_id` | String | Yes | App id. |
+| `report_ids` | String (JSON Array) | No | List of report ids. |
+| `report_id` | String | No | Single report id. Used when `report_ids` is not provided. |
 
 ## Response
 
@@ -67,105 +44,59 @@ Fetch specific crash report details by report IDs. Returns detailed information 
 
 ```json
 {
-  "report_id_1": {
-    "_id": "report_id_1",
-    "timestamp": 1707123456789,
-    "error": "Stack trace content",
-    "user_agent": "Mozilla/5.0...",
-    "os": "iOS",
-    "os_version": "16.0",
-    "app_version": "1.0.0",
-    "device": "iPhone",
-    "nonfatal": true
-  },
-  "report_id_2": {
-    ...
+  "65f1f7b2ad5b9b001f12ab34": {
+    "_id": "65f1f7b2ad5b9b001f12ab34",
+    "a": "6991c75b024cb89cdc04efd2",
+    "e": "[CLY]_crash",
+    "n": "crash_group_1",
+    "uid": "user-123"
   }
 }
 ```
-
----
-
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `(root)` | Object | Report map keyed by report document id. |
+| `{report_id}` | Object | Raw crash report document from drill events collection. |
 
 ### Error Responses
 
-```json
-{
-  "result": "Error"
-}
-```
-
-## Examples
-
-### Example 1: Fetch multiple crash reports
-
-**Request**:
-```bash
-curl -X GET "https://your-server.com/o?method=reports" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID" \
-  -d 'report_ids=["crash_123","crash_456"]'
-```
-
-### Example 2: Fetch single crash report
-
-**Request**:
-```bash
-curl -X GET "https://your-server.com/o?method=reports" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID" \
-  -d "report_id=crash_123"
-```
-
----
-
-## Processing Details
-
-The endpoint:
-1. Validates read permissions for crash feature
-2. Parses `report_ids` JSON parameter if provided
-3. Falls back to single `report_id` parameter if array not provided
-4. Fetches reports from crash tables/drill database
-5. Returns map of report ID to full report data
-
----
-
+Standard authentication/authorization errors from read validation.
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
+- If `report_ids` is present, endpoint parses it as JSON array.
+- If `report_ids` is absent and `report_id` is present, endpoint creates a single-item list.
+- Parse failures fall back to empty id list and return `{}`.
 
 ## Database Collections
 
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
-| `drill_events` | Drill event rows | Stores granular event records queried or updated by this endpoint. |
+| `countly_drill.drill_events` | Crash report source | Reads crash reports where `a` is app id, `e` is `[CLY]_crash`, and `n` matches report ids. |
 
 ---
 
-## Error Handling
+## Examples
 
-| Status | Message | Cause |
-|--------|---------|-------|
-| 401 | Unauthorized | Insufficient read permissions |
-| 400 | Missing parameter | No report_ids or report_id provided |
-| 500 | Server error | Database fetch failure |
+### Read multiple reports
 
----
+```plaintext
+/o?method=reports&api_key=YOUR_API_KEY&app_id=6991c75b024cb89cdc04efd2&report_ids=["65f1f7b2ad5b9b001f12ab34","65f1f7b2ad5b9b001f12ab35"]
+```
+
+### Read one report
+
+```plaintext
+/o?method=reports&api_key=YOUR_API_KEY&app_id=6991c75b024cb89cdc04efd2&report_id=65f1f7b2ad5b9b001f12ab34
+```
 
 ## Related Endpoints
 
-- [/o?method=crashes](./o-crashes-list.md) - List all crash groups
-- [/o/crashes/download_stacktrace](./o-crashes-download-stacktrace.md) - Download stacktrace file
+- [Crashes - Crash Groups Read](o-crashes-list.md)
 
 ## Last Updated
 
-February 2026
+2026-03-05

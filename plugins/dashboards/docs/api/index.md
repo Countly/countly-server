@@ -39,7 +39,6 @@ The Dashboards feature provides customizable analytics boards composed of reusab
 | Setting | Default | Effect |
 |---|---|---|
 | `dashboards.sharing_status` | `true` | Controls whether sharing configuration changes are allowed for non-admin contexts in create/update flows. |
-| `dashboards.allow_public_dashboards` | `true` | Controls whether `share_with=all-users` is allowed and whether public dashboards are included in read filters. |
 
 ## Key Capabilities
 

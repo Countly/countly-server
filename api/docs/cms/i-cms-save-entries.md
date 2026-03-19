@@ -83,7 +83,7 @@ Save transformed CMS entries into `countly.cms_cache`.
 **Status Code**: `500 Internal Server Error`
 ```json
 {
-  "result": "Error occured when saving entries to DB: <error>"
+  "result": "Error occured when saving entries to DB: Write operation failed"
 }
 ```
 

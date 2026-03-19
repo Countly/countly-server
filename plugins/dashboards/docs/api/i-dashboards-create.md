@@ -24,7 +24,7 @@ Countly API supports three authentication methods:
 
 ## Permissions
 
-No separate feature permission flag is checked in this handler. Creation is available to authenticated users, but sharing-related behavior is gated by sharing configuration and user role restrictions.
+Creation is available to authenticated users, but sharing-related behavior is gated by sharing configuration and user role restrictions.
 
 ## Request Parameters
 
@@ -55,7 +55,6 @@ Each sharing array parameter must decode to a JSON array. Examples:
 
 | Setting | Default | Affects | User-visible impact |
 |---|---|---|---|
-| `dashboards.allow_public_dashboards` | `true` | Validation | If `false`, `share_with=all-users` is rejected with `400` and `Public dashboards are disabled`. |
 | `dashboards.sharing_status` | `true` | Validation | If disabled, non-eligible users cannot create shared dashboards and receive `sharing_denied`. |
 
 ## Response
@@ -97,14 +96,6 @@ Each sharing array parameter must decode to a JSON array. Examples:
 ```json
 {
   "result": "Parameter needs to be an array: shared_email_edit"
-}
-```
-
-- `400`
-
-```json
-{
-  "result": "Public dashboards are disabled"
 }
 ```
 

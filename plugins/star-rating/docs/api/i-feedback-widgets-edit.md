@@ -2,7 +2,7 @@
 sidebar_label: "Edit Widget"
 ---
 
-# /i/feedback/widgets/edit
+# Star Rating - Edit Widget
 
 ## Endpoint
 
@@ -10,131 +10,142 @@ sidebar_label: "Edit Widget"
 /i/feedback/widgets/edit
 ```
 
-
 ## Overview
 
-Update configuration of an existing feedback widget. Modify all widget properties including appearance, targeting, text, and behavior options. Changes apply immediately to new requests
-
----
-
-## /i/feedback/widgets/edit
+Updates an existing star-rating widget definition.
 
 ## Authentication
 
-- **Required Permission**: Feature access
-- **HTTP Methods**: All methods supported (GET, POST, PUT, DELETE)
-- **Content-Type**: application/x-www-form-urlencoded or JSON
+Countly API supports three authentication methods:
 
-**HTTP Method Flexibility:**  
-All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchangeably. You can use GET for simpler queries or POST for large payloads. All examples show the conventional method, but any method works identically.
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
+
+
+## Permissions
+
+Requires `star_rating` `Update` permission.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes | Your API authentication key |
-| `app_id` | String | Yes | Target application ID |
+|---|---|---|---|
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
+| `widget_id` | String | Yes | Target widget ObjectID. |
+| `app_id` | String | Yes | App ID in widget payload validation schema. |
+| `status` | Boolean/String | Yes | Active flag for widget. |
+| `target_pages` | Array/String | No | JSON array string is preprocessed to array (fallback `['/']`). |
+| `targeting` | Object/String | No | JSON object string for cohort targeting. |
+| `links` | Array/String | No | JSON array string for links. |
+| `ratings_texts` | Array/String | No | JSON array string for rating labels. |
+
+Additional optional widget fields are validated using the server-side widget schema.
 
 ## Response
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
 ### Success Response
 
 ```json
-{"result": "success", "data": {}}
+{
+  "result": "Success"
+}
 ```
-
-#### Error Response
-**Status Code**: `400 Bad Request` or `500 Internal Server Error`
-
-**Body**:
-```json
-{"result": "error", "message": "Error description"}
-```
-
----
-
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `result` | String | `Success` when widget update path completes. |
 
 ### Error Responses
 
+- `500`
+
 ```json
 {
-  "result": "Error"
+  "result": "Invalid widget id."
 }
 ```
 
-## Permissions
+- `400`
 
-- Required Permission: Feature access
+```json
+{
+  "result": "Invalid params: ..."
+}
+```
+
+- `404`
+
+```json
+{
+  "result": "Widget not found"
+}
+```
+
+- `400`
+
+```json
+{
+  "result": "widget updated. Error to update cohort"
+}
+```
+
+- `400`
+
+```json
+{
+  "result": "widget updated. Error to create cohort"
+}
+```
+
+Standard authentication/authorization errors from update validation can also be returned.
 
 ## Behavior/Processing
 
-- Validates request parameters
-- Processes the operation
-- Returns appropriate response
+- Converts `widget_id` to ObjectID and validates full widget payload.
+- Applies widget field preprocessors before validation (`target_pages`, `targeting`, `links`, `ratings_texts`, `status`, `hide_sticker`).
+- Updates `feedback_widgets` document via `findAndModify`.
+- If Cohorts plugin is enabled and targeting changed:
+  - updates existing cohort,
+  - or deletes cohort,
+  - or creates new cohort and links `cohortID`.
+- Emits `cohort_edited` system log when cohort update branch runs.
 
----
+### Impact on Other Data
 
-## Examples
-
-### Example 1: Basic Request
-
-**Description**: Standard request using POST method
-
-**Request** (POST):
-```bash
-curl -X POST "https://your-server.com/i/feedback/widgets/edit" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
-### Example 2: Alternative GET Method
-
-**Description**: Same request using GET (both methods work identically)
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/i/feedback/widgets/edit?api_key=YOUR_API_KEY&app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
----
-
-## Technical Notes
+- Updates one widget in `countly.feedback_widgets`.
+- May update/create/delete related cohort documents in `countly.cohorts`.
 
 ## Database Collections
 
-This endpoint does not read or write database collections.
+| Collection | Used for | Data touched by this endpoint |
+|---|---|---|
+| `countly.feedback_widgets` | Widget storage | Reads and updates target widget document. |
+| `countly.cohorts` | Targeting cohorts | May update/create/delete cohort records (when cohorts plugin enabled). |
+| `countly.systemlogs` | Audit trail | Receives `cohort_edited` in cohort-update branch. |
+
+## Examples
+
+### Edit widget status and text
+
+```plaintext
+/i/feedback/widgets/edit?
+  api_key=YOUR_API_KEY&
+  widget_id=67a3d2f5c1a23b0f4d6c0201&
+  app_id=6991c75b024cb89cdc04efd2&
+  status=true&
+  popup_header_text=How was your experience?&
+  target_pages=["/","/pricing"]
+```
+
 ## Related Endpoints
 
-- See feature documentation for related operations
-
----
-
-## Enterprise
-
-Plugin: star-rating
-Endpoint: /i/feedback/widgets/edit
+- [Star Rating - Toggle Widget Status](i-feedback-widgets-status.md)
+- [Star Rating - List All Widgets](o-feedback-widgets.md)
 
 ## Last Updated
 
-February 2026
+2026-03-07

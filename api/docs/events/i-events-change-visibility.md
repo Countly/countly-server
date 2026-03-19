@@ -72,7 +72,7 @@ Show or hide events in event metadata without deleting event definitions.
 
 | Mode | Trigger | Processing Path | Response Shape |
 |---|---|---|---|
-| Hide mode | `set_visibility=hide` | Sets per-event `map.<event>.is_visible=false` and removes hidden events from overview list. | Wrapped string `{ "result": "Success" }` |
+| Hide mode | `set_visibility=hide` | Sets per-event `map.{eventKey}.is_visible=false` and removes hidden events from overview list. | Wrapped string `{ "result": "Success" }` |
 | Show mode | `set_visibility` is not `hide` | Clears hidden state for selected events by removing `is_visible=false` overrides. | Wrapped string `{ "result": "Success" }` |
 
 ### Impact on Other Data

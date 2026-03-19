@@ -40,7 +40,7 @@ Requires `data_migration` `Read` permission.
 
 | Setting | Default | Affects | User-visible impact |
 |---|---|---|---|
-| `security` request config | Server-defined | Outbound HTTP request behavior | TLS/proxy/request handling settings can affect remote validation success/failure. |
+| `security.*` (global security config) | Server-defined | Outbound HTTP request behavior | This endpoint uses `countly-request` initialized with `plugins.getConfig("security")`; TLS/proxy/request options can change validation success/failure. |
 
 ## Response
 

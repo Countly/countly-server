@@ -28,7 +28,7 @@ Export endpoints generate downloadable data files from collections, request hand
 1. Database export:
    - Reads directly from a selected collection and streams/returns a formatted file.
 2. Request export:
-   - Calls an internal endpoint and exports its returned payload.
+   - Calls a target API path and exports its returned payload.
 3. Request-query export:
    - Creates an async export task and returns a task ID.
 4. Data export:

@@ -1,5 +1,5 @@
 ---
-sidebar_label: "User Create"
+sidebar_label: "App User Create"
 ---
 
 # /i/app_users/create

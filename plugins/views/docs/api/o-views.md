@@ -174,7 +174,7 @@ Default graph mode (`action` empty):
 | `collection` | String | Export source collection for `getExportQuery`. |
 | `pipeline` | Array | Aggregation pipeline for `getExportQuery`. |
 | `projection` | Object | Projection map for `getExportQuery`. |
-| `result` | Number | View count for `get_view_count` (wrapped via `returnMessage`). |
+| `result` | Number | View count for `get_view_count` (returned as wrapped `result`). |
 | `appID` | String | App ID in default graph mode. |
 | `data` | Object or Array | Graph payload (default mode) or selected-action data payloads. |
 | `t`, `s`, `b`, `u` | Number | Totals response metrics (`getTotals`). |
@@ -225,7 +225,7 @@ Default graph mode (`action` empty):
 | Table mode | `action=getTable` | Aggregates view metrics, joins `app_viewsmeta`, applies search/sort/pagination. | Raw object with `aaData` and table totals. |
 | Export mode | `action=getExportQuery` | Builds export pipeline/projection and target collection metadata. | Raw object with `db`, `collection`, `pipeline`, `projection`. |
 | Table names mode | `action=getTableNames` | Reads names/display values from `app_viewsmeta` with sort/pagination. | Raw object with `aaData` and table totals. |
-| Count mode | `action=get_view_count` | Counts view-meta documents for app. | Wrapped object: `{ "result": <number> }`. |
+| Count mode | `action=get_view_count` | Counts view-meta documents for app. | Wrapped object: `{ "result": 42 }` (number). |
 | Totals mode | `action=getTotals` | Aggregates totals and unique counts via long-task-enabled query runner flow. | Raw totals object (may include `running`). |
 | Names list mode | `action=listNames` | Returns all view names/display values when total count is below limit. | Raw array. |
 | Graph mode | `action` missing/empty | Builds selected-view time models and applies unique-count enrichment. | Raw object `{ appID, data }`. |

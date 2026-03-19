@@ -1,5 +1,5 @@
 ---
-sidebar_label: "User Update"
+sidebar_label: "App User Update"
 ---
 
 # /i/app_users/update

@@ -162,7 +162,7 @@ Validation-failure branch:
 
 ```json
 {
-  "result": "Failed to create an alertERROR_DETAILS"
+  "result": "Failed to create an alertMongoServerError: duplicate key error"
 }
 ```
 
@@ -231,7 +231,7 @@ Validation-failure branch:
 
 ## Limitations
 
-- Update flow permission is still `Create` (not `Update`) because the handler is guarded by `validateCreate`.
+- Update flow permission is still `Create` (not `Update`) because the handler is guarded by `create-permission validation`.
 - Invalid update ID values can fail during ObjectId conversion and return a generic create/save error.
 
 ## Related Endpoints

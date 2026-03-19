@@ -91,6 +91,7 @@ Returns a single task record (or selected subtask result flow) for the requested
 |---|---|---|---|
 | Standard task mode | `task_id` provided without `subtask_key` | Reads task record by ID and returns task payload. | Raw task object |
 | Subtask lookup mode | `subtask_key` is provided | Resolves matching subtask result from task-group flow when available. | Raw task/subtask object |
+| Subtask rerun trigger mode | `subtask_key` is provided for a taskgroup but subtask is missing | Triggers parent task rerun in background and returns not-found response for current request. | Wrapped string `{ "result": "Task does not exist" }` |
 | Missing-task mode | Task lookup returns no result | Returns not-found error response. | Wrapped string `{ "result": "Task does not exist" }` |
 
 ### Impact on Other Data
@@ -136,6 +137,7 @@ Returns a single task record (or selected subtask result flow) for the requested
 
 - Returned payload can be large for heavy export/report tasks.
 - Response structure varies by task type.
+- In taskgroup flows, requesting a missing `subtask_key` can trigger parent rerun side effects.
 
 ---
 

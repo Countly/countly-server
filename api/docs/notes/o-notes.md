@@ -31,7 +31,7 @@ Returns a permission-filtered, paginated notes list for selected apps and period
 | `api_key` | String | Yes (or use `auth_token`) | Dashboard API key. |
 | `auth_token` | String | Yes (or use `api_key`) | Dashboard auth token. |
 | `app_id` | String | Yes for non-global-admin users | App id used by read-permission validation layer. |
-| `period` | String | Yes | Countly period format (for example `30days` or `[startTs,endTs]`). |
+| `period` | String | No | Countly period format (for example `30days` or `[startTs,endTs]`). Defaults to `30days` when omitted. |
 | `notes_apps` | JSON String (Array) | No | App IDs to query. If empty/missing, server resolves apps from user access. |
 | `category` | JSON String (Array) | No | Category filter list. |
 | `note_type` | String | No | Note type filter (for example `public`). |
@@ -85,7 +85,7 @@ Returns a permission-filtered, paginated notes list for selected apps and period
 | `aaData[].owner` | String | Owner dashboard user id. |
 | `aaData[].owner_name` | String | Owner display name resolved from `countly.members`. |
 | `iTotalDisplayRecords` | Number | Total records after current filters. |
-| `iTotalRecords` | Number | Same value as display count in this handler. |
+| `iTotalRecords` | Number | Same value as `iTotalDisplayRecords` in this response. |
 | `sEcho` | Number | Echo value from request. |
 
 ### Error Responses

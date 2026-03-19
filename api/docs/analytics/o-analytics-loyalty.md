@@ -1,5 +1,5 @@
 ---
-sidebar_label: "Read Loyalty"
+sidebar_label: "Analytics Loyalty Read"
 ---
 
 # /o/analytics/loyalty

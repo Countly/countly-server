@@ -24,12 +24,9 @@ Send test push notifications to configured test users or cohorts without creatin
 
 ## Authentication
 
-- **Required Permission**: Create access to `push` feature (`validateCreate`)
+- **Required Permission**: Create access to `push` feature (`create-permission validation`)
 - **HTTP Methods**: POST recommended (GET supported but not practical due to payload size)
 - **Content-Type**: application/x-www-form-urlencoded or JSON
-
-**HTTP Method Flexibility:**  
-All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchangeably. However, due to the complex payload size of push messages, POST is strongly recommended.
 
 ## Request Parameters
 
@@ -134,7 +131,11 @@ All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchang
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
+| `result` | Object | Test-run aggregate result payload. |
+| `result.total` | Number | Total notifications targeted for test run. |
+| `result.sent` | Number | Number of notifications sent successfully. |
+| `result.errored` | Number | Number of failed notifications. |
+| `result.errors` | Object | Error code/count map from test run. |
 
 
 ### Error Responses
@@ -147,7 +148,7 @@ All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchang
 
 ## Permissions
 
-- Required Permission: Create access to push feature (validateCreate)
+- Required Permission: Create access to push feature (create-permission validation)
 
 ## Behavior/Processing
 

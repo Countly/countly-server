@@ -1,5 +1,5 @@
 ---
-sidebar_label: "User Update"
+sidebar_label: "Dashboard User Update"
 ---
 
 # Users Management - User Update

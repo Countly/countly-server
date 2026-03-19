@@ -1,70 +1,55 @@
 ---
-sidebar_label: "Query Times Of Day"
+sidebar_label: "Times Of Day Query"
 ---
 
-# /o?method=times-of-day
-
-## Overview
-
-Retrieve times-of-day analytics for sessions or a specific event. Returns a 7x24 matrix (days x hours) with aggregated counts.
-
----
+# Times Of Day - Query
 
 ## Endpoint
-
 
 ```plaintext
 /o?method=times-of-day
 ```
 
+## Overview
+
+Returns a 7x24 matrix (day-of-week x hour) for session or event activity.
+
 ## Authentication
 
-- **Required**: Read access to Times Of Day feature
-- **HTTP Method**: GET or POST
-- **Permissions**: `times_of_day` read
+Countly API supports three authentication methods:
 
----
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
 
 ## Permissions
 
-- Permissions: times_of_day read
+Requires `times_of_day` `Read` permission.
 
 ## Request Parameters
 
-### Core Parameters
-
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes (or use auth_token) | API key for authentication |
-| `app_id` | String | Yes | App ID |
-| `method` | String | Yes | Must be `times-of-day` |
-
-### Times Of Day Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tod_type` | String | Yes | Event key or `[CLY]_session` |
-| `date_range` | String | No | Comma-separated month keys (e.g., `2024:12,2025:01`) |
-| `fetchFromGranural` | Boolean | No | Use long task aggregation instead of stored docs |
-| `period` | String | No | Period for long task mode (e.g., `30days`, `custom`) |
-| `periodOffset` | Number | No | Period offset for long task mode |
-
----
+|---|---|---|---|
+| `method` | String | Yes | Must be `times-of-day`. |
+| `api_key` | String | Yes (or use `auth_token`) | API key for authentication. |
+| `auth_token` | String | No | Auth token as query parameter or `countly-token` header. |
+| `app_id` | String | Yes | App id. |
+| `tod_type` | String | Yes | Event key or `[CLY]_session`. |
+| `date_range` | String | No | Comma-separated month ids like `2025:01,2025:02`. |
+| `fetchFromGranural` | Boolean/String | No | When truthy, runs granular long-task path instead of stored docs. |
+| `period` | String | No | Used with `fetchFromGranural` path. |
+| `periodOffset` | Number | No | Used with `fetchFromGranural` path. |
 
 ## Configuration Impact
 
 | Setting | Default | Affects | User-visible impact |
 |---|---|---|---|
-| `api.*` | Plugin/server defaults | Endpoint behavior controlled by this configuration namespace. | Changes can alter validation, filtering, limits, or processing behavior exposed by this endpoint. |
+| `api.request_threshold` | Server config | Long-task threshold | Granular mode runs with half of this value as timeout threshold. |
 
 ## Response
 
 ### Success Response
-
-**Status Code**: `200 OK`
-
-**Body**: 7x24 matrix of counts, Sunday as index `0`.
 
 ```json
 [
@@ -78,102 +63,53 @@ Retrieve times-of-day analytics for sessions or a specific event. Returns a 7x24
 ]
 ```
 
----
-
-
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `(root)` | Array | Array with 7 rows (Sunday..Saturday), each row contains 24 hourly counts. |
 
 ### Error Responses
 
+- `400`
+
 ```json
 {
-  "result": "Error"
+  "result": "Something went wrong"
 }
 ```
 
-## Examples
-
-### Example 1: Sessions by time of day
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/o?method=times-of-day&api_key=YOUR_API_KEY&app_id=YOUR_APP_ID&tod_type=%5BCLY%5D_session"
-```
-
-### Example 2: Custom event by time of day
-
-**Request** (POST):
-```bash
-curl -X POST "https://your-server.com/o" \
-  -d "method=times-of-day" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID" \
-  -d "tod_type=purchase"
-```
-
-### Example 3: Limited month range
-
-**Request** (POST):
-```bash
-curl -X POST "https://your-server.com/o" \
-  -d "method=times-of-day" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID" \
-  -d "tod_type=%5BCLY%5D_session" \
-  -d "date_range=2025:01,2025:02"
-```
-
----
-
-## Behavior Notes
-
-- **Aggregation grid**: Always returns a 7x24 matrix.
-- **Day index**: `0` is Sunday, `6` is Saturday.
-- **Event selection**: `tod_type` can be `[CLY]_session` or a custom event key.
-- **Date filtering**: `date_range` matches stored monthly keys (`YYYY:MM`).
-- **Granular mode**: `fetchFromGranural` uses long-task aggregation with `period` and `periodOffset`.
-
----
-
-## Error Responses
-
-| HTTP Code | Error | Description |
-|-----------|-------|-------------|
-| 400 | `Something went wrong` | Database query failed |
-| 401 | `Unauthorized` | Missing or invalid API key |
-
----
-
-
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
+- Standard mode: reads monthly docs from `times_of_day` and aggregates to 7x24 matrix.
+- Granular mode (`fetchFromGranural`): uses calculated-data long task and maps day `7` to `0` (Sunday).
 
 ## Database Collections
 
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
-| `times_of_day` | Endpoint data source | Stores endpoint-related records read or modified by this endpoint. |
+| `countly.times_of_day` | Times of day source | Reads monthly activity docs for selected `tod_type` and app. |
 
 ---
+
+## Examples
+
+### Query session heatmap
+
+```plaintext
+/o?method=times-of-day&api_key=YOUR_API_KEY&app_id=6991c75b024cb89cdc04efd2&tod_type=[CLY]_session
+```
+
+### Query event heatmap for selected months
+
+```plaintext
+/o?method=times-of-day&api_key=YOUR_API_KEY&app_id=6991c75b024cb89cdc04efd2&tod_type=purchase&date_range=2025:01,2025:02
+```
 
 ## Related Endpoints
 
-- [Times Of Day Ingestion](./i-times-of-day.md) - Write path for counts
-
----
-
-## Enterprise
-
-Plugin: times-of-day
-Endpoint: /o?method=times-of-day
+- [Times Of Day - Ingestion](i-times-of-day.md)
 
 ## Last Updated
 
-February 2026
+2026-03-05

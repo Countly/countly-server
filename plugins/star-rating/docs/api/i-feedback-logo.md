@@ -2,7 +2,7 @@
 sidebar_label: "Set Widget Logo"
 ---
 
-# /i/feedback/logo
+# Star Rating - Set Widget Logo
 
 ## Endpoint
 
@@ -10,131 +10,106 @@ sidebar_label: "Set Widget Logo"
 /i/feedback/logo
 ```
 
-
 ## Overview
 
-Set or update the logo for a specific feedback widget. Associates a logo image with a widget for branding purposes. Supports custom images or default branding
-
----
-
-## /i/feedback/logo
+Uploads a logo file and returns generated logo filename for widget configuration.
 
 ## Authentication
 
-- **Required Permission**: Feature access
-- **HTTP Methods**: All methods supported (GET, POST, PUT, DELETE)
-- **Content-Type**: application/x-www-form-urlencoded or JSON
+Countly API supports three authentication methods:
 
-**HTTP Method Flexibility:**  
-All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchangeably. You can use GET for simpler queries or POST for large payloads. All examples show the conventional method, but any method works identically.
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
+
+
+## Permissions
+
+Requires `star_rating` `Create` permission.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes | Your API authentication key |
-| `app_id` | String | Yes | Target application ID |
+|---|---|---|---|
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
+| `identifier` | String | Yes | File identifier used as output filename prefix. |
+| `logo` | File | No | Image file; if omitted, upload helper still returns success branch. |
 
 ## Response
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
 ### Success Response
 
 ```json
-{"result": "success", "data": {}}
+{
+  "result": "widget_logo_1.png"
+}
 ```
-
-#### Error Response
-**Status Code**: `400 Bad Request` or `500 Internal Server Error`
-
-**Body**:
-```json
-{"result": "error", "message": "Error description"}
-```
-
----
-
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `result` | String | Stored filename (`identifier.ext`) when upload succeeds. |
 
 ### Error Responses
 
+- `400`
+
 ```json
 {
-  "result": "Error"
+  "result": "Invalid image format. Must be png or jpeg"
 }
 ```
 
-## Permissions
+- `400`
 
-- Required Permission: Feature access
+```json
+{
+  "result": "Invalid file extension. Must be .png, .jpg, .gif or .jpeg"
+}
+```
+
+- `400`
+
+```json
+{
+  "result": "Failed to upload image"
+}
+```
+
+Standard authentication/authorization errors from create validation can also be returned.
 
 ## Behavior/Processing
 
-- Validates request parameters
-- Processes the operation
-- Returns appropriate response
-
----
-
-## Examples
-
-### Example 1: Basic Request
-
-**Description**: Standard request using POST method
-
-**Request** (POST):
-```bash
-curl -X POST "https://your-server.com/i/feedback/logo" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
-### Example 2: Alternative GET Method
-
-**Description**: Same request using GET (both methods work identically)
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/i/feedback/logo?api_key=YOUR_API_KEY&app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
----
-
-## Technical Notes
+- Uses shared file-upload helper with same validation rules as upload endpoint.
+- Returns `result` as plain filename string through wrapped `result` response.
 
 ## Database Collections
 
-This endpoint does not read or write database collections.
+This endpoint does not read or write MongoDB collections directly.
+
+## Examples
+
+### Upload widget logo
+
+```plaintext
+/i/feedback/logo?
+  api_key=YOUR_API_KEY&
+  identifier=widget_logo_1
+```
+
+Multipart form body:
+
+```text
+logo=@/path/to/logo.png
+```
+
 ## Related Endpoints
 
-- See feature documentation for related operations
-
----
-
-## Enterprise
-
-Plugin: star-rating
-Endpoint: /i/feedback/logo
+- [Star Rating - Upload Logo](i-feedback-upload.md)
+- [Star Rating - Edit Widget](i-feedback-widgets-edit.md)
 
 ## Last Updated
 
-February 2026
+2026-03-07

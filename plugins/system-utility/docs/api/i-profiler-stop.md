@@ -1,76 +1,66 @@
 ---
-sidebar_label: "Stop Profiler"
+sidebar_label: "Profiler Stop"
 ---
 
-# /i/profiler/stop
-
-## Overview
-
-Stop CPU and memory profiling. Saves profile data and generates reports. Clears the 2-hour timeout.
-
----
+# System Utility - Stop Profiler
 
 ## Endpoint
-
 
 ```plaintext
 /i/profiler/stop
 ```
 
+## Overview
+
+Stops profiler mode and finalizes profile files.
+
 ## Authentication
 
-- **Required**: Global admin permission (required)
-- **HTTP Method**: GET or POST
-- **Permission**: Global Admin only
+Countly API supports three authentication methods:
 
-## Response
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
-### Success Response
-
-```json
-{"result": "Stoping profiler for all processes"}
-```
-
----
-
-
-### Response Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
-
-### Error Responses
-
-```json
-{
-  "result": "Error"
-}
-```
 
 ## Permissions
 
-- Required: Global admin permission (required)
-
+Requires Global Admin access.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `api_key` | String | Yes | Global admin API key. |
-| `auth_token` | String | No | Global admin auth token as query parameter or `Authorization: Bearer <token>` header. |
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
 
+## Response
+
+### Success Response
+
+```json
+{
+  "result": "Stoping profiler for all processes"
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `result` | String | Success message when profiler is stopped. |
+
+### Error Responses
+
+```json
+{
+  "result": "Error: Profiler needs to be started"
+}
+```
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
-
+- Stops profiler and writes profiler artifacts under log profile directory.
 
 ## Database Collections
 
@@ -78,29 +68,10 @@ This endpoint does not read or write database collections.
 
 ## Examples
 
-### Example 1: Stop profiler
-
-**Request** (POST):
-```bash
-curl -X POST "https://your-server.com/i/profiler/stop" \
-  -d "api_key=YOUR_GLOBAL_ADMIN_KEY"
+```plaintext
+/i/profiler/stop?api_key=YOUR_API_KEY
 ```
-
----
-
-## Related Endpoints
-
-- [Start Profiler](./i-profiler-start.md) - Begin profiling
-- [List Files](./i-profiler-list-files.md) - View results
-
----
-
-## Implementation Notes
-
-1. **Admin-only**: Requires global admin API key
-2. **Saves data**: Profile written to disk
-3. **Generates results**: Ready to download
 
 ## Last Updated
 
-February 2026
+2026-03-07

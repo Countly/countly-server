@@ -37,7 +37,7 @@ Set or unset per-event whitelisted segment keys in event metadata.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `<eventKey>` | Array of Strings | No | Segment names to whitelist for the given event. Empty array removes whitelist entry for that event key. |
+| ``eventKey`` | Array of Strings | No | Segment names to whitelist for the given event. Empty array removes whitelist entry for that event key. |
 
 ## Response
 
@@ -77,8 +77,8 @@ Set or unset per-event whitelisted segment keys in event metadata.
 
 | Mode | Trigger | Processing Path | Response Shape |
 |---|---|---|---|
-| Set whitelist entries | Event key maps to non-empty segment array | Writes `$set` updates under `whitelisted_segments.<eventKey>`. | Wrapped string `{ "result": "Success" }` |
-| Unset whitelist entries | Event key maps to empty array | Writes `$unset` updates for `whitelisted_segments.<eventKey>`. | Wrapped string `{ "result": "Success" }` |
+| Set whitelist entries | Event key maps to non-empty segment array | Writes `$set` updates under `whitelisted_segments.eventKey`. | Wrapped string `{ "result": "Success" }` |
+| Unset whitelist entries | Event key maps to empty array | Writes `$unset` updates for `whitelisted_segments.eventKey`. | Wrapped string `{ "result": "Success" }` |
 
 ## Audit & System Logs
 

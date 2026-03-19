@@ -97,7 +97,7 @@ Multi-task mode:
 
 | Mode | Trigger | Processing Path | Response Shape |
 |---|---|---|---|
-| Single-task mode | `task_id` is a single string | Reads one task status and returns wrapped status string. | Wrapped string `{ "result": "<status>" }` |
+| Single-task mode | `task_id` is a single string | Reads one task status and returns wrapped status string. | Wrapped string `{ "result": "status_value" }` |
 | Multi-task mode | `task_id` parses as JSON array | Returns one status row per requested ID; missing IDs are marked as `deleted`. | Wrapped array `{ "result": [{...}] }` |
 | Missing-task mode | Single-task lookup returns no task | Returns task-not-found error branch. | Wrapped string `{ "result": "Task does not exist" }` |
 

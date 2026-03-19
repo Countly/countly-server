@@ -41,7 +41,7 @@ No separate feature permission flag is checked. Access is enforced by:
 
 | Setting | Default | Affects | User-visible impact |
 |---|---|---|---|
-| `dashboards.allow_public_dashboards` | `true` | Access checks | If disabled, users may lose view access to `all-users` dashboards they do not own, which can block delete flow before owner check. |
+| `dashboards.sharing_status` | `true` | Sharing model | Influences whether shared dashboards can exist broadly. This can indirectly affect which users can reach delete checks for a given dashboard. |
 
 ## Response
 

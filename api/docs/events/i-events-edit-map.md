@@ -40,8 +40,8 @@ Update event metadata map, event order, overview widgets, and omitted segment ru
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `<eventKey>.name` | String | No | Display name override. If equals event key, it is removed from stored override. |
-| `<eventKey>.is_visible` | Boolean | No | `false` hides event. `true` is normalized away from stored override. |
+| ``eventKey.name`` | String | No | Display name override. If equals event key, it is removed from stored override. |
+| ``eventKey.is_visible`` | Boolean | No | `false` hides event. `true` is normalized away from stored override. |
 
 ### `event_overview` Array Element Structure
 
@@ -56,7 +56,7 @@ Update event metadata map, event order, overview widgets, and omitted segment ru
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `<eventKey>` | Array of Strings | No | Segment keys to omit for the event. Omitted values are removed from aggregate segment data. |
+| ``eventKey`` | Array of Strings | No | Segment keys to omit for the event. Omitted values are removed from aggregate segment data. |
 
 ## Configuration Impact
 

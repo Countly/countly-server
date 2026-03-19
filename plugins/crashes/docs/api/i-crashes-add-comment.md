@@ -1,8 +1,8 @@
 ---
-sidebar_label: "Create"
+sidebar_label: "Comment Create"
 ---
 
-# /i/crashes/add_comment
+# Crashes - Add Comment
 
 ## Endpoint
 
@@ -10,122 +10,89 @@ sidebar_label: "Create"
 /i/crashes/add_comment
 ```
 
-
 ## Overview
 
-Add a comment to a crash group. Comments allow users to collaborate and document findings about crashes.
-
----
+Adds a comment to a crash group.
 
 ## Authentication
-- **Required Permission**: `Create` (crashes feature)
-- **HTTP Method**: POST
-- **Content-Type**: application/x-www-form-urlencoded
 
----
+Countly API supports three authentication methods:
+
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
 
 ## Permissions
 
-- Required Permission: Create (crashes feature)
+Requires `crashes` `Create` permission.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes (or use auth_token) | API key for authentication |
-| `app_id` | String | Yes | Application ID |
-| `args` | JSON | Yes | Arguments with comment details |
-| `args.app_id` | String | Yes | Application ID |
-| `args.crash_id` | String | Yes | Crash group ID |
-| `args.text` | String | No | Comment text |
-| `args.time` | Timestamp | No | Comment timestamp (default: current time) |
-
----
+|---|---|---|---|
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
+| `app_id` | String | Yes | Target app ID for validation context. |
+| `args` | JSON String (Object) | Yes | Comment payload. |
+| `args.app_id` | String | Yes | App ID used by comment write path. |
+| `args.crash_id` | String | Yes | Crash group ID. |
+| `args.text` | String | No | Comment text. Default empty string. |
+| `args.time` | Number | No | Comment timestamp in ms. Default current time. |
 
 ## Response
 
 ### Success Response
 
 ```json
-{"result": "Success"}
+{
+  "result": "Success"
+}
 ```
-
----
-
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `result` | String | `Success` when request is accepted. |
 
 ### Error Responses
 
+- `400`
+
 ```json
 {
-  "result": "Error"
+  "result": "Please provide args parameter"
 }
 ```
 
-## Examples
-
-### Example 1: Add comment to crash
-
-**Request**:
-```bash
-curl -X POST "https://your-server.com/i/crashes/add_comment" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID" \
-  -d 'args={"app_id":"YOUR_APP_ID","crash_id":"crash_123","text":"Fixed in release 1.5.0"}'
-```
-
----
-
-## Processing Details
-
-1. Validates create permissions
-2. Creates comment object with:
-   - `text` - Comment text
-   - `author` - Current user full_name
-   - `author_id` - Current user ID
-   - `time` - Timestamp
-   - `_id` - SHA1 hash unique identifier
-3. Adds to crash group's comments array
-4. Logs crash_added_comment event
-
----
-
+Standard auth/permission errors from create validation can also be returned.
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
+- Builds comment object with `_id`, `author`, `author_id`, `time`, `text`.
+- Comment `_id` is SHA1 hash of app/crash/comment payload.
+- Pushes comment into crash group `comments` array.
+- Emits `crash_added_comment` system log action.
 
 ## Database Collections
 
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
-| `app_crashgroups` | Crash data domain | Stores crash reports, groups, comments, and crash-related metadata touched by this endpoint. |
+| `countly.app_crashgroups{appId}` | Crash comments | Pushes new entry into `comments` array. |
+| `countly.systemlogs` | Audit trail | Receives `crash_added_comment` action. |
 
----
+## Examples
 
-## Error Handling
-
-| Status | Message | Cause |
-|--------|---------|-------|
-| 401 | Unauthorized | Insufficient permissions |
-| 400 | Please provide args parameter | args missing |
-| 500 | Server error | Database failure |
-
----
+```plaintext
+/i/crashes/add_comment?api_key=YOUR_API_KEY&app_id=6991c75b024cb89cdc04efd2&args={"app_id":"6991c75b024cb89cdc04efd2","crash_id":"crash_group_1","text":"Investigating root cause"}
+```
 
 ## Related Endpoints
 
-- [/i/crashes/edit_comment](./i-crashes-edit-comment.md) - Edit existing comment
-- [/i/crashes/delete_comment](./i-crashes-delete-comment.md) - Delete comment
+- [Crashes - Edit Comment](./i-crashes-edit-comment.md)
+- [Crashes - Delete Comment](./i-crashes-delete-comment.md)
 
 ## Last Updated
 
-February 2026
+2026-03-07

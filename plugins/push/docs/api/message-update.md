@@ -25,12 +25,9 @@ Update an existing push notification campaign. Supports updating draft messages 
 
 ## Authentication
 
-- **Required Permission**: Update access to `push` feature (`validateUpdate`)
+- **Required Permission**: Update access to `push` feature (`update-permission validation`)
 - **HTTP Methods**: POST recommended (GET supported but not practical due to payload size)
 - **Content-Type**: application/x-www-form-urlencoded or JSON
-
-**HTTP Method Flexibility:**  
-All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchangeably. However, due to the complex payload size of push messages, POST is strongly recommended.
 
 ## Request Parameters
 
@@ -143,7 +140,12 @@ All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchang
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
+| `(root)` | Object | Full updated message object returned after update pipeline. |
+| `_id` | String | Updated message ID. |
+| `status` | String | Message status after update/scheduling logic. |
+| `triggers` | Array | Stored trigger definitions after update. |
+| `contents` | Array | Stored push content blocks after update. |
+| `result` | Object | Runtime counters and metadata. |
 
 
 ### Error Responses
@@ -156,7 +158,7 @@ All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchang
 
 ## Permissions
 
-- Required Permission: Update access to push feature (validateUpdate)
+- Required Permission: Update access to push feature (update-permission validation)
 
 ## Behavior/Processing
 

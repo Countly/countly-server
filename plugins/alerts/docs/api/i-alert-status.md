@@ -98,7 +98,7 @@ true
 
 ```json
 {
-  "result": "Failed to change alert statusERROR_DETAILS"
+  "result": "Failed to change alert statusMongoServerError: write conflict"
 }
 ```
 

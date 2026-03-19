@@ -162,7 +162,7 @@ Degraded success branch used when internal list/member lookup query fails:
 
 ```json
 {
-  "result": "Failed to get hook listERROR_DETAILS"
+  "result": "Failed to get hook listMongoServerError: query timeout"
 }
 ```
 

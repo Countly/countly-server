@@ -23,12 +23,9 @@ Trigger an API-based push notification campaign by creating a schedule with cust
 
 ## Authentication
 
-- **Required Permission**: Create access to `push` feature (`validateCreate`)
-- **HTTP Methods**: POST recommended (all methods supported)
+- **Required Permission**: Create access to `push` feature (`create-permission validation`)
+- **HTTP Method**: POST
 - **Content-Type**: application/x-www-form-urlencoded or JSON
-
-**HTTP Method Flexibility:**  
-All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchangeably.
 
 ## Request Parameters
 
@@ -186,7 +183,11 @@ Personalization variables for content substitution:
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
+| `(root)` | Object | API-trigger push execution result object (`result.json`). |
+| `total` | Number | Number of notifications added for the request filter. |
+| `processed` | Number | Number of processed recipients in current run. |
+| `sent` | Number | Number of successfully sent notifications. |
+| `errored` | Number | Number of failed notifications. |
 
 
 ### Error Responses
@@ -199,7 +200,7 @@ Personalization variables for content substitution:
 
 ## Permissions
 
-- Required Permission: Create access to push feature (validateCreate)
+- Required Permission: Create access to push feature (create-permission validation)
 
 ## Behavior/Processing
 

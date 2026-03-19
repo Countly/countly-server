@@ -1,79 +1,77 @@
 ---
-sidebar_label: "Download Profiler Data"
+sidebar_label: "Profiler Download"
 ---
 
-# /i/profiler/download-all
-
-## Overview
-
-Download all profiler files as a compressed tar archive. Includes all CPU profiles and heap snapshots from previous profiling sessions.
-
----
+# System Utility - Download All Profiler Files
 
 ## Endpoint
-
 
 ```plaintext
 /i/profiler/download-all
 ```
 
+## Overview
+
+Streams all profiler output files as a tar archive.
+
 ## Authentication
 
-- **Required**: Global admin permission (required)
-- **HTTP Method**: GET
-- **Permission**: Global Admin only
+Countly API supports three authentication methods:
 
-## Response
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**: Tar archive with profiler files
-
-**Headers**:
-### Success Response
-
-```
-Content-Type: plain/text
-Content-Disposition: attachment; filename=profiler.tar
-```
-
----
-
-
-### Response Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
-
-### Error Responses
-
-```json
-{
-  "result": "Error"
-}
-```
 
 ## Permissions
 
-- Required: Global admin permission (required)
-
+Requires Global Admin access.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `api_key` | String | Yes | Global admin API key. |
-| `auth_token` | String | No | Global admin auth token as query parameter or `Authorization: Bearer <token>` header. |
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
 
+## Response
+
+### Success Response
+
+Binary stream download with headers:
+
+- `Content-Type: plain/text; charset=utf-8`
+- `Content-Disposition: attachment; filename=profiler.tar`
+
+### Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `(stream body)` | Binary stream | Tar archive containing profiler output files. |
+| `Content-Type` | Header | `plain/text; charset=utf-8` |
+| `Content-Disposition` | Header | `attachment; filename=profiler.tar` |
+
+### Error Responses
+
+- `404`
+
+```json
+{
+  "result": "Profiler files couldn't be found"
+}
+```
+
+- `500`
+
+```json
+{
+  "result": "...error text..."
+}
+```
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
-
+- Builds tar stream from profiler files directory and pipes it to response.
 
 ## Database Collections
 
@@ -81,28 +79,10 @@ This endpoint does not read or write database collections.
 
 ## Examples
 
-### Example 1: Download all profiles
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/i/profiler/download-all?api_key=YOUR_GLOBAL_ADMIN_KEY" \
-  -o profiler.tar
+```plaintext
+/i/profiler/download-all?api_key=YOUR_API_KEY
 ```
-
----
-
-## Related Endpoints
-
-- [List Files](./i-profiler-list-files.md) - See available files
-
----
-
-## Implementation Notes
-
-1. **Tar format**: Compressed archive
-2. **Admin-only**: Requires global admin API key
-3. **All files**: Includes all profiler results
 
 ## Last Updated
 
-February 2026
+2026-03-07

@@ -7,7 +7,7 @@ sidebar_label: "Log Read"
 ## Endpoint
 
 ```plaintext
-/o/errorlogs?log={log_key}
+/o/errorlogs
 ```
 
 ## Overview
@@ -21,6 +21,7 @@ Countly API supports three authentication methods:
 1. **API Key** (parameter): `api_key=YOUR_API_KEY`
 2. **Auth Token** (parameter): `auth_token=YOUR_AUTH_TOKEN`
 3. **Auth Token** (header): `countly-token: YOUR_AUTH_TOKEN`
+
 
 ## Permissions
 

@@ -2,7 +2,7 @@
 sidebar_label: "Crash Show"
 ---
 
-# /i/crashes/show
+# Crashes - Show Crash Groups
 
 ## Endpoint
 
@@ -10,84 +10,87 @@ sidebar_label: "Crash Show"
 /i/crashes/show
 ```
 
-
 ## Overview
 
-Unhide previously hidden crash groups.
-
----
+Unhides one or more crash groups.
 
 ## Authentication
-- **Required Permission**: `Update` (crashes feature)
 
----
+Countly API supports three authentication methods:
+
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
 
 
 ## Permissions
 
-- Required Permission: Update (crashes feature)
+Requires `crashes` `Update` permission.
 
 ## Request Parameters
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `api_key` | String | Yes |
-| `app_id` | String | Yes |
-| `args` | JSON | Yes |
-| `args.crashes` | Array | No | Crash group IDs |
-| `args.crash_id` | String | No | Single crash ID |
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
+| `app_id` | String | Yes | Target app ID. |
+| `args` | JSON String (Object) | Yes | Action payload. |
+| `args.crash_id` | String | No | Single crash group ID. |
+| `args.crashes` | Array of Strings | No | List of crash group IDs. |
 
----
+Provide `args.crashes` or `args.crash_id`.
 
 ## Response
 
 ### Success Response
 
 ```json
-{"result": "Success"}
+{
+  "result": "Success"
+}
 ```
-
----
-
 
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `result` | String | `Success` when operation completes. |
 
 ### Error Responses
 
+- `400`
+
 ```json
 {
-  "result": "Error"
+  "result": "Please provide args parameter"
 }
 ```
 
-
+Standard auth/permission errors from update validation can also be returned.
 
 ## Behavior/Processing
 
-- Validates authentication, permissions, and request payloads before processing.
-- Executes the endpoint-specific operation described in this document and returns the response shape listed above.
-
+- Resolves crash IDs from `args.crashes` or `[args.crash_id]`.
+- Updates matching crash groups with `is_hidden=false`.
+- Emits `crash_shown` system log action for each processed crash entry.
 
 ## Database Collections
 
-This endpoint does not read or write database collections.
+| Collection | Used for | Data touched by this endpoint |
+|---|---|---|
+| `countly.app_crashgroups{appId}` | Crash group visibility | Updates `is_hidden=false` for selected groups. |
+| `countly.systemlogs` | Audit trail | Receives `crash_shown` action(s). |
 
 ## Examples
 
-### Endpoint formation
-
 ```plaintext
-/i/crashes/show
+/i/crashes/show?api_key=YOUR_API_KEY&app_id=6991c75b024cb89cdc04efd2&args={"crashes":["crash_group_1","crash_group_2"]}
 ```
+
 ## Related Endpoints
 
-- [/i/crashes/hide](./i-crashes-hide.md) - Hide crash
+- [Crashes - Hide Crash Groups](./i-crashes-hide.md)
 
 ## Last Updated
 
-February 2026
+2026-03-07

@@ -109,7 +109,7 @@ Requires `alerts` `Read` permission.
 
 ```json
 {
-  "result": "Failed to get alert listERROR_DETAILS"
+  "result": "Failed to get alert listMongoServerError: query timeout"
 }
 ```
 

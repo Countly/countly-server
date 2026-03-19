@@ -68,8 +68,8 @@ Return all apps as packed app maps for admin and user scopes.
 |---|---|---|
 | `admin_of` | Object | Packed app map keyed by app ID. |
 | `user_of` | Object | Packed app map keyed by app ID. |
-| `admin_of.<appId>` | Object | Packed app record. |
-| `user_of.<appId>` | Object | Packed app record. |
+| `admin_of.[appId]` | Object | Packed app record. |
+| `user_of.[appId]` | Object | Packed app record. |
 | `salt` | String | App `salt` or legacy `checksum_salt` fallback. |
 
 ### Error Responses

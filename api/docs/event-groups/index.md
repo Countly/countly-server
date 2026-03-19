@@ -7,7 +7,7 @@ sidebar_label: "Overview"
 
 ## Overview
 
-Event Groups APIs manage grouped synthetic events with IDs like `[CLY]_group_<hash>`.  
+Event Groups APIs manage grouped synthetic events with IDs like ``[CLY]_group_hash``.  
 These groups are created from source events and can be reordered, enabled/disabled, and removed.
 
 ## Quick Links

@@ -24,12 +24,9 @@ Estimate the audience size and locale distribution for a push notification campa
 
 ## Authentication
 
-- **Required Permission**: Read access to `push` feature (`validateRead`)
+- **Required Permission**: Read access to `push` feature (`read-permission validation`)
 - **HTTP Methods**: GET recommended (POST also supported)
 - **Content-Type**: application/x-www-form-urlencoded or JSON
-
-**HTTP Method Flexibility:**  
-All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchangeably. GET is recommended for read-only estimation operations.
 
 ## Request Parameters
 
@@ -126,7 +123,8 @@ All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchang
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
+| `count` | Number | Estimated number of users matching app/platform/filter conditions. |
+| `locales` | Object | Locale distribution map where key is locale and value is recipient count. |
 
 
 ### Error Responses
@@ -139,7 +137,7 @@ All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchang
 
 ## Permissions
 
-- Required Permission: Read access to push feature (validateRead)
+- Required Permission: Read access to push feature (read-permission validation)
 
 ## Behavior/Processing
 

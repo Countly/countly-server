@@ -24,7 +24,7 @@ Countly API supports three authentication methods:
 
 ## Permissions
 
-No separate feature permission flag is checked in this handler. Dashboard sharing rules control access:
+Dashboard sharing rules control access:
 
 - edit access is required for removal,
 - view-only and no-access users get explicit denial payloads.

@@ -38,7 +38,7 @@ No separate feature permission flag is checked. Access is derived from dashboard
 
 | Setting | Default | Affects | User-visible impact |
 |---|---|---|---|
-| `dashboards.allow_public_dashboards` | `true` | Filtering | If enabled, dashboards with `share_with=all-users` are included for non-admin users; if disabled, they are excluded unless otherwise shared. |
+| `dashboards.sharing_status` | `true` | Sharing availability | Controls whether broad sharing options are available. This directly affects which dashboards can be visible to non-owners in list results. |
 
 ## Response
 

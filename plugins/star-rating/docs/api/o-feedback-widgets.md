@@ -2,7 +2,7 @@
 sidebar_label: "List All Widgets"
 ---
 
-# /o/feedback/widgets
+# Star Rating - List All Widgets
 
 ## Endpoint
 
@@ -10,43 +10,40 @@ sidebar_label: "List All Widgets"
 /o/feedback/widgets
 ```
 
-
 ## Overview
 
-List all feedback widgets configured for an application. Returns array of widget objects with full configuration. Includes active and inactive widgets
-
----
-
-## /o/feedback/widgets
+Lists rating widgets, optionally filtered by app and active flag.
 
 ## Authentication
 
-- **Required Permission**: Feature access
-- **HTTP Methods**: All methods supported (GET, POST, PUT, DELETE)
-- **Content-Type**: application/x-www-form-urlencoded or JSON
+Countly API supports three authentication methods:
 
-**HTTP Method Flexibility:**  
-All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchangeably. You can use GET for simpler queries or POST for large payloads. All examples show the conventional method, but any method works identically.
+1. `api_key=YOUR_API_KEY`
+2. `auth_token=YOUR_AUTH_TOKEN`
+3. `countly-token: YOUR_AUTH_TOKEN`
+
+
+## Permissions
+
+Requires `star_rating` `Read` permission.
 
 ## Request Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `api_key` | String | Yes | Your API authentication key |
-| `app_id` | String | Yes | Target application ID |
+|---|---|---|---|
+| `api_key` | String | Conditional | Required if `auth_token` is not provided. |
+| `auth_token` | String | Conditional | Required if `api_key` is not provided. |
+| `app_id` | String | No | Filters widgets by app ID. |
+| `is_active` | String | No | Filters by string flag in storage (for example `true`/`false`). |
 
 ## Response
 
-#### Success Response
-**Status Code**: `200 OK`
-
-**Body**:
 ### Success Response
 
 ```json
 [
   {
-    "_id": "60f12b92c1c9d0116e01d976",
+    "_id": "67a3d2f5c1a23b0f4d6c0201",
     "app_id": "6991c75b024cb89cdc04efd2",
     "type": "rating",
     "is_active": "true"
@@ -54,96 +51,52 @@ All Countly endpoints accept any HTTP method (GET, POST, PUT, DELETE) interchang
 ]
 ```
 
-#### Error Response
-**Status Code**: `400 Bad Request` or `500 Internal Server Error`
-
-**Body**:
-```json
-{"result": "error", "message": "Error description"}
-```
-
----
-
-
 ### Response Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `*` | Varies | Fields returned by this endpoint. See Success Response example. |
-
+| `(root)` | Array | List of widget documents. |
+| `[]` | Object | One widget record. |
+| `[].is_active` | String | String status field (`"true"`/`"false"`). |
 
 ### Error Responses
 
+- `500`
+
 ```json
 {
-  "result": "Error"
+  "result": "database error message"
 }
 ```
 
-## Permissions
-
-- Required Permission: Feature access
+Standard authentication/authorization errors from read validation can also be returned.
 
 ## Behavior/Processing
 
-- Validates request parameters
-- Processes the operation
-- Returns appropriate response
-
----
-
-## Examples
-
-### Example 1: Basic Request
-
-**Description**: Standard request using POST method
-
-**Request** (POST):
-```bash
-curl -X POST "https://your-server.com/o/feedback/widgets" \
-  -d "api_key=YOUR_API_KEY" \
-  -d "app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
-### Example 2: Alternative GET Method
-
-**Description**: Same request using GET (both methods work identically)
-
-**Request** (GET):
-```bash
-curl "https://your-server.com/o/feedback/widgets?api_key=YOUR_API_KEY&app_id=YOUR_APP_ID"
-```
-
-**Response**:
-```json
-{"result": "success"}
-```
-
----
-
-## Technical Notes
+- Always filters by `type="rating"`.
+- Adds optional filters for `is_active` and `app_id` when supplied.
+- Returns raw array via raw response body.
 
 ## Database Collections
 
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
-| `countly.feedback_widgets` | Stores feedback/NPS widget configuration and metadata per app. | Reads widget documents by app to return the list of configured widgets. |
+| `countly.feedback_widgets` | Widget source | Reads rating widgets for list output. |
+
+## Examples
+
+### List widgets for one app
+
+```plaintext
+/o/feedback/widgets?
+  api_key=YOUR_API_KEY&
+  app_id=6991c75b024cb89cdc04efd2
+```
+
 ## Related Endpoints
 
-- See feature documentation for related operations
-
----
-
-## Enterprise
-
-Plugin: star-rating
-Endpoint: /o/feedback/widgets
+- [Star Rating - Get Widget Details](o-feedback-widget.md)
 
 ## Last Updated
 
-February 2026
+2026-03-07

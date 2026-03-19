@@ -12,7 +12,7 @@ sidebar_label: "Global Config Read"
 
 ## Overview
 
-Returns the current global configuration set visible to the dashboard. The response includes enabled feature namespaces and core namespaces, excluding hidden/internal namespaces such as `services`.
+Returns the current global configuration set visible to the dashboard, excluding internal `services` namespace.
 
 ## Authentication
 
@@ -33,12 +33,6 @@ Countly API supports three authentication methods:
 | `api_key` | String | Yes (or use `auth_token`) | API key for authentication. |
 | `auth_token` | String | No | Auth token as query parameter or `countly-token` header. |
 | `app_id` | String | Yes | Target app ID required by app-admin validation. |
-
-## Configuration Impact
-
-| Setting | Default | Affects | User-visible impact |
-|---|---|---|---|
-| `plugins.{feature_code}` | `true` for installed features unless explicitly disabled | Response content | Disabled features are filtered out of the returned namespace list. |
 
 ## Response
 
@@ -73,7 +67,7 @@ Countly API supports three authentication methods:
 
 ```json
 {
-  "result": "No app id provided"
+  "result": "No app_id provided"
 }
 ```
 
@@ -128,8 +122,8 @@ Countly API supports three authentication methods:
 ## Behavior/Processing
 
 - Validates app-admin access.
-- Loads the latest plugin/config document.
-- Builds effective namespace map and filters hidden/internal namespaces.
+- Loads current global configuration set from server runtime.
+- Returns full configuration payload as a JSON object.
 - Removes `services` from the response before returning data.
 
 ## Database Collections

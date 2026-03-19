@@ -24,6 +24,7 @@ Exports documents from an accessible collection and returns them as a downloadab
 
 - Requires authenticated dashboard user access.
 - Collection-level access is validated for the requesting user.
+- For non-global users, `drill_events` and `events_data` exports are additionally constrained by app-scope base filters.
 
 ## Request Parameters
 
@@ -50,6 +51,7 @@ Exports documents from an accessible collection and returns them as a downloadab
 - `filter` is parsed first; if omitted, `query` is used.
 - Invalid `projection`, `project`, `sort`, `formatFields`, or `get_index` values are ignored (set to `null`) rather than returning parse errors.
 - Non-global users are restricted to accessible collections; additional base filtering is applied for event-heavy collections.
+- If request `query` already includes a base-filtered key, both constraints are merged with `$and` to prevent scope bypass.
 
 ## Configuration Impact
 
@@ -123,6 +125,7 @@ JSON export example (file content):
 |---|---|---|---|
 | Index export mode | `get_index` is provided and parses truthy | Reads collection index metadata and exports it through data-conversion flow. | Download stream/body (format depends on `type`) |
 | Document export mode | Default branch | Applies query/projection/sort/skip/limit and exports collection documents. | Download stream/body (format depends on `type`) |
+| Scoped document mode | Caller is non-global and collection is `drill_events` or `events_data` | Merges caller app-scope base filters into query before export cursor is built. | Download stream/body (format depends on `type`) |
 
 ### Impact on Other Data
 
@@ -137,10 +140,10 @@ JSON export example (file content):
 | Collection | Used for | Data touched by this endpoint |
 |---|---|---|
 | `countly.members` | Authentication and collection access validation | Reads caller identity for management-read checks and collection-level access rules. |
-| `countly.<collection>` | Export source when `db=countly` (default) | Reads documents or indexes from requested collection. |
-| `countly_drill.<collection>` | Export source when `db=countly_drill` | Reads documents or indexes from requested drill collection. |
-| `countly_out.<collection>` | Export source when `db=countly_out` | Reads documents or indexes from requested out database collection. |
-| `countly_fs.<collection>` | Export source when `db=countly_fs` | Reads documents/index-like metadata via GridFS handler-backed collection access. |
+| `countly.[collection]` | Export source when `db=countly` (default) | Reads documents or indexes from requested collection. |
+| `countly_drill.[collection]` | Export source when `db=countly_drill` | Reads documents or indexes from requested drill collection. |
+| `countly_out.[collection]` | Export source when `db=countly_out` | Reads documents or indexes from requested out database collection. |
+| `countly_fs.[collection]` | Export source when `db=countly_fs` | Reads documents/index-like metadata via GridFS handler-backed collection access. |
 
 ---
 
@@ -183,6 +186,7 @@ JSON export example (file content):
 
 - Access to arbitrary collections is restricted by collection permission checks.
 - Invalid JSON in `filter`/`query` returns parse error and no export file.
+- Non-global exports of `drill_events` and `events_data` cannot exceed caller app scope because base filtering is enforced server-side.
 
 ---
 

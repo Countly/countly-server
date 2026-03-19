@@ -16,11 +16,11 @@ Executes widget data loading for a provided widget array payload and returns the
 
 ## Authentication
 
-No explicit authentication check is performed in this handler.
+This endpoint accepts requests without API authentication parameters.
 
 ## Permissions
 
-No explicit permission check is performed in this handler.
+This endpoint does not enforce dashboard access or role-based permission checks.
 
 ## Request Parameters
 
@@ -91,7 +91,7 @@ This handler does not define explicit structured error responses in normal flow;
 
 ### Impact on Other Data
 
-- Read-only endpoint in this handler.
+- Read-only endpoint.
 
 ## Database Collections
 
