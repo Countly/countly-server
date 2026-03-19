@@ -2,6 +2,18 @@
 Fixes:
 - [hooks] Implement domain/ip address validation for hooks with http effect
 
+Dependencies:
+- Bump countly-sdk-web from 26.1.0 to 26.1.1
+- Bump ejs from 4.0.1 to 5.0.1 
+- Bump express-rate-limit from 8.3.0 to 8.3.1
+- Bump fast-xml-parser from 5.4.1 to 5.5.7 in /plugins/push
+- Bump flatted from 3.3.4 to 3.4.2
+- Bump moment-timezone from 0.6.0 to 0.6.1 in /bin/scripts/timezones
+- Bump nodemailer from 8.0.1 to 8.0.2
+- Bump puppeteer from 24.38.0 to 24.39.0
+- Bump sass from 1.97.3 to 1.98.0
+
+
 ## Version 25.03.39
 Fixes:
 - [core] Fixed replaceDatabaseString incorrectly replacing "countly" in the MongoDB username when it appears in the connection URL
