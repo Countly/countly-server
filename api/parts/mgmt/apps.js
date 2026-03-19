@@ -857,12 +857,7 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
                 common.db.collection('metric_changes' + appId).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
                 common.db.collection('metric_changes' + appId).ensureIndex({uid: 1}, { background: true }, function() {});
             });
-            common.db.collection('app_user_merges' + appId).drop(function() {
-                common.db.collection('app_user_merges' + appId).ensureIndex({cd: 1}, {
-                    expireAfterSeconds: 60 * 60 * 3,
-                    background: true
-                }, function() {});
-            });
+            common.db.collection('app_user_merges' + appId).drop(function() {});
             if (params.qstring.args.period === "reset") {
                 plugins.dispatch("/i/apps/reset", {
                     params: params,
