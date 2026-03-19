@@ -241,16 +241,16 @@ class EventDeduplicationJob extends job.Job {
 
     /**
      * Compute the rolling deduplication window (now minus WINDOW_HOURS to now).
-     * Returns epoch seconds (UTC) to avoid timezone-dependent string parsing in ClickHouse.
-     * Queries use {start:Float64} and toDateTime64(start, 3, 'UTC') for explicit UTC.
-     * @returns {{windowStart: number, windowEnd: number}} Start and end as epoch seconds (UTC)
+     * Returns epoch milliseconds (UTC). Queries use fromUnixTimestamp64Milli() for
+     * unambiguous, timezone-explicit conversion to DateTime64(3).
+     * @returns {{windowStart: number, windowEnd: number}} Start and end as epoch milliseconds (UTC)
      */
     #getWindowBounds() {
         const nowMs = Date.now();
         const startMs = nowMs - WINDOW_HOURS * 60 * 60 * 1000;
         return {
-            windowStart: startMs / 1000,
-            windowEnd: nowMs / 1000
+            windowStart: startMs,
+            windowEnd: nowMs
         };
     }
 
@@ -258,14 +258,14 @@ class EventDeduplicationJob extends job.Job {
      * Count total rows in the scan window. Used for anomaly-ratio calculation.
      * @param {object} queryService - ClickHouse query service instance
      * @param {object} tableConfig - Table configuration from {@link getTableConfig}
-     * @param {{start: number, end: number}} windowParams - Window bounds as epoch seconds (UTC)
+     * @param {{start: number, end: number}} windowParams - Window bounds as epoch milliseconds (UTC)
      * @returns {Promise<number>} Total row count in the cd window
      */
     async #getTotalRowsInWindow(queryService, tableConfig, windowParams) {
         const q = `
             SELECT count() AS total
             FROM ${tableConfig.selectFull}
-            WHERE cd >= toDateTime64({start:Float64}, 3, 'UTC') AND cd < toDateTime64({end:Float64}, 3, 'UTC')
+            WHERE cd >= fromUnixTimestamp64Milli({start:Int64}, 'UTC') AND cd < fromUnixTimestamp64Milli({end:Int64}, 'UTC')
         `;
         const [row] = await this.#queryJSON(queryService, q, windowParams);
         return Number(row?.total || 0);
@@ -279,7 +279,7 @@ class EventDeduplicationJob extends job.Job {
      * query size limits with large exclusion lists.
      * @param {object} queryService - ClickHouse query service instance
      * @param {object} tableConfig - Table configuration from {@link getTableConfig}
-     * @param {{start: number, end: number}} windowParams - Window bounds as epoch seconds (UTC)
+     * @param {{start: number, end: number}} windowParams - Window bounds as epoch milliseconds (UTC)
      * @param {string[]} excludeIds - _id values already processed in prior batches
      * @returns {Promise<{rows: object[], totalExcess: number}>} Duplicate groups (with _id, cnt, keep_ts, keep_cd) and total excess count
      */
@@ -298,7 +298,7 @@ class EventDeduplicationJob extends job.Job {
                     toUnixTimestamp64Milli(argMin(ts, (ts, cd))) AS keep_ts_ms,
                     toUnixTimestamp64Milli(argMin(cd, (ts, cd))) AS keep_cd_ms
                 FROM ${tableConfig.selectFull}
-                WHERE cd >= toDateTime64({start:Float64}, 3, 'UTC') AND cd < toDateTime64({end:Float64}, 3, 'UTC')
+                WHERE cd >= fromUnixTimestamp64Milli({start:Int64}, 'UTC') AND cd < fromUnixTimestamp64Milli({end:Int64}, 'UTC')
                   ${excludeClause}
                 GROUP BY _id
                 HAVING cnt > 1
@@ -322,8 +322,8 @@ class EventDeduplicationJob extends job.Job {
      * Does NOT include command_id or SETTINGS — those are appended by mutationManager.
      * @param {object} tableConfig - Table configuration from {@link getTableConfig}
      * @param {object[]} duplicates - Duplicate group rows, each with _id, keep_ts_ms, keep_cd_ms (epoch millis)
-     * @param {number} windowStart - Window start as epoch seconds (UTC)
-     * @param {number} windowEnd - Window end as epoch seconds (UTC)
+     * @param {number} windowStart - Window start as epoch milliseconds (UTC)
+     * @param {number} windowEnd - Window end as epoch milliseconds (UTC)
      * @returns {string} ALTER TABLE DELETE SQL statement
      */
     #buildDeleteSQL(tableConfig, duplicates, windowStart, windowEnd) {
@@ -335,16 +335,22 @@ class EventDeduplicationJob extends job.Job {
         const esc = (s) => String(s).replace(/'/g, "''");
         const idList = duplicates.map(d => `'${esc(d._id)}'`).join(', ');
 
+        // For truly identical rows (same _id, ts, cd), the NOT(keeper) condition matches
+        // zero rows, so those duplicates survive. This is intentionally safe: we never
+        // delete data we can't distinguish. Use OPTIMIZE TABLE DEDUPLICATE for those cases.
+        //
+        // fromUnixTimestamp64Milli accepts millis directly → DateTime64(3), explicit UTC.
+        // No division or decimal semantics needed.
         const keeperConditions = duplicates.map(d => {
             const keepTsMs = Number(d.keep_ts_ms);
             const keepCdMs = Number(d.keep_cd_ms);
-            return `(_id = '${esc(d._id)}' AND ts = toDateTime64(${keepTsMs} / 1000, 3, 'UTC') AND cd = toDateTime64(${keepCdMs} / 1000, 3, 'UTC'))`;
+            return `(_id = '${esc(d._id)}' AND ts = fromUnixTimestamp64Milli(${keepTsMs}, 'UTC') AND cd = fromUnixTimestamp64Milli(${keepCdMs}, 'UTC'))`;
         }).join('\n        OR ');
 
         return `ALTER TABLE ${tableConfig.mutationFull} ${tableConfig.onCluster}
             DELETE WHERE
-                cd >= toDateTime64(${windowStart}, 3, 'UTC')
-                AND cd < toDateTime64(${windowEnd}, 3, 'UTC')
+                cd >= fromUnixTimestamp64Milli(${windowStart}, 'UTC')
+                AND cd < fromUnixTimestamp64Milli(${windowEnd}, 'UTC')
                 AND _id IN (${idList})
                 AND NOT (
                     ${keeperConditions}
