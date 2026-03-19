@@ -709,11 +709,12 @@ class MutationManagerJob extends Job {
         if (!/\b(DELETE|UPDATE)\b/.test(upper)) {
             return null;
         }
-        if (!upper.includes(' WHERE ')) {
+        if (!/\bWHERE\b/.test(upper)) {
             return null;
         }
         // Find SETTINGS clause (if any) — inject command-id BEFORE it
-        const settingsIdx = upper.indexOf(' SETTINGS');
+        const settingsMatch = upper.match(/\bSETTINGS\b/);
+        const settingsIdx = settingsMatch?.index ?? -1;
         const injection = ` AND '${commandId}' = '${commandId}'`;
         if (settingsIdx !== -1) {
             return sql.slice(0, settingsIdx) + injection + sql.slice(settingsIdx);

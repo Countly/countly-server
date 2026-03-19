@@ -1,7 +1,7 @@
 // jobs/EventDeduplicationJob.js
 //
 // Nightly job that detects and removes duplicate events from the drill_events
-// table based on the _id column. Scans a rolling 25-hour window on the cd
+// table based on the _id column. Scans a rolling 26-hour window on the cd
 // (created/ingestion) timestamp, finds _id values with count > 1, and dispatches
 // DELETE mutations through mutationManager for execution, tracking, and retry.
 //
@@ -289,14 +289,14 @@ class EventDeduplicationJob extends job.Job {
 
         const q = `
             SELECT
-                _id, cnt, keep_ts, keep_cd,
+                _id, cnt, keep_ts_ms, keep_cd_ms,
                 sum(cnt) OVER () - count(*) OVER () AS total_excess
             FROM (
                 SELECT
                     _id,
                     count() AS cnt,
-                    toString(argMin(ts, (ts, cd))) AS keep_ts,
-                    toString(argMin(cd, (ts, cd))) AS keep_cd
+                    toUnixTimestamp64Milli(argMin(ts, (ts, cd))) AS keep_ts_ms,
+                    toUnixTimestamp64Milli(argMin(cd, (ts, cd))) AS keep_cd_ms
                 FROM ${tableConfig.selectFull}
                 WHERE cd >= toDateTime64({start:Float64}, 3, 'UTC') AND cd < toDateTime64({end:Float64}, 3, 'UTC')
                   ${excludeClause}
@@ -321,7 +321,7 @@ class EventDeduplicationJob extends job.Job {
      * single keeper row per _id (identified by its exact ts + cd pair via argMin).
      * Does NOT include command_id or SETTINGS — those are appended by mutationManager.
      * @param {object} tableConfig - Table configuration from {@link getTableConfig}
-     * @param {object[]} duplicates - Duplicate group rows, each with _id, keep_ts, keep_cd
+     * @param {object[]} duplicates - Duplicate group rows, each with _id, keep_ts_ms, keep_cd_ms (epoch millis)
      * @param {number} windowStart - Window start as epoch seconds (UTC)
      * @param {number} windowEnd - Window end as epoch seconds (UTC)
      * @returns {string} ALTER TABLE DELETE SQL statement
@@ -335,9 +335,11 @@ class EventDeduplicationJob extends job.Job {
         const esc = (s) => String(s).replace(/'/g, "''");
         const idList = duplicates.map(d => `'${esc(d._id)}'`).join(', ');
 
-        const keeperConditions = duplicates.map(d =>
-            `(_id = '${esc(d._id)}' AND ts = toDateTime64('${esc(d.keep_ts)}', 3) AND cd = toDateTime64('${esc(d.keep_cd)}', 3))`
-        ).join('\n        OR ');
+        const keeperConditions = duplicates.map(d => {
+            const keepTsMs = Number(d.keep_ts_ms);
+            const keepCdMs = Number(d.keep_cd_ms);
+            return `(_id = '${esc(d._id)}' AND ts = toDateTime64(${keepTsMs} / 1000, 3, 'UTC') AND cd = toDateTime64(${keepCdMs} / 1000, 3, 'UTC'))`;
+        }).join('\n        OR ');
 
         return `ALTER TABLE ${tableConfig.mutationFull} ${tableConfig.onCluster}
             DELETE WHERE
