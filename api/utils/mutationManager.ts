@@ -137,16 +137,52 @@ plugins.register('/core/update_granular_data', async function(ob: { db: string; 
     });
 });
 
+/**
+ * Validate that a native ClickHouse SQL statement is a safe mutation.
+ * Only allows: ALTER TABLE ... DELETE ... WHERE ... or ALTER TABLE ... UPDATE ... WHERE ...
+ * Rejects multi-statement SQL, forbidden DDL (DROP, TRUNCATE, RENAME, DETACH, ATTACH).
+ */
+function isSafeNativeChMutation(sql: string): string | null {
+    if (!sql || typeof sql !== 'string') {
+        return 'missing_or_invalid_sql';
+    }
+    const trimmed = sql.trim();
+    if (!trimmed) {
+        return 'empty_sql';
+    }
+    // Reject multi-statement: only allow optional trailing semicolon
+    const firstSemicolon = trimmed.indexOf(';');
+    if (firstSemicolon !== -1 && firstSemicolon !== trimmed.length - 1) {
+        return 'multiple_statements_not_allowed';
+    }
+    const upper = trimmed.replace(/\s+/g, ' ').toUpperCase();
+    // Reject forbidden DDL
+    if (/\b(DROP|TRUNCATE|RENAME|DETACH|ATTACH)\b/.test(upper)) {
+        return 'forbidden_command';
+    }
+    // Must start with ALTER TABLE
+    if (!upper.startsWith('ALTER TABLE ')) {
+        return 'only_alter_table_mutations_allowed';
+    }
+    // Must contain DELETE or UPDATE
+    if (!/\b(DELETE|UPDATE)\b/.test(upper)) {
+        return 'must_be_delete_or_update_mutation';
+    }
+    // Must have WHERE clause (required for command-id injection)
+    if (!upper.includes(' WHERE ')) {
+        return 'missing_where_clause';
+    }
+    return null;
+}
+
 plugins.register('/core/execute_native_ch_mutation', async function(ob: { sql: string; db: string; collection: string; metadata?: Record<string, unknown> }) {
     const { sql, db, collection, metadata } = ob;
-    if (!sql || typeof sql !== 'string') {
-        log.e('Native CH mutation rejected: missing sql');
-        return;
-    }
-    // Only allow ALTER TABLE mutations to prevent arbitrary DDL
-    if (!/^\s*ALTER\s+TABLE\s+/i.test(sql)) {
-        log.e('Native CH mutation rejected: sql must start with ALTER TABLE');
-        return;
+
+    const validationError = isSafeNativeChMutation(sql);
+    if (validationError) {
+        const errMsg = `Native CH mutation rejected: ${validationError}`;
+        log.e(errMsg);
+        throw new Error(errMsg);
     }
     log.d('Mutation (native_ch) queued:' + JSON.stringify({ db, collection }));
     const now = Date.now();
