@@ -984,6 +984,30 @@
                 dataType: "json"
             });
         },
+        getEnforcement: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    method: 'sdk-enforcement'
+                },
+                dataType: "json"
+            }).then(function(res) {
+                return res || {};
+            });
+        },
+        updateEnforcement: function(enforcement) {
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.w + "/sdk-config/update-enforcement",
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    enforcement: JSON.stringify(enforcement)
+                },
+                dataType: "json"
+            });
+        },
         calculate: function() {
             var chartData = countlyCommon.extractTwoLevelData(countlySDK.getDb(), countlySDK.getMeta("sdks"), countlySDK.clearObject, [
                 {
@@ -1024,6 +1048,11 @@
             initialize: function(context) {
                 return countlySDK.service.initialize().then(function(sdk) {
                     context.dispatch("countlySDK/sdk/all", sdk, {root: true});
+                });
+            },
+            initializeEnforcement: function(context) {
+                return countlySDK.service.getEnforcement().then(function(enforcement) {
+                    context.dispatch("countlySDK/sdk/enforcement", enforcement, {root: true});
                 });
             },
             fetchSDKStats: function(context) {
@@ -1095,12 +1124,16 @@
             state: function() {
                 return {
                     all: {},
+                    enforcement: {},
                     isTableLoading: true
                 };
             },
             getters: {
                 all: function(state) {
                     return state.all;
+                },
+                enforcement: function(state) {
+                    return state.enforcement;
                 },
                 isTableLoading: function(_state) {
                     return _state.isTableLoading;
@@ -1110,6 +1143,9 @@
                 setAll: function(state, val) {
                     state.all = val;
                 },
+                setEnforcement: function(state, val) {
+                    state.enforcement = val;
+                },
                 setTableLoading: function(state, value) {
                     state.isTableLoading = value;
                 }
@@ -1118,9 +1154,15 @@
                 all: function(context, val) {
                     context.commit("setAll", val);
                 },
+                enforcement: function(context, val) {
+                    context.commit("setEnforcement", val);
+                },
                 update: function(context, parameter) {
                     var updateParameter = Object.assign({}, parameter);
                     return countlySDK.service.updateParameter(updateParameter);
+                },
+                updateEnforcement: function(context, enforcement) {
+                    return countlySDK.service.updateEnforcement(enforcement);
                 },
                 setTableLoading: function(context, value) {
                     context.commit("setTableLoading", value);
