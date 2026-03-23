@@ -2,6 +2,21 @@
 Dependencies:
 - Remove SQLite
 
+## Version 25.03.39
+Fixes:
+- [core] Fixed replaceDatabaseString incorrectly replacing "countly" in the MongoDB username when it appears in the connection URL
+- [dashboards] Unescape event segment values in meta
+- [push] Using Android specific content for Huawei messages as well
+
+Enterprise fixes:
+- [data-manager] Fix validation approval button label
+- [data-manager] Fix validation table column names
+
+## Version 25.03.38
+Fixes:
+- [push] Fixed the property name by changing it from link to url for message buttons for Huawei messages
+- [web] Use Client Hints
+
 ## Version 25.03.37
 Fixes:
 - [core] Update home page download notification text

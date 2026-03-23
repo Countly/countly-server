@@ -382,19 +382,22 @@ class Message extends Mongoable {
 
     /**
      * Filter contents for given lang-platform combination
-     * 
+     *
      * @param {Content[]|object[]} contents array of contents to filter
      * @param {string} p platform key
      * @param {string} la language key
      * @returns {Content[]} array of contents which are applicable for this p/l case
      */
     static filterContents(contents, p, la) {
-        return (contents || []).filter(c => (!p || (!c.p || c.p === p)) && (!la || (!c.la || c.la === la)));
+        return (contents || []).filter(
+            c => (!p || (!c.p || c.p === p || (c.p === "a" && p === "h")))
+                && (!la || (!c.la || c.la === la))
+        );
     }
 
     /**
      * Get Content instance by p & l given. `content()` returns default content.
-     * 
+     *
      * @param {string} p platform key
      * @param {string} la language key
      * @returns {Content|undefined} Content instance if one with given p & l exists or undefined
