@@ -15,6 +15,7 @@ CREATE TABLE {{DATABASE}}.{{TABLE}} {{ON_CLUSTER}}
     path          String,
     matched_value String,
     matched_key   String DEFAULT '',
+    exec_ms       Float64 DEFAULT 0,
     ts            DateTime64(3)
 )
 ENGINE = {{ENGINE}}
