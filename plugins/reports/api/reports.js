@@ -20,8 +20,17 @@ var reportsInstance = {},
 
 countlyConfig.passwordSecret || "";
 
+/**
+ * Generates a cryptographically secure random string of the given length.
+ * @param {number} length - desired string length
+ * @returns {string} random hex string truncated to the given length
+ */
+function generateRandomString(length) {
+    return crypto.randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length);
+}
+
 plugins.setConfigs("reports", {
-    secretKey: countlyApiConfig?.encryption?.reports_key || "Ydqa7Omkd3yhV33M3iWV1oFcOEk898h9",
+    secretKey: countlyApiConfig?.encryption?.reports_key || generateRandomString(32),
 });
 
 versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
