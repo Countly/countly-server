@@ -3,6 +3,9 @@ Fixes:
 - [hooks] Implement domain/ip address validation for hooks with http effect
 - [reports] Hardcoded default secret for the e-mails converted to be randomly generated.
 
+Enterprise fixes:
+- [drill] Hide redacted user properties in filters
+
 Dependencies:
 - Bump countly-sdk-web from 26.1.0 to 26.1.1
 - Bump ejs from 4.0.1 to 5.0.1
