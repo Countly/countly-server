@@ -1,6 +1,6 @@
 // Script that adds creation date for existing alerts.
 
-const pluginManager = require('../../../plugins/pluginManager.js');
+const pluginManager = require('../../../../plugins/pluginManager.js');
 
 pluginManager.dbConnection().then(async(countlyDb) => {
     try {
