@@ -1,10 +1,11 @@
-## Version 25.03.X
+## Version 25.03.40
 Fixes:
 - [hooks] Implement domain/ip address validation for hooks with http effect
-- [reports] Hardcoded default secret for the e-mails converted to be randomly generated.
+- [reports] Hardcoded default secret for the e-mails converted to be randomly generated
 
 Enterprise fixes:
 - [drill] Hide redacted user properties in filters
+- [oidc] Using sub as fallback as user identifier when there's no email
 
 Dependencies:
 - Bump countly-sdk-web from 26.1.0 to 26.1.1
@@ -16,7 +17,6 @@ Dependencies:
 - Bump nodemailer from 8.0.1 to 8.0.2
 - Bump puppeteer from 24.38.0 to 24.39.0
 - Bump sass from 1.97.3 to 1.98.0
-
 
 ## Version 25.03.39
 Fixes:
