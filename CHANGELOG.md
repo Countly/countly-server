@@ -5,6 +5,7 @@ Fixes:
 
 Enterprise fixes:
 - [drill] Hide redacted user properties in filters
+- [oidc] Using sub as fallback as user identifier when there's no email
 
 Dependencies:
 - Bump countly-sdk-web from 26.1.0 to 26.1.1
