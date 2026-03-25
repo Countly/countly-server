@@ -1,9 +1,10 @@
 // jobs/EventDeduplicationJob.js
 //
 // Nightly job that detects and removes duplicate events from the drill_events
-// table based on the _id column. Scans a rolling 26-hour window on the cd
-// (created/ingestion) timestamp, finds _id values with count > 1, and dispatches
-// DELETE mutations through mutationManager for execution, tracking, and retry.
+// table based on the _id column. Scans from the last successful checkpoint to now
+// (falling back to a 26-hour window on first run or checkpoint failure), finds
+// _id values with count > 1, and dispatches DELETE mutations through
+// mutationManager for execution, tracking, and retry.
 //
 // Key guarantees:
 // - Idempotent: re-running on already-deduped data is a no-op.
@@ -24,6 +25,8 @@ const BATCH_SIZE = 1000;
 const MAX_BATCHES = 100;
 const ANOMALY_THRESHOLD = 0.1;
 const WINDOW_HOURS = 26;
+const MAX_WINDOW_HOURS = 7 * 24; // 168 hours max lookback cap
+const CHECKPOINT_ID = '_eventDeduplicationCheckpoint';
 
 /**
  * Get cluster-aware table configuration.
@@ -91,17 +94,27 @@ class EventDeduplicationJob extends job.Job {
             }
             const tableConfig = getTableConfig();
 
+            // ---- 0) Load checkpoint from last completed run ----
+            const checkpoint = await this.#loadCheckpoint(db);
+            if (checkpoint) {
+                this.log.i(`Loaded checkpoint: windowEnd=${checkpoint} (${new Date(checkpoint).toISOString()})`);
+            }
+            else {
+                this.log.d('No checkpoint found, using WINDOW_HOURS fallback');
+            }
+
             this.log.d("Config", {
                 BATCH_SIZE,
                 MAX_BATCHES,
                 ANOMALY_THRESHOLD,
                 WINDOW_HOURS,
+                MAX_WINDOW_HOURS,
                 mutationTable: tableConfig.mutationFull,
                 selectTable: tableConfig.selectFull
             });
 
             // ---- 1) Compute window bounds ----
-            const { windowStart, windowEnd } = this.#getWindowBounds();
+            const { windowStart, windowEnd } = this.#getWindowBounds(checkpoint);
             this.log.d("Window", { windowStart, windowEnd });
 
             // ---- 2) Parallel: count total rows + discover first batch with excess count ----
@@ -204,11 +217,17 @@ class EventDeduplicationJob extends job.Job {
                 totalDuplicateIds,
                 totalDuplicateRows,
                 totalRowsInWindow: totalRows,
+                checkpointUsed: checkpoint !== null,
                 windowStart,
                 windowEnd,
                 durationMs: Date.now() - t0,
-                config: { BATCH_SIZE, MAX_BATCHES, ANOMALY_THRESHOLD, WINDOW_HOURS }
+                config: { BATCH_SIZE, MAX_BATCHES, ANOMALY_THRESHOLD, WINDOW_HOURS, MAX_WINDOW_HOURS }
             };
+
+            // Persist checkpoint only on fully completed runs
+            if (result.status === 'completed') {
+                await this.#saveCheckpoint(db, windowEnd, result);
+            }
 
             await progress(MAX_BATCHES, MAX_BATCHES, "Complete");
             this.log.i("Event deduplication job: complete", result);
@@ -240,14 +259,77 @@ class EventDeduplicationJob extends job.Job {
     }
 
     /**
-     * Compute the rolling deduplication window (now minus WINDOW_HOURS to now).
-     * Returns epoch milliseconds (UTC). Queries use fromUnixTimestamp64Milli() for
-     * unambiguous, timezone-explicit conversion to DateTime64(3).
+     * Load the last successful run's checkpoint from MongoDB.
+     * @param {Database} db - MongoDB connection
+     * @returns {Promise<number|null>} Last windowEnd in epoch milliseconds, or null
+     */
+    async #loadCheckpoint(db) {
+        try {
+            const doc = await db.collection('plugins').findOne(
+                { _id: CHECKPOINT_ID },
+                { projection: { windowEnd: 1 } }
+            );
+            if (doc && typeof doc.windowEnd === 'number' && doc.windowEnd > 0) {
+                return doc.windowEnd;
+            }
+            return null;
+        }
+        catch (err) {
+            this.log.w('Failed to load deduplication checkpoint, falling back to WINDOW_HOURS', err?.message || err);
+            return null;
+        }
+    }
+
+    /**
+     * Persist the checkpoint after a fully completed run.
+     * Non-fatal on failure — next run will use WINDOW_HOURS fallback.
+     * @param {Database} db - MongoDB connection
+     * @param {number} windowEnd - The windowEnd timestamp (epoch ms) to persist
+     * @param {object} result - The job result object (for diagnostic fields)
+     * @returns {Promise<void>} resolves when the checkpoint is saved
+     */
+    async #saveCheckpoint(db, windowEnd, result) {
+        try {
+            await db.collection('plugins').updateOne(
+                { _id: CHECKPOINT_ID },
+                {
+                    $set: {
+                        windowEnd,
+                        completedAt: Date.now(),
+                        batchesProcessed: result.batchesProcessed || 0,
+                        totalDuplicateRows: result.totalDuplicateRows || 0
+                    }
+                },
+                { upsert: true }
+            );
+            this.log.i(`Checkpoint saved: windowEnd=${windowEnd}`);
+        }
+        catch (err) {
+            this.log.w('Failed to save deduplication checkpoint (non-fatal)', err?.message || err);
+        }
+    }
+
+    /**
+     * Compute the deduplication window bounds.
+     * If a checkpoint exists (from a prior completed run), windowStart = checkpoint.
+     * Otherwise, falls back to now - WINDOW_HOURS.
+     * In both cases, windowStart is clamped to at most MAX_WINDOW_HOURS ago.
+     * @param {number|null} checkpoint - Last completed windowEnd (epoch ms), or null
      * @returns {{windowStart: number, windowEnd: number}} Start and end as epoch milliseconds (UTC)
      */
-    #getWindowBounds() {
+    #getWindowBounds(checkpoint) {
         const nowMs = Date.now();
-        const startMs = nowMs - WINDOW_HOURS * 60 * 60 * 1000;
+        const maxLookbackMs = nowMs - MAX_WINDOW_HOURS * 60 * 60 * 1000;
+        const defaultStartMs = nowMs - WINDOW_HOURS * 60 * 60 * 1000;
+
+        let startMs;
+        if (checkpoint !== null && checkpoint !== undefined) {
+            startMs = Math.max(checkpoint, maxLookbackMs);
+        }
+        else {
+            startMs = defaultStartMs;
+        }
+
         return {
             windowStart: startMs,
             windowEnd: nowMs
