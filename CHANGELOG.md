@@ -1,3 +1,7 @@
+## Version 25.03.XX
+Fixes:
+- [push] Fix: Cannot create a push notification when configuration _id is a string
+
 ## Version 25.03.40
 Fixes:
 - [hooks] Implement domain/ip address validation for hooks with http effect
