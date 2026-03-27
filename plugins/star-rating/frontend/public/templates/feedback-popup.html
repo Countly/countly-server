@@ -2,9 +2,9 @@
 <html>
     <head>
         <title>Countly Feedback Popup</title>
-        <link href="../../star-rating/stylesheets/ratings-iframe.css" rel="stylesheet"/>
-        <link href="../../stylesheets/font-awesome/css/font-awesome.min.css" rel="stylesheet"/>
-        <link href="../stylesheets/ionicons/css/ionicons.min.css" rel="stylesheet"/>
+        <link href="<%= `${countlyPath}/star-rating/stylesheets/ratings-iframe.css` %>" rel="stylesheet"/>
+        <link href="<%= `${countlyPath}/stylesheets/font-awesome/css/font-awesome.min.css` %>" rel="stylesheet"/>
+        <link href="<%= `${countlyPath}/stylesheets/ionicons/css/ionicons.min.css` %>" rel="stylesheet"/>
         <!-- TODO: check where are this themeFiles -->
         <% if (themeFiles && themeFiles.css) { %>
             <% for(var i=0, l=themeFiles.css.length; i < l; i++) {%>
@@ -12,12 +12,77 @@
             <% } %>
         <% } %>
         <meta content="width=device-width, initial-scale=1" name="viewport">
+        <style>
+            .rating-emotion-emojis {
+                background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/emoji.svg` %>');
+            }
+
+            .rating-emotion-emojis1 {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/emoji_1.svg` %>');
+            }
+
+            .rating-emotion-emojis2 {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/emoji_2.svg` %>');
+            }
+
+            .rating-emotion-emojis3 {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/emoji_3.svg` %>');
+            }
+
+            .rating-emotion-emojis4 {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/emoji_4.svg` %>');
+            }
+
+            .rating-emotion-emojis5 {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/emoji_5.svg` %>');
+            }
+
+            .rating-emotion-emojis-fill {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/emoji_filled.svg` %>');
+            }
+
+            .rating-emotion-emojis1-fill {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/emoji_filled_1.svg` %>');
+            }
+
+            .rating-emotion-emojis2-fill {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/emoji_filled_2.svg` %>');
+            }
+
+            .rating-emotion-emojis3-fill {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/emoji_filled_3.svg` %>');
+            }
+
+            .rating-emotion-emojis4-fill {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/emoji_filled_4.svg` %>');
+            }
+
+            .rating-emotion-emojis5-fill {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/emoji_filled_5.svg` %>');
+            }
+
+            .rating-emotion-thumbs {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/thumbs.svg` %>');
+            }
+
+            .rating-emotion-thumbs-fill {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/thumbs_filled.svg` %>');
+            }
+
+            .rating-emotion-stars {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/stars.svg` %>');
+            }
+
+            .rating-emotion-stars-fill {
+              background-image: url('<%= `${countlyPath}/star-rating/images/star-rating/stars_filled.svg` %>');
+            }
+        </style>
     </head>
-    <body class="ratings-popup cly-vue-ratings-preview">
+    <body class="ratings-popup cly-vue-ratings-preview" data-countly-path="<%= countlyPath %>">
         <div class="rating-loader-wrapper">
             <img 
                 class="rating-loader"
-                src="../../star-rating/images/star-rating/loader.svg"
+                src="<%= `${countlyPath}/star-rating/images/star-rating/loader.svg` %>"
             />
         </div>
         <div
@@ -156,7 +221,7 @@
                 >
                     <img
                         id="powered-by-countly"
-                        src="../../star-rating/images/star-rating/powered-by-countly.svg"
+                        src="<%= `${countlyPath}/star-rating/images/star-rating/powered-by-countly.svg` %>"
                     >
                 </a>
             </div>
@@ -186,13 +251,13 @@
                 >
                     <img
                         id="powered-by-countly"
-                        src="../../star-rating/images/star-rating/powered-by-countly.svg"
+                        src="<%= `${countlyPath}/star-rating/images/star-rating/powered-by-countly.svg` %>"
                     >
                 </a>
             </div>
         </div>
-        <script src="../../star-rating/javascripts/tippy.all.min.js"></script>
-        <script src="../../javascripts/dom/jquery/jquery.js"></script>
+        <script src="<%= `${countlyPath}/star-rating/javascripts/tippy.all.min.js` %>"></script>
+        <script src="<%= `${countlyPath}/javascripts/dom/jquery/jquery.js` %>"></script>
         <script>
             var CLOSE_BUTTON_ID = '#close-btn';
             var WIDGET_BODY_FULLSCREEN_CLASS = 'modal-content--fullscreen';
@@ -290,6 +355,8 @@
                 var url = window.location.origin;
                 var widget_id = getParameterByName('widget_id');
                 let widgetVersion = null;
+
+                var countlyPath = $('body').data().countlyPath || '';
 
                 if (!platform || (platform === "undefined") || (platform === "null")) {
                     platform = DEFAULT_PLATFORM;
@@ -401,10 +468,10 @@
                             }
                             
                             if (response.globalLogo) {
-                                $('#powered-by-countly').attr('src', url + response.logo);
+                                $('#powered-by-countly').attr('src', url + countlyPath + '/' + response.logo);
                             }
                             else {
-                                $('#powered-by-countly').attr('src', url + '/star-rating/images/' + response.logo);
+                                $('#powered-by-countly').attr('src', url + countlyPath + '/star-rating/images/' + response.logo);
                             }
 
                             $('#powered-by-countly').parent().attr('href', 'void(0)');
@@ -437,7 +504,7 @@
                         });
                     },
                     type: "GET",
-                    url: url + "/o/feedback/widget"
+                    url: url + countlyPath + '/o/feedback/widget'
                 });
 
                 var eventObject = {
@@ -630,7 +697,7 @@
                             }, 5000);
                         },
                         type: "GET",
-                        url: url + '/i/feedback/input?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version
+                        url: url + countlyPath + '/i/feedback/input?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version
                     });
                 }
 

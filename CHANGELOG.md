@@ -1,3 +1,10 @@
+## Version 25.03.X
+Fixes:
+- [star-rating] Fixed widget asset path with subdirectory
+
+Enterprise Fixes:
+- [surveys] Fixed widget asset path with subdirectory
+
 ## Version 25.03.40
 Fixes:
 - [hooks] Implement domain/ip address validation for hooks with http effect
