@@ -23,7 +23,7 @@ export default {
     PAGE_SUB_TITLE: 'initial-setup-sub-title',
     APPLICATION_NAME_INPUT: 'app-name-input',
     APPLICATION_NAME_ERROR: 'app-name-error',
-    APPLICATION_KEY_LABEL: 'application-key-header',
+    APPLICATION_KEY_LABEL: 'application-key-header-app-key',
     APPLICATION_KEY_TOOLTIP: 'application-key-tooltip',
     APPLICATION_KEY_INPUT: 'app-key-input',
     APPLICATION_KEY_ERROR: 'app-key-error',
