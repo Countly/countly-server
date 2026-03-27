@@ -19,7 +19,7 @@ export default {
     CONTINUE_SUBMIT_BUTTON: 'continue-submit-button',
 
     //"Own App" Elements
-    APPLICATION_NAME_LABEL: 'application-name-header',
+    APPLICATION_NAME_LABEL: 'application-name-header-application-name',
     PAGE_SUB_TITLE: 'initial-setup-sub-title',
     APPLICATION_NAME_INPUT: 'app-name-input',
     APPLICATION_NAME_ERROR: 'app-name-error',
