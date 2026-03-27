@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebSearch",
+      "WebFetch(*)",
+      "Skill(*)",
+      "Agent(*)",
+      "Bash(PG_URL='postgresql://testuser:testpass@localhost:5433/testdb' node --test test/integration-countly.test.js)",
+      "Bash(grep -A 10 '\\\\$match + \\\\$group + \\\\$sort')",
+      "Bash(PG_URL='postgresql://testuser:testpass@localhost:5433/testdb' node --test test/integration*.test.js)",
+      "Bash(PG_URL='postgresql://testuser:testpass@localhost:5433/testdb' node --test test/integration-countly-signatures.test.js)",
+      "Bash(grep -A 10 '\\\\$addFields {\\\\$cond}')",
+      "Bash(PG_URL='postgresql://testuser:testpass@localhost:5433/testdb' node -e \"\nconst { MongoClient } = require\\('./index'\\);\n\\(async \\(\\) => {\n  const c = await MongoClient.connect\\('postgresql://testuser:testpass@localhost:5433/testdb'\\);\n  const db = c.db\\('sig_test'\\);\n  const col = db.collection\\('agg_sig'\\);\n  const r = await col.aggregate\\([\n    { '\\\\$addFields': { sortKey: { '\\\\$cond': { if: { '\\\\$gte': ['\\\\$count', 15] }, then: 0, else: 1 } } } },\n    { '\\\\$sort': { sortKey: 1, count: -1 } },\n    { '\\\\$group': { _id: '\\\\$event', topCount: { '\\\\$first': '\\\\$count' }, total: { '\\\\$sum': 1 } } }\n  ]\\).toArray\\(\\);\n  console.log\\(JSON.stringify\\(r, null, 2\\)\\);\n  await c.close\\(\\);\n}\\)\\(\\);\n\" 2>&1)",
+      "Bash(grep -A 10 '\\\\$group {\\\\$addToSet}')",
+      "Bash(grep -A 10 'bulk.find.{\\\\$and')",
+      "Bash(gh api:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(PG_URL='postgresql://testuser:testpass@localhost:5433/testdb' node --test test/integration-spec-runner.test.js)",
+      "Bash(npm uninstall:*)"
+    ]
+  }
+}

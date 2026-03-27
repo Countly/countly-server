@@ -1,4 +1,5 @@
 **/node_modules/**
+mongodb-postgresql/**
 bin/upgrade/**
 frontend/express/public/javascripts/dom/**
 frontend/express/public/javascripts/min/**

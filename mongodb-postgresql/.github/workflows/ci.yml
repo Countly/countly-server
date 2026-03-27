@@ -1,0 +1,156 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+  unit-coverage:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage 2>&1 | tee coverage-output.txt
+
+      - name: Check unit coverage thresholds (>= 90%)
+        run: |
+          LINE=$(grep '# all files' coverage-output.txt)
+          if [ -z "$LINE" ]; then echo "ERROR: No coverage summary"; exit 1; fi
+
+          LINE_COV=$(echo "$LINE" | awk -F'|' '{print $2}' | xargs)
+          BRANCH_COV=$(echo "$LINE" | awk -F'|' '{print $3}' | xargs)
+          FUNC_COV=$(echo "$LINE" | awk -F'|' '{print $4}' | xargs)
+
+          echo "Unit coverage — Lines: $LINE_COV% | Branches: $BRANCH_COV% | Functions: $FUNC_COV%"
+
+          FAILED=0
+          for metric in "$LINE_COV" "$BRANCH_COV" "$FUNC_COV"; do
+            val=$(echo "$metric" | cut -d. -f1)
+            if [ "$val" -lt 90 ]; then FAILED=1; echo "FAIL: $metric% < 90%"; fi
+          done
+          if [ "$FAILED" -eq 1 ]; then echo "Unit coverage check FAILED"; exit 1; fi
+          echo "Unit coverage check PASSED"
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U testuser -d testdb"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run integration tests
+        run: npm run test:integration
+        env:
+          PG_URL: postgresql://testuser:testpass@localhost:5433/testdb
+
+  integration-coverage:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U testuser -d testdb"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run integration tests with coverage
+        run: |
+          PG_URL=postgresql://testuser:testpass@localhost:5433/testdb \
+          node --test --experimental-test-coverage test/integration*.test.js 2>&1 | tee integration-coverage.txt
+        env:
+          PG_URL: postgresql://testuser:testpass@localhost:5433/testdb
+
+      - name: Check integration coverage thresholds (>= 90%)
+        run: |
+          LINE=$(grep '# all files' integration-coverage.txt)
+          if [ -z "$LINE" ]; then echo "ERROR: No coverage summary"; exit 1; fi
+
+          LINE_COV=$(echo "$LINE" | awk -F'|' '{print $2}' | xargs)
+          FUNC_COV=$(echo "$LINE" | awk -F'|' '{print $4}' | xargs)
+
+          echo "Integration coverage — Lines: $LINE_COV% | Functions: $FUNC_COV%"
+
+          FAILED=0
+          for metric in "$LINE_COV" "$FUNC_COV"; do
+            val=$(echo "$metric" | cut -d. -f1)
+            if [ "$val" -lt 90 ]; then FAILED=1; echo "FAIL: $metric% < 90%"; fi
+          done
+          if [ "$FAILED" -eq 1 ]; then echo "Integration coverage check FAILED"; exit 1; fi
+          echo "Integration coverage check PASSED"
