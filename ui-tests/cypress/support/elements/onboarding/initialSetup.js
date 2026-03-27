@@ -12,7 +12,7 @@ export default {
     APP_TYPE_DESKTOP_RADIO_BUTTON: 'initial-setup-desktop-el-radio-wrapper',
     APP_TYPE_DESKTOP_RADIO_BUTTON_ICON: 'initial-setup-desktop-icon',
     APP_TYPE_DESKTOP_RADIO_BUTTON_LABEL: 'initial-setup-desktop-el-radio-label',
-    SELECT_TIMEZONE_LABEL: 'select-timezone-form-header',
+    SELECT_TIMEZONE_LABEL: 'select-timezone-form-header-select-your-time-zone',
     SELECT_TIMEZONE_TOOLTIP: 'select-timezone-form-tooltip',
     SELECT_TIMEZONE_COMBOBOX: 'select-timezone-dropdown',
     SELECT_TIMEZONE_SEARCH_INPUT: 'select-timezone-dropdown-search-box',
