@@ -2,7 +2,7 @@ export default {
     //Common elements
     LOGO: 'countly-logo',
     PAGE_TITLE: 'initial-setup-title',
-    SELECT_APP_TYPE_LABEL: 'select-application-type-form-header',
+    SELECT_APP_TYPE_LABEL: 'select-application-type-form-header-select-your-application-type',
     APP_TYPE_MOBILE_RADIO_BUTTON: 'initial-setup-mobile-el-radio-wrapper',
     APP_TYPE_MOBILE_RADIO_BUTTON_ICON: 'initial-setup-mobile-icon',
     APP_TYPE_MOBILE_RADIO_BUTTON_LABEL: 'initial-setup-mobile-el-radio-label',
