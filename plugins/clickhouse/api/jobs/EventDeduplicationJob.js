@@ -140,8 +140,8 @@ class EventDeduplicationJob extends job.Job {
 
             this.log.i(`Total rows in window: ${totalRows.toLocaleString()}`);
 
-            const allDuplicates = discovery.rows;
-            const hitDiscoveryLimit = allDuplicates.length >= DISCOVERY_LIMIT;
+            const hitDiscoveryLimit = discovery.rows.length > DISCOVERY_LIMIT;
+            const allDuplicates = hitDiscoveryLimit ? discovery.rows.slice(0, DISCOVERY_LIMIT) : discovery.rows;
             if (hitDiscoveryLimit) {
                 this.log.w(`Discovery limit reached (${DISCOVERY_LIMIT}), anomaly ratio may be approximate`);
             }
@@ -170,6 +170,7 @@ class EventDeduplicationJob extends job.Job {
                 const res = { status: 'completed', message: 'No duplicates found', totalRowsInWindow: totalRows, windowStart, windowEnd, durationMs: Date.now() - t0 };
                 this.log.i(res.message, res);
                 await this.#saveCheckpoint(db, windowEnd, res);
+                await progress(1, 1, "Complete");
                 return done(null, res);
             }
 
@@ -291,6 +292,7 @@ class EventDeduplicationJob extends job.Job {
                     $set: {
                         windowEnd,
                         completedAt: Date.now(),
+                        batchesProcessed: result.mutationsDispatched || 0,
                         mutationsDispatched: result.mutationsDispatched || 0,
                         totalDuplicateRows: result.totalDuplicateRows || 0
                     }
@@ -378,7 +380,8 @@ class EventDeduplicationJob extends job.Job {
             ORDER BY cnt DESC
             LIMIT {discovery_limit:UInt32}
         `;
-        const params = { ...windowParams, discovery_limit: DISCOVERY_LIMIT };
+        // Fetch one extra row to distinguish "exactly at limit" from "more exist"
+        const params = { ...windowParams, discovery_limit: DISCOVERY_LIMIT + 1 };
         const rows = await this.#queryJSON(queryService, q, params);
         const totalExcess = rows.length > 0 ? Number(rows[0].total_excess || 0) : 0;
         return { rows, totalExcess };
