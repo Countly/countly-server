@@ -1,5 +1,6 @@
-## Version 25.03.X
+## Version 25.03.XX
 Fixes:
+- [push] Fix: Cannot create a push notification when configuration _id is a string
 - [star-rating] Fixed widget asset path with subdirectory
 
 Enterprise Fixes:
