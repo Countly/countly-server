@@ -1,3 +1,77 @@
+## Version 25.03.X
+Fixes:
+- [core] Fixed duplicate conditional in form field template
+
+## Version 25.03.41
+Fixes:
+- [push] Fix: Cannot create a push notification when configuration _id is a string
+- [star-rating] Fixed widget asset path with subdirectory
+
+Enterprise Fixes:
+- [journeys] Fix: prevent users entered stat to minus value for race conditions
+- [surveys] Fixed widget asset path with subdirectory
+
+## Version 25.03.40
+Fixes:
+- [hooks] Implement domain/ip address validation for hooks with http effect
+- [reports] Hardcoded default secret for the e-mails converted to be randomly generated
+
+Enterprise fixes:
+- [drill] Hide redacted user properties in filters
+- [oidc] Using sub as fallback as user identifier when there's no email
+
+Dependencies:
+- Bump countly-sdk-web from 26.1.0 to 26.1.1
+- Bump ejs from 4.0.1 to 5.0.1
+- Bump express-rate-limit from 8.3.0 to 8.3.1
+- Bump fast-xml-parser from 5.4.1 to 5.5.7 in /plugins/push
+- Bump flatted from 3.3.4 to 3.4.2
+- Bump moment-timezone from 0.6.0 to 0.6.1 in /bin/scripts/timezones
+- Bump nodemailer from 8.0.1 to 8.0.2
+- Bump puppeteer from 24.38.0 to 24.39.0
+- Bump sass from 1.97.3 to 1.98.0
+
+## Version 25.03.39
+Fixes:
+- [core] Fixed replaceDatabaseString incorrectly replacing "countly" in the MongoDB username when it appears in the connection URL
+- [dashboards] Unescape event segment values in meta
+- [push] Using Android specific content for Huawei messages as well
+
+Enterprise fixes:
+- [data-manager] Fix validation approval button label
+- [data-manager] Fix validation table column names
+
+## Version 25.03.38
+Fixes:
+- [push] Fixed the property name by changing it from link to url for message buttons for Huawei messages
+- [web] Use Client Hints
+
+## Version 25.03.37
+Fixes:
+- [core] Update home page download notification text
+- [data-manager] Add search and checkboxes in event selector when creating event group
+
+Enterprise fixes:
+- [funnels] Use lsid in same session funnel calculation
+- [users] Export drill data on user export
+- [users] Fix export query when there is profile group filter
+
+Dependencies:
+- Bump @faker-js/faker from 10.2.0 to 10.3.0 in /ui-tests
+- Bump axios from 1.13.2 to 1.13.5
+- Bump basic-ftp from 5.1.0 to 5.2.0
+- Bump cypress from 15.10.0 to 15.11.0 in /ui-tests
+- Bump fast-xml-parser and @google-cloud/storage in /plugins/push
+- Bump geoip-lite from 1.4.10 to 2.0.0
+- Bump minimatch from 9.0.5 to 9.0.9 in /api/utils/countly-request
+- Bump minimatch from 9.0.5 to 9.0.9 in /plugins/hooks
+- Bump nodemailer from 7.0.13 to 8.0.1
+- Bump qs from 6.14.1 to 6.14.2
+- Bump rollup from 4.56.0 to 4.59.0 in /plugins/journey_engine
+- Bump swiper from 12.0.3 to 12.1.2 in /plugins/content
+- Bump systeminformation from 5.30.5 to 5.31.1 in /ui-tests
+- Bump tar-stream from 3.1.7 to 3.1.8 in /plugins/system-utility
+
 ## Version 25.03.36
 Enterprise fixes:
 - [journey] Workflow fixes
@@ -37,7 +111,7 @@ Enterprise Fixes:
 ## Version 25.03.33
 Fixes:
 - [compliance-hub] Correctly merge user history on user merge
-- [core] Ensured usage of local fonts. 
+- [core] Ensured usage of local fonts.
 - [events] Fixed issue with page reloading on error
 - [push] re-schedule on a message update for auto triggers as well
 - [remote-config] Fix searching for parameter in experiment variants

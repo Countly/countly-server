@@ -212,7 +212,7 @@ const verifyFullDataPageElements = () => {
 
     verifyStaticElementsOfCompareEventsPage();
 
-    selectEventsToCompare('Credit Card Application');
+    selectEventsToCompare('Credit Card Payment');
     clickCompare();
 
     verifyCompareEventsEChartElements({
@@ -388,7 +388,7 @@ const verifyEventStatsDataTableElements = ({
 
 const verifyCompareEventsEChartElements = ({
     isEmpty = false,
-    eventName = 'Credit Card Application',
+    eventName = 'Credit Card Payment',
 }) => {
 
     if (isEmpty) {
@@ -502,7 +502,7 @@ const selectEventsToCompare = (...events) => {
     for (var i = 0; i < events.length; i++) {
         var itemSelector = 'el-option-test-id-' + helper.toSlug(events[i]) + '-el-options';
         //cy.typeInput(feedbackRatingWidgetsPageElements.SHOW_ONLY_SELECTOR_INPUT, events[i])
-        cy.clickElement(itemSelector);
+        cy.clickElement(itemSelector, true);
     }
     cy.clickBody();
 };
