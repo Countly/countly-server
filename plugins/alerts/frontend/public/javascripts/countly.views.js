@@ -1398,11 +1398,32 @@
             this.$store.dispatch("countlyAlerts/initialize");
         },
         mounted: function() {
+            var self = this;
             var prefill = sessionStorage.getItem('alerts_prefill');
             if (prefill) {
                 sessionStorage.removeItem('alerts_prefill');
                 var data = JSON.parse(prefill);
-                if (data.alertDataType) {
+                if (data.alertId) {
+                    var unwatch = this.$watch(
+                        function() {
+                            return self.$store.getters["countlyAlerts/table/getInitialized"];
+                        },
+                        function(initialized) {
+                            if (initialized) {
+                                unwatch();
+                                var rows = self.$store.getters["countlyAlerts/table/all"];
+                                var alertRow = rows.find(function(r) {
+                                    return r._id === data.alertId;
+                                });
+                                if (alertRow) {
+                                    self.openDrawer("home", Object.assign({}, alertRow));
+                                }
+                            }
+                        },
+                        { immediate: true }
+                    );
+                }
+                else if (data.alertDataType) {
                     var config = countlyAlerts.defaultDrawerConfigValue();
                     config.alertDataType = data.alertDataType;
                     if (data.alertDataSubType2) {
