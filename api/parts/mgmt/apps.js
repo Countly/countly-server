@@ -857,6 +857,10 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     }
     common.db.collection('app_users' + appId).drop(function() {
         if (!fromAppDelete) {
+            common.db.collection('metric_changes' + appId).drop(function() {
+                common.db.collection('metric_changes' + appId).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
+                common.db.collection('metric_changes' + appId).ensureIndex({uid: 1}, { background: true }, function() {});
+            });
             //Removes old app_user_merges collection
             common.db.collection('app_user_merges' + appId).drop(function() {});
             if (params.qstring.args.period === "reset") {

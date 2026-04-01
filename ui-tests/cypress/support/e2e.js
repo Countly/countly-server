@@ -15,16 +15,57 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
+import { getDebugContext, clearDebugContext } from './debugContext';
 
-//When Cypress detects uncaught errors originating from application it will automatically fail the current test.
-//This behavior is configurable, and you can choose to turn this off by listening to the uncaught:exception event.
-//Open the below code block after the "Cannot read properties of undefined..." errors occurred.
-//But firstly open an issue about the error.
-Cypress.on('uncaught:exception', (err, runnable) => {
-    // returning false here prevents Cypress from failing the test
-    return false;
-});
+// When Cypress detects uncaught errors originating from application it will automatically fail the current test.
+// This behavior is configurable, and you can choose to turn this off by listening to the uncaught:exception event.
+// Open the below code block after the "Cannot read properties of undefined..." errors occurred.
+// But firstly open an issue about the error.
+Cypress.on('uncaught:exception', () => false);
 
 after(() => {
     cy.assertAll();
+});
+
+// Reset debug context before every test
+beforeEach(() => {
+    clearDebugContext();
+});
+
+// Global Cypress error formatter
+Cypress.on('fail', (err, runnable) => {
+    const ctx = getDebugContext();
+
+    clearDebugContext();
+
+    const url =
+        Cypress.state('window') && Cypress.state('window').location
+            ? Cypress.state('window').location.href
+            : 'unknown';
+
+    const actual =
+        ctx.actual !== undefined
+            ? ctx.actual
+            : 'assertion failed before evaluation';
+
+    const formattedError = `
+========== CYPRESS FAILURE ==========
+
+SPEC     : ${Cypress.spec?.name || 'unknown'}
+SUITE    : ${runnable?.parent?.title || 'unknown'}
+TEST     : ${runnable?.title || 'unknown'}
+URL      : ${url}
+
+SELECTOR : ${ctx.selector || 'unknown'}
+ASSERT   : ${ctx.assertion || 'element exists'}
+EXPECTED : ${ctx.expected ?? 'element should exist'}
+ACTUAL   : ${actual}
+
+ORIGINAL : ${err.message}
+
+=====================================
+`;
+
+    err.message = formattedError;
+    throw err;
 });

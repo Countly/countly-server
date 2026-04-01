@@ -1,13 +1,14 @@
     <cly-drawer
-		@submit="onSubmit"
-		@close="onClose"
-		@copy="onCopy"
+        @submit="onSubmit"
+        @close="onClose"
+        @copy="onCopy"
         :size="6"
-		:title="title"
+        :title="title"
+        :requiresAsyncSubmit="true"
         ref="drawerData"
-		:saveButtonLabel="saveButtonLabel"
+        :saveButtonLabel="saveButtonLabel"
         toggle-transition="stdt-fade"
- 		v-bind="$props.controls">
+        v-bind="$props.controls">
         <template v-slot:default="drawerScope" >
             <cly-form-step id="step1" :name="i18n('hooks.step1')">
                 <cly-form-field name="hooksName" :label="i18n('hooks.name')" rules="required">

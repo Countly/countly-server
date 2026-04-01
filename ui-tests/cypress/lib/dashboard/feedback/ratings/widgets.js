@@ -906,7 +906,8 @@ const getWidgetIdFromDataTable = (index) => {
 
 const navigateToWidgetsDetailPage = (widgetName) => {
     searchWidgetOnDataTable(widgetName);
-    cy.clickElement(widgetsDataTableElements().WIDGET_NAME, true);
+    cy.clickElement(widgetsDataTableElements().WIDGET_NAME);
+    cy.checkLoading();
 };
 
 const verifyWidgetDetailsPageElements = ({
@@ -1065,7 +1066,6 @@ const verifyWidgetDetailsPageElements = ({
 
         cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_TAB_COMMENTS);
         cy.scrollPageToBottom('.main-view');
-
         cy.verifyElement({
             labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements().COLUMN_NAME_RATING_LABEL,
             labelText: "Rating",
@@ -1087,27 +1087,24 @@ const verifyWidgetDetailsPageElements = ({
         });
 
         for (index = 0; index < commentsTable.ratings.length; index++) {
+
+            cy.scrollPageToBottom('.main-view');
+
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_RATING,
                 labelText: commentsTable.ratings[commentsTable.ratings.length - 1 - index],
             });
-        }
 
-        for (index = 0; index < commentsTable.ratings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_TIME,
                 labelText: commentsTable.times,
             });
-        }
 
-        for (index = 0; index < commentsTable.comments.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_COMMENT,
                 labelText: commentsTable.comments[commentsTable.comments.length - 1 - index],
             });
-        }
 
-        for (index = 0; index < commentsTable.emails.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_EMAIL,
                 labelText: commentsTable.emails[commentsTable.emails.length - 1 - index],
@@ -1117,9 +1114,9 @@ const verifyWidgetDetailsPageElements = ({
 };
 
 const deleteWidget = () => {
-    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_MORE_BUTTON);
-    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_DELETE_BUTTON);
-    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_DELETE_CONFIRM_BUTTON);
+    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_MORE_BUTTON, true);
+    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_DELETE_BUTTON, true);
+    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_DELETE_CONFIRM_BUTTON, true);
 };
 
 const shouldBeWidgetDeleted = (question) => {
@@ -1137,7 +1134,7 @@ const shouldBeWidgetDeleted = (question) => {
 };
 
 const stopWidget = () => {
-    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_STOP_WIDGET_BUTTON);
+    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_STOP_WIDGET_BUTTON, true);
 };
 
 const shouldBeWidgetStopped = () => {
@@ -1145,11 +1142,11 @@ const shouldBeWidgetStopped = () => {
 };
 
 const clickEditWidgetButton = () => {
-    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_EDIT_WIDGET_BUTTON);
+    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_EDIT_WIDGET_BUTTON, true);
 };
 
 const clickBackToRatingWidgetLink = () => {
-    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_BACK_TO_RATING_WIDGETS_LINK);
+    cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_BACK_TO_RATING_WIDGETS_LINK, true);
 };
 
 const createRatingWithApi = (username, password, appName, widgetName) => {

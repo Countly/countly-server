@@ -25,12 +25,12 @@ export const alertsPageElements = {
 export const alertDrawerPageElements = {
     DRAWER_PAGE_TITLE: 'alert-drawer-header-title',
     DRAWER_CLOSE_BUTTON: 'alert-drawer-close-button',
-    DRAWER_ALERT_NAME_LABEL: 'alert-name-header',
+    DRAWER_ALERT_NAME_LABEL: 'alert-name-header-alert-name',
     DRAWER_ALERT_NAME_INPUT: 'alert-name-input',
-    DRAWER_APPLICATION_LABEL: 'application-header',
+    DRAWER_APPLICATION_LABEL: 'application-header-application',
     DRAWER_APPLICATION_SELECT: 'application-select',
 
-    DRAWER_DATA_TYPE_LABEL: 'data-type-header',
+    DRAWER_DATA_TYPE_LABEL: 'data-type-header-data-type',
     DRAWER_DATA_TYPE_SELECT: 'data-type-select',
 
     DRAWER_SUB_TYPE_LABEL: 'data-sub-type-header',
