@@ -52,7 +52,7 @@ if [[ "$CENTOS_MAJOR" = "9" ]]; then
     sudo rpm -ivh ipa-gothic-fonts-003.03-15.el8.noarch.rpm
 else
     curl -L -O -J "https://box.tools.count.ly/public.php/dav/files/Wj8opzNdyE5DyDX/?accept=zip"
-    sudo yum install -y raven-release-1.0-3.el8.noarch.rpm
+    sudo yum install -y raven-release.el8.noarch.rpm
     sudo yum install -y ipa-gothic-fonts
 fi
 
