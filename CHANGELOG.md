@@ -1,3 +1,7 @@
+## Version 25.03.X
+Fixes:
+- [core] Fixed duplicate conditional in form field template
+
 ## Version 25.03.41
 Fixes:
 - [push] Fix: Cannot create a push notification when configuration _id is a string
