@@ -9,5 +9,6 @@
 module.exports = Object.freeze({
     drill_events: Object.freeze({ db: 'countly_drill' }),
     drill_snapshots: Object.freeze({ db: 'countly_drill' }),
-    uid_map: Object.freeze({ db: 'identity' })
+    uid_map: Object.freeze({ db: 'identity' }),
+    pii_incidents: Object.freeze({ db: 'countly_pii' })
 });

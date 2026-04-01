@@ -17,6 +17,7 @@ const ALERT_MODULES = {
     "cohorts": require("../alertModules/cohorts.js"),
     "dataPoints": require("../alertModules/dataPoints.js"),
     "crashes": require("../alertModules/crashes.js"),
+    "pii": require("../alertModules/pii.js"),
 };
 
 /**
