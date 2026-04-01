@@ -73,7 +73,15 @@ async function validate(args, draft = false) {
                 }
             }
 
-            let creds = await common.db.collection(Creds.collection).find({_id: {$in: msg.platforms.map(p => common.dot(app, `plugins.push.${p}._id`))}}).toArray();
+            let creds = await common.db.collection(Creds.collection).find({
+                _id: {
+                    $in: msg.platforms.map(
+                        p => common.db.ObjectID(
+                            common.dot(app, `plugins.push.${p}._id`)
+                        )
+                    )
+                }
+            }).toArray();
             if (creds.length !== msg.platforms.length) {
                 throw new ValidationError('No push credentials in db');
             }

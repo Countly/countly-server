@@ -273,6 +273,8 @@ const verifyStaticElementsOfCrashStatisticsPage = () => {
         element: crashStatisticsEChartElements.CRASH_FREE_SESSIONS_TREND_ICON,
     });
 
+    cy.scrollPageToBottom();
+
     cy.verifyElement({
         element: crashStatisticsEChartElements.CHART_PREVIOUS_TOTAL_OCCURENCES_ICON,
         labelElement: crashStatisticsEChartElements.CHART_PREVIOUS_TOTAL_OCCURENCES_LABEL,

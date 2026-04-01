@@ -20,6 +20,7 @@
     "template"
   ],
   "dependencies": {
+    "ipaddr.js": "^2.3.0",
     "v8-sandbox": "3.2.12"
   },
   "private": true

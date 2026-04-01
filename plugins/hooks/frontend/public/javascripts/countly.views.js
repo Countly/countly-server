@@ -800,8 +800,14 @@
             }
         },
         methods: {
-            onSubmit: function(doc) {
-                this.$store.dispatch("countlyHooks/saveHook", doc);
+            onSubmit: function(doc, callback) {
+                this.$store.dispatch("countlyHooks/saveHook", doc)
+                    .then(function() {
+                        callback();
+                    })
+                    .catch(function(err) {
+                        callback(err);
+                    });
             },
             onClose: function($event) {
                 this.$emit("close", $event);
@@ -822,7 +828,6 @@
             removeEffect: function(index) {
                 this.$refs.drawerData.editedObject.effects.splice(index, 1);
             },
-
             testHook: function() {
                 var hookData = this.$refs.drawerData.editedObject;
                 this.$data.newTest = true;
