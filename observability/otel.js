@@ -58,23 +58,10 @@ const {diag, DiagConsoleLogger, DiagLogLevel} = require('@opentelemetry/api');
 const {RuntimeNodeInstrumentation} = require('@opentelemetry/instrumentation-runtime-node');
 const {CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator} = require('@opentelemetry/core');
 const {BatchSpanProcessor} = require('@opentelemetry/sdk-trace-base');
-const {performance, PerformanceObserver, monitorEventLoopDelay} = require('perf_hooks');
+const {performance, monitorEventLoopDelay} = require('perf_hooks');
+const sharedMetrics = require('./metrics');
 
-/**
- * Get standardized route from request
- * @param {object} req - Request object
- * @returns {string} Standardized route path
- */
-const getStandardizedRoute = (req) => {
-    try {
-        // Extract path without query parameters
-        const path = req?.url?.split('?')[0] || req?.path?.split('?')[0] || '/';
-        return path;
-    }
-    catch (error) {
-        return '/';
-    }
-};
+const getStandardizedRoute = sharedMetrics.getStandardizedRoute;
 
 // These will be initialized after SDK setup
 let meter;
@@ -85,41 +72,7 @@ let serverDurationMetric;
 // Track previous CPU usage for delta calculation
 let previousCpuUsage = process.cpuUsage();
 
-/**
- * Create application metrics
- * @param {object} meterInstance - Meter instance
- * @returns {object} Application metrics object
- */
-const createApplicationMetrics = (meterInstance) => ({
-    // System metrics - using create* API
-    processCpuUser: meterInstance.createCounter('process.cpu.user', {
-        description: 'Process CPU time spent in user mode',
-        unit: 'us',
-    }),
-    processCpuSystem: meterInstance.createCounter('process.cpu.system', {
-        description: 'Process CPU time spent in system mode',
-        unit: 'us',
-    }),
-    eventLoopLag: meterInstance.createHistogram('nodejs.eventloop.lag', {
-        description: 'Event loop lag',
-        unit: 'ms',
-    }),
-    eventLoopUtilization: meterInstance.createHistogram('nodejs.eventloop.utilization', {
-        description: 'Event loop utilization percentage',
-        unit: '1',
-    }),
-
-    // GC metrics - renamed to avoid conflict with RuntimeNodeInstrumentation (Problem #3 fix)
-    gcPauseTime: meterInstance.createHistogram('custom.gc.pause_ns', {
-        description: 'Garbage collection pause time',
-        unit: 'ns',
-    }),
-    gcCount: meterInstance.createCounter('custom.gc.count', {
-        description: 'Number of garbage collections',
-    }),
-
-    // Memory metrics are now created as ObservableGauges to fix zig-zag pattern (Problem #6)
-});
+const createApplicationMetrics = sharedMetrics.createApplicationMetrics;
 
 /**
  * Create HTTP metrics
@@ -328,6 +281,8 @@ const getCustomAttributes = (request) => {
     return attributes;
 };
 
+const getMetricAttributes = sharedMetrics.getMetricAttributes;
+
 /**
  * Safely get content length from headers
  * @param {object} headers - Headers object
@@ -342,41 +297,6 @@ const getContentLength = (headers) => {
     }
 };
 
-/**
- * Create request attributes
- * @param {object} request - Request object
- * @returns {object} Request attributes
- */
-const createRequestAttributes = (request) => {
-    try {
-        const standardizedRoute = getStandardizedRoute(request);
-        const hostParts = request?.headers?.host?.split(':') || [];
-
-        // Build single object with spread for performance
-        return Object.assign(
-            getCommonAttributes(request),
-            {
-                // Keep old names for backwards compatibility
-                'http_route': standardizedRoute,
-                'http_method': request?.method || 'UNKNOWN-METHOD',
-                'http_scheme': 'http',
-                'http_flavor': request?.httpVersion || '1.1',
-                'net_host_name': hostParts[0] || 'unknown',
-                'net_host_port': hostParts[1] || '80',
-                'environment': process.env.NODE_ENV || 'production'
-            }
-        );
-    }
-    catch (error) {
-        console.error('Error creating request attributes:', error);
-        return {
-            'http_method': 'UNKNOWN-METHOD',
-            'http_route': '/',
-            'environment': process.env.NODE_ENV || 'production'
-        };
-    }
-};
-
 // Track previous ELU for calculating utilization
 let previousELU = performance.eventLoopUtilization();
 
@@ -384,45 +304,10 @@ let previousELU = performance.eventLoopUtilization();
 // Memory tracking state was previously stored here but is now initialized inline
 // when needed within the SDK startup process
 
-/**
- * Collect system metrics
- * @returns {void}
- */
-const collectSystemMetrics = () => {
-    // Skip if metrics not initialized
-    if (!applicationMetrics) {
-        return;
-    }
-    try {
-        const attributes = getBaseAttributes();
-
-        // CPU metrics - record delta microseconds
-        const currentCpuUsage = process.cpuUsage();
-        const cpuDiff = process.cpuUsage(previousCpuUsage);
-
-        if (cpuDiff.user) {
-            applicationMetrics.processCpuUser.add(cpuDiff.user, attributes);
-        }
-        if (cpuDiff.system) {
-            applicationMetrics.processCpuSystem.add(cpuDiff.system, attributes);
-        }
-
-        previousCpuUsage = currentCpuUsage;
-
-        // Event loop utilization (ELU)
-        const currentELU = performance.eventLoopUtilization();
-        const utilization = performance.eventLoopUtilization(currentELU, previousELU);
-        if (utilization.utilization > 0) {
-            applicationMetrics.eventLoopUtilization.record(utilization.utilization, attributes);
-        }
-        previousELU = currentELU;
-
-        // Memory metrics are now collected via ObservableGauges (Problem #6 fix)
-    }
-    catch (error) {
-        console.error('Error collecting system metrics:', error);
-    }
-};
+// Mutable state for collectSystemMetrics
+const _metricsState = { previousCpuUsage, previousELU };
+// eslint-disable-next-line require-jsdoc
+const collectSystemMetrics = () => sharedMetrics.collectSystemMetrics(applicationMetrics, getBaseAttributes, _metricsState);
 
 /**
  * Error handling and recovery strategies
@@ -470,7 +355,14 @@ const errorHandlingStrategies = {
 };
 
 // Initialize SDK synchronously
+// eslint-disable-next-line no-unused-vars
 let sdkInitialized = false;
+let _resolveSdkReady, _rejectSdkReady;
+const sdkReady = new Promise((resolve, reject) => {
+    _resolveSdkReady = resolve;
+    _rejectSdkReady = reject;
+});
+sdkReady.catch(() => {}); // prevent unhandled rejection when OTel disabled
 let sdkInstance = null;
 
 /**
@@ -480,6 +372,7 @@ let sdkInstance = null;
 function initializeOpenTelemetry() {
     if (process.env.OTEL_ENABLED !== 'true') {
         console.log('[OTEL] OpenTelemetry is disabled (OTEL_ENABLED !== true)');
+        _rejectSdkReady(new Error('OpenTelemetry disabled'));
         return;
     }
 
@@ -585,16 +478,14 @@ function initializeOpenTelemetry() {
                         });
 
                         // Service graph attributes
-                        const serviceName = process.env.OTEL_SERVICE_NAME || 'unknown-service';
+                        // Note: peer.service is only set for outbound calls (x-target-service header).
+                        // It is NOT set to the local service name — that distorts service graphs.
+                        const serviceName = process.env.OTEL_SERVICE_NAME;
                         const serviceVersion = process.env.npm_package_version || '0.0.0';
-
-                        if (serviceName) {
-                            span.setAttribute('peer.service', serviceName);
-                        }
 
                         const targetService = request.headers?.['x-target-service'];
                         if (targetService) {
-                            span.setAttribute('service.target', targetService);
+                            span.setAttribute('peer.service', targetService);
                         }
 
                         if (serviceVersion) {
@@ -632,14 +523,14 @@ function initializeOpenTelemetry() {
 
                         const startTime = Date.now();
                         const standardizedRoute = getStandardizedRoute(request);
-                        const reqAttrs = createRequestAttributes(request);
+                        const metricAttrs = getMetricAttributes(request);
 
-                        // Helper functions for metric operations
+                        // Helper functions for metric operations - use low-cardinality attrs only
                         const add = function(metric, value = 1, extra = {}) {
-                            return metric.add(value, {...reqAttrs, ...extra});
+                            return metric.add(value, {...metricAttrs, ...extra});
                         };
                         const record = function(metric, value, extra = {}) {
-                            return metric.record(value, {...reqAttrs, ...extra});
+                            return metric.record(value, {...metricAttrs, ...extra});
                         };
 
                         span.updateName(`${request.method || 'UNKNOWN-METHOD'} ${standardizedRoute}`);
@@ -661,72 +552,118 @@ function initializeOpenTelemetry() {
                             }
                         }
 
-                        const connectionStartTime = Date.now();
+                        // ClientRequest (outgoing) has getHeader(); IncomingMessage (incoming) does not
+                        const isOutgoing = typeof request.getHeader === 'function';
 
-                        // Set up response handling
-                        request.on('response', (response) => {
-                            try {
-                                const responseTime = Date.now();
-                                const statusCode = String(response.statusCode);
-                                const extra = {'http_status_code': statusCode};
+                        if (isOutgoing) {
+                            // Outgoing: response event fires when remote server responds
+                            const connectionStartTime = Date.now();
 
-                                add(httpMetrics.responseStatusTotal, 1, extra);
-                                record(serverDurationMetric, responseTime - startTime, extra);
-                                record(httpMetrics.requestQueueDuration, responseTime - startTime, extra);
+                            request.on('response', (response) => {
+                                try {
+                                    const responseTime = Date.now();
+                                    const statusCode = String(response.statusCode);
+                                    const extra = {'http_status_code': statusCode};
 
-                                const responseSize = getContentLength(response.headers);
-                                if (responseSize > 0) {
-                                    record(httpMetrics.responseSize, responseSize, extra);
-                                }
+                                    add(httpMetrics.responseStatusTotal, 1, extra);
+                                    record(serverDurationMetric, responseTime - startTime, extra);
+                                    record(httpMetrics.requestQueueDuration, responseTime - startTime, extra);
 
-                                if (response.statusCode >= 400) {
-                                    add(httpMetrics.errorTotal, 1, extra);
-                                }
-
-                                response.on('end', () => {
-                                    try {
-                                        const duration = Date.now() - startTime;
-                                        const connectionDuration = Date.now() - connectionStartTime;
-
-                                        record(httpMetrics.requestDuration, duration, extra);
-                                        record(httpMetrics.connectionDuration, connectionDuration, extra);
-                                        add(httpMetrics.requestInFlight, -1, extra);
-                                        add(httpMetrics.connectionsTotal, -1, extra);
+                                    const responseSize = getContentLength(response.headers);
+                                    if (responseSize > 0) {
+                                        record(httpMetrics.responseSize, responseSize, extra);
                                     }
-                                    catch (endError) {
-                                        console.error('Error recording end metrics:', endError);
+
+                                    if (response.statusCode >= 400) {
+                                        add(httpMetrics.errorTotal, 1, extra);
                                     }
-                                });
-                            }
-                            catch (responseError) {
-                                console.error('Error handling response metrics:', responseError);
-                            }
-                        });
 
-                        // Handle timeouts and errors
-                        request.on('timeout', () => {
-                            try {
-                                add(httpMetrics.timeoutTotal, 1, {'error_type': 'timeout'});
-                            }
-                            catch (timeoutError) {
-                                console.error('Error handling timeout metrics:', timeoutError);
-                            }
-                        });
+                                    response.on('end', () => {
+                                        try {
+                                            const duration = Date.now() - startTime;
+                                            const connectionDuration = Date.now() - connectionStartTime;
 
-                        request.on('error', (err) => {
-                            try {
-                                add(httpMetrics.errorTotal, 1, {
-                                    'error_type': err.name || 'unknown',
-                                    'error_message': err.message?.slice(0, 100)
-                                });
-                            }
-                            catch (errorMetricError) {
-                                console.error('Error handling error metrics:', errorMetricError);
-                            }
-                        });
+                                            record(httpMetrics.requestDuration, duration, extra);
+                                            record(httpMetrics.connectionDuration, connectionDuration, extra);
+                                            add(httpMetrics.requestInFlight, -1, extra);
+                                            add(httpMetrics.connectionsTotal, -1, extra);
+                                        }
+                                        catch (endError) {
+                                            console.error('Error recording end metrics:', endError);
+                                        }
+                                    });
+                                }
+                                catch (responseError) {
+                                    console.error('Error handling response metrics:', responseError);
+                                }
+                            });
+
+                            request.on('timeout', () => {
+                                try {
+                                    add(httpMetrics.timeoutTotal, 1, {'error_type': 'timeout'});
+                                }
+                                catch (timeoutError) {
+                                    console.error('Error handling timeout metrics:', timeoutError);
+                                }
+                            });
+
+                            request.on('error', (err) => {
+                                try {
+                                    add(httpMetrics.errorTotal, 1, {
+                                        'error_type': err.name || 'unknown'
+                                    });
+                                }
+                                catch (errorMetricError) {
+                                    console.error('Error handling error metrics:', errorMetricError);
+                                }
+                            });
+                        }
+                        else {
+                            // Incoming: store startTime for responseHook to use
+                            request._otelStartTime = startTime;
+                        }
                     }
                     catch (hookError) {
                         console.error('Error in request hook:', hookError);
+                    }
+                },
+                responseHook: (span, response) => {
+                    try {
+                        // ServerResponse (incoming) has .req; IncomingMessage (outgoing response) does not
+                        if (!response.req || !httpMetrics) {
+                            return;
+                        }
+                        const request = response.req;
+                        const startTime = request._otelStartTime;
+                        if (!startTime) {
+                            return;
+                        }
+
+                        const duration = Date.now() - startTime;
+                        const metricAttrs = getMetricAttributes(request);
+                        const statusCode = String(response.statusCode);
+                        const extra = {'http_status_code': statusCode};
+
+                        httpMetrics.responseStatusTotal.add(1, {...metricAttrs, ...extra});
+                        httpMetrics.requestDuration.record(duration, {...metricAttrs, ...extra});
+                        if (serverDurationMetric) {
+                            serverDurationMetric.record(duration, {...metricAttrs, ...extra});
+                        }
+
+                        const responseSize = parseInt(response.getHeader?.('content-length')) || 0;
+                        if (responseSize > 0) {
+                            httpMetrics.responseSize.record(responseSize, {...metricAttrs, ...extra});
+                        }
+
+                        if (response.statusCode >= 400) {
+                            httpMetrics.errorTotal.add(1, {...metricAttrs, ...extra});
+                        }
+
+                        httpMetrics.requestInFlight.add(-1, metricAttrs);
+                        httpMetrics.connectionsTotal.add(-1, metricAttrs);
+                    }
+                    catch (error) {
+                        console.error('Error in response hook:', error);
                     }
                 },
             }),
@@ -742,14 +679,6 @@ function initializeOpenTelemetry() {
             new MongoDBInstrumentation({
                 enhancedDatabaseReporting: true,
                 requireParentSpan: false,
-                requestHook: (span, info) => {
-                    // Debug logging for MongoDB operations
-                    console.log('[OTEL] MongoDB operation:', {
-                        operation: info.operation,
-                        namespace: info.namespace,
-                        commandName: info.commandName
-                    });
-                },
             }),
             new FsInstrumentation({
                 enabled: false,
@@ -834,7 +763,6 @@ function initializeOpenTelemetry() {
         // Create SDK with enhanced configuration
         sdkInstance = new NodeSDK({
             resource: resource,
-            traceExporter: traceExporter,
             metricReader: metricReader,
             instrumentations: instrumentations,
             spanProcessor: new BatchSpanProcessor(traceExporter, {
@@ -842,7 +770,7 @@ function initializeOpenTelemetry() {
                 maxExportBatchSize: OTEL_CONFIG.MAX_EXPORT_BATCH_SIZE,
                 scheduledDelayMillis: OTEL_CONFIG.BATCH_TIMEOUT,
             }),
-            propagator: new CompositePropagator({
+            textMapPropagator: new CompositePropagator({
                 propagators: [
                     new W3CTraceContextPropagator(),
                     new W3CBaggagePropagator(),
@@ -852,6 +780,7 @@ function initializeOpenTelemetry() {
 
         // Start collecting system metrics
         const metricsInterval = setInterval(collectSystemMetrics, 5000);
+        metricsInterval.unref();
 
         // Setup event loop delay monitoring (Node 18+)
         let eventLoopMonitor;
@@ -890,6 +819,7 @@ function initializeOpenTelemetry() {
                     }
                 }
             }, 5000);
+            eventLoopInterval.unref();
 
             // Clean up interval on shutdown
             process.on('beforeExit', () => clearInterval(eventLoopInterval));
@@ -900,51 +830,7 @@ function initializeOpenTelemetry() {
         }
 
         // Setup GC metrics collection
-        const gcObserver = new PerformanceObserver((list) => {
-            // Skip if metrics not initialized
-            if (!applicationMetrics) {
-                return;
-            }
-
-            const attributes = getBaseAttributes();
-            const entries = list.getEntries();
-
-            for (const entry of entries) {
-                if (entry.kind !== undefined) {
-                    // Record GC pause time in nanoseconds (entry.duration is in ms, metric expects ns)
-                    applicationMetrics.gcPauseTime.record(entry.duration * 1e6, {
-                        ...attributes,
-                        'gc.type': getGCType(entry.kind)
-                    });
-
-                    // Count GC events by type
-                    applicationMetrics.gcCount.add(1, {
-                        ...attributes,
-                        'gc.type': getGCType(entry.kind)
-                    });
-                }
-            }
-
-            // Flush the buffer to prevent memory leak
-            gcObserver.takeRecords();
-        });
-
-        /**
-         * Get GC type name from kind
-         * @param {number} kind - GC kind number
-         * @returns {string} GC type name
-         */
-        const getGCType = (kind) => {
-            // GC types: https://nodejs.org/api/perf_hooks.html#performanceentrygckind
-            const gcTypes = {
-                1: 'scavenge',
-                2: 'mark_sweep_compact',
-                4: 'incremental_marking',
-                8: 'weak_callbacks',
-                16: 'all'
-            };
-            return gcTypes[kind] || 'unknown';
-        };
+        const gcObserver = sharedMetrics.setupGCObserver(() => applicationMetrics, getBaseAttributes);
 
         // Start observing GC events
         try {
@@ -989,113 +875,25 @@ function initializeOpenTelemetry() {
                 // Memory tracking is handled by the ObservableGauges directly
                 // const initialMemory = process.memoryUsage();
 
-                // Cache base attributes to avoid repeated allocations
+                // Create runtime observable gauges (event loop, memory)
                 const baseAttrs = getBaseAttributes();
-
-                // Track whether we've read all gauges this cycle
-                let gaugesRead = 0;
-                /**
-                 * Reset event loop monitor after all gauges are read
-                 * @returns {void}
-                 */
-                const resetAfterAllGauges = () => {
-                    gaugesRead++;
-                    if (gaugesRead >= 3 && eventLoopMonitor) {
-                        eventLoopMonitor.reset();
-                        gaugesRead = 0;
-                    }
-                };
-
-                // Create observable gauges with proper callback pattern
-                // Create observable gauge for max event loop lag
-                meter.createObservableGauge(
-                    'nodejs.eventloop.lag.max',
-                    {
-                        description: 'Maximum event loop lag since last measurement',
-                        unit: 'ms',
-                    },
-                    (result) => {
-                        if (eventLoopMonitor) {
-                            result.observe(eventLoopMonitor.max / 1e6, baseAttrs);
-                            resetAfterAllGauges();
-                        }
-                    }
-                );
-
-                // Create observable gauge for mean event loop lag
-                meter.createObservableGauge(
-                    'nodejs.eventloop.lag.mean',
-                    {
-                        description: 'Mean event loop lag',
-                        unit: 'ms',
-                    },
-                    (result) => {
-                        if (eventLoopMonitor) {
-                            result.observe(eventLoopMonitor.mean / 1e6, baseAttrs);
-                            resetAfterAllGauges();
-                        }
-                    }
-                );
-
-                // Create observable gauge for 99th percentile event loop lag
-                meter.createObservableGauge(
-                    'nodejs.eventloop.lag.p99',
-                    {
-                        description: '99th percentile event loop lag',
-                        unit: 'ms',
-                    },
-                    (result) => {
-                        if (eventLoopMonitor) {
-                            const p99 = eventLoopMonitor.percentile(99);
-                            result.observe(p99 / 1e6, baseAttrs);
-                            resetAfterAllGauges();
-                        }
-                    }
-                );
-
-                // Memory metrics as ObservableGauges (Problem #6 fix)
-                // Create observable gauge for RSS memory
-                meter.createObservableGauge('process.memory.usage', {
-                    description: 'Process memory usage (RSS)',
-                    unit: 'bytes',
-                }, (result) => {
-                    result.observe(process.memoryUsage().rss, baseAttrs);
-                });
-
-                // Create observable gauge for heap used memory
-                meter.createObservableGauge('process.memory.heap.used', {
-                    description: 'Process heap used memory',
-                    unit: 'bytes',
-                }, (result) => {
-                    result.observe(process.memoryUsage().heapUsed, baseAttrs);
-                });
-
-                // Create observable gauge for heap total memory
-                meter.createObservableGauge('process.memory.heap.total', {
-                    description: 'Process heap total memory',
-                    unit: 'bytes',
-                }, (result) => {
-                    result.observe(process.memoryUsage().heapTotal, baseAttrs);
-                });
-
-                // Create observable gauge for external memory
-                meter.createObservableGauge('process.memory.external', {
-                    description: 'Process external memory usage',
-                    unit: 'bytes',
-                }, (result) => {
-                    result.observe(process.memoryUsage().external, baseAttrs);
-                });
+                sharedMetrics.createRuntimeObservableGauges(meter, baseAttrs, eventLoopMonitor);
 
                 console.log('[OTEL] ✅ OpenTelemetry initialized successfully!');
                 sdkInitialized = true;
+                _resolveSdkReady();
                 return Promise.resolve();
             },
             3,
             1000
-        );
+        ).catch((err) => {
+            console.error('[OTEL] retryWithBackoff exhausted:', err);
+            _rejectSdkReady(err);
+        });
     }
     catch (error) {
         console.error('[OTEL] ❌ Failed to initialize OpenTelemetry:', error);
+        _rejectSdkReady(error);
         // Don't exit, let the application continue without telemetry
     }
 }
@@ -1104,9 +902,6 @@ function initializeOpenTelemetry() {
 if (process.env.OTEL_ENABLED === 'true') {
     initializeOpenTelemetry();
 }
-
-// Create SDK ready promise
-const sdkReady = sdkInitialized ? Promise.resolve() : Promise.reject(new Error('OpenTelemetry not initialized'));
 
 module.exports = {
     sdkReady,

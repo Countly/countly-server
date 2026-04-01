@@ -79,6 +79,38 @@
         return data;
     };
 
+    var INTERNAL_EVENT_I18N_KEYS = {
+        "/cohort/enter": "hooks.internal-event.cohort-enter",
+        "/cohort/exit": "hooks.internal-event.cohort-exit",
+        "/profile-group/enter": "hooks.internal-event.profile-group-enter",
+        "/profile-group/exit": "hooks.internal-event.profile-group-exit",
+        "/i/app_users/create": "hooks.internal-event.user-profile-created",
+        "/i/app_users/update": "hooks.internal-event.user-profile-updated",
+        "/i/app_users/delete": "hooks.internal-event.user-profile-deleted",
+        "/i/apps/create": "hooks.internal-event.application-created",
+        "/i/apps/update": "hooks.internal-event.application-updated",
+        "/i/apps/delete": "hooks.internal-event.application-deleted",
+        "/i/users/create": "hooks.internal-event.dashboard-user-created",
+        "/i/users/update": "hooks.internal-event.dashboard-user-updated",
+        "/i/users/delete": "hooks.internal-event.dashboard-user-deleted",
+        "/master": "hooks.internal-event.master-event",
+        "/systemlogs": "hooks.internal-event.system-logs",
+        "/crashes/new": "hooks.internal-event.new-crash",
+        "/hooks/trigger": "hooks.internal-event.hooks-triggered",
+        "/i/remote-config/add-parameter": "hooks.internal-event.remote-config-add-parameter",
+        "/i/remote-config/update-parameter": "hooks.internal-event.remote-config-update-parameter",
+        "/i/remote-config/remove-parameter": "hooks.internal-event.remote-config-remove-parameter",
+        "/i/remote-config/add-condition": "hooks.internal-event.remote-config-add-condition",
+        "/i/remote-config/update-condition": "hooks.internal-event.remote-config-update-condition",
+        "/i/remote-config/remove-condition": "hooks.internal-event.remote-config-remove-condition",
+        "/alerts/trigger": "hooks.internal-event.alerts-triggered"
+    };
+
+    hooksPlugin.getInternalEventPrettyName = function(eventType) {
+        var key = INTERNAL_EVENT_I18N_KEYS[eventType];
+        return (key && jQuery.i18n.map[key]) || eventType;
+    };
+
     hooksPlugin.generateTriggerActionsTreeDom = function(row) {
         var triggerNames = {
             "APIEndPointTrigger": jQuery.i18n.map["hooks.trigger-api-endpoint-uri"],
@@ -102,7 +134,7 @@
 
             if (row.trigger.type === "InternalEventTrigger") {
                 var eventType = row.trigger.configuration.eventType;
-                triggerDesc = '<div class="is-trigger-effect-desc">' + eventType + '</div>';
+                triggerDesc = '<div class="is-trigger-effect-desc" title="' + eventType + '">' + hooksPlugin.getInternalEventPrettyName(eventType) + '</div>';
             }
         }
         catch (e) {
@@ -160,7 +192,7 @@
 
             if (row.trigger.type === "InternalEventTrigger") {
                 var eventType = row.trigger.configuration.eventType;
-                triggerDesc = ' ' + eventType + ' ';
+                triggerDesc = ' ' + hooksPlugin.getInternalEventPrettyName(eventType) + ' ';
             }
         }
         catch (e) {

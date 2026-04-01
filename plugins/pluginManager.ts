@@ -1848,7 +1848,9 @@ class PluginManager {
             if (apiCountlyConfig.symlinked === true) {
                 args.unshift('--preserve-symlinks', '--preserve-symlinks-main');
             }
-            const m = cp.spawn('nodejs', args);
+            const m = cp.spawn('nodejs', args, {
+                env: { ...process.env, NODE_OPTIONS: '' }
+            });
             m.stdout.on('data', (data: Buffer) => {
                 console.log(data.toString());
             });
@@ -1920,7 +1922,9 @@ class PluginManager {
             if (apiCountlyConfig.symlinked === true) {
                 args.unshift('--preserve-symlinks', '--preserve-symlinks-main');
             }
-            const m = cp.spawn('nodejs', args);
+            const m = cp.spawn('nodejs', args, {
+                env: { ...process.env, NODE_OPTIONS: '' }
+            });
 
             m.stdout.on('data', (data: Buffer) => {
                 console.log(data.toString());
@@ -1968,7 +1972,9 @@ class PluginManager {
                     if (apiCountlyConfig.symlinked === true) {
                         args.unshift('--preserve-symlinks', '--preserve-symlinks-main');
                     }
-                    const m = cp.spawn('nodejs', args);
+                    const m = cp.spawn('nodejs', args, {
+                        env: { ...process.env, NODE_OPTIONS: '' }
+                    });
 
                     m.stdout.on('data', (data: Buffer) => {
                         console.log(data.toString());

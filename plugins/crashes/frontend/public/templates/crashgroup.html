@@ -49,6 +49,20 @@
     <cly-main>
         <div v-loading="isLoading" v-if="isLoading" class="bu-mt-6"></div>
         <div v-else>
+            <div class="bu-mb-5 bu-is-flex" v-if="hasCrashesQuery">
+                <cly-qb-bar
+                    feature="crashes"
+                    v-model="crashesQuery"
+                    :property-source-config="{drill: false}"
+                    queryStore="crashgroups"
+                    :additionalProperties="crashesQueryProperties"
+                    :additionalRules="crashesQueryRules"
+                    format="crashgroups"
+                    :disabled="true"
+                    :hide-controls="true">
+                </cly-qb-bar>
+                <el-button size="small" icon="ion-android-remove-circle" @click="clearCrashesQuery" class="bu-ml-2">{{i18n('crashes.clear')}}</el-button>
+            </div>
             <cly-section class="crashgroup-common-metrics" v-if="!!commonMetrics">
                 <div class="crashgroup-common-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                     <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-platform')"
@@ -194,8 +208,23 @@
                     </el-tab-pane>
                 </el-tabs>
             </cly-section>
-            <cly-section class="crashgroup-mobile-diagnostics" :title="i18n('crashes.crash-metrics')"
-                v-if="!!mobileMetrics">
+            <div class="bu-mb-3 bu-level" v-if="!!mobileMetrics">
+                <h4>{{i18n('crashes.crash-metrics')}}</h4>
+            </div>
+            <div class="bu-mb-3" v-if="hasCrashesQuery && !!mobileMetrics">
+                <cly-qb-bar
+                    feature="crashes"
+                    v-model="crashesQuery"
+                    :property-source-config="{drill: false}"
+                    queryStore="crashgroups"
+                    :additionalProperties="crashesQueryProperties"
+                    :additionalRules="crashesQueryRules"
+                    format="crashgroups"
+                    :disabled="true"
+                    :hide-controls="true">
+                </cly-qb-bar>
+            </div>
+            <cly-section class="crashgroup-mobile-diagnostics" v-if="!!mobileMetrics">
                 <div class="crashgroup-mobile-diagnostics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                     <cly-crashes-dashboard-tile columnWidth="is-one-fifth" v-for="diagnosticKey in diagnosticsOrder">
                         <div
@@ -231,9 +260,9 @@
             <cly-section class="crashgroup-mobile-metrics" v-if="!!mobileMetrics">
                 <div class="crashgroup-mobile-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                     <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-root')" showDonut
-                        :donutPercentage="mobileMetrics.rootedPercent || 0">
+                        :donutPercentage="mobileMetrics.rootPercent || 0">
                         <template v-slot:title>{{i18n('crashes.root')}}</template>
-                        <template v-slot:value>{{mobileMetrics.rootedPercent ? mobileMetrics.rootedPercent.toFixed(2) : 0}}%</template>
+                        <template v-slot:value>{{mobileMetrics.rootPercent ? mobileMetrics.rootPercent.toFixed(2) : 0}}%</template>
                     </cly-crashes-dashboard-tile>
                     <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-online')" showDonut
                         :donutPercentage="mobileMetrics.onlinePercent || 0">
@@ -253,30 +282,58 @@
                     </cly-crashes-dashboard-tile>
                 </div>
             </cly-section>
-            <cly-section>
-                <template v-slot:header>
-                    <span class="bu-mr-2">{{i18n('crashes.crash-occurences-by', crashgroup.nonfatal ?
-                        i18n('crashes.nonfatal') : i18n('crashes.fatal'))}}</span>
-                    <el-select v-model="chartBy" @change="handleChartByChange">
-                        <el-option v-for="item in chartByOptions"  :key="item.value" :label="item.label"
-                            :value="item.value"></el-option>
-                    </el-select>
-                    <cly-date-picker 
+            <div class="bu-mb-3">
+                <span class="bu-mr-2">{{i18n('crashes.crash-occurences-by', crashgroup.nonfatal ?
+                    i18n('crashes.nonfatal') : i18n('crashes.fatal'))}}</span>
+                <el-select v-model="chartBy" @change="handleChartByChange">
+                    <el-option v-for="item in chartByOptions"  :key="item.value" :label="item.label"
+                        :value="item.value"></el-option>
+                </el-select>
+                <cly-date-picker 
                     timestampFormat="ms" 
                     :display-shortcuts="true" 
                     v-model="pickerDate" 
                     label-mode-prop="absolute"
                     :allow-presets="false"
                     @change="handleDatePickerChange"
-                    class="bu-ml-2"
-                >
+                    class="bu-ml-2">
                 </cly-date-picker>
-                </template>
+            </div>
+            <div class="bu-mb-3" v-if="hasCrashesQuery">
+                <cly-qb-bar
+                    feature="crashes"
+                    v-model="crashesQuery"
+                    :property-source-config="{drill: false}"
+                    queryStore="crashgroups"
+                    :additionalProperties="crashesQueryProperties"
+                    :additionalRules="crashesQueryRules"
+                    format="crashgroups"
+                    :disabled="true"
+                    :hide-controls="true">
+                </cly-qb-bar>
+            </div>
+            <cly-section>
                 <p class="text-small color-cool-gray-50 bu-pl-3">{{i18n('crashes.crash-occurences-description')}}</p>
                 <cly-chart-bar  v-loading="isLoadingGraph" :force-loading="isLoadingGraph" :option="chartData(chartBy)" :legend="{show: true}" ></cly-chart-bar>
             </cly-section>
             <cly-section :title="i18n('crashes.crash-occurences')" class="recent-crash-occurences">
-                <p class="text-small color-cool-gray-50 bu-pl-3">{{i18n('crashes.recent-crash-occurances-description',currentLimit)}}</p>
+                <p class="text-small color-cool-gray-50 bu-pl-3">
+                    <template v-if="hasCrashesQuery">{{i18n('crashes.filtered-crash-occurances-description', currentLimit)}}</template>
+                    <template v-else>{{i18n('crashes.recent-crash-occurances-description', currentLimit)}}</template>
+                </p>
+                <p class="bu-pl-3" v-if="hasCrashesQuery">
+                    <cly-qb-bar
+                        feature="crashes"
+                        v-model="crashesQuery"
+                        :property-source-config="{drill: false}"
+                        queryStore="crashgroups"
+                        :additionalProperties="crashesQueryProperties"
+                        :additionalRules="crashesQueryRules"
+                        format="crashgroups"
+                        :disabled="true"
+                        :hide-controls="true">
+                    </cly-qb-bar>
+                </p>
                 <cly-datatable-n :force-loading="isLoading" :rows="crashes" :exportFormat="formatExportFunction" ref="tableData" @row-click="handleRowClick" row-class-name="bu-is-clickable" :defaultSort="{}">
                     <template v-slot:header-left="filterScope">
                         <cly-multi-select v-model="userFilter" :fields="userFilterFields"></cly-multi-select>

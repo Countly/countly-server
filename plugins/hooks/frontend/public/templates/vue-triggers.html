@@ -209,6 +209,9 @@
                v-model="value.eventType"
                :class="{'cly-vue-hook-drawer__is-full-line':true}"
                :options="internalEventOptions">
+                <template v-slot:option-suffix="option">
+                    <span class="text-smallish color-cool-gray-50" style="font-weight:normal; font-size:11px;">{{ option.value }}</span>
+                </template>
             </cly-select-x>
 
         </div>
