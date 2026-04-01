@@ -306,20 +306,29 @@
             saveHook: function(context, record) {
                 delete record._canUpdate;
                 delete record._canDelete;
-                return CV.$.ajax({
-                    type: "POST",
-                    url: countlyCommon.API_PARTS.data.w + "/hook/save?" + "app_id=" + record.apps[0],
-                    data: {
-                        "hook_config": JSON.stringify(record)
-                    },
-                    dataType: "json",
-                    success: function() {
-                        context.dispatch("countlyHooks/table/fetchAll", null, {root: true});
-                        context.dispatch("countlyHooks/initializeDetail", record._id, {root: true});
-                    },
-                    error: function() {
-                        CountlyHelpers.notify({type: "error", message: jQuery.i18n.map["hooks.trigger-save-failed"]});
-                    }
+                return new Promise(function(resolve, reject) {
+                    CV.$.ajax({
+                        type: 'POST',
+                        url: countlyCommon.API_PARTS.data.w + '/hook/save?' + 'app_id=' + record.apps[0],
+                        data: {
+                            'hook_config': JSON.stringify(record)
+                        },
+                        dataType: 'json',
+                        success: function() {
+                            context.dispatch('countlyHooks/table/fetchAll', null, {root: true});
+                            context.dispatch('countlyHooks/initializeDetail', record._id, {root: true});
+                            resolve();
+                        },
+                        error: function(err) {
+                            var msg = jQuery.i18n.map['hooks.trigger-save-failed'];
+                            if (err.responseJSON && err.responseJSON.result) {
+                                msg = err.responseJSON.result;
+                            }
+
+                            CountlyHelpers.notify({type: 'error', message: msg});
+                            reject(err);
+                        },
+                    });
                 });
             },
             deleteHook: function(context, id) {
@@ -358,7 +367,15 @@
                             });
                             context.commit("setTestResult", res.result);
                         }
-                    }
+                    },
+                    error: function(err) {
+                        var msg = jQuery.i18n.map['hooks.test-hook-failed'];
+                        if (err.responseJSON && err.responseJSON.result) {
+                            msg = err.responseJSON.result;
+                        }
+
+                        CountlyHelpers.notify({type: "error", message: msg});
+                    },
                 });
             },
             resetTestResult: function(context) {

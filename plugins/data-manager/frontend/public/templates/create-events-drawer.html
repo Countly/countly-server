@@ -42,13 +42,15 @@
                 <cly-form-field test-id="event-drawer-category-label" :label="i18n('data-manager.category')" :optional="true">
                     <cly-select-x
                         test-id="event-drawer-category-dropdown"
-                        class="bu-pt-1"
+                        class="el-input bu-pt-1"
                         :search-placeholder="i18n('data-manager.search-category')"
                         :placeholder="i18n('data-manager.uncategorized')" 
                         v-model="drawerScope.editedObject.category"
                         :auto-commit="!autoCommitDisabled" 
                         :mode="selectX.mode"
                         :hide-all-options-tab="allOptionsTabHidden"
+                        :width-same-as-trigger="true"
+                        :width="0"
                         :options="categories">
                     </cly-select-x>
                 </cly-form-field>

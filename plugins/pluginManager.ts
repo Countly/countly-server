@@ -198,6 +198,7 @@ const logDriverDb: Logger = log('driver:db');
 const exec: typeof cp.exec = cp.exec;
 const spawn: typeof cp.spawn = cp.spawn;
 const configextender: ConfigExtenderFn = require('../api/configextender');
+const { ConnectionString } = require('mongodb-connection-string-url');
 
 // ============================================================
 // INTERNAL INTERFACES (used within this module only)
@@ -2179,46 +2180,10 @@ class PluginManager {
      * @param db - database name
      * @returns modified connection string
      */
-    replaceDatabaseString(str: string, db?: string): string {
-        if (!db) {
-            db = 'countly';
-        }
-
-        const hasAdminDb = str.includes('/admin');
-
-        if (hasAdminDb) {
-            let updatedConnectionString = str.replace('/admin', '/' + db);
-            const hasAuthSource = updatedConnectionString.includes('authSource=');
-
-            if (!hasAuthSource) {
-                const hasQueryParams = updatedConnectionString.includes('?');
-                const authSourceParam = hasQueryParams ? '&authSource=admin' : '?authSource=admin';
-                updatedConnectionString += authSourceParam;
-            }
-
-            return updatedConnectionString;
-        }
-
-        const countlyIndex = str.lastIndexOf('/countly');
-        const targetDbIndex = str.lastIndexOf('/' + db);
-        if (countlyIndex !== targetDbIndex && countlyIndex !== -1 && db) {
-            return str.substr(0, countlyIndex) + '/' + db + str.substr(countlyIndex + ('/countly').length);
-        }
-        else if (countlyIndex === -1 && targetDbIndex === -1) {
-            const urlParts = str.split('://');
-            if (typeof urlParts[1] === 'string') {
-                const pathParts = urlParts[1].split('/');
-                if (pathParts.length === 1) {
-                    pathParts[0] += '/' + db;
-                }
-                else {
-                    pathParts[pathParts.length - 1] = db + pathParts.at(-1);
-                }
-                urlParts[1] = pathParts.join('/');
-            }
-            return urlParts.join('://');
-        }
-        return str;
+    replaceDatabaseString(str: string, db: string = 'countly'): string {
+        const connectionString = new ConnectionString(str);
+        connectionString.pathname = '/' + db;
+        return connectionString.toString();
     }
 
     /**

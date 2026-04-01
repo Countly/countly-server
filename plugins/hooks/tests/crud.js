@@ -2,9 +2,9 @@ var request = require('supertest');
 var should = require('should');
 var crypto = require('crypto');
 var moment = require('moment-timezone');
-var testUtils = require("../../test/testUtils");
-var pluginManager = require("../../plugins/pluginManager.ts");
-var Promise = require("bluebird");
+var testUtils = require('../../../test/testUtils');
+var pluginManager = require('../../../plugins/pluginManager.ts');
+var Promise = require('bluebird');
 request = request(testUtils.url);
 
 
