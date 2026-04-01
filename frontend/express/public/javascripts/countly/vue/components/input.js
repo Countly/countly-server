@@ -495,7 +495,7 @@
                                         </div>\
                                         <div class="bu-level-right" v-if="hasRemovableOptions || !!$scopedSlots[\'option-suffix\']">\
                                             <slot class="cly-vue-listbox__item-suffix" name="option-suffix" v-bind="option"></slot>\
-                                            <div class="cly-vue-listbox__remove-option" v-if="hasRemovableOptions" @click.stop="onRemoveOption(option)"><i class="el-icon-close"></i></div>\
+                                            <div class="cly-vue-listbox__remove-option" v-if="hasRemovableOptions" @click.stop="onRemoveOption(option)"><i data-test-id="open-query-page-removed-query-close-icon" class="el-icon-close"></i></div>\
                                         </div>\
                                     </div>\
                                 </div>\

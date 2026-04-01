@@ -389,7 +389,7 @@ const map = {
      */
     buttons: function(t, buttons) {
         if (buttons) {
-            t.result.data['c.b'] = buttons.map(b => ({t: b.title, l: b.link}));
+            t.result.data['c.b'] = buttons.map(b => ({t: b.title, l: b.url}));
         }
     },
 
