@@ -1,0 +1,444 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Error Logs API",
+    "description": "API for accessing and managing error logs in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/o/errorlogs": {
+      "get": {
+        "summary": "Get error logs",
+        "description": "Retrieve error logs from Countly Server. Requires global admin privileges. Can get all logs or a specific log file.",
+        "tags": [
+          "Error Logs"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "log",
+            "in": "query",
+            "required": false,
+            "description": "Specific log name to retrieve (e.g., 'api', 'dashboard'). If not provided, returns all available logs.",
+            "schema": {
+              "type": "string",
+              "example": "api"
+            }
+          },
+          {
+            "name": "bytes",
+            "in": "query",
+            "required": false,
+            "description": "Number of bytes to read from the end of the log file. If 0 or not provided, reads entire file. Negative values or excessively large values will result in a 502 Bad Gateway error.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "example": 1024
+            }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "required": false,
+            "description": "If set to any value, downloads the log file as an attachment instead of returning JSON.",
+            "schema": {
+              "type": "string",
+              "example": "true"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Error logs retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "description": "All available logs when no specific log is requested",
+                      "additionalProperties": {
+                        "type": "string",
+                        "description": "Log content"
+                      },
+                      "example": {
+                        "api": "[2025-07-28 10:00:00] INFO: API server started\n[2025-07-28 10:05:00] ERROR: Database connection failed",
+                        "dashboard": "[2025-07-28 10:00:00] INFO: Dashboard server started\n[2025-07-28 10:03:00] WARN: Memory usage high"
+                      }
+                    },
+                    {
+                      "type": "string",
+                      "description": "Log content when a specific log is requested",
+                      "example": "[2025-07-28 10:00:00] INFO: API server started\n[2025-07-28 10:05:00] ERROR: Database connection failed"
+                    }
+                  ]
+                }
+              },
+              "plain/text": {
+                "schema": {
+                  "type": "string",
+                  "description": "Log file content when download parameter is used"
+                }
+              }
+            },
+            "headers": {
+              "Content-disposition": {
+                "description": "File attachment header when download parameter is used",
+                "schema": {
+                  "type": "string",
+                  "example": "attachment; filename=countly-api.log"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Global admin privileges required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing required parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway - Invalid parameter values (e.g., negative bytes, excessively large bytes)",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML error page"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Get error logs (POST)",
+        "description": "Retrieve error logs from Countly Server using POST method. Supports both query parameters and form data. Requires global admin privileges.",
+        "tags": [
+          "Error Logs"
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "api_key": {
+                    "type": "string",
+                    "description": "API key for authentication"
+                  },
+                  "log": {
+                    "type": "string",
+                    "description": "Specific log name to retrieve"
+                  },
+                  "bytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Number of bytes to read"
+                  },
+                  "download": {
+                    "type": "string",
+                    "description": "Download as file attachment"
+                  }
+                },
+                "required": ["api_key"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Error logs retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "description": "All available logs when no specific log is requested",
+                      "additionalProperties": {
+                        "type": "string",
+                        "description": "Log content"
+                      }
+                    },
+                    {
+                      "type": "string",
+                      "description": "Log content when a specific log is requested"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing required parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Global admin privileges required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/errorlogs": {
+      "get": {
+        "summary": "Clear error logs",
+        "description": "Clear (truncate) a specific error log file. Requires global admin privileges.",
+        "tags": [
+          "Error Logs"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "log",
+            "in": "query",
+            "required": true,
+            "description": "Specific log name to clear (e.g., 'api', 'dashboard')",
+            "schema": {
+              "type": "string",
+              "example": "api"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Log cleared successfully or error occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Success message or error details",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing required parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Global admin privileges required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Clear error logs (POST)",
+        "description": "Clear (truncate) a specific error log file using POST method. Supports both query parameters and form data. Requires global admin privileges.",
+        "tags": [
+          "Error Logs"
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "api_key": {
+                    "type": "string",
+                    "description": "API key for authentication"
+                  },
+                  "log": {
+                    "type": "string",
+                    "description": "Specific log name to clear"
+                  }
+                },
+                "required": ["api_key", "log"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Log cleared successfully or error occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Success message or error details",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing required parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Global admin privileges required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    }
+  ]
+}

@@ -1327,6 +1327,10 @@ plugins.setConfigs("crashes", {
 
         switch (paths[3]) {
         case 'resolve':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in: crashes}}).toArray(function(crashGroupsErr, groups) {
@@ -1376,6 +1380,10 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'unresolve':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in: crashes}}).toArray(function(crashGroupsErr, groups) {
@@ -1407,7 +1415,11 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'view':
-            validateUpdate(obParams, function(params) {
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
+            validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in: crashes}}).toArray(function(crashGroupsErr, groups) {
                     if (groups) {
@@ -1440,6 +1452,10 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'share':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var id = common.crypto.createHash('sha1').update(params.qstring.app_id + params.qstring.args.crash_id + "").digest('hex');
                 common.db.collection('crash_share').insert({_id: id, app_id: params.qstring.app_id + "", crash_id: params.qstring.args.crash_id + ""}, function() {
@@ -1451,6 +1467,10 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'unshare':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var id = common.crypto.createHash('sha1').update(params.qstring.app_id + params.qstring.args.crash_id + "").digest('hex');
                 common.db.collection('crash_share').remove({'_id': id }, function() {
@@ -1462,6 +1482,10 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'modify_share':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 if (params.qstring.args.data) {
                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set": {share: params.qstring.args.data}}, function() {
@@ -1476,6 +1500,10 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'hide':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': {$in: crashes} }, {"$set": {is_hidden: true}}, {multi: true}, function() {
@@ -1488,6 +1516,10 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'show':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': {$in: crashes} }, {"$set": {is_hidden: false}}, {multi: true}, function() {
@@ -1500,6 +1532,10 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'resolving':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': {$in: crashes} }, {"$set": {is_resolving: true}}, {multi: true}, function() {
@@ -1512,6 +1548,10 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'add_comment':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateCreate(obParams, FEATURE_NAME, function() {
                 var args = obParams.qstring.args || {};
                 var appId = obParams.qstring.app_id;
@@ -1552,6 +1592,10 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'edit_comment':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateUpdate(obParams, FEATURE_NAME, function() {
                 var args = obParams.qstring.args || {};
                 var appId = obParams.qstring.app_id;
@@ -1603,6 +1647,10 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'delete_comment':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateDelete(obParams, FEATURE_NAME, function() {
                 var args = obParams.qstring.args || {};
                 var appId = obParams.qstring.app_id;
@@ -1643,6 +1691,10 @@ plugins.setConfigs("crashes", {
             });
             break;
         case 'delete':
+            if (!obParams.qstring.args) {
+                common.returnMessage(obParams, 400, 'Please provide args parameter');
+                return true;
+            }
             validateDelete(obParams, FEATURE_NAME, function() {
                 var params = obParams;
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];

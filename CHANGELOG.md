@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## Version 25.03.X
 Fixes:
 - [core] Fixed duplicate conditional in form field template
@@ -10,6 +11,11 @@ Fixes:
 Enterprise Fixes:
 - [journeys] Fix: prevent users entered stat to minus value for race conditions
 - [surveys] Fixed widget asset path with subdirectory
+=======
+## 25.xx
+Dependencies:
+- Remove SQLite
+>>>>>>> origin/flex
 
 ## Version 25.03.40
 Fixes:
@@ -292,7 +298,6 @@ Enterprise Fixes:
 - [users] Add survey section to user feedback page
 - [users] Fixed uploading user profile pictures
 
-
 ## Version 25.03.22
 Fixes:
 - [alerts] Fix: Migrate alerts to the new events model
@@ -370,7 +375,6 @@ Enterprise Fixes:
 Dependencies:
 - Bump puppeteer from 24.16.2 to 24.17.0
 
-
 ## Version 25.03.16
 Enterprise Fixes:
 - [journeys] Fix for skip threshold check in concurrent requests
@@ -379,7 +383,6 @@ Enterprise Fixes:
 Dependencies:
 - Bump get-random-values from 3.0.0 to 4.0.0
 - Bump puppeteer from 24.16.1 to 24.16.2
-
 
 ## Version 25.03.15
 Enterprise Fixes:
@@ -414,7 +417,6 @@ Enterprise Fixes:
 - [flows] Showing correct state for disabled flows
 - [surveys] Move "not likely" label next to 0 on mobile screens
 
-
 ## Version 25.03.12
 Features:
 - [plugins] Add configuration warning tags to settings UI
@@ -436,7 +438,6 @@ Dependencies:
 - Bump mongodb from 6.17.0 to 6.18.0
 - Bump puppeteer from 24.14.0 to 24.15.0
 - Bump supertest from 7.1.3 to 7.1.4
-
 
 ## Version 25.03.11
 Fixes:
@@ -533,7 +534,6 @@ Fixes:
 - [hooks] Added null check for incoming data
 - [push] Fix external drawer initialization
 - [times-of-day] Fix chart component
-
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
 - [ab-testing] Updates
