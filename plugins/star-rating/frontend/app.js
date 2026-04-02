@@ -11,8 +11,14 @@ var path = require('path');
          * @param {*} res - Express response object
          */
         function renderPopup(req, res) {
+            let countlyPath = countlyConfig.path || '';
+
+            if (countlyPath.length > 0 && !countlyPath.startsWith('/')) {
+                countlyPath = `/${countlyPath}`;
+            }
+
             res.removeHeader('X-Frame-Options');
-            res.render('../../../plugins/star-rating/frontend/public/templates/feedback-popup', {});
+            res.render('../../../plugins/star-rating/frontend/public/templates/feedback-popup', { countlyPath });
         }
 
         app.get(countlyConfig.path + '/feedback/rating', renderPopup);
