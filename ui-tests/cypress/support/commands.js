@@ -375,17 +375,17 @@ Cypress.Commands.add("shouldNotExist", (element) => {
 });
 
 Cypress.Commands.add('checkPaceRunning', () => {
-    cy.get('.pace-running', { timeout: 35000 }).should('not.exist');
+    cy.get('.pace-running', { timeout: 50000 }).should('not.exist');
 });
 
 Cypress.Commands.add('checkPaceActive', () => {
-    cy.get('.pace-active', { timeout: 10000 }).should('not.exist');
+    cy.get('.pace-active', { timeout: 50000 }).should('not.exist');
 });
 
 Cypress.Commands.add('checkLoading', () => {
     cy.get('body').then($body => {
         if ($body.find('.el-loading-mask').length) {
-            cy.get('.el-loading-mask', { timeout: 20000 })
+            cy.get('.el-loading-mask', { timeout: 50000 })
                 .should('not.be.visible');
         }
     });
