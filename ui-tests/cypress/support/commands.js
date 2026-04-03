@@ -376,9 +376,9 @@ Cypress.Commands.add("shouldNotExist", (element) => {
 
 Cypress.Commands.add('checkPaceRunning', () => {
     //cy.get('.pace-running', { timeout: 15000 }).should('not.exist');
-    cy.get('body', { timeout: 90000 }).should($body => {
-        expect($body).not.to.have.class('pace-running');
-    });
+    cy.get('body', { timeout: 90000 })
+        .invoke('hasClass', 'pace-running')
+        .should('eq', false);
 });
 
 Cypress.Commands.add('checkPaceActive', () => {
