@@ -375,11 +375,11 @@ Cypress.Commands.add("shouldNotExist", (element) => {
 });
 
 Cypress.Commands.add('checkPaceRunning', () => {
-    cy.get('.pace-running', { timeout: 90000 }).should('not.exist');
+    cy.get('.pace-running', { timeout: 15000 }).should('not.exist');
 });
 
 Cypress.Commands.add('checkPaceActive', () => {
-    cy.get('.pace-active', { timeout: 90000 }).should('not.exist');
+    cy.get('.pace-active', { timeout: 15000 }).should('not.exist');
 });
 
 Cypress.Commands.add('checkLoading', () => {
