@@ -2,6 +2,10 @@
 Fixes:
 - [core] Fixed duplicate conditional in form field template
 
+Enterprise Fixes:
+- [data-manager] Fix notification message after editing user property
+- [white-labeling] Update newsletter setting description
+
 ## Version 25.03.41
 Fixes:
 - [push] Fix: Cannot create a push notification when configuration _id is a string
