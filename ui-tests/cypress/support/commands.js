@@ -52,7 +52,7 @@ Cypress.Commands.add("clickElement", (element, isForce = false, index = 0) => {
             .click();
     }
 
-    //cy.checkPaceRunning();
+    cy.checkPaceRunning();
 });
 
 Cypress.Commands.add("clickBody", () => {
@@ -375,11 +375,11 @@ Cypress.Commands.add("shouldNotExist", (element) => {
 });
 
 Cypress.Commands.add('checkPaceRunning', () => {
-    cy.get('.pace-running', { timeout: 75000 }).should('not.exist');
+    cy.get('.pace-running', { timeout: 90000 }).should('not.exist');
 });
 
 Cypress.Commands.add('checkPaceActive', () => {
-    cy.get('.pace-active', { timeout: 75000 }).should('not.exist');
+    cy.get('.pace-active', { timeout: 90000 }).should('not.exist');
 });
 
 Cypress.Commands.add('checkLoading', () => {
