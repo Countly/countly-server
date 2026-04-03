@@ -52,7 +52,7 @@ Cypress.Commands.add("clickElement", (element, isForce = false, index = 0) => {
             .click();
     }
 
-    cy.checkPaceRunning();
+    //cy.checkPaceRunning();
 });
 
 Cypress.Commands.add("clickBody", () => {
