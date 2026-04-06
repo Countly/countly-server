@@ -1,9 +1,18 @@
-## Version 25.03.XX
+## Version 25.03.X
+Fixes:
+- [core] Fixed duplicate conditional in form field template
+
+Enterprise Fixes:
+- [data-manager] Fix notification message after editing user property
+- [white-labeling] Update newsletter setting description
+
+## Version 25.03.41
 Fixes:
 - [push] Fix: Cannot create a push notification when configuration _id is a string
 - [star-rating] Fixed widget asset path with subdirectory
 
 Enterprise Fixes:
+- [journeys] Fix: prevent users entered stat to minus value for race conditions
 - [surveys] Fixed widget asset path with subdirectory
 - [journey-engin] Added new image handling mechanism for modal and half-modal content blocks
 

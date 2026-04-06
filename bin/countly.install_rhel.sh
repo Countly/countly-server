@@ -48,10 +48,11 @@ cp "$DIR/config/supervisord.example.conf" "$DIR/config/supervisord.conf"
 
 #Install raven-release for ipa-gothic-fonts required by puppeteer
 if [[ "$CENTOS_MAJOR" = "9" ]]; then
-    sudo rpm -ivh https://pkgs.sysadmins.ws/el8/base/x86_64/ipa-gothic-fonts-003.03-15.el8.noarch.rpm
+    curl -L -O -J "https://box.tools.count.ly/public.php/dav/files/AEYjHZefDa2EZsn/?accept=zip"
+    sudo rpm -ivh ipa-gothic-fonts-003.03-15.el8.noarch.rpm
 else
-    sudo yum install -y https://pkgs.sysadmins.ws/el8/base/x86_64/raven-release-1.0-3.el8.noarch.rpm
-    sudo yum install -y ipa-gothic-fonts
+    curl -L -O -J "https://box.tools.count.ly/public.php/dav/files/Wj8opzNdyE5DyDX/?accept=zip"
+    sudo yum install -y raven-release.el8.noarch.rpm
 fi
 
 #Install dependancies required by the puppeteer
