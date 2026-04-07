@@ -62,7 +62,7 @@
         window.paceOptions = {
             ajax: {
                 ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", "method=get_events", "display_loader=false"]
-            }
+            },
         };
         window.loadPlugin = function(plugin, callback, args){
             if (typeof plugin !== "string") {
@@ -144,7 +144,7 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/inViewportMixin.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuescroll.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-json-pretty.min.js?<%= countlyVersion %>"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/Sortable.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuedraggable.umd.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.auth.js?<%= countlyVersion %>"></script>
@@ -303,6 +303,24 @@
     <!--Countly script-->
     <script type='text/javascript' src='<%- cdn %>sdk/web/countly.min.js?<%= countlyVersion %>'></script>
     <script type='text/javascript'>
+
+    var initDestroyTimeOutPace = function () {
+        var counter = 0;
+        var refreshIntervalId = setInterval(function () {
+            var progress;
+            if (typeof document.querySelector('.pace-progress').getAttribute('data-progress-text') !== 'undefined') {
+                progress = Number(document.querySelector('.pace-progress').getAttribute('data-progress-text').replace("%", ''));
+            }
+            if (progress === 99) {
+                counter++;
+            }
+            if (counter > 50) {
+                clearInterval(refreshIntervalId);
+                Pace.stop();
+            }
+        }, 100);
+    }
+    initDestroyTimeOutPace();
 
     Countly.getViewName = function(){
         var view = "/dashboard#";

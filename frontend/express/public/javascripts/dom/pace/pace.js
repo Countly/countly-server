@@ -905,6 +905,7 @@
   };
 
   Pace.start = function(_options) {
+    console.trace();
     extend(options, _options);
     Pace.running = true;
     try {

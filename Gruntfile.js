@@ -15,7 +15,7 @@ module.exports = function(grunt) {
                 src: [
                     'frontend/express/public/javascripts/dom/jquery/jquery.js',
                     'frontend/express/public/javascripts/dom/gridstack/gridstack-h5.js',
-                    'frontend/express/public/javascripts/dom/pace/pace.min.js',
+                    'frontend/express/public/javascripts/dom/pace/pace.js',
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.dom.concat.js'
             },
