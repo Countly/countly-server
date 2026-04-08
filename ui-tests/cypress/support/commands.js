@@ -1,6 +1,5 @@
 import 'cypress-file-upload';
 import { setDebugContext, clearDebugContext } from './debugContext';
-import { cy } from '@faker-js/faker';
 const helper = require('./helper');
 const chai = require('chai');
 const expect = chai.expect;
