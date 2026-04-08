@@ -6,7 +6,7 @@
 //
 // Key guarantees:
 // - Idempotent: only rows where stored value ≠ current winner are updated.
-// - Partition-scoped: updates are bounded with IN PARTITION ID (works with any partitioning scheme).
+// - Partition-scoped: updates are bounded with IN PARTITION ID 'YYYYMM'.
 // - Preflight guard: refuses to run if dictionary returns non-anchors
 //   (i.e., dict(winner) != winner) or empty winners for present keys.
 // - Safe handling of empty strings from dict: nullIf(...,'') fallback to uid.
@@ -272,7 +272,7 @@ class ColdPartitionMergingJob extends job.Job {
             WITH U AS (
               SELECT DISTINCT a, uid
               FROM ${db}.${table}
-              WHERE _partition_id IN (${partitionIds.map(p => "'" + String(p) + "'").join(',')})
+              WHERE toYYYYMM(ts,'UTC') IN (${partitionIds.map(Number).join(',')})
             ),
             M AS (
               SELECT
@@ -303,7 +303,7 @@ class ColdPartitionMergingJob extends job.Job {
      * @param {object} client - ClickHouse client instance
      * @param {string} db - Database name
      * @param {string} table - Table name
-     * @param {string} partitionId - Partition ID from system.parts (e.g. 'YYYYMM' or 'YYYYMMDD')
+     * @param {string} partitionId - Partition ID in 'YYYYMM' format
      * @param {string} canonExpr - Canonical expression for comparison
      * @returns {Promise<object>} - Object containing total rows and rows to fix
      */
@@ -313,7 +313,7 @@ class ColdPartitionMergingJob extends job.Job {
               count() AS total,
               countIf(uid_canon IS NULL OR uid_canon != ${canonExpr}) AS rows_to_fix
             FROM ${db}.${table}
-            WHERE _partition_id = '${String(partitionId)}'
+            WHERE toYYYYMM(ts,'UTC') = ${Number(partitionId)}
         `;
         const [row] = await this.#queryJSON(client, q);
         return {
@@ -328,7 +328,7 @@ class ColdPartitionMergingJob extends job.Job {
      * @param {object} client - ClickHouse client instance
      * @param {string} db - Database name
      * @param {string} table - Table name
-     * @param {string} partitionId - Partition ID from system.parts (e.g. 'YYYYMM' or 'YYYYMMDD')
+     * @param {string} partitionId - Partition ID in 'YYYYMM' format
      * @param {string} canonExpr - Canonical expression for updating
      * @param {number} mutationsSync - Mutations sync setting (0=async, 1=wait table, 2=wait all)
      * @param {boolean} safeMode - If true, update uid_canon; if false, rewrite uid
@@ -347,8 +347,7 @@ class ColdPartitionMergingJob extends job.Job {
         const q = `
             ALTER TABLE ${db}.${table} ${onCluster}
             UPDATE ${targetCol} = ${canonExpr}
-            IN PARTITION ID '${String(partitionId)}'
-            WHERE ${mismatchPredicate}
+            WHERE toYYYYMM(ts,'UTC') = ${Number(partitionId)} AND ${mismatchPredicate}
             SETTINGS mutations_sync = ${mutationsSync}
         `;
         await this.#exec(client, q);
