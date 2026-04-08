@@ -154,18 +154,20 @@ Cypress.Commands.add("shouldTooltipContainText", (element, text) => {
 });
 
 Cypress.Commands.add("shouldBeVisible", (element) => {
-    setDebugContext({
-        assertion: 'be visible',
-        expected: true,
-        actual: undefined
-    });
+  setDebugContext({
+    assertion: "be visible",
+    expected: true,
+    actual: undefined
+  });
 
-    cy.getElement(element)
-        .should('be.visible')
-        .then(($el) => {
-            const actual = Cypress.$($el).is(':visible');
-            setDebugContext({ actual });
-        });
+  cy.getElement(element)
+    .should(($el) => {
+      const visible = $el.is(':visible');
+
+      setDebugContext({ actual: visible });
+
+      expect(visible).to.be.true;
+    });
 });
 
 Cypress.Commands.add("shouldBeDisabled", (element) => {
@@ -215,33 +217,37 @@ Cypress.Commands.add("shouldNotBeHasDisabledClass", (element) => {
 });
 
 Cypress.Commands.add("shouldContainText", (element, text) => {
-    setDebugContext({
-        assertion: 'contain text',
-        expected: text,
-        actual: undefined
-    });
+  setDebugContext({
+    assertion: "contain text",
+    expected: text,
+    actual: undefined
+  });
 
-    cy.getElement(element)
-        .should('contain', text)
-        .then(($el) => {
-            const actual = $el.text().trim();
-            setDebugContext({ actual });
-        });
+  cy.getElement(element)
+    .then(($el) => {
+      const actual = $el.text().trim();
+      setDebugContext({ actual });
+      expect(actual).to.contain(text);
+    });
 });
 
 Cypress.Commands.add("shouldNotContainText", (element, text) => {
-    setDebugContext({
-        assertion: 'not contain text',
-        expected: text,
-        actual: undefined
-    });
+  setDebugContext({
+    assertion: "not contain text",
+    expected: text,
+    actual: undefined
+  });
 
-    cy.getElement(element)
-        .should('not.contain', text)
-        .then(($el) => {
-            const actual = $el.text().trim();
-            setDebugContext({ actual });
-        });
+  cy.getElement(element)
+    .should("not.contain", text)
+    .then(($el) => {
+
+      const actual = $el.text().trim();
+
+      setDebugContext({
+        actual
+      });
+    });
 });
 
 Cypress.Commands.add("shouldBeEqual", (element, text) => {
