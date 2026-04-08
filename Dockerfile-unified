@@ -1,5 +1,7 @@
 # Global ARGs - available in all stages
-ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,logger,systemlogs,populator,reports,crashes,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,config-transfer,consolidate,data-manager,hooks,dashboards,journey_engine,content,clickhouse,guides,sdk,kafka,oidc,revenue,push,ai-assistants
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,remote-config,logger,systemlogs,populator,reports,crashes,star-rating,slipping-away-users,compare,server-stats,dbviewer,alerts,times-of-day,compliance-hub,onboarding,consolidate,data-manager,hooks,dashboards,clickhouse,guides,sdk,kafka,push
+# Countly Enterprise:
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,logger,systemlogs,populator,reports,crashes,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,config-transfer,consolidate,data-manager,hooks,dashboards,journey_engine,content,clickhouse,guides,sdk,kafka,oidc,revenue,push,ai-assistants
 ARG GEOIP=empty
 
 ###############################################################################
@@ -9,8 +11,8 @@ FROM node:24-bookworm-slim AS base
 ENV HUSKY=0
 
 # 0.1  core build & runtime libs (single APT layer for better cache)
-RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt \
-    --mount=type=cache,id=apt-lists,target=/var/lib/apt/lists \
+RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=apt-lists,target=/var/lib/apt/lists,sharing=locked \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates wget gnupg git make gcc g++ build-essential sudo xz-utils curl \
@@ -45,36 +47,44 @@ FROM base AS ab-models
 ARG COUNTLY_PLUGINS
 WORKDIR /opt/countly
 
-# 1.1 copy *only* the bayesian plugin dir – keeps cache tight
-COPY plugins/ab-testing/api/bayesian/ ./plugins/ab-testing/api/bayesian/
+# Always create output dir so downstream COPY --from=ab-models never fails
+RUN mkdir -p plugins/ab-testing/api/bayesian
 
-# 1.2 compile models only if plugin present in the list (with pip cache mount)
-RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip set -eux; \
-    # 0. Bail out if ab‑testing plugin is disabled
-    echo "$COUNTLY_PLUGINS" | tr ',' '\n' | grep -qx ab-testing \
-      || { echo "AB‑testing disabled"; \
-           mkdir -p plugins/ab-testing/api/bayesian; \
-           touch plugins/ab-testing/api/bayesian/.ab_disabled; \
-           exit 0; }; \
+# Compile models only if ab-testing is in COUNTLY_PLUGINS AND source exists.
+# Uses --mount=type=bind to access build context without a COPY instruction
+# (COPY would fail when the ab-testing directory is absent from the tree).
+RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip,sharing=locked \
+    --mount=type=bind,target=/ctx,readonly \
+    set -eux; \
+    # 0. Skip if ab-testing is not in the plugin list
+    echo “$COUNTLY_PLUGINS” | tr ',' '\n' | grep -qx ab-testing \
+      || { echo “AB-testing not in COUNTLY_PLUGINS, skipping”; \
+           touch plugins/ab-testing/api/bayesian/.ab_disabled; exit 0; }; \
+    # 0.1 Skip if source directory doesn't exist in build context
+    [ -d /ctx/plugins/ab-testing/api/bayesian ] \
+      || { echo “AB-testing source not found, skipping”; \
+           touch plugins/ab-testing/api/bayesian/.ab_disabled; exit 0; }; \
+    # 1. Copy source from build context
+    cp -a /ctx/plugins/ab-testing/api/bayesian/* plugins/ab-testing/api/bayesian/; \
     cd plugins/ab-testing/api/bayesian; \
-    # 1. Stub distutils/msvccompiler.py (numpy pulls it even on Linux)
+    # 2. Stub distutils/msvccompiler.py (numpy pulls it even on Linux)
     mkdir -p /usr/local/lib/python3.12/distutils && \
     echo 'def get_build_version(*a,**k): return 0' \
       > /usr/local/lib/python3.12/distutils/msvccompiler.py; \
-    # tell setuptools to always use the std‑lib copy we just patched
+    # tell setuptools to always use the std-lib copy we just patched
     export SETUPTOOLS_USE_DISTUTILS=stdlib; \
-    # 2. Upgrade build tooling
+    # 3. Upgrade build tooling
     python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel; \
-    # 3. Read requirements_docker.txt, split “first two” vs “the rest”
-    HEAD_REQS="$(head -n 2 requirements_docker.txt | grep -v '^#' | xargs echo)"; \
-    REST_REQS="$(tail -n +3 requirements_docker.txt | grep -v '^#' | xargs echo)"; \
+    # 4. Read requirements_docker.txt, split “first two” vs “the rest”
+    HEAD_REQS=”$(head -n 2 requirements_docker.txt | grep -v '^#' | xargs echo)”; \
+    REST_REQS=”$(tail -n +3 requirements_docker.txt | grep -v '^#' | xargs echo)”; \
     python3 -m pip install --upgrade pip; \
-    # 4. Install Cython & NumPy first (make headers / C‑API available)
+    # 5. Install Cython & NumPy first (make headers / C-API available)
     python3 -m pip install --no-cache-dir ${HEAD_REQS}; \
-    # 5. Install remaining pins *without* build isolation (sees headers)
+    # 6. Install remaining pins *without* build isolation (sees headers)
     python3 -m pip install --no-cache-dir --no-build-isolation \
         --no-deps ${REST_REQS}; \
-    # 6. Compile Bayesian models if script present
+    # 7. Compile Bayesian models if script present
     [ -f model.py ] && python3 model.py; \
     touch .models_compiled
 
@@ -109,7 +119,7 @@ RUN --mount=type=cache,id=geoip-cache,target=/tmp/geoip-cache,sharing=locked \
     fi
 
 # 3) offline geocoder data  (cached on its own)
-RUN --mount=type=cache,id=geonames-cache,target=/opt/countly/bin/offline-geocoder/data \
+RUN --mount=type=cache,id=geonames-cache,target=/opt/countly/bin/offline-geocoder/data,sharing=locked \
     node ./bin/offline-geocoder/scripts/download_geonames_data.js || true
 
 # 4) plugin manifests → deps
@@ -182,6 +192,7 @@ RUN set -eux; apt-get update && apt-get install -y --no-install-recommends \
 # 4.2 copy only python runtime (no headers)
 COPY --from=base /usr/local/bin/python3.12 /usr/local/bin/python3.12
 COPY --from=base /usr/local/lib/python3.12 /usr/local/lib/python3.12
+COPY --from=base /usr/local/lib/libpython3.12.so.1.0 /usr/local/lib/libpython3.12.so.1.0
 RUN ln -s /usr/local/bin/python3.12 /usr/local/bin/python3 && ldconfig
 
 # 4.3 create countly user & dirs

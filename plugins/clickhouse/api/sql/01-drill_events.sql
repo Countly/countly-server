@@ -25,7 +25,7 @@ CREATE TABLE {{DATABASE}}.{{TABLE}} {{ON_CLUSTER}}
     cd     DateTime64(3) DEFAULT now64(3) CODEC (Delta, LZ4)
 )
 ENGINE = {{ENGINE}}
-PARTITION BY toYYYYMM(ts, 'UTC')
+PARTITION BY toStartOfInterval(ts, INTERVAL 1 WEEK, 'UTC')
 ORDER BY (a, e, n, ts)
 SETTINGS
     index_granularity = 8192,
