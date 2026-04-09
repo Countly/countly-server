@@ -7,20 +7,13 @@ const log = require('../../../../api/utils/log.js')('alert:users');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
-const { ObjectId } = require('mongodb');
 
 const METRIC_TO_PROPERTY_MAP = {
     "# of users": "u",
     "# of new users": "n",
 };
 
-module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) => {
-    const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
-    if (!app) {
-        log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-        return done();
-    }
-
+module.exports.check = async({ alert, app, done, scheduledTo: date }) => {
     let { alertDataSubType, period, compareType, compareValue } = alert;
     const metricProperty = METRIC_TO_PROPERTY_MAP[alertDataSubType];
     compareValue = Number(compareValue);
@@ -31,15 +24,18 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
     }
 
     const metricValue = await getUserMetricByDate(app, metricProperty, date, period) || 0;
+    log.d(alert._id, "value on", date, "is", metricValue);
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
+            log.d(alert._id, "triggered because", metricValue, "is more than", compareValue);
             await commonLib.trigger({ alert, app, metricValue, date }, log);
         }
     }
     else {
         const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
         const metricValueBefore = await getUserMetricByDate(app, metricProperty, before, period);
+        log.d(alert._id, "value on", before, "is", metricValueBefore);
         if (!metricValueBefore) {
             return done();
         }
@@ -50,6 +46,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             : change <= -compareValue;
 
         if (shouldTrigger) {
+            log.d(alert._id, "triggered because", compareType, String(change) + "%");
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
