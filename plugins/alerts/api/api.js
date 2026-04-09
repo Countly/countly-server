@@ -29,7 +29,7 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
  * Takes the timezone offset into account while calculating the trigger time.
  * @param {string} period - "hourly"|"daily"|"monthly"
  * @param {number} offset - timezone offset in minutes
- * @returns {string} schedule text
+ * @returns {string|undefined} schedule text
  */
 function getScheduleTextExpression(period, offset) {
     if (typeof offset !== "number") {
@@ -52,6 +52,7 @@ function getScheduleTextExpression(period, offset) {
         }
     }
     log.e(`No such period \"${period}\"`);
+    return;
 }
 
 (function() {
