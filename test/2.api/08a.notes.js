@@ -8,6 +8,7 @@ describe('Notes API', function() {
         const API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         const APP_ID = testUtils.get("APP_ID");
         const noteText = `docs-note-${Date.now()}`;
+        const noteTs = Date.now() - (60 * 60 * 1000);
 
         let sp = new URLSearchParams();
         sp.append('api_key', API_KEY_ADMIN);
@@ -15,7 +16,7 @@ describe('Notes API', function() {
         sp.append('args', JSON.stringify({
             app_id: APP_ID,
             note: noteText,
-            ts: Date.now(),
+            ts: noteTs,
             noteType: 'public',
             color: '#F59E0B'
         }));
