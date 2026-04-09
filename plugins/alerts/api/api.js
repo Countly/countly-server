@@ -3,11 +3,12 @@ const plugins = require('../../pluginManager.js');
 const log = require('../../../api/utils/log.js')('alert:api');
 var Promise = require("bluebird");
 const JOB = require('../../../api/parts/jobs');
-const utils = require('./parts/utils');
+const utils = require('./parts/utils.js');
 const _ = require('lodash');
 const { validateCreate, validateRead, validateUpdate } = require('../../../api/utils/rights.js');
 const FEATURE_NAME = 'alerts';
 const commonLib = require("./parts/common-lib.js");
+const moment = require('moment-timezone');
 
 /**
  * Alerts that can be triggered when an event is received.
@@ -23,16 +24,35 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
     name
 }));
 
-// FIX THIS: workaround for the job.schedule
-const _date = new Date("2024-03-25T23:59:00.000Z");
-const _timeDelta = _date.getTimezoneOffset() / 60;
-const _hours = String((23 + _timeDelta) % 24).padStart(2, "0");
-
-const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
-    "hourly": "every 1 hour on the 59th min",
-    "daily": "at " + _hours + ":59",
-    "monthly": "on the last day of the month at " + _hours + ":59",
-};
+/**
+ * Returns the text expression build from period for later.js.
+ * Takes the timezone offset into account while calculating the trigger time.
+ * @param {string} period - "hourly"|"daily"|"monthly"
+ * @param {number} offset - timezone offset in minutes
+ * @returns {string} schedule text
+ */
+function getScheduleTextExpression(period, offset) {
+    if (typeof offset !== "number") {
+        log.e("Offset is required");
+        return;
+    }
+    if (period === "hourly") {
+        return "every 1 hour on the 59th min";
+    }
+    else {
+        const utcClock = moment("2026-02-01T23:59:00.000Z")
+            .tz("UTC")
+            .subtract(offset, "minutes")
+            .format("HH:mm");
+        if (period === "daily") {
+            return "at " + utcClock;
+        }
+        else if (period === "monthly") {
+            return "on the last day of the month at " + utcClock;
+        }
+    }
+    log.e(`No such period \"${period}\"`);
+}
 
 (function() {
     /**
@@ -59,12 +79,17 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
 	 * update alert job
 	 * @param {object} alert  - alert record data
 	 */
-    function updateJobForAlert(alert) {
+    async function updateJobForAlert(alert) {
         if (alert.enabled) {
-            const textExpression = PERIOD_TO_TEXT_EXPRESSION_MAPPER[alert.period];
-            if (textExpression) {
-                JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule(textExpression);
-                // JOB.job('alerts:monitor', { alertID: alert._id }).replace().schedule("every seconds");
+            const apps = await commonLib.loadAlertAppsWithTimezoneOffsets(alert);
+            for (const app of apps) {
+                const textExpression = getScheduleTextExpression(alert.period, app.offset);
+                if (textExpression) {
+                    JOB.job('alerts:monitor', {
+                        alertID: alert._id,
+                        appID: app._id
+                    }).replace().schedule(textExpression);
+                }
             }
         }
         else {
@@ -74,16 +99,17 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
     /**
 	 * load job list
 	 */
-    function loadJobs() {
-        common.readBatcher.getMany("alerts", {}, function(err, alertsList) {
-            log.d(alertsList, "get alert configs");
-            alertsList && alertsList.forEach(t => {
-                //period type
-                if (t.period) {
-                    updateJobForAlert(t);
-                }
-            });
+    async function loadJobs() {
+        // delete and then re-create all jobs
+        await common.db.collection("jobs").deleteMany({
+            name: "alerts:monitor"
         });
+        const alerts = await common.readBatcher.getMany("alerts", {
+            enabled: true,
+            period: { $exists: true }
+        });
+        log.d("loaded", alerts);
+        await Promise.all(alerts.map(updateJobForAlert));
     }
 
     plugins.register("/i", async function(ob) {
@@ -124,22 +150,20 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
     });
 
     plugins.register("/master", function() {
-        loadJobs();
+        setTimeout(function() {
+            plugins.dispatch("/updateAlert", { method: "alertTrigger" });
+        }, 10000);
     });
 
     plugins.register("/updateAlert", function(ob) {
-        setTimeout(() => {
-            if (ob && (ob.method === "alertTrigger")) {
-                if (ob.alert) {
-                    deleteJob(ob.alert, function() {
-                        updateJobForAlert(ob.alert);
-                    });
-                }
-                else {
-                    loadJobs();
-                }
+        if (ob && ob.method === "alertTrigger") {
+            if (ob.alert) {
+                updateJobForAlert(ob.alert);
             }
-        }, 2000);
+            else {
+                loadJobs();
+            }
+        }
     });
 
 
@@ -148,21 +172,18 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
         utils.addAlertCount(ob);
     });
 
-    setTimeout(function() {
-        plugins.dispatch("/updateAlert", { method: "alertTrigger" });
-    }, 10000);
 
 
 
     /**
-     * @api {get} /i/alert/save save new create or updated alert data. 
-     * @apiName  saveAlert 
-     * @apiGroup alerts 
+     * @api {get} /i/alert/save save new create or updated alert data.
+     * @apiName  saveAlert
+     * @apiGroup alerts
      *
-     * @apiDescription  create or update alert. 
-     * @apiQuery {string} alert_config alert Configuration JSON object string. 
+     * @apiDescription  create or update alert.
+     * @apiQuery {string} alert_config alert Configuration JSON object string.
      *  if contains "_id" will update related alert in DB.
-     * @apiQuery {String} app_id target app id of the alert.  
+     * @apiQuery {String} app_id target app id of the alert.
      *
      * @apiSuccessExample {json} Success-Response:
      * HTTP/1.1 200 OK
@@ -229,7 +250,6 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                                 if (result && result.value) {
                                     plugins.dispatch("/updateAlert", { method: "alertTrigger", alert: result.value });
                                 }
-                                plugins.dispatch("/updateAlert", { method: "alertTrigger" });
 
                                 common.returnOutput(params, result && result.value);
                             }
@@ -361,14 +381,19 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                         qquery,
                         {},
                         { $set: { enabled: statusList[alertID] } },
-                        { new: false, upsert: false }
+                        { new: true, upsert: false }
                     )
                 );
             }
-            Promise.all(batch).then(function() {
-                log.d("alert all updated.");
+            Promise.all(batch).then(function(result) {
+                let updatedAlerts = [];
+                if (Array.isArray(result)) {
+                    updatedAlerts = result
+                        .filter(({ ok }) => !!ok)
+                        .map(({ value }) => value);
+                }
                 common.readBatcher.invalidate("alerts", {}, {}, true);
-                plugins.dispatch("/updateAlert", { method: "alertTrigger" });
+                updatedAlerts.map(alert => plugins.dispatch("/updateAlert", { method: "alertTrigger", alert }));
                 common.returnOutput(params, true);
             });
         });
@@ -376,13 +401,13 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
     });
 
     /**
-     * @api {post} /i/alert/list get alert list 
-     * @apiName getAlertList 
-     * @apiGroup alerts 
+     * @api {post} /i/alert/list get alert list
+     * @apiName getAlertList
+     * @apiGroup alerts
      *
-     * @apiDescription get Alert List user can view. 
+     * @apiDescription get Alert List user can view.
      *
-     * @apiQuery {String} app_id target app id of the alert.  
+     * @apiQuery {String} app_id target app id of the alert.
      *
      * @apiSuccessExample {json} Success-Response:
      * HTTP/1.1 200 OK
