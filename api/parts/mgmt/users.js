@@ -1054,7 +1054,7 @@ usersApi.fetchUserAppIds = async function(params) {
 * @returns {boolean} true
 **/
 usersApi.fetchNotes = async function(params) {
-    countlyCommon.getPeriodObj(params);
+    const periodObj = countlyCommon.getPeriodObj(params);
     // const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
 
     let appIds = [];
@@ -1076,7 +1076,7 @@ usersApi.fetchNotes = async function(params) {
     }
     const query = {
         'app_id': {$in: filteredAppIds},
-        'ts': {$gte: params.qstring.period[0], $lte: params.qstring.period[1]},
+        'ts': {$gte: periodObj.start, $lte: periodObj.end},
         $or: [
             {'owner': params.member._id + ""},
             {'noteType': 'public'},
