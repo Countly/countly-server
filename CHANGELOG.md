@@ -1,7 +1,7 @@
 ## Version 25.03.42
 Fixes:
-- [core] Fixed duplicate conditional in form field template
 - [alerts] Fixed alert jobs using system's timezone instead of application's
+- [core] Fixed duplicate conditional in form field template
 
 Enterprise Fixes:
 - [data-manager] Fix notification message after editing user property
