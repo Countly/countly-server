@@ -28,6 +28,12 @@ describe('Notes API', function() {
         should(saveResponse.status).equal(200);
         saveResponse.body.should.have.property('result', 'Success');
 
+        const persistedNote = await testUtils.db.collection('notes').findOne(
+            {app_id: APP_ID, note: noteText},
+            {projection: {_id: 1, app_id: 1, note: 1, ts: 1, noteType: 1, owner: 1, created_at: 1, updated_at: 1, indicator: 1}}
+        );
+        console.log('[notes-test] db persisted note:', persistedNote);
+
         let noteId = null;
         let lastSearchBody = null;
         let lastPageBody = null;
