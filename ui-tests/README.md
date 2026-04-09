@@ -13,7 +13,7 @@
 
 - Run `npm run cy:open`: Open the Cypress Test Runner
 - Run `npm run cy:run`: Run Cypress tests to completion
-- Run `npm run cy:run:login`: Run Cypress with login feature 
+- Run `npm run cy:run:login`: Run Cypress with login feature
 
 ### Dependencies
 
