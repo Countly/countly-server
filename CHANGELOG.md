@@ -14,6 +14,7 @@ Fixes:
 Enterprise Fixes:
 - [journeys] Fix: prevent users entered stat to minus value for race conditions
 - [surveys] Fixed widget asset path with subdirectory
+- [journey-engin] Added new image handling mechanism for modal and half-modal content blocks
 
 ## Version 25.03.40
 Fixes:
