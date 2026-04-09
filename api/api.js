@@ -7,6 +7,8 @@ const plugins = require('../plugins/pluginManager.ts');
 const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
+const v2Module = require('./v2/app.ts');
+const v2App = v2Module.default;
 const frontendConfig = require('../frontend/express/config.js');
 const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher.js');
 const QueryRunner = require('./parts/data/QueryRunner.js');
@@ -236,8 +238,13 @@ plugins.connectToAllDatabases().then(function() {
         server = http.createServer(rateLimit(handleRequest));
     }
 
-    server.listen(serverOptions.port, serverOptions.host, () => {
+    server.listen(serverOptions.port, serverOptions.host, async() => {
         log.i('Server listening on', serverOptions.host + ':' + serverOptions.port);
+
+        // Load plugin v2 routes after server is ready
+        if (v2Module.loadPluginRoutes) {
+            await v2Module.loadPluginRoutes();
+        }
     });
 
     server.timeout = common.config.api.timeout || 120000;
@@ -256,6 +263,11 @@ plugins.connectToAllDatabases().then(function() {
  * @param {http.ServerResponse} res - The response object
  */
 function handleRequest(req, res) {
+    // Route /v2 requests through Express Router for new dashboard APIs
+    if (req.url.startsWith('/v2')) {
+        v2App(req, res);
+        return;
+    }
     const params = {
         qstring: {},
         res: res,

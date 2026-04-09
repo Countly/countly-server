@@ -344,6 +344,9 @@ var countlyConfig = {
         max_sockets: 1024,
         timeout: 120000,
         maxUploadFileSize: 200 * 1024 * 1024, // 200MB
+        jwtSecret: "", // Required for /v2 auth. Set a strong random string (min 32 chars).
+        jwtAccessTokenExpiry: "1h", // Access token lifetime (e.g. "1h", "30m", "2d")
+        jwtRefreshTokenExpiry: "7d", // Refresh token lifetime (e.g. "7d", "30d")
         ssl: {
             enabled: false,
             key: "/path/to/ssl/private.key",

@@ -84,7 +84,8 @@
         "api/jobs/task.ts",
         "api/jobs/ttlCleanup.ts",
         "api/jobs/userMerge.ts",
-        "api/jobs/mutationManagerJob.ts"
+        "api/jobs/mutationManagerJob.ts",
+        "api/v2/**/*.ts"
     ],
     "exclude": [
         "node_modules/*",

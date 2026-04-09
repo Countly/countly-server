@@ -12,6 +12,7 @@ var common = require("./common.js"),
     plugins = require('../../plugins/pluginManager.ts'),
     Promise = require("bluebird"),
     crypto = require('crypto'),
+    jwt = require('jsonwebtoken'),
     log = require('./log.js')('core:rights');
 
 /** @type {Authorizer} */
@@ -31,6 +32,28 @@ var cachedSchema = {};
 */
 function validate_token_if_exists(params) {
     return new Promise(function(resolve) {
+        // JWT Bearer token (v2 API)
+        var authHeader = params.req && params.req.headers && params.req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            var bearerToken = authHeader.slice(7);
+            var secret = common.config.api.jwtSecret;
+            if (secret) {
+                try {
+                    var decoded = (jwt.verify(bearerToken, secret));
+                    if (decoded && decoded.memberId && decoded.type === 'access') {
+                        resolve(decoded.memberId);
+                        return;
+                    }
+                }
+                catch (e) {
+                    resolve('token-invalid');
+                    return;
+                }
+            }
+            resolve('token-invalid');
+            return;
+        }
+
         var token = params.qstring.auth_token || params.req.headers["countly-token"] || "";
         if (token && token !== "") {
             authorize.verify_return({
@@ -77,10 +100,12 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        reject('Token not valid');
                         return false;
                     }
                     else {
                         common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        reject('Missing parameter "api_key" or "auth_token"');
                         return false;
                     }
                 }
@@ -173,10 +198,12 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        reject('Token not valid');
                         return false;
                     }
                     else {
                         common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        reject('Missing parameter "api_key" or "auth_token"');
                         return false;
                     }
                 }
@@ -262,10 +289,12 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        reject('Token not valid');
                         return false;
                     }
                     else {
                         common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        reject('Missing parameter "api_key" or "auth_token"');
                         return false;
                     }
                 }
@@ -333,10 +362,12 @@ exports.validateAppAdmin = function(params, callback, callbackParam) {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        reject('Token not valid');
                         return false;
                     }
                     else {
                         common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        reject('Missing parameter "api_key" or "auth_token"');
                         return false;
                     }
                 }
@@ -418,10 +449,12 @@ exports.validateUser = function(params, callback, callbackParam) {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        reject('Token not valid');
                         return false;
                     }
                     else {
                         common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        reject('Missing parameter "api_key" or "auth_token"');
                         return false;
                     }
                 }
@@ -816,10 +849,12 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        reject('Token not valid');
                         return false;
                     }
                     else {
                         common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        reject('Missing parameter "api_key" or "auth_token"');
                         return false;
                     }
                 }
@@ -970,10 +1005,12 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                 if (!params.qstring.api_key) {
                     if (result === 'token-invalid') {
                         common.returnMessage(params, 400, 'Token not valid');
+                        reject('Token not valid');
                         return false;
                     }
                     else {
                         common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                        reject('Missing parameter "api_key" or "auth_token"');
                         return false;
                     }
                 }
