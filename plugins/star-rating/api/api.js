@@ -442,25 +442,35 @@ function uploadFile(myfile, id, callback) {
         validateUpdate(params, "global_plugins", function() {
             var images = ["feedback_logo"];
             var flag = 0;
-            if (params.files) {
-                for (let i = 0; i < images.length; i++) {
-                    if (params.files[images[i]]) {
-                        flag = 1;
-                        uploadFeedbackFile(images[i], params.files[images[i]]).then(function() {
-                            common.returnOutput(params, {"result": "Success"});
-                        }, function(err) {
-                            common.returnMessage(params, 400, err.message);
-                        });
-                        break;
-                    }
-                }
-                if (flag === 0) {
-                    uploadFeedbackFile(params.qstring.name, params.files.file).then(function() {
+            if (!params.files) {
+                common.returnMessage(params, 400, "Missing file: feedback_logo or file");
+                return;
+            }
+            for (let i = 0; i < images.length; i++) {
+                if (params.files[images[i]]) {
+                    flag = 1;
+                    uploadFeedbackFile(images[i], params.files[images[i]]).then(function() {
                         common.returnOutput(params, {"result": "Success"});
                     }, function(err) {
                         common.returnMessage(params, 400, err.message);
                     });
+                    break;
                 }
+            }
+            if (flag === 0) {
+                if (!params.files.file) {
+                    common.returnMessage(params, 400, "Missing file: feedback_logo or file");
+                    return;
+                }
+                if (!params.qstring.name) {
+                    common.returnMessage(params, 400, "Missing parameter: name");
+                    return;
+                }
+                uploadFeedbackFile(params.qstring.name, params.files.file).then(function() {
+                    common.returnOutput(params, {"result": "Success"});
+                }, function(err) {
+                    common.returnMessage(params, 400, err.message);
+                });
             }
         });
         return true;
@@ -852,6 +862,10 @@ function uploadFile(myfile, id, callback) {
     plugins.register("/i/feedback/logo", function(ob) {
         var params = ob.params;
         validateCreate(params, FEATURE_NAME, function() {
+            if (!params.files || !params.files.logo) {
+                common.returnMessage(params, 400, "Missing file: logo");
+                return;
+            }
             uploadFile(params.files.logo, params.qstring.identifier, function(good, filename) { //will return as good if no file
                 if (typeof good === 'boolean' && good) {
                     common.returnMessage(params, 200, filename);
