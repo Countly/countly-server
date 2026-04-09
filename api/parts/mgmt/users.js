@@ -730,8 +730,10 @@ function argon2Hash(str) {
 function verifyMemberArgon2Hash(username, password, callback) {
     common.db.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": username}]}]}, (err, member) => {
         if (member) {
+            const secret = countlyConfig.passwordSecret || "";
+            const effectivePassword = password + secret;
             if (isArgon2Hash(member.password)) {
-                verifyArgon2Hash(member.password, password).then(match => {
+                verifyArgon2Hash(member.password, effectivePassword).then(match => {
                     if (match) {
                         callback(undefined, member);
                     }
