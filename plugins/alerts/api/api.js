@@ -29,30 +29,20 @@ const TRIGGER_BY_EVENT = Object.keys(commonLib.TRIGGERED_BY_EVENT).map(name => (
  * Takes the timezone offset into account while calculating the trigger time.
  * @param {string} period - "hourly"|"daily"|"monthly"
  * @param {number} offset - timezone offset in minutes
- * @returns {string|undefined} schedule text
+ * @returns {string} schedule text
  */
 function getScheduleTextExpression(period, offset) {
-    if (typeof offset !== "number") {
-        log.e("Offset is required");
-        return;
-    }
     if (period === "hourly") {
         return "every 1 hour on the 59th min";
     }
-    else {
-        const utcClock = moment("2026-02-01T23:59:00.000Z")
-            .tz("UTC")
-            .subtract(offset, "minutes")
-            .format("HH:mm");
-        if (period === "daily") {
-            return "at " + utcClock;
-        }
-        else if (period === "monthly") {
-            return "on the last day of the month at " + utcClock;
-        }
+    const utcClock = moment("2026-02-01T23:59:00.000Z")
+        .tz("UTC")
+        .subtract(offset, "minutes")
+        .format("HH:mm");
+    if (period === "daily") {
+        return "at " + utcClock;
     }
-    log.e(`No such period \"${period}\"`);
-    return;
+    return "on the last day of the month at " + utcClock;
 }
 
 (function() {
@@ -81,7 +71,7 @@ function getScheduleTextExpression(period, offset) {
 	 * @param {object} alert  - alert record data
 	 */
     async function updateJobForAlert(alert) {
-        if (alert.enabled) {
+        if (alert.enabled && Object.keys(commonLib.PERIOD_TO_DATE_COMPONENT_MAP).includes(alert.period)) {
             const apps = await commonLib.loadAlertAppsWithTimezoneOffsets(alert);
             for (const app of apps) {
                 const textExpression = getScheduleTextExpression(alert.period, app.offset);
@@ -289,13 +279,13 @@ function getScheduleTextExpression(period, offset) {
 
 
     /**
-     * @api {get} /i/alert/delete delete alert by alert ID 
-     * @apiName deleteAlert 
-     * @apiGroup alerts 
+     * @api {get} /i/alert/delete delete alert by alert ID
+     * @apiName deleteAlert
+     * @apiGroup alerts
      *
      * @apiDescription delete alert by id.
      * @apiQuery {string} alertID  target alert id from db.
-     * @apiQuery {String} app_id target app id of the alert.  
+     * @apiQuery {String} app_id target app id of the alert.
      *
      * @apiSuccessExample {json} Success-Response:
      * HTTP/1.1 200 OK
@@ -343,13 +333,13 @@ function getScheduleTextExpression(period, offset) {
 
     /**
      * @api {post} /i/alert/status change alert status
-     * @apiName changeAlertStatus 
-     * @apiGroup alerts 
+     * @apiName changeAlertStatus
+     * @apiGroup alerts
      *
      * @apiDescription change alerts status by boolean flag.
      * @apiQuery {string} JSON string of status object for alerts record want to update.
      *  for example: {"626270afbf7392a8bfd8c1f3":false, "42dafbf7392a8bfd8c1e1": true}
-     * @apiQuery {String} app_id target app id of the alert.  
+     * @apiQuery {String} app_id target app id of the alert.
      *
      * @apiSuccessExample {text} Success-Response:
      * HTTP/1.1 200 OK
