@@ -959,7 +959,7 @@ usersApi.saveNote = async function(params) {
                     }
                     common.db.collection('notes').insert(note, (_err) => {
                         if (_err) {
-                            common.returnMessage(params, 503, 'Insert Note failed.');
+                            return common.returnMessage(params, 503, 'Insert Note failed.');
                         }
                         common.returnMessage(params, 200, 'Success');
                     });
