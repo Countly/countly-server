@@ -7,7 +7,6 @@ const log = require('../../../../api/utils/log.js')('alert:events');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
-const { ObjectId } = require('mongodb');
 
 const METRIC_TO_PROPERTY_MAP = {
     // these are directly being stored in db
@@ -21,13 +20,7 @@ const METRIC_TO_PROPERTY_MAP = {
 
 const AVERAGE_METRICS = ["average sum", "average duration"];
 
-module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) => {
-    const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
-    if (!app) {
-        log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-        return done();
-    }
-
+module.exports.check = async({ alert, app, done, scheduledTo: date }) => {
     let { alertDataSubType, alertDataSubType2, period, compareType, compareValue, filterKey, filterValue } = alert;
     const metricProp = METRIC_TO_PROPERTY_MAP[alertDataSubType];
     let segments;
@@ -46,9 +39,11 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
         }
         metricValue /= count;
     }
+    log.d(alert._id, "value on", date, "is", metricValue);
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
+            log.d(alert._id, "triggered because", metricValue, "is more than", compareValue);
             await commonLib.trigger({ alert, app, metricValue, date }, log);
         }
     }
@@ -68,6 +63,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             }
             metricValueBefore /= count;
         }
+        log.d(alert._id, "value on", before, "is", metricValueBefore);
 
         const change = (metricValue / metricValueBefore - 1) * 100;
         const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
@@ -75,6 +71,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             : change <= -compareValue;
 
         if (shouldTrigger) {
+            log.d(alert._id, "triggered because", compareType, String(change) + "%");
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
@@ -160,25 +157,3 @@ async function getEventMetricByDate(app, event, metric, date, period, segments) 
     }
     return number;
 }
-/*
-(async function() {
-    await new Promise(res => setTimeout(res, 2000));
-    const app = { _id: "65c1f875a12e98a328d5eb9e", timezone: "Europe/Istanbul" };
-    const date = new Date("2024-01-02T12:47:19.247Z");
-    const date2 = new Date("2024-01-03T13:47:19.247Z");
-    const event = "Checkout";
-    const prop = "c";
-
-    const hourly = await getEventMetricByDate(app, event, prop, date, "hourly");
-    console.assert(hourly === 5, "hourly event data doesn't match");
-
-    const daily = await getEventMetricByDate(app, event, prop, date2, "daily", { "Delivery Type": "Express" });
-    console.assert(daily === 22, "daily segmented event data doesn't match");
-
-    const monthly = await getEventMetricByDate(app, event, prop, date2, "monthly");
-    console.assert(monthly === 5120, "monthly event data doesn't match");
-
-    const monthlySegmented = await getEventMetricByDate(app, event, prop, date2, "monthly", { "Delivery Type": "Express" });
-    console.assert(monthlySegmented === 2535, "monthly segmented event data doesn't match");
-})();
-*/

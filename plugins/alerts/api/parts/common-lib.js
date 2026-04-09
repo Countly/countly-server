@@ -28,6 +28,7 @@
  * @property {string}   name     - name identifier
  * @property {ObjectId} _id      - document id
  * @property {string}   timezone - timezone string (e.g. Europe/Istanbul)
+ * @property {number}   offset   - timezone offset (e.g. 120 for Europe/Berlin, -240 for US/Eastern)
  * @property {any}      plugins
  */
 
@@ -57,6 +58,7 @@ const moment = require('moment-timezone');
 const path = require("path");
 const fs = require("fs");
 const ejs = require("ejs");
+const { ObjectId } = require("mongodb");
 const EMAIL_TEMPLATE = ejs.compile(
     fs.readFileSync(
         path.resolve(__dirname, '../../frontend/public/templates/email.html'),
@@ -92,6 +94,7 @@ module.exports = {
     determineAudience,
     compileEmail,
     trigger,
+    loadAlertAppsWithTimezoneOffsets,
 };
 
 /**
@@ -238,4 +241,33 @@ async function trigger(result, log) {
             log.e("Alert e-mail couldn't be send to " + email, err);
         }
     }
+}
+
+/**
+ * Returns all of the app objects from "apps" collection with "offset"
+ * property populated for the given alert.
+ * @param {Alert} alert - alert object
+ * @returns {App[]} App objects with offset property
+ */
+async function loadAlertAppsWithTimezoneOffsets(alert) {
+    const selectedApp = alert.selectedApps[0];
+    // there can only be a single app selected.
+    // or all of the apps are selected (only available for data points):
+    let apps;
+    if (selectedApp === "all") {
+        apps = await common.readBatcher.getMany("apps", {});
+    }
+    else {
+        apps = [
+            await common.readBatcher.getOne("apps", {
+                _id: new ObjectId(selectedApp)
+            })
+        ];
+    }
+    for (const app of apps) {
+        app.offset = app.timezone
+            ? moment.tz(app.timezone).utcOffset()
+            : moment().utcOffset(); // fallback to system timezone
+    }
+    return apps;
 }
