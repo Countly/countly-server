@@ -18,7 +18,7 @@
  * @property {boolean}       enabled           - true|false
  * @property {string}        compareDescribe   - text to show on lists for this alert
  * @property {Array<string>} alertValues       - audience e.g. for alertBy="email", list of e-mails
- * @property {Array<string>} allGroups         - 
+ * @property {Array<string>} allGroups         -
  * @property {string}        createdBy         - creation time
  */
 
