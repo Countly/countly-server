@@ -305,7 +305,8 @@ usersApi.createUser = async function(params) {
     * @param {string} userId - id of the user for which to remove sessions
     **/
 function killAllSessionForUser(userId) {
-    common.db.collection('sessions_').find({"session": { $regex: userId }}).toArray(function(err, sessions) {
+    const userIdString = userId + "";
+    common.db.collection('sessions_').find({"session": { $regex: userIdString }}).toArray(function(err, sessions) {
 
         var delete_us = [];
         sessions = sessions || [];
@@ -317,7 +318,7 @@ function killAllSessionForUser(userId) {
             catch (SyntaxError) {
                 console.log('Parse ' + sessions[i].session + ' JSON failed');
             }
-            if (parsed_data && parsed_data.uid === userId) {
+            if (parsed_data && (parsed_data.uid + "") === userIdString) {
                 delete_us.push(sessions[i]._id);
             }
         }
