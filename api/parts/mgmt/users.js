@@ -305,7 +305,8 @@ usersApi.createUser = async function(params) {
     * @param {string} userId - id of the user for which to remove sessions
     **/
 function killAllSessionForUser(userId) {
-    common.db.collection('sessions_').find({"session": { $regex: userId }}).toArray(function(err, sessions) {
+    const userIdString = userId + "";
+    common.db.collection('sessions_').find({"session": { $regex: userIdString }}).toArray(function(err, sessions) {
 
         var delete_us = [];
         sessions = sessions || [];
@@ -317,7 +318,7 @@ function killAllSessionForUser(userId) {
             catch (SyntaxError) {
                 console.log('Parse ' + sessions[i].session + ' JSON failed');
             }
-            if (parsed_data && parsed_data.uid === userId) {
+            if (parsed_data && (parsed_data.uid + "") === userIdString) {
                 delete_us.push(sessions[i]._id);
             }
         }
@@ -730,8 +731,10 @@ function argon2Hash(str) {
 function verifyMemberArgon2Hash(username, password, callback) {
     common.db.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": username}]}]}, (err, member) => {
         if (member) {
+            const secret = countlyConfig.passwordSecret || "";
+            const effectivePassword = password + secret;
             if (isArgon2Hash(member.password)) {
-                verifyArgon2Hash(member.password, password).then(match => {
+                verifyArgon2Hash(member.password, effectivePassword).then(match => {
                     if (match) {
                         callback(undefined, member);
                     }
@@ -959,7 +962,7 @@ usersApi.saveNote = async function(params) {
                     }
                     common.db.collection('notes').insert(note, (_err) => {
                         if (_err) {
-                            common.returnMessage(params, 503, 'Insert Note failed.');
+                            return common.returnMessage(params, 503, 'Insert Note failed.');
                         }
                         common.returnMessage(params, 200, 'Success');
                     });
@@ -1051,7 +1054,7 @@ usersApi.fetchUserAppIds = async function(params) {
 * @returns {boolean} true
 **/
 usersApi.fetchNotes = async function(params) {
-    countlyCommon.getPeriodObj(params);
+    const periodObj = countlyCommon.getPeriodObj(params);
     // const timestampRange = countlyCommon.getTimestampRangeQuery(params, false);
 
     let appIds = [];
@@ -1073,7 +1076,7 @@ usersApi.fetchNotes = async function(params) {
     }
     const query = {
         'app_id': {$in: filteredAppIds},
-        'ts': {$gte: params.qstring.period[0], $lte: params.qstring.period[1]},
+        'ts': {$gte: periodObj.start, $lte: periodObj.end},
         $or: [
             {'owner': params.member._id + ""},
             {'noteType': 'public'},

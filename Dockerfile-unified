@@ -132,10 +132,14 @@ WORKDIR /opt/countly
 COPY . .
 
 # 3.1.2 copy OpenTelemetry files from build context
+#   otel.js and otelexpress.js both require('./metrics'), so metrics.js
+#   must be copied alongside each entry point.
 RUN if [ -f observability/otel.js ]; then \
         echo "Copying OpenTelemetry files..."; \
         cp observability/otel.js api/utils/otel.js; \
+        cp observability/metrics.js api/utils/metrics.js; \
         cp observability/otelexpress.js frontend/express/otel.js; \
+        cp observability/metrics.js frontend/express/metrics.js; \
     else \
         echo "Observability files not found, skipping..."; \
     fi

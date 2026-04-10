@@ -38,7 +38,7 @@
             </cly-section>
 
             <!-- Lag History Chart -->
-            <cly-section v-if="aggregatorLagHistory.length > 0" :title="i18n('aggregator-status.lag-history.title')" :tooltip="i18n('aggregator-status.lag-history.tooltip')">
+            <cly-section v-if="aggregatorLagHistory && aggregatorLagHistory.length > 0" :title="i18n('aggregator-status.lag-history.title')" :tooltip="i18n('aggregator-status.lag-history.tooltip')">
                 <cly-chart-line
                     :option="lagChartOption"
                     :height="400"
@@ -51,7 +51,7 @@
             </cly-section>
 
             <!-- Consumer Groups Table -->
-            <cly-section v-if="aggregatorConsumers.length > 0" :title="i18n('aggregator-status.consumer-groups.title')" :tooltip="i18n('aggregator-status.consumer-groups.tooltip')">
+            <cly-section v-if="aggregatorConsumers && aggregatorConsumers.length > 0" :title="i18n('aggregator-status.consumer-groups.title')" :tooltip="i18n('aggregator-status.consumer-groups.tooltip')">
                 <cly-datatable-n :rows="aggregatorConsumers" :resizable="true" :force-loading="isLoading">
                     <template v-slot="scope">
                         <el-table-column column-key="groupId" prop="groupId" sortable="custom" :label="i18n('aggregator-status.table.group-id')" min-width="180">
@@ -107,7 +107,7 @@
             </cly-section>
 
             <!-- Consumer Group Processing Stats Table -->
-            <cly-section v-if="aggregatorPartitions.length > 0" :title="i18n('aggregator-status.processing-stats.title')" :tooltip="i18n('aggregator-status.processing-stats.tooltip')">
+            <cly-section v-if="aggregatorPartitions && aggregatorPartitions.length > 0" :title="i18n('aggregator-status.processing-stats.title')" :tooltip="i18n('aggregator-status.processing-stats.tooltip')">
                 <cly-datatable-n :rows="aggregatorPartitions" :resizable="true" :force-loading="isLoading">
                     <template v-slot="scope">
                         <el-table-column column-key="consumerGroup" prop="consumerGroup" sortable="custom" :label="i18n('aggregator-status.table.consumer-group')" min-width="150">

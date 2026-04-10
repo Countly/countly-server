@@ -1,6 +1,33 @@
 const EventSourceInterface = require('./EventSourceInterface');
 const Log = require('../utils/log.js');
 
+// OTel metrics — opt-in, zero overhead when OTEL_ENABLED is not set
+const _otelEnabled = /^(1|true|yes)$/i.test(process.env.OTEL_ENABLED || '');
+let _sourceMetrics = null;
+
+/**
+ * Initialize OTel metrics for event source
+ * @returns {Object|null} OTel metrics object or null if OTel is not enabled
+ * @private
+ */
+function getSourceMetrics() {
+    if (_sourceMetrics) {
+        return _sourceMetrics;
+    }
+    if (!_otelEnabled) {
+        return null;
+    }
+    try {
+        const { metrics } = require('@opentelemetry/api');
+        const meter = metrics.getMeter('countly-event-source');
+        _sourceMetrics = {
+            batchWait: meter.createHistogram('countly_event_source_batch_wait_seconds', { unit: 's' }),
+        };
+    }
+    catch (_e) { /* no-op */ }
+    return _sourceMetrics;
+}
+
 /**
  * Kafka implementation of EventSourceInterface
  * Supports async iteration with auto-acknowledgment and proper at-least-once delivery
@@ -563,6 +590,7 @@ class KafkaEventSource extends EventSourceInterface {
             return checkAndReturnBatch(batch);
         }
         // Wait for next batch from Kafka
+        const waitStart = Date.now();
         await new Promise((resolve) => {
             // Race condition check: batch might have arrived while creating promise
             if (this.#currentBatch) {
@@ -570,6 +598,11 @@ class KafkaEventSource extends EventSourceInterface {
                 return;
             }
             this.#batchAvailable = resolve;
+        });
+        const waitDuration = (Date.now() - waitStart) / 1000;
+        getSourceMetrics()?.batchWait.record(waitDuration, {
+            group_id: this.#effectiveGroupId || this.#name,
+            topic: this.#kafkaOptions?.topics?.[0] || 'unknown'
         });
 
         // Return the batch that arrived

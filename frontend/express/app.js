@@ -64,7 +64,6 @@ var versionInfo = require('./version.info'),
     request = require('countly-request')(plugins.getConfig("security")),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app'),
-    url = require('url'),
     /** @type {import('../../types/authorizer').Authorizer} */
     authorize = require('../../api/utils/authorizer.js'), //for token validations
     languages = require('../../frontend/express/locale.conf'),
@@ -116,7 +115,8 @@ function paramsGenerator(obj) {
         req: obj.req,
         res: obj.res,
         qstring: obj.req.query,
-        fullPath: url.parse(obj.req.url, true).pathname
+        // base URL is required by WHATWG URL API for relative paths, only pathname is used
+        fullPath: new URL(obj.req.url, 'http://localhost').pathname
     };
 
     params.qstring.auth_token = obj.req.session.auth_token;
@@ -836,6 +836,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.post('*', checkRequestForSession);
 
     app.get(countlyConfig.path + '/logout', function(req, res) {
+        membersUtility.logout(req, res);
         if (req.query.message) {
             res.redirect(countlyConfig.path + '/login?message=' + req.query.message);
         }

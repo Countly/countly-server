@@ -837,7 +837,8 @@ const exportsModule = {
     fromDatabase,
     fromRequest,
     fromRequestQuery,
-    fromData
+    fromData,
+    transformValuesInObject
 };
 
 export default exportsModule;
@@ -850,6 +851,7 @@ export {
     fromDatabase,
     fromRequest,
     fromRequestQuery,
-    fromData
+    fromData,
+    transformValuesInObject
 };
 export type { ExportOptions, Params, Mapper };

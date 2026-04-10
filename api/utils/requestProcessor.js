@@ -12,7 +12,6 @@
  */
 
 const Promise = require('bluebird');
-const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
 const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter } = require('./rights.js');
@@ -115,13 +114,14 @@ const processRequest = (params) => {
         return common.returnMessage(params, 400, "Please provide request data");
     }
 
-    const urlParts = url.parse(params.req.url, true),
-        queryString = urlParts.query,
-        paths = urlParts.pathname.split("/");
-    params.href = urlParts.href;
+    // base URL is required by WHATWG URL API for relative paths, only pathname and query are used
+    const parsedUrl = new URL(params.req.url, 'http://localhost'),
+        queryString = Object.fromEntries(parsedUrl.searchParams),
+        paths = parsedUrl.pathname.split("/");
+    params.href = parsedUrl.pathname + parsedUrl.search;
     params.qstring = params.qstring || {};
     params.res = params.res || {};
-    params.urlParts = urlParts;
+    params.urlParts = { pathname: parsedUrl.pathname, path: parsedUrl.pathname + parsedUrl.search };
     params.paths = paths;
 
     //request object fillers
@@ -181,7 +181,7 @@ const processRequest = (params) => {
             validateUserForDataWriteAPI: validateUserForDataWriteAPI,
             validateUserForGlobalAdmin: validateUserForGlobalAdmin,
             paths: paths,
-            urlParts: urlParts
+            urlParts: params.urlParts
         });
 
         if (!params.cancelRequest) {
@@ -1614,25 +1614,35 @@ const processRequest = (params) => {
                                         eid = eid[0];
 
                                         var cursor = common.db.collection("exports").find({"_eid": eid}, {"_eid": 0, "_id": 0});
-                                        var options = {"type": "stream", "filename": eid + ".json", params: params};
                                         params.res.writeHead(200, {
-                                            'Content-Type': 'application/x-gzip',
-                                            'Content-Disposition': 'inline; filename="' + eid + '.json'
+                                            'Content-Type': 'application/json',
+                                            'Content-Disposition': 'inline; filename="' + eid + '.json"'
                                         });
-                                        options.streamOptions = {};
-                                        if (options.type === "stream" || options.type === "json") {
-                                            options.streamOptions.transform = function(doc) {
+
+                                        var isFirst = true;
+                                        params.res.write('[');
+                                        cursor.forEach(function(doc) {
+                                            if (doc) {
                                                 doc._id = doc.__id;
                                                 delete doc.__id;
-                                                return JSON.stringify(doc);
-                                            };
-                                        }
-
-                                        options.output = options.output || function(stream) {
-                                            countlyApi.data.exports.stream(options.params, stream, options);
-                                        };
-                                        options.output(cursor);
-
+                                                if (!isFirst) {
+                                                    params.res.write(',');
+                                                }
+                                                isFirst = false;
+                                                params.res.write(JSON.stringify(doc));
+                                            }
+                                        }).then(function() {
+                                            params.res.write(']');
+                                            params.res.end();
+                                        }).catch(function(err) {
+                                            log.e('Error streaming export data:', err);
+                                            if (!params.res.headersSent) {
+                                                common.returnMessage(params, 500, 'Error streaming export data');
+                                            }
+                                            else {
+                                                params.res.end();
+                                            }
+                                        });
 
                                     }
                                     else {

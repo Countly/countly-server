@@ -19,7 +19,6 @@ var common = require('./../../../api/utils/common.js');
 var plugins = require('./../../../plugins/pluginManager.ts');
 var configs = require('./../config', 'dont-enclose');
 var countlyMail = require('./../../../api/parts/mgmt/mail.js');
-var url = require('url');
 var crypto = require('crypto');
 var argon2 = require('argon2');
 
@@ -478,7 +477,8 @@ function killOtherSessionsForUser(userId, my_token, my_session, countlyDb) {
 membersUtility.loginWithToken = function(req, callback) {
     var token = req.params.token;
     var pathUrl = req.url.replace(membersUtility.countlyConfig.path, "");
-    var urlParts = url.parse(pathUrl, true);
+    // base URL is required by WHATWG URL API for relative paths, only pathname is used
+    var urlParts = new URL(pathUrl, 'http://localhost');
     var fullPath = urlParts.pathname;
 
     authorize.verify_return({
@@ -766,6 +766,10 @@ membersUtility.reset = function(req, callback) {
             var secret = membersUtility.countlyConfig.passwordSecret || "";
             argon2Hash(req.body.password + secret).then(password => {
                 membersUtility.db.collection('password_reset').findOne({ prid: req.body.prid }, function(err, passwordReset) {
+                    if (err || !passwordReset || !passwordReset.user_id) {
+                        callback(false, undefined);
+                        return;
+                    }
                     membersUtility.db.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function(err2, member) {
                         member = member && member.ok ? member.value : null;
                         killOtherSessionsForUser(passwordReset.user_id + "", null, null, membersUtility.db);

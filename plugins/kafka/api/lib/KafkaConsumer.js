@@ -1,5 +1,39 @@
 const log = require('../../../../api/utils/log.js')('kafka:consumer');
 const countlyConfig = require('../../../../api/config');
+
+// OTel metrics — opt-in, zero overhead when OTEL_ENABLED is not set
+const _otelEnabled = /^(1|true|yes)$/i.test(process.env.OTEL_ENABLED || '');
+let _consumerMetrics = null;
+
+/**
+ * Initialize OpenTelemetry metrics for Kafka consumer
+ * @returns {Object|null} Metrics object or null if OTel is not enabled
+ */
+function getConsumerMetrics() {
+    if (_consumerMetrics) {
+        return _consumerMetrics;
+    }
+    if (!_otelEnabled) {
+        return null;
+    }
+    try {
+        const { metrics } = require('@opentelemetry/api');
+        const meter = metrics.getMeter('countly-kafka-consumer');
+        _consumerMetrics = {
+            batchesTotal: meter.createCounter('countly_kafka_consumer_batches_total'),
+            batchMessages: meter.createHistogram('countly_kafka_consumer_batch_messages'),
+            batchDuration: meter.createHistogram('countly_kafka_consumer_batch_duration_seconds', { unit: 's' }),
+            parseDuration: meter.createHistogram('countly_kafka_consumer_parse_duration_seconds', { unit: 's' }),
+            handlerDuration: meter.createHistogram('countly_kafka_consumer_handler_duration_seconds', { unit: 's' }),
+            commitDuration: meter.createHistogram('countly_kafka_consumer_commit_duration_seconds', { unit: 's' }),
+            invalidMessages: meter.createCounter('countly_kafka_consumer_invalid_messages_total'),
+            rebalances: meter.createCounter('countly_kafka_consumer_rebalances_total'),
+        };
+    }
+    catch (_e) { /* OTel API not installed — no-op */ }
+    return _consumerMetrics;
+}
+
 const { CompressionTypes, CompressionCodecs } = require('kafkajs');
 const lz4 = require('lz4-napi');
 
@@ -87,21 +121,21 @@ log.i('LZ4 codec registered with lz4-napi: native NAPI bindings with libuv threa
  * - Configuration bounds to prevent KafkaJS timeout warnings
  * - Graceful shutdown handling with proper resource cleanup
  * - Configurable concurrency for parallel partition processing
- * 
+ *
  * @example
  * const consumer = new KafkaConsumer(kafkaClient, 'analytics-processor', {
  *   topics: ['user-events', 'system-events'],
  *   partitionsConsumedConcurrently: 4
  * });
- * 
+ *
  * await consumer.start(async ({ topic, partition, records }) => {
  *   console.log(`Processing ${records.length} events from ${topic}[${partition}]`);
- *   
+ *
  *   for (const { event, message, headers } of records) {
  *     // Process each event in the batch
  *     await processEvent(event);
  *   }
- *   
+ *
  *   // Offset committed automatically after successful handler completion
  * });
  */
@@ -125,16 +159,16 @@ class KafkaConsumer {
 
     /**
      * Create a new KafkaConsumer instance
-     * 
+     *
      * Automatically applies groupId prefix from configuration and validates
      * all timeout/batch configuration values to prevent KafkaJS warnings.
-     * 
+     *
      * @param {kafkaClient} kafkaClient - KafkaClient instance for connection management
      * @param {string} groupId - Consumer group ID (prefix will be applied automatically)
      * @param {KafkaConsumerOptions} [options={}] - Consumer configuration options
-     * 
+     *
      * @throws {Error} If kafkaClient is not provided or groupId is invalid
-     * 
+     *
      * @example
      * const consumer = new KafkaConsumer(kafkaClient, 'event-processor', {
      *   topics: ['user-events'],
@@ -172,10 +206,10 @@ class KafkaConsumer {
 
     /**
      * Load and validate consumer configuration with bounds checking
-     * 
+     *
      * Maps librdkafka-style consumer configuration to KafkaJS format and applies
      * strict bounds to prevent timeout warnings and ensure reasonable limits.
-     * 
+     *
      * @private
      * @param {Object} kafkaConfig - Kafka configuration from countlyConfig
      * @param {string} groupId - Base group ID (before prefix)
@@ -243,34 +277,34 @@ class KafkaConsumer {
 
     /**
      * Start consuming messages with the provided batch handler
-     * 
+     *
      * Key behaviors:
      * - TRUE batch processing: handler receives arrays of messages per call
-     * - Manual commits: offsets committed only after successful handler completion  
+     * - Manual commits: offsets committed only after successful handler completion
      * - Transactional isolation: only reads committed messages (readUncommitted=false)
      * - Automatic heartbeating: maintains group membership during long processing
      * - Graceful error handling: invalid JSON messages handled per configuration
      * - Exactly-once semantics: each batch processed exactly once per consumer group
-     * 
+     *
      * The handler function receives batches of parsed records and must process them
      * synchronously within each call. Offsets are committed automatically after
      * successful handler completion.
-     * 
+     *
      * @param {function(HandlerParams): Promise<void>} handler - Batch processing function
      * @param {string} handler.topic - Topic name for this batch
-     * @param {number} handler.partition - Partition number for this batch  
+     * @param {number} handler.partition - Partition number for this batch
      * @param {Object} handler.batch - Raw KafkaJS batch object
      * @param {BatchRecord[]} handler.records - Array of parsed event records
-     * 
+     *
      * @throws {Error} If handler is not a function or consumer initialization fails
-     * 
+     *
      * @example
      * await consumer.start(async ({ topic, partition, records }) => {
      *   console.log(`Processing ${records.length} records from ${topic}[${partition}]`);
-     *   
+     *
      *   const events = records.map(r => r.event);
      *   await batchProcessEvents(events);
-     *   
+     *
      *   // Offset will be committed automatically after this function returns
      * });
      */
@@ -288,11 +322,14 @@ class KafkaConsumer {
                 if (!isRunning()) {
                     return;
                 }
+                const m = getConsumerMetrics();
+                const batchStartTime = Date.now();
 
                 const { topic, partition, messages } = batch;
                 // If this assignment is already stale, do nothing.
                 if (isStale()) {
                     log.w(`[group=${this.#config.groupId}] Stale assignment before processing ${topic}[${partition}] – skipping batch`);
+                    m?.batchesTotal.add(1, { group_id: this.#config.groupId, topic, result: 'stale' });
                     return;
                 }
 
@@ -305,21 +342,22 @@ class KafkaConsumer {
                 let lastHb = Date.now();
                 let sinceLastHb = 0;
 
-                for (const m of messages) {
+                for (const msg of messages) {
                     // If we lost the assignment mid-parse, stop immediately.
                     if (!isRunning() || isStale()) {
                         log.w(`[group=${this.#config.groupId}] Assignment became stale during parse ${topic}[${partition}] – aborting batch`);
+                        m?.batchesTotal.add(1, { group_id: this.#config.groupId, topic, result: 'stale' });
                         return;
                     }
                     try {
-                        const event = JSON.parse(m.value.toString());
-                        parsed.push({ event, message: m, headers: m.headers || {} });
+                        const event = JSON.parse(msg.value.toString());
+                        parsed.push({ event, message: msg, headers: msg.headers || {} });
                     }
                     catch (e) {
                         invalidCount++;
-                        log.w(`Invalid JSON at ${topic}[${partition}]@${m.offset}; behavior: ${this.#config.invalidJsonBehavior}: ${e.message}`);
+                        log.w(`Invalid JSON at ${topic}[${partition}]@${msg.offset}; behavior: ${this.#config.invalidJsonBehavior}: ${e.message}`);
                         if (this.#config.invalidJsonBehavior === 'fail') {
-                            throw new Error(`Invalid JSON at ${topic}[${partition}]@${m.offset}: ${e.message}`);
+                            throw new Error(`Invalid JSON at ${topic}[${partition}]@${msg.offset}: ${e.message}`);
                         }
                         // 'skip' -> continue
                     }
@@ -344,6 +382,15 @@ class KafkaConsumer {
                         }
                         lastHb = Date.now();
                         sinceLastHb = 0;
+                    }
+                }
+
+                const parseEndTime = Date.now();
+                const group_id = this.#config.groupId;
+                if (m) {
+                    m.parseDuration.record((parseEndTime - batchStartTime) / 1000, { group_id, topic });
+                    if (invalidCount > 0) {
+                        m.invalidMessages.add(invalidCount, { group_id, topic });
                     }
                 }
 
@@ -405,6 +452,7 @@ class KafkaConsumer {
                 }
                 catch (handlerErr) {
                     log.e(`[group=${this.#config.groupId}] Handler error ${topic}[${partition}]`, handlerErr);
+                    m?.batchesTotal.add(1, { group_id: this.#config.groupId, topic, result: 'handler_error' });
                     throw handlerErr;
                 }
                 finally {
@@ -413,6 +461,11 @@ class KafkaConsumer {
                         signalHandlerDone();
                     } // Cancel sleep immediately
                     await heartbeatLoop;
+                }
+
+                const handlerEndTime = Date.now();
+                if (m) {
+                    m.handlerDuration.record((handlerEndTime - parseEndTime) / 1000, { group_id, topic });
                 }
 
                 if (messages.length > 0 && this.#consumer && !isStale() && !batchAborted) {
@@ -434,9 +487,17 @@ class KafkaConsumer {
                         }
                         await this.#consumer.commitOffsets([{ topic, partition, offset: next }]);
                         log.d(`[group=${this.#config.groupId}] Committed ${topic}[${partition}] -> ${next}`);
+                        const commitEndTime = Date.now();
+                        if (m) {
+                            m.commitDuration.record((commitEndTime - handlerEndTime) / 1000, { group_id, topic });
+                            m.batchesTotal.add(1, { group_id, topic, result: 'success' });
+                            m.batchMessages.record(parsed.length, { group_id, topic });
+                            m.batchDuration.record((commitEndTime - batchStartTime) / 1000, { group_id, topic });
+                        }
                     }
                     catch (e) {
                         log.w(`[group=${this.#config.groupId}] Commit failed ${topic}[${partition}]: ${e.message}`);
+                        m?.batchesTotal.add(1, { group_id: this.#config.groupId, topic, result: 'commit_error' });
                     }
                 }
             }
@@ -461,6 +522,7 @@ class KafkaConsumer {
                 }
                 catch (err) {
                     log.e(`[group=${this.#config.groupId}] Consumer crashed; restarting in ${backoff}ms`, err);
+                    getConsumerMetrics()?.batchesTotal.add(1, { group_id: this.#config.groupId, topic: 'unknown', result: 'crash' });
                     this.#recordHealthStat('error', { message: err.message, type: 'CRASH' });
 
                     // Tear down the consumer instance for full recreation
@@ -487,13 +549,13 @@ class KafkaConsumer {
 
     /**
      * Pause message consumption on all subscribed topics
-     * 
+     *
      * Pauses consumption while maintaining group membership. Messages will
      * accumulate in Kafka and be processed when resumed. Useful for backpressure
      * control or maintenance operations.
-     * 
+     *
      * @returns {Promise<void>} Promise that resolves when paused
-     * 
+     *
      * @example
      * await consumer.pause();
      * console.log('Processing paused');
@@ -509,12 +571,12 @@ class KafkaConsumer {
 
     /**
      * Resume message consumption on all subscribed topics
-     * 
+     *
      * Resumes processing of accumulated messages. The consumer will immediately
      * begin processing any backlog that accumulated during the pause.
-     * 
+     *
      * @returns {Promise<void>} Promise that resolves when resumed
-     * 
+     *
      * @example
      * await consumer.resume();
      * console.log('Processing resumed');
@@ -530,12 +592,12 @@ class KafkaConsumer {
 
     /**
      * Stop the consumer and disconnect from Kafka
-     * 
+     *
      * Gracefully shuts down the consumer, ensuring any in-flight batches
      * are completed before disconnecting. Can be called multiple times safely.
-     * 
+     *
      * @returns {Promise<void>} Promise that resolves when stopped
-     * 
+     *
      * @example
      * await consumer.stop();
      * console.log('Consumer stopped');
@@ -562,12 +624,12 @@ class KafkaConsumer {
 
     /**
      * Initialize the KafkaJS consumer with transactional isolation
-     * 
+     *
      * Creates a KafkaJS consumer with:
      * - readUncommitted=false for transactional isolation
      * - Optimized fetch settings for batch processing
      * - Subscription to configured topics
-     * 
+     *
      * @private
      * @returns {Promise<void>} Promise that resolves when consumer is connected and subscribed
      */
@@ -627,6 +689,7 @@ class KafkaConsumer {
 
             attachEvent('REBALANCING', (e) => {
                 log.d(`[group=${this.#config.groupId}] REBALANCING groupId=${e.payload.groupId} memberId=${e.payload.memberId || 'n/a'}`);
+                getConsumerMetrics()?.rebalances.add(1, { group_id: this.#config.groupId });
                 this.#recordHealthStat('rebalance', { groupId: e.payload.groupId });
             });
 
