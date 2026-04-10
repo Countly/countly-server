@@ -1,7 +1,15 @@
-<<<<<<< HEAD
-## Version 25.03.X
+## 25.xx
+Dependencies:
+- Remove SQLite
+
+## Version 25.03.42
 Fixes:
+- [alerts] Fixed alert jobs using system's timezone instead of application's
 - [core] Fixed duplicate conditional in form field template
+
+Enterprise Fixes:
+- [data-manager] Fix notification message after editing user property
+- [white-labeling] Update newsletter setting description
 
 ## Version 25.03.41
 Fixes:
@@ -11,11 +19,7 @@ Fixes:
 Enterprise Fixes:
 - [journeys] Fix: prevent users entered stat to minus value for race conditions
 - [surveys] Fixed widget asset path with subdirectory
-=======
-## 25.xx
-Dependencies:
-- Remove SQLite
->>>>>>> origin/flex
+- [journey-engin] Added new image handling mechanism for modal and half-modal content blocks
 
 ## Version 25.03.40
 Fixes:
