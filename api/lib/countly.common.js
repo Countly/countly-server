@@ -994,15 +994,21 @@ countlyCommon.getPeriodRange = function(period, timezone, offset) {
         let nDays = 30;
         startTimestamp = __currMoment.clone().startOf("day").subtract(nDays - 1, "days");
     }
-    if (!offset) {
-        offset = moment.tz(timezone).utcOffset();
-        offset = offset * -1;
+    var startOffset = offset;
+    var endOffset = offset;
+
+    if (typeof startOffset !== "number") {
+        startOffset = timezone ? moment.tz(startTimestamp.valueOf(), timezone).utcOffset() * -1 : 0;
     }
+    if (typeof endOffset !== "number") {
+        endOffset = timezone ? moment.tz(endTimestamp.valueOf(), timezone).utcOffset() * -1 : 0;
+    }
+
     return {
-        "$gt": startTimestamp.valueOf() + offset * 60000 - 1,
-        "$lt": endTimestamp.valueOf() + offset * 60000 + 1,
-        "$gte": startTimestamp.valueOf() + offset * 60000,
-        "$lte": endTimestamp.valueOf() + offset * 60000,
+        "$gt": startTimestamp.valueOf() + startOffset * 60000 - 1,
+        "$lt": endTimestamp.valueOf() + endOffset * 60000 + 1,
+        "$gte": startTimestamp.valueOf() + startOffset * 60000,
+        "$lte": endTimestamp.valueOf() + endOffset * 60000,
     };
 };
 
