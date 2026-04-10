@@ -3319,7 +3319,7 @@ const processRequest = (params) => {
                     validateUserForWrite(params, countlyApi.mgmt.cms.saveEntries);
                     break;
                 case 'clear':
-                    validateUserForWrite(countlyApi.mgmt.cms.clearCache, params);
+                    validateUserForWrite(params, countlyApi.mgmt.cms.clearCache);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
