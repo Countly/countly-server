@@ -1,0 +1,397 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Configurations API",
+    "description": "API for managing system and user configurations in Countly Server. This includes global system settings and user-specific preferences. Note: Authentication failures and missing required parameters typically return HTTP 400 (Bad Request) rather than 401 (Unauthorized), as they are treated as parameter validation errors.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/configs": {
+      "get": {
+        "summary": "Update system configurations",
+        "description": "Update global system configurations. Requires global admin permissions. Changes may affect session timeouts and other system-wide settings.",
+        "tags": [
+          "System Configuration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "configs",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing configuration updates. Session timeout changes affect authentication tokens.",
+            "schema": {
+              "type": "string",
+              "example": "{\"frontend\":{\"session_timeout\":60,\"theme\":\"dark\"},\"api\":{\"max_events\":100,\"safe\":true}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Configurations updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Updated configuration object with all current settings"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - error updating configurations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Error updating configs"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - requires global admin permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Authentication error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/configs": {
+      "get": {
+        "summary": "Get system configurations",
+        "description": "Retrieve current system configurations. Excludes sensitive service configurations. Requires app admin permissions.",
+        "tags": [
+          "System Configuration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "System configurations retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "System configuration object",
+                  "properties": {
+                    "frontend": {
+                      "type": "object",
+                      "description": "Frontend-related configurations",
+                      "properties": {
+                        "session_timeout": {
+                          "type": "integer",
+                          "description": "Session timeout in minutes"
+                        },
+                        "theme": {
+                          "type": "string",
+                          "description": "Default theme"
+                        }
+                      }
+                    },
+                    "api": {
+                      "type": "object",
+                      "description": "API-related configurations",
+                      "properties": {
+                        "max_events": {
+                          "type": "integer",
+                          "description": "Maximum events per request"
+                        },
+                        "safe": {
+                          "type": "boolean",
+                          "description": "Whether safe mode is enabled"
+                        }
+                      }
+                    },
+                    "logs": {
+                      "type": "object",
+                      "description": "Logging configurations"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - requires app admin permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Authentication error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/userconfigs": {
+      "get": {
+        "summary": "Update user configurations",
+        "description": "Update user-specific configurations. Affects settings like session timeout for the current user. Requires global admin permissions.",
+        "tags": [
+          "User Configuration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "configs",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing user configuration updates. Session timeout changes affect the current user's authentication tokens.",
+            "schema": {
+              "type": "string",
+              "example": "{\"frontend\":{\"session_timeout\":30,\"theme\":\"light\"}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User configurations updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Updated user configuration object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - error updating configurations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Error updating configs"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - requires global admin permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Authentication error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/userconfigs": {
+      "get": {
+        "summary": "Get user configurations",
+        "description": "Retrieve user-specific configurations. Returns settings personalized for the current user.",
+        "tags": [
+          "User Configuration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User configurations retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "User configuration object",
+                  "properties": {
+                    "frontend": {
+                      "type": "object",
+                      "description": "Frontend-related user configurations",
+                      "properties": {
+                        "session_timeout": {
+                          "type": "integer",
+                          "description": "User-specific session timeout in minutes"
+                        },
+                        "theme": {
+                          "type": "string",
+                          "description": "User-preferred theme"
+                        },
+                        "language": {
+                          "type": "string",
+                          "description": "User language preference"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - requires user authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Authentication error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SystemConfiguration": {
+        "type": "object",
+        "description": "System-wide configuration object",
+        "properties": {
+          "frontend": {
+            "type": "object",
+            "description": "Frontend-related configurations"
+          },
+          "api": {
+            "type": "object",
+            "description": "API-related configurations"
+          },
+          "logs": {
+            "type": "object",
+            "description": "Logging configurations"
+          }
+        }
+      },
+      "UserConfiguration": {
+        "type": "object",
+        "description": "User-specific configuration object",
+        "properties": {
+          "frontend": {
+            "type": "object",
+            "description": "Frontend-related user configurations"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}

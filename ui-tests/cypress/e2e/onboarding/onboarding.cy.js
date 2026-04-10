@@ -38,7 +38,7 @@ const incomingDataLogsPageHelpers = require('../../lib/dashboard/manage/logger/l
 const sdkManagersPageHelpers = require('../../lib/dashboard/manage/sdk/stats');
 const requestStatsPageHelpers = require('../../lib/dashboard/manage/sdk/requestStats');
 const healthCheckPageHelpers = require('../../lib/dashboard/manage/sdk/healthCheck');
-const sdkConfigurationsPageHelpers = require('../../lib/dashboard/manage/sdk/configurations');
+// const sdkConfigurationsPageHelpers = require('../../lib/dashboard/manage/sdk/configurations'); // Moved to SDK tests
 const complianceHubMetricsPageHelpers = require('../../lib/dashboard/manage/compliance/metrics');
 const complianceHubUsersPageHelpers = require('../../lib/dashboard/manage/compliance/users');
 const complianceHubHistoryPageHelpers = require('../../lib/dashboard/manage/compliance/history');
@@ -228,8 +228,8 @@ describe('Complete Onboarding', () => {
         requestStatsPageHelpers.verifyEmptyPageElements();
         requestStatsPageHelpers.clickHealthCheckTab();
         healthCheckPageHelpers.verifyEmptyPageElements();
-        healthCheckPageHelpers.clickSdkConfigurationTab();
-        sdkConfigurationsPageHelpers.verifyPageElements({});
+        // healthCheckPageHelpers.clickSdkConfigurationTab(); // Moved to SDK tests
+        // sdkConfigurationsPageHelpers.verifyPageElements({}); // Moved to SDK tests
         navigationHelpers.goToComplianceHubMetricsPage();
         complianceHubMetricsPageHelpers.verifyEmptyPageElements();
         complianceHubMetricsPageHelpers.clickUsersTab();
@@ -401,7 +401,7 @@ describe('Complete Onboarding', () => {
         //healthCheckPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
         healthCheckPageHelpers.verifyEmptyPageElements();
         healthCheckPageHelpers.clickSdkConfigurationTab();
-        sdkConfigurationsPageHelpers.verifyPageElements({});
+        // sdkConfigurationsPageHelpers.verifyPageElements({}); // Moved to SDK tests
         navigationHelpers.goToComplianceHubMetricsPage();
         complianceHubMetricsPageHelpers.verifyFullDataPageElements();
         complianceHubMetricsPageHelpers.clickUsersTab();

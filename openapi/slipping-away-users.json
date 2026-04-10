@@ -1,0 +1,449 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Slipping Away Users API",
+    "description": "API for tracking and managing users who are slipping away from your app",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/o/slipping/users": {
+      "get": {
+        "summary": "Get slipping away users",
+        "description": "Get users who are slipping away based on inactivity period",
+        "tags": [
+          "User Retention"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Time period to check for (days)",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                7,
+                14,
+                30,
+                60,
+                90
+              ],
+              "default": 7
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of users to return",
+            "schema": {
+              "type": "integer",
+              "default": 50
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "description": "Number of users to skip for pagination",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "userQuery",
+            "in": "query",
+            "required": false,
+            "description": "Query to filter users by",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filterBy",
+            "in": "query",
+            "required": false,
+            "description": "Field to filter users by",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "uid",
+                "did",
+                "name",
+                "email",
+                "last_seen"
+              ]
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "required": false,
+            "description": "Field to sort users by",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "uid",
+                "did",
+                "name",
+                "email",
+                "last_seen"
+              ],
+              "default": "last_seen"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "required": false,
+            "description": "Sort order",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Slipping away users retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "description": "List of slipping away users",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "uid": {
+                            "type": "string",
+                            "description": "User ID"
+                          },
+                          "did": {
+                            "type": "string",
+                            "description": "Device ID"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "User name"
+                          },
+                          "email": {
+                            "type": "string",
+                            "description": "User email"
+                          },
+                          "last_seen": {
+                            "type": "integer",
+                            "description": "Last seen timestamp"
+                          },
+                          "slipping_away_since": {
+                            "type": "integer",
+                            "description": "Days since last activity"
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "Total number of slipping away users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/slipping/resolution": {
+      "get": {
+        "summary": "Get slipping away resolution",
+        "description": "Get the distribution of slipping away users by resolution",
+        "tags": [
+          "User Retention"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Time period to check for (days)",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                7,
+                14,
+                30,
+                60,
+                90
+              ],
+              "default": 7
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Slipping away resolution data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "integer"
+                      },
+                      "description": "Distribution by resolution"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Total count"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/slipping/platforms": {
+      "get": {
+        "summary": "Get slipping away platforms",
+        "description": "Get the distribution of slipping away users by platform",
+        "tags": [
+          "User Retention"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Time period to check for (days)",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                7,
+                14,
+                30,
+                60,
+                90
+              ],
+              "default": 7
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Slipping away platform data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "integer"
+                      },
+                      "description": "Distribution by platform"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Total count"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/slipping/app_versions": {
+      "get": {
+        "summary": "Get slipping away app versions",
+        "description": "Get the distribution of slipping away users by app version",
+        "tags": [
+          "User Retention"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Time period to check for (days)",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                7,
+                14,
+                30,
+                60,
+                90
+              ],
+              "default": 7
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Slipping away app version data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "integer"
+                      },
+                      "description": "Distribution by app version"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Total count"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/slipping/carriers": {
+      "get": {
+        "summary": "Get slipping away carriers",
+        "description": "Get the distribution of slipping away users by carrier",
+        "tags": [
+          "User Retention"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Time period to check for (days)",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                7,
+                14,
+                30,
+                60,
+                90
+              ],
+              "default": 7
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Slipping away carrier data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "integer"
+                      },
+                      "description": "Distribution by carrier"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Total count"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    }
+  ]
+}
