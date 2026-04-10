@@ -20,7 +20,7 @@
     "recaptcha"
   ],
   "dependencies": {
-    "express-recaptcha": "2.1.0"
+    "express-recaptcha": "5.1.0"
   },
   "private": true
 }
