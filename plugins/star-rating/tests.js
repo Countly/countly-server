@@ -1,6 +1,7 @@
 var request = require('supertest');
 var should = require('should');
 var testUtils = require("../../test/testUtils");
+var path = require("path");
 request = request(testUtils.url);
 
 var API_KEY_ADMIN = "";
@@ -8,6 +9,7 @@ var APP_ID = "";
 var APP_KEY = "";
 var DEVICE_ID = "123456789";
 var WIDGET_ID = "";
+var LOGO_FILE = path.resolve(__dirname, "../../frontend/express/public/images/flags/us.png");
 
 var modelData = {};
 
@@ -94,6 +96,84 @@ describe('Testing Rating plugin', function() {
                 .end(function(err, res) {
                     var ob = JSON.parse(res.text);
                     ob.should.eql({});
+                    done();
+                });
+        });
+    });
+
+    describe('Upload validation', function() {
+        it('should return 400 when upload is missing file', function(done) {
+            request
+                .post('/i/feedback/upload?api_key=' + API_KEY_ADMIN)
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Missing file: feedback_logo or file');
+                    done();
+                });
+        });
+
+        it('should return 400 when generic file upload is missing name', function(done) {
+            request
+                .post('/i/feedback/upload?api_key=' + API_KEY_ADMIN)
+                .attach('file', LOGO_FILE)
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Missing parameter: name');
+                    done();
+                });
+        });
+
+        it('should upload feedback logo successfully', function(done) {
+            request
+                .post('/i/feedback/upload?api_key=' + API_KEY_ADMIN)
+                .attach('feedback_logo', LOGO_FILE)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    done();
+                });
+        });
+    });
+
+    describe('Logo validation', function() {
+        it('should return 400 when logo file is missing', function(done) {
+            request
+                .post('/i/feedback/logo?api_key=' + API_KEY_ADMIN)
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Missing file: logo');
+                    done();
+                });
+        });
+
+        it('should upload widget logo successfully', function(done) {
+            request
+                .post('/i/feedback/logo?api_key=' + API_KEY_ADMIN + '&identifier=star-rating-test-logo')
+                .attach('logo', LOGO_FILE)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result');
+                    ob.result.should.match(/\.png$/);
                     done();
                 });
         });

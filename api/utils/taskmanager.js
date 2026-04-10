@@ -500,6 +500,9 @@ var taskmanager = {
     */
     nameResult: function(options, data, callback) {
         options.db = options.db || common.db;
+        if (typeof data === 'function' && callback === undefined) {
+            callback = data;
+        }
         options.db.collection('long_tasks').update({_id: options.id}, {$set: {name: options.name}}, {'upsert': false}, callback);
     },
 
