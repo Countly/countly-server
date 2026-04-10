@@ -30,9 +30,9 @@ describe('CMS API', function() {
 
         const readResponse = await request.get(`/o/cms/entries?${sp.toString()}`);
         should(readResponse.status).equal(200);
-        readResponse.body.should.have.property('result');
-        should(readResponse.body.result.data).be.Array();
-        should(readResponse.body.result.data.find((entry) => entry._id === entryId)).exist();
+        readResponse.body.should.have.property('data');
+        should(readResponse.body.data).be.Array();
+        should(readResponse.body.data.find((entry) => entry._id === entryId)).exist();
 
         sp = new URLSearchParams();
         sp.append('api_key', API_KEY_ADMIN);
@@ -51,8 +51,8 @@ describe('CMS API', function() {
 
         const postClearResponse = await request.get(`/o/cms/entries?${sp.toString()}`);
         should(postClearResponse.status).equal(200);
-        postClearResponse.body.should.have.property('result');
-        should(postClearResponse.body.result.data).be.Array();
-        should(postClearResponse.body.result.data.find((entry) => entry._id === entryId)).not.exist();
+        postClearResponse.body.should.have.property('data');
+        should(postClearResponse.body.data).be.Array();
+        should(postClearResponse.body.data.find((entry) => entry._id === entryId)).not.exist();
     });
 });
