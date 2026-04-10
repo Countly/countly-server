@@ -32,7 +32,7 @@ describe('CMS API', function() {
         should(readResponse.status).equal(200);
         readResponse.body.should.have.property('data');
         should(readResponse.body.data).be.Array();
-        should(readResponse.body.data.find((entry) => entry._id === entryId)).exist();
+        should.exist(readResponse.body.data.find((entry) => entry._id === entryId));
 
         sp = new URLSearchParams();
         sp.append('api_key', API_KEY_ADMIN);
@@ -53,6 +53,6 @@ describe('CMS API', function() {
         should(postClearResponse.status).equal(200);
         postClearResponse.body.should.have.property('data');
         should(postClearResponse.body.data).be.Array();
-        should(postClearResponse.body.data.find((entry) => entry._id === entryId)).not.exist();
+        should.not.exist(postClearResponse.body.data.find((entry) => entry._id === entryId));
     });
 });
