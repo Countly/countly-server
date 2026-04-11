@@ -913,7 +913,9 @@ countlyCommon.getPeriodRange = function(period, timezone, offset) {
 
     endTimestamp = excludeCurrentDay ? __currMoment.clone().subtract(1, 'days').endOf('day') : __currMoment.clone().endOf('day');
 
-    if (Array.isArray(period)) {
+    var isRangePeriod = Array.isArray(period);
+
+    if (isRangePeriod) {
         if ((period[0] + "").length === 10) {
             period[0] *= 1000;
         }
@@ -994,15 +996,24 @@ countlyCommon.getPeriodRange = function(period, timezone, offset) {
         let nDays = 30;
         startTimestamp = __currMoment.clone().startOf("day").subtract(nDays - 1, "days");
     }
-    if (typeof offset !== "number") {
+    var startOffset = offset;
+    var endOffset = offset;
+
+    if (timezone && isRangePeriod) {
+        startOffset = moment.tz(startTimestamp.valueOf(), timezone).utcOffset() * -1;
+        endOffset = moment.tz(endTimestamp.valueOf(), timezone).utcOffset() * -1;
+    }
+    else if (typeof offset !== "number") {
         offset = timezone ? moment.tz(timezone).utcOffset() * -1 : 0;
+        startOffset = offset;
+        endOffset = offset;
     }
 
     return {
-        "$gt": startTimestamp.valueOf() + offset * 60000 - 1,
-        "$lt": endTimestamp.valueOf() + offset * 60000 + 1,
-        "$gte": startTimestamp.valueOf() + offset * 60000,
-        "$lte": endTimestamp.valueOf() + offset * 60000,
+        "$gt": startTimestamp.valueOf() + startOffset * 60000 - 1,
+        "$lt": endTimestamp.valueOf() + endOffset * 60000 + 1,
+        "$gte": startTimestamp.valueOf() + startOffset * 60000,
+        "$lte": endTimestamp.valueOf() + endOffset * 60000,
     };
 };
 
