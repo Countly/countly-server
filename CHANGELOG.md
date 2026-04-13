@@ -1,5 +1,6 @@
-## Version 24.05.XX
+## Version 24.05.49
 Fixes:
+- [alerts] Fixed alert jobs using system's timezone instead of application's
 - [compliance-hub] Correctly merge user history on user merge
 - [onboarding] Fix redirection to newsletter page
 - [star-rating] Fix active status checkbox in drawer
