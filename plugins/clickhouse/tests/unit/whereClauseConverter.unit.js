@@ -9,7 +9,7 @@ describe("ClickHouse WhereClauseConverter", function() {
     describe("Basic field conditions", function() {
         it("should convert simple equality", function() {
             const mongoQuery = { a: "123", e: "event1" };
-            const expectedSql = "WHERE `a`::String = {p0:String} AND `e`::String = {p1:String}";
+            const expectedSql = "WHERE `a`::Nullable(String) = {p0:String} AND `e`::Nullable(String) = {p1:String}";
             const expectedParams = { p0: "123", p1: "event1" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -49,7 +49,7 @@ describe("ClickHouse WhereClauseConverter", function() {
 
         it("should quote field names with hyphens", function() {
             const mongoQuery = { "sg.button-name": "Subscribe" };
-            const expectedSql = "WHERE `sg`.`button-name`::String = {p0:String}";
+            const expectedSql = "WHERE `sg`.`button-name`::Nullable(String) = {p0:String}";
             const expectedParams = { p0: "Subscribe" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -59,7 +59,7 @@ describe("ClickHouse WhereClauseConverter", function() {
 
         it("should quote field names with hyphens in $in operator", function() {
             const mongoQuery = { "sg.button-name": { $in: ["Subscribe", "Cancel"] } };
-            const expectedSql = "WHERE `sg`.`button-name`::String IN ({p0:String},{p1:String})";
+            const expectedSql = "WHERE `sg`.`button-name`::Nullable(String) IN ({p0:String},{p1:String})";
             const expectedParams = { p0: "Subscribe", p1: "Cancel" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -111,7 +111,7 @@ describe("ClickHouse WhereClauseConverter", function() {
 
         it("should convert $ne operator", function() {
             const mongoQuery = { status: { $ne: "inactive" } };
-            const expectedSql = "WHERE `status`::String != {p0:String}";
+            const expectedSql = "WHERE `status`::Nullable(String) != {p0:String}";
             const expectedParams = { p0: "inactive" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -165,7 +165,7 @@ describe("ClickHouse WhereClauseConverter", function() {
     describe("Array operators", function() {
         it("should convert $in operator", function() {
             const mongoQuery = { "up.cc": { $in: ["CN", "IN", "TR"] } };
-            const expectedSql = "WHERE `up`.`cc`::String IN ({p0:String},{p1:String},{p2:String})";
+            const expectedSql = "WHERE `up`.`cc`::Nullable(String) IN ({p0:String},{p1:String},{p2:String})";
             const expectedParams = { p0: "CN", p1: "IN", p2: "TR" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -175,7 +175,7 @@ describe("ClickHouse WhereClauseConverter", function() {
 
         it("should convert $nin operator", function() {
             const mongoQuery = { category: { $nin: ["spam", "deleted"] } };
-            const expectedSql = "WHERE `category`::String NOT IN ({p0:String},{p1:String})";
+            const expectedSql = "WHERE `category`::Nullable(String) NOT IN ({p0:String},{p1:String})";
             const expectedParams = { p0: "spam", p1: "deleted" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -220,7 +220,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                 $or: [{ type: "A" }, { type: "B" }],
                 status: "active"
             };
-            const expectedSql = "WHERE (`type`::String = {p0:String} OR `type`::String = {p1:String}) AND `status`::String = {p2:String}";
+            const expectedSql = "WHERE (`type`::Nullable(String) = {p0:String} OR `type`::Nullable(String) = {p1:String}) AND `status`::Nullable(String) = {p2:String}";
             const expectedParams = { p0: "A", p1: "B", p2: "active" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -233,7 +233,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                 $and: [{ age: { $gte: 18 } }, { age: { $lt: 65 } }],
                 country: "US"
             };
-            const expectedSql = "WHERE (toFloat64OrNull(CAST(`age`, 'String')) >= {p0:Float64} AND toFloat64OrNull(CAST(`age`, 'String')) < {p1:Float64}) AND `country`::String = {p2:String}";
+            const expectedSql = "WHERE (toFloat64OrNull(CAST(`age`, 'String')) >= {p0:Float64} AND toFloat64OrNull(CAST(`age`, 'String')) < {p1:Float64}) AND `country`::Nullable(String) = {p2:String}";
             const expectedParams = { p0: 18, p1: 65, p2: "US" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -243,7 +243,7 @@ describe("ClickHouse WhereClauseConverter", function() {
 
         it("should convert $nor operator", function() {
             const mongoQuery = { $nor: [{ status: "banned" }, { deleted: true }] };
-            const expectedSql = "WHERE NOT (`status`::String = {p0:String} OR `deleted`::Bool = {p1:Bool})";
+            const expectedSql = "WHERE NOT (`status`::Nullable(String) = {p0:String} OR `deleted`::Bool = {p1:Bool})";
             const expectedParams = { p0: "banned", p1: true };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -253,7 +253,7 @@ describe("ClickHouse WhereClauseConverter", function() {
 
         it("should handle empty $or array", function() {
             const mongoQuery = { $or: [], status: "active" };
-            const expectedSql = "WHERE (1 = 0) AND `status`::String = {p0:String}";
+            const expectedSql = "WHERE (1 = 0) AND `status`::Nullable(String) = {p0:String}";
             const expectedParams = { p0: "active" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -263,7 +263,7 @@ describe("ClickHouse WhereClauseConverter", function() {
 
         it("should handle empty $and array", function() {
             const mongoQuery = { $and: [], status: "active" };
-            const expectedSql = "WHERE (1 = 1) AND `status`::String = {p0:String}";
+            const expectedSql = "WHERE (1 = 1) AND `status`::Nullable(String) = {p0:String}";
             const expectedParams = { p0: "active" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -300,7 +300,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                 "a": "686267600c6cdf2e1f91709b",
                 "e": "[CLY]_session"
             };
-            const expectedSql = "WHERE (`up`.`cc`::String IN ({p0:String},{p1:String},{p2:String}) OR `up`.`cty`::String IN ({p3:String})) AND toFloat64OrNull(CAST(`up`.`age`, 'String')) < {p4:Float64} AND `ts` >= {p5:DateTime64(3)} AND `ts` < {p6:DateTime64(3)} AND `a`::String = {p7:String} AND `e`::String = {p8:String}";
+            const expectedSql = "WHERE (`up`.`cc`::Nullable(String) IN ({p0:String},{p1:String},{p2:String}) OR `up`.`cty`::Nullable(String) IN ({p3:String})) AND toFloat64OrNull(CAST(`up`.`age`, 'String')) < {p4:Float64} AND `ts` >= {p5:DateTime64(3)} AND `ts` < {p6:DateTime64(3)} AND `a`::Nullable(String) = {p7:String} AND `e`::Nullable(String) = {p8:String}";
             const expectedParams = {
                 p0: "CN",
                 p1: "IN",
@@ -337,7 +337,7 @@ describe("ClickHouse WhereClauseConverter", function() {
     describe("String operators", function() {
         it("should convert $regex operator", function() {
             const mongoQuery = { name: { $regex: "^John" } };
-            const expectedSql = "WHERE match(`name`::String, {p0:String})";
+            const expectedSql = "WHERE match(`name`::Nullable(String), {p0:String})";
             const expectedParams = { p0: "^John" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -347,7 +347,7 @@ describe("ClickHouse WhereClauseConverter", function() {
 
         it("should convert rgxcn (regex contains) operator", function() {
             const mongoQuery = { description: { rgxcn: "error" } };
-            const expectedSql = "WHERE match(`description`::String, {p0:String})";
+            const expectedSql = "WHERE match(`description`::Nullable(String), {p0:String})";
             const expectedParams = { p0: "error" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -357,7 +357,7 @@ describe("ClickHouse WhereClauseConverter", function() {
 
         it("should convert rgxntc (regex not contains) operator", function() {
             const mongoQuery = { log: { rgxntc: "debug" } };
-            const expectedSql = "WHERE NOT match(`log`::String, {p0:String})";
+            const expectedSql = "WHERE NOT match(`log`::Nullable(String), {p0:String})";
             const expectedParams = { p0: "debug" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -367,7 +367,7 @@ describe("ClickHouse WhereClauseConverter", function() {
 
         it("should convert rgxbw (regex begins with) operator", function() {
             const mongoQuery = { path: { rgxbw: "/api/" } };
-            const expectedSql = "WHERE startsWith(`path`::String, {p0:String})";
+            const expectedSql = "WHERE startsWith(`path`::Nullable(String), {p0:String})";
             const expectedParams = { p0: "/api/" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -377,7 +377,7 @@ describe("ClickHouse WhereClauseConverter", function() {
 
         it("should convert rgxitl (regex case insensitive) operator", function() {
             const mongoQuery = { email: { rgxitl: "admin" } };
-            const expectedSql = "WHERE match(`email`::String, {p0:String})";
+            const expectedSql = "WHERE match(`email`::Nullable(String), {p0:String})";
             const expectedParams = { p0: "(?i)admin" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -389,7 +389,7 @@ describe("ClickHouse WhereClauseConverter", function() {
     describe("String operators with converted regex. (Drill preprocessing converts base operators to regex.)", function() {
         it("Test start with case", function() {
             const mongoQuery = { name: { $regex: new RegExp("^John") } };
-            const expectedSql = "WHERE match(`name`::String, {p0:String})";
+            const expectedSql = "WHERE match(`name`::Nullable(String), {p0:String})";
             const expectedParams = { p0: "^John" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -398,7 +398,7 @@ describe("ClickHouse WhereClauseConverter", function() {
         });
         it("test contains case", function() {
             const mongoQuery = { name: { $regex: new RegExp(".*John.*") } };
-            const expectedSql = "WHERE match(`name`::String, {p0:String})";
+            const expectedSql = "WHERE match(`name`::Nullable(String), {p0:String})";
             const expectedParams = { p0: ".*John.*" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -407,7 +407,7 @@ describe("ClickHouse WhereClauseConverter", function() {
         });
         it("Test not contains case", function() {
             const mongoQuery = { name: {"$not": new RegExp(".*John.*") }};
-            const expectedSql = "WHERE NOT (match(`name`::String, {p0:String}))";
+            const expectedSql = "WHERE NOT (match(`name`::Nullable(String), {p0:String}))";
             const expectedParams = { p0: ".*John.*" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -452,7 +452,7 @@ describe("ClickHouse WhereClauseConverter", function() {
     describe("$not operator", function() {
         it("should negate simple equality", function() {
             const mongoQuery = { status: { $not: { $ne: "active" } } };
-            const expectedSql = "WHERE NOT (`status`::String != {p0:String})";
+            const expectedSql = "WHERE NOT (`status`::Nullable(String) != {p0:String})";
             const expectedParams = { p0: "active" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -472,7 +472,7 @@ describe("ClickHouse WhereClauseConverter", function() {
 
         it("should handle query-level $not", function() {
             const mongoQuery = { $not: { status: "active", type: "premium" } };
-            const expectedSql = "WHERE NOT (`status`::String = {p0:String} AND `type`::String = {p1:String})";
+            const expectedSql = "WHERE NOT (`status`::Nullable(String) = {p0:String} AND `type`::Nullable(String) = {p1:String})";
             const expectedParams = { p0: "active", p1: "premium" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -502,9 +502,9 @@ describe("ClickHouse WhereClauseConverter", function() {
             };
 
             const result = converter.queryObjToWhere(mongoQuery);
-            result.sql.should.containEql("`up`.`cc`::String IN");
-            result.sql.should.containEql("`up`.`cty`::String = ");
-            result.sql.should.containEql("`up`.`la`::String IN");
+            result.sql.should.containEql("`up`.`cc`::Nullable(String) IN");
+            result.sql.should.containEql("`up`.`cty`::Nullable(String) = ");
+            result.sql.should.containEql("`up`.`la`::Nullable(String) IN");
         });
 
         it("should handle custom event segmentation", function() {
@@ -517,7 +517,7 @@ describe("ClickHouse WhereClauseConverter", function() {
             };
 
             const result = converter.queryObjToWhere(mongoQuery);
-            result.sql.should.containEql("`sg`.`Category`::String IN");
+            result.sql.should.containEql("`sg`.`Category`::Nullable(String) IN");
             result.sql.should.containEql("toFloat64OrNull(CAST(`sg`.`Price`, 'String')) >=");
             result.sql.should.containEql("toFloat64OrNull(CAST(`sg`.`Price`, 'String')) <=");
         });
@@ -566,8 +566,8 @@ describe("ClickHouse WhereClauseConverter", function() {
             };
 
             const result = converter.queryObjToWhere(mongoQuery);
-            result.sql.should.containEql("`custom`.`field-name`::String");
-            result.sql.should.containEql("`up`.`email@domain`::String");
+            result.sql.should.containEql("`custom`.`field-name`::Nullable(String)");
+            result.sql.should.containEql("`up`.`email@domain`::Nullable(String)");
         });
 
         it("should skip fields with unprocessable values", function() {
@@ -575,7 +575,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                 createdAt: new Date('2024-01-01'),
                 name: "John"
             };
-            const expectedSql = "WHERE `name`::String = {p0:String}";
+            const expectedSql = "WHERE `name`::Nullable(String) = {p0:String}";
             const expectedParams = { p0: "John" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -596,7 +596,7 @@ describe("ClickHouse WhereClauseConverter", function() {
             };
 
             const result = converter.queryObjToWhere(mongoQuery);
-            result.sql.should.containEql("`str`::String");
+            result.sql.should.containEql("`str`::Nullable(String)");
             result.sql.should.containEql("toFloat64OrNull(CAST(`num`, 'String'))");
             result.sql.should.containEql("toFloat64OrNull(CAST(`float`, 'String'))");
             result.sql.should.containEql("`bool`::Bool");
@@ -627,7 +627,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                 field3: "value3",
                 field4: { $gt: 10 }
             };
-            const expectedSql = "WHERE (`field1`::String = {p0:String} OR `field2`::String = {p1:String}) AND `field3`::String = {p2:String} AND toFloat64OrNull(CAST(`field4`, 'String')) > {p3:Float64}";
+            const expectedSql = "WHERE (`field1`::Nullable(String) = {p0:String} OR `field2`::Nullable(String) = {p1:String}) AND `field3`::Nullable(String) = {p2:String} AND toFloat64OrNull(CAST(`field4`, 'String')) > {p3:Float64}";
             const expectedParams = { p0: "value1", p1: "value2", p2: "value3", p3: 10 };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -643,7 +643,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                     { priority: "high" }
                 ]
             };
-            const expectedSql = "WHERE ((`type`::String = {p0:String} OR `type`::String = {p1:String}) AND `priority`::String = {p2:String}) AND (`status`::String = {p3:String} OR `status`::String = {p4:String})";
+            const expectedSql = "WHERE ((`type`::Nullable(String) = {p0:String} OR `type`::Nullable(String) = {p1:String}) AND `priority`::Nullable(String) = {p2:String}) AND (`status`::Nullable(String) = {p3:String} OR `status`::Nullable(String) = {p4:String})";
             const expectedParams = { p0: "A", p1: "B", p2: "high", p3: "active", p4: "pending" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -660,7 +660,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                 ],
                 active: true
             };
-            const expectedSql = "WHERE (`up`.`cc`::String IN ({p0:String},{p1:String}) OR `up`.`cty`::String = {p2:String} OR toFloat64OrNull(CAST(`up`.`age`, 'String')) < {p3:Float64}) AND `active`::Bool = {p4:Bool}";
+            const expectedSql = "WHERE (`up`.`cc`::Nullable(String) IN ({p0:String},{p1:String}) OR `up`.`cty`::Nullable(String) = {p2:String} OR toFloat64OrNull(CAST(`up`.`age`, 'String')) < {p3:Float64}) AND `active`::Bool = {p4:Bool}";
             const expectedParams = { p0: "CN", p1: "IN", p2: "Tokyo", p3: 30, p4: true };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -683,11 +683,11 @@ describe("ClickHouse WhereClauseConverter", function() {
 
             const result = converter.queryObjToWhere(mongoQuery);
             // Should properly parenthesize the OR condition
-            result.sql.should.containEql("(`up`.`cc`::String IN ({p0:String},{p1:String},{p2:String}) OR `up`.`cty`::String IN ({p3:String}))");
+            result.sql.should.containEql("(`up`.`cc`::Nullable(String) IN ({p0:String},{p1:String},{p2:String}) OR `up`.`cty`::Nullable(String) IN ({p3:String}))");
             // Should have all other conditions connected with AND
             result.sql.should.containEql("AND toFloat64OrNull(CAST(`up`.`age`, 'String')) < {p4:Float64}");
             result.sql.should.containEql("AND `ts` >= {p5:DateTime64(3)}");
-            result.sql.should.containEql("AND `a`::String = {p7:String}");
+            result.sql.should.containEql("AND `a`::Nullable(String) = {p7:String}");
         });
 
         it("should handle nested logical expressions with proper parentheses", function() {
@@ -719,8 +719,8 @@ describe("ClickHouse WhereClauseConverter", function() {
 
             const result = converter.queryObjToWhere(mongoQuery);
             // Both logical operators should be present and properly parenthesized
-            result.sql.should.containEql("(`field4`::String = {p0:String} AND (`field5`::String = {p1:String} OR `field6`::String = {p2:String}))");
-            result.sql.should.containEql("((`field1`::String = {p3:String} AND `field2`::String = {p4:String}) OR `field3`::String = {p5:String})");
+            result.sql.should.containEql("(`field4`::Nullable(String) = {p0:String} AND (`field5`::Nullable(String) = {p1:String} OR `field6`::Nullable(String) = {p2:String}))");
+            result.sql.should.containEql("((`field1`::Nullable(String) = {p3:String} AND `field2`::Nullable(String) = {p4:String}) OR `field3`::Nullable(String) = {p5:String})");
         });
     });
 
@@ -732,7 +732,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                     { e: "[CLY]_session" }
                 ]
             };
-            const expectedSql = "WHERE ((`e`::String = {p0:String} AND `n`::String = {p1:String}) OR `e`::String = {p2:String})";
+            const expectedSql = "WHERE ((`e`::Nullable(String) = {p0:String} AND `n`::Nullable(String) = {p1:String}) OR `e`::Nullable(String) = {p2:String})";
             const expectedParams = { p0: "[CLY]_custom", p1: "Login", p2: "[CLY]_session" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -748,7 +748,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                     { event: "click", element: "button", position: "top" }
                 ]
             };
-            const expectedSql = "WHERE ((`event`::String = {p0:String} AND `category`::String = {p1:String} AND toFloat64OrNull(CAST(`price`, 'String')) >= {p2:Float64}) OR (`event`::String = {p3:String} AND `page`::String = {p4:String}) OR (`event`::String = {p5:String} AND `element`::String = {p6:String} AND `position`::String = {p7:String}))";
+            const expectedSql = "WHERE ((`event`::Nullable(String) = {p0:String} AND `category`::Nullable(String) = {p1:String} AND toFloat64OrNull(CAST(`price`, 'String')) >= {p2:Float64}) OR (`event`::Nullable(String) = {p3:String} AND `page`::Nullable(String) = {p4:String}) OR (`event`::Nullable(String) = {p5:String} AND `element`::Nullable(String) = {p6:String} AND `position`::Nullable(String) = {p7:String}))";
             const expectedParams = {
                 p0: "purchase",
                 p1: "electronics",
@@ -773,7 +773,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                     { role: "admin" }
                 ]
             };
-            const expectedSql = "WHERE (`status`::String = {p0:String} OR (`type`::String = {p1:String} AND `verified`::Bool = {p2:Bool}) OR `role`::String = {p3:String})";
+            const expectedSql = "WHERE (`status`::Nullable(String) = {p0:String} OR (`type`::Nullable(String) = {p1:String} AND `verified`::Bool = {p2:Bool}) OR `role`::Nullable(String) = {p3:String})";
             const expectedParams = { p0: "active", p1: "premium", p2: true, p3: "admin" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -790,7 +790,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                 ],
                 ts: { $gte: 1735678800000 }
             };
-            const expectedSql = "WHERE ((`up`.`cc`::String = {p0:String} AND toFloat64OrNull(CAST(`up`.`age`, 'String')) >= {p1:Float64}) OR (`up`.`cc`::String = {p2:String} AND `up`.`verified`::Bool = {p3:Bool})) AND `a`::String = {p4:String} AND `ts` >= {p5:DateTime64(3)}";
+            const expectedSql = "WHERE ((`up`.`cc`::Nullable(String) = {p0:String} AND toFloat64OrNull(CAST(`up`.`age`, 'String')) >= {p1:Float64}) OR (`up`.`cc`::Nullable(String) = {p2:String} AND `up`.`verified`::Bool = {p3:Bool})) AND `a`::Nullable(String) = {p4:String} AND `ts` >= {p5:DateTime64(3)}";
             const expectedParams = {
                 p0: "US",
                 p1: 25,
@@ -817,7 +817,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                     { category: "books", author: "tolkien", available: true }
                 ]
             };
-            const expectedSql = "WHERE ((`category`::String = {p0:String} AND toFloat64OrNull(CAST(`price`, 'String')) < {p1:Float64} AND `brand`::String = {p2:String}) OR (`category`::String = {p3:String} AND `author`::String = {p4:String} AND `available`::Bool = {p5:Bool}))";
+            const expectedSql = "WHERE ((`category`::Nullable(String) = {p0:String} AND toFloat64OrNull(CAST(`price`, 'String')) < {p1:Float64} AND `brand`::Nullable(String) = {p2:String}) OR (`category`::Nullable(String) = {p3:String} AND `author`::Nullable(String) = {p4:String} AND `available`::Bool = {p5:Bool}))";
             const expectedParams = {
                 p0: "electronics",
                 p1: 500,
@@ -846,11 +846,11 @@ describe("ClickHouse WhereClauseConverter", function() {
 
             const result = converter.queryObjToWhere(mongoQuery);
             // Should properly parenthesize the multi-condition OR branches
-            result.sql.should.containEql("(`up`.`cc`::String = ");
-            result.sql.should.containEql(" AND `sg`.`button`::String = ");
-            result.sql.should.containEql(") OR (`up`.`cc`::String = ");
-            result.sql.should.containEql(" AND `sg`.`button`::String = ");
-            result.sql.should.containEql(") OR `up`.`cty`::String = ");
+            result.sql.should.containEql("(`up`.`cc`::Nullable(String) = ");
+            result.sql.should.containEql(" AND `sg`.`button`::Nullable(String) = ");
+            result.sql.should.containEql(") OR (`up`.`cc`::Nullable(String) = ");
+            result.sql.should.containEql(" AND `sg`.`button`::Nullable(String) = ");
+            result.sql.should.containEql(") OR `up`.`cty`::Nullable(String) = ");
         });
     });
 
@@ -958,7 +958,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                 sSearch: "test",
                 e: "[CLY]_session"
             };
-            const expectedSql = "WHERE `a`::String = {p0:String} AND (lower(`e`) LIKE lower({p1:String}) OR lower(`n`) LIKE lower({p2:String})) AND `e`::String = {p3:String}";
+            const expectedSql = "WHERE `a`::Nullable(String) = {p0:String} AND (lower(`e`) LIKE lower({p1:String}) OR lower(`n`) LIKE lower({p2:String})) AND `e`::Nullable(String) = {p3:String}";
             const expectedParams = { p0: "app123", p1: "%test%", p2: "%test%", p3: "[CLY]_session" };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -975,7 +975,7 @@ describe("ClickHouse WhereClauseConverter", function() {
                 ],
                 ts: { $gte: 1735678800000 }
             };
-            const expectedSql = "WHERE `a`::String = {p0:String} AND (lower(`e`) LIKE lower({p1:String}) OR lower(`n`) LIKE lower({p2:String})) AND `ts` >= {p3:DateTime64(3)}";
+            const expectedSql = "WHERE `a`::Nullable(String) = {p0:String} AND (lower(`e`) LIKE lower({p1:String}) OR lower(`n`) LIKE lower({p2:String})) AND `ts` >= {p3:DateTime64(3)}";
             const expectedParams = { p0: "app123", p1: "%event%", p2: "%name%", p3: 1735678800 };
 
             const result = converter.queryObjToWhere(mongoQuery);
@@ -995,20 +995,20 @@ describe("ClickHouse WhereClauseConverter", function() {
                 };
                 const result = converter.queryObjToWhere(mongoQuery);
                 result.sql.should.equal(
-                    "WHERE `sg`.`button-name`::String = {p0:String} AND `up`.`email@domain`::String = {p1:String} AND `weird name`::String = {p2:String} AND `9lives`::String = {p3:String}"
+                    "WHERE `sg`.`button-name`::Nullable(String) = {p0:String} AND `up`.`email@domain`::Nullable(String) = {p1:String} AND `weird name`::Nullable(String) = {p2:String} AND `9lives`::Nullable(String) = {p3:String}"
                 );
             });
 
             it("escapes backticks inside identifiers", function() {
                 const mongoQuery = { "cra`zy": "x" };
                 const result = converter.queryObjToWhere(mongoQuery);
-                result.sql.should.equal("WHERE `cra``zy`::String = {p0:String}");
+                result.sql.should.equal("WHERE `cra``zy`::Nullable(String) = {p0:String}");
             });
 
             it("quotes reserved keywords as identifiers", function() {
                 const mongoQuery = { select: "x", date: "2025-01-01" };
                 const result = converter.queryObjToWhere(mongoQuery);
-                result.sql.should.equal("WHERE `select`::String = {p0:String} AND `date`::String = {p1:String}");
+                result.sql.should.equal("WHERE `select`::Nullable(String) = {p0:String} AND `date`::Nullable(String) = {p1:String}");
             });
         });
 
@@ -1016,7 +1016,7 @@ describe("ClickHouse WhereClauseConverter", function() {
             it("uses IS NULL for literal null", function() {
                 const mongoQuery = { field1: null, field2: "x" };
                 const result = converter.queryObjToWhere(mongoQuery);
-                result.sql.should.equal("WHERE `field1` IS NULL AND `field2`::String = {p0:String}");
+                result.sql.should.equal("WHERE `field1` IS NULL AND `field2`::Nullable(String) = {p0:String}");
                 result.params.should.deepEqual({ p0: "x" });
             });
 
@@ -1059,7 +1059,7 @@ describe("ClickHouse WhereClauseConverter", function() {
             it("supports $regex with $options: 'i'", function() {
                 const mongoQuery = { name: { $regex: "john", $options: "i" } };
                 const result = converter.queryObjToWhere(mongoQuery);
-                result.sql.should.equal("WHERE match(`name`::String, {p0:String})");
+                result.sql.should.equal("WHERE match(`name`::Nullable(String), {p0:String})");
                 result.params.should.deepEqual({ p0: "(?i)john" });
             });
         });
@@ -1075,7 +1075,7 @@ describe("ClickHouse WhereClauseConverter", function() {
             it("handles empty $nor array as (1 = 1)", function() {
                 const mongoQuery = { $nor: [], status: "ok" };
                 const result = converter.queryObjToWhere(mongoQuery);
-                result.sql.should.equal("WHERE (1 = 1) AND `status`::String = {p0:String}");
+                result.sql.should.equal("WHERE (1 = 1) AND `status`::Nullable(String) = {p0:String}");
                 result.params.should.deepEqual({ p0: "ok" });
             });
         });
@@ -1106,7 +1106,7 @@ describe("ClickHouse WhereClauseConverter", function() {
             it("negates string operator under $not", function() {
                 const mongoQuery = { name: { $not: { rgxcn: "err" } } };
                 const result = converter.queryObjToWhere(mongoQuery);
-                result.sql.should.equal("WHERE NOT (match(`name`::String, {p0:String}))");
+                result.sql.should.equal("WHERE NOT (match(`name`::Nullable(String), {p0:String}))");
                 result.params.should.deepEqual({ p0: "err" });
             });
         });
