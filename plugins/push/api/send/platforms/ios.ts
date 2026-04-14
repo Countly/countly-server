@@ -5,14 +5,74 @@ import { URL } from "url";
 import { ObjectId } from "mongodb";
 import { createHash } from "crypto";
 import type { OutgoingHttpHeaders } from "http2";
-import type { PushEvent, IOSMessagePayload, IOSConfig } from "../../types/queue.ts";
-import type { Content, Message } from "../../types/message.ts";
-import type { APNCredentials, APNP12Credentials, APNP8Credentials, RawAPNCredentials, RawAPNP8Credentials, TLSKeyPair } from "../../types/credentials.ts";
+import type { PushEvent } from "../../kafka/types.ts";
+import type { Content, Message } from "../../models/message.ts";
+import type { APNCredentials, APNP12Credentials, APNP8Credentials, RawAPNCredentials, RawAPNP8Credentials, TLSKeyPair } from "../../models/credentials.ts";
 import type { ProxyConfiguration } from "../../lib/utils.ts";
 import type { TemplateContext } from "../../lib/template.ts";
 import { serializeProxyConfig, removeUPFromUserPropertyKey } from "../../lib/utils.ts";
 import { InvalidCredentials, SendError, InvalidResponse, APNSErrors, InvalidDeviceToken } from "../../lib/error.ts";
 import { PROXY_CONNECTION_TIMEOUT } from "../../constants/configs.ts";
+
+export interface IOSConfig {
+    setContentAvailable: boolean;
+}
+
+export interface IOSMessagePayload {
+    aps: {
+        "mutable-content"?: number; // gets set to 1 if the message has media or buttons
+        sound?: string; // sound file name, default is 'default'
+        badge?: number; // badge number
+        alert?: {
+            title?: string; // message title
+            body?: string; // message content
+            subtitle?: string; // message subtitle
+        };
+        "content-available"?: number; // set to 1 for silent push
+    },
+    c: {
+        i: string; // message id as string
+        a?: string; // message media url
+        l?: string; // message link url
+        b?: Array<{ // buttons
+            t: string; // button text
+            l: string; // button link
+        }>;
+        e?: { // extra user properties like: country code, city, source, etc.
+            [key: string]: any;
+            // av: "0:0" // extra user property: app version
+        };
+    },
+    [key: string]: any; // custom json data
+    // NORMAL MESSAGE EXAMPLE:
+    // aps: {
+    //     'mutable-content': 1,
+    //     sound: 'default',
+    //     badge: 12,
+    //     alert: {
+    //         title: 'message title',
+    //         body: 'message content',
+    //         subtitle: 'message subtitle'
+    //     },
+    //     'content-available': 1
+    // },
+    // c: {
+    //     i: '689607f8899e1ae6f88173cc',
+    //     a: 'https://someurl.com/something.png',
+    //     l: 'https://someurl.com/',
+    //     b: [{ t: 'button text', l: 'https://www.someurl.com' }],
+    //     e: { av: '0:0' }
+    // },
+    // test: 'custom json data'
+    //
+    // SILENT MESSAGE EXAMPLE:
+    // aps: { badge: 32, 'content-available': 1 },
+    // c: {
+    //   i: '689624ae899e1ae6f88173d7',
+    //   e: { did: '426BCD17-3820-4D69-A8FC-F2C491817A74' }
+    // },
+    // test: 'custom json data'
+}
 
 interface JWTCache {
     token: string;

@@ -1,16 +1,13 @@
 import { ObjectId } from "mongodb";
 import type { Db, Collection, Document } from "mongodb";
-import type {
-    ScheduleEvent, PushEvent, IOSConfig, AndroidConfig, HuaweiConfig,
-} from "../types/queue.ts";
+import type { ScheduleEvent, PushEvent, PlatformConfig } from "../kafka/types.ts";
 import type {
     MessageCollection, Message, PlatformKey, PlatformEnvKey, PlatformCombinedKey,
-} from "../types/message.ts";
-import type { PlatformCredential } from "../types/credentials.ts";
+} from "../models/message.ts";
+import type { PlatformCredential } from "../models/credentials.ts";
 import type { ErrorObject } from "../lib/error.ts";
-import type { Schedule, ScheduleCollection, AudienceFilter } from "../types/schedule.ts";
-import type { MessageTemplateFunction } from "../lib/template.ts";
-import * as queue from "../lib/kafka.ts"; // do not import by destructuring; it's being mocked in the tests
+import type { Schedule, ScheduleCollection, AudienceFilter } from "../models/schedule.ts";
+import * as queue from "../kafka/producer.ts"; // do not import by destructuring; it's being mocked in the tests
 import { createTemplate, getUserPropertiesUsedInsideMessage } from "../lib/template.ts";
 import PLATFORM_KEYMAP from "../constants/platform-keymap.ts";
 import { buildResultObject, increaseResultStat, applyResultObject } from "./resultor.ts";
@@ -206,7 +203,7 @@ export async function* createPushStream(
     scheduledTo: Date,
     creds: PlatformCredentialsMap,
     pluginConfig: Awaited<ReturnType<typeof loadPluginConfiguration>> | undefined,
-    template: MessageTemplateFunction,
+    template: ReturnType<typeof createTemplate>,
     pipeline: Document[]
 ): AsyncGenerator<PushEvent, void, void> {
     const stream = db.collection("app_users" + appDoc._id.toString())
@@ -487,7 +484,7 @@ export async function loadCredentials(db: Db, appId: ObjectId): Promise<Platform
 /**
  * Extracts platform-specific configuration from the message document.
  */
-function getPlatformConfiguration(platform: PlatformKey, message: Message): IOSConfig | AndroidConfig | HuaweiConfig {
+function getPlatformConfiguration(platform: PlatformKey, message: Message): PlatformConfig {
     if (platform === "i") {
         let setContentAvailable = false;
         const contentItem = message.contents.find(i => Array.isArray(i.specific));

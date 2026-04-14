@@ -2,14 +2,57 @@ import firebaseAdmin from "firebase-admin";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { ObjectId } from "mongodb";
 import { createHash } from "crypto";
-import type { PushEvent, AndroidMessagePayload } from "../../types/queue.ts";
-import type { Content, Message } from "../../types/message.ts";
+import type { PushEvent } from "../../kafka/types.ts";
+import type { Content, Message } from "../../models/message.ts";
 import type { ProxyConfiguration } from "../../lib/utils.ts";
-import type { FCMCredentials, RawFCMCredentials } from "../../types/credentials.ts";
+import type { FCMCredentials, RawFCMCredentials } from "../../models/credentials.ts";
 import type { TemplateContext } from "../../lib/template.ts";
 import { buildProxyUrl, serializeProxyConfig, flattenObject, removeUPFromUserPropertyKey } from "../../lib/utils.ts";
 import { InvalidCredentials, SendError, FCMErrors } from "../../lib/error.ts";
 import { PROXY_CONNECTION_TIMEOUT } from "../../constants/configs.ts";
+
+export interface AndroidConfig {}
+
+export interface AndroidMessagePayload {
+    data: {
+        title?: string; // message title
+        message?: string; // message content
+        "c.i": string; // message id as string
+        "c.m"?: string; // message media url
+        "c.l"?: string; // message link url
+        "c.b"?: string; // buttons: stringified array of objects in the form of: Array<{ t: string; l: string; }>; (button text and link)
+        "c.li"?: string; // message icon
+        badge?: string; // badge: stringified badge number
+        sound?: string;
+        // keeping this here for "custom json data" and "extra user properties"
+        [key: string]: any;
+        // test: 'custom json data for android', // custom json
+        // "c.e.cc": string; // extra user property: country code
+        // "c.e.cty": string; // extra user property: city
+    };
+    android?: {
+        ttl?: number; // time to live in milliseconds (fcm sets it to 4 weeks (2419200000 ms) by default)
+    };
+    // EXAMPLE:
+    // data: {
+    //     'c.i': '689607f8899e1ae6f88173cc',
+    //     'c.m': 'https://www.someurl.com/something.png',
+    //     sound: 'default',
+    //     badge: 32,
+    //     'c.l': 'https://www.someurl.com',
+    //     title: 'message title',
+    //     message: 'message content',
+    //     'c.b': [{ t: 'button text', l: 'https://www.someurl.com' } ],
+    //     test: 'custom json data',
+    //     'c.e.cc': 'us',
+    //     'c.e.cty': 'Böston 墨尔本',
+    //     'c.e.src': 'Android',
+    //     'c.li': 'test-icon'
+    // }
+    // android: {
+    //   ttl: 2419200000
+    // }
+}
 
 interface FirebaseError extends Error {
     code: string;

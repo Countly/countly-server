@@ -2,7 +2,7 @@ import { onTokenSession } from './api-push.ts';
 import platforms from "./constants/platform-keymap.ts";
 import { guessThePlatformFromUserAgentHeader } from "./lib/utils.ts";
 import { autoOnEvent } from './api-auto.ts';
-import { loadKafka, setupProducer } from './lib/kafka.ts';
+import { loadKafka, setupProducer } from './kafka/producer.ts';
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports

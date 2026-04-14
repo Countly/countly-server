@@ -1,13 +1,4 @@
-import type {
-    ScheduleEvent, PushEvent, ResultEvent, AutoTriggerEvent,
-    PushEventHandler, ScheduleEventHandler, ResultEventHandler, AutoTriggerEventHandler,
-} from "../types/queue.ts";
-import {
-    scheduleEventDTOToObject,
-    pushEventDTOToObject,
-    resultEventDTOToObject,
-    autoTriggerEventDTOToObject,
-} from "./dto.ts";
+import type { ScheduleEvent, PushEvent, ResultEvent, AutoTriggerEvent } from "./types.ts";
 import kafkaConfig from "../constants/kafka-config.ts";
 import { createRequire } from 'module';
 
@@ -17,13 +8,13 @@ const common: import('../../../../types/common.js').Common = require('../../../.
 const log = common.log('push:kafka');
 
 // Types from kafkajs (via kafka plugin)
-interface KafkaInstance {
+export interface KafkaInstance {
     producer(config?: { createPartitioner?: KafkaCustomPartitioner }): KafkaProducer;
     consumer(config?: any): any;
     admin(): any;
 }
 
-interface KafkaProducer {
+export interface KafkaProducer {
     connect(): Promise<void>;
     send(config: {
         topic: string;
@@ -31,9 +22,9 @@ interface KafkaProducer {
     }): Promise<any>;
 }
 
-type KafkaCustomPartitioner = () => any;
+export type KafkaCustomPartitioner = () => any;
 
-interface KafkaPartitioners {
+export interface KafkaPartitioners {
     DefaultPartitioner: KafkaCustomPartitioner;
     LegacyPartitioner: KafkaCustomPartitioner;
 }
@@ -113,74 +104,11 @@ export async function setupTopicsAndPartitions(kafkaInstance: KafkaInstance, for
     log.i("Kafka topics are set up");
 }
 
-export async function initPushQueue(
-    kafkaInstance: KafkaInstance,
-    createPartitioner: KafkaCustomPartitioner,
-    onPushMessages: PushEventHandler,
-    onMessageSchedules: ScheduleEventHandler,
-    onMessageResults: ResultEventHandler,
-    onAutoTriggerEvents: AutoTriggerEventHandler
-): Promise<void> {
-    await setupProducer(kafkaInstance, createPartitioner);
-    await setupTopicsAndPartitions(kafkaInstance);
-
-    const pushConsumer = kafkaInstance.consumer({
-        groupId: kafkaConfig.consumerGroupId,
-        allowAutoTopicCreation: false,
-    });
-    await pushConsumer.connect();
-    await pushConsumer.subscribe({
-        topics: [
-            kafkaConfig.topics.SEND.name,
-            kafkaConfig.topics.COMPOSE.name,
-            kafkaConfig.topics.RESULT.name,
-            kafkaConfig.topics.AUTO_TRIGGER.name,
-        ],
-        fromBeginning: true,
-    });
-    await pushConsumer.run({
-        eachBatch: async({
-            batch: {
-                topic,
-                messages,
-            },
-        }: any) => {
-            const decoded = messages.map(
-                (m: any) => m.value ? m.value.toString("utf8") : null
-            );
-            try {
-                log.i("Received", messages.length, "message(s) in topic", topic);
-                const parsed = decoded
-                    .map((value: string | null) => value ? JSON.parse(value) : null)
-                    .filter((value: any) => !!value);
-                log.d("Messages:", JSON.stringify(parsed, null, 2));
-                switch (topic) {
-                case kafkaConfig.topics.SEND.name:
-                    return await onPushMessages(parsed.map(pushEventDTOToObject));
-                case kafkaConfig.topics.COMPOSE.name:
-                    return await onMessageSchedules(parsed.map(scheduleEventDTOToObject));
-                case kafkaConfig.topics.RESULT.name:
-                    return await onMessageResults(parsed.map(resultEventDTOToObject));
-                case kafkaConfig.topics.AUTO_TRIGGER.name:
-                    return await onAutoTriggerEvents(parsed.map(autoTriggerEventDTOToObject));
-                }
-            }
-            catch (err) {
-                log.e(
-                    "Error while consuming,",
-                    "Topic", topic,
-                    "Messages:", decoded,
-                    "Error:", err
-                );
-            }
-        }
-    });
-}
-
 export async function sendScheduleEvents(scheduleEvents: ScheduleEvent[]): Promise<void> {
     if (!PRODUCER) {
         throw new Error("Kafka producer is not initialized");
     }
+    log.i("Sending " + scheduleEvents.length + " schedule events");
     await PRODUCER.send({
         topic: kafkaConfig.topics.SCHEDULE.name,
         messages: scheduleEvents.map(scheduleEvent => {
@@ -206,6 +134,7 @@ export async function sendPushEvents(pushes: PushEvent[]): Promise<void> {
     if (!PRODUCER) {
         throw new Error("Kafka producer is not initialized");
     }
+    log.i("Sending " + pushes.length + " push events");
     await PRODUCER.send({
         topic: kafkaConfig.topics.SEND.name,
         messages: pushes.map(p => ({ value: JSON.stringify(p) }))
@@ -216,6 +145,7 @@ export async function sendResultEvents(results: ResultEvent[]): Promise<void> {
     if (!PRODUCER) {
         throw new Error("Kafka producer is not initialized");
     }
+    log.i("Sending " + results.length + " result events");
     await PRODUCER.send({
         topic: kafkaConfig.topics.RESULT.name,
         messages: results.map(r => ({ value: JSON.stringify(r) }))
@@ -226,6 +156,7 @@ export async function sendAutoTriggerEvents(autoTriggerEvents: AutoTriggerEvent[
     if (!PRODUCER) {
         throw new Error("Kafka producer is not initialized");
     }
+    log.i("Sending " + autoTriggerEvents.length + " auto trigger events");
     await PRODUCER.send({
         topic: kafkaConfig.topics.AUTO_TRIGGER.name,
         messages: autoTriggerEvents.map(e => ({ value: JSON.stringify(e) })),

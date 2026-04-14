@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import type { Db, AnyBulkWriteOperation, BulkWriteResult, SetFields } from "mongodb";
-import type { ResultEvent } from "../types/queue.ts";
-import type { Result, PlatformKey } from "../types/message.ts";
+import type { ResultEvent } from "../kafka/types.ts";
+import type { Result, PlatformKey } from "../models/message.ts";
 import { InvalidDeviceToken } from "../lib/error.ts";
 import { updateInternalsWithResults, sanitizeMongoPath } from "../lib/utils.ts";
 import { createRequire } from 'module';

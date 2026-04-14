@@ -1,6 +1,6 @@
 import { createSchedule } from "./send/scheduler.ts";
 import { zodValidate } from "./lib/utils.ts";
-import { ApiPushSchema } from "./types/message.ts";
+import { ApiPushSchema } from "./models/message.ts";
 import { ValidationError } from "./lib/error.ts";
 import { createRequire } from 'module';
 

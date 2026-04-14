@@ -1,7 +1,7 @@
 import type { ObjectId } from "mongodb";
 import type { Cohort } from "./lib/api-patches.ts";
 import { cohortMessageExists, eventMessageExists } from "./lib/message-cache.ts";
-import { sendAutoTriggerEvents } from "./lib/kafka.ts";
+import { sendAutoTriggerEvents } from "./kafka/producer.ts";
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports

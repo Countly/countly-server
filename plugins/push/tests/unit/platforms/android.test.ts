@@ -1,5 +1,5 @@
-import type { FCMCredentials } from '../../../api/types/credentials.ts';
-import type { PushEvent } from '../../../api/types/queue.ts';
+import type { FCMCredentials } from '../../../api/models/credentials.ts';
+import type { PushEvent } from '../../../api/models/queue.ts';
 import type { ProxyConfiguration } from '../../../api/lib/utils.ts';
 import assert from 'assert';
 import { ObjectId } from 'mongodb';

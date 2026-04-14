@@ -1,5 +1,5 @@
-import type { PushEvent } from '../../../api/types/queue.ts';
-import type { HMSCredentials } from '../../../api/types/credentials.ts';
+import type { PushEvent } from '../../../api/models/queue.ts';
+import type { HMSCredentials } from '../../../api/models/credentials.ts';
 import assert from 'assert';
 import { describe, it } from 'mocha';
 import { ObjectId } from 'mongodb';

@@ -1,4 +1,4 @@
-import type { PushEvent, ScheduleEvent, ScheduleEventHandler, PushEventHandler } from '../../../api/types/queue.ts';
+import type { PushEvent, ScheduleEvent, ScheduleEventHandler, PushEventHandler } from '../../../api/models/queue.ts';
 import { ObjectId } from 'mongodb';
 import assert from 'assert';
 import esmock from 'esmock';
@@ -15,11 +15,10 @@ const {
     sendAutoTriggerEvents,
     sendResultEvents,
     setupTopicsAndPartitions,
-    setupProducer,
-    initPushQueue
-} = await esmock("../../../api/lib/kafka.ts", {
+    setupProducer
+} = await esmock("../../../api/kafka/producer.ts", {
     "../../../../../api/utils/common.js": { default: { log: createSilentLogModule() } }
-}) as typeof import('../../../api/lib/kafka.ts');
+}) as typeof import('../../../api/kafka/producer.ts');
 
 describe("Kafka queue", () => {
     if (!isKafkaPluginAvailable()) {
@@ -166,13 +165,25 @@ describe("Kafka queue", () => {
         describe("initPushQueue", () => {
             it("should configure kafkajs instance correctly", async() => {
                 adminInstance.listTopics.returns(Promise.resolve([]));
+
+                const mockSendAllPushes = async() => [];
+                const mockCompose = async() => {};
+                const mockSaveResults = async() => {};
+                const mockScheduleAuto = async() => {};
+
+                const { initPushQueue } = await esmock("../../../api/kafka/consumer.ts", {
+                    "../../../api/send/sender.ts": { sendAllPushes: mockSendAllPushes },
+                    "../../../api/send/composer.ts": { composeAllScheduledPushes: mockCompose },
+                    "../../../api/send/resultor.ts": { saveResults: mockSaveResults },
+                    "../../../api/send/scheduler.ts": { scheduleMessageByAutoTriggers: mockScheduleAuto },
+                    "../../../api/kafka/producer.ts": { setupProducer, setupTopicsAndPartitions },
+                    "../../../../../api/utils/common.js": { default: { log: createSilentLogModule() } },
+                }) as typeof import('../../../api/kafka/consumer.ts');
+
                 await initPushQueue(
+                    {} as any,
                     kafkaInstance,
                     Partitioners.DefaultPartitioner,
-                    async() => {},
-                    async() => {},
-                    async() => {},
-                    async() => {}
                 );
 
                 assert(kafkaInstance.producer.calledWith({
@@ -203,28 +214,22 @@ describe("Kafka queue", () => {
             it("should handle multiple message types in batch correctly", async() => {
                 adminInstance.listTopics.returns(Promise.resolve([]));
 
-                const handlers: { push: any[], schedule: any[], result: any[], autoTrigger: any[] } = {
-                    push: [],
-                    schedule: [],
-                    result: [],
-                    autoTrigger: []
-                };
+                let receivedPushes: any[] = [];
+                const { initPushQueue } = await esmock("../../../api/kafka/consumer.ts", {
+                    "../../../api/send/sender.ts": {
+                        sendAllPushes: async(events: any) => { receivedPushes = events; return []; },
+                    },
+                    "../../../api/send/composer.ts": { composeAllScheduledPushes: async() => {} },
+                    "../../../api/send/resultor.ts": { saveResults: async() => {} },
+                    "../../../api/send/scheduler.ts": { scheduleMessageByAutoTriggers: async() => {} },
+                    "../../../api/kafka/producer.ts": { setupProducer, setupTopicsAndPartitions },
+                    "../../../../../api/utils/common.js": { default: { log: createSilentLogModule() } },
+                }) as typeof import('../../../api/kafka/consumer.ts');
 
                 await initPushQueue(
+                    {} as any,
                     kafkaInstance,
                     Partitioners.DefaultPartitioner,
-                    async(events: any) => {
-                        handlers.push = events;
-                    },
-                    async(events: any) => {
-                        handlers.schedule = events;
-                    },
-                    async(events: any) => {
-                        handlers.result = events;
-                    },
-                    async(events: any) => {
-                        handlers.autoTrigger = events;
-                    }
                 );
 
                 const { eachBatch } = consumerInstance.run.firstCall.firstArg;
@@ -243,22 +248,28 @@ describe("Kafka queue", () => {
                     }
                 });
 
-                assert.strictEqual(handlers.push.length, 3);
+                assert.strictEqual(receivedPushes.length, 3);
             });
 
             it("should handle null message values gracefully", async() => {
                 adminInstance.listTopics.returns(Promise.resolve([]));
                 let receivedEvents: any[] = [];
 
+                const { initPushQueue } = await esmock("../../../api/kafka/consumer.ts", {
+                    "../../../api/send/sender.ts": {
+                        sendAllPushes: async(events: any) => { receivedEvents = events; return []; },
+                    },
+                    "../../../api/send/composer.ts": { composeAllScheduledPushes: async() => {} },
+                    "../../../api/send/resultor.ts": { saveResults: async() => {} },
+                    "../../../api/send/scheduler.ts": { scheduleMessageByAutoTriggers: async() => {} },
+                    "../../../api/kafka/producer.ts": { setupProducer, setupTopicsAndPartitions },
+                    "../../../../../api/utils/common.js": { default: { log: createSilentLogModule() } },
+                }) as typeof import('../../../api/kafka/consumer.ts');
+
                 await initPushQueue(
+                    {} as any,
                     kafkaInstance,
                     Partitioners.DefaultPartitioner,
-                    async(events: any) => {
-                        receivedEvents = events;
-                    },
-                    async() => {},
-                    async() => {},
-                    async() => {}
                 );
 
                 const { eachBatch } = consumerInstance.run.firstCall.firstArg;
@@ -281,13 +292,19 @@ describe("Kafka queue", () => {
             it("should not throw when message parsing fails", async() => {
                 adminInstance.listTopics.returns(Promise.resolve([]));
 
+                const { initPushQueue } = await esmock("../../../api/kafka/consumer.ts", {
+                    "../../../api/send/sender.ts": { sendAllPushes: async() => [] },
+                    "../../../api/send/composer.ts": { composeAllScheduledPushes: async() => {} },
+                    "../../../api/send/resultor.ts": { saveResults: async() => {} },
+                    "../../../api/send/scheduler.ts": { scheduleMessageByAutoTriggers: async() => {} },
+                    "../../../api/kafka/producer.ts": { setupProducer, setupTopicsAndPartitions },
+                    "../../../../../api/utils/common.js": { default: { log: createSilentLogModule() } },
+                }) as typeof import('../../../api/kafka/consumer.ts');
+
                 await initPushQueue(
+                    {} as any,
                     kafkaInstance,
                     Partitioners.DefaultPartitioner,
-                    async() => {},
-                    async() => {},
-                    async() => {},
-                    async() => {}
                 );
 
                 const { eachBatch } = consumerInstance.run.firstCall.firstArg;
@@ -308,7 +325,8 @@ describe("Kafka queue", () => {
                     let noResolves = 2;
                     const pushEvent = data.pushEvent();
                     const scheduleEvent = data.scheduleEvent();
-                    const pushEventHandler: PushEventHandler = async(events) => {
+
+                    const mockSendAllPushes: PushEventHandler = async(events) => {
                         try {
                             assert(events[0].appId instanceof ObjectId);
                             assert(events[0].messageId instanceof ObjectId);
@@ -323,8 +341,9 @@ describe("Kafka queue", () => {
                         catch (err) {
                             --noResolves || rej(err);
                         }
+                        return [] as any;
                     };
-                    const scheduleEventHandler: ScheduleEventHandler = async(events) => {
+                    const mockCompose: ScheduleEventHandler = async(events) => {
                         try {
                             assert(events[0].appId instanceof ObjectId);
                             assert(events[0].messageId instanceof ObjectId);
@@ -341,32 +360,37 @@ describe("Kafka queue", () => {
                             --noResolves || rej(err);
                         }
                     };
-                    initPushQueue(
-                        kafkaInstance,
-                        Partitioners.DefaultPartitioner,
-                        pushEventHandler,
-                        scheduleEventHandler,
-                        async() => {},
-                        async() => {}
-                    )
-                        .then(() => {
-                            const { eachBatch } = consumerInstance.run.firstCall.firstArg;
-                            return eachBatch({
-                                batch: {
-                                    topic: kafkaConfig.topics.SEND.name,
-                                    messages: [{ value: JSON.stringify(pushEvent) }]
-                                }
-                            });
-                        })
-                        .then(() => {
-                            const { eachBatch } = consumerInstance.run.firstCall.firstArg;
-                            return eachBatch({
-                                batch: {
-                                    topic: kafkaConfig.topics.COMPOSE.name,
-                                    messages: [{ value: JSON.stringify(scheduleEvent) }]
-                                }
-                            });
+
+                    (async() => {
+                        const { initPushQueue } = await esmock("../../../api/kafka/consumer.ts", {
+                            "../../../api/send/sender.ts": { sendAllPushes: mockSendAllPushes },
+                            "../../../api/send/composer.ts": { composeAllScheduledPushes: (_db: any, events: any) => mockCompose(events) },
+                            "../../../api/send/resultor.ts": { saveResults: async() => {} },
+                            "../../../api/send/scheduler.ts": { scheduleMessageByAutoTriggers: async() => {} },
+                            "../../../api/kafka/producer.ts": { setupProducer, setupTopicsAndPartitions },
+                            "../../../../../api/utils/common.js": { default: { log: createSilentLogModule() } },
+                        }) as typeof import('../../../api/kafka/consumer.ts');
+
+                        await initPushQueue(
+                            {} as any,
+                            kafkaInstance,
+                            Partitioners.DefaultPartitioner,
+                        );
+
+                        const { eachBatch } = consumerInstance.run.firstCall.firstArg;
+                        await eachBatch({
+                            batch: {
+                                topic: kafkaConfig.topics.SEND.name,
+                                messages: [{ value: JSON.stringify(pushEvent) }]
+                            }
                         });
+                        await eachBatch({
+                            batch: {
+                                topic: kafkaConfig.topics.COMPOSE.name,
+                                messages: [{ value: JSON.stringify(scheduleEvent) }]
+                            }
+                        });
+                    })();
                 });
             });
         });
@@ -375,14 +399,7 @@ describe("Kafka queue", () => {
     describe("Push event sender", () => {
         it("should send a valid payload", async() => {
             const pushEvent = data.pushEvent();
-            await initPushQueue(
-                kafkaInstance,
-                Partitioners.DefaultPartitioner,
-                async() => {},
-                async() => {},
-                async() => {},
-                async() => {}
-            );
+            await setupProducer(kafkaInstance, Partitioners.DefaultPartitioner);
             await sendPushEvents([pushEvent]);
             assert(producerInstance.send.calledWith({
                 topic: kafkaConfig.topics.SEND.name,
@@ -396,14 +413,7 @@ describe("Kafka queue", () => {
     describe("Result event sender", () => {
         it("should send a valid payload", async() => {
             const resultEvent = data.resultEvent();
-            await initPushQueue(
-                kafkaInstance,
-                Partitioners.DefaultPartitioner,
-                async() => {},
-                async() => {},
-                async() => {},
-                async() => {}
-            );
+            await setupProducer(kafkaInstance, Partitioners.DefaultPartitioner);
             await sendResultEvents([resultEvent]);
             assert(producerInstance.send.calledWith({
                 topic: kafkaConfig.topics.RESULT.name,
@@ -417,14 +427,7 @@ describe("Kafka queue", () => {
     describe("Auto trigger event sender", () => {
         it("should send a valid payload", async() => {
             const autoTriggerEvent = data.cohortTriggerEvent();
-            await initPushQueue(
-                kafkaInstance,
-                Partitioners.DefaultPartitioner,
-                async() => {},
-                async() => {},
-                async() => {},
-                async() => {}
-            );
+            await setupProducer(kafkaInstance, Partitioners.DefaultPartitioner);
             await sendAutoTriggerEvents([autoTriggerEvent]);
             assert(producerInstance.send.calledWith({
                 topic: kafkaConfig.topics.AUTO_TRIGGER.name,
@@ -441,14 +444,7 @@ describe("Kafka queue", () => {
             let targetKey = scheduleEvent.messageId.toString()
                 + "|" + scheduleEvent.scheduleId.toString()
                 + "|" + scheduleEvent.scheduledTo.toISOString();
-            await initPushQueue(
-                kafkaInstance,
-                Partitioners.DefaultPartitioner,
-                async() => {},
-                async() => {},
-                async() => {},
-                async() => {}
-            );
+            await setupProducer(kafkaInstance, Partitioners.DefaultPartitioner);
             await sendScheduleEvents([scheduleEvent]);
             const arg = producerInstance.send.args[0][0] as any;
             assert(typeof arg.messages[0].key === "string");

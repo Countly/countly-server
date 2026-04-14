@@ -1,4 +1,4 @@
-import type { PlatformKey } from './types/message.ts';
+import type { PlatformKey } from './models/message.ts';
 import { DBMAP_MESSAGING_ENABLED } from './constants/configs.ts';
 import { ValidationError } from "./lib/error.ts";
 import { validateCredentials as validateAndroidCredentials } from "./send/platforms/android.ts";

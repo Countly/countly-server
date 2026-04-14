@@ -1,6 +1,6 @@
 import type { User } from '../../api/lib/template.ts';
-import type { PushEvent } from '../../api/types/queue.ts';
-import type { PlatformCredential } from '../../api/types/credentials.ts';
+import type { PushEvent } from '../../api/models/queue.ts';
+import type { PlatformCredential } from '../../api/models/credentials.ts';
 import { ObjectId } from 'mongodb';
 import { describe, it, afterEach } from 'mocha';
 import assert from 'assert';
@@ -26,7 +26,7 @@ const {
     buildUserAggregationPipeline,
     convertAudienceFiltersToMatchStage
 } = await esmock("../../api/send/composer.ts", {
-    "../../api/lib/kafka.ts": {
+    "../../api/kafka/producer.ts": {
         sendPushEvents: mockSendPushEvents
     },
     "../../../../api/utils/common.js": {

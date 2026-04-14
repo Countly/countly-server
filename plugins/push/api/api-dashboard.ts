@@ -1,5 +1,5 @@
-import type { PlatformKey } from "./types/message.ts";
-import { isProducerInitialized, verifyKafka } from "./lib/kafka.ts";
+import type { PlatformKey } from "./models/message.ts";
+import { isProducerInitialized, verifyKafka } from "./kafka/producer.ts";
 import platforms from "./constants/platform-keymap.ts";
 import { createRequire } from 'module';
 import crypto from 'crypto';

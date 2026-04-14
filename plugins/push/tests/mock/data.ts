@@ -1,8 +1,8 @@
-import type { Message, RecurringTrigger, PlainTrigger } from '../../api/types/message.ts';
-import type { Schedule } from '../../api/types/schedule.ts';
-import type { ScheduleEvent, PushEvent, ResultEvent, CohortTriggerEvent, EventTriggerEvent } from '../../api/types/queue.ts';
+import type { Message, RecurringTrigger, PlainTrigger } from '../../api/models/message.ts';
+import type { Schedule } from '../../api/models/schedule.ts';
+import type { ScheduleEvent, PushEvent, ResultEvent, CohortTriggerEvent, EventTriggerEvent } from '../../api/models/queue.ts';
 import type { User } from '../../api/lib/template.ts';
-import type { PlatformCredential } from '../../api/types/credentials.ts';
+import type { PlatformCredential } from '../../api/models/credentials.ts';
 import { ObjectId } from 'mongodb';
 
 export function schedule(): Schedule {

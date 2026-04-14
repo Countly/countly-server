@@ -3,8 +3,8 @@ import { zodValidate } from './lib/utils.ts';
 import {
     CreateMessageSchema, DraftMessageSchema,
     type Message, type Result, type MessageTrigger,
-} from './types/message.ts';
-import type { Schedule } from './types/schedule.ts';
+} from './models/message.ts';
+import type { Schedule } from './models/schedule.ts';
 import { buildResultObject } from './send/resultor.ts';
 import { scheduleIfEligible, DATE_TRIGGERS } from './send/scheduler.ts';
 import { buildUserAggregationPipeline, createPushStream, loadCredentials } from './send/composer.ts';

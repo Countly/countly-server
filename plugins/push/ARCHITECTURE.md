@@ -32,6 +32,16 @@ CREATE → SCHEDULE → COMPOSE → SEND → RESULT
 
 Each stage is decoupled through Kafka, allowing independent scaling and fault isolation.
 
+### Module Organization Principles
+
+- **`models/`** — Domain schemas and types (Zod schemas, TypeScript interfaces). Pure data definitions with no runtime dependencies on the send pipeline or Kafka.
+- **`kafka/`** — Kafka transport layer, split into three files to avoid circular dependencies:
+  - `kafka/types.ts` — Event interfaces (`PushEvent`, `ScheduleEvent`, `ResultEvent`, `AutoTriggerEvent`), DTO types, and DTO conversion functions. No runtime imports from the send pipeline.
+  - `kafka/producer.ts` — Kafka producer setup, topic management, and event publishing functions (`sendPushEvents`, `sendScheduleEvents`, etc.). Imported by `send/` modules for publishing.
+  - `kafka/consumer.ts` — `initPushQueue()` consumer setup and message routing. This is the only file that imports the send pipeline handlers, keeping the dependency one-directional.
+- **`send/platforms/`** — Each platform file co-locates its payload types (`AndroidMessagePayload`, `IOSConfig`, etc.) with its send logic. Platform-specific types are not shared across a central types file.
+- **`lib/`** — Shared utilities with no Kafka or send-pipeline dependencies (template compilation, error types, validation helpers).
+
 ## Directory Structure
 
 ```
@@ -40,13 +50,17 @@ plugins/push/api/
 ├── api-message.ts          # Message CRUD operations (create/validate/update/remove)
 ├── api-push.ts             # Credentials, config, dashboard endpoints
 ├── api-auto.ts             # Auto-trigger message endpoints
+├── api-dashboard.ts        # Dashboard statistics endpoint
 ├── api-drill.ts            # Drill integration
+├── api-tx.ts               # Transactional push (API trigger) endpoint
 ├── api-reset.ts            # Data reset handlers
+├── kafka/
+│   ├── types.ts            # Event interfaces, DTO types, DTO conversion functions
+│   ├── producer.ts         # Kafka producer setup, topic management, event publishing
+│   └── consumer.ts         # Consumer setup, message routing to send pipeline
 ├── lib/
 │   ├── api-patches.ts      # Wrappers for validateCreate/Read/Update/Delete
 │   ├── template.ts         # Template compilation and personalization
-│   ├── kafka.ts            # Kafka producer/consumer setup and event sending
-│   ├── dto.ts              # DTO conversion (JSON ↔ typed objects with ObjectId/Date)
 │   ├── error.ts            # Error types (SendError, InvalidDeviceToken, etc.)
 │   └── utils.ts            # Shared utilities (proxy, drill, flatten, etc.)
 ├── send/
@@ -55,14 +69,15 @@ plugins/push/api/
 │   ├── sender.ts           # Platform dispatch (ios/android/huawei)
 │   ├── resultor.ts         # Result saving, token cleanup, stats
 │   └── platforms/
-│       ├── android.ts      # FCM send + payload mapping
-│       ├── ios.ts          # APNs send + payload mapping
-│       └── huawei.ts       # HMS send + payload mapping
-├── types/
+│       ├── android.ts      # FCM send + payload mapping + AndroidMessagePayload/AndroidConfig types
+│       ├── ios.ts          # APNs send + payload mapping + IOSMessagePayload/IOSConfig types
+│       └── huawei.ts       # HMS send + payload mapping + HuaweiMessagePayload/HuaweiConfig types
+├── models/
+│   ├── index.ts            # Barrel re-export of all model modules
+│   ├── queue.ts            # Barrel re-export of kafka/types.ts event types (stable import path for tests)
 │   ├── message.ts          # Message, Content, Trigger Zod schemas + types
-│   ├── queue.ts            # Event types (PushEvent, ScheduleEvent, etc.)
-│   ├── schedule.ts         # Schedule document type
-│   └── credentials.ts      # Platform credential types
+│   ├── schedule.ts         # Schedule document interface + AudienceFilter, MessageOverrides
+│   └── credentials.ts      # Platform credential Zod schemas + types (FCM, APN, HMS)
 └── constants/
     ├── kafka-config.ts     # Topic names, partition counts
     ├── platform-keymap.ts  # Platform keys → titles, environments, combined keys
@@ -191,6 +206,14 @@ When a `ScheduleEvent` arrives from the COMPOSE topic, `composeScheduledPushes()
 
 ## Kafka Queue
 
+**Directory:** `kafka/`
+
+The Kafka transport layer is split into three files to avoid circular dependencies between the send pipeline and Kafka publishing:
+
+- **`kafka/types.ts`** — Event interfaces (`ScheduleEvent`, `PushEvent`, `ResultEvent`, `AutoTriggerEvent`), platform-specific variants, DTO types for JSON serialization (ObjectId/Date ↔ string), and DTO conversion functions
+- **`kafka/producer.ts`** — Producer setup, topic management (`setupTopicsAndPartitions`), and event publishing functions (`sendScheduleEvents`, `sendPushEvents`, `sendResultEvents`, `sendAutoTriggerEvents`). Imported by `send/` modules.
+- **`kafka/consumer.ts`** — `initPushQueue()` sets up the consumer, subscribes to topics, and routes messages to the send pipeline handlers (`sendAllPushes`, `composeAllScheduledPushes`, `saveResults`, `scheduleMessageByAutoTriggers`). This is the only Kafka file that imports the send pipeline, keeping the dependency graph acyclic.
+
 | Topic | Name | Partitions | Purpose |
 |-------|------|-----------|---------|
 | SCHEDULE | CLY_PUSH_MESSAGE_SCHEDULE | 2 | Delayed schedule delivery (compact) |
@@ -220,7 +243,12 @@ Consumer group: `countly-push-consumers`
 
 ## Platform Payload Formats
 
+Each platform defines its own payload type and config interface in its platform file under `send/platforms/`.
+
 ### Android (FCM)
+
+**File:** `send/platforms/android.ts` — exports `AndroidMessagePayload`, `AndroidConfig`
+
 ```json
 {
   "data": {
@@ -241,6 +269,9 @@ Consumer group: `countly-push-consumers`
 All values in `data` are strings. `android.ttl` is set from `content.expiration`.
 
 ### iOS (APNs)
+
+**File:** `send/platforms/ios.ts` — exports `IOSMessagePayload`, `IOSConfig`
+
 ```json
 {
   "aps": {
@@ -261,6 +292,9 @@ All values in `data` are strings. `android.ttl` is set from `content.expiration`
 Key differences from Android: `badge` is a number (not string), `c.b` is an array (not JSON string), media is under `c.a` (not `c.m`), extras under `c.e` keep their original types, custom data is merged into the root (not `data`).
 
 ### Huawei (HMS)
+
+**File:** `send/platforms/huawei.ts` — exports `HuaweiMessagePayload`, `HuaweiConfig`
+
 ```json
 {
   "message": {
@@ -273,16 +307,16 @@ Huawei reuses Android's `mapMessageToPayload()`, then wraps only the `.data` pro
 
 ## Database Collections
 
-| Collection | Description |
-|------------|-------------|
-| `messages` | Push message documents (config, triggers, contents, cumulative results) |
-| `message_schedules` | Schedule documents per message (one-to-many). Tracks events, status, per-schedule results |
-| `message_results` | Raw send results (one per push attempt, when `saveResult: true`) |
-| `push_{appId}` | Per-app token storage. `_id` = user uid, `tk` = token map, `msgs` = sent message timestamps |
-| `app_users{appId}` | Core user collection. Token existence flags (`tkap`, `tkhp`, etc.) used for audience filtering |
-| `apps` | App documents with `plugins.push` containing credential references |
-| `creds` | Platform credential documents (FCM service accounts, APN certificates/keys, HMS secrets) |
-| `geos` | Geo-fence documents for location-based audience filtering |
+| Collection | Description | Model |
+|------------|-------------|-------|
+| `messages` | Push message documents (config, triggers, contents, cumulative results) | `models/message.ts` → `Message`, `MessageCollection` |
+| `message_schedules` | Schedule documents per message (one-to-many). Tracks events, status, per-schedule results | `models/schedule.ts` → `Schedule`, `ScheduleCollection` |
+| `message_results` | Raw send results (one per push attempt, when `saveResult: true`) | — |
+| `push_{appId}` | Per-app token storage. `_id` = user uid, `tk` = token map, `msgs` = sent message timestamps | — |
+| `app_users{appId}` | Core user collection. Token existence flags (`tkap`, `tkhp`, etc.) used for audience filtering | — |
+| `apps` | App documents with `plugins.push` containing credential references | — |
+| `creds` | Platform credential documents (FCM service accounts, APN certificates/keys, HMS secrets) | `models/credentials.ts` → `PlatformCredential` |
+| `geos` | Geo-fence documents for location-based audience filtering | — |
 
 ## Auto-Trigger System
 

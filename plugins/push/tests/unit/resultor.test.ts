@@ -1,4 +1,4 @@
-import type { Result } from '../../api/types/message.ts';
+import type { Result } from '../../api/models/message.ts';
 import assert from 'assert';
 import { describe, it } from 'mocha';
 import { buildUpdateQueryForResult } from '../../api/send/resultor.ts';

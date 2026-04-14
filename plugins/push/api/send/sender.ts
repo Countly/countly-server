@@ -1,9 +1,9 @@
-import type { PushEvent, ResultEvent } from "../types/queue.ts";
+import type { PushEvent, ResultEvent } from "../kafka/types.ts";
 import type { ErrorObject } from "../lib/error.ts";
 import { send as androidSend } from "./platforms/android.ts";
 import { send as iosSend } from "./platforms/ios.ts";
 import { send as huaweiSend } from "./platforms/huawei.ts";
-import { sendResultEvents } from "../lib/kafka.ts";
+import { sendResultEvents } from "../kafka/producer.ts";
 import { SendError, TooLateToSend } from "../lib/error.ts";
 
 import { createRequire } from 'module';

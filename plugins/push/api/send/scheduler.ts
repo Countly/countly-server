@@ -1,10 +1,10 @@
 import { ObjectId } from "mongodb";
 import type { Db, Filter } from "mongodb";
 import moment from "moment";
-import type { Message, MessageTrigger, RecurringTrigger, MultiTrigger, MessageCollection } from "../types/message.ts";
-import type { Schedule, AudienceFilter, MessageOverrides, ScheduleCollection } from "../types/schedule.ts";
-import type { ScheduleEvent, AutoTriggerEvent, CohortTriggerEvent } from "../types/queue.ts";
-import * as queue from "../lib/kafka.ts";
+import type { Message, MessageTrigger, RecurringTrigger, MultiTrigger, MessageCollection } from "../models/message.ts";
+import type { Schedule, AudienceFilter, MessageOverrides, ScheduleCollection } from "../models/schedule.ts";
+import type { ScheduleEvent, AutoTriggerEvent, CohortTriggerEvent } from "../kafka/types.ts";
+import * as queue from "../kafka/producer.ts";
 import allTZOffsets from "../constants/all-tz-offsets.ts";
 import { buildResultObject } from "../send/resultor.ts";
 import { createRequire } from 'module';

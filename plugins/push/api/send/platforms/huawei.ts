@@ -3,15 +3,30 @@ import { ObjectId } from "mongodb";
 import { URLSearchParams } from "url";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { createHash } from "crypto";
-import type { PushEvent, HuaweiMessagePayload, AndroidMessagePayload } from "../../types/queue.ts";
-import type { Content, Message } from "../../types/message.ts";
-import type { HMSCredentials, RawHMSCredentials } from "../../types/credentials.ts";
+import type { PushEvent } from "../../kafka/types.ts";
+import type { Content, Message } from "../../models/message.ts";
+import type { HMSCredentials, RawHMSCredentials } from "../../models/credentials.ts";
 import type { ProxyConfiguration } from "../../lib/utils.ts";
 import type { TemplateContext } from "../../lib/template.ts";
 import { buildProxyUrl } from "../../lib/utils.ts";
 import { mapMessageToPayload as mapMessageToAndroidPayload } from "./android.ts";
 import { InvalidCredentials, SendError, InvalidResponse, InvalidDeviceToken, HMSErrors } from "../../lib/error.ts";
 import { PROXY_CONNECTION_TIMEOUT } from "../../constants/configs.ts";
+
+export interface HuaweiConfig {}
+
+export interface HuaweiMessagePayload {
+    message: {
+        data: string; // JSON stringified data. should be in the form of: AndroidMessagePayload.data
+        android: {};
+        token?: string[]; // Huawei device token. being included in huawei push sender.
+    }
+    // EXAMPLE:
+    // message: {
+    //   data: '{"c.i":"689607f8899e1ae6f88173cc","c.m":"https://www.someurl.com/something.png","title":"message title","message":"message content","c.b":[{"t":"message text"}]}',
+    //   android: {}
+    // }
+}
 
 interface TokenCache {
     token?: string;

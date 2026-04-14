@@ -1,5 +1,4 @@
-import type { PersonalizationObject, Content, Message, PlatformKey, PlatformCombinedKey } from "../types/message.ts";
-import type { PlatformMessagePayload } from "../types/queue.ts";
+import type { PersonalizationObject, Content, Message, PlatformKey, PlatformCombinedKey } from "../models/message.ts";
 import { mapMessageToPayload as mapMessageToAndroidPayload } from "../send/platforms/android.ts";
 import { mapMessageToPayload as mapMessageToIOSPayload } from "../send/platforms/ios.ts";
 import { mapMessageToPayload as mapMessageToHuaweiPayload } from "../send/platforms/huawei.ts";
@@ -43,11 +42,13 @@ export interface ContentWithPersonalization {
 
 export type TemplateContext = User | { [key: string]: any };
 
-export type MessageTemplateFunction = (platform: PlatformKey, context: TemplateContext) => PlatformMessagePayload;
+type PlatformMessagePayload = ReturnType<typeof mapMessageToAndroidPayload>
+    | ReturnType<typeof mapMessageToIOSPayload>
+    | ReturnType<typeof mapMessageToHuaweiPayload>
 
 const PERSONALIZABLE_CONTENT_FIELDS: PersonalizableField[] = ["title", "message"];
 
-export function createTemplate(messageDoc: Message): MessageTemplateFunction {
+export function createTemplate(messageDoc: Message) {
     const {
         contentsByLanguage,
         contentsByPlatform

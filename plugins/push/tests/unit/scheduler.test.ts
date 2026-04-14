@@ -1,5 +1,5 @@
-import type { ScheduleEvent, AutoTriggerEvent } from '../../api/types/queue.ts';
-import type { RecurringTrigger, MultiTrigger, EventTrigger } from '../../api/types/message.ts';
+import type { ScheduleEvent, AutoTriggerEvent } from '../../api/models/queue.ts';
+import type { RecurringTrigger, MultiTrigger, EventTrigger } from '../../api/models/message.ts';
 import assert from 'assert';
 import { describe, it, afterEach } from 'mocha';
 import { ObjectId } from 'mongodb';
@@ -9,7 +9,7 @@ import { createMockedMongoDb } from '../mock/mongo.ts';
 import timezones from '../../api/constants/all-tz-offsets.ts';
 import * as mockData from '../mock/data.ts';
 import { buildResultObject } from '../../api/send/resultor.ts';
-import type { Schedule } from '../../api/types/schedule.ts';
+import type { Schedule } from '../../api/models/schedule.ts';
 
 let {
     collection,
@@ -28,7 +28,7 @@ const {
     mergeAutoTriggerEvents,
     scheduleMessageByAutoTriggers,
 } = await esmock("../../api/send/scheduler.ts", {
-    "../../api/lib/kafka.ts": {
+    "../../api/kafka/producer.ts": {
         sendScheduleEvents: mockSendScheduleEvents
     }
 });

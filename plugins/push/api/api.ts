@@ -5,11 +5,8 @@ import { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } from '
 import { estimate, test, create, update, toggle, remove, all, one, mime, user, periodicStats } from './api-message.ts';
 import { dashboard } from './api-dashboard.ts';
 import { clear, reset, removeUsers } from './api-reset.ts';
-import { initPushQueue, loadKafka } from './lib/kafka.ts';
-import { composeAllScheduledPushes } from './send/composer.ts';
-import { sendAllPushes } from './send/sender.ts';
-import { saveResults } from './send/resultor.ts';
-import { scheduleMessageByAutoTriggers } from './send/scheduler.ts';
+import { loadKafka } from './kafka/producer.ts';
+import { initPushQueue } from './kafka/consumer.ts';
 import { createRequire } from 'module';
 import type { CohortHookArg } from './lib/api-patches.ts';
 import { createApi, updateApi, deleteApi, readApi } from './lib/api-patches.ts';
@@ -29,17 +26,14 @@ plugins.register("/master", async function() {
     try {
         const { kafkaInstance, Partitioners } = await loadKafka();
         await initPushQueue(
+            common.db,
             kafkaInstance,
             Partitioners.DefaultPartitioner,
-            pushes => sendAllPushes(pushes),
-            schedules => composeAllScheduledPushes(common.db, schedules),
-            results => saveResults(common.db, results),
-            autoTriggerEvents => scheduleMessageByAutoTriggers(common.db, autoTriggerEvents),
         );
         log.i("Push queue initialized successfully");
     }
     catch (err) {
-        log.e("Error initializing push queue:", err);
+        log.e("Error initializing push queue", err);
     }
 });
 

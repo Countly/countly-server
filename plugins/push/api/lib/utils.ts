@@ -1,7 +1,7 @@
 import { URL } from "url";
 import type { Db } from "mongodb";
-import type { PlatformKey, PlatformEnvKey } from "../types/message.ts";
-import type { ResultEvent } from "../types/queue.ts";
+import type { PlatformKey, PlatformEnvKey } from "../models/message.ts";
+import type { ResultEvent } from "../kafka/types.ts";
 import PLATFORM_KEYMAP from "../constants/platform-keymap.ts";
 import { createRequire } from 'module';
 import { z } from "zod";

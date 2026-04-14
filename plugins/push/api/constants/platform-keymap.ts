@@ -1,4 +1,4 @@
-import type { PlatformKey, PlatformEnvKey, PlatformCombinedKey } from "../types/message.ts";
+import type { PlatformKey, PlatformEnvKey, PlatformCombinedKey } from "../models/message.ts";
 
 interface PlatformKeymapEntry {
     title: string;

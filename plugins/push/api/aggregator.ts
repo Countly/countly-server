@@ -1,5 +1,5 @@
 import { autoOnCohort } from './api-auto.ts';
-import { loadKafka, setupProducer } from './lib/kafka.ts';
+import { loadKafka, setupProducer } from './kafka/producer.ts';
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports

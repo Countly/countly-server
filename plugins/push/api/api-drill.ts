@@ -1,5 +1,5 @@
 import platforms from "./constants/platform-keymap.ts";
-import type { PlatformEnvKey } from "./types/message.ts";
+import type { PlatformEnvKey } from "./models/message.ts";
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
