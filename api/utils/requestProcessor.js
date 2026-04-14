@@ -34,6 +34,7 @@ const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 const request = require('countly-request')(plugins.getConfig("security"));
 const render = require('../../api/utils/render.js');
+const ip = require('../parts/mgmt/ip.js');
 
 var loaded_configs_time = 0;
 
@@ -360,26 +361,32 @@ const processRequest = (params) => {
                     options.savePath = path.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + imageName);
                     options.source = "core";
 
-                    authorize.save({
-                        db: common.db,
-                        multi: false,
-                        owner: params.member._id,
-                        ttl: 300,
-                        purpose: "LoginAuthToken",
-                        callback: function(err2, token) {
-                            if (err2) {
-                                common.returnMessage(params, 400, 'Error creating token: ' + err2);
-                                return false;
-                            }
-                            options.token = token;
-                            render.renderView(options, function(err3) {
-                                if (err3) {
-                                    common.returnMessage(params, 400, 'Error creating screenshot. Please check logs for more information.');
+                    ip.getHost(function(err, host) {
+                        if (!err && host) {
+                            options.host = host;
+                        }
+
+                        authorize.save({
+                            db: common.db,
+                            multi: false,
+                            owner: params.member._id,
+                            ttl: 300,
+                            purpose: "LoginAuthToken",
+                            callback: function(err2, token) {
+                                if (err2) {
+                                    common.returnMessage(params, 400, 'Error creating token: ' + err2);
                                     return false;
                                 }
-                                common.returnOutput(params, {path: common.config.path + "/images/screenshots/" + imageName});
-                            });
-                        }
+                                options.token = token;
+                                render.renderView(options, function(err3) {
+                                    if (err3) {
+                                        common.returnMessage(params, 400, 'Error creating screenshot. Please check logs for more information.');
+                                        return false;
+                                    }
+                                    common.returnOutput(params, {path: common.config.path + "/images/screenshots/" + imageName});
+                                });
+                            }
+                        });
                     });
                 });
                 break;
