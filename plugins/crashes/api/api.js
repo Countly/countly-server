@@ -606,7 +606,7 @@ const FEATURE_NAME = 'crashes';
                 try {
                     [crash] = await getCrashesTable({
                         query: { _id: id },
-                        fields: { binary_crash_dump: 1 },
+                        fields: { error: 1 },
                         limit: 1,
                     });
                 }
@@ -647,7 +647,7 @@ const FEATURE_NAME = 'crashes';
                 try {
                     [crash] = await getCrashesTable({
                         query: { _id: id },
-                        fields: { error: 1 },
+                        fields: { binary_crash_dump: 1 },
                         limit: 1,
                     });
                 }
