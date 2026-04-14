@@ -158,7 +158,8 @@ class WhereClauseConverter {
             return `toFloat64OrNull(CAST(${quotedField}, 'String')) ${operator} ?`;
         }
         else {
-            return `${quotedField}::${type} ${operator} ?`;
+            const safeType = type === 'String' ? 'Nullable(String)' : type;
+            return `${quotedField}::${safeType} ${operator} ?`;
         }
     }
 
@@ -287,7 +288,8 @@ class WhereClauseConverter {
             // Use tolerant conversion for numeric types to match MongoDB behavior
             return `toFloat64OrNull(CAST(${quotedFieldName}, 'String'))`;
         }
-        return `${quotedFieldName}::${type}`;
+        const safeType = type === 'String' ? 'Nullable(String)' : type;
+        return `${quotedFieldName}::${safeType}`;
     }
 
     /**
