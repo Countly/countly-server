@@ -1,3 +1,7 @@
+## Version 25.03.X
+Enterprise Fixes:
+- [flow] Optimize timeline period query
+
 ## Version 25.03.42
 Fixes:
 - [alerts] Fixed alert jobs using system's timezone instead of application's
