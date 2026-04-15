@@ -67,7 +67,7 @@
     "fs-extra": "11.3.4",
     "geoip-lite": "2.0.1",
     "get-random-values": "^4.0.0",
-    "grunt": "1.6.1",
+    "grunt": "1.6.2",
     "grunt-cli": "1.5.0",
     "grunt-contrib-concat": "2.1.0",
     "grunt-contrib-copy": "1.0.0",
