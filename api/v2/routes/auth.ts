@@ -15,13 +15,13 @@ import type { ApiError } from '../../../../web/src/shared/types/api.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import argon2 from 'argon2';
+import { validatePassword, killOtherSessionsForUser } from '../services/members.ts';
 
 
 const require = createRequire(import.meta.url);
 const common = require('../../utils/common.js');
 const preventBruteforce = require('../../../frontend/express/libs/preventBruteforce.js');
 const mail = require('../../parts/mgmt/mail.js');
-const membersUtility = require('../../../frontend/express/libs/members.js');
 const plugins = require('../../../plugins/pluginManager.js');
 
 const router = express.Router();
@@ -440,8 +440,9 @@ router.post('/reset', async function(req: Request, res: Response, next: NextFunc
         }
 
         // Validate password strength via legacy security config
-        const passwordError = membersUtility.validatePassword(password);
-        if (passwordError !== false) {
+        const passwordError = validatePassword(password);
+
+        if (passwordError !== null) {
             const body: ApiError = { error: { code: 'WEAK_PASSWORD', message: passwordError } };
             return res.status(400).json(body);
         }
@@ -485,12 +486,7 @@ router.post('/reset', async function(req: Request, res: Response, next: NextFunc
         removeResetToken(String(prid));
 
         // Kill other sessions for security (matches legacy behavior)
-        membersUtility.killOtherSessionsForUser(
-            (member._id as { toString(): string }).toString(),
-            undefined,
-            undefined,
-            common.db
-        );
+        killOtherSessionsForUser({ userId: (member._id as { toString(): string }).toString() });
 
         // Reset brute force counters for this user
         resetFailedLogins(member.username as string);
