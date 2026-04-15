@@ -431,7 +431,6 @@ const clickAddFilterButton = () => {
 };
 
 const selectFilterCrashesAppVersion = (...appVersions) => {
-    cy.wait(3000)
     cy.selectCheckboxOption(alertDrawerPageElements.DRAWER_FILTER_CRASHES_SELECT, ...appVersions);
 };
 
