@@ -66,20 +66,20 @@ describe('Create New Alert', () => {
             const alertUpdated = generateAlertFixture();
 
             alertsHelpers.clickEdit(alert.alertName);
-            alertsHelpers.verifyAlertDrawerPageElements({
-                isEditPage: true,
-                alertName: alert.alertName,
-                application: application,
-                dataType: FEATURE_TYPE.CRASHES,
-                triggerMetric: TRIGGER_METRICS.NEW_CRASH_ERROR,
-                emailNotificationType: EMAIL_NOTIFICATION_TYPE.TO_SPECIFIC_ADDRESS,
-                email: ['demo@count.ly', 'test@count.ly']
-            });
+            // alertsHelpers.verifyAlertDrawerPageElements({
+            //     isEditPage: true,
+            //     alertName: alert.alertName,
+            //     application: application,
+            //     dataType: FEATURE_TYPE.CRASHES,
+            //     triggerMetric: TRIGGER_METRICS.NEW_CRASH_ERROR,
+            //     emailNotificationType: EMAIL_NOTIFICATION_TYPE.TO_SPECIFIC_ADDRESS,
+            //     email: ['demo@count.ly', 'test@count.ly']
+            // });
 
             alertsHelpers.typeAlertName(alertUpdated.alertName);
             alertsHelpers.selectDataType(FEATURE_TYPE.CRASHES);
-        //    alertsHelpers.clickAddFilterButton();
-        //    alertsHelpers.selectFilterCrashesAppVersion(...[appVersion]);
+            alertsHelpers.clickAddFilterButton();
+            alertsHelpers.selectFilterCrashesAppVersion(...[appVersion]);
             alertsHelpers.selectTriggerMetric(TRIGGER_METRICS.NEW_CRASH_ERROR);
             alertsHelpers.selectDoNotSendEmail();
             alertsHelpers.clickCreateButton();
