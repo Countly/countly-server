@@ -203,6 +203,97 @@ export function androidCredential(): PlatformCredential {
     };
 }
 
+export function iosCredential(): PlatformCredential {
+    return {
+        _id: new ObjectId,
+        hash: "ioshashvalue",
+        type: "apn_token",
+        bundle: "com.example.app",
+        key: "-----BEGIN PRIVATE KEY-----\nMIGT...fake\n-----END PRIVATE KEY-----",
+        keyid: "ABC123DEF4",
+        team: "TEAM123456",
+    };
+}
+
+export function appUserMultiToken(): User {
+    const uid = "multi";
+    return {
+        uid,
+        _id: uid,
+        did: 'multi-device',
+        la: 'fr',
+        tz: '60',
+        tk: [
+            {
+                _id: uid,
+                tk: {
+                    ap: "android-token-123",
+                    ip: "ios-token-456",
+                }
+            }
+        ],
+        d: 'iPhone15',
+        dt: 'mobile',
+        fs: 1700549799,
+        p: 'iOS',
+    };
+}
+
+export function appUserNoToken(): User {
+    const uid = "notoken";
+    return {
+        uid,
+        _id: uid,
+        did: 'device-no-token',
+        la: 'en',
+        tz: '180',
+        tk: [],
+        d: 'sdk_gphone64_arm64',
+        dt: 'mobile',
+        fs: 1700549799,
+        p: 'Android',
+    };
+}
+
+export function appUserNoLanguage(): User {
+    const uid = "nolang";
+    return {
+        uid,
+        _id: uid,
+        did: 'device-no-lang',
+        tz: '180',
+        tk: [
+            {
+                _id: uid,
+                tk: { ap: "token-nolang" }
+            }
+        ],
+        d: 'sdk_gphone64_arm64',
+        dt: 'mobile',
+        fs: 1700549799,
+        p: 'Android',
+    };
+}
+
+export function recurringMessage(): Message {
+    return {
+        ...message(),
+        triggers: [dailyRecurringTrigger()],
+    };
+}
+
+export function multiPlatformMessage(): Message {
+    return {
+        ...message(),
+        platforms: ["a", "i"],
+        contents: [
+            { title: 'title', message: 'message', expiration: 604800000 },
+            { p: 'a', sound: 'default' },
+            { p: 'i', sound: 'default' },
+        ],
+    };
+}
+
 export function pushEvent(): PushEvent {
     return {
         appId: new ObjectId,

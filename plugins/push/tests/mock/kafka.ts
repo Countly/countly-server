@@ -1,4 +1,7 @@
 import sinon from 'sinon';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 type Kafka = any;
 type Admin = any;

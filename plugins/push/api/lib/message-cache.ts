@@ -1,4 +1,4 @@
-import type { ObjectId } from "mongodb";
+import type { ObjectId, Db } from "mongodb";
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
@@ -15,9 +15,9 @@ interface AutoTriggerMessagesCache {
 
 let AUTO_TRIGGER_MESSAGES: AutoTriggerMessagesCache = {};
 
-async function loadAutoMessages(): Promise<void> {
+export async function loadAutoMessages(db: Db): Promise<void> {
     const now = new Date;
-    const messages = await common.db.collection("messages")
+    const messages = await db.collection("messages")
         .find({
             status: "active",
             triggers: {
@@ -70,11 +70,11 @@ async function loadAutoMessages(): Promise<void> {
     }
 }
 setInterval(
-    loadAutoMessages,
+    () => loadAutoMessages(common.db),
     process.env.AUTO_TRIGGER_CACHE_INTERVAL
         ? Number(process.env.AUTO_TRIGGER_CACHE_INTERVAL)
         : 5 * 60 * 1000
-);
+).unref();
 
 export function cohortMessageExists(appId: string | ObjectId, cohortId: string, direction: "enter" | "exit"): boolean {
     const numberOfMessages = AUTO_TRIGGER_MESSAGES
