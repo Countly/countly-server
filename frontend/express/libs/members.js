@@ -1188,4 +1188,7 @@ membersUtility.mergePermissions = (current, addition) => {
     }
 };
 
+membersUtility.validatePassword = validatePassword;
+membersUtility.killOtherSessionsForUser = killOtherSessionsForUser;
+
 module.exports = membersUtility;
