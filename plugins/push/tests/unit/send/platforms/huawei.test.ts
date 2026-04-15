@@ -1,6 +1,4 @@
-import type { HMSCredentials, RawHMSCredentials } from '../../../../api/models/credentials.ts';
 import type { PushEvent } from '../../../../api/models/queue.ts';
-import type { ProxyConfiguration } from '../../../../api/lib/utils.ts';
 import assert from 'assert';
 import { describe, it, beforeEach } from 'mocha';
 import { ObjectId } from 'mongodb';
@@ -34,32 +32,10 @@ const {
     },
 });
 
-function createHMSCredentials(overrides: Partial<HMSCredentials> = {}): HMSCredentials {
-    return {
-        _id: new ObjectId(),
-        type: "hms",
-        app: "123456",
-        secret: "a".repeat(64),
-        hash: "hmshash" + Math.random().toString(36).slice(2),
-        ...overrides,
-    };
-}
-
-function createHuaweiPushEvent(overrides: Record<string, any> = {}): PushEvent {
-    return {
-        ...mockData.pushEvent(),
-        platform: "h",
-        credentials: createHMSCredentials(),
-        payload: {
-            message: {
-                data: '{"c.i":"test","title":"test","message":"test"}',
-                android: {},
-            },
-        },
-        platformConfiguration: {},
-        ...overrides,
-    } as PushEvent;
-}
+// Re-exported as locals for backwards-compat with the many existing call sites.
+const createHMSCredentials = mockData.huaweiCredential;
+const createHuaweiPushEvent = (overrides: Partial<PushEvent> = {}) =>
+    mockData.huaweiPushEvent({ credentials: createHMSCredentials(), ...overrides });
 
 /**
  * Simulates an HTTPS response by intercepting `https.request` and triggering
@@ -178,7 +154,7 @@ describe("Huawei platform", () => {
 
         it("should use proxy agent when proxy config is provided", async() => {
             const creds = createHMSCredentials();
-            const proxy: ProxyConfiguration = { host: "proxy.com", port: "8080", auth: false };
+            const proxy = mockData.proxyConfig();
             setupHttpsMock(200, JSON.stringify({
                 access_token: "proxy-token",
                 expires_in: 3600,
@@ -353,7 +329,7 @@ describe("Huawei platform", () => {
         });
 
         it("should use proxy agent when proxy is configured", async() => {
-            const proxy: ProxyConfiguration = { host: "proxy.com", port: "9090", auth: true };
+            const proxy = mockData.proxyConfig({ port: "9090", auth: true });
             const push = createHuaweiPushEvent({ proxy });
             setupAuthThenSend(200, JSON.stringify({ code: "80000000", msg: "Success" }));
 
@@ -404,19 +380,8 @@ describe("Huawei platform", () => {
     });
 
     describe("mapMessageToPayload", () => {
-        const messageId = new ObjectId();
-        const baseMessageDoc = {
-            _id: messageId,
-            app: new ObjectId(),
-            platforms: ["h"],
-            status: "active",
-            saveResults: true,
-            triggers: [{ kind: "plain", start: new Date() }],
-            filter: {},
-            contents: [],
-            result: { total: 0, sent: 0, actioned: 0, failed: 0, errors: {}, subs: {} },
-            info: {},
-        };
+        const baseMessageDoc = mockData.mapperMessageDoc("h");
+        const messageId = baseMessageDoc._id;
         const baseContent = { title: "Test", message: "Body" };
         const baseContext = { uid: "u1", did: "d1" };
 

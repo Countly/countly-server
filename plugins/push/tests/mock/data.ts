@@ -1,8 +1,9 @@
-import type { Message, RecurringTrigger, PlainTrigger } from '../../api/models/message.ts';
+import type { Message, RecurringTrigger, PlainTrigger, PlatformKey } from '../../api/models/message.ts';
 import type { Schedule } from '../../api/models/schedule.ts';
 import type { ScheduleEvent, PushEvent, ResultEvent, CohortTriggerEvent, EventTriggerEvent } from '../../api/models/queue.ts';
 import type { User } from '../../api/lib/template.ts';
-import type { PlatformCredential } from '../../api/models/credentials.ts';
+import type { FCMCredentials, APNP8Credentials, HMSCredentials } from '../../api/models/credentials.ts';
+import type { ProxyConfiguration } from '../../api/lib/utils.ts';
 import { ObjectId } from 'mongodb';
 
 export function schedule(): Schedule {
@@ -194,24 +195,71 @@ export function message(): Message {
     };
 }
 
-export function androidCredential(): PlatformCredential {
+/**
+ * Bare Firebase service account JSON used for FCM credentials. Returns a plain
+ * object so tests can inspect/encode it before assembling a credential.
+ */
+export function fcmServiceAccount(overrides: Record<string, any> = {}): Record<string, any> {
     return {
-        _id: new ObjectId,
-        hash: "somethingsomething",
-        serviceAccountFile: "data:application/json;base64,...",
-        type: "fcm"
+        type: "service_account",
+        project_id: "countlydemo",
+        private_key_id: "0000000000",
+        private_key: "-----BEGIN PRIVATE KEY-----\nfakekey\n-----END PRIVATE KEY-----\n",
+        client_email: "client@countlydemo.iam.gserviceaccount.com",
+        client_id: "102258429722735018634",
+        auth_uri: "https://accounts.google.com/o/oauth2/auth",
+        token_uri: "https://oauth2.googleapis.com/token",
+        auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+        client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/client_email",
+        universe_domain: "googleapis.com",
+        ...overrides,
     };
 }
 
-export function iosCredential(): PlatformCredential {
+const JSON_DATA_URI_PREFIX = "data:application/json;base64,";
+
+export function androidCredential(overrides: Partial<FCMCredentials> = {}): FCMCredentials {
     return {
         _id: new ObjectId,
-        hash: "ioshashvalue",
+        hash: "0f07c581fd44f570b7b4133c49656c714364f859a36d1f58d13a32338a1e1e11",
+        type: "fcm",
+        serviceAccountFile: JSON_DATA_URI_PREFIX
+            + Buffer.from(JSON.stringify(fcmServiceAccount())).toString("base64"),
+        ...overrides,
+    };
+}
+
+export function iosCredential(overrides: Partial<APNP8Credentials> = {}): APNP8Credentials {
+    return {
+        _id: new ObjectId,
         type: "apn_token",
+        hash: "ioshashvalue",
         bundle: "com.example.app",
-        key: "-----BEGIN PRIVATE KEY-----\nMIGT...fake\n-----END PRIVATE KEY-----",
+        key: Buffer.from("-----BEGIN PRIVATE KEY-----\nfake\n-----END PRIVATE KEY-----").toString("base64"),
         keyid: "ABC123DEF4",
         team: "TEAM123456",
+        ...overrides,
+    };
+}
+
+export function huaweiCredential(overrides: Partial<HMSCredentials> = {}): HMSCredentials {
+    return {
+        _id: new ObjectId,
+        type: "hms",
+        app: "123456",
+        secret: "a".repeat(64),
+        // randomized so per-test token caches keyed by hash don't bleed across tests
+        hash: "hmshash" + Math.random().toString(36).slice(2),
+        ...overrides,
+    };
+}
+
+export function proxyConfig(overrides: Partial<ProxyConfiguration> = {}): ProxyConfiguration {
+    return {
+        host: "proxy.com",
+        port: "8080",
+        auth: false,
+        ...overrides,
     };
 }
 
@@ -318,6 +366,58 @@ export function pushEvent(): PushEvent {
         appTimezone: "NA",
         trigger: plainTrigger(),
         platformConfiguration: {}
+    };
+}
+
+export function iosPushEvent(overrides: Partial<PushEvent> = {}): PushEvent {
+    return {
+        ...pushEvent(),
+        platform: "i",
+        env: "p",
+        credentials: iosCredential(),
+        payload: {
+            aps: { alert: { title: "test", body: "test" }, sound: "default" },
+            c: { i: new ObjectId().toString() },
+        },
+        platformConfiguration: { setContentAvailable: false },
+        ...overrides,
+    } as PushEvent;
+}
+
+export function huaweiPushEvent(overrides: Partial<PushEvent> = {}): PushEvent {
+    return {
+        ...pushEvent(),
+        platform: "h",
+        credentials: huaweiCredential(),
+        payload: {
+            message: {
+                data: '{"c.i":"test","title":"test","message":"test"}',
+                android: {},
+            },
+        },
+        platformConfiguration: {},
+        ...overrides,
+    } as PushEvent;
+}
+
+/**
+ * Minimal Message-shaped doc for `mapMessageToPayload` tests in
+ * `send/platforms/{android,ios,huawei}.test.ts`. The mappers only read `_id`
+ * and `platforms`, so we don't need a full Message document here.
+ */
+export function mapperMessageDoc(platform: PlatformKey, overrides: Record<string, any> = {}): any {
+    return {
+        _id: new ObjectId(),
+        app: new ObjectId(),
+        platforms: [platform],
+        status: "active",
+        saveResults: true,
+        triggers: [{ kind: "plain", start: new Date() }],
+        filter: {},
+        contents: [],
+        result: { total: 0, sent: 0, actioned: 0, failed: 0, errors: {}, subs: {} },
+        info: {},
+        ...overrides,
     };
 }
 

@@ -1,6 +1,5 @@
 import type { APNP8Credentials, APNP12Credentials } from '../../../../api/models/credentials.ts';
 import type { PushEvent } from '../../../../api/models/queue.ts';
-import type { ProxyConfiguration } from '../../../../api/lib/utils.ts';
 import assert from 'assert';
 import path from 'path';
 import fsPromise from 'fs/promises';
@@ -43,32 +42,21 @@ const {
     "node-forge": (await import("node-forge")).default,
 });
 
+// Per-test unique hash so the JWT cache (keyed by hash) doesn't bleed across tests.
 function createP8Credentials(overrides: Partial<APNP8Credentials> = {}): APNP8Credentials {
-    return {
-        _id: new ObjectId(),
-        type: "apn_token",
+    return mockData.iosCredential({
         hash: "p8hash" + Math.random().toString(36).slice(2),
-        bundle: "com.example.app",
-        key: Buffer.from("-----BEGIN PRIVATE KEY-----\nfake\n-----END PRIVATE KEY-----").toString("base64"),
         keyid: "KEYID12345",
         team: "TEAMABC123",
         ...overrides,
-    };
+    });
 }
 
 function createIOSPushEvent(overrides: Partial<PushEvent> = {}): PushEvent {
-    return {
-        ...mockData.pushEvent(),
-        platform: "i",
-        env: "p",
+    return mockData.iosPushEvent({
         credentials: createP8Credentials(),
-        payload: {
-            aps: { alert: { title: "test", body: "test" }, sound: "default" },
-            c: { i: new ObjectId().toString() },
-        },
-        platformConfiguration: { setContentAvailable: false },
         ...overrides,
-    } as PushEvent;
+    });
 }
 
 describe("IOS platform", () => {
@@ -178,11 +166,7 @@ describe("IOS platform", () => {
         });
 
         it("should create an Http2OverHttp agent with proxy config", () => {
-            const config: ProxyConfiguration = {
-                host: "proxy.example.com",
-                port: "8080",
-                auth: false,
-            };
+            const config = mockData.proxyConfig({ host: "proxy.example.com" });
             const agent = getProxyAgent(config);
 
             assert(agent);
@@ -192,13 +176,12 @@ describe("IOS platform", () => {
         });
 
         it("should include basic auth header when user/pass are provided", () => {
-            const config: ProxyConfiguration = {
+            const config = mockData.proxyConfig({
                 host: "proxy.example.com",
-                port: "8080",
                 auth: true,
                 user: "proxyuser",
                 pass: "proxypass",
-            };
+            });
             getProxyAgent(config);
 
             const proxyOptions = mockHttp2OverHttp.firstCall.firstArg.proxyOptions;
@@ -207,11 +190,7 @@ describe("IOS platform", () => {
         });
 
         it("should cache the agent for the same proxy config", () => {
-            const config: ProxyConfiguration = {
-                host: "cached-proxy.com",
-                port: "9999",
-                auth: false,
-            };
+            const config = mockData.proxyConfig({ host: "cached-proxy.com", port: "9999" });
             const agent1 = getProxyAgent(config);
             const agent2 = getProxyAgent(config);
 
@@ -461,19 +440,8 @@ describe("IOS platform", () => {
     });
 
     describe("mapMessageToPayload", () => {
-        const messageId = new ObjectId();
-        const baseMessageDoc = {
-            _id: messageId,
-            app: new ObjectId(),
-            platforms: ["i"],
-            status: "active",
-            saveResults: true,
-            triggers: [{ kind: "plain", start: new Date() }],
-            filter: {},
-            contents: [],
-            result: { total: 0, sent: 0, actioned: 0, failed: 0, errors: {}, subs: {} },
-            info: {},
-        };
+        const baseMessageDoc = mockData.mapperMessageDoc("i");
+        const messageId = baseMessageDoc._id;
         const baseContent = { title: "Test Title", message: "Test Body" };
         const baseContext = { uid: "u1", did: "d1", country: "US" };
 

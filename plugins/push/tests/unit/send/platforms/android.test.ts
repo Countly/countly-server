@@ -1,6 +1,5 @@
 import type { FCMCredentials } from '../../../../api/models/credentials.ts';
 import type { PushEvent } from '../../../../api/models/queue.ts';
-import type { ProxyConfiguration } from '../../../../api/lib/utils.ts';
 import assert from 'assert';
 import { ObjectId } from 'mongodb';
 import sinon from 'sinon';
@@ -24,33 +23,9 @@ const { send, validateCredentials, mapMessageToPayload, isProxyConfigurationUpda
 describe("Android platform", () => {
 
     describe("Push notification sender", () => {
-        const serviceAccount = {
-            type: 'service_account',
-            project_id: 'countlydemo',
-            private_key_id: '0000000000',
-            private_key: '-----BEGIN PRIVATE KEY-----\n' +
-            'loremipsumdolorsitametprivatekey' +
-            '-----END PRIVATE KEY-----\n',
-            client_email: 'client_email',
-            client_id: '102258429722735018634',
-            auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-            token_uri: 'https://oauth2.googleapis.com/token',
-            auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
-            client_x509_cert_url: 'https://www.googleapis.com/robot/v1/metadata/x509/client_email',
-            universe_domain: 'googleapis.com'
-        };
-        const jsonDataURIPrefix = "data:application/json;base64,";
-        const credentials: FCMCredentials = {
-            _id: new ObjectId,
-            hash: '0f07c581fd44f570b7b4133c49656c714364f859a36d1f58d13a32338a1e1e11',
-            type: 'fcm',
-            serviceAccountFile: jsonDataURIPrefix
-                + Buffer.from(JSON.stringify(serviceAccount)).toString("base64"),
-        };
-        const push: PushEvent = {
-            ...mockData.pushEvent(),
-            credentials: credentials,
-        };
+        const serviceAccount = mockData.fcmServiceAccount();
+        const credentials = mockData.androidCredential();
+        const push: PushEvent = { ...mockData.pushEvent(), credentials };
 
         beforeEach(() => {
             mockFirebaseAdmin.apps = [];
@@ -84,13 +59,12 @@ describe("Android platform", () => {
         });
 
         it("configure the firebase application instance with proxy", async() => {
-            const proxy: ProxyConfiguration = {
-                auth: false,
+            const proxy = mockData.proxyConfig({
                 host: "proxyhost.com",
+                port: "666",
                 user: "proxyUser",
                 pass: "proxyPassword",
-                port: "666"
-            };
+            });
             const href = "http://" + proxy.user + ":" + proxy.pass + "@" + proxy.host + ":" + proxy.port + "/";
             const pushWithProxy: PushEvent = { ...push, proxy };
             await send(pushWithProxy);
@@ -111,25 +85,12 @@ describe("Android platform", () => {
     });
 
     describe("Message mapper", () => {
-        const messageId = new ObjectId();
-        const baseMessageDoc = {
-            _id: messageId,
-            app: new ObjectId(),
-            platforms: ["a"],
-            status: "active",
-            saveResults: true,
-            triggers: [{ kind: "plain", start: new Date() }],
-            filter: {},
-            contents: [],
-            result: { total: 0, sent: 0, actioned: 0, failed: 0, errors: {}, subs: {} },
-            info: {}
-        };
-
+        const baseMessageDoc = mockData.mapperMessageDoc("a");
+        const messageId = baseMessageDoc._id;
         const baseContent = {
             title: "Test Title",
             message: "Test Message"
         };
-
         const baseUserProps = {
             uid: "test_user",
             did: "test_device",
@@ -319,18 +280,8 @@ describe("Android platform", () => {
     });
 
     describe("Credential validator", () => {
-        const validServiceAccount = {
-            type: 'service_account',
-            project_id: 'test-project',
-            private_key_id: '0000000000',
-            private_key: '-----BEGIN PRIVATE KEY-----\nfakekey\n-----END PRIVATE KEY-----\n',
-            client_email: 'test@test.iam.gserviceaccount.com',
-            client_id: '123456789',
-            auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-            token_uri: 'https://oauth2.googleapis.com/token',
-        };
         const jsonDataURIPrefix = "data:application/json;base64,";
-        const validFile = jsonDataURIPrefix + Buffer.from(JSON.stringify(validServiceAccount)).toString("base64");
+        const validFile = mockData.androidCredential().serviceAccountFile;
 
         beforeEach(() => {
             mockFirebaseAdmin.apps = [];
@@ -465,23 +416,7 @@ describe("Android platform", () => {
     });
 
     describe("FCM error handling", () => {
-        const serviceAccount = {
-            type: 'service_account',
-            project_id: 'countlydemo',
-            private_key_id: '0000000000',
-            private_key: '-----BEGIN PRIVATE KEY-----\nloremipsumdolorsitametprivatekey-----END PRIVATE KEY-----\n',
-            client_email: 'client_email',
-            client_id: '102258429722735018634',
-            auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-            token_uri: 'https://oauth2.googleapis.com/token',
-        };
-        const jsonDataURIPrefix = "data:application/json;base64,";
-        const credentials: FCMCredentials = {
-            _id: new ObjectId,
-            hash: 'testhash',
-            type: 'fcm',
-            serviceAccountFile: jsonDataURIPrefix + Buffer.from(JSON.stringify(serviceAccount)).toString("base64"),
-        };
+        const credentials = mockData.androidCredential({ hash: 'testhash' });
         const push: PushEvent = { ...mockData.pushEvent(), credentials };
 
         beforeEach(() => {
@@ -570,23 +505,7 @@ describe("Android platform", () => {
     });
 
     describe("Proxy reconfiguration", () => {
-        const serviceAccount = {
-            type: 'service_account',
-            project_id: 'countlydemo',
-            private_key_id: '0000000000',
-            private_key: '-----BEGIN PRIVATE KEY-----\nloremipsumdolorsitametprivatekey-----END PRIVATE KEY-----\n',
-            client_email: 'client_email',
-            client_id: '102258429722735018634',
-            auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-            token_uri: 'https://oauth2.googleapis.com/token',
-        };
-        const jsonDataURIPrefix = "data:application/json;base64,";
-        const credentials: FCMCredentials = {
-            _id: new ObjectId,
-            hash: 'proxytesthash',
-            type: 'fcm',
-            serviceAccountFile: jsonDataURIPrefix + Buffer.from(JSON.stringify(serviceAccount)).toString("base64"),
-        };
+        const credentials = mockData.androidCredential({ hash: 'proxytesthash' });
 
         beforeEach(() => {
             mockFirebaseAdmin.apps = [];
@@ -600,9 +519,7 @@ describe("Android platform", () => {
         });
 
         it("should delete and recreate the app when proxy configuration changes", async() => {
-            const proxyA: ProxyConfiguration = {
-                host: "proxyA.com", port: "8080", auth: false
-            };
+            const proxyA = mockData.proxyConfig({ host: "proxyA.com" });
             const deleteStub = sinon.stub().resolves();
             const existingApp = {
                 name: credentials.hash,
@@ -620,9 +537,7 @@ describe("Android platform", () => {
             mockFirebaseAdmin.initializeApp.resetHistory();
 
             // Second call: different proxy → should delete old and create new
-            const proxyB: ProxyConfiguration = {
-                host: "proxyB.com", port: "9090", auth: true
-            };
+            const proxyB = mockData.proxyConfig({ host: "proxyB.com", port: "9090", auth: true });
             const pushB: PushEvent = { ...mockData.pushEvent(), credentials, proxy: proxyB };
             const newApp = { name: credentials.hash, messaging: messagingStub };
             mockFirebaseAdmin.initializeApp.returns(newApp);
@@ -633,9 +548,7 @@ describe("Android platform", () => {
         });
 
         it("should not recreate the app when proxy configuration is the same", async() => {
-            const proxy: ProxyConfiguration = {
-                host: "proxy.com", port: "8080", auth: false
-            };
+            const proxy = mockData.proxyConfig();
             const existingApp = {
                 name: credentials.hash,
                 messaging: messagingStub,
@@ -661,23 +574,7 @@ describe("Android platform", () => {
     });
 
     describe("isProxyConfigurationUpdated", () => {
-        const serviceAccount = {
-            type: 'service_account',
-            project_id: 'countlydemo',
-            private_key_id: '0000000000',
-            private_key: '-----BEGIN PRIVATE KEY-----\nfakekey\n-----END PRIVATE KEY-----\n',
-            client_email: 'client_email',
-            client_id: '102258429722735018634',
-            auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-            token_uri: 'https://oauth2.googleapis.com/token',
-        };
-        const jsonDataURIPrefix = "data:application/json;base64,";
-        const credentials: FCMCredentials = {
-            _id: new ObjectId,
-            hash: 'isproxytesthash',
-            type: 'fcm',
-            serviceAccountFile: jsonDataURIPrefix + Buffer.from(JSON.stringify(serviceAccount)).toString("base64"),
-        };
+        const credentials = mockData.androidCredential({ hash: 'isproxytesthash' });
 
         beforeEach(() => {
             mockFirebaseAdmin.apps = [];
@@ -697,13 +594,13 @@ describe("Android platform", () => {
         });
 
         it("should return true when adding a proxy to an app that had none", () => {
-            const proxy: ProxyConfiguration = { host: "p", port: "8080", auth: false };
+            const proxy = mockData.proxyConfig();
             const app = {} as any;
             assert.strictEqual(isProxyConfigurationUpdated(app, proxy), true);
         });
 
         it("should return false when the same proxy is passed again after send", async() => {
-            const proxy: ProxyConfiguration = { host: "p", port: "8080", auth: false };
+            const proxy = mockData.proxyConfig();
             const app = { name: credentials.hash, messaging: messagingStub };
             mockFirebaseAdmin.initializeApp.returns(app);
             await send({ ...mockData.pushEvent(), credentials, proxy });
@@ -711,8 +608,8 @@ describe("Android platform", () => {
         });
 
         it("should return true when the proxy changes after send", async() => {
-            const oldProxy: ProxyConfiguration = { host: "a", port: "1", auth: false };
-            const newProxy: ProxyConfiguration = { host: "b", port: "2", auth: true };
+            const oldProxy = mockData.proxyConfig({ host: "a", port: "1" });
+            const newProxy = mockData.proxyConfig({ host: "b", port: "2", auth: true });
             const app = { name: credentials.hash, messaging: messagingStub };
             mockFirebaseAdmin.initializeApp.returns(app);
             await send({ ...mockData.pushEvent(), credentials, proxy: oldProxy });
@@ -720,7 +617,7 @@ describe("Android platform", () => {
         });
 
         it("should return true when removing a proxy from an app that had one", async() => {
-            const proxy: ProxyConfiguration = { host: "p", port: "8080", auth: false };
+            const proxy = mockData.proxyConfig();
             const app = { name: credentials.hash, messaging: messagingStub };
             mockFirebaseAdmin.initializeApp.returns(app);
             await send({ ...mockData.pushEvent(), credentials, proxy });
@@ -728,17 +625,15 @@ describe("Android platform", () => {
         });
 
         it("should return false when proxies are equivalent but different object instances", async() => {
-            const proxyA: ProxyConfiguration = { host: "p", port: "8080", auth: false };
-            const proxyB: ProxyConfiguration = { host: "p", port: "8080", auth: false };
             const app = { name: credentials.hash, messaging: messagingStub };
             mockFirebaseAdmin.initializeApp.returns(app);
-            await send({ ...mockData.pushEvent(), credentials, proxy: proxyA });
-            assert.strictEqual(isProxyConfigurationUpdated(app as any, proxyB), false);
+            await send({ ...mockData.pushEvent(), credentials, proxy: mockData.proxyConfig() });
+            assert.strictEqual(isProxyConfigurationUpdated(app as any, mockData.proxyConfig()), false);
         });
 
         it("should return true when proxy auth flag changes", async() => {
-            const proxy1: ProxyConfiguration = { host: "p", port: "8080", auth: false };
-            const proxy2: ProxyConfiguration = { host: "p", port: "8080", auth: true };
+            const proxy1 = mockData.proxyConfig();
+            const proxy2 = mockData.proxyConfig({ auth: true });
             const app = { name: credentials.hash, messaging: messagingStub };
             mockFirebaseAdmin.initializeApp.returns(app);
             await send({ ...mockData.pushEvent(), credentials, proxy: proxy1 });
