@@ -2,6 +2,7 @@ const plugins = require("../../../../pluginManager.js");
 const request = require("countly-request")(plugins.getConfig("security"));
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
+const ssrfProtection = require('../../ssrf-protection');
 const log = common.log("hooks:api:api_endpoint_trigger");
 
 /**
@@ -47,17 +48,39 @@ class HTTPEffect {
             const parsedRequestData = utils.parseStringTemplate(requestData, params, method);
             log.d("[hook http effect ]", parsedURL, parsedRequestData, method);
 
-            // todo: assemble params for request;
-            // const params = {}
+            // Revalidate URL after template expansion.
+            // The URL was validated at save time, but template variables
+            // (e.g. {{path}}) may have been replaced with malicious values
+            // that redirect to internal/private addresses.
+            const urlCheck = await ssrfProtection.isUrlSafe(parsedURL);
+            if (!urlCheck.safe) {
+                const ssrfError = new Error('SSRF protection: blocked HTTP effect — ' + urlCheck.error);
+                logs.push(`Error: ${ssrfError.message}`);
+                utils.addErrorRecord(rule._id, ssrfError, params, effectStep, _originalInput);
+                log.e("[hook http effect ] SSRF blocked:", urlCheck.error);
+                return {...options, logs};
+            }
+
             const requestHeaders = headers || {};
             const methodOption = method && method.toLowerCase() || "get";
             switch (methodOption) {
-            case 'get':
-                await request.get({
-                    uri: parsedURL + "?" + parsedRequestData,
+            case 'get': {
+                // For GET, also validate the full URL with query string
+                const fullGetUrl = parsedURL + "?" + parsedRequestData;
+                const getUrlCheck = await ssrfProtection.isUrlSafe(fullGetUrl);
+                if (!getUrlCheck.safe) {
+                    const ssrfError = new Error('SSRF protection: blocked GET URL — ' + getUrlCheck.error);
+                    logs.push(`Error: ${ssrfError.message}`);
+                    utils.addErrorRecord(rule._id, ssrfError, params, effectStep, _originalInput);
+                    log.e("[hook http effect ] SSRF blocked:", getUrlCheck.error);
+                    return {...options, logs};
+                }
+
+                await request.get(ssrfProtection.getSsrfSafeOptions({
+                    uri: fullGetUrl,
                     timeout: this._timeout,
-                    headers: requestHeaders
-                }, function(e, r, body) {
+                    headers: requestHeaders,
+                }), function(e, r, body) {
                     log.d("[http get effect]", e, body);
                     if (e) {
                         logs.push(`Error: ${e.message}`);
@@ -66,6 +89,7 @@ class HTTPEffect {
                     }
                 });
                 break;
+            }
             case 'post': {
                 //support post formData
                 let parsedJSON = {};
@@ -90,13 +114,13 @@ class HTTPEffect {
                     utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
                 }
                 if (Object.keys(parsedJSON).length) {
-                    await request({
+                    await request(ssrfProtection.getSsrfSafeOptions({
                         method: 'POST',
                         uri: parsedURL,
                         json: parsedJSON,
                         timeout: this._timeout,
-                        headers: requestHeaders
-                    },
+                        headers: requestHeaders,
+                    }),
                     function(e, r, body) {
                         log.d("[httpeffects]", e, body, rule);
                         if (e) {

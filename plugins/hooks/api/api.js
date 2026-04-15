@@ -9,6 +9,7 @@ const log = common.log('hooks:api');
 const _ = require('lodash');
 const utils = require('./utils');
 const rights = require('../../../api/utils/rights');
+const ssrfProtection = require('./ssrf-protection');
 
 const FEATURE_NAME = 'hooks';
 
@@ -232,7 +233,7 @@ const CheckEffectProperties = function(effect) {
     //todo: add more validation for effect types
     if (effect) {
         if (effect.type === "HTTPEffect") {
-            rules.url = { 'required': true, 'type': 'URL', 'regex': '^(?!.*(?:localhost|127\\.0\\.0\\.1|\\[::1\\])).*(?:https?|ftp):\\/\\/(?:[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)+|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\])(?::\\d{1,5})?(?:\\/\\S*)?$' };
+            rules.url = { 'required': true, 'type': 'URL' };
             rules.headers = { 'required': false, 'type': 'Object' };
         }
     }
@@ -273,7 +274,7 @@ plugins.register("/permissions/features", function(ob) {
 plugins.register("/i/hook/save", function(ob) {
     let paramsInstance = ob.params;
 
-    validateCreate(ob.params, FEATURE_NAME, function(params) {
+    validateCreate(ob.params, FEATURE_NAME, async function(params) {
         let hookConfig = params.qstring.hook_config;
         if (!hookConfig) {
             common.returnMessage(params, 400, 'Invalid hookConfig');
@@ -290,9 +291,12 @@ plugins.register("/i/hook/save", function(ob) {
                     return true;
                 }
 
-                if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
-                    common.returnMessage(params, 400, 'Invalid configuration for effects');
-                    return true;
+                if (hookConfig.effects) {
+                    const effectValidation = await validateEffects(hookConfig.effects);
+                    if (!effectValidation.valid) {
+                        common.returnMessage(params, 400, effectValidation.error || 'Invalid configuration for effects');
+                        return true;
+                    }
                 }
 
                 if (hookConfig._id) {
@@ -367,20 +371,25 @@ plugins.register("/i/hook/save", function(ob) {
 
 /***
  * @param {array} effects - array of effects
- * @returns {boolean} isValid - true if all effects are valid
  */
-function validateEffects(effects) {
-    let isValid = true;
+async function validateEffects(effects) {
     if (effects) {
         for (let i = 0; i < effects.length; i++) {
             if (!(common.validateArgs(effects[i].configuration, CheckEffectProperties(effects[i])))) {
-                isValid = false;
-                break;
+                return { valid: false, error: 'Invalid effect configuration' };
+            }
+
+            // SSRF protection: validate HTTPEffect URLs with DNS resolution
+            if (effects[i].type === "HTTPEffect" && effects[i].configuration && effects[i].configuration.url) {
+                const urlCheck = await ssrfProtection.isUrlSafe(effects[i].configuration.url);
+                if (!urlCheck.safe) {
+                    return { valid: false, error: 'Unsafe URL in HTTPEffect: ' + urlCheck.error };
+                }
             }
         }
     }
 
-    return isValid;
+    return { valid: true, error: null };
 
 }
 
@@ -644,9 +653,12 @@ plugins.register("/i/hook/test", function(ob) {
             }
 
             // Null check for effects
-            if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
-                common.returnMessage(params, 400, 'Config invalid');
-                return; // Add return to exit early
+            if (hookConfig.effects) {
+                const effectValidation = await validateEffects(hookConfig.effects);
+                if (!effectValidation.valid) {
+                    common.returnMessage(params, 400, effectValidation.error || 'Config invalid');
+                    return; // Add return to exit early
+                }
             }
 
 
