@@ -155,10 +155,10 @@ const verifyAlertDrawerPageElements = ({
         });
 
         if (dataType == FEATURE_TYPE.CRASHES) {
-            // cy.verifyElement({
-            //     element: alertDrawerPageElements.DRAWER_FILTER_CRASHES_INPUT,
-            //     value: 'App Version',
-            // });
+            cy.verifyElement({
+                element: alertDrawerPageElements.DRAWER_FILTER_CRASHES_INPUT,
+                value: 'App Version',
+            });
 
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_FILTER_CRASHES_SELECT,
@@ -629,8 +629,8 @@ module.exports = {
     selectDoNotSendEmail,
     clickCreateButton,
     clickCancelButton,
-    clickAddFilterButton,
-    selectFilterCrashesAppVersion,
+//    clickAddFilterButton,
+//    selectFilterCrashesAppVersion,
     selectEventFilter,
     typeEventFilterValue,
     selectFilterRatingPoints,
