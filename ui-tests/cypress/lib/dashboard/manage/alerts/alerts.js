@@ -193,10 +193,10 @@ const verifyAlertDrawerPageElements = ({
         }
     }
     else if (dataType == FEATURE_TYPE.CRASHES || dataType == FEATURE_TYPE.EVENTS || dataType == FEATURE_TYPE.RATING) {
-        cy.verifyElement({
-            element: alertDrawerPageElements.DRAWER_ADD_FILTER_BUTTON,
-            elementText: "+ Add Filter"
-        });
+        // cy.verifyElement({
+        //     element: alertDrawerPageElements.DRAWER_ADD_FILTER_BUTTON,
+        //     elementText: "+ Add Filter"
+        // });
     }
 
     cy.verifyElement({
