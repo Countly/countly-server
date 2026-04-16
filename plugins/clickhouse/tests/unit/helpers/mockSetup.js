@@ -45,7 +45,7 @@ function createMockClickHouseClient(options = {}) {
         execError
     } = options;
 
-    return {
+    const client = {
         exec: async(opts) => {
             if (execError) {
                 throw execError;
@@ -53,6 +53,7 @@ function createMockClickHouseClient(options = {}) {
             return execResult;
         },
         query: async(opts) => {
+            client.lastQueryOpts = opts;
             if (queryError) {
                 throw queryError;
             }
@@ -72,9 +73,9 @@ function createMockClickHouseClient(options = {}) {
             }
             return execResult;
         },
-        _lastExecQuery: null,
-        _lastQueryQuery: null
+        lastQueryOpts: null
     };
+    return client;
 }
 
 /**

@@ -32,9 +32,10 @@ function getChMetrics() {
     return _chMetrics;
 }
 
-// Query size thresholds for max_query_size override
-const QUERY_SIZE_THRESHOLD = 20 * 1024; // 20KB - trigger for large query mode
-const LARGE_QUERY_MAX_SIZE = 16 * 1024 * 1024; // 16MB - for large cohort queries
+// ClickHouse default max_query_size is 262144 (256KB).
+// We dynamically set it to 2× the actual query payload so large cohort/formula
+// queries always have headroom, while small queries stay at the server default.
+const CH_DEFAULT_MAX_QUERY_SIZE = 262144;
 
 /**
  * ClickHouse-backed implementation of the DrillEvents repository.
@@ -264,14 +265,16 @@ class ClickhouseQueryService {
                 this.maskingService.setAppId(appID.toString());
             }
 
-            const estimatedQuerySize = options?.estimatedQuerySize || 0;
-            const needsLargeQuerySettings = estimatedQuerySize > QUERY_SIZE_THRESHOLD;
-
-            // Build effective clickhouse_settings with max_query_size override for large queries
+            // Auto-size max_query_size to 2× actual payload so large queries always have headroom
+            const estimatedQuerySize = Buffer.byteLength(pipeline.query || '')
+                + (pipeline.params ? Buffer.byteLength(JSON.stringify(pipeline.params)) : 0);
             let effectiveSettings = { ...(options?.clickhouse_settings || {}) };
-            if (needsLargeQuerySettings && !effectiveSettings.max_query_size) {
-                log.d(`Large query detected (estimatedQuerySize: ${estimatedQuerySize} bytes), applying max_query_size=${LARGE_QUERY_MAX_SIZE}`);
-                effectiveSettings.max_query_size = LARGE_QUERY_MAX_SIZE;
+            if (!effectiveSettings.max_query_size) {
+                const dynamicLimit = Math.max(estimatedQuerySize * 2, CH_DEFAULT_MAX_QUERY_SIZE);
+                if (dynamicLimit > CH_DEFAULT_MAX_QUERY_SIZE) {
+                    log.d(`Setting max_query_size=${dynamicLimit} for query of ${estimatedQuerySize} bytes`);
+                    effectiveSettings.max_query_size = dynamicLimit;
+                }
             }
 
             // Attempt to mask query string only if masking is enabled

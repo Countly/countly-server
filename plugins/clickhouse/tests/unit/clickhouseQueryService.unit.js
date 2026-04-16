@@ -225,31 +225,29 @@ describe('ClickhouseQueryService Unit Tests', function() {
             })).be.rejectedWith(/Query syntax error/);
         });
 
-        it('should apply large query settings when estimatedQuerySize exceeds threshold', async function() {
-            const clientWithResult = createMockClickHouseClient({
+        it('should dynamically set max_query_size to 2x query size for large queries', async function() {
+            const client = createMockClickHouseClient({
                 queryResults: []
             });
-            const qs = new ClickhouseQueryService(clientWithResult);
+            const qs = new ClickhouseQueryService(client);
 
-            // 25KB > 20KB threshold
-            await qs.aggregate(
-                { query: 'SELECT * FROM test' },
-                { estimatedQuerySize: 25 * 1024 }
-            );
-            // No error means success - settings were applied
+            // 300KB query — exceeds ClickHouse default of 256KB
+            const largeQuery = 'SELECT * FROM test WHERE uid IN (' + 'x'.repeat(300 * 1024) + ')';
+            await qs.aggregate({ query: largeQuery }, {});
+
+            const querySize = Buffer.byteLength(largeQuery);
+            should(client.lastQueryOpts.clickhouse_settings).have.property('max_query_size', querySize * 2);
         });
 
-        it('should not apply large query settings for small queries', async function() {
-            const clientWithResult = createMockClickHouseClient({
+        it('should not set max_query_size for small queries', async function() {
+            const client = createMockClickHouseClient({
                 queryResults: []
             });
-            const qs = new ClickhouseQueryService(clientWithResult);
+            const qs = new ClickhouseQueryService(client);
 
-            await qs.aggregate(
-                { query: 'SELECT * FROM test' },
-                { estimatedQuerySize: 1024 } // 1KB < 20KB threshold
-            );
-            // No error means success
+            await qs.aggregate({ query: 'SELECT 1' }, {});
+
+            should(client.lastQueryOpts.clickhouse_settings).not.have.property('max_query_size');
         });
 
         it('should use custom clickhouse_settings', async function() {
