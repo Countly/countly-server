@@ -7,6 +7,7 @@ var path = require("path");
 var fs = require("fs"),
     readline = require('readline'),
     stream = require('stream');
+var os = require('os');
 var cp = require('child_process'); //call process
 const exec = cp.exec; //for calling command line
 const fse = require('fs-extra'); // delete folders
@@ -853,7 +854,7 @@ describe("Testing data migration plugin", function() {
                 });
         });
         it("rejects path traversal in import delete exportid", function(done) {
-            var traversalTarget = "/tmp/countly_data_migration_path_traversal_test";
+            var traversalTarget = path.join(os.tmpdir(), "countly_data_migration_path_traversal_test_" + Date.now());
             var traversalExportId = "../../../../../../../../.." + traversalTarget;
 
             fs.writeFileSync(traversalTarget, "test");

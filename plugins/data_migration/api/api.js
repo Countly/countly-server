@@ -411,7 +411,7 @@ function trim_ending_slashes(address) {
                     //delete info file
                     try {
                         var importInfoPath = common.resolvePathInBase(path.resolve(__dirname, './../import'), exportid + '.json');
-                        if (importInfoPath) {
+                        if (importInfoPath && fs.existsSync(importInfoPath)) {
                             fs.unlinkSync(importInfoPath);
                         }
                     }
