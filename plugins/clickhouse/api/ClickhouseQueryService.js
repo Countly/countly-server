@@ -35,7 +35,9 @@ function getChMetrics() {
 // ClickHouse default max_query_size is 262144 (256KB).
 // We dynamically set it to 2× the actual query payload so large cohort/formula
 // queries always have headroom, while small queries stay at the server default.
+// The cap prevents a runaway code path from raising the limit unboundedly.
 const CH_DEFAULT_MAX_QUERY_SIZE = 262144;
+const CH_MAX_QUERY_SIZE_CAP = 256 * 1024 * 1024; // 256MB backstop
 
 /**
  * ClickHouse-backed implementation of the DrillEvents repository.
@@ -266,11 +268,22 @@ class ClickhouseQueryService {
             }
 
             // Auto-size max_query_size to 2× actual payload so large queries always have headroom
-            const estimatedQuerySize = Buffer.byteLength(pipeline.query || '')
-                + (pipeline.params ? Buffer.byteLength(JSON.stringify(pipeline.params)) : 0);
+            let paramsSize = 0;
+            if (pipeline.params) {
+                try {
+                    paramsSize = Buffer.byteLength(JSON.stringify(pipeline.params));
+                }
+                catch (e) {
+                    log.d('Failed to estimate ClickHouse params size, falling back to query-only sizing', e);
+                }
+            }
+            const estimatedQuerySize = Buffer.byteLength(pipeline.query || '') + paramsSize;
             let effectiveSettings = { ...(options?.clickhouse_settings || {}) };
-            if (!effectiveSettings.max_query_size) {
-                const dynamicLimit = Math.max(estimatedQuerySize * 2, CH_DEFAULT_MAX_QUERY_SIZE);
+            if (!('max_query_size' in effectiveSettings)) {
+                const dynamicLimit = Math.min(
+                    Math.max(estimatedQuerySize * 2, CH_DEFAULT_MAX_QUERY_SIZE),
+                    CH_MAX_QUERY_SIZE_CAP
+                );
                 if (dynamicLimit > CH_DEFAULT_MAX_QUERY_SIZE) {
                     log.d(`Setting max_query_size=${dynamicLimit} for query of ${estimatedQuerySize} bytes`);
                     effectiveSettings.max_query_size = dynamicLimit;
