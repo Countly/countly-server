@@ -852,6 +852,26 @@ describe("Testing data migration plugin", function() {
                     }
                 });
         });
+        it("rejects path traversal in import delete exportid", function(done) {
+            var traversalTarget = "/tmp/countly_data_migration_path_traversal_test";
+            var traversalExportId = "../../../../../../../../.." + traversalTarget;
+
+            fs.writeFileSync(traversalTarget, "test");
+            request
+                .post('/i/datamigration/delete_import?exportid=' + encodeURIComponent(traversalExportId) + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(400)
+                .end(function(err) {
+                    if (err) {
+                        fse.removeSync(traversalTarget);
+                        return done(err);
+                    }
+                    if (!fs.existsSync(traversalTarget)) {
+                        return done("Traversal target was deleted");
+                    }
+                    fse.removeSync(traversalTarget);
+                    done();
+                });
+        });
         it("delete import request ", function(done) {
             request
                 .post('/i/datamigration/delete_import?exportid=b18e10498ec0f41a85bb8155ccd4a209819319a3' + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
