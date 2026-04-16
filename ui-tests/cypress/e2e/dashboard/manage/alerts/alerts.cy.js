@@ -77,7 +77,7 @@ describe('Create New Alert', () => {
             });
 
             alertsHelpers.typeAlertName(alertUpdated.alertName);
-            //alertsHelpers.selectDataType(FEATURE_TYPE.CRASHES);
+            alertsHelpers.selectDataType(FEATURE_TYPE.CRASHES);
             alertsHelpers.clickAddFilterButton();
             alertsHelpers.selectFilterCrashesAppVersion(...[appVersion]);
             alertsHelpers.selectTriggerMetric(TRIGGER_METRICS.FATAL_CRASHES_ERRORS_PER_SESSION);
