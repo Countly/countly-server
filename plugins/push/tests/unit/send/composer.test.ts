@@ -396,13 +396,16 @@ describe("Push composer", async() => {
                 as: "tk"
             });
 
-            // Check $project stage
+            // Check $project stage — includes standard drill user-profile fields
             const projectStage = pipeline[2];
-            assert.deepStrictEqual(projectStage.$project, {
-                uid: 1,
-                tk: 1,
-                la: 1
-            });
+            assert(projectStage.$project.uid === 1);
+            assert(projectStage.$project.tk === 1);
+            assert(projectStage.$project.la === 1);
+            assert(projectStage.$project.did === 1);
+            assert(projectStage.$project.custom === 1);
+            assert(projectStage.$project.cmp === 1);
+            assert(projectStage.$project.d === 1);
+            assert(projectStage.$project.p === 1);
         });
 
         it("should include user properties in projection for parametric messages", async() => {
@@ -411,16 +414,13 @@ describe("Push composer", async() => {
 
             const projectStage = pipeline.find((stage: any) => stage.$project);
             assert(projectStage);
-            assert.deepStrictEqual(projectStage.$project, {
-                uid: 1,
-                tk: 1,
-                la: 1,
-                dt: 1,
-                nonExisting: 1,
-                d: 1,
-                did: 1,
-                fs: 1
-            });
+            // Drill fields always present
+            assert(projectStage.$project.did === 1);
+            assert(projectStage.$project.custom === 1);
+            // Parametric message adds its own projection fields on top
+            assert(projectStage.$project.dt === 1);
+            assert(projectStage.$project.nonExisting === 1);
+            assert(projectStage.$project.fs === 1);
         });
 
         it("should add timezone filter when timezone is provided", async() => {
@@ -640,7 +640,7 @@ describe("Push composer", async() => {
             const result = await composeScheduledPushes(db, scheduleEvent);
             const arg = mockSendPushEvents.getCall(0).firstArg?.map(
                 (a: PushEvent) => {
-                    const { payload, ...ret } = a;
+                    const { payload, userProfile, ...ret } = a as any;
                     return ret;
                 }
             );
@@ -651,6 +651,63 @@ describe("Push composer", async() => {
             for (let i = 0; i < events.length; i++) {
                 assert.deepStrictEqual(arg[i], events[i]);
             }
+        });
+
+        it("should mark event composed BEFORE running applyResultObject status checks", async() => {
+            // Reproduces a real bug with timezone-aware recurring schedules:
+            // A schedule has 38 timezone events. Only 1 has users (1 push sent).
+            // The result arrives before all zero-user slots are composed. The
+            // resultor's status check sees "scheduled" events → stays "sending".
+            // Then the remaining zero-user events get composed one by one. If the
+            // composer marks "composed" AFTER applyResultObject, the LAST event's
+            // status check still sees itself as "scheduled" → never transitions
+            // to "sent". Fix: mark "composed" BEFORE applyResultObject so the
+            // last event's check sees all events as "composed".
+            const scheduleEvent = mockData.scheduleEvent();
+            const {appId, messageId, scheduleId} = scheduleEvent;
+            const schedule = mockData.schedule();
+            const message = mockData.message();
+            schedule.appId = appId;
+            schedule._id = scheduleId;
+            schedule.messageId = messageId;
+            message._id = messageId;
+            message.app = appId;
+            const appUsersCollectionName = "app_users" + appId.toString();
+            const { aggregationCursor } = createMockedCollection(appUsersCollectionName);
+            const { collection: messageCollection } = createMockedCollection("messages");
+            const { collection: scheduleCollection } = createMockedCollection("message_schedules");
+            const { collection: appsCollection } = createMockedCollection("apps");
+            const { collection: credsCollection } = createMockedCollection("creds");
+            const creds = mockData.androidCredential();
+
+            // Empty stream — simulates a zero-user timezone slot
+            aggregationCursor.stream.returns((async function*() {})() as any);
+            appsCollection.findOne.resolves({
+                _id: appId, timezone: "NA",
+                plugins: { push: { a: { ...creds, serviceAccountFile: "sa.json" } } }
+            });
+            messageCollection.findOne.resolves(message);
+            scheduleCollection.findOne.resolves(schedule);
+            credsCollection.findOne.resolves(creds);
+
+            await composeScheduledPushes(db, scheduleEvent);
+
+            const calls = scheduleCollection.updateOne.getCalls().map(
+                (c: any) => JSON.stringify(c.args)
+            );
+            const markComposedIdx = calls.findIndex(
+                (c: string) => c.includes('"events.$.status"') && c.includes('"composed"')
+            );
+            const incIdx = calls.findIndex(
+                (c: string) => c.includes('"$inc"') || c.includes('"result.total"')
+            );
+
+            assert(markComposedIdx !== -1, "mark-composed call should exist");
+            assert(incIdx !== -1, "$inc call should exist");
+            assert(
+                markComposedIdx < incIdx,
+                `mark-composed (call ${markComposedIdx}) must run BEFORE applyResultObject $inc (call ${incIdx})`
+            );
         });
 
         it("should merge messageOverrides.contents into message contents", async() => {

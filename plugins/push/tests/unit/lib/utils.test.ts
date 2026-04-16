@@ -233,7 +233,6 @@ describe("Utils", () => {
             const config = await loadPluginConfiguration();
             assert(typeof config === "object");
             assert("messageTimeout" in config || config.messageTimeout === undefined);
-            assert("messageResultsTTL" in config || config.messageResultsTTL === undefined);
         });
 
         it("should not have proxy when not configured", async() => {
@@ -320,9 +319,8 @@ describe("Utils", () => {
         });
     });
 
-    // Note: updateInternalsWithResults depends on processInternalEvents and
-    // updateDataPoints which require DB access (common.writeBatcher). These
-    // CJS dependencies loaded via createRequire cannot be intercepted by esmock.
-    // This function is tested indirectly through resultor.test.ts where it's
-    // mocked at the module boundary.
+    // Note: updatePushDataPoints depends on common.writeBatcher + the
+    // server-stats plugin, both loaded via createRequire which esmock cannot
+    // intercept. The function is tested indirectly through resultor.test.ts
+    // where it's mocked at the module boundary.
 });

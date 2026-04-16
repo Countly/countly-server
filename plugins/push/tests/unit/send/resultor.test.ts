@@ -22,7 +22,7 @@ let {
     createMockedCollection
 } = createMockedMongoDb();
 
-const mockUpdateInternals = sinon.stub();
+const mockEmitPushSentEvents = sinon.stub().resolves();
 
 const {
     buildResultObject,
@@ -34,9 +34,11 @@ const {
     recordSentDates,
 } = await esmock("../../../api/send/resultor.ts", {
     "../../../api/lib/utils.ts": {
-        updateInternalsWithResults: mockUpdateInternals,
         sanitizeMongoPath: (path: string) => path.replace(/\./g, '\uff0e').replace(/\$/g, '\uff04').replace(/\\/g, '\uff3c'),
-    }
+    },
+    "../../../api/lib/event-emitter.ts": {
+        emitPushSentEvents: mockEmitPushSentEvents,
+    },
 });
 
 describe("Resultor", () => {
@@ -47,7 +49,7 @@ describe("Resultor", () => {
             sandbox: mongoMockSandbox,
             createMockedCollection
         } = createMockedMongoDb());
-        mockUpdateInternals.resetHistory();
+        mockEmitPushSentEvents.resetHistory();
     });
 
     describe("buildResultObject", () => {
@@ -532,18 +534,15 @@ describe("Resultor", () => {
             return { ...base, ...overrides } as ResultEvent;
         }
 
-        it("should call updateInternalsWithResults", async() => {
-            const {
-                collection: schedulesCollection
-            } = createMockedCollection("message_schedules");
+        it("should call emitPushSentEvents with the results", async() => {
+            createMockedCollection("message_schedules");
             createMockedCollection("messages");
-            createMockedCollection("message_results");
 
             const result = makeResult();
             await saveResults(db, [result]);
 
-            assert(mockUpdateInternals.calledOnce);
-            assert.strictEqual(mockUpdateInternals.firstCall.firstArg.length, 1);
+            assert(mockEmitPushSentEvents.calledOnce);
+            assert.strictEqual(mockEmitPushSentEvents.firstCall.firstArg.length, 1);
         });
 
         it("should aggregate stats by schedule and apply to documents", async() => {
@@ -555,7 +554,6 @@ describe("Resultor", () => {
             const {
                 collection: messagesCollection
             } = createMockedCollection("messages");
-            createMockedCollection("message_results");
 
             const sent1 = makeResult({ scheduleId, messageId, platform: "a", language: "en" });
             const sent2 = makeResult({ scheduleId, messageId, platform: "a", language: "tr" });
@@ -575,31 +573,28 @@ describe("Resultor", () => {
             assert.deepStrictEqual(messageIncCall.args[0], { _id: messageId });
         });
 
-        it("should save results into message_results when saveResult is true", async() => {
+        it("should forward results to emitPushSentEvents", async() => {
             createMockedCollection("message_schedules");
             createMockedCollection("messages");
-            const {
-                collection: resultsCollection
-            } = createMockedCollection("message_results");
 
             const result = makeResult({ saveResult: true });
             await saveResults(db, [result]);
 
-            assert(resultsCollection.insertMany.calledOnce);
-            assert.strictEqual(resultsCollection.insertMany.firstCall.firstArg.length, 1);
+            assert(mockEmitPushSentEvents.calledOnce);
+            assert.strictEqual(mockEmitPushSentEvents.firstCall.firstArg.length, 1);
+            assert.strictEqual(mockEmitPushSentEvents.firstCall.firstArg[0], result);
         });
 
-        it("should not insert into message_results when saveResult is false", async() => {
+        it("should call emitPushSentEvents regardless of saveResult (emitter applies its own opt-out)", async() => {
             createMockedCollection("message_schedules");
             createMockedCollection("messages");
-            const {
-                collection: resultsCollection
-            } = createMockedCollection("message_results");
 
             const result = makeResult({ saveResult: false });
             await saveResults(db, [result]);
 
-            assert(resultsCollection.insertMany.notCalled);
+            // Resultor doesn't filter — emitter is responsible for the saveResult opt-out.
+            assert(mockEmitPushSentEvents.calledOnce);
+            assert.strictEqual(mockEmitPushSentEvents.firstCall.firstArg[0].saveResult, false);
         });
 
         it("should clear invalid tokens on InvalidDeviceToken errors", async() => {
@@ -607,7 +602,6 @@ describe("Resultor", () => {
             const appIdStr = appId.toString();
             createMockedCollection("message_schedules");
             createMockedCollection("messages");
-            createMockedCollection("message_results");
             const {
                 collection: pushCollection
             } = createMockedCollection("push_" + appIdStr);
@@ -650,7 +644,6 @@ describe("Resultor", () => {
             const appIdStr = appId.toString();
             createMockedCollection("message_schedules");
             createMockedCollection("messages");
-            createMockedCollection("message_results");
             const {
                 collection: pushCollection
             } = createMockedCollection("push_" + appIdStr);
@@ -675,7 +668,6 @@ describe("Resultor", () => {
             const appIdStr = appId.toString();
             createMockedCollection("message_schedules");
             createMockedCollection("messages");
-            createMockedCollection("message_results");
             const {
                 collection: pushCollection
             } = createMockedCollection("push_" + appIdStr);
@@ -708,7 +700,6 @@ describe("Resultor", () => {
             const {
                 collection: messagesCollection
             } = createMockedCollection("messages");
-            createMockedCollection("message_results");
 
             const r1 = makeResult({ scheduleId: scheduleA, messageId: messageA, saveResult: false });
             delete r1.error;
@@ -723,18 +714,5 @@ describe("Resultor", () => {
             assert.strictEqual(messagesCollection.updateOne.callCount, 2);
         });
 
-        it("should not crash when updateInternalsWithResults throws", async() => {
-            createMockedCollection("message_schedules");
-            createMockedCollection("messages");
-            createMockedCollection("message_results");
-
-            mockUpdateInternals.throws(new Error("internal tracking failed"));
-
-            const result = makeResult({ saveResult: false });
-            delete result.error;
-
-            // Should not throw
-            await saveResults(db, [result]);
-        });
     });
 });

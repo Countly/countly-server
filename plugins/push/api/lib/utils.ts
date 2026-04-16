@@ -9,8 +9,6 @@ import { z } from "zod";
 // createRequire needed for CJS modules without ES exports
 const require = createRequire(import.meta.url);
 const common: import('../../../../types/common.js').Common = require('../../../../api/utils/common.js');
-const { processEvents: processInternalEvents } = require('../../../../api/parts/data/events.js');
-const { updateDataPoints } = require('../../../server-stats/api/parts/stats.js');
 
 export interface DrillAPI {
     fetchUsers(params: any, cb: (err: Error, uids: string[]) => void, db: Db): void;
@@ -18,7 +16,6 @@ export interface DrillAPI {
 
 export interface PluginConfiguration {
     messageTimeout?: number;
-    messageResultsTTL?: number;
     proxy?: ProxyConfiguration;
 }
 
@@ -32,7 +29,6 @@ export interface ProxyConfiguration {
 
 export interface PushPluginConfig {
     message_timeout?: number; // should be 3600000 by default. timeout for a message not sent yet (for TooLateToSend errors)
-    message_results_ttl?: number; // should be 7776000000 (90 days) by default. how long to keep message results
     proxyhost?: string;
     proxyport?: string;
     proxyuser?: string;
@@ -45,7 +41,6 @@ type PlainObject = { [key: string]: any };
 export async function loadPluginConfiguration(): Promise<PluginConfiguration> {
     const pushConfig = common.plugins.getConfig("push") as PushPluginConfig;
     const config: PluginConfiguration = {
-        messageResultsTTL: pushConfig.message_results_ttl,
         messageTimeout: pushConfig.message_timeout
     };
     if (pushConfig.proxyhost && pushConfig.proxyport) {
@@ -100,51 +95,6 @@ export function sanitizeMongoPath(path: string): string {
     return path.replace(/\./g, '\uff0e')
         .replace(/\$/g, '\uff04')
         .replace(/\\/g, '\uff3c');
-}
-
-export function updateInternalsWithResults(results: ResultEvent[], log: any): void {
-    const messageIndexedEvents: { [messageId: string]: ResultEvent[] } = {};
-    for (let i = 0; i < results.length; i++) {
-        const mid = results[i].messageId.toString();
-        if (!(mid in messageIndexedEvents)) {
-            messageIndexedEvents[mid] = [];
-        }
-        messageIndexedEvents[mid].push(results[i]);
-    }
-    for (let mid in messageIndexedEvents) {
-        const events = messageIndexedEvents[mid];
-        const trigger = events[0].trigger;
-        const isAutoTrigger = ["cohort", "event"].includes(trigger.kind);
-        const isApiTrigger = trigger.kind === "api";
-        const params = {
-            qstring: {
-                events: [
-                    {
-                        key: "[CLY]_push_sent",
-                        count: events.length,
-                        segmentation: {
-                            i: mid,
-                            a: isAutoTrigger,
-                            t: isApiTrigger,
-                            p: events[0].platform,
-                            ap: String(isAutoTrigger) + events[0].platform,
-                            tp: String(isApiTrigger) + events[0].platform,
-                        }
-                    }
-                ]
-            },
-            app_id: events[0].appId,
-            appTimezone: events[0].appTimezone,
-            time: common.initTimeObj(events[0].appTimezone),
-        };
-        log.d('Recording %d [CLY]_push_sent\'s: %j', events.length, params);
-        processInternalEvents(params).catch(
-            (err: Error) => {
-                log.e('Error while recording %d [CLY]_push_sent\'s: %j', events.length, params, err);
-            }
-        ).then(() => log.d('Recorded %d [CLY]_push_sent\'s: %j', events.length, params));
-        updateDataPoints(common.writeBatcher, events[0].appId.toString(), 0, {"p": events.length});
-    }
 }
 
 export function flattenObject(ob: PlainObject): PlainObject {
