@@ -800,7 +800,7 @@ describe('Testing Alert API against OpenAPI Specification', function() {
             const nonExistentID = "507f1f77bcf86cd799439011"; // Random MongoDB ObjectId
 
             request.get(getRequestURL('/i/alert/delete') + "&alertID=" + nonExistentID)
-                .expect(200)
+                .expect(404)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
@@ -817,7 +817,7 @@ describe('Testing Alert API against OpenAPI Specification', function() {
         it('should fail when alertID parameter is missing', function(done) {
             // Test the endpoint with no alertID parameter
             request.get(getRequestURL('/i/alert/delete'))
-                .expect(200)
+                .expect(404)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);

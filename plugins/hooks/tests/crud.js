@@ -214,7 +214,7 @@ describe('Testing Hooks', function() {
                                 if (err) {
                                     return resolve();
                                 }
-                                res.body.should.have.property('result', 'Invalid configuration for effects');
+                                res.body.should.have.property('result', 'Invalid effect configuration');
                                 resolve();
                             });
                     });
@@ -1119,4 +1119,3 @@ describe('Testing Hooks', function() {
     });
 
 });
-
