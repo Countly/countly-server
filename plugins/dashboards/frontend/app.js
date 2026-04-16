@@ -2,26 +2,8 @@ var plugins = require('../../pluginManager.js');
 var exported = {};
 var countlyConfig = require('../../../frontend/express/config', 'dont-enclose');
 var countlyFs = require('../../../api/utils/countlyFs.js');
+var common = require('../../../api/utils/common.js');
 var path = require('path');
-
-/**
- * Resolve a request path under a static base directory.
- * @param {string} baseDir - base static directory
- * @param {string} requestPath - user-supplied request path
- * @returns {string|null} contained path or null
- */
-function safeStaticPath(baseDir, requestPath) {
-    baseDir = path.resolve(baseDir);
-    requestPath = (requestPath + "").replace(/\\/g, "/");
-    while (requestPath.indexOf("/") === 0) {
-        requestPath = requestPath.substring(1);
-    }
-    var resolvedPath = path.resolve(baseDir, requestPath);
-    if (resolvedPath === baseDir || resolvedPath.indexOf(baseDir + path.sep) === 0) {
-        return resolvedPath;
-    }
-    return null;
-}
 
 (function(plugin) {
     plugin.init = function(/*app, countlyDb*/) {
@@ -42,7 +24,7 @@ function safeStaticPath(baseDir, requestPath) {
             if (req.params && req.params[0]) {
                 fileName = req.params[0];
             }
-            var requestPath = safeStaticPath(__dirname + '/public/images/screenshots', fileName);
+            var requestPath = common.resolvePathInBase(path.resolve(__dirname, './public/images/screenshots'), fileName);
             if (!requestPath) {
                 return res.send(false);
             }

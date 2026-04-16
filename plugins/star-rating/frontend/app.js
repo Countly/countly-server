@@ -1,26 +1,8 @@
 var exported = {},
     countlyFs = require('../../../api/utils/countlyFs.js'),
-    countlyConfig = require("../../../frontend/express/config");
+    countlyConfig = require("../../../frontend/express/config"),
+    common = require('../../../api/utils/common.js');
 var path = require('path');
-
-/**
- * Resolve a request path under a static base directory.
- * @param {string} baseDir - base static directory
- * @param {string} requestPath - user-supplied request path
- * @returns {string|null} contained path or null
- */
-function safeStaticPath(baseDir, requestPath) {
-    baseDir = path.resolve(baseDir);
-    requestPath = (requestPath + "").replace(/\\/g, "/");
-    while (requestPath.indexOf("/") === 0) {
-        requestPath = requestPath.substring(1);
-    }
-    var resolvedPath = path.resolve(baseDir, requestPath);
-    if (resolvedPath === baseDir || resolvedPath.indexOf(baseDir + path.sep) === 0) {
-        return resolvedPath;
-    }
-    return null;
-}
 
 (function(plugin) {
     plugin.init = function(app) {
@@ -66,7 +48,7 @@ function safeStaticPath(baseDir, requestPath) {
             }
         });
         app.get(countlyConfig.path + '/star-rating/images/*', function(req, res) {
-            var imagePath = safeStaticPath(path.resolve(__dirname, './../images'), req.params[0]);
+            var imagePath = common.resolvePathInBase(path.resolve(__dirname, './../images'), req.params[0]);
             if (!imagePath) {
                 res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
                 return;

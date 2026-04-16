@@ -75,25 +75,6 @@ var versionInfo = require('./version.info'),
     { validateCreate } = require('../../api/utils/rights.js'),
     tracker = require('../../api/parts/mgmt/tracker.js');
 
-/**
- * Resolve a request path under a static base directory.
- * @param {string} baseDir - base static directory
- * @param {string} requestPath - user-supplied request path
- * @returns {string|null} contained path or null
- */
-function safeStaticPath(baseDir, requestPath) {
-    baseDir = path.resolve(baseDir);
-    requestPath = (requestPath + "").replace(/\\/g, "/");
-    while (requestPath.indexOf("/") === 0) {
-        requestPath = requestPath.substring(1);
-    }
-    var resolvedPath = path.resolve(baseDir, requestPath);
-    if (resolvedPath === baseDir || resolvedPath.indexOf(baseDir + path.sep) === 0) {
-        return resolvedPath;
-    }
-    return null;
-}
-
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
 var COUNTLY_NAMED_TYPE = "Countly Lite v" + COUNTLY_VERSION;
@@ -521,7 +502,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.sendFile(__dirname + '/public/images/default_app_icon.png');
         }
         else {
-            var appImagePath = safeStaticPath(__dirname + '/public/appimages', req.params[0]);
+            var appImagePath = common.resolvePathInBase(__dirname + '/public/appimages', req.params[0]);
             if (!appImagePath) {
                 res.sendFile(__dirname + '/public/images/default_app_icon.png');
                 return;
@@ -560,7 +541,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.sendFile(__dirname + '/public/images/default_member_icon.png');
         }
         else {
-            var memberImagePath = safeStaticPath(__dirname + '/public/memberimages', req.params[0]);
+            var memberImagePath = common.resolvePathInBase(__dirname + '/public/memberimages', req.params[0]);
             if (!memberImagePath) {
                 res.sendFile(__dirname + '/public/images/default_member_icon.png');
                 return;
@@ -593,7 +574,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.get(countlyConfig.path + "*/screenshots/*", function(req, res) {
-        var screenshotPath = safeStaticPath(__dirname + '/public', req.path);
+        var screenshotPath = common.resolvePathInBase(__dirname + '/public', req.path);
         if (!screenshotPath) {
             return res.send(false);
         }

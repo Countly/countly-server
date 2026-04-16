@@ -36,18 +36,6 @@ module.exports = function(my_db) {
         }
         return null;
     };
-    var safePathIn = function(basePath, filename) {
-        filename = filename + "";
-        if (!filename || common.sanitizeFilename(filename) !== filename) {
-            return null;
-        }
-        basePath = path.resolve(basePath);
-        var resolvedPath = path.resolve(basePath, filename);
-        if (resolvedPath.indexOf(basePath + path.sep) === 0) {
-            return resolvedPath;
-        }
-        return null;
-    };
     var create_con_strings = function() {
         var dbargs = [];
         var db_params = plugins.getDbConnectionParams('countly');
@@ -238,7 +226,7 @@ module.exports = function(my_db) {
                     return;
                 }
                 if (remove_archive) {
-                    var archivePath = safePathIn(baseFolder, my_exportid + '.tar.gz');
+                    var archivePath = common.resolvePathInBase(baseFolder, my_exportid + '.tar.gz');
                     if (archivePath && fs.existsSync(archivePath)) {
                         try {
                             fs.unlinkSync(archivePath);
@@ -250,7 +238,7 @@ module.exports = function(my_db) {
                 }
                 //cleans up default(if exist), then special
                 new Promise(function(resolve0, reject0) {
-                    var dataPath = safePathIn(baseFolder, my_exportid);
+                    var dataPath = common.resolvePathInBase(baseFolder, my_exportid);
                     if (dataPath && fs.existsSync(dataPath)) {
                         //removes default folder if exists
                         fse.remove(dataPath, err => {
@@ -283,7 +271,7 @@ module.exports = function(my_db) {
                                         }
                                     }
                                     var my_dir = path.dirname(res.export_path);
-                                    var exportPath = my_dir ? safePathIn(my_dir, my_exportid) : null;
+                                    var exportPath = my_dir ? common.resolvePathInBase(my_dir, my_exportid) : null;
                                     if (exportPath && fs.existsSync(exportPath)) {
                                         fse.remove(exportPath, err1 => {
                                             if (err1) {
@@ -299,7 +287,7 @@ module.exports = function(my_db) {
                                     }
                                 }
                                 else {
-                                    var defaultPath = safePathIn(baseFolder, my_exportid);
+                                    var defaultPath = common.resolvePathInBase(baseFolder, my_exportid);
                                     if (defaultPath && fs.existsSync(defaultPath)) {
                                         fse.remove(defaultPath, err1 => {
                                             if (err1) {
@@ -324,7 +312,7 @@ module.exports = function(my_db) {
                                 var data = fs.readFileSync(infofile);
                                 var mydata = JSON.parse(data);
                                 if (mydata && mydata.my_folder) {
-                                    var importPath = safePathIn(mydata.my_folder, my_exportid);
+                                    var importPath = common.resolvePathInBase(mydata.my_folder, my_exportid);
                                     if (!importPath) {
                                         reject(Error('data-migration.invalid-exportid'));
                                         return;
