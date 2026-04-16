@@ -26,6 +26,7 @@ const plugins = require('../../../plugins/pluginManager.js');
 
 const router = express.Router();
 
+// TODO: make this value configurable in setting security tab once the page is added to the new dashboard
 const PASSWORD_RESET_TTL_SECONDS = 600;
 const REFRESH_COOKIE_NAME = 'cly_refresh_token';
 
