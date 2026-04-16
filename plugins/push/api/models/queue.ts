@@ -1,0 +1,28 @@
+// Re-export barrel: event types live in kafka/types.ts since they are Kafka message contracts.
+// This file keeps existing import paths (tests, utils) stable.
+export type {
+    PushEventHandler,
+    ScheduleEventHandler,
+    ResultEventHandler,
+    AutoTriggerEventHandler,
+    ScheduleEventDTO,
+    CredentialsDTO,
+    PushEventDTO,
+    ResultEventDTO,
+    AutoTriggerEventDTO,
+    ScheduleEvent,
+    PlatformConfig,
+    BasePushEvent,
+    AndroidPushEvent,
+    HuaweiPushEvent,
+    IOSPushEvent,
+    PushEvent,
+    AndroidResultEvent,
+    HuaweiResultEvent,
+    IOSResultEvent,
+    ResultEvent,
+    BaseTriggerEvent,
+    CohortTriggerEvent,
+    EventTriggerEvent,
+    AutoTriggerEvent,
+} from '../kafka/types.ts';

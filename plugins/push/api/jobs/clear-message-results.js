@@ -1,12 +1,12 @@
 /**
- * @typedef {import("../../../../types/pluginManager").Database} Database
+ * @typedef {import('mongodb').Db} Database
  * @typedef {() => void} DoneCallback
  * @typedef {(i: number, j: number, message: string) => void} ProgressCallback
  * @typedef {{ type: string; value: string; }} ScheduleConfig
  */
 
 const { Job } = require('../../../../jobServer/index.js');
-const { loadPluginConfiguration } = require("../new/lib/utils.js");
+const { loadPluginConfiguration } = require("../lib/utils.ts");
 
 /**
  * Job to clear old message results based on TTL configuration.

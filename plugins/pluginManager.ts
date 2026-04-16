@@ -199,6 +199,24 @@ const exec: typeof cp.exec = cp.exec;
 const spawn: typeof cp.spawn = cp.spawn;
 const configextender: ConfigExtenderFn = require('../api/configextender');
 
+const PLUGIN_FILE_EXTENSIONS = ['.ts', '.js'];
+
+/**
+ * Resolve a plugin file path by checking multiple extensions (.ts, .js).
+ * @param dir - directory to search in
+ * @param basename - filename without extension
+ * @returns resolved path or undefined if not found
+ */
+function resolveWithExtension(dir: string, basename: string): string | undefined {
+    for (const ext of PLUGIN_FILE_EXTENSIONS) {
+        const filepath = path.resolve(dir, basename + ext);
+        if (fs.existsSync(filepath)) {
+            return filepath;
+        }
+    }
+    return undefined;
+}
+
 // ============================================================
 // INTERNAL INTERFACES (used within this module only)
 // ============================================================
@@ -426,10 +444,11 @@ class PluginManager {
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             this.fullPluginsMap[pluginNames[i]] = true;
             try {
-                const filepath = path.resolve(__dirname, pluginNames[i] + '/api/' + (options.filename || 'api') + '.js');
-                if (fs.existsSync(filepath)) {
-                    const initConfigPath = path.resolve(__dirname, pluginNames[i] + '/api/init_configs.js');
-                    if (fs.existsSync(initConfigPath)) {
+                const pluginApiDir = path.resolve(__dirname, pluginNames[i] + '/api/');
+                const filepath = resolveWithExtension(pluginApiDir, options.filename || 'api');
+                if (filepath) {
+                    const initConfigPath = resolveWithExtension(pluginApiDir, 'init_configs');
+                    if (initConfigPath) {
                         require(initConfigPath);
                     }
                     pluginsApis[pluginNames[i]] = require(filepath);
@@ -493,11 +512,15 @@ class PluginManager {
     initPlugin(pluginName: string, filename?: string): void {
         try {
             filename = filename || 'api';
-            const initConfigPath = path.resolve(__dirname, './' + pluginName + '/api/init_configs.js');
-            if (fs.existsSync(initConfigPath)) {
+            const pluginApiDir = path.resolve(__dirname, './' + pluginName + '/api/');
+            const initConfigPath = resolveWithExtension(pluginApiDir, 'init_configs');
+            if (initConfigPath) {
                 require(initConfigPath);
             }
-            pluginsApis[pluginName] = require(path.resolve(__dirname, './' + pluginName + '/api/' + filename));
+            const apiFilePath = resolveWithExtension(pluginApiDir, filename);
+            if (apiFilePath) {
+                pluginsApis[pluginName] = require(apiFilePath);
+            }
             this.fullPluginsMap[pluginName] = true;
         }
         catch (ex: any) {
@@ -1253,13 +1276,13 @@ class PluginManager {
 
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             try {
-                const initConfigPath = path.resolve(__dirname, pluginNames[i] + '/api/init_configs.js');
-                if (fs.existsSync(initConfigPath)) {
+                const initConfigPath = resolveWithExtension(path.resolve(__dirname, pluginNames[i] + '/api/'), 'init_configs');
+                if (initConfigPath) {
                     require(initConfigPath);
                 }
-                const appPath = path.resolve(__dirname, pluginNames[i] + '/frontend/app.js');
+                const appPath = resolveWithExtension(path.resolve(__dirname, pluginNames[i] + '/frontend/'), 'app');
                 let plugin: any;
-                if (fs.existsSync(appPath)) {
+                if (appPath) {
                     plugin = require(appPath);
                     this.plugs.push({ 'name': pluginNames[i], 'plugin': plugin });
                     app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + '/frontend/public', { maxAge: 31557600000 }));
@@ -2276,8 +2299,11 @@ class PluginManager {
 
         let useConfig: MongoDbConfig = JSON.parse(JSON.stringify(countlyConfig));
         if (process.argv[1] && (process.argv[1].endsWith('api/api.js') ||
+                                process.argv[1].endsWith('api/api.ts') ||
                                 process.argv[1].endsWith('api/ingestor.js') ||
+                                process.argv[1].endsWith('api/ingestor.ts') ||
                                 process.argv[1].endsWith('api/aggregator.js') ||
+                                process.argv[1].endsWith('api/aggregator.ts') ||
                                 process.argv[1].includes('/api/') ||
                                 process.argv[1].includes('jobServer/index.js'))) {
             useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
@@ -3491,6 +3517,8 @@ class PluginManager {
         });
     }
 }
+
+export type IPluginManager = PluginManager;
 
 // Create singleton instance
 const pluginManagerInstance = new PluginManager();

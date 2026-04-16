@@ -128,8 +128,8 @@ export interface ValidationArgProperties {
     [key: string]: {
         /** should property be present in args */
         required?: boolean;
-        /** what type should property be, possible values: String, Array, Number, URL, Boolean, Object, Email */
-        type?: 'String' | 'Array' | 'Number' | 'URL' | 'Boolean' | 'Object' | 'Email' | string;
+        /** what type should property be, possible values: String, Array, Number, URL, Boolean, Object, Email, or nested ValidationArgProperties */
+        type?: 'String' | 'Array' | 'Number' | 'URL' | 'Boolean' | 'Object' | 'Email' | string | ValidationArgProperties;
         /** property should not be longer than provided value */
         'max-length'?: number;
         /** property should not be shorter than provided value */
@@ -461,7 +461,7 @@ export interface Common {
      * @param {string} reqTimestamp - timestamp in the request
      * @returns {TimeObject} Time object for current request
      */
-    initTimeObj: (appTimezone: string, reqTimestamp: string | number) => TimeObject;
+    initTimeObj: (appTimezone: string, reqTimestamp?: string | number) => TimeObject;
 
     /**
      * Creates a Date object from provided seconds timestamp in provided timezone
@@ -556,7 +556,7 @@ export interface Common {
      * @param {string} noescape - prevent escaping HTML entities
      * @param {object} heads - headers to add to the output
      */
-    returnOutput: (params: Params, output: output, noescape?: string, heads?: object) => void;
+    returnOutput: (params: Params, output: output, noescape?: string | boolean, heads?: object) => void;
 
     /**
      * Get IP address from request object
@@ -817,7 +817,7 @@ export interface Common {
      * common.dot({a: {b: {c: 'string'}}}, 'a.b.c', 5) === 5
      * common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 5
      */
-    dot: (obj: object, is: string | string[], value: any) => any;
+    dot: (obj: object, is: string | string[], value?: any) => any;
 
     /**
      * Not deep object and primitive type comparison function
