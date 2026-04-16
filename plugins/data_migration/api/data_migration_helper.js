@@ -29,6 +29,25 @@ module.exports = function(my_db) {
     var log = common.log('datamigration:api');
 
     var self = this;
+    var safeDataMigrationId = function(my_exportid) {
+        my_exportid = my_exportid + "";
+        if (my_exportid && common.sanitizeFilename(my_exportid) === my_exportid) {
+            return my_exportid;
+        }
+        return null;
+    };
+    var safePathIn = function(basePath, filename) {
+        filename = filename + "";
+        if (!filename || common.sanitizeFilename(filename) !== filename) {
+            return null;
+        }
+        basePath = path.resolve(basePath);
+        var resolvedPath = path.resolve(basePath, filename);
+        if (resolvedPath.indexOf(basePath + path.sep) === 0) {
+            return resolvedPath;
+        }
+        return null;
+    };
     var create_con_strings = function() {
         var dbargs = [];
         var db_params = plugins.getDbConnectionParams('countly');
@@ -211,11 +230,18 @@ module.exports = function(my_db) {
 
     this.clean_up_data = function(folder, my_exportid, remove_archive) {
         return new Promise(function(resolve, reject) {
-            if (my_exportid !== "") {
+            my_exportid = safeDataMigrationId(my_exportid);
+            if (my_exportid) {
+                var baseFolder = path.resolve(__dirname, './../' + folder);
+                if (['import', 'export'].indexOf(folder) === -1) {
+                    reject(Error('data-migration.invalid-exportid'));
+                    return;
+                }
                 if (remove_archive) {
-                    if (fs.existsSync(path.resolve(__dirname, './../' + folder + '/' + common.sanitizeFilename(my_exportid) + '.tar.gz'))) {
+                    var archivePath = safePathIn(baseFolder, my_exportid + '.tar.gz');
+                    if (archivePath && fs.existsSync(archivePath)) {
                         try {
-                            fs.unlinkSync(path.resolve(__dirname, './../' + folder + '/' + common.sanitizeFilename(my_exportid) + '.tar.gz'));
+                            fs.unlinkSync(archivePath);
                         }
                         catch (err) {
                             log.e(err);
@@ -224,9 +250,10 @@ module.exports = function(my_db) {
                 }
                 //cleans up default(if exist), then special
                 new Promise(function(resolve0, reject0) {
-                    if (fs.existsSync(path.resolve(__dirname, './../' + folder + '/' + my_exportid))) {
+                    var dataPath = safePathIn(baseFolder, my_exportid);
+                    if (dataPath && fs.existsSync(dataPath)) {
                         //removes default folder if exists
-                        fse.remove(path.resolve(__dirname, './../' + folder + '/' + my_exportid), err => {
+                        fse.remove(dataPath, err => {
                             if (err) {
                                 reject0(Error('data-migration.unable-to-remove-directory'));
                             }
@@ -256,8 +283,9 @@ module.exports = function(my_db) {
                                         }
                                     }
                                     var my_dir = path.dirname(res.export_path);
-                                    if (my_dir && fs.existsSync(my_dir + '/' + my_exportid)) {
-                                        fse.remove(my_dir + '/' + my_exportid, err1 => {
+                                    var exportPath = my_dir ? safePathIn(my_dir, my_exportid) : null;
+                                    if (exportPath && fs.existsSync(exportPath)) {
+                                        fse.remove(exportPath, err1 => {
                                             if (err1) {
                                                 reject(Error('data-migration.unable-to-remove-directory'));
                                             }
@@ -271,8 +299,9 @@ module.exports = function(my_db) {
                                     }
                                 }
                                 else {
-                                    if (fs.existsSync(path.resolve(__dirname, './../' + folder + '/' + my_exportid))) {
-                                        fse.remove(path.resolve(__dirname, './../' + folder + '/' + my_exportid), err1 => {
+                                    var defaultPath = safePathIn(baseFolder, my_exportid);
+                                    if (defaultPath && fs.existsSync(defaultPath)) {
+                                        fse.remove(defaultPath, err1 => {
                                             if (err1) {
                                                 reject(Error('data-migration.unable-to-remove-directory'));
                                             }
@@ -295,7 +324,12 @@ module.exports = function(my_db) {
                                 var data = fs.readFileSync(infofile);
                                 var mydata = JSON.parse(data);
                                 if (mydata && mydata.my_folder) {
-                                    fse.remove(mydata.my_folder + "/" + my_exportid, err => {
+                                    var importPath = safePathIn(mydata.my_folder, my_exportid);
+                                    if (!importPath) {
+                                        reject(Error('data-migration.invalid-exportid'));
+                                        return;
+                                    }
+                                    fse.remove(importPath, err => {
                                         if (err) {
                                             reject(Error('data-migration.unable-to-remove-directory'));
                                         }
