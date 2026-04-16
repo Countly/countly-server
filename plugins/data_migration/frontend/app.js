@@ -32,7 +32,12 @@ function safeFilename(filename) {
                         if (!err && data) {
                             var myfile = common.resolvePathInBase(path.resolve(__dirname, './../export'), exportid + '.tar.gz');
                             if (data.export_path && data.export_path !== '') {
-                                myfile = data.export_path;
+                                var customExportPath = path.resolve(data.export_path + "");
+                                if (path.basename(customExportPath) !== exportid + '.tar.gz') {
+                                    res.status(400).send('Invalid export file');
+                                    return;
+                                }
+                                myfile = customExportPath;
                             }
                             if (fs.existsSync(myfile)) {
                                 res.set('Content-Type', 'application/x-gzip');
@@ -43,6 +48,14 @@ function safeFilename(filename) {
                                 res.status(404).send('Export file not found');
                                 return;
                             }
+                        }
+                        else if (err) {
+                            res.status(500).send('Error loading export file');
+                            return;
+                        }
+                        else {
+                            res.status(404).send('Export file not found');
+                            return;
                         }
                     });
                 }

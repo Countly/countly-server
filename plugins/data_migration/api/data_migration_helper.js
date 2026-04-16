@@ -220,11 +220,11 @@ module.exports = function(my_db) {
         return new Promise(function(resolve, reject) {
             my_exportid = safeDataMigrationId(my_exportid);
             if (my_exportid) {
-                var baseFolder = path.resolve(__dirname, './../' + folder);
                 if (['import', 'export'].indexOf(folder) === -1) {
-                    reject(Error('data-migration.invalid-exportid'));
+                    reject(Error('data-migration.invalid-folder'));
                     return;
                 }
+                var baseFolder = path.resolve(__dirname, './../' + folder);
                 if (remove_archive) {
                     var archivePath = common.resolvePathInBase(baseFolder, my_exportid + '.tar.gz');
                     if (archivePath && fs.existsSync(archivePath)) {
