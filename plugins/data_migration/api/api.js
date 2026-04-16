@@ -237,9 +237,19 @@ function trim_ending_slashes(address) {
                 data_migrator.import_data(params.files.import_file, params, logpath, log, foldername);
             }
             else if (params.qstring.existing_file) {
+                var importBasePath = path.resolve(__dirname, './../import');
+                var existingFileInput = (params.qstring.existing_file + "").trim();
+                var resolvedExistingFilePath = null;
 
-                if (fs.existsSync(params.qstring.existing_file)) {
-                    var fname = path.basename(params.qstring.existing_file);//path to file
+                if (safeDataMigrationId(existingFileInput)) {
+                    resolvedExistingFilePath = common.resolvePathInBase(importBasePath, existingFileInput + '.tar.gz');
+                }
+                else if (existingFileInput.endsWith('.tar.gz') && common.sanitizeFilename(existingFileInput) === existingFileInput) {
+                    resolvedExistingFilePath = common.resolvePathInBase(importBasePath, existingFileInput);
+                }
+
+                if (resolvedExistingFilePath && fs.existsSync(resolvedExistingFilePath)) {
+                    var fname = path.basename(resolvedExistingFilePath);//path to file
                     fname = fname.split(".");
                     foldername = fname[0];
 
@@ -250,7 +260,7 @@ function trim_ending_slashes(address) {
                         logpath = path.resolve(__dirname, '../../../log/dm-import_' + foldername + '.log');
                         common.returnMessage(params, 200, "data-migration.import-started");
                         data_migrator = new migration_helper();
-                        data_migrator.importExistingData(params.qstring.existing_file, params, logpath, log, foldername);
+                        data_migrator.importExistingData(resolvedExistingFilePath, params, logpath, log, foldername);
                     }
                 }
                 else {
