@@ -1207,6 +1207,14 @@ const FEATURE_NAME = 'views';
                             graphKeys = [];
                         }
                     }
+                    //Clean out any graphKeys in wrong format
+                    var cleanGraphKeys = [];
+                    for (var gk = 0; gk < graphKeys.length; gk++) {
+                        if (graphKeys[gk] && graphKeys[gk].view) {
+                            cleanGraphKeys.push(graphKeys[gk]);
+                        }
+                    }
+                    graphKeys = cleanGraphKeys;
                     if (graphKeys.length === 0) {
                         common.returnOutput(params, {appID: params.qstring.app_id, data: []});
                     }
