@@ -956,9 +956,15 @@ describe("Testing data migration plugin", function() {
 
         it("Call import process", function(done) {
             tt = "b18e10498ec0f41a85bb8155ccd4a209819319a3";
-            var dir = path.resolve(__dirname, './' + tt + '.tar.gz');
+            var sourcePath = path.resolve(__dirname, './' + tt + '.tar.gz');
+            var importDir = path.resolve(__dirname, './../import');
+            var importPath = path.resolve(importDir, './' + tt + '.tar.gz');
+            if (!fs.existsSync(importDir)) {
+                fs.mkdirSync(importDir, 484);
+            }
+            fs.copyFileSync(sourcePath, importPath);
             request
-                .post('/i/datamigration/import?ts=000000&existing_file=' + dir)
+                .post('/i/datamigration/import?ts=000000&existing_file=' + tt)
                 .set('countly-token', mytoken)
                 .expect(200)
                 .end(function(err, res) {
