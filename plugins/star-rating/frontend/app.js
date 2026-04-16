@@ -3,6 +3,7 @@ var exported = {},
     countlyConfig = require("../../../frontend/express/config"),
     common = require('../../../api/utils/common.js');
 var path = require('path');
+var log = common.log('star-rating:frontend');
 
 (function(plugin) {
     plugin.init = function(app) {
@@ -63,6 +64,15 @@ var path = require('path');
                             res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
                         }
                         else {
+                            stream.on('error', function(error) {
+                                log.e(error);
+                                if (!res.headersSent) {
+                                    res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
+                                }
+                                else {
+                                    res.end();
+                                }
+                            });
                             res.writeHead(200, {
                                 'Accept-Ranges': 'bytes',
                                 'Cache-Control': 'public, max-age=31536000',

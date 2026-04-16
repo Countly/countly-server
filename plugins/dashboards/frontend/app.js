@@ -4,6 +4,7 @@ var countlyConfig = require('../../../frontend/express/config', 'dont-enclose');
 var countlyFs = require('../../../api/utils/countlyFs.js');
 var common = require('../../../api/utils/common.js');
 var path = require('path');
+var log = common.log('dashboards:frontend');
 
 (function(plugin) {
     plugin.init = function(/*app, countlyDb*/) {
@@ -37,6 +38,13 @@ var path = require('path');
                     if (err2 || !stream) {
                         return res.send(false);
                     }
+                    stream.on('error', function(streamErr) {
+                        log.e(streamErr);
+                        if (!res.headersSent) {
+                            return res.send(false);
+                        }
+                        res.end();
+                    });
 
                     res.writeHead(200, {
                         'Accept-Ranges': 'bytes',

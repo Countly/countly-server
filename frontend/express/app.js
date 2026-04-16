@@ -517,6 +517,15 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                             res.sendFile(__dirname + '/public/images/default_app_icon.png');
                         }
                         else {
+                            stream.on('error', function(streamErr) {
+                                log.e(streamErr);
+                                if (!res.headersSent) {
+                                    res.sendFile(__dirname + '/public/images/default_app_icon.png');
+                                }
+                                else {
+                                    res.end();
+                                }
+                            });
                             res.writeHead(200, {
                                 'Accept-Ranges': 'bytes',
                                 'Cache-Control': 'public, max-age=31536000',
@@ -556,6 +565,15 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                             res.sendFile(__dirname + '/public/images/default_member_icon.png');
                         }
                         else {
+                            stream.on('error', function(streamErr) {
+                                log.e(streamErr);
+                                if (!res.headersSent) {
+                                    res.sendFile(__dirname + '/public/images/default_member_icon.png');
+                                }
+                                else {
+                                    res.end();
+                                }
+                            });
                             res.writeHead(200, {
                                 'Accept-Ranges': 'bytes',
                                 'Cache-Control': 'public, max-age=31536000',
@@ -587,6 +605,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 if (err2 || !stream) {
                     return res.send(false);
                 }
+                stream.on('error', function(streamErr) {
+                    log.e(streamErr);
+                    if (!res.headersSent) {
+                        return res.send(false);
+                    }
+                    res.end();
+                });
 
                 res.writeHead(200, {
                     'Accept-Ranges': 'bytes',
