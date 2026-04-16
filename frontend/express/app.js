@@ -75,6 +75,25 @@ var versionInfo = require('./version.info'),
     { validateCreate } = require('../../api/utils/rights.js'),
     tracker = require('../../api/parts/mgmt/tracker.js');
 
+/**
+ * Resolve a request path under a static base directory.
+ * @param {string} baseDir - base static directory
+ * @param {string} requestPath - user-supplied request path
+ * @returns {string|null} contained path or null
+ */
+function safeStaticPath(baseDir, requestPath) {
+    baseDir = path.resolve(baseDir);
+    requestPath = (requestPath + "").replace(/\\/g, "/");
+    while (requestPath.indexOf("/") === 0) {
+        requestPath = requestPath.substring(1);
+    }
+    var resolvedPath = path.resolve(baseDir, requestPath);
+    if (resolvedPath === baseDir || resolvedPath.indexOf(baseDir + path.sep) === 0) {
+        return resolvedPath;
+    }
+    return null;
+}
+
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
 var COUNTLY_NAMED_TYPE = "Countly Lite v" + COUNTLY_VERSION;
@@ -502,12 +521,17 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.sendFile(__dirname + '/public/images/default_app_icon.png');
         }
         else {
-            countlyFs.getStats("appimages", __dirname + '/public/appimages/' + req.params[0], {id: req.params[0]}, function(err, stats) {
+            var appImagePath = safeStaticPath(__dirname + '/public/appimages', req.params[0]);
+            if (!appImagePath) {
+                res.sendFile(__dirname + '/public/images/default_app_icon.png');
+                return;
+            }
+            countlyFs.getStats("appimages", appImagePath, {id: req.params[0]}, function(err, stats) {
                 if (err || !stats || !stats.size) {
                     res.sendFile(__dirname + '/public/images/default_app_icon.png');
                 }
                 else {
-                    countlyFs.getStream("appimages", __dirname + '/public/appimages/' + req.params[0], {id: req.params[0]}, function(err2, stream) {
+                    countlyFs.getStream("appimages", appImagePath, {id: req.params[0]}, function(err2, stream) {
                         if (err2 || !stream) {
                             res.sendFile(__dirname + '/public/images/default_app_icon.png');
                         }
@@ -536,12 +560,17 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.sendFile(__dirname + '/public/images/default_member_icon.png');
         }
         else {
-            countlyFs.getStats("memberimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err, stats) {
+            var memberImagePath = safeStaticPath(__dirname + '/public/memberimages', req.params[0]);
+            if (!memberImagePath) {
+                res.sendFile(__dirname + '/public/images/default_member_icon.png');
+                return;
+            }
+            countlyFs.getStats("memberimages", memberImagePath, {id: req.params[0]}, function(err, stats) {
                 if (err || !stats || !stats.size) {
                     res.sendFile(__dirname + '/public/images/default_member_icon.png');
                 }
                 else {
-                    countlyFs.getStream("memberimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err2, stream) {
+                    countlyFs.getStream("memberimages", memberImagePath, {id: req.params[0]}, function(err2, stream) {
                         if (err2 || !stream) {
                             res.sendFile(__dirname + '/public/images/default_member_icon.png');
                         }
@@ -564,12 +593,16 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.get(countlyConfig.path + "*/screenshots/*", function(req, res) {
-        countlyFs.getStats("screenshots", __dirname + '/public/' + req.path, {id: "core"}, function(err, stats) {
+        var screenshotPath = safeStaticPath(__dirname + '/public', req.path);
+        if (!screenshotPath) {
+            return res.send(false);
+        }
+        countlyFs.getStats("screenshots", screenshotPath, {id: "core"}, function(err, stats) {
             if (err || !stats || !stats.size) {
                 return res.send(false);
             }
 
-            countlyFs.getStream("screenshots", __dirname + '/public/' + req.path, {id: "core"}, function(err2, stream) {
+            countlyFs.getStream("screenshots", screenshotPath, {id: "core"}, function(err2, stream) {
                 if (err2 || !stream) {
                     return res.send(false);
                 }

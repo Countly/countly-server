@@ -2,6 +2,26 @@ var plugins = require('../../pluginManager.js');
 var exported = {};
 var countlyConfig = require('../../../frontend/express/config', 'dont-enclose');
 var countlyFs = require('../../../api/utils/countlyFs.js');
+var path = require('path');
+
+/**
+ * Resolve a request path under a static base directory.
+ * @param {string} baseDir - base static directory
+ * @param {string} requestPath - user-supplied request path
+ * @returns {string|null} contained path or null
+ */
+function safeStaticPath(baseDir, requestPath) {
+    baseDir = path.resolve(baseDir);
+    requestPath = (requestPath + "").replace(/\\/g, "/");
+    while (requestPath.indexOf("/") === 0) {
+        requestPath = requestPath.substring(1);
+    }
+    var resolvedPath = path.resolve(baseDir, requestPath);
+    if (resolvedPath === baseDir || resolvedPath.indexOf(baseDir + path.sep) === 0) {
+        return resolvedPath;
+    }
+    return null;
+}
 
 (function(plugin) {
     plugin.init = function(/*app, countlyDb*/) {
@@ -18,20 +38,20 @@ var countlyFs = require('../../../api/utils/countlyFs.js');
             if (!req || !req.params) {
                 return res.send(false);
             }
-            var requestPath = req.path;
-            var reqArray = requestPath.split("/");
             var fileName = "";
-            if (reqArray && reqArray.length) {
-                reqArray[0] += "/frontend/public";
-                fileName = reqArray[reqArray.length - 1];
+            if (req.params && req.params[0]) {
+                fileName = req.params[0];
             }
-            requestPath = reqArray.join("/");
-            countlyFs.getStats("screenshots", __dirname + '/../../../plugins/' + requestPath, {id: "dashboards/" + fileName}, function(err, stats) {
+            var requestPath = safeStaticPath(__dirname + '/public/images/screenshots', fileName);
+            if (!requestPath) {
+                return res.send(false);
+            }
+            countlyFs.getStats("screenshots", requestPath, {id: "dashboards/" + fileName}, function(err, stats) {
                 if (err || !stats || !stats.size) {
                     return res.send(false);
                 }
 
-                countlyFs.getStream("screenshots", __dirname + '/../../../plugins/' + requestPath, {id: "dashboards/" + fileName}, function(err2, stream) {
+                countlyFs.getStream("screenshots", requestPath, {id: "dashboards/" + fileName}, function(err2, stream) {
                     if (err2 || !stream) {
                         return res.send(false);
                     }
