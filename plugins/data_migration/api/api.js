@@ -37,25 +37,6 @@ function safeDataMigrationId(exportid) {
 }
 
 /**
- * Resolve a filename under a base path after filename validation.
- * @param {string} basePath - base directory
- * @param {string} filename - filename to resolve under base directory
- * @returns {string|null} contained path or null
- */
-function safePathIn(basePath, filename) {
-    filename = filename + "";
-    if (!filename || common.sanitizeFilename(filename) !== filename) {
-        return null;
-    }
-    basePath = path.resolve(basePath);
-    var resolvedPath = path.resolve(basePath, filename);
-    if (resolvedPath.indexOf(basePath + path.sep) === 0) {
-        return resolvedPath;
-    }
-    return null;
-}
-
-/**
 *Function to delete all exported files in export folder
 * @returns {Promise} Promise
 */
@@ -342,7 +323,10 @@ function trim_ending_slashes(address) {
                             var data_migrator = new migration_helper(common.db);
 
                             data_migrator.clean_up_data('export', exportid, true).then(function() {
-                                var logPath = res.log ? safePathIn(path.resolve(__dirname, './../../../log'), res.log) : null;
+                                var logPath = null;
+                                if (res.log && common.sanitizeFilename(res.log) === (res.log + "")) {
+                                    logPath = common.resolvePathInBase(path.resolve(__dirname, './../../../log'), res.log);
+                                }
                                 if (res.log && !logPath) {
                                     common.returnMessage(ob.params, 401, "data-migration.unable-to-delete-log-file");
                                     return;
@@ -405,7 +389,7 @@ function trim_ending_slashes(address) {
                 var data_migrator = new migration_helper(common.db);
                 data_migrator.clean_up_data('import', exportid, true).then(function() {
                     //delete log file
-                    var importLogPath = safePathIn(path.resolve(__dirname, './../../../log'), 'dm-import_' + exportid + '.log');
+                    var importLogPath = common.resolvePathInBase(path.resolve(__dirname, './../../../log'), 'dm-import_' + exportid + '.log');
                     if (importLogPath && fs.existsSync(importLogPath)) {
                         try {
                             fs.unlinkSync(importLogPath);
@@ -416,7 +400,7 @@ function trim_ending_slashes(address) {
                     }
                     //delete info file
                     try {
-                        var importInfoPath = safePathIn(path.resolve(__dirname, './../import'), exportid + '.json');
+                        var importInfoPath = common.resolvePathInBase(path.resolve(__dirname, './../import'), exportid + '.json');
                         if (importInfoPath) {
                             fs.unlinkSync(importInfoPath);
                         }
