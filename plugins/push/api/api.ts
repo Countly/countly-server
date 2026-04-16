@@ -127,7 +127,7 @@ plugins.register('/i/app_users/export', ({ app_id, uids, export_commands, dbargs
  * @apiDefine PushMessageBody
  *
  * @apiBody {ObjectID} app Application ID
- * @apiBody {Boolean} saveResults Store each individual push message result into message_results for debugging
+ * @apiBody {Boolean} saveResults If true, emit a [CLY]_push_sent drill event per result (so deliveries show up on drill / user profiles). Set false to suppress drill emission for this message.
  * @apiBody {String[]} platforms Array of platforms to send to
  * @apiBody {String="draft"} [status] Message status, only set to draft when creating or editing a draft message, don't set otherwise
  * @apiBody {Object} filter={} User profile filter to limit recipients of this message
@@ -176,7 +176,7 @@ plugins.register('/i/app_users/export', ({ app_id, uids, export_commands, dbargs
  *
  * @apiSuccess {ObjectID} _id Message ID
  * @apiSuccess {ObjectID} app Application ID
- * @apiSuccess {Boolean} saveResults Store each individual push message result into message_results for debugging
+ * @apiSuccess {Boolean} saveResults If true, emit a [CLY]_push_sent drill event per result (so deliveries show up on drill / user profiles). Set false to suppress drill emission for this message.
  * @apiSuccess {String[]} platforms Array of platforms to send to
  * @apiSuccess {Number} state Message state, for internal use
  * @apiSuccess {String="created", "inactive", "draft", "scheduled", "sending", "sent", "stopped", "failed"} [status] Message status: "created" is for messages yet to be scheduled (put into queue), "inactive" - cannot be scheduled (approval required for push approver plugin), "draft", "scheduled", "sending", "sent", "stopped" - automated message has been stopped, "failed" - failed to send all notifications

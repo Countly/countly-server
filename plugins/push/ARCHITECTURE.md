@@ -40,13 +40,19 @@ Each stage is decoupled through Kafka, allowing independent scaling and fault is
   - `kafka/producer.ts` — Kafka producer setup, topic management, and event publishing functions (`sendPushEvents`, `sendScheduleEvents`, etc.). Imported by `send/` modules for publishing.
   - `kafka/consumer.ts` — `initPushQueue()` consumer setup and message routing. This is the only file that imports the send pipeline handlers, keeping the dependency one-directional.
 - **`send/platforms/`** — Each platform file co-locates its payload types (`AndroidMessagePayload`, `IOSConfig`, etc.) with its send logic. Platform-specific types are not shared across a central types file.
-- **`lib/`** — Shared utilities with no Kafka or send-pipeline dependencies (template compilation, error types, validation helpers).
+- **`lib/`** — Shared utilities with no Kafka or send-pipeline dependencies (template compilation, error types, validation helpers, the drill event emitter).
+- **Per-process entry files**: the plugin manager loads different top-level files per process based on `plugins.init({ filename })`:
+  - `api.ts` — loaded in every process (the default).
+  - `aggregator.ts` — loaded only in the aggregator process (by `api/aggregator.ts`). Hosts `plugins.register('/aggregator', ...)` handlers.
+  - `ingestor.ts` — loaded only in the ingestor process (by `api/ingestor.ts`). Hosts `/sdk/process_request` hooks that need to run before events are written to drill_events.
 
 ## Directory Structure
 
 ```
 plugins/push/api/
-├── api.ts                  # Main plugin entry, registers all hooks
+├── api.ts                  # Main plugin entry, registers all hooks (loaded in all processes)
+├── aggregator.ts           # Aggregator-process-only: kafka producer setup + [CLY]_push_sent/_action → events_data handler
+├── ingestor.ts             # Ingestor-process-only: /sdk/process_request hook enriching [CLY]_push_action
 ├── api-message.ts          # Message CRUD operations (create/validate/update/remove)
 ├── api-push.ts             # Credentials, config, dashboard endpoints
 ├── api-auto.ts             # Auto-trigger message endpoints
@@ -62,7 +68,8 @@ plugins/push/api/
 │   ├── api-patches.ts      # Wrappers for validateCreate/Read/Update/Delete
 │   ├── template.ts         # Template compilation and personalization
 │   ├── error.ts            # Error types (SendError, InvalidDeviceToken, etc.)
-│   └── utils.ts            # Shared utilities (proxy, drill, flatten, etc.)
+│   ├── event-emitter.ts    # Emits [CLY]_push_sent drill events via UnifiedEventSink
+│   └── utils.ts            # Shared utilities (proxy, drill, flatten, data points, etc.)
 ├── send/
 │   ├── scheduler.ts        # Schedule creation and date calculation
 │   ├── composer.ts         # User aggregation, push event creation
@@ -190,19 +197,29 @@ When a `ScheduleEvent` arrives from the COMPOSE topic, `composeScheduledPushes()
 
 `saveResults()` processes `ResultEvent`s:
 
-1. **Update internals**: Calls `updateInternalsWithResults()` for real-time internal tracking
-2. **Aggregate stats**: Groups results by `scheduleId`, builds `Result` objects with hierarchical stats:
+1. **Update billing data points**: `updatePushDataPoints()` increments the `server_stats_data_points` counter per app (`p: count`).
+2. **Emit `[CLY]_push_sent` drill events** (`lib/event-emitter.ts`): one drill row per `ResultEvent` (respecting each message's `saveResult` opt-out), written via `UnifiedEventSink` — which fans out to the mongo `drill_events` collection and (when `eventSink.sinks` includes `'kafka'`) the `countly-drill-events` kafka topic. From there:
+   - **Drill** reads `drill_events` directly to surface the push on user profiles / the drill UI.
+   - **The aggregator process** consumes the same stream and folds counts into `events_data` (via the plugin-owned handler in `plugins/push/api/aggregator.ts`, which also covers `[CLY]_push_action` emitted by the SDK).
+   - **ClickHouse `drill_events`** is populated by the existing CH ingest consumer on the kafka topic — no push-plugin code involved.
+3. **Aggregate stats**: Groups results by `scheduleId`, builds `Result` objects with hierarchical stats:
    ```
    result.total/sent/failed
    └── result.subs[platform].total/sent/failed
        └── result.subs[platform].subs[language].total/sent/failed
    ```
-3. **Apply to documents**: `applyResultObject()` uses `$inc` to atomically update both `message_schedules` and `messages` collections. Also transitions schedule status:
+4. **Apply to documents**: `applyResultObject()` uses `$inc` to atomically update both `message_schedules` and `messages` collections. Also transitions schedule status:
    - `scheduled` + `composed` events → `"sending"`
    - All composed + `sent + failed >= total` → `"sent"` or `"failed"`
-4. **Save raw results**: Inserts `ResultEvent`s into `message_results` (if `saveResult: true`)
-5. **Clean invalid tokens**: For `InvalidDeviceToken` errors, removes the token from both `push_{appId}` (the `tk` field) and `app_users{appId}` (the `tk{combined}` field)
-6. **Record sent dates**: Adds timestamps to `push_{appId}.msgs.{messageId}` array using `$addToSet` (used for cap/sleep filtering in auto-triggers)
+5. **Clean invalid tokens**: For `InvalidDeviceToken` errors, removes the token from both `push_{appId}` (the `tk` field) and `app_users{appId}` (the `tk{combined}` field).
+6. **Record sent dates**: Adds timestamps to `push_{appId}.msgs.{messageId}` array using `$addToSet` (used for cap/sleep filtering in auto-triggers).
+
+**Event shape** of the emitted `[CLY]_push_sent` drill doc:
+- Core fields: `_id` (deterministic — `${appId}_${uid}_${sentAt}_${messageId}` — so kafka retries don't dupe), `a`, `e: '[CLY]_push_sent'`, `n`, `uid`, `_uid`, `did`, `ts`, `cd`, `c: 1`, `s: 0`, `dur: 0`.
+- `sg`: `messageId`, `scheduleId`, `token`, `platform`, `env`, `language`, `credentialHash`, `appTimezone`, `sendBefore`, `triggerKind`, `success`, `errorName`, `errorMessage`, plus JSON-stringified `payload` / `platformConfiguration` / `trigger` / `response`.
+- `up` / `custom` / `cmp`: populated from the matching `app_users{appId}` document (one `$in` lookup per result batch, grouped by app).
+
+**Deployment note:** for ClickHouse `drill_events` to be populated, the deployment must configure `eventSink.sinks` to include `'kafka'`. Without that, events still reach drill (mongo) and `events_data` (aggregator via change stream), but not ClickHouse.
 
 ## Kafka Queue
 
@@ -311,7 +328,8 @@ Huawei reuses Android's `mapMessageToPayload()`, then wraps only the `.data` pro
 |------------|-------------|-------|
 | `messages` | Push message documents (config, triggers, contents, cumulative results) | `models/message.ts` → `Message`, `MessageCollection` |
 | `message_schedules` | Schedule documents per message (one-to-many). Tracks events, status, per-schedule results | `models/schedule.ts` → `Schedule`, `ScheduleCollection` |
-| `message_results` | Raw send results (one per push attempt, when `saveResult: true`) | — |
+| `drill_events` (shared) | `[CLY]_push_sent` rows are emitted here by resultor (via `UnifiedEventSink`) per successful/failed delivery. Read by drill and by the plugin's aggregator handler. Not owned by the push plugin. | — |
+| `events_data` (shared) | Aggregated `[CLY]_push_sent` + `[CLY]_push_action` counts produced by the plugin's aggregator handler (`api/aggregator.ts`). Read by `api-dashboard.ts`. Not owned by the push plugin. | — |
 | `push_{appId}` | Per-app token storage. `_id` = user uid, `tk` = token map, `msgs` = sent message timestamps | — |
 | `app_users{appId}` | Core user collection. Token existence flags (`tkap`, `tkhp`, etc.) used for audience filtering | — |
 | `apps` | App documents with `plugins.push` containing credential references | — |

@@ -50,6 +50,19 @@ export interface ScheduleEvent {
 
 export type PlatformConfig = IOSConfig|AndroidConfig|HuaweiConfig;
 
+/**
+ * User profile snapshot captured at composition time from the app_users{appId}
+ * doc. Carried through to the ResultEvent so the event-emitter can produce
+ * drill_events rows without a second round-trip to the DB.
+ */
+export interface PushEventUserProfile {
+    _uid?: string;                        // app_users._id
+    did?: string;                         // device id
+    up?: Record<string, unknown>;         // standard user properties (preset.up keys)
+    custom?: Record<string, unknown>;     // user custom properties
+    cmp?: Record<string, unknown>;        // legacy campaign data
+}
+
 export interface BasePushEvent {
     appId: ObjectId;
     messageId: ObjectId;
@@ -67,10 +80,11 @@ export interface BasePushEvent {
     // to keep track of the original send date and throw TooLateToSend error in
     // the sender if the push event is not sent before this date.
     sendBefore?: Date;
-    // these are required for internal post processing in resultor.js@updateInternals
-    // could be removed to reduce the size of this PushEvent and ResultEvent in the future.
-    trigger: MessageTrigger; // trigger that caused this push event to be created:
+    trigger: MessageTrigger; // trigger that caused this push event to be created
     appTimezone: string; // timezone of the app
+    // User-profile snapshot from composition time. The event-emitter reads this
+    // to build drill_events rows without an extra app_users lookup.
+    userProfile?: PushEventUserProfile;
 }
 
 export interface AndroidPushEvent extends BasePushEvent {

@@ -170,13 +170,20 @@ export async function composeScheduledPushes(db: Db, scheduleEvent: ScheduleEven
     if (events && events.length) {
         await queue.sendPushEvents(events);
     }
-    // update the schedule and message document
-    await applyResultObject(db, scheduleId, messageId, resultObject);
-    // mark this specific schedule event as 'composed'
+    // Mark this specific schedule event as 'composed' BEFORE running
+    // applyResultObject. The status-transition queries inside applyResultObject
+    // need this event to be "composed" so the { "events.status": { $ne:
+    // "scheduled" } } filter can match. For timezone-aware schedules with
+    // many timezone slots (most having zero users), the resultor may have
+    // already processed results while later zero-user slots are still being
+    // composed. Only the LAST slot's applyResultObject will see all events as
+    // "composed" and can transition the status to "sent".
     await scheduleCol.updateOne(
         { _id: scheduleId, "events.scheduledTo": scheduledTo },
         { $set: { "events.$.status": "composed" } }
     );
+    // update the schedule and message document
+    await applyResultObject(db, scheduleId, messageId, resultObject);
 
     // check if we need to re-schedule this message
     const reschedulableTrigger = messageDoc.triggers
@@ -246,6 +253,18 @@ export async function* createPushStream(
                 platformConfiguration: getPlatformConfiguration(platform, messageDoc),
                 trigger: messageDoc.triggers[0],
                 appTimezone: appDoc.timezone,
+                userProfile: {
+                    _uid: user._id,
+                    did: user.did,
+                    up: {
+                        fs: user.fs, ls: user.ls, sc: user.sc, tsd: user.tsd,
+                        d: user.d, dt: user.dt, p: user.p, pv: user.pv, av: user.av,
+                        cc: user.cc, cty: user.cty, rgn: user.rgn,
+                        src: user.src, src_ch: user.src_ch, la: user.la,
+                    },
+                    custom: user.custom,
+                    cmp: user.cmp,
+                },
             } as PushEvent;
         }
     }
@@ -263,7 +282,16 @@ export async function buildUserAggregationPipeline(
 ): Promise<Document[]> {
     const appId = message.app.toString();
     const $match: { [key: string]: any } = {};
-    const $project = { uid: 1, tk: 1, la: 1, ...userPropsProjection(message) };
+    const $project = {
+        uid: 1, tk: 1, la: 1,
+        // Fields needed for drill event emission in the resultor (via PushEvent.userProfile).
+        // These are read by event-emitter.ts to produce drill_events rows without a
+        // second round-trip to app_users.
+        did: 1, custom: 1, cmp: 1,
+        d: 1, dt: 1, p: 1, pv: 1, av: 1, cc: 1, cty: 1, rgn: 1, src: 1, src_ch: 1,
+        fs: 1, ls: 1, sc: 1, tsd: 1,
+        ...userPropsProjection(message),
+    };
     const $lookup = {
         from: "push_" + appId,
         localField: 'uid',

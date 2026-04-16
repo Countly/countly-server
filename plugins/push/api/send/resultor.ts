@@ -3,7 +3,8 @@ import type { Db, AnyBulkWriteOperation, BulkWriteResult, SetFields } from "mong
 import type { ResultEvent } from "../kafka/types.ts";
 import type { Result, PlatformKey } from "../models/message.ts";
 import { InvalidDeviceToken } from "../lib/error.ts";
-import { updateInternalsWithResults, sanitizeMongoPath } from "../lib/utils.ts";
+import { sanitizeMongoPath } from "../lib/utils.ts";
+import { emitPushSentEvents } from "../lib/event-emitter.ts";
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
@@ -27,17 +28,16 @@ export const STAT_KEYS: Stat[] = ["total", "sent", "failed", "actioned"];
 
 /**
  * Processes the given results, updates the relevant Schedule and Message
- * documents, saves the results into message_results collection, clears
- * invalid tokens from app_users{appId} and push_{appId} collections and
- * records sent dates into push_{appId} collections.
+ * documents, emits [CLY]_push_sent drill events (via UnifiedEventSink — drill
+ * + aggregator pick them up and produce drill_events / events_data rows),
+ * clears invalid tokens from app_users{appId} and push_{appId} collections
+ * and records sent dates into push_{appId} collections.
  */
 export async function saveResults(db: Db, results: ResultEvent[]): Promise<void> {
-    try {
-        updateInternalsWithResults(results, log);
-    }
-    catch (error) {
-        log.e("Error while updating internals with results", results, error);
-    }
+    // Emit one [CLY]_push_sent drill event per result via UnifiedEventSink.
+    // Respects the per-message saveResult opt-out. Catches its own errors so
+    // we never re-consume the kafka batch on emission failure.
+    await emitPushSentEvents(results);
 
     const scheduleMap: { [scheduleId: string]: { resultObject: Result; messageId: ObjectId } } = {};
     for (let i = 0; i < results.length; i++) {
@@ -73,12 +73,6 @@ export async function saveResults(db: Db, results: ResultEvent[]): Promise<void>
 
     // if something fails after this line, we ignore it to avoid consuming the same events again
     try {
-        // insert the results into message_results
-        const resultsToKeep = results.filter(result => result.saveResult);
-        if (resultsToKeep.length) {
-            await db.collection("message_results")
-                .insertMany(resultsToKeep);
-        }
         // clean up the relevant information of invalid tokens inside
         // app_users{appId} and push_{appId}
         const tokenError = new InvalidDeviceToken("Adhoc error");
@@ -95,7 +89,6 @@ export async function saveResults(db: Db, results: ResultEvent[]): Promise<void>
         // save sent date into the relevant document inside push_{appId} documents
         const sentResults = results.filter(({ error }) => !error);
         await recordSentDates(db, sentResults);
-        // TODO: record [CLY]_push_sent events
     }
     catch (error) {
         log.e("Error while updating meta results", results, error);
@@ -348,10 +341,15 @@ export async function applyResultObject(db: Db, scheduleId: ObjectId, messageId:
             }
         }
     }, {
-        $set: { // failed is equal to total (all of the messages are failed)
+        $set: { // all pushes failed (failed > 0 and failed >= total)
             status: {
                 $cond: {
-                    if: { $lte: ["$result.total", "$result.failed"] },
+                    if: {
+                        $and: [
+                            { $gt: ["$result.failed", 0] },
+                            { $lte: ["$result.total", "$result.failed"] }
+                        ]
+                    },
                     then: "failed",
                     else: "$status"
                 }
