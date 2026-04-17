@@ -1047,7 +1047,8 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
             }
         }
 
-        plugins.dispatch('/sdk/validate_request', { params: params }, async function() {
+        plugins.dispatch('/sdk/pre', { params: params, app: app }, function() {
+            plugins.dispatch('/sdk/validate_request', { params: params }, async function() {
             if (params.cancelRequest) {
                 if (!params.res.finished && !params.waitForResponse) {
                     common.returnOutput(params, { result: 'Success', info: 'Request ignored: ' + params.cancelRequest });
@@ -1176,6 +1177,7 @@ const validateAppForWriteAPI = (params: RequestParams, done: () => void): void =
                 done();
                 return;
             }
+            });
         });
     });
 };
