@@ -1,7 +1,7 @@
 var pluginOb = {},
     plugins = require('../../pluginManager.ts'),
-    registerWebSdkPre = require('./parts/sdk-pre.js');
+    registerWebSdkValidateRequest = require('./parts/sdk-validate-request.js');
 
-registerWebSdkPre(plugins);
+registerWebSdkValidateRequest(plugins);
 
 module.exports = pluginOb;

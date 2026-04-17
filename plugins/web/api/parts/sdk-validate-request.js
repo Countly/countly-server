@@ -163,10 +163,10 @@ function parseClientHints(headers) {
     return hints;
 }
 
-module.exports = function registerWebSdkPre(plugins) {
+module.exports = function registerWebSdkValidateRequest(plugins) {
     plugins.appTypes.push("web");
 
-    plugins.register("/sdk/pre", function(ob) {
+    plugins.register("/sdk/validate_request", function(ob) {
         var params = ob.params;
 
         // Parse client hints first (modern approach)
