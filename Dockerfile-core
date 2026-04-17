@@ -25,7 +25,10 @@ USER root
 WORKDIR /opt/countly
 COPY . .
 
-RUN useradd -r -M -U -d /opt/countly -s /bin/false countly && \
+RUN sed -i 's|http://|https://|g' /etc/apt/sources.list && \
+    find /etc/apt/sources.list.d -name '*.list' -exec sed -i 's|http://|https://|g' {} + || true && \
+    echo 'Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries && \
+    useradd -r -M -U -d /opt/countly -s /bin/false countly && \
     apt-get update && \
     apt-get install -y \
         # standard

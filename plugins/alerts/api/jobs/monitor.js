@@ -30,40 +30,31 @@ class MonitorJob extends Job {
      * @param {object} _db - db object
      * @param {function} done - callback function
      */
-    run(_db, done) {
-        const alertID = this._json.data.alertID;
+    async run(_db, done) {
+        let { alertID, appID } = this._json.data;
         const scheduledTo = this._json.next;
-        const self = this;
-        common.db.collection("alerts").findOne({
-            _id: common.db.ObjectID(alertID),
-            // these are being triggered by the event listener in api.js
-            alertDataSubType: { $nin: Object.values(TRIGGERED_BY_EVENT) }
-        }, async function(err, alertConfigs) {
-            if (err) {
-                log.e(err);
-                return;
+        try {
+            const alert = await common.db.collection("alerts").findOne({
+                _id: common.db.ObjectID(alertID),
+                // these are being triggered by the event listener in api.js
+                alertDataSubType: { $nin: Object.values(TRIGGERED_BY_EVENT) }
+            });
+            const app = await common.db.collection("apps").findOne({
+                _id: common.db.ObjectID(appID),
+            });
+            log.d("alert job info:", this._json, alert, app);
+            if (!alert || !app) {
+                throw new Error("Alert", alertID, "or App", appID, "couldn't be found");
             }
-            if (!alertConfigs) {
-                return;
+            if (alert.alertDataType === 'profile_groups') {
+                alert.alertDataType = 'cohorts';
             }
-            log.d('Runing alerts Monitor Job ....');
-            log.d("job info:", self._json, alertConfigs);
-            if (alertConfigs.alertDataType === 'profile_groups') {
-                alertConfigs.alertDataType = 'cohorts';
-            }
-            const module = ALERT_MODULES[alertConfigs.alertDataType];
-            if (module) {
-                try {
-                    await module.check({ alertConfigs, done, scheduledTo });
-                }
-                catch (error) {
-                    log.e("Error while running " + alertConfigs.alertDataType + " alert check", error);
-                }
-            }
-            else {
-                log.e("Alert module " + alertConfigs.alertDataType + " not found");
-            }
-        });
+            const module = ALERT_MODULES[alert.alertDataType];
+            await module.check({ alert, app, done, scheduledTo });
+        }
+        catch (err) {
+            log.e(err);
+        }
     }
 }
 
