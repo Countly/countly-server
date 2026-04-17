@@ -1651,6 +1651,15 @@ const processRequest = (params) => {
                                                 common.returnMessage(params, 400, "Export doesn't exist");
                                             }
                                             else {
+                                                stream.on("error", function(streamErr) {
+                                                    log.e(streamErr);
+                                                    if (!params.res.headersSent) {
+                                                        common.returnMessage(params, 500, "Export stream error");
+                                                    }
+                                                    else {
+                                                        params.res.end();
+                                                    }
+                                                });
                                                 params.res.writeHead(200, {
                                                     'Content-Type': 'application/x-gzip',
                                                     'Content-Length': size,
@@ -2600,6 +2609,15 @@ const processRequest = (params) => {
                                                     common.returnMessage(params, 400, "Export stream does not exist");
                                                 }
                                                 else {
+                                                    stream.on("error", function(streamErr) {
+                                                        log.e(streamErr);
+                                                        if (!params.res.headersSent) {
+                                                            common.returnMessage(params, 500, "Export stream error");
+                                                        }
+                                                        else {
+                                                            params.res.end();
+                                                        }
+                                                    });
                                                     headers = {};
                                                     headers["Content-Type"] = countlyApi.data.exports.getType(type);
                                                     headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);

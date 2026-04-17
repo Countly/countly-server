@@ -287,7 +287,20 @@ function output(params: Params, data: unknown, filename: string, type: string): 
 
     if (type === 'xlsx' || type === 'xls') {
         params.res.writeHead?.(200, headers);
-        (data as { pipe: (res: unknown) => void }).pipe(params.res);
+        const outputStream = data as {
+            on?: (event: string, callback: (err: Error) => void) => void;
+            pipe: (res: unknown) => void;
+        };
+        outputStream.on?.('error', function(streamErr: Error) {
+            common.log('exports').e(streamErr);
+            if (!params.res.headersSent) {
+                common.returnMessage(params, 500, 'Export stream error');
+            }
+            else {
+                params.res.end();
+            }
+        });
+        outputStream.pipe(params.res);
     }
     else {
         common.returnRaw(params, 200, data, headers);
@@ -490,6 +503,15 @@ function streamExport(
     }
     else if (type === 'xlsx' || type === 'xls') {
         const xc = new XLSXTransformStream();
+        xc.on('error', function(streamErr: Error) {
+            common.log('exports').e(streamErr);
+            if (!params.res.headersSent) {
+                common.returnMessage(params, 500, 'Export stream error');
+            }
+            else {
+                params.res.end();
+            }
+        });
         xc.pipe(params.res);
         if (listAtEnd === false) {
             xc.write(paramList);

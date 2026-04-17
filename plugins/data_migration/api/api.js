@@ -28,6 +28,20 @@ var authorize = require('../../../api/utils/authorizer.js'); //for token
 
 const request = require('countly-request')(plugins.getConfig("security"));
 const FEATURE_NAME = 'data_migration';
+
+/**
+ * Validate a data migration id before using it as a path segment.
+ * @param {string} exportid - export or import id
+ * @returns {string|null} safe id or null
+ */
+function safeDataMigrationId(exportid) {
+    exportid = exportid + "";
+    if (exportid && common.sanitizeFilename(exportid) === exportid) {
+        return exportid;
+    }
+    return null;
+}
+
 /**
 *Function to delete all exported files in export folder
 * @returns {Promise} Promise
@@ -229,9 +243,19 @@ function trim_ending_slashes(address) {
                 data_migrator.import_data(params.files.import_file, params, logpath, log, foldername);
             }
             else if (params.qstring.existing_file) {
+                var importBasePath = path.resolve(__dirname, './../import');
+                var existingFileInput = (params.qstring.existing_file + "").trim();
+                var resolvedExistingFilePath = null;
 
-                if (fs.existsSync(params.qstring.existing_file)) {
-                    var fname = path.basename(params.qstring.existing_file);//path to file
+                if (safeDataMigrationId(existingFileInput)) {
+                    resolvedExistingFilePath = common.resolvePathInBase(importBasePath, existingFileInput + '.tar.gz');
+                }
+                else if (existingFileInput.endsWith('.tar.gz') && common.sanitizeFilename(existingFileInput) === existingFileInput) {
+                    resolvedExistingFilePath = common.resolvePathInBase(importBasePath, existingFileInput);
+                }
+
+                if (resolvedExistingFilePath && fs.existsSync(resolvedExistingFilePath)) {
+                    var fname = path.basename(resolvedExistingFilePath);//path to file
                     fname = fname.split(".");
                     foldername = fname[0];
 
@@ -242,7 +266,7 @@ function trim_ending_slashes(address) {
                         logpath = path.resolve(__dirname, '../../../log/dm-import_' + foldername + '.log');
                         common.returnMessage(params, 200, "data-migration.import-started");
                         data_migrator = new migration_helper();
-                        data_migrator.importExistingData(params.qstring.existing_file, params, logpath, log, foldername);
+                        data_migrator.importExistingData(resolvedExistingFilePath, params, logpath, log, foldername);
                     }
                 }
                 else {
@@ -301,7 +325,12 @@ function trim_ending_slashes(address) {
         }
         validateDelete(params, FEATURE_NAME, function() {
             if (params.qstring.exportid) {
-                common.db.collection("data_migrations").findOne({_id: params.qstring.exportid}, function(err, res) {
+                var exportid = safeDataMigrationId(params.qstring.exportid);
+                if (!exportid) {
+                    common.returnMessage(ob.params, 400, "data-migration.invalid-exportid");
+                    return;
+                }
+                common.db.collection("data_migrations").findOne({_id: exportid}, function(err, res) {
                     if (err) {
                         common.returnMessage(params, 404, err);
                     }
@@ -309,17 +338,25 @@ function trim_ending_slashes(address) {
                         if (res) {
                             var data_migrator = new migration_helper(common.db);
 
-                            data_migrator.clean_up_data('export', params.qstring.exportid, true).then(function() {
-                                if (fs.existsSync(path.resolve(__dirname, './../../../log/' + res.log))) {
+                            data_migrator.clean_up_data('export', exportid, true).then(function() {
+                                var logPath = null;
+                                if (res.log && common.sanitizeFilename(res.log) === (res.log + "")) {
+                                    logPath = common.resolvePathInBase(path.resolve(__dirname, './../../../log'), res.log);
+                                }
+                                if (res.log && !logPath) {
+                                    common.returnMessage(ob.params, 401, "data-migration.unable-to-delete-log-file");
+                                    return;
+                                }
+                                if (logPath && fs.existsSync(logPath)) {
                                     try {
-                                        fs.unlinkSync(path.resolve(__dirname, './../../../log/' + res.log));
+                                        fs.unlinkSync(logPath);
                                     }
                                     catch (err1) {
                                         log.e(err1);
                                         common.returnMessage(ob.params, 401, "data-migration.unable-to-delete-log-file"); return;
                                     }
                                 }
-                                common.db.collection("data_migrations").remove({_id: params.qstring.exportid}, function(err1) {
+                                common.db.collection("data_migrations").remove({_id: exportid}, function(err1) {
                                     if (err1) {
                                         common.returnMessage(params, 404, err1);
                                     }
@@ -360,12 +397,18 @@ function trim_ending_slashes(address) {
         }
         validateDelete(params, FEATURE_NAME, function() {
             if (params.qstring.exportid && params.qstring.exportid !== '') {
+                var exportid = safeDataMigrationId(params.qstring.exportid);
+                if (!exportid) {
+                    common.returnMessage(ob.params, 400, 'data-migration.invalid-exportid');
+                    return;
+                }
                 var data_migrator = new migration_helper(common.db);
-                data_migrator.clean_up_data('import', params.qstring.exportid, true).then(function() {
+                data_migrator.clean_up_data('import', exportid, true).then(function() {
                     //delete log file
-                    if (fs.existsSync(path.resolve(__dirname, './../../../log/dm-import_' + params.qstring.exportid + '.log'))) {
+                    var importLogPath = common.resolvePathInBase(path.resolve(__dirname, './../../../log'), 'dm-import_' + exportid + '.log');
+                    if (importLogPath && fs.existsSync(importLogPath)) {
                         try {
-                            fs.unlinkSync(path.resolve(__dirname, './../../../log/dm-import_' + params.qstring.exportid + '.log'));
+                            fs.unlinkSync(importLogPath);
                         }
                         catch (err) {
                             log.e(err);
@@ -373,7 +416,10 @@ function trim_ending_slashes(address) {
                     }
                     //delete info file
                     try {
-                        fs.unlinkSync(path.resolve(__dirname, './../import/' + params.qstring.exportid + '.json'));
+                        var importInfoPath = common.resolvePathInBase(path.resolve(__dirname, './../import'), exportid + '.json');
+                        if (importInfoPath && fs.existsSync(importInfoPath)) {
+                            fs.unlinkSync(importInfoPath);
+                        }
                     }
                     catch (err) {
                         log.e(err);

@@ -174,6 +174,15 @@ function stopWithTimeout(type, fromTimeout = false) {
                             "Content-Type": "plain/text; charset=utf-8",
                             "Content-Disposition": "attachment; filename=profiler.tar"
                         });
+                        tarStream.on("error", (streamErr) => {
+                            log.e(streamErr);
+                            if (!params.res.headersSent) {
+                                common.returnMessage(params, 500, "Profiler archive stream error");
+                            }
+                            else {
+                                params.res.end();
+                            }
+                        });
                         tarStream.on("end", () => params.res.end());
                         tarStream.pipe(params.res);
                     }
