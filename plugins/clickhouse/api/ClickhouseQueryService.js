@@ -32,9 +32,12 @@ function getChMetrics() {
     return _chMetrics;
 }
 
-// Query size thresholds for max_query_size override
-const QUERY_SIZE_THRESHOLD = 20 * 1024; // 20KB - trigger for large query mode
-const LARGE_QUERY_MAX_SIZE = 16 * 1024 * 1024; // 16MB - for large cohort queries
+// ClickHouse default max_query_size is 262144 (256KB).
+// We dynamically set it to 2× the actual query payload so large cohort/formula
+// queries always have headroom, while small queries stay at the server default.
+// The cap prevents a runaway code path from raising the limit unboundedly.
+const CH_DEFAULT_MAX_QUERY_SIZE = 262144;
+const CH_MAX_QUERY_SIZE_CAP = 256 * 1024 * 1024; // 256MB backstop
 
 /**
  * ClickHouse-backed implementation of the DrillEvents repository.
@@ -264,14 +267,27 @@ class ClickhouseQueryService {
                 this.maskingService.setAppId(appID.toString());
             }
 
-            const estimatedQuerySize = options?.estimatedQuerySize || 0;
-            const needsLargeQuerySettings = estimatedQuerySize > QUERY_SIZE_THRESHOLD;
-
-            // Build effective clickhouse_settings with max_query_size override for large queries
+            // Auto-size max_query_size to 2× actual payload so large queries always have headroom
+            let paramsSize = 0;
+            if (pipeline.params) {
+                try {
+                    paramsSize = Buffer.byteLength(JSON.stringify(pipeline.params));
+                }
+                catch (e) {
+                    log.d('Failed to estimate ClickHouse params size, falling back to query-only sizing', e);
+                }
+            }
+            const estimatedQuerySize = Buffer.byteLength(pipeline.query || '') + paramsSize;
             let effectiveSettings = { ...(options?.clickhouse_settings || {}) };
-            if (needsLargeQuerySettings && !effectiveSettings.max_query_size) {
-                log.d(`Large query detected (estimatedQuerySize: ${estimatedQuerySize} bytes), applying max_query_size=${LARGE_QUERY_MAX_SIZE}`);
-                effectiveSettings.max_query_size = LARGE_QUERY_MAX_SIZE;
+            if (!('max_query_size' in effectiveSettings)) {
+                const dynamicLimit = Math.min(
+                    Math.max(estimatedQuerySize * 2, CH_DEFAULT_MAX_QUERY_SIZE),
+                    CH_MAX_QUERY_SIZE_CAP
+                );
+                if (dynamicLimit > CH_DEFAULT_MAX_QUERY_SIZE) {
+                    log.d(`Setting max_query_size=${dynamicLimit} for query of ${estimatedQuerySize} bytes`);
+                    effectiveSettings.max_query_size = dynamicLimit;
+                }
             }
 
             // Attempt to mask query string only if masking is enabled
