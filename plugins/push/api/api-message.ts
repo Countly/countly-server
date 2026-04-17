@@ -15,7 +15,6 @@ import platforms from './constants/platform-keymap.ts';
 import { PROXY_CONNECTION_TIMEOUT, MEDIA_MIME_TYPE_ALL, MEDIA_MAX_SIZE } from './constants/configs.ts';
 import { ValidationError } from './lib/error.ts';
 import { createRequire } from 'module';
-import crypto from 'crypto';
 import moment from 'moment-timezone';
 import { HttpProxyAgent } from 'http-proxy-agent';
 import { HttpsProxyAgent } from 'https-proxy-agent';
@@ -27,8 +26,6 @@ import http from 'node:http'
 const require = createRequire(import.meta.url);
 const common: import('../../../types/common.d.ts').Common = require('../../../api/utils/common.js');
 const log = common.log('push:api:message');
-const countlyFetch: any = require("../../../api/parts/data/fetch.js");
-
 const allTriggerKinds: Array<MessageTrigger["kind"]> = ["api", "cohort", "event", "multi", "plain", "rec"];
 
 /**
@@ -743,114 +740,6 @@ export async function one(params: any) {
 };
 
 /**
- * Get periodic message stats
- * @param {Params} params params object
- *
- * @api {GET} o/push/message/stats Get periodic message stats
- * @apiName message-stats
- * @apiDescription Get sent and actioned event counts for a single message
- * @apiGroup Push Notifications
- *
- * @apiQuery {ObjectID} _id Message ID
- * @apiQuery {String} period Period of the stats. Possible values are: 30days, 24weeks, 12months
- *
- * @apiSuccess {Object} Event type indexed periodical event counts
- * @apiSuccessExample {json} Success-Response
- *      HTTP/1.1 200 Success
- *      {
- *          "sent": [
- *              [ "2024-03-04T21:00:00.000Z", 23  ],
- *              [ "2024-03-05T21:00:00.000Z", 41  ],
- *              [ "2024-03-06T21:00:00.000Z", 8   ],
- *              [ "2024-03-07T21:00:00.000Z", 142 ],
- *              [ "2024-03-08T21:00:00.000Z", 12  ],
- *              [ "2024-03-09T21:00:00.000Z", 412 ]
- *          ],
- *          "action": [
- *              [ "2024-03-04T21:00:00.000Z", 23  ],
- *              [ "2024-03-05T21:00:00.000Z", 41  ],
- *              [ "2024-03-06T21:00:00.000Z", 8   ],
- *              [ "2024-03-07T21:00:00.000Z", 142 ],
- *              [ "2024-03-08T21:00:00.000Z", 12  ],
- *              [ "2024-03-09T21:00:00.000Z", 412 ]
- *          ]
- *      }
- */
-export async function periodicStats(params: any) {
-    const dateDeltaMap: Record<string, (string | number)[]> = {
-        "30days": [30, "day"],
-        "24weeks": [24, "week"],
-        "12months": [12, "month"]
-    };
-    const validation: any = common.validateArgs(params.qstring, {
-        _id: { type: "ObjectID", required: true },
-        period: { type: 'String', required: false, in: Object.keys(dateDeltaMap) },
-    }, true);
-    if (!validation?.result) {
-        const errors = validation?.errors || ["Invalid parameters"];
-        common.returnMessage(params, 400, { errors }, null, true);
-        return true;
-    }
-    const { _id: messageId, period } = validation.obj;
-    const delta = dateDeltaMap[period];
-    const message = await common.db.collection("messages").findOne({ _id: new ObjectId(messageId) });
-    const app = await common.db.collection("apps").findOne({ _id: message?.app });
-    if (!message || !app || !delta) {
-        common.returnMessage(params, 400, { errors: ["Invalid or missing parameters"] }, null, true);
-        return true;
-    }
-    const app_id = message.app.toString();
-    const cols = {
-        sent: 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_sent') + app_id).digest('hex'),
-        action: 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_action') + app_id).digest('hex')
-    };
-    const endDate = moment().tz(app.timezone).toDate();
-    const startDate = moment(endDate).subtract(...delta);
-    const dateRange = periodicDateRange(startDate.toDate(), endDate, app.timezone, delta[1] as moment.unitOfTime.StartOf);
-    const ob = { app_id, appTimezone: app.timezone, qstring: { period, segmentation: "i" } };
-    const results: Record<string, [string, number][]> = {};
-    for (const colName in cols) {
-        results[colName] = await new Promise(res => {
-            countlyFetch.getTimeObjForEvents(cols[colName as keyof typeof cols], ob, (doc: any) => {
-                const result = [];
-                if (delta[1] === "week") {
-                    for (const startDayOfTheWeek of dateRange) {
-                        const daysOfTheWeek = periodicDateRange(
-                            startDayOfTheWeek,
-                            moment(startDayOfTheWeek).tz(app.timezone).endOf("isoWeek").toDate(),
-                            app.timezone,
-                            "day"
-                        );
-                        let weekValue = 0;
-                        for (const date of daysOfTheWeek) {
-                            const { months, date: days, years } = moment(date).tz(app.timezone).toObject();
-                            const value = doc?.[years]?.[months + 1]?.[days]?.[messageId]?.c;
-                            if (value) {
-                                weekValue += value;
-                            }
-                        }
-                        result.push([startDayOfTheWeek, weekValue]);
-                    }
-                }
-                else {
-                    for (const date of dateRange) {
-                        const { months, date: days, years } = moment(date).tz(app.timezone).toObject();
-                        let context = doc?.[years]?.[months + 1];
-                        if (delta[1] === "day") {
-                            context = context?.[days];
-                        }
-                        result.push([date, context?.[messageId]?.c || 0]);
-                    }
-                }
-                res(result.map(([ date, value]) => ([ date.toISOString(), value ])));
-            });
-        });
-    }
-    common.returnOutput(params, results);
-    return true;
-};
-
-/**
  * Get notifications sent to a particular user
  *
  * @param {Params} params params
@@ -1166,29 +1055,6 @@ export async function all(params: any) {
 
     return true;
 };
-
-/**
- * Returns the starting days of the given period between the given start and end dates.
- * @param   {Date}   start    Start date
- * @param   {Date}   end      End date
- * @param   {String} timezone End date
- * @param   {String} period   Period interval: day|month|week|year
- * @returns {Date[]}          Array of dates in between start and end (both start and end included)
- */
-function periodicDateRange(start: Date, end: Date, timezone: string, period: moment.unitOfTime.StartOf = "day"): Date[] {
-    const startFrom: moment.unitOfTime.StartOf = period === "week" ? "isoWeek" : period;
-    const startObj = moment(start).tz(timezone).startOf("day").startOf(startFrom);
-    const endObj = moment(end).tz(timezone).startOf("day").startOf(startFrom);
-    const result: Date[] = [];
-    if (startObj.isAfter(endObj)) {
-        return [];
-    }
-    while (startObj.isSameOrBefore(endObj, period)) {
-        result.push(startObj.toDate());
-        startObj.add(1, period as moment.unitOfTime.DurationConstructor);
-    }
-    return result;
-}
 
 /** Result with legacy `processed` field used only by generateDemoData */
 type DemoResult = Result & { processed?: number };

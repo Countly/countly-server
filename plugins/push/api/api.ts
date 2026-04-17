@@ -2,7 +2,7 @@ import { onSessionUser, onAppPluginsUpdate, onMerge } from './api-push.ts';
 import { autoOnCohort } from './api-auto.ts';
 import { apiPush } from './api-tx.ts';
 import { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } from './api-drill.ts';
-import { estimate, test, create, update, toggle, remove, all, one, mime, user, periodicStats } from './api-message.ts';
+import { estimate, test, create, update, toggle, remove, all, one, mime, user } from './api-message.ts';
 import { dashboard } from './api-dashboard.ts';
 import { clear, reset, removeUsers } from './api-reset.ts';
 import { loadKafka } from './kafka/producer.ts';
@@ -46,7 +46,6 @@ plugins.register('/o/push/mime', readApi(mime));
 plugins.register('/o/push/user', readApi(user));
 plugins.register('/o/push/message/estimate', readApi(estimate));
 plugins.register('/o/push/message/all', readApi(all));
-plugins.register('/o/push/message/stats', readApi(periodicStats));
 plugins.register('/o/push/message/GET', readApi(one));
 
 // Write API

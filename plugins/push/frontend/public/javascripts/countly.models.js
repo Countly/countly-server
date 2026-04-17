@@ -674,24 +674,6 @@
                 }, {disableAutoCatch: true});
             });
         },
-        fetchMessageStats: function(_id, period = "30days") {
-            return new Promise(function(resolve, reject) {
-                CV.$.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_PARTS.data.r + "/push/message/stats",
-                    data: { _id, period },
-                    dataType: "json",
-                    success: function(response) {
-                        resolve(response);
-                    },
-                    error: function(error) {
-                        console.error(error);
-                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
-                        reject(new Error(errorMessage));
-                    },
-                }, {disableAutoCatch: true});
-            });
-        },
         getDashboard: function(echo) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID
@@ -2784,10 +2766,6 @@
         messageSettings[PlatformEnum.ANDROID] = {};
         return {
             pushNotification: countlyPushNotification.helper.getInitialModel(TypeEnum.ONE_TIME),
-            messageStats: {
-                sent: [],
-                action: []
-            },
             platformFilter: null,
             platformFilterOptions: [],
             localeFilter: null,
@@ -2813,19 +2791,6 @@
                     console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
                 });
-        },
-        fetchMessageStats: function(context, { messageId, period }) {
-            context.dispatch('onFetchInit', {useLoader: true});
-            countlyPushNotification.api.fetchMessageStats(messageId, period)
-                .then(function(model) {
-                    context.commit('setMessageStats', model);
-                    context.dispatch('onFetchSuccess', {useLoader: true});
-                })
-                .catch(function(error) {
-                    console.error(error);
-                    context.dispatch('onFetchError', {error: error, useLoader: true});
-                });
-
         },
         onUserCommand: function(context, payload) {
             context.commit('setUserCommand', payload);
@@ -2905,9 +2870,6 @@
     var detailsMutations = {
         setPushNotification: function(state, value) {
             state.pushNotification = value;
-        },
-        setMessageStats: function(state, value) {
-            state.messageStats = value;
         },
         setUserCommand: function(state, value) {
             state.userCommand = value;

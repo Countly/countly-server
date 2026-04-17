@@ -1760,11 +1760,6 @@
                         component: countlyPushNotificationComponent.DetailsErrorsTab
                     },
                     {
-                        title: CV.i18n('push-notification-details.stats-tab'),
-                        name: "stats",
-                        component: countlyPushNotificationComponent.DetailsStatsTab
-                    },
-                    {
                         title: CV.i18n('push-notification-details.schedules-tab'),
                         name: "schedules",
                         component: countlyPushNotificationComponent.SchedulesTab
