@@ -1220,6 +1220,14 @@ function getEventsModel(params, apps, appId, collection, segment, event, widget)
         }
 
         fn(function(data) {
+            if (data.meta && data.meta.segments) {
+                data.meta.segments.forEach((sg) => {
+                    if (data.meta[sg] && data.meta[sg].length > 0) {
+                        data.meta[sg] = data.meta[sg].map((item) => common.decode_html(item));
+                    }
+                });
+            }
+
             countlyCommon.setPeriod(paramsObj.qstring.period);
 
             var model = countlyModel.load("event");

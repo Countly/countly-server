@@ -16,7 +16,7 @@ module.exports = defineConfig({
     e2e: {
         baseUrl: "http://localhost",
         defaultCommandTimeout: 30000,
-        retries: 2,
+        //retries: 2,
         viewportWidth: 2000,
         viewportHeight: 1100,
         numTestsKeptInMemory: 0,

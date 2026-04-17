@@ -3523,7 +3523,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3559,7 +3559,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3688,7 +3688,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3702,7 +3702,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3716,7 +3716,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3730,7 +3730,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3744,7 +3744,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3758,7 +3758,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3772,7 +3772,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3786,7 +3786,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3800,7 +3800,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3814,7 +3814,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3828,7 +3828,7 @@ describe('Testing Crashes', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Please provide args parameter');
+                        ob.should.have.property('result', 'Error: args not found');
                         done();
                     });
             });
@@ -3909,7 +3909,7 @@ describe('Testing Crashes', function() {
 
             it('should return 400 for invalid /i/crashes path', function(done) {
                 request
-                    .get('/i/crashes/invalid_path?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
+                    .get('/i/crashes/invalid_path?args={}&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
                     .expect(400)
                     .end(function(err, res) {
                         if (err) {

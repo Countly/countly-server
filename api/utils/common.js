@@ -26,6 +26,7 @@ const mongodb = require('mongodb');
 const getRandomValues = require('get-random-values');
 const semver = require('semver');
 const _ = require('lodash');
+const path = require('path');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
@@ -1323,9 +1324,13 @@ common.returnRaw = function(params, returnCode, body, heads) {
         }
         return;
     }
-    const defaultHeaders = {};
+    const defaultHeaders = {
+        'Accept-CH': 'Sec-CH-UA, Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version, Sec-CH-UA-Model',
+        'Critical-CH': 'Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version',
+        'X-Countly': 'api'
+    };
     //set provided in configuration headers
-    let headers = {};
+    let headers = { ...defaultHeaders };
     if (heads) {
         for (var i in heads) {
             headers[i] = heads[i];
@@ -1371,7 +1376,10 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
     }
     //set provided in configuration headers
     const defaultHeaders = {
-        'Content-Type': 'application/json; charset=utf-8'
+        'Content-Type': 'application/json; charset=utf-8',
+        'Accept-CH': 'Sec-CH-UA, Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version, Sec-CH-UA-Model',
+        'Critical-CH': 'Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version',
+        'X-Countly': 'api'
     };
     let headers = { ...defaultHeaders };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
@@ -1446,7 +1454,10 @@ common.returnOutput = function(params, output, noescape, heads) {
     }
     //set provided in configuration headers
     const defaultHeaders = {
-        'Content-Type': 'application/json; charset=utf-8'
+        'Content-Type': 'application/json; charset=utf-8',
+        'Accept-CH': 'Sec-CH-UA, Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version, Sec-CH-UA-Model',
+        'Critical-CH': 'Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version',
+        'X-Countly': 'api'
     };
     let headers = { ...defaultHeaders };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
@@ -2352,9 +2363,9 @@ common.clearClashingQueryOperations = function(query) {
         }
     }
 
-    for (var path in map) {
-        if (map[path] > 1) {
-            badPaths.push(path);
+    for (var fieldPath in map) {
+        if (map[fieldPath] > 1) {
+            badPaths.push(fieldPath);
         }
     }
     if (badPaths.length > 0) {
@@ -2844,6 +2855,25 @@ common.sanitizeFilename = (filename, replacement = "") => {
         .replace(/[\/\?<>\\:\*\|"]/g, replacement)
         .replace(/^\.{1,2}$/, replacement)
         .replace(/^\.+/, replacement);
+};
+
+/**
+ * Resolve an input path under a base directory and reject path traversal.
+ * @param {string} basePath - base directory for allowed paths
+ * @param {string} inputPath - user-supplied path segment or relative path
+ * @returns {string|null} contained absolute path or null
+ */
+common.resolvePathInBase = (basePath, inputPath) => {
+    basePath = path.resolve(basePath + "");
+    inputPath = (inputPath + "").replace(/\\/g, "/");
+    while (inputPath.indexOf("/") === 0) {
+        inputPath = inputPath.substring(1);
+    }
+    let resolvedPath = path.resolve(basePath, inputPath);
+    if (resolvedPath === basePath || resolvedPath.indexOf(basePath + path.sep) === 0) {
+        return resolvedPath;
+    }
+    return null;
 };
 
 common.sanitizeHTML = (html, extendedWhitelist) => {

@@ -18,7 +18,7 @@
  * @property {boolean}       enabled           - true|false
  * @property {string}        compareDescribe   - text to show on lists for this alert
  * @property {Array<string>} alertValues       - audience e.g. for alertBy="email", list of e-mails
- * @property {Array<string>} allGroups         - 
+ * @property {Array<string>} allGroups         -
  * @property {string}        createdBy         - creation time
  */
 
@@ -28,6 +28,7 @@
  * @property {string}   name     - name identifier
  * @property {ObjectId} _id      - document id
  * @property {string}   timezone - timezone string (e.g. Europe/Istanbul)
+ * @property {number}   offset   - timezone offset (e.g. 120 for Europe/Berlin, -240 for US/Eastern)
  * @property {any}      plugins
  */
 
@@ -57,6 +58,7 @@ const moment = require('moment-timezone');
 const path = require("path");
 const fs = require("fs");
 const ejs = require("ejs");
+const { ObjectId } = require("mongodb");
 const EMAIL_TEMPLATE = ejs.compile(
     fs.readFileSync(
         path.resolve(__dirname, '../../frontend/public/templates/email.html'),
@@ -92,6 +94,7 @@ module.exports = {
     determineAudience,
     compileEmail,
     trigger,
+    loadAlertAppsWithTimezoneOffsets,
 };
 
 /**
@@ -207,7 +210,7 @@ async function compileEmail(result) {
  * Formats the metric value to ensure it maintains its type.
  * If the value is a number, it rounds to 2 decimal places if necessary.
  * Otherwise, it returns the value as is.
- * 
+ *
  * @param {number|string} value - The value to be formatted.
  * @returns {number|string} The formatted value, maintaining the original type.
  */
@@ -258,4 +261,33 @@ async function trigger(result, log) {
             log.e("Alert e-mail couldn't be send to " + email, err);
         }
     }
+}
+
+/**
+ * Returns all of the app objects from "apps" collection with "offset"
+ * property populated for the given alert.
+ * @param {Alert} alert - alert object
+ * @returns {App[]} App objects with offset property
+ */
+async function loadAlertAppsWithTimezoneOffsets(alert) {
+    const selectedApp = alert.selectedApps[0];
+    // there can only be a single app selected.
+    // or all of the apps are selected (only available for data points):
+    let apps;
+    if (selectedApp === "all") {
+        apps = await common.readBatcher.getMany("apps", {});
+    }
+    else {
+        apps = [
+            await common.readBatcher.getOne("apps", {
+                _id: new ObjectId(selectedApp)
+            })
+        ];
+    }
+    for (const app of apps) {
+        app.offset = app.timezone
+            ? moment.tz(app.timezone).utcOffset()
+            : moment().utcOffset(); // fallback to system timezone
+    }
+    return apps;
 }

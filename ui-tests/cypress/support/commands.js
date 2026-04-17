@@ -1,4 +1,5 @@
 import 'cypress-file-upload';
+import { setDebugContext, clearDebugContext } from './debugContext';
 const helper = require('./helper');
 let softErrors = [];
 
@@ -72,12 +73,23 @@ Cypress.Commands.add('getText', { prevSubject: true }, (subject) => {
 /* ---------------- Click & Select Helpers ---------------- */
 
 Cypress.Commands.add("clickElement", (element, isForce = false, index = 0) => {
-    cy.getElement(element).eq(index).click({ force: isForce });
+    if (isForce) {
+        cy.getElement(element).eq(index).click({ force: true });
+    }
+    else {
+        cy.getElement(element)
+            .filter(':visible')
+            .eq(index)
+            .should('exist')
+            .and('not.be.disabled')
+            .click();
+    }
+
     cy.checkPaceRunning();
 });
 
 Cypress.Commands.add("clickBody", () => {
-    cy.get('body').click({ force: true });
+    cy.get('body', { log: false }).click(0, 0);
     cy.checkPaceRunning();
 });
 
@@ -299,6 +311,15 @@ Cypress.Commands.add('checkPaceActive', () => cy.elementExists('.pace-active').t
         cy.shouldNotExist('.pace-active');
     }
 }));
+
+Cypress.Commands.add('checkLoading', () => {
+    cy.get('body').then($body => {
+        if ($body.find('.el-loading-mask').length) {
+            cy.get('.el-loading-mask', { timeout: 20000 })
+                .should('not.be.visible');
+        }
+    });
+});
 
 /* ---------------- Database ---------------- */
 

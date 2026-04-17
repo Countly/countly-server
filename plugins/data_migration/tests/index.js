@@ -7,6 +7,7 @@ var path = require("path");
 var fs = require("fs"),
     readline = require('readline'),
     stream = require('stream');
+var os = require('os');
 var cp = require('child_process'); //call process
 const exec = cp.exec; //for calling command line
 const fse = require('fs-extra'); // delete folders
@@ -850,6 +851,26 @@ describe("Testing data migration plugin", function() {
                     }
                 });
         });
+        it("rejects path traversal in import delete exportid", function(done) {
+            var traversalTarget = path.join(os.tmpdir(), "countly_data_migration_path_traversal_test_" + Date.now());
+            var traversalExportId = "../../../../../../../../.." + traversalTarget;
+
+            fs.writeFileSync(traversalTarget, "test");
+            request
+                .post('/i/datamigration/delete_import?exportid=' + encodeURIComponent(traversalExportId) + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(400)
+                .end(function(err) {
+                    if (err) {
+                        fse.removeSync(traversalTarget);
+                        return done(err);
+                    }
+                    if (!fs.existsSync(traversalTarget)) {
+                        return done("Traversal target was deleted");
+                    }
+                    fse.removeSync(traversalTarget);
+                    done();
+                });
+        });
         it("delete import request ", function(done) {
             request
                 .post('/i/datamigration/delete_import?exportid=b18e10498ec0f41a85bb8155ccd4a209819319a3' + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
@@ -934,9 +955,15 @@ describe("Testing data migration plugin", function() {
 
         it("Call import process", function(done) {
             tt = "b18e10498ec0f41a85bb8155ccd4a209819319a3";
-            var dir = path.resolve(__dirname, './' + tt + '.tar.gz');
+            var sourcePath = path.resolve(__dirname, './' + tt + '.tar.gz');
+            var importDir = path.resolve(__dirname, './../import');
+            var importPath = path.resolve(importDir, './' + tt + '.tar.gz');
+            if (!fs.existsSync(importDir)) {
+                fs.mkdirSync(importDir, 484);
+            }
+            fs.copyFileSync(sourcePath, importPath);
             request
-                .post('/i/datamigration/import?ts=000000&existing_file=' + dir)
+                .post('/i/datamigration/import?ts=000000&existing_file=' + tt)
                 .set('countly-token', mytoken)
                 .expect(200)
                 .end(function(err, res) {

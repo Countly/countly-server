@@ -20,6 +20,7 @@
     "template"
   ],
   "dependencies": {
+    "ipaddr.js": "^2.3.0",
     "isolated-vm": "^6.0.2"
   },
   "private": true
