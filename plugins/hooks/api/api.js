@@ -355,7 +355,7 @@ async function validateEffects(effects) {
     if (effects) {
         for (let i = 0; i < effects.length; i++) {
             if (!(common.validateArgs(effects[i].configuration, CheckEffectProperties(effects[i])))) {
-                return { valid: false, error: 'Invalid effect configuration' };
+                return { valid: false, error: 'Invalid configuration for effects' };
             }
 
             // SSRF protection: validate HTTPEffect URLs with DNS resolution
