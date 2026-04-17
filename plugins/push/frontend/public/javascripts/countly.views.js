@@ -25,13 +25,6 @@
         {label: CV.i18n("push-notification.platform-filter-ios"), value: countlyPushNotification.service.PlatformEnum.IOS}
     ];
 
-    var oneTimePeriodFilterOptions = [
-        {label: CV.i18n("push-notification.time-chart-period-weekly"), value: countlyPushNotification.service.PeriodEnum.WEEKLY},
-        {label: CV.i18n("push-notification.time-chart-period-monthly"), value: countlyPushNotification.service.PeriodEnum.MONTHLY},
-    ];
-    var automaticPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
-    var transactionalPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
-
     var messageTypeFilterOptions = [
         {label: CV.i18n("push-notification.content-message"), value: countlyPushNotification.service.MessageTypeEnum.CONTENT},
         {label: CV.i18n("push-notification.silent-message"), value: countlyPushNotification.service.MessageTypeEnum.SILENT}
@@ -1340,14 +1333,7 @@
                     transactional: CV.i18n('push-notification.platform-filter-label-transactional')
                 },
                 statusFilters: statusFilterOptions,
-                DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
-                oneTimePeriodFilters: oneTimePeriodFilterOptions,
-                selectedOneTimePeriodFilter: countlyPushNotification.service.PeriodEnum.WEEKLY,
-                automaticPeriodFilters: automaticPeriodFilterOptions,
                 statusOptions: countlyPushNotification.service.statusOptions,
-                selectedAutomaticPeriodFilter: countlyPushNotification.service.PeriodEnum.DAILY,
-                transactionalPeriodFilters: transactionalPeriodFilterOptions,
-                selectedTransactionalPeriodFilter: countlyPushNotification.service.PeriodEnum.DAILY,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 UserCommandEnum: countlyPushNotification.service.UserCommandEnum,
@@ -1397,14 +1383,6 @@
             isUserCommandLoading: function() {
                 return this.$store.getters['countlyPushNotificationMain/isLoading'];
             },
-            pushNotificationOptions: function() {
-                return {
-                    xAxis: {
-                        data: this.xAxisPushNotificationPeriods
-                    },
-                    series: this.yAxisPushNotificationSeries
-                };
-            },
             kafkaStatus: function() {
                 return this.$store.state.countlyPushNotificationDashboard.kafkaStatus;
             },
@@ -1419,36 +1397,6 @@
                     return 0;
                 }
                 return parseInt(this.formatPercentage(this.enabledUsers / this.totalAppUsers));
-            },
-            xAxisPushNotificationPeriods: function() {
-                return this.$store.state.countlyPushNotificationDashboard.periods[this.selectedPushNotificationType][this.selectedPeriodFilter];
-            },
-            yAxisPushNotificationSeries: function() {
-                var self = this;
-                return this.$store.state.countlyPushNotificationDashboard.series[this.selectedPushNotificationType][this.selectedPeriodFilter].map(function(pushNotificationSerie) {
-                    return {
-                        data: pushNotificationSerie.data[self.selectedPlatformFilter] || [],
-                        name: pushNotificationSerie.label
-                    };
-                });
-            },
-            legend: function() {
-                return {
-                    show: true,
-                    type: "primary",
-                    data: [
-                        {
-                            name: CV.i18n('push-notification.sent-serie-name'),
-                            value: this.formatNumber(this.$store.state.countlyPushNotificationDashboard.totalSent[this.selectedPushNotificationType][this.selectedPlatformFilter]),
-                            tooltip: CV.i18n('push-notification.sent-serie-description')
-                        },
-                        {
-                            name: CV.i18n('push-notification.actions-performed-serie-name'),
-                            value: this.formatNumber(this.$store.state.countlyPushNotificationDashboard.totalActions[this.selectedPushNotificationType][this.selectedPlatformFilter]),
-                            tooltip: CV.i18n('push-notification.actions-performed-serie-description')
-                        }
-                    ]
-                };
             },
             selectedStatusFilter: {
                 get: function() {
@@ -1474,17 +1422,6 @@
             },
             selectedPlatformFilterLabel: function() {
                 return this.platformFilterLabel[this.selectedPushNotificationType];
-            },
-            selectedPeriodFilter: function() {
-                if (this.selectedPushNotificationType === countlyPushNotification.service.TypeEnum.ONE_TIME) {
-                    return this.selectedOneTimePeriodFilter;
-                }
-                else if (this.selectedPushNotificationType === countlyPushNotification.service.TypeEnum.AUTOMATIC) {
-                    return this.selectedAutomaticPeriodFilter;
-                }
-                else {
-                    return this.selectedTransactionalPeriodFilter;
-                }
             },
             hasApproverPermission: function() {
                 return countlyPushNotification.service.hasApproverPermission();

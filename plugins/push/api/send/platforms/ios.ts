@@ -451,7 +451,6 @@ export async function credentialTest(creds: APNCredentials, proxyConfig?: ProxyC
                 },
                 c: { i: Math.random() + '' }
             },
-            saveResult: false,
             platform: "i",
             env: "p",
             language: "en",

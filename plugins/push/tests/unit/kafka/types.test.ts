@@ -162,7 +162,6 @@ describe("DTO conversion functions", () => {
             assert.strictEqual(result.platform, pushEvent.platform);
             assert.strictEqual(result.token, pushEvent.token);
             assert.strictEqual(result.language, pushEvent.language);
-            assert.strictEqual(result.saveResult, pushEvent.saveResult);
         });
     });
 

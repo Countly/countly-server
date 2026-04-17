@@ -70,7 +70,6 @@ export interface BasePushEvent {
     uid: string;
     token: string;
     payload: AndroidMessagePayload | IOSMessagePayload | HuaweiMessagePayload; // actual message to be sent. data structure depends on the platform
-    saveResult: boolean;
     platform: PlatformKey;
     env: PlatformEnvKey;
     language: string;

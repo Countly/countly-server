@@ -42,7 +42,6 @@ describe("Huawei integration", () => {
             scheduleId: new ObjectId(),
             token: HUAWEI_TEST_TOKEN,
             credentials,
-            saveResult: false,
             env: "p",
             language: "en",
             platform: "h",

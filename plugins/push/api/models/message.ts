@@ -274,7 +274,6 @@ export type Info = z.infer<typeof InfoSchema>;
 export const MessageSchema = z.object({
     _id: ObjectIdSchema,
     app: ObjectIdSchema,
-    saveResults: z.boolean(),
     platforms: z.array(PlatformKeySchema).min(1),
     status: z.enum(["active", "inactive", "rejected", "draft", "stopped", "deleted"]),
     filter: MessageAudienceFilterSchema.optional(),
@@ -292,7 +291,6 @@ export type Message = z.infer<typeof MessageSchema>;
 export const DraftMessageSchema = z.object({
     _id: ObjectIdSchema.optional(),
     app: ObjectIdSchema,
-    saveResults: z.boolean().default(false),
     platforms: z.array(PlatformKeySchema).min(1),
     status: z.enum(["active", "inactive", "rejected", "draft", "stopped", "deleted"]).optional(),
     filter: MessageAudienceFilterSchema.optional(),

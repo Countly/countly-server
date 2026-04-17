@@ -135,7 +135,6 @@ export function message(): Message {
         app: new ObjectId,
         platforms: ["a"],
         status: "active",
-        saveResults: true,
         triggers: [
             {
                 kind: 'plain',
@@ -348,7 +347,6 @@ export function pushEvent(): PushEvent {
         messageId: new ObjectId,
         scheduleId: new ObjectId,
         token: "",
-        saveResult: true,
         uid: "",
         platform: "a",
         env: "p",
@@ -411,7 +409,6 @@ export function mapperMessageDoc(platform: PlatformKey, overrides: Record<string
         app: new ObjectId(),
         platforms: [platform],
         status: "active",
-        saveResults: true,
         triggers: [{ kind: "plain", start: new Date() }],
         filter: {},
         contents: [],

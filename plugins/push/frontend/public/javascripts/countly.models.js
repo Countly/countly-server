@@ -1,9 +1,7 @@
 /* eslint-disable no-console */
-/*global countlyVue,CV,countlyPlugins,countlyCommon,countlySegmentation,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
+/*global countlyVue,CV,countlyCommon,countlySegmentation,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
-    var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
-    var actionsPerformedLabel = CV.i18n('push-notification.actions-performed-serie-name');
     var DEBOUNCE_TIME_IN_MS = 250;
     var MB_TO_BYTES_RATIO = 1000000;
     var DAY_TO_MS_RATIO = 86400 * 1000;
@@ -205,27 +203,6 @@
             result[PlatformEnum.ANDROID] = {};
             return result;
         },
-        getInitialSeriesStateByType: function(type) {
-            if (type === TypeEnum.ONE_TIME) {
-                return {
-                    monthly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
-                    weekly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
-                };
-            }
-            return {
-                daily: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
-            };
-        },
-        getInitialPeriodsStateByType: function(type) {
-            if (type === TypeEnum.ONE_TIME) {
-                return {
-                    periods: {monthly: [], weekly: []},
-                };
-            }
-            return {
-                periods: {daily: []},
-            };
-        },
         getInitialModelDashboardPlatform: function() {
             return {
                 sent: 0,
@@ -243,15 +220,12 @@
             return result;
         },
         getInitialBaseModel: function(dto) {
-            const settings = countlyPlugins.getConfigsData();
-            const pushSettings = settings?.push || {};
             return {
                 isEe: typeof countlySegmentation !== 'undefined',
                 isGeo: typeof countlyLocationTargetComponent !== 'undefined',
                 isCohorts: typeof countlyCohorts !== 'undefined',
                 _id: null,
                 demo: false,
-                saveResults: pushSettings.save_results_by_default ?? false,
                 name: (dto && dto.name ? dto.name : ""),
                 platforms: [],
                 message: {
@@ -1064,75 +1038,6 @@
                 }
                 throw new Error('Unknown push notification type:', dto);
             },
-            mapOneTimeSeriesData: function(dto) {
-                var monthlySendData = {};
-                monthlySendData[PlatformEnum.ALL] = dto.sent.monthly.data || [];
-                monthlySendData[PlatformEnum.ANDROID] = dto.sent.platforms[PlatformDtoEnum.ANDROID].monthly.data || [];
-                monthlySendData[PlatformEnum.IOS] = dto.sent.platforms[PlatformDtoEnum.IOS].monthly.data || [];
-                var monthlyActionsData = {};
-                monthlyActionsData[PlatformEnum.ALL] = dto.actions.monthly.data || [];
-                monthlyActionsData[PlatformEnum.ANDROID] = dto.actions.platforms[PlatformDtoEnum.ANDROID].monthly.data || [];
-                monthlyActionsData[PlatformEnum.IOS] = dto.actions.platforms[PlatformDtoEnum.IOS].monthly.data || [];
-                var weeklySentData = {};
-                weeklySentData[PlatformEnum.ALL] = dto.sent.weekly.data || [];
-                weeklySentData[PlatformEnum.ANDROID] = dto.sent.platforms[PlatformDtoEnum.ANDROID].weekly.data || [];
-                weeklySentData[PlatformEnum.IOS] = dto.sent.platforms[PlatformDtoEnum.IOS].weekly.data || [];
-                var weeklyActionsData = {};
-                weeklyActionsData[PlatformEnum.ALL] = dto.actions.weekly.data || [];
-                weeklyActionsData[PlatformEnum.ANDROID] = dto.actions.platforms[PlatformDtoEnum.ANDROID].weekly.data || [];
-                weeklyActionsData[PlatformEnum.IOS] = dto.actions.platforms[PlatformDtoEnum.IOS].weekly.data || [];
-                return {
-                    monthly: [{data: monthlySendData, label: messagesSentLabel}, {data: monthlyActionsData, label: actionsPerformedLabel}],
-                    weekly: [{data: weeklySentData, label: messagesSentLabel}, {data: weeklyActionsData, label: actionsPerformedLabel}],
-                };
-            },
-            mapAutomaticSeriesData: function(dto) {
-                var dailySendData = {};
-                dailySendData[PlatformEnum.ALL] = dto.sent_automated.daily.data || [];
-                dailySendData[PlatformEnum.ANDROID] = dto.sent_automated.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
-                dailySendData[PlatformEnum.IOS] = dto.sent_automated.platforms[PlatformDtoEnum.IOS].daily.data || [];
-                var dailyActionsData = {};
-                dailyActionsData[PlatformEnum.ALL] = dto.actions_automated.daily.data || [];
-                dailyActionsData[PlatformEnum.ANDROID] = dto.actions_automated.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
-                dailyActionsData[PlatformEnum.IOS] = dto.actions_automated.platforms[PlatformDtoEnum.IOS].daily.data || [];
-                return {
-                    daily: [{data: dailySendData || [], label: messagesSentLabel}, {data: dailyActionsData || [], label: actionsPerformedLabel}]
-                };
-            },
-            mapTransactionalSeriesData: function(dto) {
-                var dailySendData = {};
-                dailySendData[PlatformEnum.ALL] = dto.sent_tx.daily.data || [];
-                dailySendData[PlatformEnum.ANDROID] = dto.sent_tx.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
-                dailySendData[PlatformEnum.IOS] = dto.sent_tx.platforms[PlatformDtoEnum.IOS].daily.data || [];
-                var dailyActionsData = {};
-                dailyActionsData[PlatformEnum.ALL] = dto.actions_tx.daily.data || [];
-                dailyActionsData[PlatformEnum.ANDROID] = dto.actions_tx.platforms[PlatformDtoEnum.ANDROID].daily.data || [];
-                dailyActionsData[PlatformEnum.IOS] = dto.actions_tx.platforms[PlatformDtoEnum.IOS].daily.data || [];
-                return {
-                    daily: [{data: dailySendData || [], label: messagesSentLabel}, {data: dailyActionsData || [], label: actionsPerformedLabel}]
-                };
-            },
-            mapSeries: function(dto) {
-                var result = {};
-                result[TypeEnum.ONE_TIME] = this.mapOneTimeSeriesData(dto);
-                result[TypeEnum.AUTOMATIC] = this.mapAutomaticSeriesData(dto);
-                result[TypeEnum.TRANSACTIONAL] = this.mapTransactionalSeriesData(dto);
-                return result;
-            },
-            mapPeriods: function(dto) {
-                var result = {};
-                result[TypeEnum.ONE_TIME] = {
-                    weekly: dto.actions.weekly.keys,
-                    monthly: dto.actions.monthly.keys
-                };
-                result[TypeEnum.AUTOMATIC] = {
-                    daily: dto.actions_automated.daily.keys
-                };
-                result[TypeEnum.TRANSACTIONAL] = {
-                    daily: dto.actions_tx.daily.keys
-                };
-                return result;
-            },
             mapPlatforms: function(dto) {
                 return dto.reduce(function(allPlatformItems, currentPlatformItem) {
                     if (currentPlatformItem === PlatformDtoEnum.IOS) {
@@ -1423,37 +1328,11 @@
                 result[PlatformEnum.IOS] = parseInt(dto.enabled.i);
                 return result;
             },
-            mapDashboardTotal: function(dto, type, property) {
-                var result = {};
-                result[type] = {};
-                result[type][PlatformEnum.ALL] = dto[property].total;
-                result[type][PlatformEnum.IOS] = dto[property].platforms[PlatformDtoEnum.IOS].total;
-                result[type][PlatformEnum.ANDROID] = dto[property].platforms[PlatformDtoEnum.ANDROID].total;
-                return result;
-            },
-            mapTotalActions: function(dto) {
-                var result = {};
-                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.ONE_TIME, 'actions'));
-                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.AUTOMATIC, 'actions_automated'));
-                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.TRANSACTIONAL, 'actions_tx'));
-                return result;
-            },
-            mapTotalSent: function(dto) {
-                var result = {};
-                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.ONE_TIME, 'sent'));
-                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.AUTOMATIC, 'sent_automated'));
-                Object.assign(result, this.mapDashboardTotal(dto, TypeEnum.TRANSACTIONAL, 'sent_tx'));
-                return result;
-            },
             mapMainDashboard: function(dashboardDto) {
                 return {
                     kafkaStatus: dashboardDto.kafkaStatus,
-                    series: this.mapSeries(dashboardDto),
-                    periods: this.mapPeriods(dashboardDto),
                     totalAppUsers: parseInt(dashboardDto.users),
                     enabledUsers: this.mapEnabledUsers(dashboardDto),
-                    totalActions: this.mapTotalActions(dashboardDto),
-                    totalSent: this.mapTotalSent(dashboardDto),
                     tokens: dashboardDto.tokens,
                 };
             },
@@ -1523,7 +1402,6 @@
                 return {
                     _id: dto._id || null,
                     demo: this.mapDemo(dto),
-                    saveResults: dto.saveResults || false,
                     status: this.mapStatus(dto),
                     createdAt: dto.info && dto.info.created ? moment(dto.info.created).format("dddd, Do MMMM YYYY h:mm") : null,
                     name: dto.info && countlyCommon.unescapeHtml(dto.info.title),
@@ -2238,7 +2116,6 @@
             mapModelToBaseDto: function(pushNotificationModel, options) {
                 var resultDto = {
                     app: countlyCommon.ACTIVE_APP_ID,
-                    saveResults: pushNotificationModel.saveResults || false,
                     platforms: this.mapPlatforms(pushNotificationModel.platforms),
                 };
                 if (pushNotificationModel._id) {
@@ -3245,68 +3122,13 @@
         enabledUsers[PlatformEnum.IOS] = 0;
         enabledUsers[PlatformEnum.ANDROID] = 0;
 
-        var totalActions = {};
-        totalActions[TypeEnum.ONE_TIME] = {};
-        totalActions[TypeEnum.ONE_TIME][PlatformEnum.IOS] = 0;
-        totalActions[TypeEnum.ONE_TIME][PlatformEnum.ANDROID] = 0;
-        totalActions[TypeEnum.ONE_TIME][PlatformEnum.ALL] = 0;
-        totalActions[TypeEnum.AUTOMATIC] = {};
-        totalActions[TypeEnum.AUTOMATIC][PlatformEnum.IOS] = 0;
-        totalActions[TypeEnum.AUTOMATIC][PlatformEnum.ANDROID] = 0;
-        totalActions[TypeEnum.AUTOMATIC][PlatformEnum.ALL] = 0;
-        totalActions[TypeEnum.TRANSACTIONAL] = {};
-        totalActions[TypeEnum.TRANSACTIONAL][PlatformEnum.IOS] = 0;
-        totalActions[TypeEnum.TRANSACTIONAL][PlatformEnum.ANDROID] = 0;
-        totalActions[TypeEnum.TRANSACTIONAL][PlatformEnum.ALL] = 0;
-
-        var totalSent = {};
-        totalSent[TypeEnum.ONE_TIME] = {};
-        totalSent[TypeEnum.ONE_TIME][PlatformEnum.IOS] = 0;
-        totalSent[TypeEnum.ONE_TIME][PlatformEnum.ANDROID] = 0;
-        totalSent[TypeEnum.ONE_TIME][PlatformEnum.ALL] = 0;
-        totalSent[TypeEnum.AUTOMATIC] = {};
-        totalSent[TypeEnum.AUTOMATIC][PlatformEnum.IOS] = 0;
-        totalSent[TypeEnum.AUTOMATIC][PlatformEnum.ANDROID] = 0;
-        totalSent[TypeEnum.AUTOMATIC][PlatformEnum.ALL] = 0;
-        totalSent[TypeEnum.TRANSACTIONAL] = {};
-        totalSent[TypeEnum.TRANSACTIONAL][PlatformEnum.IOS] = 0;
-        totalSent[TypeEnum.TRANSACTIONAL][PlatformEnum.ANDROID] = 0;
-        totalSent[TypeEnum.TRANSACTIONAL][PlatformEnum.ALL] = 0;
-
-        var series = {};
-        series[TypeEnum.ONE_TIME] = {
-            monthly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
-            weekly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
-        };
-        series[TypeEnum.AUTOMATIC] = {
-            daily: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
-        };
-        series[TypeEnum.TRANSACTIONAL] = {
-            daily: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
-        };
-        var periods = {};
-        periods[TypeEnum.ONE_TIME] = {
-            weekly: [],
-            monthy: [],
-        };
-        periods[TypeEnum.AUTOMATIC] = {
-            daily: [],
-        };
-        periods[TypeEnum.TRANSACTIONAL] = {
-            daily: []
-        };
-
         return {
-            series: series,
-            periods: periods,
             totalAppUsers: 0,
             kafkaStatus: {
                 available: true,
                 error: null
             },
             enabledUsers: enabledUsers,
-            totalActions: totalActions,
-            totalSent: totalSent,
             isFetched: false
         };
     };

@@ -244,7 +244,6 @@ export async function validateCredentials(
                     android: {}
                 }
             },
-            saveResult: false,
             platform: "h",
             env: "p",
             language: "en",

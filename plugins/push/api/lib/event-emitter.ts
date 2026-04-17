@@ -155,14 +155,8 @@ export async function emitPushSentEvents(results: ResultEvent[]): Promise<void> 
     if (!results.length) {
         return;
     }
-    // Respect the per-message saveResult opt-out — if a message sets
-    // saveResults=false, its pushes don't produce drill rows.
-    const emittable = results.filter(r => r.saveResult);
-    if (!emittable.length) {
-        return;
-    }
     try {
-        const bulkOps: BulkInsertOne[] = emittable.map(buildDrillEvent);
+        const bulkOps: BulkInsertOne[] = results.map(buildDrillEvent);
 
         const sink = getEventSink();
         const writeResult = await sink.write(bulkOps);

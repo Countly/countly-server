@@ -577,24 +577,12 @@ describe("Resultor", () => {
             createMockedCollection("message_schedules");
             createMockedCollection("messages");
 
-            const result = makeResult({ saveResult: true });
+            const result = makeResult();
             await saveResults(db, [result]);
 
             assert(mockEmitPushSentEvents.calledOnce);
             assert.strictEqual(mockEmitPushSentEvents.firstCall.firstArg.length, 1);
             assert.strictEqual(mockEmitPushSentEvents.firstCall.firstArg[0], result);
-        });
-
-        it("should call emitPushSentEvents regardless of saveResult (emitter applies its own opt-out)", async() => {
-            createMockedCollection("message_schedules");
-            createMockedCollection("messages");
-
-            const result = makeResult({ saveResult: false });
-            await saveResults(db, [result]);
-
-            // Resultor doesn't filter — emitter is responsible for the saveResult opt-out.
-            assert(mockEmitPushSentEvents.calledOnce);
-            assert.strictEqual(mockEmitPushSentEvents.firstCall.firstArg[0].saveResult, false);
         });
 
         it("should clear invalid tokens on InvalidDeviceToken errors", async() => {
@@ -616,7 +604,6 @@ describe("Resultor", () => {
                 uid: "badtoken-user",
                 platform: "a",
                 env: "p",
-                saveResult: false,
             });
             result.error = { name: "InvalidDeviceToken", message: "bad token" };
             delete (result as any).response;
@@ -649,7 +636,7 @@ describe("Resultor", () => {
             } = createMockedCollection("push_" + appIdStr);
             pushCollection.bulkWrite.resolves({} as any);
 
-            const result = makeResult({ appId, messageId, uid: "u1", saveResult: false });
+            const result = makeResult({ appId, messageId, uid: "u1" });
             // Ensure no error (successful send)
             delete result.error;
 
@@ -673,7 +660,7 @@ describe("Resultor", () => {
             } = createMockedCollection("push_" + appIdStr);
             pushCollection.bulkWrite.resolves({} as any);
 
-            const result = makeResult({ appId, saveResult: false }, true);
+            const result = makeResult({ appId }, true);
 
             await saveResults(db, [result]);
 
@@ -701,9 +688,9 @@ describe("Resultor", () => {
                 collection: messagesCollection
             } = createMockedCollection("messages");
 
-            const r1 = makeResult({ scheduleId: scheduleA, messageId: messageA, saveResult: false });
+            const r1 = makeResult({ scheduleId: scheduleA, messageId: messageA });
             delete r1.error;
-            const r2 = makeResult({ scheduleId: scheduleB, messageId: messageB, saveResult: false });
+            const r2 = makeResult({ scheduleId: scheduleB, messageId: messageB });
             delete r2.error;
 
             await saveResults(db, [r1, r2]);

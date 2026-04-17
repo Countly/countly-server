@@ -29,7 +29,6 @@ describe("Android integration", () => {
             scheduleId: new ObjectId,
             token: ANDROID_TEST_TOKEN,
             credentials,
-            saveResult: false,
             env: "p",
             language: "en",
             platform: "a",

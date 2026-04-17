@@ -34,7 +34,6 @@ describe('emitPushSentEvents', () => {
         return {
             ...mockData.resultEvent(),
             uid: 'u1',
-            saveResult: true,
             userProfile: {
                 _uid: 'app-user-id',
                 did: 'device-1',
@@ -49,22 +48,6 @@ describe('emitPushSentEvents', () => {
     it('returns early for an empty array without touching the sink', async() => {
         await emitPushSentEvents([]);
         assert.strictEqual(sinkWrite.callCount, 0);
-    });
-
-    it('returns early when no results opt into saveResult', async() => {
-        await emitPushSentEvents([makeResult({ saveResult: false })]);
-        assert.strictEqual(sinkWrite.callCount, 0);
-    });
-
-    it('filters out results with saveResult=false but emits the rest', async() => {
-        const r1 = makeResult({ uid: 'keep', saveResult: true });
-        const r2 = makeResult({ uid: 'drop', saveResult: false });
-        await emitPushSentEvents([r1, r2]);
-
-        assert.strictEqual(sinkWrite.callCount, 1);
-        const ops: BulkInsertOne[] = sinkWrite.firstCall.firstArg;
-        assert.strictEqual(ops.length, 1);
-        assert.strictEqual(ops[0].insertOne.document.uid, 'keep');
     });
 
     it('produces a drill_events-shaped document per result', async() => {

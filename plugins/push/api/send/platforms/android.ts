@@ -200,7 +200,6 @@ export async function validateCredentials(
                     sound: 'default'
                 }
             },
-            saveResult: false,
             platform: "a",
             env: "p",
             language: "en",

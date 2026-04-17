@@ -27,7 +27,11 @@ export function createMockedMongoDb() {
 
     const sandbox = sinon.createSandbox();
     // generic collection
-    const {collection, findCursor, aggregationCursor} = createMockedCollection(sandbox);
+    const {
+        collection,
+        findCursor,
+        aggregationCursor
+    } = createMockedCollection(sandbox);
     const db = sandbox.createStubInstance(Db);
 
     db.collection.callsFake((collectionName: string) => {

@@ -592,7 +592,6 @@ describe("Push composer", async() => {
                 messageId,
                 scheduleId,
                 token: "",
-                saveResult: true,
                 uid: "",
                 platform: "a",
                 env: "p",

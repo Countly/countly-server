@@ -29,7 +29,6 @@ describe("IOS integration", () => {
             scheduleId: new ObjectId,
             token: IOS_TEST_TOKEN,
             credentials,
-            saveResult: false,
             env: "d",
             language: "en",
             platform: "i",

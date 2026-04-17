@@ -240,7 +240,6 @@ export async function* createPushStream(
                 appId: appDoc._id,
                 messageId: messageDoc._id,
                 scheduleId: scheduleDoc._id,
-                saveResult: messageDoc.saveResults,
                 token,
                 uid: user.uid,
                 platform,
