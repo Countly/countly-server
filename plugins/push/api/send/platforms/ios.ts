@@ -95,6 +95,7 @@ const PROXY_CACHE: { [serializedProxyConfig: string]: ProxyCache } = {};
 const TOKEN_CACHE: { [credentialHash: string]: JWTCache } = {};
 const TOKEN_TTL = 20 * 60 * 1000; // 20 mins
 const TLS_KEY_PAIR_CACHE: { [hash: string]: TLSKeyPairCache } = {};
+const CACHE_IDLE_TTL = 60 * 1000; // 60 seconds
 
 export function getAuthToken(credentials: APNCredentials): string | undefined {
     if (credentials.type !== "apn_token") {
@@ -118,9 +119,16 @@ export function getProxyAgent(config?: ProxyConfiguration): any {
         return;
     }
     const serializedProxyConfig = serializeProxyConfig(config);
-    if (serializedProxyConfig in PROXY_CACHE) {
-        PROXY_CACHE[serializedProxyConfig].lastUsedAt = Date.now();
-        return PROXY_CACHE[serializedProxyConfig].agent;
+    const cached = PROXY_CACHE[serializedProxyConfig];
+    if (cached) {
+        if (Date.now() - cached.lastUsedAt > CACHE_IDLE_TTL) {
+            cached.agent.destroy?.();
+            delete PROXY_CACHE[serializedProxyConfig];
+        }
+        else {
+            cached.lastUsedAt = Date.now();
+            return cached.agent;
+        }
     }
     const proxyOptions: any = {
         url: "http://" + config.host + ":" + config.port,
@@ -137,18 +145,20 @@ export function getProxyAgent(config?: ProxyConfiguration): any {
         timeout: PROXY_CONNECTION_TIMEOUT,
         proxyOptions
     });
-    PROXY_CACHE[serializedProxyConfig] = {
-        lastUsedAt: Date.now(),
-        agent
-    };
+    PROXY_CACHE[serializedProxyConfig] = { agent, lastUsedAt: Date.now() };
     return agent;
 }
 
 export function getTlsKeyPair(credentials: APNP12Credentials): TLSKeyPair {
-    const cache = TLS_KEY_PAIR_CACHE[credentials.hash];
-    if (cache) {
-        cache.lastUsedAt = Date.now();
-        return cache.keyPair;
+    const cached = TLS_KEY_PAIR_CACHE[credentials.hash];
+    if (cached) {
+        if (Date.now() - cached.lastUsedAt > CACHE_IDLE_TTL) {
+            delete TLS_KEY_PAIR_CACHE[credentials.hash];
+        }
+        else {
+            cached.lastUsedAt = Date.now();
+            return cached.keyPair;
+        }
     }
     const { cert, key } = parseP12Certificate(
         credentials.cert, credentials.secret

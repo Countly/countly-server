@@ -31,25 +31,30 @@ export interface HuaweiMessagePayload {
 interface TokenCache {
     token?: string;
     expiryDate?: number;
+    lastUsedAt: number;
     promise?: Promise<string>;
 }
 
 const TOKEN_CACHE: { [credentialHash: string]: TokenCache } = {};
+const CACHE_IDLE_TTL = 60 * 1000; // 60 seconds
 
 export async function getAuthToken(credentials: HMSCredentials, proxy?: ProxyConfiguration): Promise<string> {
-    if (credentials.hash in TOKEN_CACHE) {
-        const cache = TOKEN_CACHE[credentials.hash];
-        if (cache.token) {
-            if (cache.expiryDate && cache.expiryDate > Date.now()) {
-                return cache.token;
-            }
+    const cached = TOKEN_CACHE[credentials.hash];
+    if (cached) {
+        if (Date.now() - cached.lastUsedAt > CACHE_IDLE_TTL) {
+            delete TOKEN_CACHE[credentials.hash];
         }
-        else if (cache.promise) {
-            return cache.promise;
+        else if (cached.token && cached.expiryDate && cached.expiryDate > Date.now()) {
+            cached.lastUsedAt = Date.now();
+            return cached.token;
+        }
+        else if (cached.promise) {
+            cached.lastUsedAt = Date.now();
+            return cached.promise;
         }
     }
 
-    TOKEN_CACHE[credentials.hash] = {};
+    TOKEN_CACHE[credentials.hash] = { lastUsedAt: Date.now() };
 
     const requestBody = (new URLSearchParams({
         grant_type: 'client_credentials',
