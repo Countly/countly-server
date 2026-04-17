@@ -12,7 +12,7 @@ import type { ProxyConfiguration } from "../../lib/utils.ts";
 import type { TemplateContext } from "../../lib/template.ts";
 import { serializeProxyConfig, removeUPFromUserPropertyKey } from "../../lib/utils.ts";
 import { InvalidCredentials, SendError, InvalidResponse, APNSErrors, InvalidDeviceToken } from "../../lib/error.ts";
-import { PROXY_CONNECTION_TIMEOUT } from "../../constants/configs.ts";
+import { PROXY_CONNECTION_TIMEOUT, SEND_TIMEOUT } from "../../constants/configs.ts";
 
 export interface IOSConfig {
     setContentAvailable: boolean;
@@ -255,7 +255,8 @@ export async function send(pushEvent: PushEvent): Promise<string> {
     };
     const options: any = {
         headers,
-        agent: getProxyAgent(pushEvent.proxy)
+        agent: getProxyAgent(pushEvent.proxy),
+        timeout: SEND_TIMEOUT,
     };
     if (credentials.type === "apn_token") {
         headers.authorization = "Bearer " + getAuthToken(credentials);
@@ -273,6 +274,7 @@ export async function send(pushEvent: PushEvent): Promise<string> {
     const request = (http2Wrapper as any).request(url, options);
 
     return new Promise<string>((resolve, reject) => {
+        request.on("timeout", () => { request.destroy(new Error("ETIMEDOUT")); });
         request.on("error", reject);
         request.on("response", (response: any) => {
             let data = "";

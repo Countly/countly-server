@@ -27,7 +27,6 @@ const mockSendPushEvents: sinon.SinonStub<[pushes: PushEvent[]], Promise<void>> 
 
 const {
     composeScheduledPushes,
-    composeAllScheduledPushes,
     createPushStream,
     userPropsProjection,
     loadCredentials,
@@ -878,84 +877,6 @@ describe("Push composer", async() => {
             assert.strictEqual(mockSendPushEvents.callCount, 2);
             assert.strictEqual(mockSendPushEvents.firstCall.firstArg.length, 100);
             assert.strictEqual(mockSendPushEvents.secondCall.firstArg.length, 50);
-        });
-    });
-
-    describe("composeAllScheduledPushes", () => {
-        it("should process multiple schedule events and return total count", async() => {
-            const event1 = mockData.scheduleEvent();
-            const event2 = mockData.scheduleEvent();
-            // Both events have deleted messages → return 0 quickly
-            const {
-                collection: messageCollection
-            } = createMockedCollection("messages");
-            const {
-                collection: scheduleCollection
-            } = createMockedCollection("message_schedules");
-
-            messageCollection.findOne.resolves(null);
-
-            const total = await composeAllScheduledPushes(db, [event1, event2]);
-
-            assert.strictEqual(total, 0);
-            // findOne called twice (once per event)
-            assert.strictEqual(messageCollection.findOne.callCount, 2);
-            // schedules canceled twice
-            assert.strictEqual(scheduleCollection.updateMany.callCount, 2);
-        });
-
-        it("should catch errors and mark failed events in the database", async() => {
-            const event1 = mockData.scheduleEvent();
-            const {
-                collection: messageCollection
-            } = createMockedCollection("messages");
-            const {
-                collection: scheduleCollection
-            } = createMockedCollection("message_schedules");
-
-            const testError = new Error("Database connection lost");
-            messageCollection.findOne.rejects(testError);
-
-            const total = await composeAllScheduledPushes(db, [event1]);
-
-            assert.strictEqual(total, 0);
-            // Should mark the schedule event as failed
-            assert(scheduleCollection.updateOne.calledOnce);
-            const updateArgs = scheduleCollection.updateOne.firstCall.args;
-            assert.deepStrictEqual(updateArgs[0], {
-                _id: event1.scheduleId,
-                "events.scheduledTo": event1.scheduledTo
-            });
-            const $set = (updateArgs[1] as any).$set;
-            assert.strictEqual($set["events.$.status"], "failed");
-            assert.strictEqual($set["events.$.error"].name, "Error");
-            assert.strictEqual($set["events.$.error"].message, "Database connection lost");
-        });
-
-        it("should continue processing after an individual event failure", async() => {
-            const event1 = mockData.scheduleEvent();
-            const event2 = mockData.scheduleEvent();
-            // Give them different messageIds so we can distinguish
-            event1.messageId = new ObjectId();
-            event2.messageId = new ObjectId();
-            const {
-                collection: messageCollection
-            } = createMockedCollection("messages");
-            const {
-                collection: scheduleCollection
-            } = createMockedCollection("message_schedules");
-
-            // First event throws, second event has deleted message (returns 0)
-            messageCollection.findOne.onFirstCall().rejects(new Error("fail"));
-            messageCollection.findOne.onSecondCall().resolves(null);
-
-            const total = await composeAllScheduledPushes(db, [event1, event2]);
-
-            assert.strictEqual(total, 0);
-            // First event: error → scheduleCollection.updateOne (mark failed)
-            // Second event: no message → scheduleCollection.updateMany (cancel all)
-            assert(scheduleCollection.updateOne.calledOnce);
-            assert(scheduleCollection.updateMany.calledOnce);
         });
     });
 

@@ -7,8 +7,8 @@ import type { AutoTrigger, MessageTrigger, PlatformKey, PlatformEnvKey } from ".
 import type { ErrorObject } from "../lib/error.ts";
 import { ObjectId } from "mongodb";
 
-export type PushEventHandler = (pushes: PushEvent[]) => Promise<any>;
-export type ScheduleEventHandler = (schedules: ScheduleEvent[]) => Promise<any>;
+export type PushEventHandler = (push: PushEvent) => Promise<any>;
+export type ScheduleEventHandler = (schedule: ScheduleEvent) => Promise<any>;
 export type ResultEventHandler = (results: ResultEvent[]) => Promise<any>;
 export type AutoTriggerEventHandler = (autoTriggers: AutoTriggerEvent[]) => Promise<any>;
 

@@ -10,7 +10,7 @@ import { scheduleIfEligible, DATE_TRIGGERS } from './send/scheduler.ts';
 import { buildUserAggregationPipeline, createPushStream, loadCredentials } from './send/composer.ts';
 import { loadPluginConfiguration, buildProxyUrl } from './lib/utils.ts';
 import { createTemplate } from './lib/template.ts';
-import { sendAllPushes } from './send/sender.ts';
+import { sendPush } from './send/sender.ts';
 import platforms from './constants/platform-keymap.ts';
 import { PROXY_CONNECTION_TIMEOUT, MEDIA_MIME_TYPE_ALL, MEDIA_MAX_SIZE } from './constants/configs.ts';
 import { ValidationError } from './lib/error.ts';
@@ -213,11 +213,10 @@ export async function test(params: any) {
         const schedule = { _id: common.db.ObjectID() } as Schedule;
         const stream = createPushStream(common.db, app, msg, schedule,
             new Date(), creds, pluginConfig, template, pipeline);
-        let results = [];
+        const results = [];
         for await (const push of stream) {
-            results.push(await sendAllPushes([push], false));
+            results.push(await sendPush(push, false));
         }
-        results = results.flat();
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_test', data: {test_uids, test_cohorts, results}});
         common.returnOutput(params, {results});
     }

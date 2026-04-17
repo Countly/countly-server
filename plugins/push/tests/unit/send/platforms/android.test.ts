@@ -52,10 +52,9 @@ describe("Android platform", () => {
             const firebaseCredentialObject = { internal: "credentials object" };
             mockFirebaseAdmin.credential.cert.returns(firebaseCredentialObject);
             await send(push);
-            assert(mockFirebaseAdmin.initializeApp.calledWith({
-                httpAgent: undefined,
-                credential: firebaseCredentialObject
-            }));
+            const initArgs = mockFirebaseAdmin.initializeApp.firstCall.firstArg;
+            assert.strictEqual(initArgs.credential, firebaseCredentialObject);
+            assert(initArgs.httpAgent, "should provide an httpAgent with timeout");
         });
 
         it("configure the firebase application instance with proxy", async() => {

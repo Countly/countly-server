@@ -1,4 +1,5 @@
 import firebaseAdmin from "firebase-admin";
+import https from "https";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { ObjectId } from "mongodb";
 import { createHash } from "crypto";
@@ -9,7 +10,7 @@ import type { FCMCredentials, RawFCMCredentials } from "../../models/credentials
 import type { TemplateContext } from "../../lib/template.ts";
 import { buildProxyUrl, serializeProxyConfig, flattenObject, removeUPFromUserPropertyKey } from "../../lib/utils.ts";
 import { InvalidCredentials, SendError, FCMErrors } from "../../lib/error.ts";
-import { PROXY_CONNECTION_TIMEOUT } from "../../constants/configs.ts";
+import { PROXY_CONNECTION_TIMEOUT, SEND_TIMEOUT } from "../../constants/configs.ts";
 
 export interface AndroidConfig {}
 
@@ -87,13 +88,16 @@ export async function send(pushEvent: PushEvent): Promise<string> {
             "base64"
         );
         const serviceAccountObject = JSON.parse(buffer.toString("utf8"));
-        let agent: HttpsProxyAgent<string> | undefined;
+        let agent: https.Agent;
         if (pushEvent.proxy) {
             agent = new HttpsProxyAgent(buildProxyUrl(pushEvent.proxy), {
                 keepAlive: true,
                 timeout: PROXY_CONNECTION_TIMEOUT,
                 rejectUnauthorized: pushEvent.proxy.auth,
             });
+        }
+        else {
+            agent = new https.Agent({ keepAlive: true, timeout: SEND_TIMEOUT });
         }
         firebaseApp = firebaseAdmin.initializeApp({
             httpAgent: agent,

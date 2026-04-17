@@ -11,7 +11,7 @@ import type { TemplateContext } from "../../lib/template.ts";
 import { buildProxyUrl } from "../../lib/utils.ts";
 import { mapMessageToPayload as mapMessageToAndroidPayload } from "./android.ts";
 import { InvalidCredentials, SendError, InvalidResponse, InvalidDeviceToken, HMSErrors } from "../../lib/error.ts";
-import { PROXY_CONNECTION_TIMEOUT } from "../../constants/configs.ts";
+import { PROXY_CONNECTION_TIMEOUT, SEND_TIMEOUT } from "../../constants/configs.ts";
 
 export interface HuaweiConfig {}
 
@@ -72,6 +72,7 @@ export async function getAuthToken(credentials: HMSCredentials, proxy?: ProxyCon
             hostname: 'oauth-login.cloud.huawei.com',
             path: '/oauth2/v3/token',
             method: 'POST',
+            timeout: SEND_TIMEOUT,
             headers: {
                 accept: 'application/json',
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -116,6 +117,7 @@ export async function getAuthToken(credentials: HMSCredentials, proxy?: ProxyCon
             });
         });
 
+        request.on('timeout', () => { request.destroy(new Error("ETIMEDOUT")); });
         request.on('error', err => reject(err));
         request.end(requestBody);
     });
@@ -147,6 +149,7 @@ export async function send(pushEvent: PushEvent): Promise<string> {
             hostname: 'push-api.cloud.huawei.com',
             path: '/v1/' + credentials.app + '/messages:send',
             method: 'POST',
+            timeout: SEND_TIMEOUT,
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
@@ -190,6 +193,7 @@ export async function send(pushEvent: PushEvent): Promise<string> {
                 return reject(new InvalidResponse("Invalid response", raw));
             });
         });
+        request.on("timeout", () => { request.destroy(new Error("ETIMEDOUT")); });
         request.on("error", reject);
         request.end(payload);
     });

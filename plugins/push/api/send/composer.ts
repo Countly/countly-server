@@ -42,53 +42,18 @@ interface UserPropertiesProjection {
     [key: string]: any;
 }
 
-/**
- * Composes push notifications for all given schedule events.
- */
-export async function composeAllScheduledPushes(db: Db, scheduleEvents: ScheduleEvent[]): Promise<number> {
-    let totalNumberOfPushes = 0;
-    for (let i = 0; i < scheduleEvents.length; i++) {
-        const scheduleEvent = scheduleEvents[i];
-        try {
-            const result = await composeScheduledPushes(db, scheduleEvent);
-            totalNumberOfPushes += result;
-        }
-        catch (err) {
-            log.e("Error while composing scheduleEvents", scheduleEvent, err);
-            let error: ErrorObject = {
-                name: "UnknownError",
-                message: "Unknown error occurred while composing the scheduled push messages"
-            };
-            if (err instanceof Error) {
-                error = {
-                    name: err.name,
-                    message: err.message,
-                    stack: err.stack
-                };
-            }
-            db.collection("message_schedules").updateOne(
-                {
-                    _id: scheduleEvent.scheduleId,
-                    "events.scheduledTo": scheduleEvent.scheduledTo
-                },
-                {
-                    $set: {
-                        "events.$.status": "failed",
-                        "events.$.error": error,
-                    }
-                }
-            );
-        }
-    }
-    return totalNumberOfPushes;
-}
+export type HeartbeatFn = () => Promise<void>;
 
 /**
  * Composes push notifications for a single schedule event.
  * Loads necessary documents, builds aggregation pipeline, creates push events,
  * sends them to the queue, and updates the schedule and message documents.
+ *
+ * @param heartbeat Optional callback invoked after each batch is sent to Kafka.
+ *   The Kafka consumer passes its heartbeat function here so the consumer session
+ *   stays alive while composing millions of users.
  */
-export async function composeScheduledPushes(db: Db, scheduleEvent: ScheduleEvent): Promise<number> {
+export async function composeScheduledPushes(db: Db, scheduleEvent: ScheduleEvent, heartbeat?: HeartbeatFn): Promise<number> {
     const { appId, scheduleId, messageId, timezone, scheduledTo } = scheduleEvent;
     // load necessary documents:
     const messageCol: MessageCollection = db.collection("messages");
@@ -162,6 +127,9 @@ export async function composeScheduledPushes(db: Db, scheduleEvent: ScheduleEven
         if (events.length === QUEUE_WRITE_BATCH_SIZE) {
             await queue.sendPushEvents(events);
             events = [];
+            if (heartbeat) {
+                await heartbeat();
+            }
         }
         // update results
         increaseResultStat(resultObject, push.platform, push.language, "total");

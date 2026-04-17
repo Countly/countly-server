@@ -40,16 +40,11 @@ describe("Kafka consumer", () => {
         it("should configure kafkajs instance correctly", async() => {
             adminInstance.listTopics.returns(Promise.resolve([]));
 
-            const mockSendAllPushes = async() => [];
-            const mockCompose = async() => {};
-            const mockSaveResults = async() => {};
-            const mockScheduleAuto = async() => {};
-
             const { initPushQueue } = await esmock("../../../api/kafka/consumer.ts", {
-                "../../../api/send/sender.ts": { sendAllPushes: mockSendAllPushes },
-                "../../../api/send/composer.ts": { composeAllScheduledPushes: mockCompose },
-                "../../../api/send/resultor.ts": { saveResults: mockSaveResults },
-                "../../../api/send/scheduler.ts": { scheduleMessageByAutoTriggers: mockScheduleAuto },
+                "../../../api/send/sender.ts": { sendPush: async() => {} },
+                "../../../api/send/composer.ts": { composeScheduledPushes: async() => {} },
+                "../../../api/send/resultor.ts": { saveResults: async() => {} },
+                "../../../api/send/scheduler.ts": { scheduleMessageByAutoTriggers: async() => {} },
                 "../../../api/kafka/producer.ts": { setupProducer, setupTopicsAndPartitions },
             }) as typeof import('../../../api/kafka/consumer.ts');
 
@@ -65,10 +60,10 @@ describe("Kafka consumer", () => {
 
             assert(producerInstance.connect.called);
 
-            assert(kafkaInstance.consumer.calledWith({
-                groupId: kafkaConfig.consumerGroupId,
-                allowAutoTopicCreation: false
-            }));
+            const consumerConfig = kafkaInstance.consumer.firstCall.firstArg;
+            assert.strictEqual(consumerConfig.groupId, kafkaConfig.consumerGroupId);
+            assert.strictEqual(consumerConfig.allowAutoTopicCreation, false);
+            assert.strictEqual(consumerConfig.sessionTimeout, 30000);
 
             assert(consumerInstance.connect.called);
 
@@ -87,12 +82,12 @@ describe("Kafka consumer", () => {
         it("should handle multiple message types in batch correctly", async() => {
             adminInstance.listTopics.returns(Promise.resolve([]));
 
-            let receivedPushes: any[] = [];
+            let callCount = 0;
             const { initPushQueue } = await esmock("../../../api/kafka/consumer.ts", {
                 "../../../api/send/sender.ts": {
-                    sendAllPushes: async(events: any) => { receivedPushes = events; return []; },
+                    sendPush: async() => { callCount++; },
                 },
-                "../../../api/send/composer.ts": { composeAllScheduledPushes: async() => {} },
+                "../../../api/send/composer.ts": { composeScheduledPushes: async() => {} },
                 "../../../api/send/resultor.ts": { saveResults: async() => {} },
                 "../../../api/send/scheduler.ts": { scheduleMessageByAutoTriggers: async() => {} },
                 "../../../api/kafka/producer.ts": { setupProducer, setupTopicsAndPartitions },
@@ -113,24 +108,27 @@ describe("Kafka consumer", () => {
             ];
 
             await eachBatch({
+                resolveOffset: () => {},
+                commitOffsetsIfNecessary: async() => {},
+                heartbeat: async() => {},
                 batch: {
                     topic: kafkaConfig.topics.SEND.name,
-                    messages: testData.map((d: any) => ({ value: JSON.stringify(d) }))
+                    messages: testData.map((d: any, i: number) => ({ offset: String(i), value: JSON.stringify(d) }))
                 }
             });
 
-            assert.strictEqual(receivedPushes.length, 3);
+            assert.strictEqual(callCount, 3);
         });
 
         it("should handle null message values gracefully", async() => {
             adminInstance.listTopics.returns(Promise.resolve([]));
-            let receivedEvents: any[] = [];
+            let callCount = 0;
 
             const { initPushQueue } = await esmock("../../../api/kafka/consumer.ts", {
                 "../../../api/send/sender.ts": {
-                    sendAllPushes: async(events: any) => { receivedEvents = events; return []; },
+                    sendPush: async() => { callCount++; return []; },
                 },
-                "../../../api/send/composer.ts": { composeAllScheduledPushes: async() => {} },
+                "../../../api/send/composer.ts": { composeScheduledPushes: async() => {} },
                 "../../../api/send/resultor.ts": { saveResults: async() => {} },
                 "../../../api/send/scheduler.ts": { scheduleMessageByAutoTriggers: async() => {} },
                 "../../../api/kafka/producer.ts": { setupProducer, setupTopicsAndPartitions },
@@ -145,25 +143,28 @@ describe("Kafka consumer", () => {
             const { eachBatch } = consumerInstance.run.firstCall.firstArg;
 
             await eachBatch({
+                resolveOffset: () => {},
+                commitOffsetsIfNecessary: async() => {},
+                heartbeat: async() => {},
                 batch: {
                     topic: kafkaConfig.topics.SEND.name,
                     messages: [
-                        { value: JSON.stringify(data.pushEvent()) },
-                        { value: null },
-                        { value: JSON.stringify(data.pushEvent()) }
+                        { offset: '0', value: JSON.stringify(data.pushEvent()) },
+                        { offset: '1', value: null },
+                        { offset: '2', value: JSON.stringify(data.pushEvent()) }
                     ]
                 }
             });
 
-            assert.strictEqual(receivedEvents.length, 2);
+            assert.strictEqual(callCount, 2);
         });
 
         it("should not throw when message parsing fails", async() => {
             adminInstance.listTopics.returns(Promise.resolve([]));
 
             const { initPushQueue } = await esmock("../../../api/kafka/consumer.ts", {
-                "../../../api/send/sender.ts": { sendAllPushes: async() => [] },
-                "../../../api/send/composer.ts": { composeAllScheduledPushes: async() => {} },
+                "../../../api/send/sender.ts": { sendPush: async() => [] },
+                "../../../api/send/composer.ts": { composeScheduledPushes: async() => {} },
                 "../../../api/send/resultor.ts": { saveResults: async() => {} },
                 "../../../api/send/scheduler.ts": { scheduleMessageByAutoTriggers: async() => {} },
                 "../../../api/kafka/producer.ts": { setupProducer, setupTopicsAndPartitions },
@@ -178,10 +179,13 @@ describe("Kafka consumer", () => {
             const { eachBatch } = consumerInstance.run.firstCall.firstArg;
 
             await eachBatch({
+                resolveOffset: () => {},
+                commitOffsetsIfNecessary: async() => {},
+                heartbeat: async() => {},
                 batch: {
                     topic: kafkaConfig.topics.SEND.name,
                     messages: [
-                        { value: Buffer.from('invalid json {') }
+                        { offset: '0', value: Buffer.from('invalid json {') }
                     ]
                 }
             });
@@ -193,33 +197,32 @@ describe("Kafka consumer", () => {
                 const pushEvent = data.pushEvent();
                 const scheduleEvent = data.scheduleEvent();
 
-                const mockSendAllPushes: PushEventHandler = async(events) => {
+                const mockSendPush: PushEventHandler = async(event) => {
                     try {
-                        assert(events[0].appId instanceof ObjectId);
-                        assert(events[0].messageId instanceof ObjectId);
-                        assert(events[0].scheduleId instanceof ObjectId);
+                        assert(event.appId instanceof ObjectId);
+                        assert(event.messageId instanceof ObjectId);
+                        assert(event.scheduleId instanceof ObjectId);
 
                         assert.deepStrictEqual(
-                            JSON.parse(JSON.stringify([pushEvent])),
-                            JSON.parse(JSON.stringify(events))
+                            JSON.parse(JSON.stringify(pushEvent)),
+                            JSON.parse(JSON.stringify(event))
                         );
                         --noResolves || res(undefined);
                     }
                     catch (err) {
                         --noResolves || rej(err);
                     }
-                    return [] as any;
                 };
-                const mockCompose: ScheduleEventHandler = async(events) => {
+                const mockCompose: ScheduleEventHandler = async(event) => {
                     try {
-                        assert(events[0].appId instanceof ObjectId);
-                        assert(events[0].messageId instanceof ObjectId);
-                        assert(events[0].scheduleId instanceof ObjectId);
-                        assert(events[0].scheduledTo instanceof Date);
+                        assert(event.appId instanceof ObjectId);
+                        assert(event.messageId instanceof ObjectId);
+                        assert(event.scheduleId instanceof ObjectId);
+                        assert(event.scheduledTo instanceof Date);
 
                         assert.deepStrictEqual(
-                            JSON.parse(JSON.stringify([scheduleEvent])),
-                            JSON.parse(JSON.stringify(events))
+                            JSON.parse(JSON.stringify(scheduleEvent)),
+                            JSON.parse(JSON.stringify(event))
                         );
                         --noResolves || res(undefined);
                     }
@@ -230,8 +233,8 @@ describe("Kafka consumer", () => {
 
                 (async() => {
                     const { initPushQueue } = await esmock("../../../api/kafka/consumer.ts", {
-                        "../../../api/send/sender.ts": { sendAllPushes: mockSendAllPushes },
-                        "../../../api/send/composer.ts": { composeAllScheduledPushes: (_db: any, events: any) => mockCompose(events) },
+                        "../../../api/send/sender.ts": { sendPush: mockSendPush },
+                        "../../../api/send/composer.ts": { composeScheduledPushes: (_db: any, event: any) => mockCompose(event) },
                         "../../../api/send/resultor.ts": { saveResults: async() => {} },
                         "../../../api/send/scheduler.ts": { scheduleMessageByAutoTriggers: async() => {} },
                         "../../../api/kafka/producer.ts": { setupProducer, setupTopicsAndPartitions },
@@ -245,15 +248,21 @@ describe("Kafka consumer", () => {
 
                     const { eachBatch } = consumerInstance.run.firstCall.firstArg;
                     await eachBatch({
+                        resolveOffset: () => {},
+                        commitOffsetsIfNecessary: async() => {},
+                        heartbeat: async() => {},
                         batch: {
                             topic: kafkaConfig.topics.SEND.name,
-                            messages: [{ value: JSON.stringify(pushEvent) }]
+                            messages: [{ offset: '0', value: JSON.stringify(pushEvent) }]
                         }
                     });
                     await eachBatch({
+                        resolveOffset: () => {},
+                        commitOffsetsIfNecessary: async() => {},
+                        heartbeat: async() => {},
                         batch: {
                             topic: kafkaConfig.topics.COMPOSE.name,
-                            messages: [{ value: JSON.stringify(scheduleEvent) }]
+                            messages: [{ offset: '0', value: JSON.stringify(scheduleEvent) }]
                         }
                     });
                 })();
@@ -267,8 +276,8 @@ describe("Kafka consumer", () => {
             let receivedResults: any[] = [];
 
             const { initPushQueue } = await esmock("../../../api/kafka/consumer.ts", {
-                "../../../api/send/sender.ts": { sendAllPushes: async() => [] },
-                "../../../api/send/composer.ts": { composeAllScheduledPushes: async() => {} },
+                "../../../api/send/sender.ts": { sendPush: async() => [] },
+                "../../../api/send/composer.ts": { composeScheduledPushes: async() => {} },
                 "../../../api/send/resultor.ts": {
                     saveResults: async(_db: any, events: any) => { receivedResults = events; },
                 },
@@ -281,9 +290,12 @@ describe("Kafka consumer", () => {
 
             const resultEvent = data.resultEvent();
             await eachBatch({
+                resolveOffset: () => {},
+                commitOffsetsIfNecessary: async() => {},
+                heartbeat: async() => {},
                 batch: {
                     topic: kafkaConfig.topics.RESULT.name,
-                    messages: [{ value: JSON.stringify(resultEvent) }]
+                    messages: [{ offset: '0', value: JSON.stringify(resultEvent) }]
                 }
             });
 
@@ -297,8 +309,8 @@ describe("Kafka consumer", () => {
             let receivedTriggers: any[] = [];
 
             const { initPushQueue } = await esmock("../../../api/kafka/consumer.ts", {
-                "../../../api/send/sender.ts": { sendAllPushes: async() => [] },
-                "../../../api/send/composer.ts": { composeAllScheduledPushes: async() => {} },
+                "../../../api/send/sender.ts": { sendPush: async() => [] },
+                "../../../api/send/composer.ts": { composeScheduledPushes: async() => {} },
                 "../../../api/send/resultor.ts": { saveResults: async() => {} },
                 "../../../api/send/scheduler.ts": {
                     scheduleMessageByAutoTriggers: async(_db: any, events: any) => { receivedTriggers = events; },
@@ -311,9 +323,12 @@ describe("Kafka consumer", () => {
 
             const triggerEvent = data.cohortTriggerEvent();
             await eachBatch({
+                resolveOffset: () => {},
+                commitOffsetsIfNecessary: async() => {},
+                heartbeat: async() => {},
                 batch: {
                     topic: kafkaConfig.topics.AUTO_TRIGGER.name,
-                    messages: [{ value: JSON.stringify(triggerEvent) }]
+                    messages: [{ offset: '0', value: JSON.stringify(triggerEvent) }]
                 }
             });
 

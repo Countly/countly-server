@@ -1,6 +1,8 @@
 export const FEATURE_NAME = "push";
 
-export const PROXY_CONNECTION_TIMEOUT = 5000;
+export const KAFKA_SESSION_TIMEOUT = 30000;
+export const SEND_TIMEOUT = 10000;
+export const PROXY_CONNECTION_TIMEOUT = SEND_TIMEOUT;
 
 export const DBMAP_MESSAGING_ENABLED = 'm';
 

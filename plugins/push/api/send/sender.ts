@@ -14,69 +14,53 @@ const common: import('../../../../types/common.d.ts').Common = require('../../..
 const log = common.log('push:sender');
 
 /**
- * Sends an array of push events to the appropriate platform handlers.
- * Each push event is processed based on its platform type (iOS, Android, Huawei).
- * The function waits for all push events to be processed and returns an array of result events.
- * If any push event fails, it captures the error and includes it in the result.
- * If `autoHandleResults` is false, the function will not send the results to Kafka.
+ * Sends a single push event to the appropriate platform handler.
+ * Returns the result event with either a response or error.
+ * If `autoHandleResults` is true, the result is also sent to Kafka.
  */
-export async function sendAllPushes(pushes: PushEvent[], autoHandleResults = true): Promise<ResultEvent[]> {
-    const promises: Promise<string>[] = [];
-    for (let i = 0; i < pushes.length; i++) {
-        const push = pushes[i];
+export async function sendPush(push: PushEvent, autoHandleResults = true): Promise<ResultEvent> {
+    let resultEvent: ResultEvent;
+    try {
         if (push.sendBefore && push.sendBefore.getTime() < Date.now()) {
-            promises.push(Promise.reject(new TooLateToSend));
-            continue;
+            throw new TooLateToSend;
         }
-        switch (pushes[i].platform) {
+        let response: string;
+        switch (push.platform) {
         case "i":
-            promises.push(iosSend(pushes[i]));
+            response = await iosSend(push);
             break;
         case "a":
-            promises.push(androidSend(pushes[i]));
+            response = await androidSend(push);
             break;
         case "h":
-            promises.push(huaweiSend(pushes[i]));
+            response = await huaweiSend(push);
             break;
+        default:
+            throw new Error(`Unknown platform: ${push.platform}`);
         }
+        resultEvent = { ...push, response, sentAt: new Date };
     }
-    const results = await Promise.allSettled(promises);
-    const resultEvents: ResultEvent[] = results.map((result, i) => {
-        const pushEvent = pushes[i];
-        if (result.status === "fulfilled") {
-            return {
-                ...pushEvent,
-                response: result.value,
-                sentAt: new Date,
-            };
+    catch (reason) {
+        let response: string | undefined;
+        let error: ErrorObject = { name: "UnknownError", message: "UnknownError" };
+        if (reason instanceof Error) {
+            const { name, message, stack } = reason;
+            error = { name, message, stack };
+            if (reason instanceof SendError) {
+                response = reason.response;
+            }
         }
         else {
-            let response: string | undefined;
-            let error: ErrorObject = { name: "UnknownError", message: "UnknownError" };
-            if (result.reason instanceof Error) {
-                const { name, message, stack } = result.reason;
-                error = { name, message, stack };
-                if (result.reason instanceof SendError) {
-                    response = result.reason.response;
-                }
-            }
-            else {
-                log.e(
-                    "Invalid rejection reason for push event:",
-                    JSON.stringify(pushEvent, null, 2),
-                    JSON.stringify(result.reason, null, 2)
-                );
-            }
-            return {
-                ...pushEvent,
-                response,
-                error,
-                sentAt: new Date,
-            };
+            log.e(
+                "Invalid rejection reason for push event:",
+                JSON.stringify(push, null, 2),
+                JSON.stringify(reason, null, 2)
+            );
         }
-    });
-    if (autoHandleResults) {
-        await sendResultEvents(resultEvents);
+        resultEvent = { ...push, response, error, sentAt: new Date };
     }
-    return resultEvents;
+    if (autoHandleResults) {
+        await sendResultEvents([resultEvent]);
+    }
+    return resultEvent;
 }

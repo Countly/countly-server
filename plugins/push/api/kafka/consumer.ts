@@ -6,8 +6,9 @@ import {
 } from "./types.ts";
 import { setupProducer, setupTopicsAndPartitions } from "./producer.ts";
 import kafkaConfig from "../constants/kafka-config.ts";
-import { sendAllPushes } from "../send/sender.ts";
-import { composeAllScheduledPushes } from "../send/composer.ts";
+import { KAFKA_SESSION_TIMEOUT } from "../constants/configs.ts";
+import { sendPush } from "../send/sender.ts";
+import { composeScheduledPushes } from "../send/composer.ts";
 import { saveResults } from "../send/resultor.ts";
 import { scheduleMessageByAutoTriggers } from "../send/scheduler.ts";
 import { createRequire } from 'module';
@@ -24,6 +25,7 @@ export async function initPushQueue(db: Db, kafkaInstance: KafkaInstance, create
     const pushConsumer = kafkaInstance.consumer({
         groupId: kafkaConfig.consumerGroupId,
         allowAutoTopicCreation: false,
+        sessionTimeout: KAFKA_SESSION_TIMEOUT,
     });
     await pushConsumer.connect();
     await pushConsumer.subscribe({
@@ -35,35 +37,91 @@ export async function initPushQueue(db: Db, kafkaInstance: KafkaInstance, create
         ],
         fromBeginning: true,
     });
+    // SEND and COMPOSE can block for a long time (HTTP sends, audience
+    // aggregation). Process those one message at a time so we can commit
+    // offsets and heartbeat between each — preventing session timeouts from
+    // causing duplicate processing on rebalance.
+    //
+    // RESULT and AUTO_TRIGGER are fast DB operations — process them as a
+    // batch for efficiency (fewer round-trips to MongoDB).
+    const perMessageTopics = new Set([
+        kafkaConfig.topics.SEND.name,
+        kafkaConfig.topics.COMPOSE.name,
+    ]);
+
     await pushConsumer.run({
         eachBatch: async({
             batch: {
                 topic,
                 messages,
             },
+            resolveOffset,
+            heartbeat,
+            commitOffsetsIfNecessary,
         }: any) => {
-            const decoded = messages.map(
-                (m: any) => m.value ? m.value.toString("utf8") : null
-            );
-            try {
-                log.i("Received " + String(messages.length) + " message(s) in topic " + topic);
-                const parsed = decoded
-                    .map((value: string | null) => value ? JSON.parse(value) : null)
-                    .filter((value: any) => !!value);
-                log.d("Messages:", JSON.stringify(parsed, null, 2));
-                switch (topic) {
-                case kafkaConfig.topics.SEND.name:
-                    return await sendAllPushes(parsed.map(pushEventDTOToObject));
-                case kafkaConfig.topics.COMPOSE.name:
-                    return await composeAllScheduledPushes(db, parsed.map(scheduleEventDTOToObject));
-                case kafkaConfig.topics.RESULT.name:
-                    return await saveResults(db, parsed.map(resultEventDTOToObject));
-                case kafkaConfig.topics.AUTO_TRIGGER.name:
-                    return await scheduleMessageByAutoTriggers(db, parsed.map(autoTriggerEventDTOToObject));
+            log.i("Received " + String(messages.length) + " message(s) in topic " + topic);
+            if (perMessageTopics.has(topic)) {
+                for (const message of messages) {
+                    const raw = message.value ? message.value.toString("utf8") : null;
+                    if (!raw) {
+                        resolveOffset(message.offset);
+                        continue;
+                    }
+                    try {
+                        const parsed = JSON.parse(raw);
+                        log.d("Message:", raw);
+                        switch (topic) {
+                        case kafkaConfig.topics.SEND.name:
+                            await sendPush(pushEventDTOToObject(parsed));
+                            break;
+                        case kafkaConfig.topics.COMPOSE.name: {
+                            const scheduleEvent = scheduleEventDTOToObject(parsed);
+                            try {
+                                await composeScheduledPushes(db, scheduleEvent, heartbeat);
+                            }
+                            catch (composeErr: any) {
+                                log.e("Error while composing", scheduleEvent, composeErr);
+                                const error = composeErr instanceof Error
+                                    ? { name: composeErr.name, message: composeErr.message, stack: composeErr.stack }
+                                    : { name: "UnknownError", message: "Unknown error occurred while composing the scheduled push messages" };
+                                db.collection("message_schedules").updateOne(
+                                    { _id: scheduleEvent.scheduleId, "events.scheduledTo": scheduleEvent.scheduledTo },
+                                    { $set: { "events.$.status": "failed", "events.$.error": error } }
+                                );
+                            }
+                            break;
+                        }
+                        }
+                    }
+                    catch (err) {
+                        log.e("Error while consuming, Topic " + topic + " Message: " + raw, err);
+                    }
+                    resolveOffset(message.offset);
+                    await commitOffsetsIfNecessary();
+                    await heartbeat();
                 }
             }
-            catch (err) {
-                log.e("Error while consuming, Topic " + topic + " Messages: " + decoded, err);
+            else {
+                const decoded = messages.map(
+                    (m: any) => m.value ? m.value.toString("utf8") : null
+                );
+                try {
+                    const parsed = decoded
+                        .map((value: string | null) => value ? JSON.parse(value) : null)
+                        .filter((value: any) => !!value);
+                    log.d("Messages:", JSON.stringify(parsed, null, 2));
+                    switch (topic) {
+                    case kafkaConfig.topics.RESULT.name:
+                        await saveResults(db, parsed.map(resultEventDTOToObject));
+                        break;
+                    case kafkaConfig.topics.AUTO_TRIGGER.name:
+                        await scheduleMessageByAutoTriggers(db, parsed.map(autoTriggerEventDTOToObject));
+                        break;
+                    }
+                }
+                catch (err) {
+                    log.e("Error while consuming, Topic " + topic + " Messages: " + decoded, err);
+                }
             }
         }
     });
