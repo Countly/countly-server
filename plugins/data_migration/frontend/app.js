@@ -2,6 +2,20 @@ var pluginOb = {},
     countlyConfig = require("../../../frontend/express/config");
 const fs = require('fs');
 const path = require('path');
+const common = require('../../../api/utils/common.js');
+
+/**
+ * Validate a filename before using it as a path segment.
+ * @param {string} filename - filename
+ * @returns {string|null} safe filename or null
+ */
+function safeFilename(filename) {
+    filename = filename + "";
+    if (filename && common.sanitizeFilename(filename) === filename) {
+        return filename;
+    }
+    return null;
+}
 
 (function(plugin) {
     plugin.init = function(app, countlyDb) {
@@ -9,11 +23,21 @@ const path = require('path');
             if (req.session && req.session.gadm) {
                 //asked by query id
                 if (req.query && req.query.id) {
-                    countlyDb.collection("data_migrations").findOne({_id: req.query.id}, function(err, data) {
-                        if (!err) {
-                            var myfile = path.resolve(__dirname, './../export/' + req.query.id + '.tar.gz');
+                    var exportid = safeFilename(req.query.id);
+                    if (!exportid) {
+                        res.status(400).send('Invalid export file');
+                        return;
+                    }
+                    countlyDb.collection("data_migrations").findOne({_id: exportid}, function(err, data) {
+                        if (!err && data) {
+                            var myfile = common.resolvePathInBase(path.resolve(__dirname, './../export'), exportid + '.tar.gz');
                             if (data.export_path && data.export_path !== '') {
-                                myfile = data.export_path;
+                                var customExportPath = path.resolve(data.export_path + "");
+                                if (path.basename(customExportPath) !== exportid + '.tar.gz') {
+                                    res.status(400).send('Invalid export file');
+                                    return;
+                                }
+                                myfile = customExportPath;
                             }
                             if (fs.existsSync(myfile)) {
                                 res.set('Content-Type', 'application/x-gzip');
@@ -25,12 +49,25 @@ const path = require('path');
                                 return;
                             }
                         }
+                        else if (err) {
+                            res.status(500).send('Error loading export file');
+                            return;
+                        }
+                        else {
+                            res.status(404).send('Export file not found');
+                            return;
+                        }
                     });
                 }
                 if (req.query && req.query.logfile) {
-                    if (fs.existsSync(path.resolve(__dirname, '../../../log/' + req.query.logfile))) {
+                    var logFilePath = safeFilename(req.query.logfile) ? common.resolvePathInBase(path.resolve(__dirname, '../../../log'), req.query.logfile) : null;
+                    if (!logFilePath) {
+                        res.status(400).send('Invalid log file');
+                        return;
+                    }
+                    if (fs.existsSync(logFilePath)) {
                         res.set('Content-Type', 'text/plain');
-                        res.download(path.resolve(__dirname, '../../../log/' + req.query.logfile), req.query.logfile);
+                        res.download(logFilePath, req.query.logfile);
                         return;
                     }
                     else {

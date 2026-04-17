@@ -1,7 +1,10 @@
 var exported = {},
     countlyFs = require('../../../api/utils/countlyFs.js'),
-    countlyConfig = require("../../../frontend/express/config");
+    countlyConfig = require("../../../frontend/express/config"),
+    common = require('../../../api/utils/common.js');
 var path = require('path');
+var log = common.log('star-rating:frontend');
+
 (function(plugin) {
     plugin.init = function(app) {
 
@@ -46,16 +49,30 @@ var path = require('path');
             }
         });
         app.get(countlyConfig.path + '/star-rating/images/*', function(req, res) {
-            countlyFs.getStats("star-rating", path.resolve(__dirname, './../images/' + req.params[0]), {id: "" + req.params[0]}, function(statsErr, stats) {
+            var imagePath = common.resolvePathInBase(path.resolve(__dirname, './../images'), req.params[0]);
+            if (!imagePath) {
+                res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
+                return;
+            }
+            countlyFs.getStats("star-rating", imagePath, {id: "" + req.params[0]}, function(statsErr, stats) {
                 if (statsErr || !stats || !stats.size) {
                     res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
                 }
                 else {
-                    countlyFs.getStream("star-rating", path.resolve(__dirname, './../images/' + req.params[0]), {id: "" + req.params[0]}, function(streamErr, stream) {
+                    countlyFs.getStream("star-rating", imagePath, {id: "" + req.params[0]}, function(streamErr, stream) {
                         if (streamErr || !stream) {
                             res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
                         }
                         else {
+                            stream.on('error', function(error) {
+                                log.e(error);
+                                if (!res.headersSent) {
+                                    res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
+                                }
+                                else {
+                                    res.end();
+                                }
+                            });
                             res.writeHead(200, {
                                 'Accept-Ranges': 'bytes',
                                 'Cache-Control': 'public, max-age=31536000',

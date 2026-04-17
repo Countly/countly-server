@@ -502,16 +502,30 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.sendFile(__dirname + '/public/images/default_app_icon.png');
         }
         else {
-            countlyFs.getStats("appimages", __dirname + '/public/appimages/' + req.params[0], {id: req.params[0]}, function(err, stats) {
+            var appImagePath = common.resolvePathInBase(__dirname + '/public/appimages', req.params[0]);
+            if (!appImagePath) {
+                res.sendFile(__dirname + '/public/images/default_app_icon.png');
+                return;
+            }
+            countlyFs.getStats("appimages", appImagePath, {id: req.params[0]}, function(err, stats) {
                 if (err || !stats || !stats.size) {
                     res.sendFile(__dirname + '/public/images/default_app_icon.png');
                 }
                 else {
-                    countlyFs.getStream("appimages", __dirname + '/public/appimages/' + req.params[0], {id: req.params[0]}, function(err2, stream) {
+                    countlyFs.getStream("appimages", appImagePath, {id: req.params[0]}, function(err2, stream) {
                         if (err2 || !stream) {
                             res.sendFile(__dirname + '/public/images/default_app_icon.png');
                         }
                         else {
+                            stream.on('error', function(streamErr) {
+                                log.e(streamErr);
+                                if (!res.headersSent) {
+                                    res.sendFile(__dirname + '/public/images/default_app_icon.png');
+                                }
+                                else {
+                                    res.end();
+                                }
+                            });
                             res.writeHead(200, {
                                 'Accept-Ranges': 'bytes',
                                 'Cache-Control': 'public, max-age=31536000',
@@ -536,16 +550,30 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.sendFile(__dirname + '/public/images/default_member_icon.png');
         }
         else {
-            countlyFs.getStats("memberimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err, stats) {
+            var memberImagePath = common.resolvePathInBase(__dirname + '/public/memberimages', req.params[0]);
+            if (!memberImagePath) {
+                res.sendFile(__dirname + '/public/images/default_member_icon.png');
+                return;
+            }
+            countlyFs.getStats("memberimages", memberImagePath, {id: req.params[0]}, function(err, stats) {
                 if (err || !stats || !stats.size) {
                     res.sendFile(__dirname + '/public/images/default_member_icon.png');
                 }
                 else {
-                    countlyFs.getStream("memberimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err2, stream) {
+                    countlyFs.getStream("memberimages", memberImagePath, {id: req.params[0]}, function(err2, stream) {
                         if (err2 || !stream) {
                             res.sendFile(__dirname + '/public/images/default_member_icon.png');
                         }
                         else {
+                            stream.on('error', function(streamErr) {
+                                log.e(streamErr);
+                                if (!res.headersSent) {
+                                    res.sendFile(__dirname + '/public/images/default_member_icon.png');
+                                }
+                                else {
+                                    res.end();
+                                }
+                            });
                             res.writeHead(200, {
                                 'Accept-Ranges': 'bytes',
                                 'Cache-Control': 'public, max-age=31536000',
@@ -564,15 +592,26 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.get(countlyConfig.path + "*/screenshots/*", function(req, res) {
-        countlyFs.getStats("screenshots", __dirname + '/public/' + req.path, {id: "core"}, function(err, stats) {
+        var screenshotPath = common.resolvePathInBase(__dirname + '/public', req.path);
+        if (!screenshotPath) {
+            return res.send(false);
+        }
+        countlyFs.getStats("screenshots", screenshotPath, {id: "core"}, function(err, stats) {
             if (err || !stats || !stats.size) {
                 return res.send(false);
             }
 
-            countlyFs.getStream("screenshots", __dirname + '/public/' + req.path, {id: "core"}, function(err2, stream) {
+            countlyFs.getStream("screenshots", screenshotPath, {id: "core"}, function(err2, stream) {
                 if (err2 || !stream) {
                     return res.send(false);
                 }
+                stream.on('error', function(streamErr) {
+                    log.e(streamErr);
+                    if (!res.headersSent) {
+                        return res.send(false);
+                    }
+                    res.end();
+                });
 
                 res.writeHead(200, {
                     'Accept-Ranges': 'bytes',
