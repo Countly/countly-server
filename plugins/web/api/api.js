@@ -1,7 +1,8 @@
 var pluginOb = {},
-    plugins = require('../../pluginManager.ts'),
-    registerWebSdkPre = require('./parts/sdk-pre.js');
+    plugins = require('../../pluginManager.ts');
 
-registerWebSdkPre(plugins);
+(function() {
+    plugins.appTypes.push("web");
+}(pluginOb));
 
 module.exports = pluginOb;
