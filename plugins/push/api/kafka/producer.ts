@@ -1,5 +1,5 @@
 import type { ScheduleEvent, PushEvent, ResultEvent, AutoTriggerEvent } from "./types.ts";
-import kafkaConfig from "../constants/kafka-config.ts";
+import { KAFKA_TOPICS } from "../constants/configs.ts";
 import { createRequire } from 'module';
 
 // createRequire needed for CJS modules without ES exports
@@ -69,7 +69,7 @@ export async function isProducerInitialized(): Promise<boolean> {
 
 export async function setupTopicsAndPartitions(kafkaInstance: KafkaInstance, forceRecreation = false): Promise<void> {
     const admin = kafkaInstance.admin();
-    const topics = Object.values(kafkaConfig.topics);
+    const topics = Object.values(KAFKA_TOPICS);
     await admin.connect();
 
     if (forceRecreation) {
@@ -110,7 +110,7 @@ export async function sendScheduleEvents(scheduleEvents: ScheduleEvent[]): Promi
     }
     log.i("Sending " + scheduleEvents.length + " schedule events");
     await PRODUCER.send({
-        topic: kafkaConfig.topics.SCHEDULE.name,
+        topic: KAFKA_TOPICS.SCHEDULE.name,
         messages: scheduleEvents.map(scheduleEvent => {
             let targetKey = scheduleEvent.messageId.toString()
                 + "|" + scheduleEvent.scheduleId.toString()
@@ -118,7 +118,7 @@ export async function sendScheduleEvents(scheduleEvents: ScheduleEvent[]): Promi
             return {
                 value: JSON.stringify(scheduleEvent),
                 headers: {
-                    "scheduler-target-topic": kafkaConfig.topics.COMPOSE.name,
+                    "scheduler-target-topic": KAFKA_TOPICS.COMPOSE.name,
                     "scheduler-target-key": targetKey,
                     "scheduler-epoch": String(
                         Math.round(scheduleEvent.scheduledTo.getTime() / 1000)
@@ -136,7 +136,7 @@ export async function sendPushEvents(pushes: PushEvent[]): Promise<void> {
     }
     log.i("Sending " + pushes.length + " push events");
     await PRODUCER.send({
-        topic: kafkaConfig.topics.SEND.name,
+        topic: KAFKA_TOPICS.SEND.name,
         messages: pushes.map(p => ({ value: JSON.stringify(p) }))
     });
 }
@@ -147,7 +147,7 @@ export async function sendResultEvents(results: ResultEvent[]): Promise<void> {
     }
     log.i("Sending " + results.length + " result events");
     await PRODUCER.send({
-        topic: kafkaConfig.topics.RESULT.name,
+        topic: KAFKA_TOPICS.RESULT.name,
         messages: results.map(r => ({ value: JSON.stringify(r) }))
     });
 }
@@ -158,7 +158,7 @@ export async function sendAutoTriggerEvents(autoTriggerEvents: AutoTriggerEvent[
     }
     log.i("Sending " + autoTriggerEvents.length + " auto trigger events");
     await PRODUCER.send({
-        topic: kafkaConfig.topics.AUTO_TRIGGER.name,
+        topic: KAFKA_TOPICS.AUTO_TRIGGER.name,
         messages: autoTriggerEvents.map(e => ({ value: JSON.stringify(e) })),
     });
 }

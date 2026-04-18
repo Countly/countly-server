@@ -5,8 +5,7 @@ import {
     resultEventDTOToObject, autoTriggerEventDTOToObject,
 } from "./types.ts";
 import { setupProducer, setupTopicsAndPartitions } from "./producer.ts";
-import kafkaConfig from "../constants/kafka-config.ts";
-import { KAFKA_SESSION_TIMEOUT } from "../constants/configs.ts";
+import { KAFKA_TOPICS, KAFKA_CONSUMER_GROUP_ID, KAFKA_SESSION_TIMEOUT } from "../constants/configs.ts";
 import { sendPush } from "../send/sender.ts";
 import { composeScheduledPushes } from "../send/composer.ts";
 import { saveResults } from "../send/resultor.ts";
@@ -23,17 +22,17 @@ export async function initPushQueue(db: Db, kafkaInstance: KafkaInstance, create
     await setupTopicsAndPartitions(kafkaInstance);
 
     const pushConsumer = kafkaInstance.consumer({
-        groupId: kafkaConfig.consumerGroupId,
+        groupId: KAFKA_CONSUMER_GROUP_ID,
         allowAutoTopicCreation: false,
         sessionTimeout: KAFKA_SESSION_TIMEOUT,
     });
     await pushConsumer.connect();
     await pushConsumer.subscribe({
         topics: [
-            kafkaConfig.topics.SEND.name,
-            kafkaConfig.topics.COMPOSE.name,
-            kafkaConfig.topics.RESULT.name,
-            kafkaConfig.topics.AUTO_TRIGGER.name,
+            KAFKA_TOPICS.SEND.name,
+            KAFKA_TOPICS.COMPOSE.name,
+            KAFKA_TOPICS.RESULT.name,
+            KAFKA_TOPICS.AUTO_TRIGGER.name,
         ],
         fromBeginning: true,
     });
@@ -45,8 +44,8 @@ export async function initPushQueue(db: Db, kafkaInstance: KafkaInstance, create
     // RESULT and AUTO_TRIGGER are fast DB operations — process them as a
     // batch for efficiency (fewer round-trips to MongoDB).
     const perMessageTopics = new Set([
-        kafkaConfig.topics.SEND.name,
-        kafkaConfig.topics.COMPOSE.name,
+        KAFKA_TOPICS.SEND.name,
+        KAFKA_TOPICS.COMPOSE.name,
     ]);
 
     await pushConsumer.run({
@@ -71,10 +70,10 @@ export async function initPushQueue(db: Db, kafkaInstance: KafkaInstance, create
                         const parsed = JSON.parse(raw);
                         log.d("Message:", raw);
                         switch (topic) {
-                        case kafkaConfig.topics.SEND.name:
+                        case KAFKA_TOPICS.SEND.name:
                             await sendPush(pushEventDTOToObject(parsed));
                             break;
-                        case kafkaConfig.topics.COMPOSE.name: {
+                        case KAFKA_TOPICS.COMPOSE.name: {
                             const scheduleEvent = scheduleEventDTOToObject(parsed);
                             try {
                                 await composeScheduledPushes(db, scheduleEvent, heartbeat);
@@ -111,10 +110,10 @@ export async function initPushQueue(db: Db, kafkaInstance: KafkaInstance, create
                         .filter((value: any) => !!value);
                     log.d("Messages:", JSON.stringify(parsed, null, 2));
                     switch (topic) {
-                    case kafkaConfig.topics.RESULT.name:
+                    case KAFKA_TOPICS.RESULT.name:
                         await saveResults(db, parsed.map(resultEventDTOToObject));
                         break;
-                    case kafkaConfig.topics.AUTO_TRIGGER.name:
+                    case KAFKA_TOPICS.AUTO_TRIGGER.name:
                         await scheduleMessageByAutoTriggers(db, parsed.map(autoTriggerEventDTOToObject));
                         break;
                     }

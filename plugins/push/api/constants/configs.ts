@@ -29,3 +29,35 @@ export const MEDIA_MIME_TYPE_IOS = [
 ];
 
 export const MEDIA_MIME_TYPE_ALL = MEDIA_MIME_TYPE_IOS;
+
+export const KAFKA_CONSUMER_GROUP_ID = "countly-push-consumers";
+
+export const KAFKA_TOPICS = {
+    SEND: {
+        name: "CLY_PUSH_MESSAGE_SEND",
+        partitions: 10,
+        config: {},
+    },
+    SCHEDULE: {
+        name: "CLY_PUSH_MESSAGE_SCHEDULE",
+        partitions: 2,
+        config: {
+            "cleanup.policy": "compact",
+        },
+    },
+    COMPOSE: {
+        name: "CLY_PUSH_MESSAGE_COMPOSE",
+        partitions: 3,
+        config: {},
+    },
+    RESULT: {
+        name: "CLY_PUSH_MESSAGE_RESULT",
+        partitions: 4,
+        config: {},
+    },
+    AUTO_TRIGGER: {
+        name: "CLY_PUSH_MESSAGE_AUTO_TRIGGER",
+        partitions: 6,
+        config: {},
+    },
+} as const;

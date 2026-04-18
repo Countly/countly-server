@@ -5,7 +5,7 @@ import { describe, it, after, afterEach } from 'mocha';
 import { createMockedKafkajs, loadKafkajs, isKafkaPluginAvailable } from '../../mock/kafka.ts';
 import { createSilentLogModule } from '../../mock/logger.ts';
 import * as data from '../../mock/data.ts';
-import kafkaConfig from '../../../api/constants/kafka-config.ts';
+import { KAFKA_TOPICS } from '../../../api/constants/configs.ts';
 
 // Silence push logs: producer.ts loads common.js via createRequire, which esmock
 // cannot intercept — so we monkey-patch common.log directly before esmock runs.
@@ -63,17 +63,17 @@ describe("Kafka producer", () => {
             assert(adminInstance.createTopics.calledOnce);
 
             const createTopicsArg = adminInstance.createTopics.firstCall.firstArg;
-            assert.strictEqual(createTopicsArg.topics.length, Object.keys(kafkaConfig.topics).length);
+            assert.strictEqual(createTopicsArg.topics.length, Object.keys(KAFKA_TOPICS).length);
 
             // Verify SEND topic configuration
-            const sendTopic = createTopicsArg.topics.find((t: any) => t.topic === kafkaConfig.topics.SEND.name);
+            const sendTopic = createTopicsArg.topics.find((t: any) => t.topic === KAFKA_TOPICS.SEND.name);
             assert(sendTopic);
-            assert.strictEqual(sendTopic.numPartitions, kafkaConfig.topics.SEND.partitions);
+            assert.strictEqual(sendTopic.numPartitions, KAFKA_TOPICS.SEND.partitions);
 
             // Verify SCHEDULE topic configuration with cleanup policy
-            const scheduleTopic = createTopicsArg.topics.find((t: any) => t.topic === kafkaConfig.topics.SCHEDULE.name);
+            const scheduleTopic = createTopicsArg.topics.find((t: any) => t.topic === KAFKA_TOPICS.SCHEDULE.name);
             assert(scheduleTopic);
-            assert.strictEqual(scheduleTopic.numPartitions, kafkaConfig.topics.SCHEDULE.partitions);
+            assert.strictEqual(scheduleTopic.numPartitions, KAFKA_TOPICS.SCHEDULE.partitions);
             assert(scheduleTopic.configEntries);
             assert.deepStrictEqual(scheduleTopic.configEntries, [
                 { name: "cleanup.policy", value: "compact" }
@@ -84,8 +84,8 @@ describe("Kafka producer", () => {
 
         it("should not create topics that already exist", async() => {
             const existingTopics = [
-                kafkaConfig.topics.SEND.name,
-                kafkaConfig.topics.COMPOSE.name
+                KAFKA_TOPICS.SEND.name,
+                KAFKA_TOPICS.COMPOSE.name
             ];
             adminInstance.listTopics.resolves(existingTopics);
             adminInstance.connect.resolves();
@@ -99,11 +99,11 @@ describe("Kafka producer", () => {
 
             // Should only create topics that don't exist
             const topicNames = createTopicsArg.topics.map((t: any) => t.topic);
-            assert(!topicNames.includes(kafkaConfig.topics.SEND.name));
-            assert(!topicNames.includes(kafkaConfig.topics.COMPOSE.name));
-            assert(topicNames.includes(kafkaConfig.topics.SCHEDULE.name));
-            assert(topicNames.includes(kafkaConfig.topics.RESULT.name));
-            assert(topicNames.includes(kafkaConfig.topics.AUTO_TRIGGER.name));
+            assert(!topicNames.includes(KAFKA_TOPICS.SEND.name));
+            assert(!topicNames.includes(KAFKA_TOPICS.COMPOSE.name));
+            assert(topicNames.includes(KAFKA_TOPICS.SCHEDULE.name));
+            assert(topicNames.includes(KAFKA_TOPICS.RESULT.name));
+            assert(topicNames.includes(KAFKA_TOPICS.AUTO_TRIGGER.name));
         });
 
         it("should delete and recreate topics when forceRecreation is true", async() => {
@@ -117,9 +117,9 @@ describe("Kafka producer", () => {
 
             assert(adminInstance.deleteTopics.calledOnce);
             const deleteTopicsArg = adminInstance.deleteTopics.firstCall.firstArg;
-            assert.strictEqual(deleteTopicsArg.topics.length, Object.keys(kafkaConfig.topics).length);
-            assert(deleteTopicsArg.topics.includes(kafkaConfig.topics.SEND.name));
-            assert(deleteTopicsArg.topics.includes(kafkaConfig.topics.SCHEDULE.name));
+            assert.strictEqual(deleteTopicsArg.topics.length, Object.keys(KAFKA_TOPICS).length);
+            assert(deleteTopicsArg.topics.includes(KAFKA_TOPICS.SEND.name));
+            assert(deleteTopicsArg.topics.includes(KAFKA_TOPICS.SCHEDULE.name));
 
             assert(adminInstance.createTopics.calledOnce);
         });
@@ -148,8 +148,8 @@ describe("Kafka producer", () => {
 
             const createTopicsArg = adminInstance.createTopics.firstCall.firstArg;
             const topics = createTopicsArg.topics;
-            for (const topicName in kafkaConfig.topics) {
-                const config = kafkaConfig.topics[topicName as TopicName];
+            for (const topicName in KAFKA_TOPICS) {
+                const config = KAFKA_TOPICS[topicName as TopicName];
                 const topic = topics.find(
                     (t: any) => t.topic === config.name
                 );
@@ -168,7 +168,7 @@ describe("Kafka producer", () => {
             await setupProducer(kafkaInstance, Partitioners.DefaultPartitioner);
             await sendPushEvents([pushEvent]);
             assert(producerInstance.send.calledWith({
-                topic: kafkaConfig.topics.SEND.name,
+                topic: KAFKA_TOPICS.SEND.name,
                 messages: [{
                     value: JSON.stringify(pushEvent)
                 }]
@@ -182,7 +182,7 @@ describe("Kafka producer", () => {
             await setupProducer(kafkaInstance, Partitioners.DefaultPartitioner);
             await sendResultEvents([resultEvent]);
             assert(producerInstance.send.calledWith({
-                topic: kafkaConfig.topics.RESULT.name,
+                topic: KAFKA_TOPICS.RESULT.name,
                 messages: [{
                     value: JSON.stringify(resultEvent)
                 }]
@@ -196,7 +196,7 @@ describe("Kafka producer", () => {
             await setupProducer(kafkaInstance, Partitioners.DefaultPartitioner);
             await sendAutoTriggerEvents([autoTriggerEvent]);
             assert(producerInstance.send.calledWith({
-                topic: kafkaConfig.topics.AUTO_TRIGGER.name,
+                topic: KAFKA_TOPICS.AUTO_TRIGGER.name,
                 messages: [{
                     value: JSON.stringify(autoTriggerEvent)
                 }]
@@ -216,14 +216,14 @@ describe("Kafka producer", () => {
             assert(typeof arg.messages[0].key === "string");
             delete arg.messages[0].key;
             assert.deepStrictEqual(arg, {
-                topic: kafkaConfig.topics.SCHEDULE.name,
+                topic: KAFKA_TOPICS.SCHEDULE.name,
                 messages: [
                     {
                         value: JSON.stringify(scheduleEvent),
                         headers: {
                             "scheduler-epoch": String(Math.round(scheduleEvent.scheduledTo.getTime() / 1000)),
                             "scheduler-target-key": targetKey,
-                            "scheduler-target-topic": kafkaConfig.topics.COMPOSE.name,
+                            "scheduler-target-topic": KAFKA_TOPICS.COMPOSE.name,
                         },
                     }
                 ]

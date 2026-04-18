@@ -7,7 +7,7 @@ import { describe, it, after, afterEach } from 'mocha';
 import { createMockedKafkajs, loadKafkajs, isKafkaPluginAvailable } from '../../mock/kafka.ts';
 import { createSilentLogModule } from '../../mock/logger.ts';
 import * as data from '../../mock/data.ts';
-import kafkaConfig from '../../../api/constants/kafka-config.ts';
+import { KAFKA_TOPICS, KAFKA_CONSUMER_GROUP_ID } from '../../../api/constants/configs.ts';
 
 // Silence push logs: consumer.ts/producer.ts load common.js via createRequire,
 // which esmock cannot intercept — so we monkey-patch common.log directly before
@@ -61,14 +61,14 @@ describe("Kafka consumer", () => {
             assert(producerInstance.connect.called);
 
             const consumerConfig = kafkaInstance.consumer.firstCall.firstArg;
-            assert.strictEqual(consumerConfig.groupId, kafkaConfig.consumerGroupId);
+            assert.strictEqual(consumerConfig.groupId, KAFKA_CONSUMER_GROUP_ID);
             assert.strictEqual(consumerConfig.allowAutoTopicCreation, false);
             assert.strictEqual(consumerConfig.sessionTimeout, 30000);
 
             assert(consumerInstance.connect.called);
 
-            const topics = Object.values(kafkaConfig.topics)
-                .filter((i: any) => i.name !== kafkaConfig.topics.SCHEDULE.name)
+            const topics = Object.values(KAFKA_TOPICS)
+                .filter((i: any) => i.name !== KAFKA_TOPICS.SCHEDULE.name)
                 .map((i: any) => i.name);
 
             assert(consumerInstance.subscribe.calledWith({
@@ -112,7 +112,7 @@ describe("Kafka consumer", () => {
                 commitOffsetsIfNecessary: async() => {},
                 heartbeat: async() => {},
                 batch: {
-                    topic: kafkaConfig.topics.SEND.name,
+                    topic: KAFKA_TOPICS.SEND.name,
                     messages: testData.map((d: any, i: number) => ({ offset: String(i), value: JSON.stringify(d) }))
                 }
             });
@@ -147,7 +147,7 @@ describe("Kafka consumer", () => {
                 commitOffsetsIfNecessary: async() => {},
                 heartbeat: async() => {},
                 batch: {
-                    topic: kafkaConfig.topics.SEND.name,
+                    topic: KAFKA_TOPICS.SEND.name,
                     messages: [
                         { offset: '0', value: JSON.stringify(data.pushEvent()) },
                         { offset: '1', value: null },
@@ -183,7 +183,7 @@ describe("Kafka consumer", () => {
                 commitOffsetsIfNecessary: async() => {},
                 heartbeat: async() => {},
                 batch: {
-                    topic: kafkaConfig.topics.SEND.name,
+                    topic: KAFKA_TOPICS.SEND.name,
                     messages: [
                         { offset: '0', value: Buffer.from('invalid json {') }
                     ]
@@ -252,7 +252,7 @@ describe("Kafka consumer", () => {
                         commitOffsetsIfNecessary: async() => {},
                         heartbeat: async() => {},
                         batch: {
-                            topic: kafkaConfig.topics.SEND.name,
+                            topic: KAFKA_TOPICS.SEND.name,
                             messages: [{ offset: '0', value: JSON.stringify(pushEvent) }]
                         }
                     });
@@ -261,7 +261,7 @@ describe("Kafka consumer", () => {
                         commitOffsetsIfNecessary: async() => {},
                         heartbeat: async() => {},
                         batch: {
-                            topic: kafkaConfig.topics.COMPOSE.name,
+                            topic: KAFKA_TOPICS.COMPOSE.name,
                             messages: [{ offset: '0', value: JSON.stringify(scheduleEvent) }]
                         }
                     });
@@ -294,7 +294,7 @@ describe("Kafka consumer", () => {
                 commitOffsetsIfNecessary: async() => {},
                 heartbeat: async() => {},
                 batch: {
-                    topic: kafkaConfig.topics.RESULT.name,
+                    topic: KAFKA_TOPICS.RESULT.name,
                     messages: [{ offset: '0', value: JSON.stringify(resultEvent) }]
                 }
             });
@@ -327,7 +327,7 @@ describe("Kafka consumer", () => {
                 commitOffsetsIfNecessary: async() => {},
                 heartbeat: async() => {},
                 batch: {
-                    topic: kafkaConfig.topics.AUTO_TRIGGER.name,
+                    topic: KAFKA_TOPICS.AUTO_TRIGGER.name,
                     messages: [{ offset: '0', value: JSON.stringify(triggerEvent) }]
                 }
             });

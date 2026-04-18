@@ -152,7 +152,8 @@ class JobScanner {
         try {
             // Clear require cache to ensure fresh load
             // delete require.cache[require.resolve(job.file)];
-            const implementation = require(job.file);
+            const loaded = require(job.file);
+            const implementation = loaded.__esModule ? loaded.default : loaded;
             this.#log.d(`Loaded job ${jobName} from ${job.file}`);
             JobUtils.validateJobClass(implementation);
 

@@ -1,23 +1,27 @@
 /**
  * @typedef {import('mongodb').Db} Database
- * @typedef {import('../models/schedule.ts').Schedule} Schedule
- * @typedef {import('../models/schedule.ts').ScheduleCollection} ScheduleCollection
- * @typedef {import('../models/message.ts').Message} Message
- * @typedef {import('../models/message.ts').MessageCollection} MessageCollection
+ * @typedef {import('mongodb').ObjectId} ObjectId
  * @typedef {{ type: string; value: string; }} ScheduleConfig
  * @typedef {() => void} DoneCallback
  * @typedef {(i: number, j: number, message: string) => void} ProgressCallback
  */
 
+import { createRequire } from 'module';
+import { fixMessageStates } from './fix-message-states-core.ts';
+
+// createRequire needed for CJS modules without ES exports
+const require = createRequire(import.meta.url);
 const { Job } = require('../../../../jobServer/index.js');
 
 /**
- * Job to clear and fix message and schedule states.
+ * Daily job that detects and fixes stale schedule / message states caused by
+ * lost Kafka events, process restarts, or partial failures in the push
+ * notification pipeline.
  */
-class ClearMessageResultsJob extends Job {
+class FixMessageStatesJob extends Job {
     /**
-     * Get the schedule configuration for the job.
-     * @returns {ScheduleConfig} Schedule configuration object
+     * Returns the cron schedule for this job.
+     * @returns {ScheduleConfig} schedule configuration
      */
     getSchedule() {
         return {
@@ -27,64 +31,20 @@ class ClearMessageResultsJob extends Job {
     }
 
     /**
-     * Fixes message and schedule states in the database.
-     *
-     * @param {Database} db - db object
-     * @param {DoneCallback} done - Callback to signal job completion
-     * @param {ProgressCallback} progress - Progress reporting function
-     * @returns {Promise<void>} Promise that resolves when the job is complete
+     * Fixes stale message and schedule states.
+     * @param {Database} db - database connection
+     * @param {DoneCallback} done - callback to signal job completion
+     * @param {ProgressCallback} progress - progress reporting function
      */
     async run(db, done, progress) {
         try {
-            /** @type {ScheduleCollection} */
-            const scheduleCol = db.collection("schedules");
-            const timeoutBufferForSchedules = 48 * 60 * 60 * 1000;
-
-            // ================================================
-            // update all the schedule events that are still scheduled but are
-            // passed their time
-            progress(2, 1, "Fixing hanging schedules");
-            const unreceivedScheduleEvents = await scheduleCol.updateMany({
-                events: {
-                    $elemMatch: {
-                        status: "scheduled",
-                        scheduledTo: {
-                            $lt: new Date(Date.now() - timeoutBufferForSchedules)
-                        }
-                    }
-                }
-            }, {
-                $set: {
-                    "events.$.status": "failed",
-                    "events.$.error": {
-                        name: "TimeoutError",
-                        message: "Message sending timed out"
-                    }
-                }
-            });
-            if (unreceivedScheduleEvents.modifiedCount) {
-                this.log.i(`Updated statuses of ${unreceivedScheduleEvents.modifiedCount} schedule events failed due to timeout`);
-            }
-
-            // ================================================
-            // update all the schedules that doesn't have any scheduled events
-            // but are still marked as scheduled or sending
-            progress(2, 2, "Fixing hanging schedules");
-            const unfinishedSchedules = await scheduleCol.updateMany({
-                status: { $in: ["scheduled", "sending"] },
-                "events.status": { $ne: "scheduled" },
-            }, {
-                $set: { status: "failed" }
-            });
-            if (unfinishedSchedules.modifiedCount) {
-                this.log.i(`Updated statuses of ${unfinishedSchedules.modifiedCount} schedules to failed due to no scheduled events`);
-            }
+            await fixMessageStates({ db, log: this.log, progress });
             done();
         }
         catch (error) {
-            this.log.e("Error while running the task", error);
+            this.log.e("Error while running fix-message-states job", error);
         }
     }
 }
 
-module.exports = ClearMessageResultsJob;
+export default FixMessageStatesJob;

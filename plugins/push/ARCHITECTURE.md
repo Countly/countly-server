@@ -86,9 +86,8 @@ plugins/push/api/
 │   ├── schedule.ts         # Schedule document interface + AudienceFilter, MessageOverrides
 │   └── credentials.ts      # Platform credential Zod schemas + types (FCM, APN, HMS)
 └── constants/
-    ├── kafka-config.ts     # Topic names, partition counts
+    ├── configs.ts          # Kafka topics & consumer group, timeouts, media limits
     ├── platform-keymap.ts  # Platform keys → titles, environments, combined keys
-    ├── configs.ts          # Kafka session timeout, HTTP send timeout, proxy timeout, media limits
     └── all-tz-offsets.ts   # All timezone offsets for timezone-aware scheduling
 ```
 
