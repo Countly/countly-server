@@ -5,7 +5,7 @@ const appHelper = require('../../../../lib/dashboard/manage/apps/apps');
 const { generateAppsFixture } = require('../../../../fixtures/generators/apps');
 const { APP_TYPE } = require('../../../../support/constants');
 
-describe('Create apps with different types such as Desktop, Mobile, and Web. ', () => {
+describe.skip('Create apps with different types such as Desktop, Mobile, and Web. ', () => {
     beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);

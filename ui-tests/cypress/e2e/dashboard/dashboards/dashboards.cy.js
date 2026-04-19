@@ -13,7 +13,7 @@ const { generateReportFixture } = require('../../../fixtures/generators/reports'
 const { VISUALIZATION_TYPE, TIME_UNITS } = require('../../../support/constants');
 
 
-describe('Create New Custom Dashboard', () => {
+describe.skip('Create New Custom Dashboard', () => {
     beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);

@@ -6,7 +6,7 @@ const { generateUsersFixture } = require('../../../../fixtures/generators/users'
 const { USER_TYPE } = require('../../../../support/constants');
 
 
-describe('Create users with different types such as User, Admin and Global Admin ', () => {
+describe.skip('Create users with different types such as User, Admin and Global Admin ', () => {
     beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);

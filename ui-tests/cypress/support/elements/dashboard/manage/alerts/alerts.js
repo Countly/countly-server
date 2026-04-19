@@ -75,7 +75,7 @@ export const alertDrawerPageElements = {
 
     //CRASHES FILTER ELEMENTS
     DRAWER_FILTER_CRASHES_INPUT: 'alert-data-filter-key-crashes-label',
-    DRAWER_FILTER_CRASHES_SELECT: 'alert-data-filter-key-crashes-select',
+    DRAWER_FILTER_CRASHES_SELECT: 'alert-data-filter-key-crashes-select-dropdown-el-select',
 
     //EVENTS FILTER ELEMENTS
     DRAWER_FILTER_EVENT_SELECT: 'alert-data-filter-key-event-select',

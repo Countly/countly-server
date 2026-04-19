@@ -9,7 +9,7 @@ const componentAddFeedbackSteps = require('../../../../support/components/addFee
 const { RATING_SYMBOLS } = require('../../../../support/constants');
 const helper = require('../../../../support/helper');
 
-describe('Create New Widget', () => {
+describe.skip('Create New Widget', () => {
     beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);

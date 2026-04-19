@@ -427,7 +427,9 @@ const selectDoNotSendEmail = () => {
 };
 
 const clickAddFilterButton = () => {
+    cy.wait(3000)
     cy.clickElement(alertDrawerPageElements.DRAWER_ADD_FILTER_BUTTON);
+    cy.wait(2000)
 };
 
 const selectFilterCrashesAppVersion = (...appVersions) => {
