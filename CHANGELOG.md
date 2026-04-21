@@ -1,3 +1,7 @@
+## Version 25.03.X
+Enterprise Fixes:
+- [drill] Add query hint based on default indexes
+
 ## Version 25.03.43
 Enterprise Fixes:
 - [flow] Optimize timeline period query
