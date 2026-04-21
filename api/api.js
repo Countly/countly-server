@@ -277,6 +277,13 @@ function handleRequest(req, res) {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Keep-Alive', 'timeout=5, max=1000');
 
+    // CORS headers for all responses (GET, POST, OPTIONS)
+    const requestOrigin = req.headers.origin;
+    if (requestOrigin) {
+        res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+
     if (req.method.toLowerCase() === 'post') {
         const formidableOptions = { multiples: true };
         if (countlyConfig.api.maxUploadFileSize) {
@@ -352,9 +359,12 @@ function handleRequest(req, res) {
     }
     else if (req.method.toLowerCase() === 'options') {
         const headers = {};
-        headers["Access-Control-Allow-Origin"] = "*";
+        headers["Access-Control-Allow-Origin"] = requestOrigin || "*";
         headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
-        headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type";
+        headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type, Authorization";
+        if (requestOrigin) {
+            headers["Access-Control-Allow-Credentials"] = "true";
+        }
         res.writeHead(200, headers);
         res.end();
     }
