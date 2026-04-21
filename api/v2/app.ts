@@ -6,6 +6,7 @@ import authRouter from './routes/auth.ts';
 import usersRouter from './routes/users.ts';
 import appsRouter from './routes/apps.ts';
 import healthRouter from './routes/health.ts';
+import securityRouter from './routes/security.ts';
 import { pluginGuard } from './middleware/plugin-guard.ts';
 import { v2ErrorHandler } from './middleware/error-handler.ts';
 import { transformResponse } from './middleware/response-wrapper.ts';
@@ -67,6 +68,7 @@ app.use('/v2/auth', authRouter);
 app.use('/v2/users', paramsAdapter, transformResponse, usersRouter);
 app.use('/v2/apps', paramsAdapter, transformResponse, appsRouter);
 app.use('/v2/health', paramsAdapter, transformResponse, healthRouter);
+app.use('/v2/security', paramsAdapter, transformResponse, securityRouter);
 
 // --- Plugin v2 routes (auto-discovered) ---
 // Scans plugins/<name>/api/v2/index.ts and registers as /v2/<name>
