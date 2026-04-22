@@ -10,6 +10,9 @@ import type {
     ResetPasswordRequest,
     ResetPasswordResponse,
     ResetPasswordValidateResponse,
+    SetupRequest,
+    SetupResponse,
+    SetupStatusResponse,
 } from '../../../../web/src/shared/types/auth.js';
 import type { ApiError } from '../../../../web/src/shared/types/api.js';
 import jwt from 'jsonwebtoken';
@@ -186,6 +189,34 @@ function updateMemberPassword(id: unknown, hashedPassword: string): Promise<void
     });
 }
 
+function countMembers(): Promise<number> {
+    return new Promise((resolve, reject) => {
+        common.db.collection('members').count(
+            function(err: unknown, count: number) {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(count);
+            }
+        );
+    });
+}
+
+function insertMember(doc: Record<string, unknown>): Promise<Record<string, unknown>> {
+    return new Promise((resolve, reject) => {
+        common.db.collection('members').insert(
+            doc,
+            { safe: true },
+            function(err: unknown, result: { ops: Record<string, unknown>[] }) {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(result.ops[0]);
+            }
+        );
+    });
+}
+
 async function verifyCredentials(username: string, password: string): Promise<any | null> {
     const member = await new Promise<any>((resolve, reject) => {
         common.db.collection('members').findOne(
@@ -209,21 +240,24 @@ async function verifyCredentials(username: string, password: string): Promise<an
         throw err;
     }
 
+    const secret = common.config.passwordSecret || "";
+    const effectivePassword = password + secret;
+
     if (isArgon2Hash(member.password)) {
-        const match = await argon2.verify(member.password, password);
+        const match = await argon2.verify(member.password, effectivePassword);
         if (!match) {
             return null;
         }
     }
     else {
-        const sha1 = crypto.createHmac('sha1', '').update(password).digest('hex');
-        const sha512 = crypto.createHmac('sha512', '').update(password).digest('hex');
+        const sha1 = crypto.createHmac('sha1', '').update(effectivePassword).digest('hex');
+        const sha512 = crypto.createHmac('sha512', '').update(effectivePassword).digest('hex');
 
         if (member.password !== sha1 && member.password !== sha512) {
             return null;
         }
 
-        const argon2Hash = await argon2.hash(password);
+        const argon2Hash = await argon2.hash(effectivePassword);
         common.db.collection('members').updateOne(
             { _id: member._id },
             { $set: { password: argon2Hash } }
@@ -232,6 +266,117 @@ async function verifyCredentials(username: string, password: string): Promise<an
 
     return member;
 }
+
+router.get('/setup-status', async function(_req: Request, res: Response) {
+    try {
+        const count = await countMembers();
+        const response: SetupStatusResponse = { needsSetup: count === 0 };
+        res.json({ data: response });
+    }
+    catch (_err: unknown) {
+        const body: ApiError = { error: { code: 'DB_NOT_READY', message: 'Database is not available yet. Please retry.' } };
+        res.status(503).json(body);
+    }
+});
+
+router.post('/setup', async function(req: Request, res: Response, next: NextFunction) {
+    try {
+        const memberCount = await countMembers();
+
+        if (memberCount > 0) {
+            const body: ApiError = { error: { code: 'SETUP_ALREADY_COMPLETE', message: 'Server is already set up' } };
+            return res.status(409).json(body);
+        }
+
+        const { full_name, email, password, lang, createDemoApp } = req.body as SetupRequest;
+
+        if (!full_name || typeof full_name !== 'string' || full_name.trim().length === 0) {
+            const body: ApiError = { error: { code: 'VALIDATION_ERROR', message: 'Full name is required' } };
+            return res.status(400).json(body);
+        }
+
+        if (!email || typeof email !== 'string' || !email.includes('@')) {
+            const body: ApiError = { error: { code: 'VALIDATION_ERROR', message: 'A valid email address is required' } };
+            return res.status(400).json(body);
+        }
+
+        if (!password || typeof password !== 'string') {
+            const body: ApiError = { error: { code: 'VALIDATION_ERROR', message: 'Password is required' } };
+            return res.status(400).json(body);
+        }
+
+        const passwordError = validatePassword(password);
+
+        if (passwordError !== null) {
+            const body: ApiError = { error: { code: 'WEAK_PASSWORD', message: passwordError } };
+            return res.status(400).json(body);
+        }
+
+        const secret = common.config.passwordSecret || "";
+        const hashedPassword = await argon2.hash(password + secret);
+
+        const apiKey = common.md5Hash(crypto.randomBytes(48).toString('hex') + Math.random());
+
+        const now = Math.floor(Date.now() / 1000);
+        const doc: Record<string, unknown> = {
+            full_name: (full_name + "").trim(),
+            username: (email + "").trim(),
+            password: hashedPassword,
+            email: (email + "").trim(),
+            global_admin: true,
+            created_at: now,
+            password_changed: now,
+            permission: { c: {}, r: {}, u: {}, d: {}, _: { a: [], u: [[]] } },
+            api_key: apiKey,
+        };
+
+        if (lang && typeof lang === 'string') {
+            doc.lang = lang;
+        }
+
+        let member: Record<string, unknown>;
+
+        try {
+            member = await insertMember(doc);
+        }
+        catch (insertErr: unknown) {
+            // Guard against TOCTOU race: if a concurrent request already
+            // inserted a member between our count check and this insert,
+            // the duplicate key error (code 11000) surfaces here.
+            const mongoErr = insertErr as { code?: number };
+
+            if (mongoErr.code === 11000) {
+                const body: ApiError = { error: { code: 'SETUP_ALREADY_COMPLETE', message: 'Server is already set up' } };
+                return res.status(409).json(body);
+            }
+
+            throw insertErr;
+        }
+
+        const { accessToken, refreshToken } = generateTokens(member);
+
+        res.cookie(REFRESH_COOKIE_NAME, refreshToken, getRefreshCookieOptions());
+
+        const response: SetupResponse = {
+            token: accessToken,
+            member: {
+                _id: (member._id as { toString(): string }).toString(),
+                full_name: member.full_name as string,
+                username: member.username as string,
+                email: member.email as string,
+                global_admin: true,
+                lang: member.lang as string | undefined,
+                api_key: member.api_key as string,
+            },
+            createDemoApp: !!createDemoApp,
+        };
+
+        res.json({ data: response });
+    }
+    catch (err: unknown) {
+        next(err);
+    }
+});
 
 router.post('/login', async function(req: Request, res: Response, next: NextFunction) {
     try {
