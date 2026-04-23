@@ -206,6 +206,18 @@ function countMembers(): Promise<number> {
     });
 }
 
+function stripPassword(input: unknown): Record<string, unknown> {
+    if (typeof input !== 'object' || input === null) {
+        return {};
+    }
+
+    const clone = { ...input as Record<string, unknown> };
+
+    delete clone.password;
+
+    return clone;
+}
+
 function insertMember(doc: Record<string, unknown>): Promise<Record<string, unknown>> {
     return new Promise((resolve, reject) => {
         common.db.collection('members').insert(
@@ -399,7 +411,7 @@ router.post('/login', async function(req: Request, res: Response, next: NextFunc
         if (!username || !password) {
             const body: ApiError = { error: { code: 'VALIDATION_ERROR', message: 'Username and password are required' } };
 
-            plugins.callMethod("loginFailed", { req, data: req.body, reason: 'VALIDATION_ERROR' });
+            plugins.callMethod("loginFailed", { req, data: stripPassword(req.body), reason: 'VALIDATION_ERROR' });
 
             return res.status(400).json(body);
         }
@@ -410,7 +422,7 @@ router.post('/login', async function(req: Request, res: Response, next: NextFunc
         if (blocked) {
             const body: ApiError = { error: { code: 'LOGIN_BLOCKED', message: 'Too many failed attempts. Please try again later.' } };
 
-            plugins.callMethod("loginFailed", { req, data: req.body, reason: 'LOGIN_BLOCKED' });
+            plugins.callMethod("loginFailed", { req, data: stripPassword(req.body), reason: 'LOGIN_BLOCKED' });
 
             return res.status(429).json(body);
         }
@@ -421,7 +433,8 @@ router.post('/login', async function(req: Request, res: Response, next: NextFunc
             const body: ApiError = { error: { code: 'INVALID_CREDENTIALS', message: 'Invalid username or password' } };
 
             recordFailedLogin(username);
-            plugins.callMethod("loginFailed", { req, data: req.body, reason: 'INVALID_CREDENTIALS' });
+
+            plugins.callMethod("loginFailed", { req, data: stripPassword(req.body), reason: 'INVALID_CREDENTIALS' });
 
             return res.status(401).json(body);
         }
@@ -443,7 +456,7 @@ router.post('/login', async function(req: Request, res: Response, next: NextFunc
 
         common.db.collection('members').updateOne({ _id: member._id }, { $set: update });
 
-        plugins.callMethod("loginSuccessful", { req, data: member });
+        plugins.callMethod("loginSuccessful", { req, data: stripPassword(member) });
 
         res.cookie(REFRESH_COOKIE_NAME, refreshToken, getRefreshCookieOptions());
 
@@ -466,7 +479,7 @@ router.post('/login', async function(req: Request, res: Response, next: NextFunc
         if (err.code === 'ACCOUNT_LOCKED') {
             const body: ApiError = { error: { code: 'ACCOUNT_LOCKED', message: err.message } };
 
-            plugins.callMethod("loginFailed", { req, data: req.body, reason: 'ACCOUNT_LOCKED' });
+            plugins.callMethod("loginFailed", { req, data: stripPassword(req.body), reason: 'ACCOUNT_LOCKED' });
 
             return res.status(401).json(body);
         }
@@ -612,7 +625,7 @@ router.post('/forgot', async function(req: Request, res: Response, next: NextFun
             await insertResetToken(prid, member._id, timestamp);
             member.lang = member.lang || req.body.lang || "en";
             mail.sendPasswordResetInfo(member, prid);
-            plugins.callMethod("passwordRequest", { req, data: req.body });
+            plugins.callMethod("passwordReset", { req, data: stripPassword(member) });
         }
 
         // Always return the same response to prevent email enumeration
