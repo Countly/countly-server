@@ -398,6 +398,9 @@ router.post('/login', async function(req: Request, res: Response, next: NextFunc
 
         if (!username || !password) {
             const body: ApiError = { error: { code: 'VALIDATION_ERROR', message: 'Username and password are required' } };
+
+            plugins.callMethod("loginFailed", { req, data: req.body, reason: 'VALIDATION_ERROR' });
+
             return res.status(400).json(body);
         }
 
@@ -406,14 +409,20 @@ router.post('/login', async function(req: Request, res: Response, next: NextFunc
 
         if (blocked) {
             const body: ApiError = { error: { code: 'LOGIN_BLOCKED', message: 'Too many failed attempts. Please try again later.' } };
+
+            plugins.callMethod("loginFailed", { req, data: req.body, reason: 'LOGIN_BLOCKED' });
+
             return res.status(429).json(body);
         }
 
         const member = await verifyCredentials(username, password);
 
         if (!member) {
-            recordFailedLogin(username);
             const body: ApiError = { error: { code: 'INVALID_CREDENTIALS', message: 'Invalid username or password' } };
+
+            recordFailedLogin(username);
+            plugins.callMethod("loginFailed", { req, data: req.body, reason: 'INVALID_CREDENTIALS' });
+
             return res.status(401).json(body);
         }
 
@@ -422,10 +431,8 @@ router.post('/login', async function(req: Request, res: Response, next: NextFunc
 
         const { accessToken, refreshToken } = generateTokens(member);
 
-        common.db.collection('members').updateOne(
-            { _id: member._id },
-            { $set: { last_login: Math.floor(Date.now() / 1000) } }
-        );
+
+        plugins.callMethod("loginSuccessful", { req, data: member });
 
         res.cookie(REFRESH_COOKIE_NAME, refreshToken, getRefreshCookieOptions());
 
@@ -447,8 +454,12 @@ router.post('/login', async function(req: Request, res: Response, next: NextFunc
     catch (err: any) {
         if (err.code === 'ACCOUNT_LOCKED') {
             const body: ApiError = { error: { code: 'ACCOUNT_LOCKED', message: err.message } };
+
+            plugins.callMethod("loginFailed", { req, data: req.body, reason: 'ACCOUNT_LOCKED' });
+
             return res.status(401).json(body);
         }
+
         next(err);
     }
 });
