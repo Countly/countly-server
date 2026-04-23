@@ -431,6 +431,17 @@ router.post('/login', async function(req: Request, res: Response, next: NextFunc
 
         const { accessToken, refreshToken } = generateTokens(member);
 
+        const update: { last_login: number; password_changed?: number; lang?: string } = { last_login: nowSec() };
+
+        if (member?.password_changed === 'undefined') {
+            update.password_changed = member.created_at || nowSec();
+        }
+
+        if (req.body?.lang !== member.lang) {
+            update.lang = req.body.lang;
+        }
+
+        common.db.collection('members').updateOne({ _id: member._id }, { $set: update });
 
         plugins.callMethod("loginSuccessful", { req, data: member });
 
