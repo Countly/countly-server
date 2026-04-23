@@ -20,6 +20,11 @@ const preventBruteforce = require('../../frontend/express/libs/preventBruteforce
 
 const app = express();
 
+// Match legacy: honor X-Forwarded-* so req.ip reflects the real client IP
+// behind the load balancer. Required for /forgot rate limiting to key on the
+// actual client rather than the LB's internal IP.
+app.set('trust proxy', true);
+
 app.use(function(_req: Request, _res: Response, next: NextFunction) {
     if (!preventBruteforce.db && common.db) {
         preventBruteforce.db = common.db;
