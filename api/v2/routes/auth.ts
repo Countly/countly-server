@@ -528,9 +528,56 @@ router.post('/refresh', async function(req: Request, res: Response) {
     );
 });
 
-router.post('/logout', function(_req: Request, res: Response) {
-    res.clearCookie(REFRESH_COOKIE_NAME, { path: '/v2/auth' });
-    res.json({ data: { message: 'Logged out successfully' } });
+router.post('/logout', async function(req: Request, res: Response, next: NextFunction) {
+    try {
+        const refreshToken = req.cookies?.[REFRESH_COOKIE_NAME];
+        let memberId: string | null = null;
+
+        if (refreshToken) {
+            try {
+                const secret: string = common.config.api.jwtSecret;
+                const decoded = jwt.verify(refreshToken, secret) as JwtPayload;
+
+                if (decoded.type === 'refresh') {
+                    memberId = decoded.memberId;
+                }
+            }
+            catch {
+                // Invalid/expired cookie — logout still succeeds below.
+                // Intentionally swallowed: a stale cookie is not an error at logout time.
+            }
+        }
+
+        let member: Record<string, unknown> | null = null;
+
+        if (memberId) {
+            try {
+                member = await findMemberById(common.db.ObjectID(memberId));
+            }
+            catch {
+                // DB blip — keep going. We'll still clear the cookie.
+            }
+        }
+
+        if (member) {
+            plugins.callMethod("userLogout", {
+                req,
+                data: {
+                    uid: member._id,
+                    email: member.email,
+                    query: req.query
+                }
+            });
+
+            killOtherSessionsForUser({ userId: (member._id as { toString(): string }).toString() });
+        }
+
+        res.clearCookie(REFRESH_COOKIE_NAME, { path: '/v2/auth' });
+        res.json({ data: { message: 'Logged out successfully' } });
+    }
+    catch (err: unknown) {
+        next(err);
+    }
 });
 
 router.post('/forgot', async function(req: Request, res: Response, next: NextFunction) {
