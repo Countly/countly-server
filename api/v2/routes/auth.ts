@@ -33,29 +33,13 @@ const router = express.Router();
 const PASSWORD_RESET_TTL_SECONDS = 600;
 const REFRESH_COOKIE_NAME = 'cly_refresh_token';
 
-function parseDaysToMs(duration: string): number {
-    const days = Number.parseInt(duration, 10);
-
-    if (Number.isNaN(days)) {
-        return 7 * 24 * 60 * 60 * 1000;
-    }
-
-    return days * 24 * 60 * 60 * 1000;
-}
-
-function getRefreshCookieOptions() {
-    return {
-        httpOnly: true,
-        secure: common.config.api.ssl?.enabled === true,
-        sameSite: 'strict' as const,
-        path: '/v2/auth',
-        maxAge: parseDaysToMs(common.config.api.jwtRefreshTokenExpiry),
-    };
-}
-
 interface JwtPayload {
     memberId: string;
     type: 'access' | 'refresh';
+}
+
+function escapeRegEx(string: string): string {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function findMemberByEmail(email: string): Promise<Record<string, unknown> | null> {
@@ -115,6 +99,16 @@ function generateTokens(member: any): { accessToken: string; refreshToken: strin
     return { accessToken, refreshToken };
 }
 
+function getRefreshCookieOptions() {
+    return {
+        httpOnly: true,
+        secure: common.config.api.ssl?.enabled === true,
+        sameSite: 'strict' as const,
+        path: '/v2/auth',
+        maxAge: parseDaysToMs(common.config.api.jwtRefreshTokenExpiry),
+    };
+}
+
 function insertResetToken(prid: string, userId: unknown, timestamp: number): Promise<void> {
     return new Promise((resolve, reject) => {
         common.db.collection('password_reset').insert(
@@ -156,6 +150,16 @@ function isForgotBlocked(ip: string | undefined): Promise<{ blocked: boolean; fa
 
 function nowSec(): number {
     return Math.round(Date.now() / 1000);
+}
+
+function parseDaysToMs(duration: string): number {
+    const days = Number.parseInt(duration, 10);
+
+    if (Number.isNaN(days)) {
+        return 7 * 24 * 60 * 60 * 1000;
+    }
+
+    return days * 24 * 60 * 60 * 1000;
 }
 
 function recordFailedLogin(username: string): void {
@@ -217,10 +221,20 @@ function insertMember(doc: Record<string, unknown>): Promise<Record<string, unkn
     });
 }
 
-async function verifyCredentials(username: string, password: string): Promise<any | null> {
+async function verifyCredentials(usernameOrEmail: string, password: string): Promise<any | null> {
+    const trimmedUsernameOrEmail = `${usernameOrEmail}`.trim();
+
     const member = await new Promise<any>((resolve, reject) => {
         common.db.collection('members').findOne(
-            { $or: [{ username }, { email: username }] },
+            {
+                $or: [
+                    { username: trimmedUsernameOrEmail },
+                    {
+                        email: {
+                            $regex: `^${escapeRegEx(trimmedUsernameOrEmail)}$`, $options: 'i'
+                        }
+                    }]
+            },
             function(err: any, doc: any) {
                 if (err) {
                     return reject(err);
