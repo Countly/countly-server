@@ -45,7 +45,7 @@ function escapeRegEx(string: string): string {
 function findMemberByEmail(email: string): Promise<Record<string, unknown> | null> {
     return new Promise((resolve, reject) => {
         common.db.collection('members').findOne(
-            { email },
+            { email: { $regex: `^${escapeRegEx(email)}$`, $options: 'i' } },
             function(err: unknown, doc: Record<string, unknown> | null) {
                 if (err) {
                     return reject(err);
@@ -241,11 +241,8 @@ async function verifyCredentials(usernameOrEmail: string, password: string): Pro
             {
                 $or: [
                     { username: trimmedUsernameOrEmail },
-                    {
-                        email: {
-                            $regex: `^${escapeRegEx(trimmedUsernameOrEmail)}$`, $options: 'i'
-                        }
-                    }]
+                    { email: { $regex: `^${escapeRegEx(trimmedUsernameOrEmail)}$`, $options: 'i' }}
+                ]
             },
             function(err: any, doc: any) {
                 if (err) {
