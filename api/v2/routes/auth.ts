@@ -700,11 +700,6 @@ router.post('/reset', async function(req: Request, res: Response, next: NextFunc
             return res.status(400).json(body);
         }
 
-        if (member.locked) {
-            const body: ApiError = { error: { code: 'ACCOUNT_LOCKED', message: 'User account is locked' } };
-            return res.status(401).json(body);
-        }
-
         // Hash with the same secret the legacy system uses
         const secret = common.config.passwordSecret || "";
         const hashedPassword = await argon2.hash(password + secret);
