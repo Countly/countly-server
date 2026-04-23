@@ -622,7 +622,7 @@ router.post('/forgot', async function(req: Request, res: Response, next: NextFun
             await insertResetToken(prid, member._id, timestamp);
             member.lang = member.lang || req.body.lang || "en";
             mail.sendPasswordResetInfo(member, prid);
-            plugins.callMethod("passwordRequest", { req, data: stripPassword(req.body) });
+            plugins.callMethod("passwordRequest", { req, data: stripPassword(member) });
         }
 
         // Always return the same response to prevent email enumeration
