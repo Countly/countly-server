@@ -622,7 +622,7 @@ router.post('/forgot', async function(req: Request, res: Response, next: NextFun
             await insertResetToken(prid, member._id, timestamp);
             member.lang = member.lang || req.body.lang || "en";
             mail.sendPasswordResetInfo(member, prid);
-            plugins.callMethod("passwordRequest", { req, data: stripPassword(member) });
+            plugins.callMethod("passwordRequest", { req, data: req.body });
         }
 
         // Always return the same response to prevent email enumeration
@@ -726,7 +726,7 @@ router.post('/reset', async function(req: Request, res: Response, next: NextFunc
         resetFailedLogins(member.username as string);
         resetFailedLogins(member.email as string);
 
-        plugins.callMethod("passwordReset", { req, data: member });
+        plugins.callMethod("passwordReset", { req, data: stripPassword(member) });
 
         const response: ResetPasswordResponse = {
             message: 'Your password has been reset.',
