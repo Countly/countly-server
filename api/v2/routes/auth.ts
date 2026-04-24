@@ -269,6 +269,29 @@ function updateMemberPassword(id: unknown, hashedPassword: string): Promise<void
     });
 }
 
+function updateMemberPasswordWithHistory(
+    id: unknown,
+    newHash: string,
+    oldHash: string,
+    rotationLimit: number
+): Promise<void> {
+    return new Promise((resolve, reject) => {
+        common.db.collection('members').updateOne(
+            { _id: id },
+            {
+                $set: { password: newHash, password_changed: nowSec() },
+                $push: { password_history: { $each: [oldHash], $slice: -rotationLimit } }
+            },
+            function(err: unknown) {
+                if (err) {
+                    return reject(err);
+                }
+                resolve();
+            }
+        );
+    });
+}
+
 async function verifyCredentials(usernameOrEmail: string, password: string): Promise<any | null> {
     const trimmedUsernameOrEmail = `${usernameOrEmail}`.trim();
 
@@ -757,7 +780,10 @@ router.post('/reset', async function(req: Request, res: Response, next: NextFunc
         }
 
         if (rotationLimit > 0) {
-            const candidates: string[] = [member.password as string];
+            const candidates: string[] = [
+                member.password as string,
+                ...((member.password_history as string[]) || [])
+            ];
             const matches = await Promise.all(
                 candidates.map(h => passwordMatchesHash(password, h))
             );
@@ -777,7 +803,17 @@ router.post('/reset', async function(req: Request, res: Response, next: NextFunc
         const secret = common.config.passwordSecret || "";
         const hashedPassword = await argon2.hash(password + secret);
 
-        await updateMemberPassword(member._id, hashedPassword);
+        if (rotationLimit > 0) {
+            await updateMemberPasswordWithHistory(
+                member._id,
+                hashedPassword,
+                member.password as string,
+                rotationLimit
+            );
+        }
+        else {
+            await updateMemberPassword(member._id, hashedPassword);
+        }
 
         // Clean up the consumed token
         removeResetToken(String(prid));
