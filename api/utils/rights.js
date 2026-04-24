@@ -41,7 +41,28 @@ function validate_token_if_exists(params) {
                 try {
                     var decoded = (jwt.verify(bearerToken, secret));
                     if (decoded && decoded.memberId && decoded.type === 'access') {
-                        resolve(decoded.memberId);
+                        var _id = common.db.ObjectID(decoded.memberId);
+                        common.db.collection('members').findOne(
+                            { _id: _id },
+                            { projection: { _id: 1, token_invalid_before: 1 } },
+                            function(err, member) {
+                                if (err || !member) {
+                                    resolve('token-invalid');
+                                    return;
+                                }
+                                else {
+                                    if (
+                                        member.token_invalid_before &&
+                                        decoded.iat &&
+                                        member.token_invalid_before > decoded.iat * 1000
+                                    ) {
+                                        resolve('token-invalid');
+                                        return;
+                                    }
+
+                                    resolve(decoded.memberId);
+                                }
+                            });
                         return;
                     }
                 }
