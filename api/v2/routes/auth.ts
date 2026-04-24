@@ -18,327 +18,44 @@ import type { ApiError } from '../../../../web/src/shared/types/api.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import argon2 from 'argon2';
-import { validatePassword, killOtherSessionsForUser } from '../services/members.ts';
+import {
+    countMembers,
+    findMemberByEmail,
+    findMemberById,
+    insertMember,
+    killOtherSessionsForUser,
+    validatePassword,
+} from '../services/members.ts';
+import {
+    PASSWORD_RESET_TTL_SECONDS,
+    REFRESH_COOKIE_NAME,
+    findResetToken,
+    generateTokens,
+    getRefreshCookieOptions,
+    insertResetToken,
+    invalidateUserTokens,
+    isBruteforceBlocked,
+    isForgotBlocked,
+    nowSec,
+    passwordMatchesHash,
+    recordFailedLogin,
+    recordForgotFail,
+    removeResetToken,
+    resetFailedLogins,
+    stripPassword,
+    updateMemberPassword,
+    updateMemberPasswordWithHistory,
+    verifyCredentials,
+    type JwtPayload,
+} from '../services/auth/index.ts';
 
 
 const require = createRequire(import.meta.url);
 const common = require('../../utils/common.js');
-const preventBruteforce = require('../../../frontend/express/libs/preventBruteforce.js');
 const mail = require('../../parts/mgmt/mail.js');
 const plugins = require('../../../plugins/pluginManager.js');
 
 const router = express.Router();
-
-// TODO: make this value configurable in setting security tab once the page is added to the new dashboard
-const PASSWORD_RESET_TTL_SECONDS = 600;
-const REFRESH_COOKIE_NAME = 'cly_refresh_token';
-
-interface JwtPayload {
-    iat?: number;
-    memberId: string;
-    type: 'access' | 'refresh';
-}
-
-function countMembers(): Promise<number> {
-    return new Promise((resolve, reject) => {
-        common.db.collection('members').count(
-            function(err: unknown, count: number) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(count);
-            }
-        );
-    });
-}
-
-function escapeRegEx(string: string): string {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function findMemberByEmail(email: string): Promise<Record<string, unknown> | null> {
-    return new Promise((resolve, reject) => {
-        common.db.collection('members').findOne(
-            { email: { $regex: `^${escapeRegEx(email)}$`, $options: 'i' } },
-            function(err: unknown, doc: Record<string, unknown> | null) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(doc);
-            }
-        );
-    });
-}
-
-function findMemberById(id: unknown): Promise<Record<string, unknown> | null> {
-    return new Promise((resolve, reject) => {
-        common.db.collection('members').findOne(
-            { _id: id },
-            function(err: unknown, doc: Record<string, unknown> | null) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(doc);
-            }
-        );
-    });
-}
-
-function findResetToken(prid: string): Promise<Record<string, unknown> | null> {
-    return new Promise((resolve, reject) => {
-        common.db.collection('password_reset').findOne(
-            { prid },
-            function(err: unknown, doc: Record<string, unknown> | null) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(doc);
-            }
-        );
-    });
-}
-
-function generateTokens(member: any): { accessToken: string; refreshToken: string } {
-    const secret: string = common.config.api.jwtSecret;
-    const accessToken = jwt.sign(
-        { memberId: member._id.toString(), type: 'access' } satisfies JwtPayload,
-        secret,
-        { expiresIn: common.config.api.jwtAccessTokenExpiry }
-    );
-    const refreshToken = jwt.sign(
-        { memberId: member._id.toString(), type: 'refresh' } satisfies JwtPayload,
-        secret,
-        { expiresIn: common.config.api.jwtRefreshTokenExpiry }
-    );
-    return { accessToken, refreshToken };
-}
-
-function getRefreshCookieOptions() {
-    return {
-        httpOnly: true,
-        secure: common.config.api.ssl?.enabled === true,
-        sameSite: 'strict' as const,
-        path: '/v2/auth',
-        maxAge: parseDaysToMs(common.config.api.jwtRefreshTokenExpiry),
-    };
-}
-
-function insertMember(doc: Record<string, unknown>): Promise<Record<string, unknown>> {
-    return new Promise((resolve, reject) => {
-        common.db.collection('members').insert(
-            doc,
-            { safe: true },
-            function(err: unknown, result: { ops: Record<string, unknown>[] }) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(result.ops[0]);
-            }
-        );
-    });
-}
-
-function insertResetToken(prid: string, userId: unknown, timestamp: number): Promise<void> {
-    return new Promise((resolve, reject) => {
-        common.db.collection('password_reset').insert(
-            { prid, user_id: userId, timestamp },
-            { safe: true },
-            function(err: unknown) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve();
-            }
-        );
-    });
-}
-
-function invalidateUserTokens(memberId: unknown): Promise<void> {
-    return new Promise((resolve, reject) => {
-        common.db.collection('members').updateOne(
-            { _id: memberId },
-            { $set: { token_invalid_before: nowSec() } },
-            function(err: unknown) {
-                if (err) {
-                    console.error('Error invalidating user tokens:', err);
-                    return reject(err);
-                }
-                resolve();
-            }
-        );
-    });
-}
-
-function isArgon2Hash(hash: string): boolean {
-    return Boolean(hash && hash.startsWith('$argon2'));
-}
-
-function isBruteforceBlocked(username: string): Promise<{ blocked: boolean; fails: number }> {
-    return new Promise((resolve) => {
-        preventBruteforce.isBlocked("login", username, function(blocked: boolean, fails: number) {
-            resolve({ blocked, fails });
-        });
-    });
-}
-
-function isForgotBlocked(ip: string | undefined): Promise<{ blocked: boolean; fails: number }> {
-    if (!ip) {
-        return Promise.resolve({ blocked: false, fails: 0 });
-    }
-
-    return new Promise((resolve) => {
-        preventBruteforce.isBlocked("forgot", ip, function(blocked: boolean, fails: number) {
-            resolve({ blocked, fails });
-        });
-    });
-}
-
-function nowSec(): number {
-    return Math.round(Date.now() / 1000);
-}
-
-function parseDaysToMs(duration: string): number {
-    const days = Number.parseInt(duration, 10);
-
-    if (Number.isNaN(days)) {
-        return 7 * 24 * 60 * 60 * 1000;
-    }
-
-    return days * 24 * 60 * 60 * 1000;
-}
-
-async function passwordMatchesHash(password: string, storedHash: string): Promise<boolean> {
-    const secret = common.config.passwordSecret || "";
-    const effectivePassword = password + secret;
-
-    try {
-        if (isArgon2Hash(storedHash)) {
-            return await argon2.verify(storedHash, effectivePassword);
-        }
-
-        const sha1 = crypto.createHmac('sha1', '').update(effectivePassword).digest('hex');
-        const sha512 = crypto.createHmac('sha512', '').update(effectivePassword).digest('hex');
-
-        return storedHash === sha1 || storedHash === sha512;
-    }
-    catch {
-        return false;
-    }
-}
-
-function recordFailedLogin(username: string): void {
-    preventBruteforce.fail("login", username);
-}
-
-function recordForgotFail(ip: string | undefined): void {
-    preventBruteforce.fail("forgot", ip || 'Undefined IP');
-}
-
-function removeResetToken(prid: string): void {
-    common.db.collection('password_reset').remove({ prid }, function() {});
-}
-
-function resetFailedLogins(username: string): void {
-    preventBruteforce.reset("login", username);
-}
-
-function stripPassword(input: unknown): Record<string, unknown> {
-    if (typeof input !== 'object' || input === null) {
-        return {};
-    }
-
-    const clone = { ...input as Record<string, unknown> };
-
-    delete clone.password;
-
-    return clone;
-}
-
-function updateMemberPassword(id: unknown, hashedPassword: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-        common.db.collection('members').updateOne(
-            { _id: id },
-            { $set: { password: hashedPassword, password_changed: nowSec() } },
-            function(err: unknown) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve();
-            }
-        );
-    });
-}
-
-function updateMemberPasswordWithHistory(
-    id: unknown,
-    newHash: string,
-    oldHash: string,
-    rotationLimit: number
-): Promise<void> {
-    return new Promise((resolve, reject) => {
-        common.db.collection('members').updateOne(
-            { _id: id },
-            {
-                $set: { password: newHash, password_changed: nowSec() },
-                $push: { password_history: { $each: [oldHash], $slice: -rotationLimit } }
-            },
-            function(err: unknown) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve();
-            }
-        );
-    });
-}
-
-async function verifyCredentials(usernameOrEmail: string, password: string): Promise<any | null> {
-    const trimmedUsernameOrEmail = `${usernameOrEmail}`.trim();
-
-    const member = await new Promise<any>((resolve, reject) => {
-        common.db.collection('members').findOne(
-            {
-                $or: [
-                    { username: trimmedUsernameOrEmail },
-                    { email: { $regex: `^${escapeRegEx(trimmedUsernameOrEmail)}$`, $options: 'i' }}
-                ]
-            },
-            function(err: any, doc: any) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(doc);
-            }
-        );
-    });
-
-    if (!member) {
-        return null;
-    }
-
-    if (member.locked) {
-        const err: any = new Error('User account is locked');
-        err.code = 'ACCOUNT_LOCKED';
-        throw err;
-    }
-
-    const match = await passwordMatchesHash(password, member.password);
-
-    if (!match) {
-        return null;
-    }
-
-    if (!isArgon2Hash(member.password)) {
-        const secret = common.config.passwordSecret || "";
-        const argon2Hash = await argon2.hash(password + secret);
-        common.db.collection('members').updateOne(
-            { _id: member._id },
-            { $set: { password: argon2Hash } }
-        );
-    }
-
-    return member;
-}
 
 router.get('/setup-status', async function(_req: Request, res: Response) {
     try {
