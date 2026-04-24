@@ -322,24 +322,15 @@ async function verifyCredentials(usernameOrEmail: string, password: string): Pro
         throw err;
     }
 
-    const secret = common.config.passwordSecret || "";
-    const effectivePassword = password + secret;
+    const match = await passwordMatchesHash(password, member.password);
 
-    if (isArgon2Hash(member.password)) {
-        const match = await argon2.verify(member.password, effectivePassword);
-        if (!match) {
-            return null;
-        }
+    if (!match) {
+        return null;
     }
-    else {
-        const sha1 = crypto.createHmac('sha1', '').update(effectivePassword).digest('hex');
-        const sha512 = crypto.createHmac('sha512', '').update(effectivePassword).digest('hex');
 
-        if (member.password !== sha1 && member.password !== sha512) {
-            return null;
-        }
-
-        const argon2Hash = await argon2.hash(effectivePassword);
+    if (!isArgon2Hash(member.password)) {
+        const secret = common.config.passwordSecret || "";
+        const argon2Hash = await argon2.hash(password + secret);
         common.db.collection('members').updateOne(
             { _id: member._id },
             { $set: { password: argon2Hash } }
