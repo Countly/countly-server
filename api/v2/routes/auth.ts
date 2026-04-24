@@ -152,6 +152,22 @@ function insertResetToken(prid: string, userId: unknown, timestamp: number): Pro
     });
 }
 
+function invalidateUserTokens(memberId: unknown): Promise<void> {
+    return new Promise((resolve, reject) => {
+        common.db.collection('members').updateOne(
+            { _id: memberId },
+            { $set: { token_invalid_before: nowSec() } },
+            function(err: unknown) {
+                if (err) {
+                    console.error('Error invalidating user tokens:', err);
+                    return reject(err);
+                }
+                resolve();
+            }
+        );
+    });
+}
+
 function isArgon2Hash(hash: string): boolean {
     return Boolean(hash && hash.startsWith('$argon2'));
 }
@@ -579,6 +595,7 @@ router.post('/logout', async function(req: Request, res: Response, next: NextFun
                 }
             });
 
+            await invalidateUserTokens(member._id);
             killOtherSessionsForUser({ userId: (member._id as { toString(): string }).toString() });
         }
 
