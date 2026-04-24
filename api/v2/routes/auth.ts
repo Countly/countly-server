@@ -38,6 +38,19 @@ interface JwtPayload {
     type: 'access' | 'refresh';
 }
 
+function countMembers(): Promise<number> {
+    return new Promise((resolve, reject) => {
+        common.db.collection('members').count(
+            function(err: unknown, count: number) {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(count);
+            }
+        );
+    });
+}
+
 function escapeRegEx(string: string): string {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -109,6 +122,21 @@ function getRefreshCookieOptions() {
     };
 }
 
+function insertMember(doc: Record<string, unknown>): Promise<Record<string, unknown>> {
+    return new Promise((resolve, reject) => {
+        common.db.collection('members').insert(
+            doc,
+            { safe: true },
+            function(err: unknown, result: { ops: Record<string, unknown>[] }) {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(result.ops[0]);
+            }
+        );
+    });
+}
+
 function insertResetToken(prid: string, userId: unknown, timestamp: number): Promise<void> {
     return new Promise((resolve, reject) => {
         common.db.collection('password_reset').insert(
@@ -178,34 +206,6 @@ function resetFailedLogins(username: string): void {
     preventBruteforce.reset("login", username);
 }
 
-function updateMemberPassword(id: unknown, hashedPassword: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-        common.db.collection('members').updateOne(
-            { _id: id },
-            { $set: { password: hashedPassword, password_changed: nowSec() } },
-            function(err: unknown) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve();
-            }
-        );
-    });
-}
-
-function countMembers(): Promise<number> {
-    return new Promise((resolve, reject) => {
-        common.db.collection('members').count(
-            function(err: unknown, count: number) {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(count);
-            }
-        );
-    });
-}
-
 function stripPassword(input: unknown): Record<string, unknown> {
     if (typeof input !== 'object' || input === null) {
         return {};
@@ -218,16 +218,16 @@ function stripPassword(input: unknown): Record<string, unknown> {
     return clone;
 }
 
-function insertMember(doc: Record<string, unknown>): Promise<Record<string, unknown>> {
+function updateMemberPassword(id: unknown, hashedPassword: string): Promise<void> {
     return new Promise((resolve, reject) => {
-        common.db.collection('members').insert(
-            doc,
-            { safe: true },
-            function(err: unknown, result: { ops: Record<string, unknown>[] }) {
+        common.db.collection('members').updateOne(
+            { _id: id },
+            { $set: { password: hashedPassword, password_changed: nowSec() } },
+            function(err: unknown) {
                 if (err) {
                     return reject(err);
                 }
-                resolve(result.ops[0]);
+                resolve();
             }
         );
     });
