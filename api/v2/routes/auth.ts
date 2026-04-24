@@ -34,6 +34,7 @@ const PASSWORD_RESET_TTL_SECONDS = 600;
 const REFRESH_COOKIE_NAME = 'cly_refresh_token';
 
 interface JwtPayload {
+    iat?: number;
     memberId: string;
     type: 'access' | 'refresh';
 }
@@ -541,6 +542,14 @@ router.post('/refresh', async function(req: Request, res: Response) {
                 return res.status(401).json(body);
             }
 
+            if (member.token_invalid_before && decoded.iat && decoded.iat < member.token_invalid_before) {
+                const body: ApiError = { error: { code: 'TOKEN_EXPIRED', message: 'Token has been invalidated' } };
+
+                res.clearCookie(REFRESH_COOKIE_NAME, { path: '/v2/auth' });
+
+                return res.status(401).json(body);
+            }
+
             const tokens = generateTokens(member);
 
             res.cookie(REFRESH_COOKIE_NAME, tokens.refreshToken, getRefreshCookieOptions());
@@ -736,6 +745,7 @@ router.post('/reset', async function(req: Request, res: Response, next: NextFunc
         // Clean up the consumed token
         removeResetToken(String(prid));
 
+        await invalidateUserTokens(member._id);
         // Kill other sessions for security (matches legacy behavior)
         killOtherSessionsForUser({ userId: (member._id as { toString(): string }).toString() });
 
