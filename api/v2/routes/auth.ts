@@ -207,6 +207,25 @@ function parseDaysToMs(duration: string): number {
     return days * 24 * 60 * 60 * 1000;
 }
 
+async function passwordMatchesHash(password: string, storedHash: string): Promise<boolean> {
+    const secret = common.config.passwordSecret || "";
+    const effectivePassword = password + secret;
+
+    try {
+        if (isArgon2Hash(storedHash)) {
+            return await argon2.verify(storedHash, effectivePassword);
+        }
+
+        const sha1 = crypto.createHmac('sha1', '').update(effectivePassword).digest('hex');
+        const sha512 = crypto.createHmac('sha512', '').update(effectivePassword).digest('hex');
+
+        return storedHash === sha1 || storedHash === sha512;
+    }
+    catch {
+        return false;
+    }
+}
+
 function recordFailedLogin(username: string): void {
     preventBruteforce.fail("login", username);
 }
@@ -726,6 +745,7 @@ router.post('/reset', async function(req: Request, res: Response, next: NextFunc
         }
 
         const member = await findMemberById(resetDoc.user_id);
+        const rotationLimit = Number(plugins.getConfig('security').password_rotation || 0);
 
         if (!member) {
             removeResetToken(String(prid));
@@ -734,6 +754,23 @@ router.post('/reset', async function(req: Request, res: Response, next: NextFunc
             };
 
             return res.status(400).json(body);
+        }
+
+        if (rotationLimit > 0) {
+            const candidates: string[] = [member.password as string];
+            const matches = await Promise.all(
+                candidates.map(h => passwordMatchesHash(password, h))
+            );
+
+            if (matches.some(Boolean)) {
+                const body: ApiError = {
+                    error: {
+                        code: 'WEAK_PASSWORD',
+                        message: `You cannot reuse one of your last ${rotationLimit} passwords.`
+                    }
+                };
+                return res.status(400).json(body);
+            }
         }
 
         // Hash with the same secret the legacy system uses
