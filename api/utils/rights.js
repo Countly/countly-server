@@ -54,7 +54,7 @@ function validate_token_if_exists(params) {
                                     if (
                                         member.token_invalid_before &&
                                         decoded.iat &&
-                                        member.token_invalid_before > decoded.iat * 1000
+                                        member.token_invalid_before > decoded.iat
                                     ) {
                                         resolve('token-invalid');
                                         return;
