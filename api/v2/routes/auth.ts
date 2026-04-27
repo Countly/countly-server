@@ -117,6 +117,7 @@ router.post('/setup', async function(req: Request, res: Response, next: NextFunc
             global_admin: true,
             created_at: now,
             password_changed: now,
+            // Empty permission matrix; global_admin: true bypasses per-feature permission checks.
             permission: { c: {}, r: {}, u: {}, d: {}, _: { a: [], u: [[]] } },
             api_key: apiKey,
         };
