@@ -108,7 +108,7 @@ router.post('/setup', async function(req: Request, res: Response, next: NextFunc
 
         const apiKey = common.md5Hash(crypto.randomBytes(48).toString('hex') + Math.random());
 
-        const now = Math.floor(Date.now() / 1000);
+        const now = nowSec();
         const doc: Record<string, unknown> = {
             full_name: (full_name + "").trim(),
             username: trimmedEmail,
