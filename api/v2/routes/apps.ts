@@ -1,4 +1,5 @@
 import { createRequire } from 'module';
+import crypto from 'crypto';
 import express from 'express';
 import type { MemberPublic } from '../../../../web/src/shared/types/auth.js';
 import type { AppPublic } from '../../../../web/src/shared/types/app.js';
@@ -8,6 +9,7 @@ const require = createRequire(import.meta.url);
 const common = require('../../utils/common.js');
 const { validateUser } = require('../../utils/rights.js');
 const log = require('../../utils/log.js')('v2:apps');
+const plugins = require('../../../plugins/pluginManager.js');
 
 interface AppDocument {
     _id: ObjectId;
@@ -26,6 +28,15 @@ interface AppDocument {
     has_image: boolean;
     locked?: boolean;
     plugins?: Record<string, any>;
+}
+
+interface CreateAppRequest {
+    category?: string;
+    country?: string;
+    key?: string;
+    name: string;
+    timezone: string;
+    type: string;
 }
 
 const router = express.Router();
@@ -91,6 +102,88 @@ router.get('/:id', async(req, _res) => {
         log.e('GET /v2/apps/:id error: %j', err);
     }
 });
+
+router.post('/create', async(req, _res) => {
+    const params = req.countlyParams;
+
+    try {
+        await validateUser(params);
+        const { member } = params;
+
+        const { name, type, timezone, key, country, category } = req.body as CreateAppRequest;
+
+        if (!name || typeof name !== 'string' || name.trim().length === 0) {
+            return common.returnMessage(params, 400, 'Name is required');
+        }
+        if (!type || typeof type !== 'string') {
+            return common.returnMessage(params, 400, 'Type is required');
+        }
+        if (!timezone || typeof timezone !== 'string') {
+            return common.returnMessage(params, 400, 'Timezone is required');
+        }
+
+        const trimmedKey = typeof key === 'string' ? key.trim() : '';
+        const appKey = trimmedKey || common.sha1Hash(crypto.randomBytes(256).toString('hex'), true);
+
+        const now = Math.floor(Date.now() / 1000);
+        const newApp: Partial<AppDocument> = {
+            name: name,
+            key: appKey,
+            type,
+            timezone,
+            country: country || '',
+            category: category || '',
+            created_at: now,
+            edited_at: now,
+            owner: (member._id as ObjectId).toString(),
+            seq: 0,
+            has_image: false,
+        };
+
+        let insertedAppId: ObjectId;
+
+        try {
+            insertedAppId = await new Promise<ObjectId>((resolve, reject) => {
+                common.db.collection('apps').insert(newApp, (err: any, result: any) => {
+                    if (err || !result?.ops?.[0]?._id) {
+                        return reject(err || new Error('Insert failed'));
+                    }
+                    resolve(result.ops[0]._id);
+                });
+            });
+        }
+        catch (insertErr: any) {
+            if (insertErr?.code === 11000) {
+                return common.returnMessage(params, 409, 'App key already in use');
+            }
+            throw insertErr;
+        }
+
+        newApp._id = insertedAppId;
+
+        // Ensure indexes on app_users<id> — matches legacy createApp behavior
+        const appUsersCol = common.db.collection('app_users' + insertedAppId);
+        appUsersCol.ensureIndex({ ls: -1 }, { background: true }, () => {});
+        appUsersCol.ensureIndex({ uid: 1 }, { background: true }, () => {});
+        appUsersCol.ensureIndex({ sc: 1 }, { background: true }, () => {});
+        appUsersCol.ensureIndex({ lac: -1 }, { background: true }, () => {});
+        appUsersCol.ensureIndex({ tsd: 1 }, { background: true }, () => {});
+        appUsersCol.ensureIndex({ did: 1 }, { background: true }, () => {});
+
+        // Plugin hook so plugin-specific per-app collections get created
+        plugins.dispatch('/i/apps/create', {
+            params,
+            appId: insertedAppId,
+            data: newApp,
+        });
+
+        common.returnOutput(params, newApp);
+    }
+    catch (err) {
+        log.e('POST /v2/apps/create error: %j', err);
+    }
+});
+
 
 const formatApp = (app: AppDocument, role: 'admin' | 'user'): AppPublic => ({
     _id: app._id.toString(),
