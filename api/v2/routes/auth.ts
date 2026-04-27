@@ -92,6 +92,11 @@ router.post('/setup', async function(req: Request, res: Response, next: NextFunc
             return res.status(400).json(body);
         }
 
+        if (!/^[a-zA-Z0-9_.-]{3,50}$/.test(trimmedUsername)) {
+            const body: ApiError = { error: { code: 'VALIDATION_ERROR', message: 'Username must be 3-50 characters using letters, numbers, dot, underscore, or hyphen.' } };
+            return res.status(400).json(body);
+        }
+
         if (!trimmedEmail || !trimmedEmail.includes('@')) {
             const body: ApiError = { error: { code: 'VALIDATION_ERROR', message: 'A valid email address is required' } };
             return res.status(400).json(body);
