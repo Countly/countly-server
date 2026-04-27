@@ -78,7 +78,7 @@ router.post('/setup', async function(req: Request, res: Response, next: NextFunc
             return res.status(409).json(body);
         }
 
-        const { full_name, username, email, password, lang, createDemoApp } = req.body as SetupRequest;
+        const { full_name, username, email, password, lang } = req.body as SetupRequest;
         const trimmedEmail = typeof email === 'string' ? email.trim() : '';
         const trimmedUsername = typeof username === 'string' ? username.trim() : '';
 
@@ -166,7 +166,6 @@ router.post('/setup', async function(req: Request, res: Response, next: NextFunc
                 lang: member.lang as string | undefined,
                 api_key: member.api_key as string,
             },
-            createDemoApp: !!createDemoApp,
         };
 
         res.json({ data: response });
