@@ -1,4 +1,7 @@
 ## Version 25.03.X
+Fixes:
+- [core] Added a script to create missing segment and segment values for events
+
 Enterprise Fixes:
 - [drill] Add query hint based on default indexes
 
@@ -7,7 +10,7 @@ Enterprise Fixes:
 - [flow] Optimize timeline period query
 
 Dependencies:
-- Bump follow-redirects from 1.15.11 to 1.16.0 
+- Bump follow-redirects from 1.15.11 to 1.16.0
 - Bump get-random-values from 4.1.1 to 4.1.2
 - Revert @vitejs/plugin-legacy from 8.0.1 to 7.2.1
 
@@ -40,13 +43,13 @@ Dependencies:
 - Bump basic-ftp from 5.2.0 to 5.2.1
 - Bump brace-expansion from 1.1.12 to 1.1.13
 - Bump brace-expansion from 2.0.2 to 2.0.3 in /plugins/hooks
-- Bump cypress from 15.13.0 to 15.13.1 in /ui-tests 
+- Bump cypress from 15.13.0 to 15.13.1 in /ui-tests
 - Bump docker/login-action from 4.0.0 to 4.1.0 in the actions group
 - Bump file-type and jimp
 - Bump lodash from 4.17.23 to 4.18.1
 - Bump nodemailer from 8.0.2 to 8.0.5
 - Bump path-to-regexp from 0.1.12 to 0.1.13
-- Bump pdfjs-dist from 5.5.207 to 5.6.205 in /ui-tests 
+- Bump pdfjs-dist from 5.5.207 to 5.6.205 in /ui-tests
 - Bump picomatch from 4.0.3 to 4.0.4
 - Bump rate-limiter-flexible from 9.1.1 to 11.0.0
 - Bump sass from 1.98.0 to 1.99.0
