@@ -60,7 +60,7 @@ app.use(function(_req: Request, res: Response, next: NextFunction) {
     }
 
     if (_req.method === 'OPTIONS') {
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         return res.sendStatus(200);
     }
