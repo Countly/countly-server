@@ -4,6 +4,7 @@ import express from 'express';
 import type { MemberPublic } from '../../../../web/src/shared/types/auth.js';
 import type { AppPublic } from '../../../../web/src/shared/types/app.js';
 import type { ObjectId } from 'mongodb';
+import { nowSec } from '../services/utils/time.ts';
 
 const require = createRequire(import.meta.url);
 const common = require('../../utils/common.js');
@@ -125,7 +126,7 @@ router.post('/create', async(req, _res) => {
         const trimmedKey = typeof key === 'string' ? key.trim() : '';
         const appKey = trimmedKey || common.sha1Hash(crypto.randomBytes(256).toString('hex'), true);
 
-        const now = Math.floor(Date.now() / 1000);
+        const now = nowSec();
         const newApp: Partial<AppDocument> = {
             name: name,
             key: appKey,

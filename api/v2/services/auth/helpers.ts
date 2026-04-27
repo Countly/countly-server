@@ -1,9 +1,7 @@
+export { nowSec } from '../utils/time.ts';
+
 export function escapeRegEx(string: string): string {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-export function nowSec(): number {
-    return Math.round(Date.now() / 1000);
 }
 
 export function stripPassword(input: unknown): Record<string, unknown> {
