@@ -78,11 +78,17 @@ router.post('/setup', async function(req: Request, res: Response, next: NextFunc
             return res.status(409).json(body);
         }
 
-        const { full_name, email, password, lang, createDemoApp } = req.body as SetupRequest;
+        const { full_name, username, email, password, lang, createDemoApp } = req.body as SetupRequest;
         const trimmedEmail = typeof email === 'string' ? email.trim() : '';
+        const trimmedUsername = typeof username === 'string' ? username.trim() : '';
 
         if (!full_name || typeof full_name !== 'string' || full_name.trim().length === 0) {
             const body: ApiError = { error: { code: 'VALIDATION_ERROR', message: 'Full name is required' } };
+            return res.status(400).json(body);
+        }
+
+        if (!trimmedUsername) {
+            const body: ApiError = { error: { code: 'VALIDATION_ERROR', message: 'Username is required' } };
             return res.status(400).json(body);
         }
 
@@ -111,7 +117,7 @@ router.post('/setup', async function(req: Request, res: Response, next: NextFunc
         const now = nowSec();
         const doc: Record<string, unknown> = {
             full_name: (full_name + "").trim(),
-            username: trimmedEmail,
+            username: trimmedUsername,
             password: hashedPassword,
             email: trimmedEmail,
             global_admin: true,
