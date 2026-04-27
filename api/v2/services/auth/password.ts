@@ -74,7 +74,7 @@ export async function verifyCredentials(usernameOrEmail: string, password: strin
         common.db.collection('members').findOne(
             {
                 $or: [
-                    { username: trimmedUsernameOrEmail },
+                    { username: { $regex: `^${escapeRegEx(trimmedUsernameOrEmail)}$`, $options: 'i' }},
                     { email: { $regex: `^${escapeRegEx(trimmedUsernameOrEmail)}$`, $options: 'i' }}
                 ]
             },
