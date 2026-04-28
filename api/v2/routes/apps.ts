@@ -40,6 +40,16 @@ interface CreateAppRequest {
     type: string;
 }
 
+// Indexes ensured on app_users<id> at app creation. Matches legacy createApp.
+const APP_USERS_INDEX_SPECS: Array<Record<string, 1 | -1>> = [
+    { ls: -1 },
+    { uid: 1 },
+    { sc: 1 },
+    { lac: -1 },
+    { tsd: 1 },
+    { did: 1 },
+];
+
 const router = express.Router();
 
 // GET /v2/apps - list apps the current user has access to
@@ -162,14 +172,10 @@ router.post('/create', async(req, _res) => {
 
         newApp._id = insertedAppId;
 
-        // Ensure indexes on app_users<id> — matches legacy createApp behavior
         const appUsersCol = common.db.collection('app_users' + insertedAppId);
-        appUsersCol.ensureIndex({ ls: -1 }, { background: true }, () => {});
-        appUsersCol.ensureIndex({ uid: 1 }, { background: true }, () => {});
-        appUsersCol.ensureIndex({ sc: 1 }, { background: true }, () => {});
-        appUsersCol.ensureIndex({ lac: -1 }, { background: true }, () => {});
-        appUsersCol.ensureIndex({ tsd: 1 }, { background: true }, () => {});
-        appUsersCol.ensureIndex({ did: 1 }, { background: true }, () => {});
+        APP_USERS_INDEX_SPECS.forEach((spec) => {
+            appUsersCol.ensureIndex(spec, { background: true }, () => {});
+        });
 
         // Plugin hook so plugin-specific per-app collections get created
         plugins.dispatch('/i/apps/create', {
