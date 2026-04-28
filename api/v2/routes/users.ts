@@ -1,5 +1,6 @@
 import { createRequire } from 'module';
 import express from 'express';
+import { formatMember } from '../services/members.ts';
 
 const require = createRequire(import.meta.url);
 const common = require('../../utils/common.js');
@@ -11,19 +12,6 @@ const ALLOWED_LANGS = ['en', 'tr', 'cs'] as const;
 type AllowedLang = (typeof ALLOWED_LANGS)[number];
 
 const router = express.Router();
-
-function formatMember(member: any, langOverride?: string) {
-    return {
-        _id: member._id.toString(),
-        full_name: member.full_name,
-        username: member.username,
-        email: member.email,
-        global_admin: member.global_admin === true,
-        lang: langOverride ?? member.lang,
-        api_key: member.api_key,
-        permission: member.permission,
-    };
-}
 
 router.get('/me', async(req, _res) => {
     const params = req.countlyParams;

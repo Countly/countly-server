@@ -84,3 +84,22 @@ export function insertMember(doc: Record<string, unknown>): Promise<Record<strin
         );
     });
 }
+
+/**
+ * Wire-format projection of a member doc for v2 responses.
+ * Used by /v2/users/me, /v2/users/me PATCH, and /v2/auth/setup.
+ * Pass `langOverride` after a write that just mutated the lang field
+ * to surface the new value without re-reading the doc.
+ */
+export function formatMember(member: any, langOverride?: string) {
+    return {
+        _id: member._id.toString(),
+        full_name: member.full_name,
+        username: member.username,
+        email: member.email,
+        global_admin: member.global_admin === true,
+        lang: langOverride ?? member.lang,
+        api_key: member.api_key,
+        permission: member.permission,
+    };
+}

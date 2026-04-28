@@ -21,6 +21,7 @@ import {
     countMembers,
     findMemberByEmail,
     findMemberById,
+    formatMember,
     insertMember,
     killOtherSessionsForUser,
     validatePassword,
@@ -482,15 +483,7 @@ router.post('/setup', async function(req: Request, res: Response, next: NextFunc
 
         const response: SetupResponse = {
             token: accessToken,
-            member: {
-                _id: (member._id as { toString(): string }).toString(),
-                full_name: member.full_name as string,
-                username: member.username as string,
-                email: member.email as string,
-                global_admin: true,
-                lang: member.lang as string | undefined,
-                api_key: member.api_key as string,
-            },
+            member: formatMember(member),
         };
 
         res.json({ data: response });
