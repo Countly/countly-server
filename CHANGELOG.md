@@ -2,9 +2,11 @@
 Enterprise Fixes:
 - [drill] Add query hint based on default indexes
 
+
 ## Version 25.03.43
 Enterprise Fixes:
 - [flow] Optimize timeline period query
+- [journey_engine] Maker checker approver
 
 Dependencies:
 - Bump follow-redirects from 1.15.11 to 1.16.0 
