@@ -9,7 +9,7 @@ const log = common.log('hooks:api');
 const _ = require('lodash');
 const utils = require('./utils');
 const rights = require('../../../api/utils/rights');
-const ssrfProtection = require('./ssrf-protection');
+const ssrfProtection = require('../../../api/utils/ssrf-protection');
 
 const FEATURE_NAME = 'hooks';
 

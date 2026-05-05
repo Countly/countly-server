@@ -22,6 +22,7 @@ const log = require('./log.js')('core:api');
 const fs = require('fs');
 var countlyFs = require('./countlyFs.js');
 var path = require('path');
+var ssrfProtection = require('./ssrf-protection.js');
 const validateUserForWriteAPI = validateUser;
 const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
@@ -3302,8 +3303,10 @@ function validateRedirect(ob) {
             newPath += "?";
         }
 
+        var fullUri = app.redirect_url + newPath + '&ip_address=' + params.ip_address;
+
         var opts = {
-            uri: app.redirect_url + newPath + '&ip_address=' + params.ip_address,
+            uri: fullUri,
             method: 'GET'
         };
 
@@ -3317,36 +3320,52 @@ function validateRedirect(ob) {
             }
         }
 
-        request(opts, function(error, response, body) {
-            var code = 400;
-            var message = "Redirect error. Tried to redirect to:" + app.redirect_url;
-
-            if (response && response.statusCode) {
-                code = response.statusCode;
-            }
-
-
-            if (response && response.body) {
-                try {
-                    var resp = JSON.parse(response.body);
-                    message = resp.result || resp;
+        // SSRF guard: validate the resolved URL against the shared block list
+        // (private/loopback/cloud-metadata) before issuing the request, and
+        // disable redirects in the underlying client. The redirect_url is set
+        // by app admins and would otherwise let any app-admin pivot the SDK
+        // ingestion stream into internal services or a proxy/harvest endpoint.
+        ssrfProtection.isUrlSafe(opts.uri).then(function(check) {
+            if (!check.safe) {
+                log.e("Redirect SSRF guard blocked %s: %s", opts.uri, check.error);
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
+                    common.returnMessage(params, 400, 'Redirect blocked by SSRF protection: ' + check.error);
                 }
-                catch (e) {
-                    if (response.result) {
-                        message = response.result;
+                return;
+            }
+            request(ssrfProtection.getSsrfSafeOptions(opts), function(error, response, body) {
+                var code = 400;
+                var message = "Redirect error. Tried to redirect to:" + app.redirect_url;
+
+                if (response && response.statusCode) {
+                    code = response.statusCode;
+                }
+
+
+                if (response && response.body) {
+                    try {
+                        var resp = JSON.parse(response.body);
+                        message = resp.result || resp;
                     }
-                    else {
-                        message = response.body;
+                    catch (e) {
+                        if (response.result) {
+                            message = response.result;
+                        }
+                        else {
+                            message = response.body;
+                        }
                     }
                 }
-            }
-            if (error) { //error
-                log.e("Redirect error", error, body, opts, app, params);
-            }
+                if (error) { //error
+                    log.e("Redirect error", error, body, opts, app, params);
+                }
 
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
-                common.returnMessage(params, code, message);
-            }
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
+                    common.returnMessage(params, code, message);
+                }
+            });
+        }).catch(function(e) {
+            log.e("Redirect SSRF guard error", e);
         });
         params.cancelRequest = "Redirected: " + app.redirect_url;
         params.waitForResponse = false;
