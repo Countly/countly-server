@@ -1100,8 +1100,14 @@ usersApi.fetchNotes = async function(params) {
     const orderByKey = {'3': 'noteType', '2': 'ts'};
     let sortBy = {};
     if (params.qstring.sSearch) {
+        // Cap input length and escape regex metacharacters before
+        // constructing the RegExp. Without this, a pattern like "^(a+)+$"
+        // can stall the worker (and the per-collection Mongo regex scan)
+        // for any caller with notes:read.
+        var rawSearch = (params.qstring.sSearch + "").slice(0, 256);
+        var escapedSearch = rawSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         /*eslint-disable */
-        query.note = {$regex: new RegExp(params.qstring.sSearch, "i")};
+        query.note = {$regex: new RegExp(escapedSearch, "i")};
         /*eslint-enable */
     }
     if (params.qstring.iSortCol_0 && params.qstring.iSortCol_0 !== '0') {
