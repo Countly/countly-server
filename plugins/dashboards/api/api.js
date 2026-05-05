@@ -122,7 +122,14 @@ plugins.setConfigs("dashboards", {
                     memberId = member._id + "";
 
                 common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
-                    if (!err && dashboard) {
+                    if (err || !dashboard) {
+                        // Return the same response shape as the access-denied
+                        // branch below so an attacker can't distinguish
+                        // "exists but no access" from "doesn't exist".
+                        // Without this, dashboard IDs were enumerable.
+                        return common.returnOutput(params, {error: true, dashboard_access_denied: true});
+                    }
+                    {
                         async.parallel([
                             hasViewAccessToDashboard.bind(null, params.member, dashboard),
                             hasEditAccessToDashboard.bind(null, params.member, dashboard),
@@ -198,9 +205,6 @@ plugins.setConfigs("dashboards", {
                                 common.returnOutput(params, output);
                             });
                         });
-                    }
-                    else {
-                        common.returnMessage(params, 404, "Dashboard does not exist");
                     }
 
                     /**
