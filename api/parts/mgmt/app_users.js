@@ -235,8 +235,18 @@ usersApi.delete = function(app_id, query, params, callback) {
                         //deleting userimages(if they exist);
                         if (res[0].picture) {
                             for (let i = 0;i < res[0].picture.length; i++) {
-                                //remove /userimages/ 
+                                //remove /userimages/
                                 let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
+                                // The SDK populates user.picture; an attacker who controls a
+                                // device can set it to "/userimages/../../../etc/whatever".
+                                // path.resolve would then escape the userimages dir and the
+                                // server would unlink an arbitrary file when the user is
+                                // deleted. Strip to basename and reject anything that still
+                                // contains a separator after the strip.
+                                id = path.basename(id);
+                                if (!id || id === "." || id === ".." || id.indexOf("/") !== -1 || id.indexOf("\\") !== -1) {
+                                    continue;
+                                }
                                 var pp = path.resolve(__dirname, './../../../frontend/express/public/userimages/' + id);
                                 countlyFs.deleteFile("userimages", pp, {id: id}, function(err1) {
                                     if (err1) {
