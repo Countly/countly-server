@@ -232,6 +232,18 @@ appsApi.createApp = async function(params) {
             'checksum_salt': {
                 'required': false,
                 'type': 'String'
+            },
+            'redirect_url': {
+                'required': false,
+                'type': 'String'
+            },
+            'app_domain': {
+                'required': false,
+                'type': 'String'
+            },
+            'description': {
+                'required': false,
+                'type': 'String'
             }
         },
         newApp = {};
@@ -242,11 +254,9 @@ appsApi.createApp = async function(params) {
         return false;
     }
 
-    for (let i in params.qstring.args) {
-        if (typeof newApp[i] === "undefined") {
-            newApp[i] = params.qstring.args[i];
-        }
-    }
+    // Previously a catch-all loop copied EVERY field from params.qstring.args
+    // into newApp. That let the caller pre-set fields like _id, seq, plugins.*
+    // on insert. We now drop the catch-all and rely on the schema above.
 
     processAppProps(newApp);
 
@@ -351,6 +361,22 @@ appsApi.updateApp = function(params) {
             'locked': {
                 'required': false,
                 'type': 'Boolean'
+            },
+            // App admins are allowed to manage these app-level settings via
+            // the regular update flow. SSRF protection on redirect_url is
+            // applied at request time (api/utils/ssrf-protection.js used in
+            // validateRedirect) — see plugins/hooks/api/ssrf-protection.js.
+            'redirect_url': {
+                'required': false,
+                'type': 'String'
+            },
+            'app_domain': {
+                'required': false,
+                'type': 'String'
+            },
+            'description': {
+                'required': false,
+                'type': 'String'
             }
         },
         updatedApp = {};
@@ -377,11 +403,17 @@ appsApi.updateApp = function(params) {
         return false;
     }
 
-    for (var i in params.qstring.args) {
-        if (typeof updatedApp[i] === "undefined" && i !== "app_id") {
-            updatedApp[i] = params.qstring.args[i];
-        }
-    }
+    // Previously this loop copied EVERY field from params.qstring.args back
+    // into updatedApp (excluding only "app_id"). That allowed an app admin to
+    // set arbitrary fields on the app document — owner, _id, seq, plugins.*,
+    // last_data, paused, created_at, etc. — bypassing per-flow validators
+    // (e.g. plugins.* should go through /i/apps/update/plugins/<name>; key
+    // and salt rotation should go through resetApp / dedicated flows).
+    //
+    // We now drop the catch-all and rely solely on the schema above. Any
+    // additional field a plugin needs the dashboard to set must be added to
+    // argProps explicitly (or, for plugin-namespaced settings, routed through
+    // /i/apps/update/plugins/<name>).
 
     if (Object.keys(updatedApp).length === 0) {
         common.returnMessage(params, 200, 'Nothing changed');
