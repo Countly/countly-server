@@ -11,6 +11,16 @@ var log = common.log('star-rating:frontend');
 // via path component shenanigans (no path separators, no dots).
 var PREVIEW_NAME_RE = /^[a-zA-Z0-9_-]{1,64}$/;
 
+// File extension → response Content-Type for /star-rating/images/*.
+// Upload side restricts saved files to png/jpg/gif; .jpeg kept for any
+// legacy data uploaded before that restriction was tightened.
+var STAR_RATING_EXT_TO_MIME = {
+    "png": "image/png",
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "gif": "image/gif"
+};
+
 (function(plugin) {
     plugin.init = function(app) {
 
@@ -80,6 +90,16 @@ var PREVIEW_NAME_RE = /^[a-zA-Z0-9_-]{1,64}$/;
                 res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
                 return;
             }
+            // Derive Content-Type from the requested filename extension.
+            // Upload side guarantees the saved extension matches the
+            // sniffed format; this just ensures the response Content-Type
+            // matches the actual bytes (rather than always claiming png).
+            var pathExt = (req.params[0].split(".").pop() || "").toLowerCase();
+            var responseMime = STAR_RATING_EXT_TO_MIME[pathExt];
+            if (!responseMime) {
+                res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
+                return;
+            }
             countlyFs.getStats("star-rating", imagePath, {id: "" + req.params[0]}, function(statsErr, stats) {
                 if (statsErr || !stats || !stats.size) {
                     res.sendFile(path.resolve(__dirname + './../../../frontend/express/public/images/default_app_icon.png'));
@@ -108,7 +128,7 @@ var PREVIEW_NAME_RE = /^[a-zA-Z0-9_-]{1,64}$/;
                                 'Last-Modified': stats.mtime.toUTCString(),
                                 'Server': 'nginx/1.10.3 (Ubuntu)',
                                 'X-Powered-By': 'Express',
-                                'Content-Type': 'image/png',
+                                'Content-Type': responseMime,
                                 'Content-Length': stats.size,
                                 'X-Content-Type-Options': 'nosniff',
                                 'Content-Security-Policy': "sandbox; default-src 'none'",

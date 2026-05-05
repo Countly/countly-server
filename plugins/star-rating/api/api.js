@@ -287,16 +287,17 @@ function uploadFile(myfile, id, callback) {
             try {
                 var pp = path.resolve(__dirname, './../images/' + id + "." + detectedExt);
                 countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + detectedExt, writeMode: "overwrite" }, function(err3) {
+                    fs.unlink(tmp_path, function() { });
                     if (err3) {
                         callback("Failed to upload image");
                     }
                     else {
-                        fs.unlink(tmp_path, function() { });
                         callback(true, id + "." + detectedExt);
                     }
                 });
             }
             catch (SyntaxError) {
+                fs.unlink(tmp_path, function() { });
                 callback("Failed to upload image");
             }
         });
@@ -377,11 +378,8 @@ function uploadFile(myfile, id, callback) {
             }
             else {
                 fs.readFile(tmp_path, (err, data) => {
-                    if (err) {
-                        reject(Error("feedback.imagee-error"));
-                        return;
-                    }
-                    if (!data) {
+                    if (err || !data) {
+                        fs.unlink(tmp_path, function() {});
                         reject(Error("feedback.imagee-error"));
                         return;
                     }
@@ -406,6 +404,7 @@ function uploadFile(myfile, id, callback) {
                         });
                     }
                     catch (SyntaxError) {
+                        fs.unlink(tmp_path, function() {});
                         reject(Error("feedback.imagee-error"));
                     }
                 });
@@ -463,7 +462,11 @@ function uploadFile(myfile, id, callback) {
 
         var parsed = imageUtils.parseFeedbackLogoName(requestedName);
         if (!parsed.valid || !fileObj) {
-            common.returnMessage(params, 400, "feedback.invalid-name");
+            // Reuse the existing localized "invalid format" key rather than
+            // adding a new key that would need translating across 25+ locale
+            // files. From the user's perspective both conditions (bad name
+            // shape, missing file) are "your upload was malformed, try again".
+            common.returnMessage(params, 400, "feedback.imagef-error");
             return true;
         }
 
