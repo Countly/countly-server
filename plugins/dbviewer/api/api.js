@@ -26,7 +26,9 @@ const whiteListedAggregationStages = {
     "$facet": true,
     "$fill": true,
     "$geoNear": true,
-    "$graphLookup": true,
+    // "$graphLookup": false — removed: lets attacker pull joined documents from any collection in the same DB,
+    //                        bypassing the per-collection access check. Use $lookup instead if cross-collection
+    //                        joins are ever needed (currently also disallowed).
     "$group": true,
     //"$indexStats": false,
     "$limit": true,
