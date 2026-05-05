@@ -1791,8 +1791,29 @@ const processRequest = (params) => {
                  */
                 case 'download': {
                     if (paths[4] && paths[4] !== '') {
+                        // Reject filenames containing path separators / traversal
+                        // characters before any further parsing. The legitimate
+                        // shape is "appUser_<24hex>_<uid>(.json|.tar.gz)" or a
+                        // task-result id.
+                        if (typeof paths[4] !== 'string' || /[^A-Za-z0-9_.-]/.test(paths[4])) {
+                            common.returnMessage(params, 400, 'Invalid filename');
+                            return false;
+                        }
                         validateUserForRead(params, function() {
                             var filename = paths[4].split('.');
+                            // Cross-tenant guard: an appUser_<app_id>_<uid> export
+                            // belongs to <app_id>. validateUserForRead only verifies
+                            // the caller has read on params.qstring.app_id (which
+                            // can be any app they have access to), so without this
+                            // check, a member of app A could pull exports owned by
+                            // app B simply by guessing the filename.
+                            if (filename[0].startsWith("appUser_")) {
+                                var nameParts = filename[0].split('_');
+                                if (nameParts.length >= 2 && !params.member.global_admin && (params.qstring.app_id + "") !== (nameParts[1] + "")) {
+                                    common.returnMessage(params, 403, 'Not allowed (export belongs to a different app)');
+                                    return false;
+                                }
+                            }
                             new Promise(function(resolve) {
                                 if (filename[0].startsWith("appUser_")) {
                                     filename[0] = filename[0] + '.tar.gz';
