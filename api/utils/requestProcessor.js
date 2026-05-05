@@ -2158,9 +2158,12 @@ const processRequest = (params) => {
                     }, params);
                     break;
                 case 'plugins':
-                    validateUserForMgmtReadAPI(() => {
+                    // Listing installed plugins (paid/enterprise modules
+                    // included) is sensitive recon for attackers. Restrict
+                    // to global admins.
+                    validateUserForGlobalAdmin(params, () => {
                         common.returnOutput(params, plugins.getPlugins());
-                    }, params);
+                    });
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -3122,7 +3125,12 @@ const processRequest = (params) => {
             case '/i/cms': {
                 switch (paths[3]) {
                 case 'save_entries':
-                    validateUserForWrite(params, countlyApi.mgmt.cms.saveEntries);
+                    // Restrict CMS cache writes to global admins. The CMS
+                    // entries seed help/onboarding content rendered to other
+                    // dashboard users; before this, validateUserForWrite (an
+                    // alias of validateUser) allowed any logged-in user to
+                    // pollute the cache.
+                    validateUserForGlobalAdmin(params, countlyApi.mgmt.cms.saveEntries);
                     break;
                 case 'clear':
                     validateUserForWrite(countlyApi.mgmt.cms.clearCache, params);
