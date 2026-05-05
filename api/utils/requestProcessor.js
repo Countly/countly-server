@@ -2285,6 +2285,17 @@ const processRequest = (params) => {
                                 if (err) {
                                     common.returnMessage(params, 400, err);
                                 }
+                                else if (!data) {
+                                    common.returnMessage(params, 404, 'Export not found');
+                                }
+                                else if (!taskmanager.isAuthorizedFor(params.member, data)) {
+                                    // Without this check, validateRead only verifies the user has
+                                    // 'core:read' on the qstring app_id — which can be any app
+                                    // they have access to — while the long_tasks document itself
+                                    // (and its on-disk export) belongs to potentially a different
+                                    // app or another user's tenant scope. Cross-app data leak.
+                                    common.returnMessage(params, 403, 'Not allowed');
+                                }
                                 else {
                                     var filename = data.report_name;
                                     var type = filename.split(".");
