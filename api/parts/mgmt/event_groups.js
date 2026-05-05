@@ -46,7 +46,16 @@ const create = (params) => {
         return false;
     }
     const _id = `${ID_PREFIX}${crypto.createHash('md5').update(`${JSON.stringify(params.qstring.args.source_events)}${params.qstring.app_id}${Date.now()}`).digest('hex')}`;
-    common.db.collection(COLLECTION_NAME).insert({...params.qstring.args, _id}, (error, result) =>{
+    // Insert only the validated fields plus the server-side _id and app_id.
+    // The previous spread of params.qstring.args allowed callers to inject
+    // any field (including a forged app_id) into the inserted document.
+    const doc = {_id, app_id: params.qstring.app_id};
+    for (const field of ['name', 'source_events', 'description', 'display_map', 'status', 'order']) {
+        if (Object.prototype.hasOwnProperty.call(obj, field)) {
+            doc[field] = obj[field];
+        }
+    }
+    common.db.collection(COLLECTION_NAME).insert(doc, (error, result) =>{
         if (error) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;
@@ -58,13 +67,33 @@ const create = (params) => {
 };
 
 /**
+ * Whitelist of fields a caller may set/update on an event_group document.
+ * Anything else (notably _id, app_id) is stripped from $set.
+ */
+const UPDATABLE_FIELDS = ['name', 'source_events', 'description', 'display_map', 'status', 'order'];
+
+/**
  * Event Groups CRUD - The function updating which created `Event Groups` data by `_id`
- * @param {Object} params - 
+ * @param {Object} params -
+ * @returns {boolean|undefined} false on validation failure, otherwise undefined
  */
 const update = (params) => {
     if (params.qstring.args) {
         params.qstring.args = JSON.parse(params.qstring.args);
-        common.db.collection(COLLECTION_NAME).updateOne({'_id': params.qstring.args._id, app_id: params.qstring.app_id}, {$set: params.qstring.args}, (error) =>{
+        // Strip args down to the whitelisted fields. Without this, args was
+        // passed as $set verbatim — letting an attacker rewrite app_id (move
+        // an event group across tenants) or set arbitrary unscoped fields.
+        const updateSet = {};
+        for (const field of UPDATABLE_FIELDS) {
+            if (Object.prototype.hasOwnProperty.call(params.qstring.args, field)) {
+                updateSet[field] = params.qstring.args[field];
+            }
+        }
+        if (Object.keys(updateSet).length === 0) {
+            common.returnMessage(params, 400, 'No updatable fields provided');
+            return false;
+        }
+        common.db.collection(COLLECTION_NAME).updateOne({'_id': params.qstring.args._id, app_id: params.qstring.app_id}, {$set: updateSet}, (error) =>{
             if (error) {
                 common.returnMessage(params, 500, `error: ${error}`);
                 return false;
