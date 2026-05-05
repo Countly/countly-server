@@ -109,7 +109,10 @@ var PREVIEW_NAME_RE = /^[a-zA-Z0-9_-]{1,64}$/;
                                 'Server': 'nginx/1.10.3 (Ubuntu)',
                                 'X-Powered-By': 'Express',
                                 'Content-Type': 'image/png',
-                                'Content-Length': stats.size
+                                'Content-Length': stats.size,
+                                'X-Content-Type-Options': 'nosniff',
+                                'Content-Security-Policy': "sandbox; default-src 'none'",
+                                'Content-Disposition': 'inline'
                             });
                             stream.pipe(res);
                         }

@@ -53,7 +53,8 @@ var log = common.log('dashboards:frontend');
                         'Date': new Date().toUTCString(),
                         'Last-Modified': stats.mtime.toUTCString(),
                         'Content-Type': 'image/png',
-                        'Content-Length': stats.size
+                        'Content-Length': stats.size,
+                        'X-Content-Type-Options': 'nosniff'
                     });
                     stream.pipe(res);
                 });

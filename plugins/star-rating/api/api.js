@@ -244,6 +244,16 @@ function create_upload_dir(callback) {
     });
 }
 
+// Map sniffed image MIME → file extension to use on disk. Determines
+// the saved filename and the URL component returned to the caller.
+// Restricted to png/jpeg/gif to preserve the original /i/feedback/logo
+// contract (no widening to webp here).
+var SNIFFED_TYPE_TO_EXT = {
+    "image/png": "png",
+    "image/jpeg": "jpg",
+    "image/gif": "gif"
+};
+
 /**
 * Used for file upload
 * @param {object} myfile - file object(if empty - returns)
@@ -256,48 +266,37 @@ function uploadFile(myfile, id, callback) {
         return;
     }
     var tmp_path = myfile.path;
-    var type = myfile.type;
-    myfile.name = myfile.name || "png";
-    if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
-        fs.unlink(tmp_path, function() { });
-        callback("Invalid image format. Must be png or jpeg");
-        return;
-    }
-
-    var allowedExtensions = ["gif", "jpeg", "jpg", "png"];
-    var ext = myfile.name.split(".");
-    ext = ext[ext.length - 1];
-
-    if (allowedExtensions.indexOf(ext) === -1) {
-        callback("Invalid file extension. Must be .png, .jpg, .gif or .jpeg");
-        return;
-    }
 
     create_upload_dir(function() {
         fs.readFile(tmp_path, (err, data) => {
-            if (err) {
+            if (err || !data) {
+                fs.unlink(tmp_path, function() { });
                 callback("Failed to upload image");
                 return;
             }
-            //convert file to data
-            if (data) {
-                try {
-                    var pp = path.resolve(__dirname, './../images/' + id + "." + ext);
-                    countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + ext, writeMode: "overwrite" }, function(err3) {
-                        if (err3) {
-                            callback("Failed to upload image");
-                        }
-                        else {
-                            fs.unlink(tmp_path, function() { });
-                            callback(true, id + "." + ext);
-                        }
-                    });
-                }
-                catch (SyntaxError) {
-                    callback("Failed to upload image");
-                }
+            // Detect format from magic bytes; never trust myfile.type or
+            // myfile.name. Anything not in the allowlist (png/jpeg/gif)
+            // is rejected.
+            var detectedType = imageUtils.sniffImageType(data);
+            var detectedExt = detectedType && SNIFFED_TYPE_TO_EXT[detectedType];
+            if (!detectedExt) {
+                fs.unlink(tmp_path, function() { });
+                callback("Invalid image format. Must be png, jpeg, or gif");
+                return;
             }
-            else {
+            try {
+                var pp = path.resolve(__dirname, './../images/' + id + "." + detectedExt);
+                countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + detectedExt, writeMode: "overwrite" }, function(err3) {
+                    if (err3) {
+                        callback("Failed to upload image");
+                    }
+                    else {
+                        fs.unlink(tmp_path, function() { });
+                        callback(true, id + "." + detectedExt);
+                    }
+                });
+            }
+            catch (SyntaxError) {
                 callback("Failed to upload image");
             }
         });
