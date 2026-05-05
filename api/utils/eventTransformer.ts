@@ -22,6 +22,8 @@ interface DrillEventDocument {
     sg?: Record<string, unknown>;
     up_extra?: Record<string, unknown>;
     lu?: number | Date | string;
+    /** PII raw delta: original values for fields that were obfuscated or blocked. Keys match drill event field names (e.g. sg, up). Only present when PII obfuscation occurred. */
+    raw?: Record<string, unknown>;
     [key: string]: unknown;
 }
 
@@ -44,6 +46,8 @@ interface KafkaEventFormat {
     sg?: Record<string, unknown>;
     up_extra?: Record<string, unknown>;
     lu?: number;
+    /** PII raw delta: original values for fields that were obfuscated or blocked. Only present when PII obfuscation occurred. Ignored by the drill_events ClickHouse table (no matching column); consumed by drill_events_raw via a dedicated connector + SMT. */
+    raw?: Record<string, unknown>;
 }
 
 /**
@@ -102,6 +106,9 @@ function transformToKafkaEventFormat(doc: DrillEventDocument | null | undefined)
     }
     if (doc.up_extra && typeof doc.up_extra === 'object') {
         result.up_extra = doc.up_extra;
+    }
+    if (doc.raw && typeof doc.raw === 'object') {
+        result.raw = doc.raw;
     }
 
     // Optional date field

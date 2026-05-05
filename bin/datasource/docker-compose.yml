@@ -36,7 +36,9 @@ services:
 
   # Kafka Connect with ClickHouse connector
   kafka-connect:
-    image: countly/kafka-connect-clickhouse:latest
+    build:
+      context: .
+      dockerfile: Dockerfile-kafka-connect-clickhouse-dev
     container_name: kafka-connect
     depends_on:
       kafka:
@@ -80,6 +82,9 @@ services:
       CONNECT_CONSUMER_MAX_PARTITION_FETCH_BYTES: "52428800"     # 50MB per partition
       CONNECT_PRODUCER_MAX_REQUEST_SIZE: "52428800"              # 50MB producer request
       CONNECT_PRODUCER_BUFFER_MEMORY: "67108864"                 # 64MB producer buffer
+      # Small heap to force frequent GC — for benchmarking SMT GC overhead only
+      #KAFKA_HEAP_OPTS: "-Xms128M -Xmx512M"
+      #KAFKA_JVM_PERFORMANCE_OPTS: "-server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -Xlog:gc*:file=/tmp/gc.log:time,level,tags:filecount=1,filesize=50m"
     networks:
       - kafka-network
 
@@ -130,7 +135,7 @@ services:
           sleep 5
         done
         echo 'Connect is ready, creating connector...'
-        
+
         curl -X PUT -H 'Content-Type: application/json' \
           -d '{
             "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
@@ -154,13 +159,45 @@ services:
             "errors.deadletterqueue.topic.replication.factor": "1"
           }' \
           http://kafka-connect:8083/connectors/clickhouse-sink/config
-        
-        if [ $? -eq 0 ]; then
-          echo 'Connector created successfully with DLQ!'
-        else
-          echo 'Failed to create connector'
+
+        if [ $? -ne 0 ]; then
+          echo 'Failed to create clickhouse-sink connector'
           exit 1
         fi
+        echo 'clickhouse-sink connector created successfully!'
+
+        echo 'Creating clickhouse-sink-raw connector...'
+        curl -X PUT -H 'Content-Type: application/json' \
+          -d '{
+            "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
+            "tasks.max": "1",
+            "topics": "drill-events",
+            "hostname": "clickhouse",
+            "port": "8123",
+            "ssl": "false",
+            "database": "countly_drill",
+            "username": "default",
+            "password": "",
+            "topic2TableMap": "drill-events=drill_events_raw",
+            "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+            "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+            "value.converter.schemas.enable": "false",
+            "errors.tolerance": "all",
+            "errors.retry.timeout": "300000",
+            "errors.retry.delay.max.ms": "10000",
+            "errors.deadletterqueue.topic.name": "drill-events-dlq",
+            "errors.deadletterqueue.context.headers.enable": "true",
+            "errors.deadletterqueue.topic.replication.factor": "1",
+            "transforms": "extractRaw",
+            "transforms.extractRaw.type": "dev.you.smt.RawEventExtractor"
+          }' \
+          http://kafka-connect:8083/connectors/clickhouse-sink-raw/config
+
+        if [ $? -ne 0 ]; then
+          echo 'Failed to create clickhouse-sink-raw connector'
+          exit 1
+        fi
+        echo 'clickhouse-sink-raw connector created successfully!'
     restart: "no"
 
   # Kafka UI for monitoring
@@ -216,7 +253,7 @@ services:
           sleep 2
         done
         echo 'MongoDB is ready, initializing replica set...'
-        
+
         mongosh --host mongodb:27017 --eval '
           try {
             rs.status();
@@ -232,7 +269,7 @@ services:
             console.log("Replica set initialized successfully");
           }
         '
-        
+
         echo 'Waiting for replica set to be ready...'
         mongosh --host mongodb:27017 --eval '
           while (true) {
