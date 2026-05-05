@@ -1898,7 +1898,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.post(countlyConfig.path + '/users/check/username', function(req, res) {
-        if (!req.session.uid || !req.body.username) {
+        // Symmetric with /users/check/email above: only global admins can
+        // probe whether a username exists. Without this gate any logged-in
+        // user could enumerate dashboard usernames.
+        if (!req.session.uid || !isGlobalAdmin(req) || !req.body.username) {
             res.send(false);
             return false;
         }
