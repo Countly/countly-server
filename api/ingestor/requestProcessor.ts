@@ -234,6 +234,8 @@ interface RequestEvent {
     _system_event?: boolean;
     /** ID value */
     _id?: string;
+    /** PII raw delta — original values before obfuscation, keyed by top-level field */
+    raw?: Record<string, unknown>;
 }
 
 /**
@@ -876,6 +878,11 @@ const processToDrill = async function(params: RequestParams, drill_updates: Dril
             dbEventObject.s = currEvent.sum || 0;
             dbEventObject.dur = currEvent.dur || 0;
             dbEventObject.c = currEvent.count || 1;
+
+            if (currEvent.raw && typeof currEvent.raw === 'object') {
+                dbEventObject.raw = currEvent.raw;
+            }
+
             eventsToInsert.push({ 'insertOne': { 'document': dbEventObject } });
 
             if (eventKey === '[CLY]_view') {

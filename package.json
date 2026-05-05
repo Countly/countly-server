@@ -38,7 +38,9 @@
     "start:jobserver:dev": "COUNTLY_CONFIG__SYMLINKED=true COUNTLY_CONTAINER=api node --preserve-symlinks --preserve-symlinks-main --trace-warnings jobServer/index.js",
     "start:all:dev": "npm run start:api:dev & npm run start:frontend:dev & npm run start:ingestor:dev & npm run start:aggregator:dev & npm run start:jobserver:dev & wait",
     "test:services": "env-cmd -f test/configs/base.env -f test/configs/suite-overrides/core.env sh -c 'npm run start:api:dev & npm run start:frontend:dev & npm run start:ingestor:dev & npm run start:aggregator:dev & npm run start:jobserver:dev & wait'",
-    "postinstall": "mkdir -p frontend/express/public/sdk/web && cp -rf node_modules/countly-sdk-web/lib/* frontend/express/public/sdk/web/"
+    "postinstall": "mkdir -p frontend/express/public/sdk/web && cp -rf node_modules/countly-sdk-web/lib/* frontend/express/public/sdk/web/",
+    "build:plugin-frontends": "node scripts/compile-plugin-frontends.js",
+    "watch:plugin-frontend": "node scripts/compile-plugin-frontends.js --watch"
   },
   "lint-staged": {
     "*.{js,vue}": [

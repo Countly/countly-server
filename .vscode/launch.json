@@ -25,7 +25,7 @@
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "env": {
-                "COUNTLY_CONFIG_HOSTNAME": "localhost:3001"
+                "COUNTLY_CONFIG_HOSTNAME": "localhost"
             }
         },
         {

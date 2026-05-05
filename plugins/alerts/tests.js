@@ -12,7 +12,7 @@ const baseAlert = {
     "alertName": "Test Alert",
     "alertDataType": "metric",
     "alertDataSubType": "Total users",
-    "compareType": "increased by at least",
+    "compareType": "increased",
     "compareValue": "10",
     "selectedApps": [],
     "period": "hourly", // Updated to match OpenAPI spec enum
@@ -28,7 +28,7 @@ const testAlertConfigs = {
         "alertName": "Crash Alert",
         "alertDataType": "crash",
         "alertDataSubType": "Total crashes",
-        "compareType": "more than",
+        "compareType": "more",
         "compareValue": "5",
         "selectedApps": [],
         "period": "daily",
@@ -41,7 +41,7 @@ const testAlertConfigs = {
         "alertName": "Session Alert",
         "alertDataType": "session",
         "alertDataSubType": "Session count",
-        "compareType": "decreased by at least",
+        "compareType": "decreased",
         "compareValue": "15",
         "selectedApps": [],
         "period": "monthly",
@@ -54,7 +54,7 @@ const testAlertConfigs = {
         "alertName": "Webhook Alert",
         "alertDataType": "users",
         "alertDataSubType": "New users",
-        "compareType": "increased by at least",
+        "compareType": "increased",
         "compareValue": "25",
         "selectedApps": [],
         "period": "hourly",
@@ -109,7 +109,7 @@ function validateAlertObject(alert) {
     // These fields are now optional in our updated OpenAPI spec
     if (alert.compareType !== undefined && alert.compareType !== null) {
         alert.compareType.should.be.a.String();
-        const validCompareTypes = ["increased by at least", "decreased by at least", "more than"];
+        const validCompareTypes = ["increased", "decreased", "more"];
         validCompareTypes.should.containEql(alert.compareType);
     }
 
@@ -142,17 +142,17 @@ function validateAlertObject(alert) {
     }
 
     // Validate required enum values according to OpenAPI spec
-    const validDataTypes = ["metric", "crash", "event", "session", "users", "views", "revenue", "cohorts", "dataPoints", "rating", "survey", "nps"];
+    const validDataTypes = ["metric", "crash", "event", "session", "users", "views", "revenue", "cohorts", "dataPoints", "rating", "survey", "nps", "pii"];
     validDataTypes.should.containEql(alert.alertDataType);
 
     // Optional fields - validate if present
     if (alert.alertDataSubType2 !== undefined && alert.alertDataSubType2 !== null) {
         alert.alertDataSubType2.should.be.a.String();
     }
-    if (alert.filterKey !== undefined) {
+    if (alert.filterKey !== undefined && alert.filterKey !== null) {
         alert.filterKey.should.be.a.String();
     }
-    if (alert.filterValue !== undefined) {
+    if (alert.filterValue !== undefined && alert.filterValue !== null) {
         alert.filterValue.should.be.a.String();
     }
     if (alert.allGroups !== undefined) {
@@ -285,7 +285,7 @@ describe('Testing Alert API against OpenAPI Specification', function() {
             // Create an invalid alert missing required fields
             const invalidConfig = {
                 // Missing alertName and other required fields
-                "compareType": "increased by at least",
+                "compareType": "increased",
                 "compareValue": "10",
                 "selectedApps": [testUtils.get("APP_ID")],
                 "enabled": true
@@ -379,7 +379,7 @@ describe('Testing Alert API against OpenAPI Specification', function() {
             const APP_ID = testUtils.get("APP_ID");
 
             // Test all supported compare types from OpenAPI spec
-            const compareTypes = ["increased by at least", "decreased by at least", "more than"];
+            const compareTypes = ["increased", "decreased", "more"];
             let testIndex = 0;
 
             function testNextCompareType() {
@@ -391,7 +391,7 @@ describe('Testing Alert API against OpenAPI Specification', function() {
                 const alertConfig = Object.assign({}, baseAlert, {
                     alertName: `Compare Type Test: ${compareType}`,
                     compareType: compareType,
-                    compareDescribe: `Total users ${compareType} 10${compareType.includes('than') ? '' : '%'}`,
+                    compareDescribe: `Total users ${compareType} 10${compareType === 'more' ? '' : '%'}`,
                     selectedApps: [APP_ID]
                 });
 

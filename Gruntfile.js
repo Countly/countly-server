@@ -297,7 +297,13 @@ module.exports = function(grunt) {
 
     grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'replace-paths', 'cssmin']);
 
-    grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function() {
+    grunt.registerTask('compile-plugin-frontends', 'Compile plugin frontend TypeScript to JavaScript', function() {
+        var execSync = require('child_process').execSync;
+        execSync('node scripts/compile-plugin-frontends.js', { cwd: __dirname, stdio: 'inherit' });
+    });
+
+    grunt.registerTask('plugins', ['compile-plugin-frontends', 'plugins:run']);
+    grunt.registerTask('plugins:run', 'Minify plugin JS / CSS files and copy images', function() {
         var js = [], css = [], img = [], fs = require('fs'), path = require('path');
 
         var pluginFolderPath = path.join(__dirname, 'plugins');

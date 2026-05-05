@@ -1,31 +1,23 @@
-FROM eclipse-temurin:21-jre
+# Stage 1: compile the RawEventExtractor SMT against the Kafka Connect API JARs
+# that are bundled inside the existing runtime image.
+FROM eclipse-temurin:21-jdk AS smt-builder
 
-ARG SCALA_VERSION=2.13
-ARG KAFKA_VERSION=4.0.0
-ARG CH_SINK_VERSION=1.3.5
+# Copy the Kafka libs from the runtime image so javac has the Connect API on its classpath
+COPY --from=countly/kafka-connect-clickhouse:latest /opt/kafka/libs /opt/kafka/libs
+COPY --from=countly/kafka-connect-clickhouse:latest /opt/kafka/plugins /opt/kafka/plugins
 
-# Install Kafka (includes connect-distributed.sh)
-RUN mkdir -p /opt && \
-    curl -fSL https://dlcdn.apache.org/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz \
-      -o /tmp/kafka.tgz && \
-    tar -xzf /tmp/kafka.tgz -C /opt && \
-    ln -s /opt/kafka_${SCALA_VERSION}-${KAFKA_VERSION} /opt/kafka && \
-    rm /tmp/kafka.tgz
+COPY transforms/RawEventExtractor.java /tmp/RawEventExtractor.java
+RUN mkdir -p /tmp/smt-build && \
+    javac -cp "/opt/kafka/libs/*:/opt/kafka/plugins/clickhouse/*" \
+          -d /tmp/smt-build \
+          /tmp/RawEventExtractor.java && \
+    jar cf /tmp/countly-smt.jar -C /tmp/smt-build .
 
-# Plugins
-RUN mkdir -p /opt/kafka/plugins/clickhouse
-# Pull the ClickHouse Sink (Apache-2.0) release ZIP and extract jars
-RUN apt-get update && apt-get install -y unzip ca-certificates curl && \
-    curl -fSL \
-      https://github.com/ClickHouse/clickhouse-kafka-connect/releases/download/v${CH_SINK_VERSION}/clickhouse-kafka-connect-v${CH_SINK_VERSION}.zip \
-    -o /tmp/ch-sink.zip && \
-    unzip -q /tmp/ch-sink.zip -d /opt/kafka/plugins/clickhouse && \
-    rm -rf /var/lib/apt/lists/* /tmp/ch-sink.zip
+# Stage 2: extend the existing runtime image with the compiled JAR
+FROM countly/kafka-connect-clickhouse:latest
+
+COPY --from=smt-builder /tmp/countly-smt.jar /opt/kafka/plugins/countly-smt/countly-smt.jar
 
 # Copy minimal config (environment variables will override)
 COPY connect-distributed.properties /opt/kafka/config/connect-distributed.properties
 COPY clickhouse-connector.json /opt/kafka/config/clickhouse-connector.json
-
-EXPOSE 8083
-WORKDIR /opt/kafka
-CMD ["bin/connect-distributed.sh", "config/connect-distributed.properties"]

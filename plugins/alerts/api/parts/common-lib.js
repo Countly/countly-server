@@ -83,6 +83,7 @@ const TRIGGERED_BY_EVENT = {
     nps: "new NPS response",
     rating: "new rating response",
     crashes: "new crash/error",
+    pii: "new sensitive data incident",
 };
 
 module.exports = {

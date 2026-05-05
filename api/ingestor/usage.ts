@@ -901,7 +901,6 @@ const usage: IngestorUsageModule = {
         if (Object.keys(update).length > 0) {
             ob.updates.push(update);
         }
-        usage.processCoreMetrics(params); // Collects core metrics
     },
 
     /**

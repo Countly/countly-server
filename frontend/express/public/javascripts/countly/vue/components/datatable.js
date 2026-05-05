@@ -315,11 +315,14 @@
                     if (newDataView) {
                         const hasCursorData = newDataView.hasNextPage !== undefined || newDataView.nextCursor !== undefined;
                         const shouldUseCursor = hasCursorData && (newDataView.hasNextPage || newDataView.nextCursor);
+                        const hasActiveCursorState = !!this.controlParams.cursor ||
+                            (this.controlParams.cursorHistory && this.controlParams.cursorHistory.length > 0) ||
+                            this.controlParams.page > this.firstPage;
 
                         if (shouldUseCursor && !this.controlParams.useCursorPagination) {
                             this.controlParams.useCursorPagination = true;
                         }
-                        else if (!shouldUseCursor && this.controlParams.useCursorPagination) {
+                        else if (!shouldUseCursor && this.controlParams.useCursorPagination && !hasActiveCursorState) {
                             this.controlParams.useCursorPagination = false;
                         }
                     }
@@ -400,11 +403,16 @@
         methods: {
             checkPageBoundaries() {
                 if (this.lastPage > 0 && this.controlParams.page > this.lastPage) {
-                    this.controlParams.page = this.lastPage;
+                    this.updateControlParams({
+                        page: this.lastPage
+                    });
+                    return;
                 }
 
                 if (this.controlParams.page < 1) {
-                    this.controlParams.page = 1;
+                    this.updateControlParams({
+                        page: 1
+                    });
                 }
             },
 
@@ -446,6 +454,7 @@
                 try {
                     if (
                         countlyGlobal.member.columnOrder &&
+                        countlyGlobal.member.columnOrder[this.persistKey] &&
                         countlyGlobal.member.columnOrder[this.persistKey].tableSortMap
                     ) {
                         defaultState.selectedDynamicCols = countlyGlobal.member.columnOrder[this.persistKey].tableSortMap;
@@ -534,8 +543,10 @@
                             });
                         }
                         else {
-                            // Fallback: just go back one page (will show first page data)
-                            this.controlParams.page--;
+                            // Fallback: go back one page through unified updater so page-1 cursor state is normalized.
+                            this.updateControlParams({
+                                page: this.controlParams.page - 1
+                            });
                         }
                     }
                     else {
@@ -654,6 +665,11 @@
             },
 
             updateControlParams(newParams) {
+                // Keep cursor state consistent: page 1 must never carry a cursor/history token.
+                if (newParams && Number(newParams.page) === this.firstPage) {
+                    newParams.cursor = null;
+                    newParams.cursorHistory = [];
+                }
                 _.extend(this.controlParams, newParams);
             },
 
