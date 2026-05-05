@@ -121,6 +121,7 @@ usersApi.update = function(app_id, query, update, params, callback) {
         callback = params;
         params = {};
     }
+    common.stripUnsafeMongoOperators(query);
     plugins.dispatch("/drill/preprocess_query", {
         query: query
     });
@@ -177,6 +178,7 @@ usersApi.delete = function(app_id, query, params, callback) {
             query = {};
         }
     }
+    common.stripUnsafeMongoOperators(query);
     plugins.dispatch("/drill/preprocess_query", {
         query: query
     });
@@ -301,6 +303,7 @@ usersApi.search = function(app_id, query, project, sort, limit, skip, callback) 
             query = {};
         }
     }
+    common.stripUnsafeMongoOperators(query);
 
     plugins.dispatch("/drill/preprocess_query", {
         query: query
@@ -361,6 +364,7 @@ usersApi.count = function(app_id, query, callback) {
             query = {};
         }
     }
+    common.stripUnsafeMongoOperators(query);
 
     plugins.dispatch("/drill/preprocess_query", {
         query: query
@@ -1032,6 +1036,7 @@ usersApi.export = function(app_id, query, params, callback) {
         });
     }
 
+    common.stripUnsafeMongoOperators(query);
     plugins.dispatch("/drill/preprocess_query", {
         query: query
     });
@@ -1290,6 +1295,7 @@ usersApi.loyalty = function(params) {
     if (typeof query === "string") {
         try {
             query = JSON.parse(query);
+            common.stripUnsafeMongoOperators(query);
             plugins.dispatch("/drill/preprocess_query", {
                 query: query,
                 params
@@ -1298,6 +1304,9 @@ usersApi.loyalty = function(params) {
         catch (error) {
             query = {};
         }
+    }
+    else {
+        common.stripUnsafeMongoOperators(query);
     }
 
     if (cohorts) {
