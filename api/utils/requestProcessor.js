@@ -757,57 +757,105 @@ const processRequest = (params) => {
                 switch (paths[3]) {
                 case 'update':
                     validateUserForWrite(params, () => {
-                        taskmanager.rerunTask({
-                            db: common.db,
-                            id: params.qstring.task_id
-                        }, (err, res) => {
-                            common.returnMessage(params, 200, res);
+                        // Authorize: only the task's creator, an admin of the task's
+                        // app_id, or a global admin can rerun a task. Otherwise
+                        // rerunTask would replay the original request using the
+                        // creator's api_key (cross-tenant privilege escalation).
+                        taskmanager.loadIfAuthorized(common.db, params.qstring.task_id, params.member, (authErr) => {
+                            if (authErr === 'forbidden') {
+                                return common.returnMessage(params, 403, 'Not allowed');
+                            }
+                            if (authErr === 'not_found') {
+                                return common.returnMessage(params, 404, 'Task not found');
+                            }
+                            if (authErr) {
+                                return common.returnMessage(params, 500, 'Server error');
+                            }
+                            taskmanager.rerunTask({
+                                db: common.db,
+                                id: params.qstring.task_id
+                            }, (err, res) => {
+                                common.returnMessage(params, 200, res);
+                            });
                         });
                     });
                     break;
                 case 'delete':
                     validateUserForWrite(params, () => {
-                        taskmanager.deleteResult({
-                            db: common.db,
-                            id: params.qstring.task_id
-                        }, (err, task) => {
-                            plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_deleted", data: task});
-                            common.returnMessage(params, 200, "Success");
+                        taskmanager.loadIfAuthorized(common.db, params.qstring.task_id, params.member, (authErr) => {
+                            if (authErr === 'forbidden') {
+                                return common.returnMessage(params, 403, 'Not allowed');
+                            }
+                            if (authErr === 'not_found') {
+                                return common.returnMessage(params, 404, 'Task not found');
+                            }
+                            if (authErr) {
+                                return common.returnMessage(params, 500, 'Server error');
+                            }
+                            taskmanager.deleteResult({
+                                db: common.db,
+                                id: params.qstring.task_id
+                            }, (err, task) => {
+                                plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_deleted", data: task});
+                                common.returnMessage(params, 200, "Success");
+                            });
                         });
                     });
                     break;
                 case 'name':
                     validateUserForWrite(params, () => {
-                        taskmanager.nameResult({
-                            db: common.db,
-                            id: params.qstring.task_id,
-                            name: params.qstring.name
-                        }, () => {
-                            common.returnMessage(params, 200, "Success");
+                        taskmanager.loadIfAuthorized(common.db, params.qstring.task_id, params.member, (authErr) => {
+                            if (authErr === 'forbidden') {
+                                return common.returnMessage(params, 403, 'Not allowed');
+                            }
+                            if (authErr === 'not_found') {
+                                return common.returnMessage(params, 404, 'Task not found');
+                            }
+                            if (authErr) {
+                                return common.returnMessage(params, 500, 'Server error');
+                            }
+                            taskmanager.nameResult({
+                                db: common.db,
+                                id: params.qstring.task_id,
+                                name: params.qstring.name
+                            }, () => {
+                                common.returnMessage(params, 200, "Success");
+                            });
                         });
                     });
                     break;
                 case 'edit':
                     validateUserForWrite(params, () => {
-                        const data = {
-                            "report_name": params.qstring.report_name,
-                            "report_desc": params.qstring.report_desc,
-                            "global": params.qstring.global + "" === 'true',
-                            "autoRefresh": params.qstring.autoRefresh + "" === 'true',
-                            "period_desc": params.qstring.period_desc
-                        };
-                        taskmanager.editTask({
-                            db: common.db,
-                            data: data,
-                            id: params.qstring.task_id
-                        }, (err, d) => {
-                            if (err) {
-                                common.returnMessage(params, 503, "Error");
+                        taskmanager.loadIfAuthorized(common.db, params.qstring.task_id, params.member, (authErr) => {
+                            if (authErr === 'forbidden') {
+                                return common.returnMessage(params, 403, 'Not allowed');
                             }
-                            else {
-                                common.returnMessage(params, 200, "Success");
+                            if (authErr === 'not_found') {
+                                return common.returnMessage(params, 404, 'Task not found');
                             }
-                            plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_updated", data: d});
+                            if (authErr) {
+                                return common.returnMessage(params, 500, 'Server error');
+                            }
+                            const data = {
+                                "report_name": params.qstring.report_name,
+                                "report_desc": params.qstring.report_desc,
+                                "global": params.qstring.global + "" === 'true',
+                                "autoRefresh": params.qstring.autoRefresh + "" === 'true',
+                                "period_desc": params.qstring.period_desc
+                            };
+                            taskmanager.editTask({
+                                db: common.db,
+                                data: data,
+                                id: params.qstring.task_id
+                            }, (err, d) => {
+                                if (err) {
+                                    common.returnMessage(params, 503, "Error");
+                                }
+                                else {
+                                    common.returnMessage(params, 200, "Success");
+                                }
+                                plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_updated", data: d});
+                            });
                         });
                     });
                     break;
