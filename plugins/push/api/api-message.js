@@ -8,14 +8,30 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
 
 /**
  * Validate data & construct message out of it, throw in case of error
- * 
+ *
  * @param {object} args plain object to construct Message from
  * @param {boolean} draft true if we need to skip checking data for validity
+ * @param {object} [params=null] request params object — when supplied, the
+ *                  body's "app" field is required to match params.qstring.app_id
+ *                  (cross-app guard).
  * @returns {PostMessageOptions} Message instance in case validation passed, array of error messages otherwise
  * @throws {ValidationError} in case of error
  * @apiUse PushMessageBody
  */
-async function validate(args, draft = false) {
+async function validate(args, draft = false, params = null) {
+    // Cross-app guard. The body's "app" field selects which app's push
+    // credentials are used and which app's user base is targeted.
+    // validateCreate / validateRead etc. only check the caller's
+    // permission against params.qstring.app_id, so without this check a
+    // user with push:create on app A could submit args.app = <victim_B>
+    // and send arbitrary push notifications through app B's signed
+    // APNS/FCM credentials. Force the body's app to match the
+    // permission-checked qstring.app_id.
+    if (params && params.qstring && params.qstring.app_id) {
+        if (args && args.app && (args.app + "") !== (params.qstring.app_id + "")) {
+            throw new ValidationError('args.app does not match request app_id');
+        }
+    }
     let msg;
     if (draft) {
         let data = common.validateArgs(args, {
@@ -148,7 +164,7 @@ async function validate(args, draft = false) {
  * @apiUse PushError
  */
 module.exports.test = async params => {
-    let msg = await validate(params.qstring),
+    let msg = await validate(params.qstring, false, params),
         cfg = params.app.plugins && params.app.plugins.push || {},
         test_uids = cfg && cfg.test && cfg.test.uids ? cfg.test.uids.split(',') : undefined,
         test_cohorts = cfg && cfg.test && cfg.test.cohorts ? cfg.test.cohorts.split(',') : undefined,
@@ -252,7 +268,7 @@ module.exports.test = async params => {
  * @apiUse PushError
  */
 module.exports.create = async params => {
-    let msg = await validate(params.qstring, params.qstring.status === Status.Draft),
+    let msg = await validate(params.qstring, params.qstring.status === Status.Draft, params),
         demo = params.qstring.demo === undefined ? params.qstring.args ? params.qstring.args.demo : false : params.qstring.demo;
     msg._id = common.db.ObjectID();
     msg.info.created = msg.info.updated = new Date();
@@ -304,7 +320,7 @@ module.exports.create = async params => {
  * @apiUse PushError
  */
 module.exports.update = async params => {
-    let msg = await validate(params.qstring, params.qstring.status === Status.Draft);
+    let msg = await validate(params.qstring, params.qstring.status === Status.Draft, params);
     msg.info.updated = new Date();
     msg.info.updatedBy = params.member._id;
     msg.info.updatedByName = params.member.full_name;
@@ -395,7 +411,15 @@ module.exports.remove = async params => {
         return true;
     }
 
-    let msg = await Message.findOne({_id: data.obj._id, state: {$bitsAllClear: State.Deleted}});
+    // Cross-app guard. Without scoping the lookup by app, a member with
+    // push:delete on app A could pass _id of a message belonging to app B
+    // and delete it. Bind to params.qstring.app_id (which validateDelete
+    // already permission-checked).
+    let findFilter = {_id: data.obj._id, state: {$bitsAllClear: State.Deleted}};
+    if (params.qstring.app_id) {
+        findFilter.app = common.db.ObjectID(params.qstring.app_id + "");
+    }
+    let msg = await Message.findOne(findFilter);
     if (!msg) {
         common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
         return true;
@@ -473,7 +497,12 @@ module.exports.toggle = async params => {
         return true;
     }
 
-    let msg = await Message.findOne(data._id);
+    // Scope by app — same cross-app guard as in remove() / one().
+    let toggleFilter = {_id: data._id};
+    if (params.qstring.app_id) {
+        toggleFilter.app = common.db.ObjectID(params.qstring.app_id + "");
+    }
+    let msg = await Message.findOne(toggleFilter);
     if (!msg) {
         common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
         return true;
@@ -705,7 +734,13 @@ module.exports.one = async params => {
         return true;
     }
 
-    let msg = await Message.findOne(data._id);
+    // Scope by app so a user with push:read on app A can't read a message
+    // belonging to app B by guessing its _id.
+    let oneFilter = {_id: data._id};
+    if (params.qstring.app_id) {
+        oneFilter.app = common.db.ObjectID(params.qstring.app_id + "");
+    }
+    let msg = await Message.findOne(oneFilter);
     if (!msg) {
         common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
         return true;
