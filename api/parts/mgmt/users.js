@@ -906,62 +906,62 @@ usersApi.saveNote = async function(params) {
     };
     const args = params.qstring.args;
     const noteValidation = common.validateArgs(args, argProps, true);
-    if (noteValidation) {
-        const note = {
-            app_id: args.app_id,
-            note: args.note,
-            ts: args.ts,
-            noteType: args.noteType,
-            emails: args.emails || [],
-            color: args.color,
-            category: args.category,
-            owner: params.member._id + "",
-            created_at: new Date().getTime(),
-            updated_at: new Date().getTime()
-        };
+    if (!noteValidation.result) {
+        common.returnMessage(params, 400, 'Invalid note: ' + (noteValidation.errors && noteValidation.errors.join('; ')));
+        return false;
+    }
 
-        if (args._id) {
-            const editPermission = await usersApi.checkNoteEditPermission(params);
-            if (!editPermission) {
-                common.returnMessage(params, 403, 'Not allow to edit note');
-            }
-            else {
-                delete note.created_at;
-                delete note.owner;
-                common.db.collection('notes').update({_id: common.db.ObjectID(args._id)}, {$set: note }, (err) => {
-                    if (err) {
-                        common.returnMessage(params, 503, 'Save note failed');
-                    }
-                    else {
-                        common.returnMessage(params, 200, 'Success');
-                    }
-                });
-            }
+    const note = {
+        app_id: args.app_id,
+        note: args.note,
+        ts: args.ts,
+        noteType: args.noteType,
+        emails: args.emails || [],
+        color: args.color,
+        category: args.category,
+        owner: params.member._id + "",
+        created_at: new Date().getTime(),
+        updated_at: new Date().getTime()
+    };
+
+    if (args._id) {
+        const editPermission = await usersApi.checkNoteEditPermission(params);
+        if (!editPermission) {
+            common.returnMessage(params, 403, 'Not allow to edit note');
         }
         else {
-            common.db.collection('notes').find({ "app_id": args.app_id }).sort({ "created_at": -1 }).limit(1).project({ "indicator": 1 }).toArray(function(err, res) {
+            delete note.created_at;
+            delete note.owner;
+            common.db.collection('notes').update({_id: common.db.ObjectID(args._id)}, {$set: note }, (err) => {
                 if (err) {
                     common.returnMessage(params, 503, 'Save note failed');
                 }
                 else {
-                    if (res && res.length) {
-                        note.indicator = countlyCommon.stringIncrement(res[0].indicator);
-                    }
-                    else {
-                        note.indicator = "A";
-                    }
-                    common.db.collection('notes').insert(note, (_err) => {
-                        if (_err) {
-                            common.returnMessage(params, 503, 'Insert Note failed.');
-                        }
-                        common.returnMessage(params, 200, 'Success');
-                    });
+                    common.returnMessage(params, 200, 'Success');
                 }
             });
         }
     }
     else {
-        common.returnMessage(params, 403, 'add notes failed');
+        common.db.collection('notes').find({ "app_id": args.app_id }).sort({ "created_at": -1 }).limit(1).project({ "indicator": 1 }).toArray(function(err, res) {
+            if (err) {
+                common.returnMessage(params, 503, 'Save note failed');
+            }
+            else {
+                if (res && res.length) {
+                    note.indicator = countlyCommon.stringIncrement(res[0].indicator);
+                }
+                else {
+                    note.indicator = "A";
+                }
+                common.db.collection('notes').insert(note, (_err) => {
+                    if (_err) {
+                        common.returnMessage(params, 503, 'Insert Note failed.');
+                    }
+                    common.returnMessage(params, 200, 'Success');
+                });
+            }
+        });
     }
     return true;
 };
