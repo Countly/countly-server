@@ -2327,6 +2327,58 @@ common.checkPromise = function(func, count, interval) {
     });
 };
 
+/**
+ * Recursively remove MongoDB operators that allow arbitrary JavaScript
+ * execution or comparison-bypass against trusted server state from a
+ * user-supplied query object. Strips:
+ *
+ *   $where        — evaluates a JS function on every doc; supports
+ *                   `while(true){}` DoS and timing-based exfiltration.
+ *   $expr         — evaluates aggregation expressions against the doc;
+ *                   can be chained with $function/$accumulator below.
+ *   $function     — Mongo 4.4+ server-side JS execution.
+ *   $accumulator  — server-side JS aggregation execution.
+ *
+ * Use this anywhere a request body / query string is passed straight
+ * into MongoDB find/update/delete/count/aggregate as the filter. It is
+ * a defence-in-depth helper, not a substitute for a strict allowlist
+ * of fields.
+ *
+ * @param {*} query - user-supplied query (any depth)
+ * @returns {*} the same query with the dangerous operators removed
+ */
+common.stripUnsafeMongoOperators = function(query) {
+    var BLOCKED = ["$where", "$expr", "$function", "$accumulator"];
+    /**
+     * Recursive walk that strips blocked operators in-place.
+     * @param {*} v - current node
+     * @returns {void}
+     */
+    function walk(v) {
+        if (!v || typeof v !== "object") {
+            return;
+        }
+        if (Array.isArray(v)) {
+            for (var ai = 0; ai < v.length; ai++) {
+                walk(v[ai]);
+            }
+            return;
+        }
+        for (var bi = 0; bi < BLOCKED.length; bi++) {
+            if (Object.prototype.hasOwnProperty.call(v, BLOCKED[bi])) {
+                delete v[BLOCKED[bi]];
+            }
+        }
+        for (var k in v) {
+            if (Object.prototype.hasOwnProperty.call(v, k)) {
+                walk(v[k]);
+            }
+        }
+    }
+    walk(query);
+    return query;
+};
+
 common.clearClashingQueryOperations = function(query) {
     var map = {};
     var field;
