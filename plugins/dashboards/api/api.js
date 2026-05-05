@@ -353,18 +353,52 @@ plugins.setConfigs("dashboards", {
     });
 
     plugins.register("/o/dashboards/test", function(ob) {
-        var params = ob.params,
-            widgets = [];
+        var params = ob.params;
 
-        try {
-            widgets = JSON.parse(params.qstring.widgets);
-        }
-        catch (ex) {
-            //Error
-        }
+        validateUser(params, function() {
+            var widgets = [];
+            try {
+                widgets = JSON.parse(params.qstring.widgets);
+            }
+            catch (ex) {
+                //Error
+            }
 
-        customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
-            common.returnOutput(params, data);
+            if (!Array.isArray(widgets)) {
+                widgets = [];
+            }
+
+            // Reject widgets referencing apps the requesting user does not have
+            // access to. Without this, the endpoint (which previously had no
+            // auth at all) could be used to read analytics from arbitrary apps.
+            var allowed = {};
+            if (params.member && params.member.global_admin) {
+                // Global admins skip the per-app restriction below.
+                allowed = null;
+            }
+            else if (params.member) {
+                var userApps = getUserApps(params.member) || [];
+                for (var i = 0; i < userApps.length; i++) {
+                    allowed[userApps[i] + ""] = true;
+                }
+            }
+
+            if (allowed) {
+                for (var w = 0; w < widgets.length; w++) {
+                    if (Array.isArray(widgets[w].apps)) {
+                        widgets[w].apps = widgets[w].apps.filter(function(a) {
+                            return allowed[a + ""];
+                        });
+                    }
+                    else {
+                        widgets[w].apps = [];
+                    }
+                }
+            }
+
+            customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
+                common.returnOutput(params, data);
+            });
         });
 
         return true;
