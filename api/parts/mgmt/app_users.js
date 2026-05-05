@@ -834,12 +834,27 @@ var deleteMyExport = function(exportID) { //tries to delete packed file, exporte
 
 usersApi.deleteExport = function(filename, params, callback) {
     if (filename && filename !== '') {
+        // Reject anything containing path-traversal characters or separators.
+        // The legitimate filename shape is appUser_<24hex>_<uid> or
+        // appUser_<24hex>_HASH_<hex>; both should match a tight regex.
+        if (typeof filename !== 'string' || /[^A-Za-z0-9_.-]/.test(filename)) {
+            return callback('invalid filename', '');
+        }
         var base_name = filename.split('.');
         var name_parts = base_name[0].split('_');
 
-        //filename : appUsers_{appid}_{uid} vai appUsers_{appid}_HASH_{hash form uids}            
+        //filename : appUsers_{appid}_{uid} vai appUsers_{appid}_HASH_{hash form uids}
         if (name_parts[0] !== 'appUser') {
             callback('invalid filename', '');
+        }
+        // Cross-tenant guard: the export filename embeds the app_id at
+        // name_parts[1]. Until this commit, validateUserForWrite ran against
+        // params.qstring.app_id (which can be any app the caller has admin on)
+        // while the actual mutation/file deletion targeted name_parts[1] (a
+        // potentially DIFFERENT app). Require they match. global_admin keeps
+        // unrestricted access.
+        else if (!params.member.global_admin && (params.qstring.app_id + "") !== (name_parts[1] + "")) {
+            callback('Not allowed (export belongs to a different app)', '');
         }
         else {
             //remove archive
