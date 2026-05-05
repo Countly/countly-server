@@ -100,11 +100,21 @@ fetch.fetchEventData = function(collection, params) {
 * The return the event groups data by _id.
 * @param {Object} params - params object
 * @param {string} params._id - The id of the event group id.
+* @returns {boolean|undefined} false on validation failure
 **/
 fetch.fetchEventGroupById = function(params) {
     const COLLECTION_NAME = "event_groups";
-    const { qstring: { _id } } = params;
-    common.db.collection(COLLECTION_NAME).findOne({ _id }, function(error, result) {
+    // Coerce _id to a string to defeat NoSQL operator-injection. Always
+    // scope the lookup to params.app_id so an attacker who knows or
+    // enumerates an event-group _id from another tenant cannot read it
+    // back via this endpoint. validateRead ensures params.app_id is a
+    // tenant the caller is allowed on.
+    const _id = (params.qstring._id || "") + "";
+    if (!_id) {
+        common.returnMessage(params, 400, 'Missing parameter "_id"');
+        return false;
+    }
+    common.db.collection(COLLECTION_NAME).findOne({ _id, app_id: params.app_id + "" }, function(error, result) {
         if (error || !result) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;
@@ -157,7 +167,11 @@ fetch.fetchMergedEventGroups = function(params) {
 */
 fetch.getMergedEventGroups = function(params, event, options, callback) {
     const COLLECTION_NAME = "event_groups";
-    common.db.collection(COLLECTION_NAME).findOne({ _id: event }, function(error, result) {
+    // Same scoping rule as fetchEventGroupById — confine the lookup to
+    // params.app_id so a caller can't merge another tenant's event group
+    // by knowing/guessing its _id.
+    const eventId = (event || "") + "";
+    common.db.collection(COLLECTION_NAME).findOne({ _id: eventId, app_id: params.app_id + "" }, function(error, result) {
         if (error || !result) {
             common.returnMessage(params, 500, `error: ${error}`);
             return false;
