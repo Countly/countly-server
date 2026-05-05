@@ -493,7 +493,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                 'Date': new Date().toUTCString(),
                                 'Last-Modified': stats.mtime.toUTCString(),
                                 'Content-Type': 'image/png',
-                                'Content-Length': stats.size
+                                'Content-Length': stats.size,
+                                'X-Content-Type-Options': 'nosniff'
                             });
                             stream.pipe(res);
                         }
@@ -541,7 +542,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                 'Date': new Date().toUTCString(),
                                 'Last-Modified': stats.mtime.toUTCString(),
                                 'Content-Type': 'image/png',
-                                'Content-Length': stats.size
+                                'Content-Length': stats.size,
+                                'X-Content-Type-Options': 'nosniff'
                             });
                             stream.pipe(res);
                         }
@@ -580,7 +582,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     'Date': new Date().toUTCString(),
                     'Last-Modified': stats.mtime.toUTCString(),
                     'Content-Type': 'image/png',
-                    'Content-Length': stats.size
+                    'Content-Length': stats.size,
+                    'X-Content-Type-Options': 'nosniff'
                 });
                 stream.pipe(res);
             });
