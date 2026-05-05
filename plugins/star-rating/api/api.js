@@ -5,8 +5,9 @@ var exported = {},
     log = common.log('star-rating:api'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
-    countlyFs = require('../../../api/utils/countlyFs.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateGlobalAdmin, validateAppAdmin } = require('../../../api/utils/rights.js'),
+    countlyFs = require('../../../api/utils/countlyFs.js'),
+    imageUtils = require('./image-utils.js');
 var fetch = require('../../../api/parts/data/fetch.js');
 var ejs = require("ejs"),
     fs = require('fs'),
@@ -371,7 +372,6 @@ function uploadFile(myfile, id, callback) {
     function uploadFeedbackFile(myname, myfile) {
         return new Promise(function(resolve, reject) {
             var tmp_path = myfile.path;
-            var type = myfile.type;
             if (myfile.size > 1.5 * 1024 * 1024) {
                 fs.unlink(tmp_path, function() {});
                 reject(Error("feedback.image-error"));
@@ -380,27 +380,33 @@ function uploadFile(myfile, id, callback) {
                 fs.readFile(tmp_path, (err, data) => {
                     if (err) {
                         reject(Error("feedback.imagee-error"));
+                        return;
                     }
-                    //convert file to data
-                    if (data) {
-                        try {
-                            var data_uri_prefix = "data:" + type + ";base64,";
-                            var buf = Buffer.from(data);
-                            var image = buf.toString('base64');
-                            image = data_uri_prefix + image;
-                            countlyFs.gridfs.saveData("feedback", myname, image, {id: myname, writeMode: "overwrite"}, function(err2) {
-                                fs.unlink(tmp_path, function() {});
-                                if (err2) {
-                                    return reject(err2);
-                                }
-                                resolve();
-                            });
-                        }
-                        catch (SyntaxError) {
-                            reject(Error("feedback.imagee-error"));
-                        }
+                    if (!data) {
+                        reject(Error("feedback.imagee-error"));
+                        return;
                     }
-                    else {
+                    var buf = Buffer.from(data);
+                    // Detect MIME from the actual bytes; never trust myfile.type.
+                    // Anything that isn't a recognized safe raster image is rejected.
+                    var detectedType = imageUtils.sniffImageType(buf);
+                    if (!detectedType) {
+                        fs.unlink(tmp_path, function() {});
+                        reject(Error("feedback.imagef-error"));
+                        return;
+                    }
+                    try {
+                        var data_uri_prefix = "data:" + detectedType + ";base64,";
+                        var image = data_uri_prefix + buf.toString('base64');
+                        countlyFs.gridfs.saveData("feedback", myname, image, {id: myname, writeMode: "overwrite"}, function(err2) {
+                            fs.unlink(tmp_path, function() {});
+                            if (err2) {
+                                return reject(err2);
+                            }
+                            resolve();
+                        });
+                    }
+                    catch (SyntaxError) {
                         reject(Error("feedback.imagee-error"));
                     }
                 });
@@ -430,37 +436,60 @@ function uploadFile(myfile, id, callback) {
      * }
     */
     plugins.register("/i/feedback/upload", function(ob) {
-        // do not respond if this isn't feedback fetch request 
+        // do not respond if this isn't feedback fetch request
         // or surveys plugin enabled
         if (surveysEnabled) {
             return false;
         }
 
         var params = ob.params;
-        validateUpdate(params, "global_plugins", function() {
-            var images = ["feedback_logo"];
-            var flag = 0;
-            if (params.files) {
-                for (let i = 0; i < images.length; i++) {
-                    if (params.files[images[i]]) {
-                        flag = 1;
-                        uploadFeedbackFile(images[i], params.files[images[i]]).then(function() {
-                            common.returnOutput(params, {"result": "Success"});
-                        }, function(err) {
-                            common.returnMessage(params, 400, err.message);
-                        });
-                        break;
-                    }
-                }
-                if (flag === 0) {
-                    uploadFeedbackFile(params.qstring.name, params.files.file).then(function() {
-                        common.returnOutput(params, {"result": "Success"});
-                    }, function(err) {
-                        common.returnMessage(params, 400, err.message);
-                    });
-                }
-            }
-        });
+        if (!params.files) {
+            common.returnMessage(params, 400, "feedback.imagee-error");
+            return true;
+        }
+
+        // Two upload modes:
+        //   1. Global feedback logo: file posted under field "feedback_logo",
+        //      stored under id "feedback_logo". Modifies a global plugin
+        //      setting and therefore requires actual global admin.
+        //   2. Per-app feedback logo: file posted under field "file" with
+        //      ?name=feedback_logo<24-char-hex-app-id>. The target app id is
+        //      decoded from the name itself, NOT taken from qstring.app_id,
+        //      so an admin of one app can't plant a logo for another app.
+        //
+        // Any other name shape is rejected.
+        var globalUpload = !!params.files.feedback_logo;
+        var fileObj = globalUpload ? params.files.feedback_logo : params.files.file;
+        var requestedName = globalUpload ? "feedback_logo" : (params.qstring && params.qstring.name);
+
+        var parsed = imageUtils.parseFeedbackLogoName(requestedName);
+        if (!parsed.valid || !fileObj) {
+            common.returnMessage(params, 400, "feedback.invalid-name");
+            return true;
+        }
+
+        /**
+         * Run the actual file upload after auth has passed.
+         * @returns {void}
+         */
+        function performUpload() {
+            uploadFeedbackFile(requestedName, fileObj).then(function() {
+                common.returnOutput(params, {"result": "Success"});
+            }, function(err) {
+                common.returnMessage(params, 400, err.message);
+            });
+        }
+
+        if (parsed.isGlobal) {
+            validateGlobalAdmin(params, performUpload);
+        }
+        else {
+            // Pin app_id to the value embedded in the upload name so the
+            // app-admin check can't be satisfied with admin rights on a
+            // different app.
+            params.qstring.app_id = parsed.appId;
+            validateAppAdmin(params, performUpload);
+        }
         return true;
     });
     /*

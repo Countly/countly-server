@@ -1,9 +1,15 @@
 var exported = {},
     countlyFs = require('../../../api/utils/countlyFs.js'),
     countlyConfig = require("../../../frontend/express/config"),
-    common = require('../../../api/utils/common.js');
+    common = require('../../../api/utils/common.js'),
+    imageUtils = require('../api/image-utils.js');
 var path = require('path');
 var log = common.log('star-rating:frontend');
+
+// Names accepted on the preview route. Tighter than the upload-side
+// validator so even legacy data with unexpected ids can't be reached
+// via path component shenanigans (no path separators, no dots).
+var PREVIEW_NAME_RE = /^[a-zA-Z0-9_-]{1,64}$/;
 
 (function(plugin) {
     plugin.init = function(app) {
@@ -22,23 +28,43 @@ var log = common.log('star-rating:frontend');
         // keep this for backward compatability
         app.get(countlyConfig.path + '/feedback', renderPopup);
         app.get(countlyConfig.path + '/feedback/preview/*', function(req, res/*, next*/) {
-            if (!req.params || !req.params[0] || req.params[0] === '') {
+            if (!req.params || !req.params[0] || req.params[0] === '' || !PREVIEW_NAME_RE.test(req.params[0])) {
                 res.sendFile(__dirname + '/public/images/default_app_icon.png');
             }
             else {
                 countlyFs.gridfs.getDataById("feedback", req.params[0], function(err, data) {
                     if (err || !data) {
                         res.sendFile(__dirname + '/public/images/default_app_icon.png');
+                        return;
                     }
-                    else {
-                        var dd = data.split(',');
-                        var img = Buffer.from(dd[1], 'base64');
-                        res.writeHead(200, {
-                            'Content-Type': dd = dd[0].substr(5, dd[0].length - 12),
-                            'Content-Length': img.length
-                        });
-                        res.end(img);
+                    var commaIdx = data.indexOf(',');
+                    if (commaIdx === -1) {
+                        res.sendFile(__dirname + '/public/images/default_app_icon.png');
+                        return;
                     }
+                    var img;
+                    try {
+                        img = Buffer.from(data.slice(commaIdx + 1), 'base64');
+                    }
+                    catch (e) {
+                        res.sendFile(__dirname + '/public/images/default_app_icon.png');
+                        return;
+                    }
+                    // Re-derive Content-Type from sniffed bytes. Never trust
+                    // the MIME embedded in the stored data URI.
+                    var safeType = imageUtils.sniffImageType(img);
+                    if (!safeType) {
+                        res.sendFile(__dirname + '/public/images/default_app_icon.png');
+                        return;
+                    }
+                    res.writeHead(200, {
+                        'Content-Type': safeType,
+                        'Content-Length': img.length,
+                        'X-Content-Type-Options': 'nosniff',
+                        'Content-Security-Policy': "sandbox; default-src 'none'",
+                        'Content-Disposition': 'inline'
+                    });
+                    res.end(img);
                 });
             }
         });
