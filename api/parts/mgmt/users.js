@@ -865,7 +865,11 @@ usersApi.checkNoteEditPermission = async function(params) {
                         return resolve(false);
                     }
                     const globalAdmin = params.member.global_admin;
-                    const isAppAdmin = hasAdminAccess(params.member, params.qstring.app_id);
+                    // Permission is checked against the NOTE's stored app_id, not the
+                    // app_id in the request's query string. Otherwise a user who is
+                    // app-admin of A can edit/delete notes that belong to B by passing
+                    // app_id=A in the qstring while targeting note_id=<B's note>.
+                    const isAppAdmin = hasAdminAccess(params.member, note.app_id + "");
                     const noteOwner = (note.owner + '' === params.member._id + '');
                     return resolve(noteOwner || (isAppAdmin && note.noteType === 'public') || (globalAdmin && note.noteType === 'public'));
                 }
@@ -914,8 +918,12 @@ usersApi.saveNote = async function(params) {
         return false;
     }
 
+    // Bind the note to the app_id we already permission-checked
+    // (params.qstring.app_id, against which validateCreate ran). Trusting
+    // args.app_id would let a user with create-rights on app A write notes
+    // attached to app B by passing args.app_id=B.
     const note = {
-        app_id: args.app_id,
+        app_id: params.qstring.app_id + "",
         note: args.note,
         ts: args.ts,
         noteType: args.noteType,
@@ -946,7 +954,7 @@ usersApi.saveNote = async function(params) {
         }
     }
     else {
-        common.db.collection('notes').find({ "app_id": args.app_id }).sort({ "created_at": -1 }).limit(1).project({ "indicator": 1 }).toArray(function(err, res) {
+        common.db.collection('notes').find({ "app_id": note.app_id }).sort({ "created_at": -1 }).limit(1).project({ "indicator": 1 }).toArray(function(err, res) {
             if (err) {
                 common.returnMessage(params, 503, 'Save note failed');
             }
