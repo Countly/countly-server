@@ -2072,7 +2072,13 @@ fetch.alljobs = async function(metric, params) {
     if (params.qstring.sSearch) {
         var rr;
         try {
-            rr = new RegExp(params.qstring.sSearch, "i");
+            // Cap input length and escape regex metacharacters before
+            // building the RegExp. A user-supplied raw pattern such as
+            // "^(a+)+$" can exhibit catastrophic backtracking and stall
+            // the worker (and Mongo CPU) across the whole jobs collection.
+            var raw = (params.qstring.sSearch + "").slice(0, 256);
+            var escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            rr = new RegExp(escaped, "i");
             pipeline.unshift({
                 $match: { name: { $regex: rr } }
             });
