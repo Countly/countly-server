@@ -515,7 +515,17 @@ membersUtility.loginWithToken = function(req, callback) {
                     // the victim's pre-attack session id then becomes the authenticated
                     // session. The password login flow above (line ~329) already does
                     // this; the token flow was missing it.
-                    req.session.regenerate(function() {
+                    //
+                    // If regenerate fails (e.g. session store error), abort the login
+                    // rather than fall through to setLoggedInVariables on the existing
+                    // (pre-auth) session id — silently continuing would re-introduce
+                    // the fixation primitive this commit closes.
+                    req.session.regenerate(function(regenErr) {
+                        if (regenErr) {
+                            console.log("Session regenerate failed during token login", regenErr);
+                            plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner, reason: "session_regenerate_failed"}});
+                            return callback(undefined);
+                        }
                         if (valid.temporary) {
                             req.session.temporary_token = true;
                         }
