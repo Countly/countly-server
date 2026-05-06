@@ -264,6 +264,15 @@ module.exports = function(my_db) {
                                 if (res && res.export_path && res.export_path !== '') {
                                     if (remove_archive) {
                                         try {
+                                            // KNOWN LIMITATION: res.export_path comes from the
+                                            // user-supplied target_path during export
+                                            // (data_migration_helper.js ~1224). The directory
+                                            // portion isn't currently containment-checked.
+                                            // Proper fix is to validate target_path at write
+                                            // time (will be addressed alongside the broader
+                                            // target_path hardening). Subdirectory removal a
+                                            // few lines below uses common.resolvePathInBase
+                                            // for defense-in-depth.
                                             fs.unlinkSync(res.export_path);
                                         }
                                         catch (err1) {

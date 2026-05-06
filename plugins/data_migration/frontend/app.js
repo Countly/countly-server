@@ -37,6 +37,13 @@ function safeFilename(filename) {
                                     res.status(400).send('Invalid export file');
                                     return;
                                 }
+                                // KNOWN LIMITATION: customExportPath is trusted as a filesystem path
+                                // beyond the basename check. Its directory portion ultimately comes from
+                                // the user-supplied params.qstring.target_path during the export flow
+                                // (data_migration_helper.js ~1224). The proper fix is at write time —
+                                // contain target_path to an allowed base directory there. Until that
+                                // upstream fix lands, an attacker with data_migration create rights who
+                                // exploits the target_path issue can read back the file they wrote.
                                 myfile = customExportPath;
                             }
                             if (fs.existsSync(myfile)) {
