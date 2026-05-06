@@ -434,13 +434,7 @@ const FEATURE_NAME = 'reports';
                                 html = ejs.render(res.message.template, res.message.data);
                             }
 
-                            // No wildcard CORS — preview HTML is intended for
-                            // human view, not cross-origin programmatic
-                            // consumption. * here would let any third-party
-                            // page read the rendered (potentially user-
-                            // influenced) content and cookies do not need to
-                            // attach for that.
-                            common.returnRaw(params, 200, html, {'Content-Type': 'text/html; charset=utf-8'});
+                            common.returnRaw(params, 200, html, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
                         }
                         else {
                             common.returnMessage(params, 200, 'No data to report');
@@ -489,12 +483,11 @@ const FEATURE_NAME = 'reports';
                                         common.returnMessage(params, 500, 'Cannot read pdf file');
                                     }
                                     else {
-                                        // No wildcard CORS for PDF either; same reasoning
-                                        // as the HTML preview above.
                                         common.returnRaw(params, 200, data, {
                                             'Content-Type': 'application/pdf',
                                             'Content-Disposition': 'inline; filename="report.pdf"',
-                                            'Content-Length': data.length
+                                            'Content-Length': data.length,
+                                            'Access-Control-Allow-Origin': '*'
                                         });
                                     }
                                     fs.unlink(filePath, function(unlinkErr) {
