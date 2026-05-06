@@ -272,8 +272,16 @@ usersApi.createUser = async function(params) {
                     console.log('Error creating user: ', err);
                 }
                 if (member && member.length && !err) {
+                    // The previous derivation was sha512Hash(username + full_name, timestamp).
+                    // sha512Hash treats its second arg as a *boolean* addSalt flag (see
+                    // sha512Hash() below), so the actual HMAC key was Date.now() ms — a tiny
+                    // attacker-discoverable keyspace given an estimated send time. Combined
+                    // with attacker-knowable username/full_name, this enabled new-member
+                    // invite token recovery and account takeover before the legitimate user
+                    // clicked the link. Use crypto.randomBytes(32) instead — same approach
+                    // already used by the password-reset flow in frontend/express/libs/members.js.
                     var timestamp = Math.round(new Date().getTime() / 1000),
-                        prid = sha512Hash(member[0].username + member[0].full_name, timestamp);
+                        prid = crypto.randomBytes(32).toString('hex');
                     common.db.collection('password_reset').insert({"prid": prid, "user_id": member[0]._id, "timestamp": timestamp, "newInvite": true}, {safe: true}, function() {
                         mail.sendToNewMemberLink(member[0], prid);
                     });
