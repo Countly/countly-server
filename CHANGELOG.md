@@ -1,5 +1,7 @@
 ## Version 24.05.50
 Security Fixes:
+- [star-rating] Close stored XSS in feedback widget logo upload/preview; restrict uploads to image MIME types and validate magic bytes (backport of #7532)
+- [star-rating] Defense-in-depth on image upload/serve routes
 - [data_migration] Constrain export/import paths to allowed directories; reject path-traversal in `target_path`, multipart filenames, and exportid (backport of #7491)
 - [errorlogs] Reject path-traversal in admin log file paths
 - [system-utility] Harden streamed responses with error handlers
@@ -7,7 +9,6 @@ Security Fixes:
 - [exports] Add stream error handlers to export download
 - [reports] Add stream error handlers
 - [dashboards] Constrain public screenshot route paths and stream error handling
-- [star-rating] Constrain public feedback image route paths and stream error handling
 - [core] Add `common.resolvePathInBase` helper for safe path containment checks
 
 ## Version 24.05.49
