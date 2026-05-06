@@ -23,7 +23,16 @@ plugins.setConfigs("recaptcha", {
         });
         app.post(countlyConfig.path + '/login', function(req, res, next) {
             if (req.session.fails && plugins.getConfig("recaptcha").enable && plugins.getConfig("recaptcha").site_key !== "" && plugins.getConfig("recaptcha").secret_key !== "") {
-                if (req.body && req.body.auth_code && req.body.auth_code === req.session.otp) { //if coming from two-factor and if it is matching the auth code in session skip captcha
+                // Skip captcha when the user already completed 2FA in this
+                // session. Previously this branch checked
+                // req.body.auth_code === req.session.otp, but the 2FA plugin
+                // used to write session.otp BEFORE verifying the code — so
+                // any successful 2FA login left a session in which any
+                // subsequent /login with the same auth_code value would
+                // bypass captcha against arbitrary other usernames.
+                // The 2FA plugin now sets req.session.twoFactorPassed = true
+                // ONLY after GA.check succeeds; we use that flag here.
+                if (req.session.twoFactorPassed) {
                     next();
                 }
                 else {
