@@ -338,7 +338,9 @@ function trim_ending_slashes(address) {
                                     logPath = common.resolvePathInBase(path.resolve(__dirname, './../../../log'), res.log);
                                 }
                                 if (res.log && !logPath) {
-                                    common.returnMessage(ob.params, 401, "data-migration.unable-to-delete-log-file");
+                                    // 400: the stored log filename failed
+                                    // sanitization/containment (bad input).
+                                    common.returnMessage(ob.params, 400, "data-migration.unable-to-delete-log-file");
                                     return;
                                 }
                                 if (logPath && fs.existsSync(logPath)) {
@@ -347,7 +349,8 @@ function trim_ending_slashes(address) {
                                     }
                                     catch (err1) {
                                         log.e(err1);
-                                        common.returnMessage(ob.params, 401, "data-migration.unable-to-delete-log-file"); return;
+                                        // 500: actual server-side fs error.
+                                        common.returnMessage(ob.params, 500, "data-migration.unable-to-delete-log-file"); return;
                                     }
                                 }
                                 common.db.collection("data_migrations").remove({_id: exportid}, function(err1) {
