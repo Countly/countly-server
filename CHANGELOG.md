@@ -1,3 +1,15 @@
+## Version 24.05.50
+Security Fixes:
+- [data_migration] Constrain export/import paths to allowed directories; reject path-traversal in `target_path`, multipart filenames, and exportid (backport of #7491)
+- [errorlogs] Reject path-traversal in admin log file paths
+- [system-utility] Harden streamed responses with error handlers
+- [crashes] Add error handlers to crash report streamed responses
+- [exports] Add stream error handlers to export download
+- [reports] Add stream error handlers
+- [dashboards] Constrain public screenshot route paths and stream error handling
+- [star-rating] Constrain public feedback image route paths and stream error handling
+- [core] Add `common.resolvePathInBase` helper for safe path containment checks
+
 ## Version 24.05.49
 Fixes:
 - [alerts] Fixed alert jobs using system's timezone instead of application's
