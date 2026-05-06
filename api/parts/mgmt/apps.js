@@ -364,8 +364,9 @@ appsApi.updateApp = function(params) {
             },
             // App admins are allowed to manage these app-level settings via
             // the regular update flow. SSRF protection on redirect_url is
-            // applied at request time (api/utils/ssrf-protection.js used in
-            // validateRedirect) — see plugins/hooks/api/ssrf-protection.js.
+            // applied at request time by validateRedirect in
+            // api/utils/requestProcessor.js, which uses the shared helper at
+            // api/utils/ssrf-protection.js.
             'redirect_url': {
                 'required': false,
                 'type': 'String'
