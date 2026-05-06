@@ -115,8 +115,16 @@ fetch.fetchEventGroupById = function(params) {
         return false;
     }
     common.db.collection(COLLECTION_NAME).findOne({ _id, app_id: params.app_id + "" }, function(error, result) {
-        if (error || !result) {
+        if (error) {
             common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        if (!result) {
+            // Distinguish "no such doc in this app's scope" (a normal client
+            // error / cross-tenant probe) from an actual server error. With
+            // app_id scoping introduced in H-17, the not-found case became
+            // common and returning 500 was misleading to callers.
+            common.returnMessage(params, 404, 'Event group not found');
             return false;
         }
         common.returnOutput(params, result);
@@ -172,8 +180,15 @@ fetch.getMergedEventGroups = function(params, event, options, callback) {
     // by knowing/guessing its _id.
     const eventId = (event || "") + "";
     common.db.collection(COLLECTION_NAME).findOne({ _id: eventId, app_id: params.app_id + "" }, function(error, result) {
-        if (error || !result) {
+        if (error) {
             common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        if (!result) {
+            // Same rationale as fetchEventGroupById — with app_id scoping in
+            // place, "not found" is a normal client error (often a probe
+            // for a foreign tenant's _id), not a server error.
+            common.returnMessage(params, 404, 'Event group not found');
             return false;
         }
         options = options || {};
