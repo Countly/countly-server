@@ -1415,9 +1415,18 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
 };
 
 common.returnOutput = function(params, output, noescape, heads) {
-    if (params && params.qstring && params.qstring.noescape) {
-        noescape = params.qstring.noescape;
-    }
+    // The function previously honored params.qstring.noescape — letting any
+    // caller disable HTML-entity escaping on the API response by appending
+    // ?noescape=1 to the URL. The dashboard relies on returnOutput escaping
+    // attacker-controllable strings (crash names, segmentation values, etc)
+    // before rendering them with v-html. With ?noescape=1 honored at the
+    // qstring level, an attacker could craft a URL that, when loaded by an
+    // admin, returned unescaped JSON which then executed as script in
+    // v-html sinks (reflected XSS via parameter manipulation).
+    //
+    // Keep `noescape` as a function argument for internal callers that
+    // intentionally bypass escaping (binary, pre-escaped content); never
+    // accept it from the request.
     var escape = noescape ? undefined : function(k, v) {
         return escape_html_entities(k, v, true);
     };
