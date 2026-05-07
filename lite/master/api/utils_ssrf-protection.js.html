@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>WriteBatcher - Documentation</title>
+    <title>utils/ssrf-protection.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -37,1322 +37,243 @@
 
 <div id="main">
     
-    <h1 class="page-title">WriteBatcher</h1>
-    
-
-    
-
-
-
-
-<section>
-
-<header>
-    
-        <h2>
-        
-            WriteBatcher
-        
-        </h2>
-        
-            <div class="class-description usertext"><p>Class for batching database operations for aggregated data</p></div>
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-
-    
-    <h2>Constructor</h2>
-    
-
-    <h4 class="name" id="WriteBatcher"><span class="type-signature"></span>new WriteBatcher<span class="signature">(db)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Create batcher instance</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_batcher.js.html">parts/data/batcher.js</a>, <a href="parts_data_batcher.js.html#line185">line 185</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-examples">Example</h5>
-    
-    <pre class="prettyprint"><code>let batcher = new WriteBatcher(common.db);
- batcher.add("eventsa8bb6a86cc8026768c0fbb8ed5689b386909ee5c", "no-segment_2020:0_2", {"$set":{"segments.name":true, "name.Runner":true}});</code></pre>
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Db</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>database object</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        </div>
-    
-
-    
-
-    
-
-    
-    
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id="add"><span class="type-signature"></span>add<span class="signature">(collection, id, operation, db, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Provide operation for document id and batcher will try to merge multiple operations</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_batcher.js.html">parts/data/batcher.js</a>, <a href="parts_data_batcher.js.html#line345">line 345</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>collection</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>name of the collection where to update data</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>id</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>id of the document</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>operation</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>operation</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    <code>countly</code>
-                
-                </td>
-            
-
-            <td class="description last"><p>name of the database for which to write data</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>options for operation ((upsert: false) - if you don't want to upsert document)</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="addDb"><span class="type-signature"></span>addDb<span class="signature">(name, connection)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Add another database to batch</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_batcher.js.html">parts/data/batcher.js</a>, <a href="parts_data_batcher.js.html#line204">line 204</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>name of the database</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>connection</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Db</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>MongoDB connection to that database</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="flush"><span class="type-signature type-signature-async">(async) </span>flush<span class="signature">(db, collection)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Writes data to database for specific collection</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_batcher.js.html">parts/data/batcher.js</a>, <a href="parts_data_batcher.js.html#line224">line 224</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>name of the database for which to write data</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>collection</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>name of the collection for which to write data</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="flushAll"><span class="type-signature"></span>flushAll<span class="signature">()</span><span class="type-signature"> &rarr; {Promise}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Run all pending database queries</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_batcher.js.html">parts/data/batcher.js</a>, <a href="parts_data_batcher.js.html#line298">line 298</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5 class="h5-returns">Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>promise</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise</span>
-
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="get"><span class="type-signature"></span>get<span class="signature">(collection, id, db)</span><span class="type-signature"> &rarr; {object}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Get operation on document by id</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_batcher.js.html">parts/data/batcher.js</a>, <a href="parts_data_batcher.js.html#line327">line 327</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>collection</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>name of the collection where to update data</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>id</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>id of the document</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                    <code>countly</code>
-                
-                </td>
-            
-
-            <td class="description last"><p>name of the database for which to write data</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5 class="h5-returns">Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>bulkwrite query for document by reference, you can modify it synchronously or data may be lost</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">object</span>
-
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="loadConfig"><span class="type-signature"></span>loadConfig<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Reloads server configs</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_batcher.js.html">parts/data/batcher.js</a>, <a href="parts_data_batcher.js.html#line212">line 212</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="schedule"><span class="type-signature"></span>schedule<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Schedule next flush</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_batcher.js.html">parts/data/batcher.js</a>, <a href="parts_data_batcher.js.html#line313">line 313</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    
-
-    
-
-    
-</article>
-
-</section>
+    <h1 class="page-title">utils/ssrf-protection.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module api/utils/ssrf-protection
+ * @description SSRF (Server-Side Request Forgery) protection utilities
+ * shared by the core API (validateRedirect for app.redirect_url) and
+ * the Hooks plugin's HTTPEffect.
+ *
+ * Provides IP blocklist checking, DNS-level validation, and URL safety
+ * verification to prevent requests to internal/private network addresses,
+ * cloud metadata endpoints, and other dangerous targets.
+ *
+ * Uses ipaddr.js for robust IP address parsing and range classification,
+ * covering all RFC-defined private, reserved, loopback, link-local,
+ * multicast, carrier-grade NAT, and documentation ranges for both
+ * IPv4 and IPv6 (including IPv4-mapped IPv6 and NAT64).
+ *
+ *  - URL parse time validation with DNS (isUrlSafe)
+ *  - Protocol restriction (only http/https)
+ *  - Redirects disabled (followRedirect: false via getSsrfSafeOptions)
+ *  - Revalidation after template expansion (when doing request in http effect)
+ */
+
+'use strict';
+
+const dns = require('dns');
+const net = require('net');
+const { URL } = require('url');
+const ipaddr = require('ipaddr.js');
+
+/**
+ * Allowed URL protocols for outbound requests.
+ */
+const ALLOWED_PROTOCOLS = new Set(['http:', 'https:']);
+
+/**
+ * Hostnames known to serve cloud metadata / internal services.
+ * Checked as exact match (case-insensitive).
+ */
+const BLOCKED_HOSTNAMES = new Set([
+    'metadata.google.internal',
+    'metadata.goog',
+    'metadata.google.com',
+    'kubernetes.default.svc',
+    'kubernetes.default',
+    'kubernetes',
+]);
+
+/**
+ * Check whether an IP address (v4 or v6) is private/reserved/internal.
+ *
+ * Uses ipaddr.js range() classification. Only 'unicast' addresses are
+ * considered safe. All other ranges are blocked:
+ *  - unspecified  (0.0.0.0/8, ::)
+ *  - loopback     (127.0.0.0/8, ::1)
+ *  - private      (10/8, 172.16/12, 192.168/16)
+ *  - linkLocal    (169.254/16, fe80::/10)
+ *  - multicast    (224/4, ff00::/8)
+ *  - broadcast    (255.255.255.255)
+ *  - reserved     (192.0.0/24, 192.0.2/24, 192.88.99/24, 198.18/15,
+ *                  198.51.100/24, 203.0.113/24, 240/4, 2001:db8::/32)
+ *  - carrierGradeNat (100.64/10)
+ *  - uniqueLocal  (fc00::/7)
+ *  - ipv4Mapped   (::ffff:0:0/96 — unwrapped and re-checked as IPv4)
+ *  - rfc6052      (64:ff9b::/96 NAT64)
+ *  - discard      (100::/64)
+ *
+ * @param {string} ip - IP address string
+ * @returns {boolean} true if the IP should be blocked
+ */
+function isBlockedIP(ip) {
+    let parsed;
+    try {
+        parsed = ipaddr.parse(ip);
+    }
+    catch (e) {
+        // Unparseable IP — block to be safe
+        return true;
+    }
+
+    const range = parsed.range();
+
+    // IPv4-mapped IPv6 (::ffff:x.x.x.x): unwrap and check the inner IPv4
+    if (range === 'ipv4Mapped' &amp;&amp; parsed.isIPv4MappedAddress()) {
+        return parsed.toIPv4Address().range() !== 'unicast';
+    }
+
+    return range !== 'unicast';
+}
+
+/**
+ * Check whether a hostname is a known dangerous internal service.
+ *
+ * @param {string} hostname - The hostname to check (will be lowercased)
+ * @returns {boolean} true if the hostname should be blocked
+ */
+function isBlockedHostname(hostname) {
+    const lower = hostname.toLowerCase();
+
+    // Exact match against known dangerous hosts
+    if (BLOCKED_HOSTNAMES.has(lower)) {
+        return true;
+    }
+
+    // Block "localhost" and variants
+    if (lower === 'localhost' || lower.endsWith('.localhost')) {
+        return true;
+    }
+
+    // Block .internal TLD (used by GCP metadata and internal services)
+    if (lower.endsWith('.internal')) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Strip IPv6 brackets from a hostname if present.
+ * new URL('http://[::1]/').hostname returns '[::1]' with brackets,
+ * but net.isIP() and our IP checkers expect '::1' without brackets.
+ *
+ * @param {string} hostname - hostname possibly wrapped in brackets
+ * @returns {string} hostname with brackets stripped if it was a bracketed IPv6
+ */
+function stripIPv6Brackets(hostname) {
+    if (hostname.startsWith('[') &amp;&amp; hostname.endsWith(']')) {
+        return hostname.slice(1, -1);
+    }
+    return hostname;
+}
+
+/**
+ * Validate a URL string for SSRF safety.
+ *
+ * @param {string} urlString - The URL to validate
+ */
+async function isUrlSafe(urlString) {
+    // Must be a non-empty string
+    if (!urlString || typeof urlString !== 'string') {
+        return { safe: false, error: 'URL must be a non-empty string' };
+    }
+
+    // Parse the URL
+    let parsed;
+    try {
+        parsed = new URL(urlString);
+    }
+    catch (e) {
+        return { safe: false, error: 'Invalid URL: ' + e.message };
+    }
+
+    // Protocol restriction
+    if (!ALLOWED_PROTOCOLS.has(parsed.protocol)) {
+        return { safe: false, error: `Protocol "${parsed.protocol}" is not allowed. Only http and https are permitted.` };
+    }
+
+    // Block credentials in URL (user:pass@host)
+    if (parsed.username || parsed.password) {
+        return { safe: false, error: 'URLs with embedded credentials are not allowed' };
+    }
+
+    const hostname = parsed.hostname;
+
+    // Check against blocked hostnames
+    if (isBlockedHostname(hostname)) {
+        return { safe: false, error: `Hostname "${hostname}" is blocked` };
+    }
+
+    // Strip IPv6 brackets for IP checks (URL parser returns [::1], net.isIP expects ::1)
+    const bareHostname = stripIPv6Brackets(hostname);
+
+    // If hostname is an IP literal, check it directly
+    if (net.isIP(bareHostname)) {
+        if (isBlockedIP(bareHostname)) {
+            return { safe: false, error: `IP address "${bareHostname}" is in a private/reserved range` };
+        }
+        // IP is public — OK at parse time
+        return { safe: true, error: null };
+    }
+
+    // Hostname is a domain name — resolve it to check the IP
+    try {
+        const address = await new Promise((resolve, reject) => {
+            dns.lookup(hostname, (err, addr) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve(addr);
+                }
+            });
+        });
+
+        if (isBlockedIP(address)) {
+            return { safe: false, error: `Hostname "${hostname}" resolves to private/reserved IP "${address}"` };
+        }
+    }
+    catch (e) {
+        return { safe: false, error: `DNS resolution failed for "${hostname}": ${e.message}` };
+    }
+
+    return { safe: true, error: null };
+}
+
+/**
+ * Build got-compatible request options with SSRF protection baked in.
+ *
+ * Disables redirects to prevent redirect-based SSRF bypasses.
+ *
+ * @param {object} requestOptions - base request options (uri, timeout, headers, etc.)
+ * @returns {object} the same options object with SSRF settings injected
+ */
+function getSsrfSafeOptions(requestOptions) {
+    const options = Object.assign({}, requestOptions);
+
+    // Disable redirects entirely — prevents redirect-based SSRF bypasses
+    options.followRedirect = false;
+
+    return options;
+}
+
+module.exports = {
+    isUrlSafe,
+    getSsrfSafeOptions,
+};
+</code></pre>
+        </article>
+    </section>
 
 
 
