@@ -1,6 +1,10 @@
 ## Version 25.03.X
 Enterprise Fixes:
 - [drill] Add query hint based on default indexes
+- [drill] Add contextual links in drill table for user IDs and crash groups
+- [drill] Resolve device IDs to user profiles via server-side redirect endpoint
+- [drill] Open crash group and user profile links in new tab
+- [drill] Show user-friendly error message when saving a query fails
 
 
 ## Version 25.03.43
