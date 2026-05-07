@@ -1397,13 +1397,7 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
                 log.e(`Error writing header in 'returnMessage' ${err}`);
                 params.res.writeHead(returnCode, defaultHeaders);
             }
-            if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
-            }
-            else {
-                params.res.write(JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities));
-            }
-
+            params.res.write(JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities));
             params.res.end();
         }
         else {
@@ -1485,13 +1479,7 @@ common.returnOutput = function(params, output, noescape, heads) {
                 log.e(`Error writing header in 'returnMessage' ${err}`);
                 params.res.writeHead(200, defaultHeaders);
             }
-            if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
-            }
-            else {
-                params.res.write(JSON.stringify(output, escape));
-            }
-
+            params.res.write(JSON.stringify(output, escape));
             params.res.end();
         }
         else {
