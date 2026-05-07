@@ -33,7 +33,7 @@
     "grunt-mocha-nyc": "1.0.3",
     "grunt-mocha-test": "0.13.3",
     "husky": "^9.1.7",
-    "lint-staged": "^16.0.0",
+    "lint-staged": "^17.0.2",
     "mocha": "10.8.2",
     "nyc": "18.0.0",
     "should": "13.2.3",
