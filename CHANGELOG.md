@@ -1,3 +1,47 @@
+## Version 24.05.50
+Security Fixes (backport of #7535 — bug-bounty-style hardening pass):
+- [auth] Restrict `/login/token/:token` to login-purpose tokens; regenerate session id on token login to close fixation
+- [dashboards] Require auth + per-widget app permission on `/o/dashboards/test`; remove the unused endpoint
+- [dashboards] Identical response for missing/inaccessible dashboard (no enumeration)
+- [dbviewer] Block `$graphLookup` aggregation stage (cross-collection data exfiltration)
+- [redirect] Apply SSRF protection (`api/utils/ssrf-protection.js`) to `app.redirect_url` outbound requests
+- [tasks] Authorize `/i/tasks/{update,delete,name,edit}` per task ownership / app admin / global admin
+- [exports] Authorize `/o/export/download` by task ownership / app_id
+- [notes] Bind notes to permission-checked `app_id`; check edit permissions against the note's stored `app_id`
+- [notes] Enforce `saveNote` schema validation
+- [apps] Replace updateApp/createApp mass-assignment with explicit field allowlist
+- [event_groups] Whitelist updatable fields on create/update; scope reads by `app_id`
+- [app_users] Sanitize `user.picture` filename before deletion (path traversal)
+- [app_users] Scope export download/delete to caller's `app_id`; reject path-traversal in filenames
+- [app_users / logger / compliance-hub] Strip dangerous Mongo operators (`$where`, `$expr`, `$function`, `$accumulator`) from user-supplied queries
+- [push] Bind message create/test/update/one/remove/toggle to query-string `app_id` (cross-app push injection)
+- [alerts] Validate `alertConfig.selectedApps` against caller's permissions (cross-app metric exfiltration)
+- [data] Escape regex metacharacters in `sSearch` parameters (ReDoS)
+- [users] `/users/check/username` now requires global admin (parity with email check)
+- [cms / system / systemlogs] `/i/cms/save_entries`, `/o/system/plugins`, `/i/systemlogs` restricted to global admins
+- [auth] Replace OTP-equality recaptcha bypass with `twoFactorPassed` session flag
+- [auth] Generate new-member invite `prid` with `crypto.randomBytes` (replace predictable HMAC)
+- [output] Remove `noescape` query-string bypass on `returnOutput` (reflected-XSS via parameter)
+- [auth] Handle `req.session.regenerate` error in token login
+- [data] Return 404 (not 500) when `event_groups` lookup misses
+
+24.05-specific notes (some master fixes were not directly applicable):
+- C-1 (`$graphLookup`) and M-11 (dbviewer non-admin filter scope): master uses a `whiteListedAggregationStages` mechanism (added by SER-2122) and a `getBaseAppFilter` per-collection app-id mechanism that 24.05 does not have. C-1 is implemented as a minimal targeted block; M-11 is not applicable here. A broader 24.05 dbviewer hardening (porting SER-2122 + filter scope + M-11) is left for a separate change.
+- M-14 (`--disable-web-security`): the flag was never present in 24.05's puppeteer args, so the master fix is a no-op; only an explanatory comment was added.
+- L-7 (drop wildcard CORS from reports preview/pdf): intentionally **not** backported — the wildcard is needed for puppeteer PDF rendering against `data:` URL documents (sub-resource fetches). Same decision as on master where the L-7 fix was reverted.
+
+Earlier in this 24.05.50 release:
+- [star-rating] Close stored XSS in feedback widget logo upload/preview; restrict uploads to image MIME types and validate magic bytes (backport of #7532)
+- [star-rating] Defense-in-depth on image upload/serve routes
+- [data_migration] Constrain export/import paths to allowed directories; reject path-traversal in `target_path`, multipart filenames, and exportid (backport of #7491)
+- [errorlogs] Reject path-traversal in admin log file paths
+- [system-utility] Harden streamed responses with error handlers
+- [crashes] Add error handlers to crash report streamed responses
+- [exports] Add stream error handlers to export download
+- [reports] Add stream error handlers
+- [dashboards] Constrain public screenshot route paths and stream error handling
+- [core] Add `common.resolvePathInBase` helper for safe path containment checks
+
 ## Version 24.05.49
 Fixes:
 - [alerts] Fixed alert jobs using system's timezone instead of application's

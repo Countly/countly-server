@@ -194,8 +194,18 @@ function generateQRCode(username, secret, callback) {
                         try {
                             const secretToken = member.two_factor_auth && member.two_factor_auth.secret_token ? apiUtils.decrypt(member.two_factor_auth.secret_token) : req.body.secret_token;
 
-                            req.session.otp = req.body.auth_code;
+                            // NOTE: do NOT write req.session.otp here. The
+                            // recaptcha plugin used to skip its check when
+                            // req.body.auth_code === req.session.otp; setting
+                            // it BEFORE verification let an attacker who once
+                            // performed any 2FA login subsequently brute-force
+                            // other accounts using the same auth_code value
+                            // and bypass recaptcha. Instead we set
+                            // req.session.twoFactorPassed = true ONLY after
+                            // GA.check succeeds, and the recaptcha plugin
+                            // looks at that flag.
                             if (GA.check(req.body.auth_code, secretToken)) {
+                                req.session.twoFactorPassed = true;
                                 if (req.body.secret_token) {
                                     countlyDb.collection("members").findAndModify(
                                         {_id: member._id},

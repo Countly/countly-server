@@ -487,6 +487,20 @@ membersUtility.loginWithToken = function(req, callback) {
                 return callback(undefined);
             }
 
+            // Only allow tokens whose purpose is explicitly "log this member in".
+            //   - "LoggedInAuth"   — legitimate session tokens (set by setLoggedInVariables;
+            //                        mail.sendTimeBanWarning).
+            //   - "LoginAuthToken" — short-lived (TTL=300, multi:false) tokens used by the
+            //                        server-side Puppeteer renderer to authenticate the
+            //                        headless Chrome session at /login/token/:token.
+            // Any other purpose — including arbitrary purposes settable via /i/token/create
+            // by a global admin — MUST NOT be redeemable here.
+            var allowedLoginPurposes = ["LoggedInAuth", "LoginAuthToken"];
+            if (allowedLoginPurposes.indexOf(valid.purpose) === -1) {
+                plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner, reason: "wrong_purpose"}});
+                return callback(undefined);
+            }
+
             membersUtility.db.collection('members').findOne({"_id": membersUtility.db.ObjectID(valid.owner)}, function(err, member) {
                 if (err || !member) {
                     plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner}});
@@ -495,12 +509,30 @@ membersUtility.loginWithToken = function(req, callback) {
                 else {
                     plugins.callMethod("tokenLoginSuccessful", {req: req, data: {username: member.username}});
 
-                    if (valid.temporary) {
-                        req.session.temporary_token = true;
-                    }
-                    setLoggedInVariables(req, member, membersUtility.db, function() {
-                        req.session.settings = member.settings;
-                        callback(member);
+                    // Regenerate the session id before binding the new identity to it.
+                    // Without this, an attacker who knows a valid token can fixate the
+                    // victim's session id by getting them to GET /login/token/:token —
+                    // the victim's pre-attack session id then becomes the authenticated
+                    // session. The password login flow above (line ~329) already does
+                    // this; the token flow was missing it.
+                    //
+                    // If regenerate fails (e.g. session store error), abort the login
+                    // rather than fall through to setLoggedInVariables on the existing
+                    // (pre-auth) session id — silently continuing would re-introduce
+                    // the fixation primitive this commit closes.
+                    req.session.regenerate(function(regenErr) {
+                        if (regenErr) {
+                            console.log("Session regenerate failed during token login", regenErr);
+                            plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner, reason: "session_regenerate_failed"}});
+                            return callback(undefined);
+                        }
+                        if (valid.temporary) {
+                            req.session.temporary_token = true;
+                        }
+                        setLoggedInVariables(req, member, membersUtility.db, function() {
+                            req.session.settings = member.settings;
+                            callback(member);
+                        });
                     });
                 }
             });

@@ -208,11 +208,23 @@ function stopWithTimeout(type, fromTimeout = false) {
                         common.returnMessage(params, 404, "Profiler files couldn't be found");
                     }
                     else {
+                        // Attach error/end handlers BEFORE writeHead so the
+                        // !headersSent branch is reachable for errors that
+                        // fire before the first chunk is piped.
+                        tarStream.on("error", (streamErr) => {
+                            log.e(streamErr);
+                            if (!params.res.headersSent) {
+                                common.returnMessage(params, 500, "Profiler archive stream error");
+                            }
+                            else {
+                                params.res.end();
+                            }
+                        });
+                        tarStream.on("end", () => params.res.end());
                         params.res.writeHead(200, {
                             "Content-Type": "plain/text; charset=utf-8",
                             "Content-Disposition": "attachment; filename=profiler.tar"
                         });
-                        tarStream.on("end", () => params.res.end());
                         tarStream.pipe(params.res);
                     }
                 }

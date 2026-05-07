@@ -68,6 +68,11 @@ exports.renderView = function(options, cb) {
                     XDG_CONFIG_HOME: pathModule.resolve(__dirname, "../../.cache/chrome/tmp/.chromium"),
                     XDG_CACHE_HOME: pathModule.resolve(__dirname, "../../.cache/chrome/tmp/.chromium")
                 },
+                // --no-sandbox / --disable-setuid-sandbox: needed when running as root in containers.
+                // --ignore-certificate-errors: needed because the renderer fetches the local
+                //   dashboard at https://localhost which often has a self-signed certificate.
+                // Note: master 25.x temporarily added --disable-web-security here and PR #7535's
+                //   M-14 commit removed it; this 24.05 branch never had that flag, so M-14 is a no-op.
                 args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'],
                 ignoreHTTPSErrors: true,
                 userDataDir: pathModule.resolve(__dirname, "../../dump/chrome/" + Date.now())

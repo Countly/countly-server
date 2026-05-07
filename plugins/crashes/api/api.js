@@ -1247,12 +1247,24 @@ plugins.setConfigs("crashes", {
                     }
                     if (params.res.writeHead) {
                         var buf = Buffer.from(crash.binary_crash_dump, 'base64');
+                        // Construct the stream and attach the error handler
+                        // BEFORE writeHead so the !headersSent branch is
+                        // reachable for errors that fire before piping.
+                        let stream = new Duplex();
+                        stream.on("error", function(streamErr) {
+                            log.e(streamErr);
+                            if (!params.res.headersSent) {
+                                common.returnMessage(params, 500, "Binary stream error");
+                            }
+                            else {
+                                params.res.end();
+                            }
+                        });
                         params.res.writeHead(200, {
                             'Content-Type': 'application/octet-stream',
                             'Content-Length': buf.byteLength,
                             'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_bin.dmp"
                         });
-                        let stream = new Duplex();
                         stream.push(buf);
                         stream.push(null);
                         stream.pipe(params.res);

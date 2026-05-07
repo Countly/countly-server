@@ -121,86 +121,88 @@ plugins.setConfigs("dashboards", {
                     memberId = member._id + "";
 
                 common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
-                    if (!err && dashboard) {
-                        async.parallel([
-                            hasViewAccessToDashboard.bind(null, params.member, dashboard),
-                            hasEditAccessToDashboard.bind(null, params.member, dashboard),
-                            fetchMembersData.bind(null, [dashboard.owner_id], [])
-                        ], function(er, res) {
-                            var hasViewAccess = res[0];
-                            var hasEditAccess = res[1];
-                            var ownerData = res[2];
+                    if (err || !dashboard) {
+                        // Return the same response shape as the access-denied
+                        // branch below so an attacker can't distinguish
+                        // "exists but no access" from "doesn't exist".
+                        // Without this, dashboard IDs were enumerable.
+                        return common.returnOutput(params, {error: true, dashboard_access_denied: true});
+                    }
+                    async.parallel([
+                        hasViewAccessToDashboard.bind(null, params.member, dashboard),
+                        hasEditAccessToDashboard.bind(null, params.member, dashboard),
+                        fetchMembersData.bind(null, [dashboard.owner_id], [])
+                    ], function(er, res) {
+                        var hasViewAccess = res[0];
+                        var hasEditAccess = res[1];
+                        var ownerData = res[2];
 
-                            if (er || !hasViewAccess) {
-                                return common.returnOutput(params, {error: true, dashboard_access_denied: true});
-                            }
+                        if (er || !hasViewAccess) {
+                            return common.returnOutput(params, {error: true, dashboard_access_denied: true});
+                        }
 
-                            if (dashboard.owner_id === memberId || member.global_admin) {
-                                dashboard.is_owner = true;
-                            }
+                        if (dashboard.owner_id === memberId || member.global_admin) {
+                            dashboard.is_owner = true;
+                        }
 
-                            if (hasEditAccess) {
-                                dashboard.is_editable = true;
-                            }
-                            else {
-                                dashboard.is_editable = false;
-                            }
+                        if (hasEditAccess) {
+                            dashboard.is_editable = true;
+                        }
+                        else {
+                            dashboard.is_editable = false;
+                        }
 
-                            if (ownerData && ownerData.length) {
-                                dashboard.owner = ownerData[0];
-                            }
+                        if (ownerData && ownerData.length) {
+                            dashboard.owner = ownerData[0];
+                        }
 
-                            var parallelTasks = [
-                                fetchDashboardWidgets.bind(null)
-                            ];
+                        var parallelTasks = [
+                            fetchDashboardWidgets.bind(null)
+                        ];
 
-                            if (!dashboard.share_with) {
-                                if (dashboard.shared_with_edit && dashboard.shared_with_edit.length ||
-                                    dashboard.shared_with_view && dashboard.shared_with_view.length ||
-                                    dashboard.shared_email_edit && dashboard.shared_email_edit.length ||
-                                    dashboard.shared_email_view && dashboard.shared_email_view.length ||
-                                    dashboard.shared_user_groups_edit && dashboard.shared_user_groups_edit.length ||
-                                    dashboard.shared_user_groups_view && dashboard.shared_user_groups_view.length) {
-                                    dashboard.share_with = "selected-users";
-                                }
-                                else {
-                                    dashboard.share_with = "none";
-                                }
-                            }
-
-                            if (dashboard.refreshRate) {
-                                dashboard.refreshRate = dashboard.refreshRate / 60; //Convert to minutes
-                                dashboard.use_refresh_rate = true;
-                            }
-
-                            if (canSeeDashboardShares(params.member, dashboard)) {
-                                parallelTasks.push(fetchSharedUsersInfo.bind(null, dashboard));
+                        if (!dashboard.share_with) {
+                            if (dashboard.shared_with_edit && dashboard.shared_with_edit.length ||
+                                dashboard.shared_with_view && dashboard.shared_with_view.length ||
+                                dashboard.shared_email_edit && dashboard.shared_email_edit.length ||
+                                dashboard.shared_email_view && dashboard.shared_email_view.length ||
+                                dashboard.shared_user_groups_edit && dashboard.shared_user_groups_edit.length ||
+                                dashboard.shared_user_groups_view && dashboard.shared_user_groups_view.length) {
+                                dashboard.share_with = "selected-users";
                             }
                             else {
-                                delete dashboard.shared_with_edit;
-                                delete dashboard.shared_with_view;
-                                delete dashboard.shared_email_view;
-                                delete dashboard.shared_email_edit;
-                                delete dashboard.shared_user_groups_edit;
-                                delete dashboard.shared_user_groups_view;
+                                dashboard.share_with = "none";
+                            }
+                        }
+
+                        if (dashboard.refreshRate) {
+                            dashboard.refreshRate = dashboard.refreshRate / 60; //Convert to minutes
+                            dashboard.use_refresh_rate = true;
+                        }
+
+                        if (canSeeDashboardShares(params.member, dashboard)) {
+                            parallelTasks.push(fetchSharedUsersInfo.bind(null, dashboard));
+                        }
+                        else {
+                            delete dashboard.shared_with_edit;
+                            delete dashboard.shared_with_view;
+                            delete dashboard.shared_email_view;
+                            delete dashboard.shared_email_edit;
+                            delete dashboard.shared_user_groups_edit;
+                            delete dashboard.shared_user_groups_view;
+                        }
+
+                        async.parallel(parallelTasks, function(error, result) {
+                            if (error) {
+                                common.returnMessage(params, 401, 'Error while fetching dashboard widget data.');
+                                return true;
                             }
 
-                            async.parallel(parallelTasks, function(error, result) {
-                                if (error) {
-                                    common.returnMessage(params, 401, 'Error while fetching dashboard widget data.');
-                                    return true;
-                                }
+                            var output = dashboard;
+                            output = Object.assign(output, result[0]);
 
-                                var output = dashboard;
-                                output = Object.assign(output, result[0]);
-
-                                common.returnOutput(params, output);
-                            });
+                            common.returnOutput(params, output);
                         });
-                    }
-                    else {
-                        common.returnMessage(params, 404, "Dashboard does not exist");
-                    }
+                    });
 
                     /**
                      * Function to fetch dashboard widgets
@@ -347,24 +349,6 @@ plugins.setConfigs("dashboards", {
                     common.returnMessage(params, 404, "Such dashboard and widget combination does not exist.");
                 }
             });
-        });
-
-        return true;
-    });
-
-    plugins.register("/o/dashboards/test", function(ob) {
-        var params = ob.params,
-            widgets = [];
-
-        try {
-            widgets = JSON.parse(params.qstring.widgets);
-        }
-        catch (ex) {
-            //Error
-        }
-
-        customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
-            common.returnOutput(params, data);
         });
 
         return true;

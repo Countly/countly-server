@@ -327,6 +327,22 @@ var spawn = require('child_process').spawn,
                 common.returnMessage(params, 500, "The aggregation pipeline must be of the type array");
             }
             else {
+                // Reject $graphLookup. Its `from:` lets a user pull joined
+                // documents from any other collection in the same DB,
+                // bypassing the per-collection access check
+                // (dbUserHasAccessToCollection) and getBaseAppFilter — the
+                // base filter only applies to the source pipeline. The
+                // members/auth_tokens redaction below only fires when the
+                // source collection is one of those, not when those docs
+                // come in via the join. (Master 25.x has a broader
+                // aggregation-stage whitelist; this is the minimal 24.05
+                // backport of the same intent — see PR #7535 commit C-1.)
+                for (var stageIdx = 0; stageIdx < aggregation.length; stageIdx++) {
+                    if (aggregation[stageIdx] && Object.prototype.hasOwnProperty.call(aggregation[stageIdx], "$graphLookup")) {
+                        common.returnMessage(params, 400, "Aggregation stage \"$graphLookup\" is not allowed");
+                        return;
+                    }
+                }
                 var addProjectionAt = 0;
                 if (aggregation[0] && aggregation[0].$match) {
                     while (aggregation.length > addProjectionAt && aggregation[addProjectionAt].$match) {

@@ -2,7 +2,7 @@ var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    { validateGlobalAdmin, validateUser } = require('../../../api/utils/rights.js');
+    { validateGlobalAdmin } = require('../../../api/utils/rights.js');
 
 //const FEATURE_NAME = 'systemlogs';
 plugins.setConfigs("systemlogs", {
@@ -188,7 +188,13 @@ plugins.setConfigs("systemlogs", {
 
     plugins.register("/i/systemlogs", function(ob) {
         var params = ob.params;
-        validateUser(params, function() {
+        // Restrict /i/systemlogs to global admins. Previously gated only by
+        // validateUser, so any authenticated dashboard user (incl. read-only)
+        // could write arbitrary action+data into the systemlogs collection
+        // — useful for forging "app_deleted"/"user_deleted" entries to mask
+        // real attacker activity, or for socially engineering admins via
+        // attacker-controlled JSON rendered in the System Logs UI.
+        validateGlobalAdmin(params, function() {
             if (typeof params.qstring.data === "string") {
                 try {
                     params.qstring.data = JSON.parse(params.qstring.data);
