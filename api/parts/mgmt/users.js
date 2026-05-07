@@ -272,8 +272,16 @@ usersApi.createUser = async function(params) {
                     console.log('Error creating user: ', err);
                 }
                 if (member && member.length && !err) {
+                    // The previous derivation was sha512Hash(username + full_name, timestamp).
+                    // sha512Hash treats its second arg as a *boolean* addSalt flag (see
+                    // sha512Hash() below), so the actual HMAC key was Date.now() ms — a tiny
+                    // attacker-discoverable keyspace given an estimated send time. Combined
+                    // with attacker-knowable username/full_name, this enabled new-member
+                    // invite token recovery and account takeover before the legitimate user
+                    // clicked the link. Use crypto.randomBytes(32) instead — same approach
+                    // already used by the password-reset flow in frontend/express/libs/members.js.
                     var timestamp = Math.round(new Date().getTime() / 1000),
-                        prid = sha512Hash(member[0].username + member[0].full_name, timestamp);
+                        prid = crypto.randomBytes(32).toString('hex');
                     common.db.collection('password_reset').insert({"prid": prid, "user_id": member[0]._id, "timestamp": timestamp, "newInvite": true}, {safe: true}, function() {
                         mail.sendToNewMemberLink(member[0], prid);
                     });
@@ -865,7 +873,11 @@ usersApi.checkNoteEditPermission = async function(params) {
                         return resolve(false);
                     }
                     const globalAdmin = params.member.global_admin;
-                    const isAppAdmin = hasAdminAccess(params.member, params.qstring.app_id);
+                    // Permission is checked against the NOTE's stored app_id, not the
+                    // app_id in the request's query string. Otherwise a user who is
+                    // app-admin of A can edit/delete notes that belong to B by passing
+                    // app_id=A in the qstring while targeting note_id=<B's note>.
+                    const isAppAdmin = hasAdminAccess(params.member, note.app_id + "");
                     const noteOwner = (note.owner + '' === params.member._id + '');
                     return resolve(noteOwner || (isAppAdmin && note.noteType === 'public') || (globalAdmin && note.noteType === 'public'));
                 }
@@ -909,62 +921,66 @@ usersApi.saveNote = async function(params) {
     };
     const args = params.qstring.args;
     const noteValidation = common.validateArgs(args, argProps, true);
-    if (noteValidation) {
-        const note = {
-            app_id: args.app_id,
-            note: args.note,
-            ts: args.ts,
-            noteType: args.noteType,
-            emails: args.emails || [],
-            color: args.color,
-            category: args.category,
-            owner: params.member._id + "",
-            created_at: new Date().getTime(),
-            updated_at: new Date().getTime()
-        };
+    if (!noteValidation.result) {
+        common.returnMessage(params, 400, 'Invalid note: ' + (noteValidation.errors && noteValidation.errors.join('; ')));
+        return false;
+    }
 
-        if (args._id) {
-            const editPermission = await usersApi.checkNoteEditPermission(params);
-            if (!editPermission) {
-                common.returnMessage(params, 403, 'Not allow to edit note');
-            }
-            else {
-                delete note.created_at;
-                delete note.owner;
-                common.db.collection('notes').update({_id: common.db.ObjectID(args._id)}, {$set: note }, (err) => {
-                    if (err) {
-                        common.returnMessage(params, 503, 'Save note failed');
-                    }
-                    else {
-                        common.returnMessage(params, 200, 'Success');
-                    }
-                });
-            }
+    // Bind the note to the app_id we already permission-checked
+    // (params.qstring.app_id, against which validateCreate ran). Trusting
+    // args.app_id would let a user with create-rights on app A write notes
+    // attached to app B by passing args.app_id=B.
+    const note = {
+        app_id: params.qstring.app_id + "",
+        note: args.note,
+        ts: args.ts,
+        noteType: args.noteType,
+        emails: args.emails || [],
+        color: args.color,
+        category: args.category,
+        owner: params.member._id + "",
+        created_at: new Date().getTime(),
+        updated_at: new Date().getTime()
+    };
+
+    if (args._id) {
+        const editPermission = await usersApi.checkNoteEditPermission(params);
+        if (!editPermission) {
+            common.returnMessage(params, 403, 'Not allow to edit note');
         }
         else {
-            common.db.collection('notes').find({ "app_id": args.app_id }).sort({ "created_at": -1 }).limit(1).project({ "indicator": 1 }).toArray(function(err, res) {
+            delete note.created_at;
+            delete note.owner;
+            common.db.collection('notes').update({_id: common.db.ObjectID(args._id)}, {$set: note }, (err) => {
                 if (err) {
                     common.returnMessage(params, 503, 'Save note failed');
                 }
                 else {
-                    if (res && res.length) {
-                        note.indicator = countlyCommon.stringIncrement(res[0].indicator);
-                    }
-                    else {
-                        note.indicator = "A";
-                    }
-                    common.db.collection('notes').insert(note, (_err) => {
-                        if (_err) {
-                            common.returnMessage(params, 503, 'Insert Note failed.');
-                        }
-                        common.returnMessage(params, 200, 'Success');
-                    });
+                    common.returnMessage(params, 200, 'Success');
                 }
             });
         }
     }
     else {
-        common.returnMessage(params, 403, 'add notes failed');
+        common.db.collection('notes').find({ "app_id": note.app_id }).sort({ "created_at": -1 }).limit(1).project({ "indicator": 1 }).toArray(function(err, res) {
+            if (err) {
+                common.returnMessage(params, 503, 'Save note failed');
+            }
+            else {
+                if (res && res.length) {
+                    note.indicator = countlyCommon.stringIncrement(res[0].indicator);
+                }
+                else {
+                    note.indicator = "A";
+                }
+                common.db.collection('notes').insert(note, (_err) => {
+                    if (_err) {
+                        common.returnMessage(params, 503, 'Insert Note failed.');
+                    }
+                    common.returnMessage(params, 200, 'Success');
+                });
+            }
+        });
     }
     return true;
 };
@@ -1092,8 +1108,14 @@ usersApi.fetchNotes = async function(params) {
     const orderByKey = {'3': 'noteType', '2': 'ts'};
     let sortBy = {};
     if (params.qstring.sSearch) {
+        // Cap input length and escape regex metacharacters before
+        // constructing the RegExp. Without this, a pattern like "^(a+)+$"
+        // can stall the worker (and the per-collection Mongo regex scan)
+        // for any caller with notes:read.
+        var rawSearch = (params.qstring.sSearch + "").slice(0, 256);
+        var escapedSearch = rawSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         /*eslint-disable */
-        query.note = {$regex: new RegExp(params.qstring.sSearch, "i")};
+        query.note = {$regex: new RegExp(escapedSearch, "i")};
         /*eslint-enable */
     }
     if (params.qstring.iSortCol_0 && params.qstring.iSortCol_0 !== '0') {

@@ -5,7 +5,7 @@ var Promise = require("bluebird");
 const JOB = require('../../../api/parts/jobs');
 const utils = require('./parts/utils.js');
 const _ = require('lodash');
-const { validateCreate, validateRead, validateUpdate } = require('../../../api/utils/rights.js');
+const { validateCreate, validateRead, validateUpdate, hasCreateRight } = require('../../../api/utils/rights.js');
 const FEATURE_NAME = 'alerts';
 const commonLib = require("./parts/common-lib.js");
 const moment = require('moment-timezone');
@@ -222,6 +222,22 @@ function getScheduleTextExpression(period, offset) {
                 if (!(common.validateArgs(alertConfig, checkProps))) {
                     common.returnMessage(params, 200, 'Not enough args');
                     return true;
+                }
+
+                // Cross-app guard: every entry of selectedApps must be an
+                // app the caller is allowed to create alerts on. Without
+                // this, a user with alerts:create on app A could submit
+                // selectedApps=[B] and have the alert evaluator emit B's
+                // metric values to attacker-controlled emails listed in
+                // alertValues.
+                if (Array.isArray(alertConfig.selectedApps) && alertConfig.selectedApps.length > 0 && !params.member.global_admin) {
+                    var unauthorized = alertConfig.selectedApps.filter(function(aid) {
+                        return !hasCreateRight(FEATURE_NAME, aid + "", params.member);
+                    });
+                    if (unauthorized.length > 0) {
+                        common.returnMessage(params, 403, 'No alerts:create permission on apps: ' + unauthorized.join(', '));
+                        return true;
+                    }
                 }
                 if (alertConfig._id) {
                     const id = alertConfig._id;

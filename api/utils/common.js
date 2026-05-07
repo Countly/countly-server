@@ -1415,9 +1415,18 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
 };
 
 common.returnOutput = function(params, output, noescape, heads) {
-    if (params && params.qstring && params.qstring.noescape) {
-        noescape = params.qstring.noescape;
-    }
+    // The function previously honored params.qstring.noescape — letting any
+    // caller disable HTML-entity escaping on the API response by appending
+    // ?noescape=1 to the URL. The dashboard relies on returnOutput escaping
+    // attacker-controllable strings (crash names, segmentation values, etc)
+    // before rendering them with v-html. With ?noescape=1 honored at the
+    // qstring level, an attacker could craft a URL that, when loaded by an
+    // admin, returned unescaped JSON which then executed as script in
+    // v-html sinks (reflected XSS via parameter manipulation).
+    //
+    // Keep `noescape` as a function argument for internal callers that
+    // intentionally bypass escaping (binary, pre-escaped content); never
+    // accept it from the request.
     var escape = noescape ? undefined : function(k, v) {
         return escape_html_entities(k, v, true);
     };
@@ -2325,6 +2334,58 @@ common.checkPromise = function(func, count, interval) {
         }
         check();
     });
+};
+
+/**
+ * Recursively remove MongoDB operators that allow arbitrary JavaScript
+ * execution or comparison-bypass against trusted server state from a
+ * user-supplied query object. Strips:
+ *
+ *   $where        — evaluates a JS function on every doc; supports
+ *                   `while(true){}` DoS and timing-based exfiltration.
+ *   $expr         — evaluates aggregation expressions against the doc;
+ *                   can be chained with $function/$accumulator below.
+ *   $function     — Mongo 4.4+ server-side JS execution.
+ *   $accumulator  — server-side JS aggregation execution.
+ *
+ * Use this anywhere a request body / query string is passed straight
+ * into MongoDB find/update/delete/count/aggregate as the filter. It is
+ * a defence-in-depth helper, not a substitute for a strict allowlist
+ * of fields.
+ *
+ * @param {*} query - user-supplied query (any depth)
+ * @returns {*} the same query with the dangerous operators removed
+ */
+common.stripUnsafeMongoOperators = function(query) {
+    var BLOCKED = ["$where", "$expr", "$function", "$accumulator"];
+    /**
+     * Recursive walk that strips blocked operators in-place.
+     * @param {*} v - current node
+     * @returns {void}
+     */
+    function walk(v) {
+        if (!v || typeof v !== "object") {
+            return;
+        }
+        if (Array.isArray(v)) {
+            for (var ai = 0; ai < v.length; ai++) {
+                walk(v[ai]);
+            }
+            return;
+        }
+        for (var bi = 0; bi < BLOCKED.length; bi++) {
+            if (Object.prototype.hasOwnProperty.call(v, BLOCKED[bi])) {
+                delete v[BLOCKED[bi]];
+            }
+        }
+        for (var k in v) {
+            if (Object.prototype.hasOwnProperty.call(v, k)) {
+                walk(v[k]);
+            }
+        }
+    }
+    walk(query);
+    return query;
 };
 
 common.clearClashingQueryOperations = function(query) {

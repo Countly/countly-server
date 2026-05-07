@@ -76,6 +76,7 @@
     "grunt-contrib-uglify": "5.2.2",
     "hpagent": "^1.2.0",
     "icanhazip": "^1.0.3",
+    "ipaddr.js": "^2.3.0",
     "jimp": "1.6.1",
     "json2csv": "5.0.7",
     "jsonwebtoken": "^9.0.1",

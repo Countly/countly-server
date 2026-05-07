@@ -100,13 +100,31 @@ fetch.fetchEventData = function(collection, params) {
 * The return the event groups data by _id.
 * @param {Object} params - params object
 * @param {string} params._id - The id of the event group id.
+* @returns {boolean|undefined} false on validation failure
 **/
 fetch.fetchEventGroupById = function(params) {
     const COLLECTION_NAME = "event_groups";
-    const { qstring: { _id } } = params;
-    common.db.collection(COLLECTION_NAME).findOne({ _id }, function(error, result) {
-        if (error || !result) {
+    // Coerce _id to a string to defeat NoSQL operator-injection. Always
+    // scope the lookup to params.app_id so an attacker who knows or
+    // enumerates an event-group _id from another tenant cannot read it
+    // back via this endpoint. validateRead ensures params.app_id is a
+    // tenant the caller is allowed on.
+    const _id = (params.qstring._id || "") + "";
+    if (!_id) {
+        common.returnMessage(params, 400, 'Missing parameter "_id"');
+        return false;
+    }
+    common.db.collection(COLLECTION_NAME).findOne({ _id, app_id: params.app_id + "" }, function(error, result) {
+        if (error) {
             common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        if (!result) {
+            // Distinguish "no such doc in this app's scope" (a normal client
+            // error / cross-tenant probe) from an actual server error. With
+            // app_id scoping introduced in H-17, the not-found case became
+            // common and returning 500 was misleading to callers.
+            common.returnMessage(params, 404, 'Event group not found');
             return false;
         }
         common.returnOutput(params, result);
@@ -159,9 +177,20 @@ fetch.fetchMergedEventGroups = function(params) {
 */
 fetch.getMergedEventGroups = function(params, event, options, callback) {
     const COLLECTION_NAME = "event_groups";
-    common.db.collection(COLLECTION_NAME).findOne({ _id: event }, function(error, result) {
-        if (error || !result) {
+    // Same scoping rule as fetchEventGroupById — confine the lookup to
+    // params.app_id so a caller can't merge another tenant's event group
+    // by knowing/guessing its _id.
+    const eventId = (event || "") + "";
+    common.db.collection(COLLECTION_NAME).findOne({ _id: eventId, app_id: params.app_id + "" }, function(error, result) {
+        if (error) {
             common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        if (!result) {
+            // Same rationale as fetchEventGroupById — with app_id scoping in
+            // place, "not found" is a normal client error (often a probe
+            // for a foreign tenant's _id), not a server error.
+            common.returnMessage(params, 404, 'Event group not found');
             return false;
         }
         options = options || {};
@@ -2086,7 +2115,13 @@ fetch.alljobs = async function(metric, params) {
     if (params.qstring.sSearch) {
         var rr;
         try {
-            rr = new RegExp(params.qstring.sSearch, "i");
+            // Cap input length and escape regex metacharacters before
+            // building the RegExp. A user-supplied raw pattern such as
+            // "^(a+)+$" can exhibit catastrophic backtracking and stall
+            // the worker (and Mongo CPU) across the whole jobs collection.
+            var raw = (params.qstring.sSearch + "").slice(0, 256);
+            var escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            rr = new RegExp(escaped, "i");
             pipeline.unshift({
                 $match: { name: { $regex: rr } }
             });
