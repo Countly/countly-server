@@ -482,9 +482,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         var urlPath = req.url.replace(countlyConfig.path, "");
         var theme = req.cookies.theme || curTheme;
         if (theme && theme.length && (req.url.indexOf(countlyConfig.path + '/images/') === 0 || req.url.indexOf(countlyConfig.path + '/geodata/') === 0)) {
-            fs.exists(__dirname + '/public/themes/' + theme + urlPath, function(exists) {
+            // Both `theme` (cookie) and `urlPath` (URL) are user-controlled.
+            // Resolve under the themes base and reject paths that escape it,
+            // otherwise `..` segments could read files outside /public/themes.
+            var themesBase = path.resolve(__dirname, 'public/themes');
+            var themedFile = common.resolvePathInBase(themesBase, theme + urlPath);
+            if (!themedFile) {
+                next();
+                return;
+            }
+            fs.exists(themedFile, function(exists) {
                 if (exists) {
-                    res.sendFile(__dirname + '/public/themes/' + theme + urlPath);
+                    res.sendFile(themedFile);
                 }
                 else {
                     next();

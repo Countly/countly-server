@@ -1403,7 +1403,9 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
         else {
             console.error("Output already closed, can't write more");
             console.trace();
-            console.log(params);
+            // Don't dump the full params object — req.body/req.headers can
+            // contain credentials, session cookies, or other secrets.
+            console.log({url: params.req && params.req.url, apiPath: params.apiPath, qstringKeys: params.qstring && Object.keys(params.qstring)});
         }
     }
 };
@@ -1485,7 +1487,9 @@ common.returnOutput = function(params, output, noescape, heads) {
         else {
             console.error("Output already closed, can't write more");
             console.trace();
-            console.log(params);
+            // Don't dump the full params object — req.body/req.headers can
+            // contain credentials, session cookies, or other secrets.
+            console.log({url: params.req && params.req.url, apiPath: params.apiPath, qstringKeys: params.qstring && Object.keys(params.qstring)});
         }
     }
 };
