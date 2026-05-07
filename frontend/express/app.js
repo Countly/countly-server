@@ -479,23 +479,16 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.use(cookieParser());
     //server theme images
     app.use(function(req, res, next) {
-        var urlPath = req.url.replace(countlyConfig.path, "");
+        var urlPath = req.path.replace(countlyConfig.path, "");
         var theme = req.cookies.theme || curTheme;
-        if (theme && theme.length && (req.url.indexOf(countlyConfig.path + '/images/') === 0 || req.url.indexOf(countlyConfig.path + '/geodata/') === 0)) {
+        if (theme && theme.length && (req.path.indexOf(countlyConfig.path + '/images/') === 0 || req.path.indexOf(countlyConfig.path + '/geodata/') === 0)) {
             // Both `theme` (cookie) and `urlPath` (URL) are user-controlled.
-            // Resolve under the themes base and reject paths that escape it,
-            // otherwise `..` segments could read files outside /public/themes.
-            var themesBase = path.resolve(__dirname, 'public/themes');
-            var themedFile = common.resolvePathInBase(themesBase, theme + urlPath);
-            if (!themedFile) {
-                next();
-                return;
-            }
-            fs.exists(themedFile, function(exists) {
-                if (exists) {
-                    res.sendFile(themedFile);
-                }
-                else {
+            // Hand the relative path to res.sendFile with `root` set to
+            // /public/themes — express normalizes the path and rejects any
+            // `..` traversal before touching the filesystem. Missing files
+            // surface via the error callback and fall through to next().
+            res.sendFile(theme + urlPath, {root: path.resolve(__dirname, 'public/themes')}, function(err) {
+                if (err) {
                     next();
                 }
             });

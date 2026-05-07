@@ -1404,8 +1404,9 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
             console.error("Output already closed, can't write more");
             console.trace();
             // Don't dump the full params object — req.body/req.headers can
-            // contain credentials, session cookies, or other secrets.
-            console.log({url: params.req && params.req.url, apiPath: params.apiPath, qstringKeys: params.qstring && Object.keys(params.qstring)});
+            // contain credentials, session cookies, or other secrets. Log
+            // only the pathname (query string can carry api_key/auth_token).
+            console.log({pathname: params.urlParts && params.urlParts.pathname, apiPath: params.apiPath, qstringKeys: params.qstring && Object.keys(params.qstring)});
         }
     }
 };
@@ -1488,8 +1489,9 @@ common.returnOutput = function(params, output, noescape, heads) {
             console.error("Output already closed, can't write more");
             console.trace();
             // Don't dump the full params object — req.body/req.headers can
-            // contain credentials, session cookies, or other secrets.
-            console.log({url: params.req && params.req.url, apiPath: params.apiPath, qstringKeys: params.qstring && Object.keys(params.qstring)});
+            // contain credentials, session cookies, or other secrets. Log
+            // only the pathname (query string can carry api_key/auth_token).
+            console.log({pathname: params.urlParts && params.urlParts.pathname, apiPath: params.apiPath, qstringKeys: params.qstring && Object.keys(params.qstring)});
         }
     }
 };
