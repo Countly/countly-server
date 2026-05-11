@@ -1,5 +1,6 @@
 ## Version 25.03.X
 Enterprise Fixes:
+- [active_users] Fixed logic to prevent triggering active users calculation if it is already running.
 - [drill] Add query hint based on default indexes
 - [drill] Add contextual links in drill table for user IDs and crash groups
 - [drill] Resolve device IDs to user profiles via server-side redirect endpoint
