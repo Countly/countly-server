@@ -442,12 +442,25 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         var urlPath = req.path.replace(countlyConfig.path, "");
         var theme = req.cookies.theme || curTheme;
         if (theme && theme.length && (req.path.indexOf(countlyConfig.path + '/images/') === 0 || req.path.indexOf(countlyConfig.path + '/geodata/') === 0)) {
-            // Both `theme` (cookie) and `urlPath` (URL) are user-controlled.
+            // The `theme` cookie is user-controlled. Restrict it to a plain
+            // filename (no separators, no leading dots, no nulls) before
+            // building the path. This is defense-in-depth on top of the
+            // `root` option below; reject anything that doesn't survive
+            // sanitizeFilename unchanged.
+            if (common.sanitizeFilename(theme) !== theme) {
+                next();
+                return;
+            }
             // Hand the relative path to res.sendFile with `root` set to
             // /public/themes — express normalizes the path and rejects any
             // `..` traversal before touching the filesystem. Missing files
-            // surface via the error callback and fall through to next().
+            // and traversal-blocked requests fall through to next(); other
+            // errors are logged server-side but still fall through so a
+            // theme misconfiguration doesn't 500 the page.
             res.sendFile(theme + urlPath, {root: path.resolve(__dirname, 'public/themes')}, function(err) {
+                if (err && err.code !== 'ENOENT' && err.statusCode !== 403 && err.statusCode !== 404) {
+                    log.e('Error serving theme image %j: %s', req.path, err.message);
+                }
                 if (err) {
                     next();
                 }
