@@ -439,14 +439,16 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.use(cookieParser());
     //server theme images
     app.use(function(req, res, next) {
-        var urlPath = req.url.replace(countlyConfig.path, "");
+        var urlPath = req.path.replace(countlyConfig.path, "");
         var theme = req.cookies.theme || curTheme;
-        if (theme && theme.length && (req.url.indexOf(countlyConfig.path + '/images/') === 0 || req.url.indexOf(countlyConfig.path + '/geodata/') === 0)) {
-            fs.exists(__dirname + '/public/themes/' + theme + urlPath, function(exists) {
-                if (exists) {
-                    res.sendFile(__dirname + '/public/themes/' + theme + urlPath);
-                }
-                else {
+        if (theme && theme.length && (req.path.indexOf(countlyConfig.path + '/images/') === 0 || req.path.indexOf(countlyConfig.path + '/geodata/') === 0)) {
+            // Both `theme` (cookie) and `urlPath` (URL) are user-controlled.
+            // Hand the relative path to res.sendFile with `root` set to
+            // /public/themes — express normalizes the path and rejects any
+            // `..` traversal before touching the filesystem. Missing files
+            // surface via the error callback and fall through to next().
+            res.sendFile(theme + urlPath, {root: path.resolve(__dirname, 'public/themes')}, function(err) {
+                if (err) {
                     next();
                 }
             });
