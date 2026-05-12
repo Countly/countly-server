@@ -18,8 +18,8 @@ Security fixes:
 - [data_migration] Constrain export/import paths to allowed directories; reject path-traversal in target_path, multipart filenames, and exportid (backport of #7491)
 - [data] Escape regex metacharacters in sSearch parameters (ReDoS)
 - [data] Return 404 (not 500) when event_groups lookup misses
-- [dbvieweer] ($graphLookup) and M-11 (dbviewer non-admin filter scope)
 - [dbviewer] Block $graphLookup aggregation stage (cross-collection data exfiltration)
+- [dbviewer] Wrap non-admin scope as top-level $and so user-supplied $or/$nor cannot bypass per-tenant filter (cross-tenant data exfiltration)
 - [errorlogs] Reject path-traversal in admin log file paths
 - [event_groups] Whitelist updatable fields on create/update; scope reads by app_id
 - [exports] Add stream error handlers to export download
@@ -29,7 +29,7 @@ Security fixes:
 - [output] Remove noescape query-string bypass on returnOutput (reflected-XSS via parameter)
 - [push] Bind message create/test/update/one/remove/toggle to query-string app_id (cross-app push injection)
 - [redirect] Apply SSRF protection (api/utils/ssrf-protection.js) to app.redirect_url outbound requests
-- [render] (--disable-web-security) removed from puppetteer
+- [render] (--disable-web-security) removed from puppeteer
 - [reports] Add stream error handlers
 - [star-rating] Close stored XSS in feedback widget logo upload/preview; restrict uploads to image MIME types and validate magic bytes (backport of #7532)
 - [star-rating] Defense-in-depth on image upload/serve routes
