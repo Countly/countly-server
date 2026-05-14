@@ -45,6 +45,8 @@ Enterprise Fixes:
 - [drill] Open crash group and user profile links in new tab
 - [drill] Show user-friendly error message when saving a query fails
 
+Enterprise Features:
+- [journey_engine] Engagement cooldown information added to journey builder and user profiles
 
 ## Version 25.03.43
 Enterprise Fixes:
