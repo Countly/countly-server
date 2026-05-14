@@ -46,6 +46,8 @@ Enterprise Fixes:
 - [drill] Show user-friendly error message when saving a query fails
 - [users] Fix MongoDB dot encoding (&#46;) leaking into user profile UI filters, breakdown dropdown, and URLs
 
+Enterprise Features:
+- [journey_engine] Engagement cooldown information added to journey builder and user profiles
 
 ## Version 25.03.43
 Enterprise Fixes:
