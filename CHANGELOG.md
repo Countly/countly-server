@@ -208,6 +208,7 @@ Fixes:
 - [star-rating] Fix consent fields in drawer
 
 Enterprise Fixes:
+- [cognito] Fix crash on GET /clogin/:code when body-parser 2.x leaves req.body undefined on requests with no body
 - [cohorts] Correctly regenerate cohorts having $or rule on custom properties
 - [journey-engine] Update asset file naming to include version from package.json
 
