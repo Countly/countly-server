@@ -71,6 +71,11 @@
                 type: String
             },
 
+            cooldownBadge: {
+                default: () => ({ show: false }),
+                type: Object
+            },
+
             status: {
                 default: () => ({
                     label: 'Status',
