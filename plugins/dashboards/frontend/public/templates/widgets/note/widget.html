@@ -1,16 +1,19 @@
 <div v-bind:class="[componentId, 'clyd-widget', 'dashboards-notes-widget']">
     <div class="bu-level notes-widget-button">
-		<div class="bu-level-left"></div>
+        <div class="bu-level-left" />
         <div class="bu-level-right">
-            <slot name="action"></slot>
+            <slot name="action" />
         </div>
     </div>
-	<div 
-		class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center clyd-widget__content__note" 
-		
-	>
-		<vue-scroll :ops="scrollNote">
-			<span class="el-tiptap-editor el-tiptap-editor__content ProseMirror" v-html="widgetHTML"></span>
-		</vue-scroll>
-	</div>
+    <div
+        class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center clyd-widget__content__note" 
+        @mousedown.stop
+    >
+        <vue-scroll :ops="scrollNote">
+            <span
+                v-html="widgetHTML"
+                class="el-tiptap-editor el-tiptap-editor__content ProseMirror"
+            />
+        </vue-scroll>
+    </div>
 </div>

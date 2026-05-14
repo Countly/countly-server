@@ -204,6 +204,10 @@ var metricProps = {
                                 }
                                 else {
                                     event = parts[1];
+                                    for (var z = 2; z < parts.length; z++) {
+                                        event += "." + parts[z];
+                                    }
+                                    parts[1] = event;//To use it as name also afterwards
                                 }
                                 if (event) {
                                     if (Array.isArray(event)) {

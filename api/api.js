@@ -14,6 +14,7 @@ const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher
 const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
+const tracker = require('./parts/mgmt/tracker.js');
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
@@ -36,6 +37,9 @@ else {
 process.title = t.join(' ');
 
 plugins.connectToAllDatabases().then(function() {
+    plugins.loadConfigs(common.db, function() {
+        tracker.enable();
+    });
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);
@@ -118,6 +122,27 @@ plugins.connectToAllDatabases().then(function() {
         proxy_username: "",
         proxy_password: "",
         proxy_type: "https"
+    });
+
+    /**
+    * Set tracking config
+    */
+    plugins.setConfigs("tracking", {
+        self_tracking_app: "",
+        self_tracking_url: "",
+        self_tracking_app_key: "",
+        self_tracking_id_policy: "_id",
+        self_tracking_sessions: true,
+        self_tracking_events: true,
+        self_tracking_views: true,
+        self_tracking_feedback: true,
+        self_tracking_user_details: true,
+        server_sessions: true,
+        server_events: true,
+        server_crashes: true,
+        server_views: true,
+        server_feedback: true,
+        server_user_details: true
     });
 
     /**
@@ -307,7 +332,7 @@ plugins.connectToAllDatabases().then(function() {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
             jobs.job('api:topEvents').replace().schedule('at 00:01 am ' + 'every 1 day');
-            jobs.job('api:ping').replace().schedule('every 1 day');
+            jobs.job('api:ping').replace().schedule('at 00:01 am ' + 'every 1 day');
             jobs.job('api:clear').replace().schedule('every 1 day');
             jobs.job('api:clearTokens').replace().schedule('every 1 day');
             jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');

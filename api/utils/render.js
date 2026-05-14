@@ -25,6 +25,7 @@ var chromePath = "";
 var countlyFs = require('./countlyFs');
 var log = require('./log.js')('core:render');
 var countlyConfig = require('./../config', 'dont-enclose');
+var fs = require('fs');
 
 
 /**
@@ -67,9 +68,14 @@ exports.renderView = function(options, cb) {
                     XDG_CONFIG_HOME: pathModule.resolve(__dirname, "../../.cache/chrome/tmp/.chromium"),
                     XDG_CACHE_HOME: pathModule.resolve(__dirname, "../../.cache/chrome/tmp/.chromium")
                 },
+                // --no-sandbox / --disable-setuid-sandbox: needed when running as root in containers.
+                // --ignore-certificate-errors: needed because the renderer fetches the local
+                //   dashboard at https://localhost which often has a self-signed certificate.
+                // Note: master 25.x temporarily added --disable-web-security here and PR #7535's
+                //   M-14 commit removed it; this 24.05 branch never had that flag, so M-14 is a no-op.
                 args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'],
                 ignoreHTTPSErrors: true,
-                userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
+                userDataDir: pathModule.resolve(__dirname, "../../dump/chrome/" + Date.now())
             };
 
             if (chromePath) {
@@ -251,6 +257,9 @@ exports.renderView = function(options, cb) {
                 await bodyHandle.dispose();
                 await browser.close();
 
+                // Remove user data directory after use
+                fs.rmSync(settings.userDataDir, { recursive: true, force: true });
+
                 var imageData = {
                     image: image,
                     path: path
@@ -261,6 +270,8 @@ exports.renderView = function(options, cb) {
             catch (e) {
                 log.e("Headless chrome browser error", e);
                 await browser.close();
+                // Remove user data directory after use
+                fs.rmSync(settings.userDataDir, { recursive: true, force: true });
                 return cb(e);
             }
         }

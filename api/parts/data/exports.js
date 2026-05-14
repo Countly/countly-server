@@ -207,6 +207,19 @@ exports.output = function(params, data, filename, type) {
     headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename) + "." + type;
 
     if (type === "xlsx" || type === "xls") { //we have stream
+        // Attach the stream error handler BEFORE writing headers so the
+        // !headersSent branch is reachable for errors that fire before
+        // the first chunk is piped. Once headers are out, the only safe
+        // recovery is to destroy the response.
+        data.on("error", function(streamErr) {
+            common.log("exports").e(streamErr);
+            if (!params.res.headersSent) {
+                common.returnMessage(params, 500, "Export stream error");
+            }
+            else {
+                params.res.end();
+            }
+        });
         params.res.writeHead(200, headers);
         data.pipe(params.res);
         //common.returnRaw(params, 200, new Buffer(data, 'binary'), headers);
@@ -400,6 +413,15 @@ exports.stream = function(params, stream, options) {
     else if (type === 'xlsx' || type === 'xls') {
         options.streamOptions.transform = transformFunction;
         var xc = new XLSXTransformStream();
+        xc.on("error", function(streamErr) {
+            common.log("exports").e(streamErr);
+            if (!params.res.headersSent) {
+                common.returnMessage(params, 500, "Export stream error");
+            }
+            else {
+                params.res.end();
+            }
+        });
         xc.pipe(params.res);
         if (listAtEnd === false) {
             xc.write(paramList);

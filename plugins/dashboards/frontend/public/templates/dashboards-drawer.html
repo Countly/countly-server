@@ -100,6 +100,21 @@
             <cly-form-field name="send-email">
                 <el-checkbox v-model="drawerScope.editedObject.send_email_invitation">{{i18n('dashboards.send-email')}}</el-checkbox>
             </cly-form-field>
+            <cly-form-field name="use-refresh-rate">
+                <el-checkbox v-model="drawerScope.editedObject.use_refresh_rate">
+                    {{ i18nM("dashboards.custom-refresh-rate") }}
+                    <cly-tooltip-icon :tooltip="i18n('dashboards.custom-refresh-rate-description')"></cly-tooltip-icon>
+                </el-checkbox>
+                <cly-form-field
+                    v-if="drawerScope.editedObject.use_refresh_rate"
+                    name="title"
+                    :rules="drawerScope.editedObject.use_refresh_rate ? 'required' : ''">
+                    <el-input
+                        v-model="drawerScope.editedObject.refreshRate"
+                        placeholder="">
+                    </el-input>
+                </cly-form-field>
+            </cly-form-field>
 
         </cly-form-step>
     </template>

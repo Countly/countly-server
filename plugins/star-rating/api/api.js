@@ -5,8 +5,9 @@ var exported = {},
     log = common.log('star-rating:api'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
-    countlyFs = require('../../../api/utils/countlyFs.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateGlobalAdmin, validateAppAdmin } = require('../../../api/utils/rights.js'),
+    countlyFs = require('../../../api/utils/countlyFs.js'),
+    imageUtils = require('./image-utils.js');
 var fetch = require('../../../api/parts/data/fetch.js');
 var ejs = require("ejs"),
     fs = require('fs'),
@@ -23,7 +24,7 @@ if (cohortsEnabled) {
 if (!surveysEnabled) {
     plugins.setConfigs("feedback", {
         main_color: "#0166D6",
-        font_color: "#0166D6",
+        font_color: "#FFFFFF",
         feedback_logo: ""
 
     });
@@ -243,6 +244,16 @@ function create_upload_dir(callback) {
     });
 }
 
+// Map sniffed image MIME → file extension to use on disk. Determines
+// the saved filename and the URL component returned to the caller.
+// Restricted to png/jpeg/gif to preserve the original /i/feedback/logo
+// contract (no widening to webp here).
+var SNIFFED_TYPE_TO_EXT = {
+    "image/png": "png",
+    "image/jpeg": "jpg",
+    "image/gif": "gif"
+};
+
 /**
 * Used for file upload
 * @param {object} myfile - file object(if empty - returns)
@@ -255,48 +266,38 @@ function uploadFile(myfile, id, callback) {
         return;
     }
     var tmp_path = myfile.path;
-    var type = myfile.type;
-    myfile.name = myfile.name || "png";
-    if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
-        fs.unlink(tmp_path, function() { });
-        callback("Invalid image format. Must be png or jpeg");
-        return;
-    }
-
-    var allowedExtensions = ["gif", "jpeg", "jpg", "png"];
-    var ext = myfile.name.split(".");
-    ext = ext[ext.length - 1];
-
-    if (allowedExtensions.indexOf(ext) === -1) {
-        callback("Invalid file extension. Must be .png, .jpg, .gif or .jpeg");
-        return;
-    }
 
     create_upload_dir(function() {
         fs.readFile(tmp_path, (err, data) => {
-            if (err) {
+            if (err || !data) {
+                fs.unlink(tmp_path, function() { });
                 callback("Failed to upload image");
                 return;
             }
-            //convert file to data
-            if (data) {
-                try {
-                    var pp = path.resolve(__dirname, './../images/' + id + "." + ext);
-                    countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + ext, writeMode: "overwrite" }, function(err3) {
-                        if (err3) {
-                            callback("Failed to upload image");
-                        }
-                        else {
-                            fs.unlink(tmp_path, function() { });
-                            callback(true, id + "." + ext);
-                        }
-                    });
-                }
-                catch (SyntaxError) {
-                    callback("Failed to upload image");
-                }
+            // Detect format from magic bytes; never trust myfile.type or
+            // myfile.name. Anything not in the allowlist (png/jpeg/gif)
+            // is rejected.
+            var detectedType = imageUtils.sniffImageType(data);
+            var detectedExt = detectedType && SNIFFED_TYPE_TO_EXT[detectedType];
+            if (!detectedExt) {
+                fs.unlink(tmp_path, function() { });
+                callback("Invalid image format. Must be png, jpeg, or gif");
+                return;
             }
-            else {
+            try {
+                var pp = path.resolve(__dirname, './../images/' + id + "." + detectedExt);
+                countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + detectedExt, writeMode: "overwrite" }, function(err3) {
+                    fs.unlink(tmp_path, function() { });
+                    if (err3) {
+                        callback("Failed to upload image");
+                    }
+                    else {
+                        callback(true, id + "." + detectedExt);
+                    }
+                });
+            }
+            catch (SyntaxError) {
+                fs.unlink(tmp_path, function() { });
                 callback("Failed to upload image");
             }
         });
@@ -371,36 +372,39 @@ function uploadFile(myfile, id, callback) {
     function uploadFeedbackFile(myname, myfile) {
         return new Promise(function(resolve, reject) {
             var tmp_path = myfile.path;
-            var type = myfile.type;
             if (myfile.size > 1.5 * 1024 * 1024) {
                 fs.unlink(tmp_path, function() {});
                 reject(Error("feedback.image-error"));
             }
             else {
                 fs.readFile(tmp_path, (err, data) => {
-                    if (err) {
+                    if (err || !data) {
+                        fs.unlink(tmp_path, function() {});
                         reject(Error("feedback.imagee-error"));
+                        return;
                     }
-                    //convert file to data
-                    if (data) {
-                        try {
-                            var data_uri_prefix = "data:" + type + ";base64,";
-                            var buf = Buffer.from(data);
-                            var image = buf.toString('base64');
-                            image = data_uri_prefix + image;
-                            countlyFs.gridfs.saveData("feedback", myname, image, {id: myname, writeMode: "overwrite"}, function(err2) {
-                                fs.unlink(tmp_path, function() {});
-                                if (err2) {
-                                    return reject(err2);
-                                }
-                                resolve();
-                            });
-                        }
-                        catch (SyntaxError) {
-                            reject(Error("feedback.imagee-error"));
-                        }
+                    var buf = Buffer.from(data);
+                    // Detect MIME from the actual bytes; never trust myfile.type.
+                    // Anything that isn't a recognized safe raster image is rejected.
+                    var detectedType = imageUtils.sniffImageType(buf);
+                    if (!detectedType) {
+                        fs.unlink(tmp_path, function() {});
+                        reject(Error("feedback.imagef-error"));
+                        return;
                     }
-                    else {
+                    try {
+                        var data_uri_prefix = "data:" + detectedType + ";base64,";
+                        var image = data_uri_prefix + buf.toString('base64');
+                        countlyFs.gridfs.saveData("feedback", myname, image, {id: myname, writeMode: "overwrite"}, function(err2) {
+                            fs.unlink(tmp_path, function() {});
+                            if (err2) {
+                                return reject(err2);
+                            }
+                            resolve();
+                        });
+                    }
+                    catch (SyntaxError) {
+                        fs.unlink(tmp_path, function() {});
                         reject(Error("feedback.imagee-error"));
                     }
                 });
@@ -430,37 +434,64 @@ function uploadFile(myfile, id, callback) {
      * }
     */
     plugins.register("/i/feedback/upload", function(ob) {
-        // do not respond if this isn't feedback fetch request 
+        // do not respond if this isn't feedback fetch request
         // or surveys plugin enabled
         if (surveysEnabled) {
             return false;
         }
 
         var params = ob.params;
-        validateUpdate(params, "global_plugins", function() {
-            var images = ["feedback_logo"];
-            var flag = 0;
-            if (params.files) {
-                for (let i = 0; i < images.length; i++) {
-                    if (params.files[images[i]]) {
-                        flag = 1;
-                        uploadFeedbackFile(images[i], params.files[images[i]]).then(function() {
-                            common.returnOutput(params, {"result": "Success"});
-                        }, function(err) {
-                            common.returnMessage(params, 400, err.message);
-                        });
-                        break;
-                    }
-                }
-                if (flag === 0) {
-                    uploadFeedbackFile(params.qstring.name, params.files.file).then(function() {
-                        common.returnOutput(params, {"result": "Success"});
-                    }, function(err) {
-                        common.returnMessage(params, 400, err.message);
-                    });
-                }
-            }
-        });
+        if (!params.files) {
+            common.returnMessage(params, 400, "feedback.imagee-error");
+            return true;
+        }
+
+        // Two upload modes:
+        //   1. Global feedback logo: file posted under field "feedback_logo",
+        //      stored under id "feedback_logo". Modifies a global plugin
+        //      setting and therefore requires actual global admin.
+        //   2. Per-app feedback logo: file posted under field "file" with
+        //      ?name=feedback_logo<24-char-hex-app-id>. The target app id is
+        //      decoded from the name itself, NOT taken from qstring.app_id,
+        //      so an admin of one app can't plant a logo for another app.
+        //
+        // Any other name shape is rejected.
+        var globalUpload = !!params.files.feedback_logo;
+        var fileObj = globalUpload ? params.files.feedback_logo : params.files.file;
+        var requestedName = globalUpload ? "feedback_logo" : (params.qstring && params.qstring.name);
+
+        var parsed = imageUtils.parseFeedbackLogoName(requestedName);
+        if (!parsed.valid || !fileObj) {
+            // Reuse the existing localized "invalid format" key rather than
+            // adding a new key that would need translating across 25+ locale
+            // files. From the user's perspective both conditions (bad name
+            // shape, missing file) are "your upload was malformed, try again".
+            common.returnMessage(params, 400, "feedback.imagef-error");
+            return true;
+        }
+
+        /**
+         * Run the actual file upload after auth has passed.
+         * @returns {void}
+         */
+        function performUpload() {
+            uploadFeedbackFile(requestedName, fileObj).then(function() {
+                common.returnOutput(params, {"result": "Success"});
+            }, function(err) {
+                common.returnMessage(params, 400, err.message);
+            });
+        }
+
+        if (parsed.isGlobal) {
+            validateGlobalAdmin(params, performUpload);
+        }
+        else {
+            // Pin app_id to the value embedded in the upload name so the
+            // app-admin check can't be satisfied with admin rights on a
+            // different app.
+            params.qstring.app_id = parsed.appId;
+            validateAppAdmin(params, performUpload);
+        }
         return true;
     });
     /*
@@ -920,6 +951,72 @@ function uploadFile(myfile, id, callback) {
             });
         }
     });
+
+    /**
+     * @api {post} /i/feedback/widgets/status Bulk update feedback widgets
+     * @apiName BulkUpdateWidgetStatus
+     * @apiGroup Ratings
+     * 
+     * @apiDescription Update the status (active/inactive) of multiple feedback widgets in a single operation
+     * @apiPermission Update permission for star_rating feature
+     * @apiBody {Object} data JSON object where keys are widget IDs and values are boolean status values
+     * 
+     * @apiSuccessExample {json} Success Response:
+     * HTTP/1.1 200 OK
+     * {
+     *   "result": "Success"
+     * }
+     * 
+     * @apiErrorExample {json} Error - Invalid Data Format:
+     * HTTP/1.1 500 Internal Server Error
+     * {
+     *   "result": "Invalid parameter 'data'"
+     * }
+     */
+    plugins.register('/i/feedback/widgets/status', function(ob) {
+        const { params } = ob || {};
+
+        validateUpdate(params, FEATURE_NAME, function() {
+            let data = {};
+
+            try {
+                data = JSON.parse(params.qstring.data);
+            }
+            catch (error) {
+                common.returnMessage(params, 500, "Invalid parameter 'data'");
+                return false;
+            }
+
+            const hasToUpdate = data && Object.keys(data).length > 0;
+
+            if (!hasToUpdate) {
+                common.returnMessage(params, 400, 'Nothing to update');
+                return false;
+            }
+
+            const bulk = common.db.collection('feedback_widgets').initializeUnorderedBulkOp();
+
+            for (const key in data) {
+                const newStatusValue = data[key] === true || data[key] === 'true' ? true : false;
+
+                bulk.find({ _id: common.db.ObjectID(key) }).updateOne({ $set: { 'status': newStatusValue } });
+            }
+
+            bulk.execute(function(error) {
+                if (error) {
+                    log.e(error);
+                    common.returnMessage(params, 400, error);
+                }
+                else {
+                    common.returnMessage(params, 200, 'Success');
+                    plugins.dispatch('/systemlogs', { params: params, action: 'surveys_widget_status', data: data });
+                }
+            });
+        });
+
+        return true;
+    });
+
     /**
      * @api {post} /i/feedback/widgets/create Create new widget
      * @apiName CreateRatingsWidget

@@ -33,7 +33,7 @@ const goToDemoWidgetPage = (username, password, appName, widgetID) => {
                 if (response.admin_of[key].name === appName) {
 
                     const appKey = response.admin_of[key].key;
-                    cy.visit(`/feedback/rating?widget_id=${widgetID}&device_id=test&app_key=${appKey}`);
+                    cy.visit(`/feedback/rating?widget_id=${widgetID.trim()}&device_id=test&app_key=${appKey}`);
                 }
             }
         });

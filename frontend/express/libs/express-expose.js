@@ -157,7 +157,7 @@ function renderNamespace(str) {
 function renderObject(obj, namespace) {
     return Object.keys(obj).map(function(key) {
         var val = obj[key];
-        return namespace + '["' + key + '"] = ' + string(val) + ';';
+        return namespace + '["' + escape_js_string(key) + '"] = ' + string(val) + ';';
     }).join('\n');
 }
 
@@ -180,61 +180,49 @@ function string(obj) {
     }
     else if ('[object Object]' === Object.prototype.toString.call(obj)) {
         return '{' + Object.keys(obj).map(function(key) {
-            return '"' + key + '":' + string(obj[key]);
+            return '"' + escape_js_string(key) + '":' + string(obj[key]);
         }).join(', ') + '}';
     }
     else {
-        obj = escape_html(JSON.stringify(obj));
+        obj = JSON.stringify(obj);
         if (obj) {
+            // Only escape things that could break out of script context
             obj = obj.replace(/<\/script>/ig, '</scr"+"ipt>');
+            obj = obj.replace(/<!--/g, '<\\!--');
+            obj = obj.replace(/\u2028/g, '\\u2028'); // Line separator
+            obj = obj.replace(/\u2029/g, '\\u2029'); // Paragraph separator
         }
         return obj;
     }
 }
 
-var matchHtmlRegExp = /[<>]/;
-
 /**
-* Escape special characters in the given string of html.
+* Escape special characters that could break JavaScript string context
 *
-* @param  {string} str - The string to escape for inserting into HTML
+* @param  {string} str - The string to escape
 * @return {string} escaped string
 * @public
 */
-function escape_html(str) {
-    str = '' + str;
-    var match = matchHtmlRegExp.exec(str);
-
-    if (!match) {
+function escape_js_string(str) {
+    if (typeof str !== 'string') {
         return str;
     }
 
-    var escape;
-    var html = '';
-    var index = 0;
-    var lastIndex = 0;
-
-    for (index = match.index; index < str.length; index++) {
-        switch (str.charCodeAt(index)) {
-        case 60: // <
-            escape = '&lt;';
-            break;
-        case 62: // >
-            escape = '&gt;';
-            break;
-        default:
-            continue;
-        }
-
-        if (lastIndex !== index) {
-            html += str.substring(lastIndex, index);
-        }
-
-        lastIndex = index + 1;
-        html += escape;
-    }
-
-    return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
+    return str
+        .replace(/\\/g, '\\\\') // Backslash
+        .replace(/"/g, '\\"') // Double quote
+        .replace(/'/g, "\\'") // Single quote
+        .replace(/`/g, '\\`') // Backtick (template literal)
+        .replace(/\$/g, '\\$') // Dollar sign (template literal)
+        .replace(/\n/g, '\\n') // Newline
+        .replace(/\r/g, '\\r') // Carriage return
+        .replace(/\t/g, '\\t') // Tab
+        .replace(/\f/g, '\\f') // Form feed
+        .replace(/\v/g, '\\v') // Vertical tab
+        .replace(/\0/g, '\\0') // Null character
+        .replace(/[\u0000-\u001F\u007F-\u009F]/g, function(ch) {
+            return '\\u' + ('0000' + ch.charCodeAt(0).toString(16)).slice(-4);
+        });
 }
 
 exports = module.exports = function(app) {

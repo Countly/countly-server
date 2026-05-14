@@ -2039,6 +2039,9 @@
     });
 
     var SecondaryLegend = countlyBaseComponent.extend({
+        mixins: [
+            countlyVue.mixins.commonFormatters,
+        ],
         props: {
             data: {
                 type: Array,
@@ -2100,15 +2103,18 @@
                                 :class="[\'cly-vue-chart-legend__s-series\',\
                                         {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
                                 @click="onClick(item, index)">\
-                                <div :data-test-id="testId + \'-legend-icon\'" class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div :data-test-id="testId + \'-legend-label\'" class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
-                                <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
+                                <div :data-test-id="testId + \'-\' + item.name.replaceAll(\' \', \'-\').toLowerCase() + \'-legend-icon\'" class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
+                                <div :data-test-id="testId + \'-\' + item.name.replaceAll(\' \', \'-\').toLowerCase() + \'-legend-label\'" class="cly-vue-chart-legend__s-title has-ellipsis">{{unescapeHtml(item.label || item.name)}}</div>\
+                                <div :data-test-id="testId + \'-\' + item.name.replaceAll(\' \', \'-\').toLowerCase() + \'-legend-percentage\'" class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
                             </div>\
                         </vue-scroll>\
                     </div>'
     });
 
     var PrimaryLegend = countlyBaseComponent.extend({
+        mixins: [
+            countlyVue.mixins.commonFormatters,
+        ],
         props: {
             data: {
                 type: Array,
@@ -2128,8 +2134,8 @@
                                     {\'cly-vue-chart-legend__p-series--deselected\': item.status === \'off\'}]"\
                             @click="onClick(item, index)">\
                             <div class="cly-vue-chart-legend__first-row">\
-                                <div class="cly-vue-chart-legend__p-checkbox" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div class="cly-vue-chart-legend__p-title">{{item.label || item.name}}</div>\
+                                <div class="cly-vue-chart-legend__p-checkbox" :style="{backgroundColor: item.displayColor}" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-icon\'"></div>\
+                                <div class="cly-vue-chart-legend__p-title" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-label\'">{{unescapeHtml(item.label || item.name)}}</div>\
                                 <div class="cly-vue-chart-legend__p-tooltip" v-if="item.tooltip">\
                                     <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
                                 </div>\
@@ -2258,9 +2264,6 @@
                             }
                         }
                     }
-                    data.forEach((item) => {
-                        item.name = countlyCommon.unescapeHtml(item.name);
-                    });
                     this.legendData = data;
                 }
             }
