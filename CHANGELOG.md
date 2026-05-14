@@ -44,6 +44,7 @@ Enterprise Fixes:
 - [drill] Resolve device IDs to user profiles via server-side redirect endpoint
 - [drill] Open crash group and user profile links in new tab
 - [drill] Show user-friendly error message when saving a query fails
+- [users] Fix MongoDB dot encoding (&#46;) leaking into user profile UI filters, breakdown dropdown, and URLs
 
 Enterprise Features:
 - [journey_engine] Engagement cooldown information added to journey builder and user profiles
