@@ -37,8 +37,12 @@ Security fixes:
 - [tasks] Authorize /i/tasks/{update,delete,name,edit} per task ownership / app admin / global admin
 - [users] /users/check/username now requires global admin (parity with email check)
 
+Enterprise Features:
+- [journey_engine] Maker checker approver
+
 Enterprise Fixes:
-- [active_users] Fixed logic to prevent triggering active users calculation if it is already running.
+- [active_users] Fixed logic to prevent triggering active users calculation if it 
+- [cognito] Fix crash on GET /clogin/:code when body-parser 2.x leaves req.body undefined on requests with no bodyis already running.
 - [drill] Add query hint based on default indexes
 - [drill] Add contextual links in drill table for user IDs and crash groups
 - [drill] Resolve device IDs to user profiles via server-side redirect endpoint
@@ -52,7 +56,6 @@ Enterprise Features:
 ## Version 25.03.43
 Enterprise Fixes:
 - [flow] Optimize timeline period query
-- [journey_engine] Maker checker approver
 
 Dependencies:
 - Bump follow-redirects from 1.15.11 to 1.16.0 
