@@ -901,7 +901,7 @@ usersApi.saveNote = async function(params) {
         },
         'ts': {
             'required': true,
-            'type': ''
+            'type': 'IntegerString'
         },
         'noteType': {
             'required': true,
