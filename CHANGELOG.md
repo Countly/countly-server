@@ -1,3 +1,8 @@
+
+## Version 25.03.X
+Fixes:
+- [core] Accept numeric color in saveNote schema so graph note create/edit no longer fails validation
+
 ## Version 25.03.44
 Security fixes:
 - [alerts] Validate alertConfig.selectedApps against caller's permissions (cross-app metric exfiltration)
