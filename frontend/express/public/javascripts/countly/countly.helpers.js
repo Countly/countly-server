@@ -337,10 +337,16 @@
         }
         var payload = {};
         var persistent = msg.persistent;
-        payload.text = countlyCommon.encodeHtml(msg.message);
+        if (msg.html) {
+            payload.text = msg.message;
+        }
+        else {
+            payload.text = countlyCommon.encodeHtml(msg.message);
+        }
         payload.autoHide = !msg.sticky;
         payload.id = msg.id;
         payload.width = msg.width;
+        payload.goTo = msg.goTo;
         var colorToUse;
 
         if (countlyGlobal.ssr) {
@@ -393,9 +399,14 @@
      * title is the text that will be dispalyed for the backlink url. 
      */
     CountlyHelpers.goTo = function(options) {
-        app.backlinkUrl = options.from;
-        app.backlinkTitle = options.title;
-        window.location.hash = options.url;
+        if (options.url && options.url.startsWith('https://')) {
+            window.open(options.url, '_blank', 'noopener,noreferrer');
+        }
+        else {
+            app.backlinkUrl = options.from;
+            app.backlinkTitle = options.title;
+            window.location.hash = options.url;
+        }
     };
 
     /**

@@ -688,7 +688,7 @@
 
     var NotificationToastsView = {
         template: '<div class="notification-toasts"> \
-                        <cly-notification v-for="(toast) in notificationToasts" :key="toast.id" :id="toast.id" :text="toast.text" :autoHide="toast.autoHide" :color="toast.color" :closable="true" :customWidth="toast.width" @close="onClose" class="notification-toasts__item"></cly-notification>\
+                        <cly-notification v-for="(toast) in notificationToasts" :key="toast.id" v-bind="toast" closable :customWidth="toast.width" toast @close="onClose" class="notification-toasts__item"></cly-notification>\
                     </div>',
         store: _vuex.getGlobalStore(),
         computed: {

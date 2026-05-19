@@ -6,7 +6,8 @@
     var EditViewsView = countlyVue.views.create({
         template: CV.T("/views/templates/manageViews.html"),
         mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters,
         ],
         data: function() {
             return {

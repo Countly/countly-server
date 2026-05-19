@@ -11,6 +11,8 @@ var countlyModel = require("../../../../api/lib/countly.model.js"),
     log = common.log('dashboards:api'),
     plugins = require("../../../pluginManager.js");
 
+const taskmanager = require('../../../../api/utils/taskmanager.js');
+
 /** @lends module:api/parts/data/dashboard */
 var dashboard = {};
 
@@ -73,6 +75,70 @@ function toSegment(val) {
     return val;
 }
 
+/**
+ * Triggers widget refresh for drill and formula widgets in dashboards based on refresh rate. 
+ * @param {object} db - db Connection, if not passed will use common.db
+ * @param {object} dashboard_obj - dashboard object
+ */
+dashboard.refreshDashboard = async function(db, dashboard_obj) {
+    //Get lists of widgets which could be refreshed.
+    db = db || common.db;
+    if (dashboard_obj.widgets && dashboard_obj.widgets.length) {
+        try {
+            for (var p = 0; p < dashboard_obj.widgets.length; p++) {
+                dashboard_obj.widgets[p] = common.db.ObjectID(dashboard_obj.widgets[p]);
+            }
+            var pipeline = [
+                {"$match": {"_id": {"$in": dashboard_obj.widgets}, "widget_type": {"$in": ["drill", "formulas"]}}}
+            ];
+            var widgets = await db.collection("widgets").aggregate(pipeline).toArray();
+            var tasks = [];
+            for (var z = 0; z < widgets.length; z++) {
+                if (widgets[z].widget_type === "drill") {
+                    for (var k = 0; k < widgets[z].drill_report.length; k++) {
+                        tasks.push({
+                            _id: widgets[z].drill_report[k],
+                            type: "drill"
+                        });
+                    }
+                }
+                else if (widgets[z].widget_type === "formulas") {
+                    for (var kz = 0; kz < widgets[z].cmetrics.length; kz++) {
+                        tasks.push({
+                            _id: widgets[z].cmetrics[kz],
+                            type: "formula"
+                        });
+                    }
+                }
+            }
+            //Refresh rate is saved in seconds in database
+            var maxTS = Date.now().valueOf() - dashboard_obj.refreshRate * 1000;
+            log.d("collected list with potential tasks for refresh", JSON.stringify(tasks));
+            await async.eachSeries(tasks, function(task, next) {
+                taskmanager.rerunTask({
+                    db: common.db,
+                    id: task._id,
+                    autoUpdate: true,
+                    additionalQuery: {
+                        status: {"$nin": ["running", "rerunning"]},
+                        end: {"$lt": maxTS}
+                    },
+                    subtask_key: "daily"
+                }, function(e) {
+                    if (e) {
+                        log.e(e, e.stack);
+                    }
+                    next();
+                });
+            });
+        }
+        catch (e) {
+            log.d("Error while refreshing dashboard", e);
+        }
+
+    }
+
+};
 dashboard.mapWidget = function(widget) {
     var widgetType, visualization, dataType, appcount, breakdowns, isPluginWidget, feature;
 

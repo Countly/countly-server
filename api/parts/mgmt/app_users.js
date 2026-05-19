@@ -121,6 +121,7 @@ usersApi.update = function(app_id, query, update, params, callback) {
         callback = params;
         params = {};
     }
+    common.stripUnsafeMongoOperators(query);
     plugins.dispatch("/drill/preprocess_query", {
         query: query
     });
@@ -177,6 +178,7 @@ usersApi.delete = function(app_id, query, params, callback) {
             query = {};
         }
     }
+    common.stripUnsafeMongoOperators(query);
     plugins.dispatch("/drill/preprocess_query", {
         query: query
     });
@@ -235,8 +237,18 @@ usersApi.delete = function(app_id, query, params, callback) {
                         //deleting userimages(if they exist);
                         if (res[0].picture) {
                             for (let i = 0;i < res[0].picture.length; i++) {
-                                //remove /userimages/ 
+                                //remove /userimages/
                                 let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
+                                // The SDK populates user.picture; an attacker who controls a
+                                // device can set it to "/userimages/../../../etc/whatever".
+                                // path.resolve would then escape the userimages dir and the
+                                // server would unlink an arbitrary file when the user is
+                                // deleted. Strip to basename and reject anything that still
+                                // contains a separator after the strip.
+                                id = path.basename(id);
+                                if (!id || id === "." || id === ".." || id.indexOf("/") !== -1 || id.indexOf("\\") !== -1) {
+                                    continue;
+                                }
                                 var pp = path.resolve(__dirname, './../../../frontend/express/public/userimages/' + id);
                                 countlyFs.deleteFile("userimages", pp, {id: id}, function(err1) {
                                     if (err1) {
@@ -291,6 +303,7 @@ usersApi.search = function(app_id, query, project, sort, limit, skip, callback) 
             query = {};
         }
     }
+    common.stripUnsafeMongoOperators(query);
 
     plugins.dispatch("/drill/preprocess_query", {
         query: query
@@ -351,6 +364,7 @@ usersApi.count = function(app_id, query, callback) {
             query = {};
         }
     }
+    common.stripUnsafeMongoOperators(query);
 
     plugins.dispatch("/drill/preprocess_query", {
         query: query
@@ -823,12 +837,27 @@ var deleteMyExport = function(exportID) { //tries to delete packed file, exporte
 
 usersApi.deleteExport = function(filename, params, callback) {
     if (filename && filename !== '') {
+        // Reject anything containing path-traversal characters or separators.
+        // The legitimate filename shape is appUser_<24hex>_<uid> or
+        // appUser_<24hex>_HASH_<hex>; both should match a tight regex.
+        if (typeof filename !== 'string' || /[^A-Za-z0-9_.-]/.test(filename)) {
+            return callback('invalid filename', '');
+        }
         var base_name = filename.split('.');
         var name_parts = base_name[0].split('_');
 
-        //filename : appUsers_{appid}_{uid} vai appUsers_{appid}_HASH_{hash form uids}            
+        //filename : appUsers_{appid}_{uid} vai appUsers_{appid}_HASH_{hash form uids}
         if (name_parts[0] !== 'appUser') {
             callback('invalid filename', '');
+        }
+        // Cross-tenant guard: the export filename embeds the app_id at
+        // name_parts[1]. Until this commit, validateUserForWrite ran against
+        // params.qstring.app_id (which can be any app the caller has admin on)
+        // while the actual mutation/file deletion targeted name_parts[1] (a
+        // potentially DIFFERENT app). Require they match. global_admin keeps
+        // unrestricted access.
+        else if (!params.member.global_admin && (params.qstring.app_id + "") !== (name_parts[1] + "")) {
+            callback('Not allowed (export belongs to a different app)', '');
         }
         else {
             //remove archive
@@ -1007,6 +1036,7 @@ usersApi.export = function(app_id, query, params, callback) {
         });
     }
 
+    common.stripUnsafeMongoOperators(query);
     plugins.dispatch("/drill/preprocess_query", {
         query: query
     });
@@ -1265,6 +1295,7 @@ usersApi.loyalty = function(params) {
     if (typeof query === "string") {
         try {
             query = JSON.parse(query);
+            common.stripUnsafeMongoOperators(query);
             plugins.dispatch("/drill/preprocess_query", {
                 query: query,
                 params
@@ -1273,6 +1304,9 @@ usersApi.loyalty = function(params) {
         catch (error) {
             query = {};
         }
+    }
+    else {
+        common.stripUnsafeMongoOperators(query);
     }
 
     if (cohorts) {

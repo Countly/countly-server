@@ -16,7 +16,7 @@ describe('Create New Widget', () => {
         navigationHelpers.goToFeedbackRatingsWidgetsPage();
     });
 
-    it.skip('Verify default values of page and create a widget with that values and then update the widget data', function() {
+    it('Verify default values of page and create a widget with that values and then update the widget data', function() {
         widgetsHelpers.clickAddNewWidgetButton();
         widgetsHelpers.verifySettingsPageDefaultElements();
         widgetsHelpers.typeWidgetName("My New Widget");
@@ -36,7 +36,7 @@ describe('Create New Widget', () => {
             contactViaCheckboxLabelText: "Contact me via e-mail",
             submitButtonText: "Submit Feedback",
             submitButtonColor: "#0166D6",
-            submitButtonFontColor: "#0166D6",
+            submitButtonFontColor: "#FFFFFF",
             hasPoweredByLogo: true
         });
 
@@ -49,7 +49,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.verifyPreviewTriggerButtonPopUpElements({
             triggerButtonText: "Feedback",
             triggerButtonColor: "#0166D6",
-            triggerButtonFontColor: "#0166D6"
+            triggerButtonFontColor: "#FFFFFF"
         });
 
         widgetsHelpers.clickNextStepButton();
@@ -68,7 +68,7 @@ describe('Create New Widget', () => {
             contactViaCheckboxLabelText: "Contact me via e-mail",
             submitButtonText: "Submit Feedback",
             submitButtonColor: "#0166D6",
-            submitButtonFontColor: "#0166D6",
+            submitButtonFontColor: "#FFFFFF",
             hasPoweredByLogo: true
         });
 
@@ -97,7 +97,7 @@ describe('Create New Widget', () => {
             selectedEmojiItemIndex: 5,
             submitButtonText: "Submit Feedback",
             selectedMainColor: '#0166D6',
-            selectedFontColor: '#0166D6',
+            selectedFontColor: '#FFFFFF',
             hasPoweredByLogo: true,
             thankYouMessageText: 'Thanks for your feedback!',
             successIconColor: '#0166D6'
@@ -222,7 +222,8 @@ describe('Create New Widget', () => {
             contactViaCheckboxLabelText: widget.contactViaCheckboxLabelText,
             contactEmail: widgetRate.contactEmail,
             submitButtonText: widget.submitButtonText,
-            hasAggrementCheckbox: true,
+            //TODO SER-1971 There is no Aggrement Checkbox in the demo page, Also Look at the line 136 in demoWidgetPage.js
+            //hasAggrementCheckbox: true,
             selectedMainColor: widget.mainColor,
             selectedFontColor: widget.FontColor,
             hasPoweredByLogo: true,

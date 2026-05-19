@@ -6,7 +6,6 @@ const log = require('../../../../api/utils/log.js')('alert:nps');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
-const { ObjectId } = require('mongodb');
 
 module.exports.triggerByEvent = triggerByEvent;
 /**
@@ -50,26 +49,23 @@ async function triggerByEvent(payload) {
     }
 }
 
-module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
-    const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
-    if (!app) {
-        log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-        return done();
-    }
-
+module.exports.check = async function({ alert, app, done, scheduledTo: date }) {
     let { period, alertDataSubType2, compareType, compareValue, filterValue } = alert;
     compareValue = Number(compareValue);
 
     const metricValue = await getResponsesByDate(app, alertDataSubType2, date, period, filterValue) || 0;
+    log.d(alert._id, "value on", date, "is", metricValue);
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
+            log.d(alert._id, "triggered because", metricValue, "is more than", compareValue);
             await commonLib.trigger({ alert, app, metricValue, date }, log);
         }
     }
     else {
         const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
         const metricValueBefore = await getResponsesByDate(app, alertDataSubType2, before, period, filterValue);
+        log.d(alert._id, "value on", before, "is", metricValueBefore);
         if (!metricValueBefore) {
             return done();
         }
@@ -80,6 +76,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
             : change <= -compareValue;
 
         if (shouldTrigger) {
+            log.d(alert._id, "triggered because", compareType, String(change) + "%");
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
@@ -164,19 +161,3 @@ function sumOfAllResponses(scope, nps, score) {
     return numberOfResponses;
 }
 
-/*
-(async function() {
-    const app = {name: "test", _id: new ObjectId("6600901a71159e99a3434253"), timezone: "Europe/Istanbul", plugins: null };
-    const nps = "6600909ed476e1837317dc52";
-    const date = new Date("2024-09-16T12:00:00.000Z");
-
-    let data = await getResponsesByDate(app, nps, date, "monthly");
-    console.log("monthly:", data);
-
-    data = await getResponsesByDate(app, nps, date, "daily");
-    console.log("daily:", data);
-
-    data = await getResponsesByDate(app, nps, date, "hourly");
-    console.log("hourly:", data);
-})();
-*/

@@ -131,73 +131,125 @@
 }
     
 .cly-vue-status-tag {
-    padding-right: 16.33px;
-    border-radius: 4px;
     display: inline-block;
+    border-radius: 4px;
+    padding: 0px 6px;
+
+    // .cly-vue-status-tag__blink
+    &__blink {
+        display: inline-block;
+        position: relative;
+        top: -1px;
+        width: 6px;
+        height: 6px;
+        border-radius: 8px;
+        vertical-align: middle;
+        margin-right: 2px;
+        animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+    }
+
+    // .cly-vue-status-tag__skeleton
+    &__skeleton {
+        display: inline-block;
+        position: relative;
+        top: -1px;
+        background-color: #BDBDBD;
+        width: 40px;
+        height: 4px;
+        border-radius: 8px;
+        vertical-align: middle;
+        animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+    }
+
+    // .cly-vue-status-tag--blue
+    &--blue {
+        background-color: #E6F0FB;
+        color: #017AFF;
+
+        // .cly-vue-status-tag--blue .cly-vue-status-tag__blink
+        & .cly-vue-status-tag__blink {
+            background-color: #017AFF;
+        }
+    }
+
+    // .cly-vue-status-tag--gray
+    &--gray {
+        background-color: #F5F5F5;
+        color: #BDBDBD;
+
+        // .cly-vue-status-tag--gray .cly-vue-status-tag__blink
+        & .cly-vue-status-tag__blink {
+            background-color: #BDBDBD;
+        }
+    }
+
+    // .cly-vue-status-tag--green
+    &--green {
+        background-color: #EBFAEE;
+        color: #12AF51;
+        
+        // .cly-vue-status-tag--green .cly-vue-status-tag__blink
+        & .cly-vue-status-tag__blink {
+            background-color: #12AF51;
+        }
+    }
+
+    // .cly-vue-status-tag--red
+    &--red {
+        background-color: #FBECE5;
+        color: #D23F00;
+        
+        // .cly-vue-status-tag--red .cly-vue-status-tag__blink
+        & .cly-vue-status-tag__blink {
+            background-color: #D23F00;
+        }
+    }
+
+    // .cly-vue-status-tag--small
     &--small {
         font-size: 12px;
         line-height: 18px;
         display: flex;
         align-items: baseline;
         font-weight: 500;
+
+        // .cly-vue-status-tag--small .cly-vue-status-tag__blink
+        & .cly-vue-status-tag__blink {
+            /*
+                NOTE: This is a hack to make the blinking dot align with the blinking line
+                the hole component styles should be redone when working on the new UI
+            */
+            top: 1px;
+        }
+
+        // .cly-vue-status-tag--small .cly-vue-status-tag__skeleton
+        & .cly-vue-status-tag__skeleton {
+            /*
+                NOTE: This is a hack to make the blinking line align with the blinking dot
+                the hole component styles should be redone when working on the new UI
+            */
+            top: 0px;
+            margin: 4px 0;
+        }
     }
-    &--green {
-        background-color: #EBFAEE;
-        color: #12AF51;
-        padding: 0px 6px;   
-    }
-    &--green  &__blink{
-        background-color: #12AF51;
-    }
-    &--blue {
-        background-color: #E6F0FB;
-        color: #017AFF;
-        padding: 0px 6px;   
-    }
-    &--blue  &__blink{
-        background-color: #017AFF;
-    }
+    
+    // .cly-vue-status-tag--yellow
     &--yellow {
         background-color: #FCF5E5;
         color: #CDAD7A;
-        padding: 0px 6px;
+        
+        // .cly-vue-status-tag--yellow .cly-vue-status-tag__blink
+        & .cly-vue-status-tag__blink {
+            background-color: #CDAD7A;
+        }
     }
-    &--yellow  &__blink{
-        background-color: #CDAD7A;
-    }
-    &--red {
-        background-color: #FBECE5;
-        color: #D23F00;
-        padding: 0px 6px;
-    }
-    &--red  &__blink{
-        background-color: #D23F00;
-    }
-    &--gray {
-        background-color: #F5F5F5;
-        color: #BDBDBD;
-        padding: 0px 6px;
-    }
-    &--gray  &__blink{
-        background-color: #BDBDBD;
-    }
-    &__blink {
-        position: relative;
-        top: -1px;
-        width: 6px;
-        height: 6px;
-        border-radius: 8px;
-        display: inline-block;
-        vertical-align: middle;
-        margin-right: 2px;
-        animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
-    }
+
     @keyframes blinker {
         50% {
-          opacity: 0;
+            opacity: 0;
         }
-      }    
-  }
+    }
+}
 
 .cly-vue-theme-clydef {
 
@@ -1809,14 +1861,9 @@
             box-sizing: border-box;
         }
 
+        // .cly-vue-drawer__title-container
         &__title-container {
-            width: 100%; 
-            margin-bottom: 24px;
-        }
-
-        &__title-header {
-            margin-top: 24px; 
-            margin-left: 32px;
+            margin: 24px 32px;
         }
 
         &__subtitle {
@@ -1824,16 +1871,19 @@
             margin-bottom: 24px !important;
         }
 
+        // .cly-vue-drawer__close-button
         &__close-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
             font-size: 30px;
             color: #81868D;
             transition: color 1s;
             cursor: pointer;
-            //width: 30px;
-            height: 15px;
-            //margin-block: auto;
-            margin-right: 32px;
-            margin-top: 24px;
+            height: 20px;
+
+            // .cly-vue-drawer__close-button:hover
             &:hover {
                 color: #333;
                 transition: color 1s;

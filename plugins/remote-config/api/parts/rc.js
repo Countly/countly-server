@@ -2,6 +2,7 @@
 * Fetching and processing data for remote config
 * @module plugins/remote-config/api/parts/data/rc
 */
+const semver = require('semver');
 var prng = require('../../../../api/utils/random-sfc32.js');
 var globalSeed = "Countly_is_awesome";
 
@@ -9,68 +10,88 @@ var globalSeed = "Countly_is_awesome";
 var remoteConfig = {};
 
 /**
- * Function to check if the given query would match the given user
- * @param  {Object} user - user
- * @param  {Object} query - query
+ * Function to check if the given query matches the given user
+ * @param  {Object} inpUser - user object
+ * @param  {Object} inpQuery - condition query
  * @returns {Boolean} true if the query matches the user
  */
-remoteConfig.processFilter = function(user, query) {
-    var queryStatus = false, isCohort = false, hasValue = false;
+remoteConfig.processFilter = function(inpUser, inpQuery) {
+    /**
+     * Inner function of processFilter for recursion
+     * @param  {Object} user - user object
+     * @param  {Object} query - condition query
+     * @returns {Boolean} true if the query matches the user
+     */
+    function matchesQuery(user, query) {
+        for (let key in query) {
+            if (typeof query[key] === 'object' && query[key] !== null && !Array.isArray(query[key])) {
+                let qResult = true;
 
-    if (Object.keys(query).length) {
-        queryStatus = true;
+                for (let prop in query) {
+                    if (prop === '$or') {
+                        return qResult && query[prop].some((subQuery) => matchesQuery(user, subQuery));
+                    }
+                    else if (prop === '$and') {
+                        return qResult && query[prop].every((subQuery) => matchesQuery(user, subQuery));
+                    }
 
-        for (var prop in query) {
-            var parts = prop.split(".");
-            var value;
+                    let parts = prop.split(".");
+                    let value;
 
-            if (parts[0] === "up" || parts.length === 1) {
-                var p = parts[0];
-                if (p === "up") {
-                    p = parts[1];
-                }
-                if (user[p]) {
-                    value = user[p];
-                }
-            }
-            else if (user[parts[0]] && user[parts[0]][parts[1]]) {
-                value = user[parts[0]][parts[1]];
-            }
+                    if (parts[0] === "up" || parts.length === 1) {
+                        var p = parts[0];
+                        if (p === "up") {
+                            p = parts[1];
+                        }
+                        if (user[p]) {
+                            value = user[p];
+                        }
+                    }
+                    else if (user[parts[0]] && user[parts[0]][parts[1]]) {
+                        value = user[parts[0]][parts[1]];
+                    }
 
-            if (parts[0] !== "chr") {
-                if (typeof (value) !== "undefined") {
-                    hasValue = true;
-                    queryStatus = queryStatus && processPropertyValues(value, query, prop);
-                }
-                else {
-                    //If the type of the user prop is undefined, set query status to false, since data is not available
-                    //In such cases only process if $nin is present otherwise we show the default value to the user
-                    if (query[prop].$nin) {
-                        hasValue = true;
-                        queryStatus = queryStatus && processPropertyValues(value, query, prop);
+                    if (parts[0] !== 'chr') {
+                        if (typeof (value) !== 'undefined') {
+                            const filterType = Object.keys(query[prop])[0];
+
+                            if (prop === 'up.av' && /^\$(gt|lt)/.test(filterType)) {
+                                qResult = qResult && processAppVersionValues(user.av, { [prop]: query[prop] }, prop);
+                            }
+                            else {
+                                qResult = qResult && processPropertyValues(value, { [prop]: query[prop] }, prop);
+                            }
+                        }
+                        else {
+                            //If data is not available, check for $nin and $exists operator since they can be true 
+                            if (query[prop] && ('$nin' in query[prop] || '$exists' in query[prop])) {
+                                qResult = qResult && processPropertyValues(value, { [prop]: query[prop] }, prop);
+                            } // Otherwise return false
+                            else {
+                                qResult = qResult && false;
+                            }
+                        }
                     }
                     else {
-                        queryStatus = false;
+                        qResult = qResult && processCohortValues(user, { chr: query[prop] });
                     }
                 }
+
+                return qResult;
+            }
+            else if (key === '$or') {
+                return query[key].some((subQuery) => matchesQuery(user, subQuery));
+            }
+            else if (key === '$and') {
+                return query[key].every((subQuery) => matchesQuery(user, subQuery));
             }
             else {
-                hasValue = true;
-                isCohort = true;
+                return false;
             }
-        }
-
-        if (isCohort) {
-            queryStatus = queryStatus && processCohortValues(user, query);
-        }
-
-        if (!hasValue) {
-            //If the user does not have any user prop value, set query status to false, since data is not available
-            queryStatus = false;
         }
     }
 
-    return queryStatus;
+    return matchesQuery(inpUser, inpQuery);
 };
 
 /**
@@ -105,10 +126,32 @@ function processPropertyValues(value, query, prop) {
         case "$lte": status = status && value <= query[prop].$lte; break;
         case "$regex": status = status && query[prop].$regex.test(value); break;
         case "$not": status = status && !query[prop].$not.test(value); break;
+        case '$exists': status = status && (query[prop].$exists === (value !== undefined)); break;
         }
     }
 
     return status;
+}
+
+/**
+ * Function to process query property value
+ * @param  {Object} inpUserAv - user app version
+ * @param  {Object} query - filter
+ * @param  {String} prop - query property
+ * @returns {Boolean} property value status
+ */
+function processAppVersionValues(inpUserAv, query, prop) {
+    // app version is stored in mongo like 1:1:0 instead of 1.1.0
+    // the colons have to be replaced with dots so that semver lib can compare the app version 
+    const userAv = inpUserAv.replace(/:/g, '.');
+    const filterType = Object.keys(query[prop])[0];
+    const targetAv = query[prop] && query[prop][filterType] && query[prop][filterType].replace(/:/g, '.');
+
+    if (!semver.valid(userAv) || !semver.valid(targetAv)) {
+        return false;
+    }
+
+    return semver[filterType.slice(1)](userAv, targetAv);
 }
 
 /**

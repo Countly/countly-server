@@ -26,7 +26,8 @@
     "supertest": "7.0.0"
   },
   "scripts": {
-    "test": "grunt --verbose"
+    "test": "grunt --verbose",
+    "postinstall": "mkdir -p frontend/express/public/sdk/web && cp -rf node_modules/countly-sdk-web/lib/* frontend/express/public/sdk/web/"
   },
   "dependencies": {
     "all-the-cities": "3.1.0",
@@ -64,6 +65,7 @@
     "grunt-contrib-uglify": "5.2.2",
     "hpagent": "^1.2.0",
     "icanhazip": "^1.0.3",
+    "ipaddr.js": "^2.3.0",
     "jimp": "1.6.0",
     "json2csv": "5.0.7",
     "jsonwebtoken": "^9.0.1",
@@ -82,6 +84,7 @@
     "properties-parser": "0.6.0",
     "puppeteer": "^23.8.0",
     "sass": "1.83.4",
+    "semver": "^7.7.1",
     "tslib": "^2.6.3",
     "uglify-js": "3.19.3",
     "underscore": "1.13.7",

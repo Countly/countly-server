@@ -1,3 +1,207 @@
+## Version 24.05.50
+Security Fixes (backport of #7535 — bug-bounty-style hardening pass):
+- [auth] Restrict `/login/token/:token` to login-purpose tokens; regenerate session id on token login to close fixation
+- [dashboards] Require auth + per-widget app permission on `/o/dashboards/test`; remove the unused endpoint
+- [dashboards] Identical response for missing/inaccessible dashboard (no enumeration)
+- [dbviewer] Block `$graphLookup` aggregation stage (cross-collection data exfiltration)
+- [redirect] Apply SSRF protection (`api/utils/ssrf-protection.js`) to `app.redirect_url` outbound requests
+- [tasks] Authorize `/i/tasks/{update,delete,name,edit}` per task ownership / app admin / global admin
+- [exports] Authorize `/o/export/download` by task ownership / app_id
+- [notes] Bind notes to permission-checked `app_id`; check edit permissions against the note's stored `app_id`
+- [notes] Enforce `saveNote` schema validation
+- [apps] Replace updateApp/createApp mass-assignment with explicit field allowlist
+- [event_groups] Whitelist updatable fields on create/update; scope reads by `app_id`
+- [app_users] Sanitize `user.picture` filename before deletion (path traversal)
+- [app_users] Scope export download/delete to caller's `app_id`; reject path-traversal in filenames
+- [app_users / logger / compliance-hub] Strip dangerous Mongo operators (`$where`, `$expr`, `$function`, `$accumulator`) from user-supplied queries
+- [push] Bind message create/test/update/one/remove/toggle to query-string `app_id` (cross-app push injection)
+- [alerts] Validate `alertConfig.selectedApps` against caller's permissions (cross-app metric exfiltration)
+- [data] Escape regex metacharacters in `sSearch` parameters (ReDoS)
+- [users] `/users/check/username` now requires global admin (parity with email check)
+- [cms / system / systemlogs] `/i/cms/save_entries`, `/o/system/plugins`, `/i/systemlogs` restricted to global admins
+- [auth] Replace OTP-equality recaptcha bypass with `twoFactorPassed` session flag
+- [auth] Generate new-member invite `prid` with `crypto.randomBytes` (replace predictable HMAC)
+- [output] Remove `noescape` query-string bypass on `returnOutput` (reflected-XSS via parameter)
+- [auth] Handle `req.session.regenerate` error in token login
+- [data] Return 404 (not 500) when `event_groups` lookup misses
+
+24.05-specific notes (some master fixes were not directly applicable):
+- C-1 (`$graphLookup`) and M-11 (dbviewer non-admin filter scope): master uses a `whiteListedAggregationStages` mechanism (added by SER-2122) and a `getBaseAppFilter` per-collection app-id mechanism that 24.05 does not have. C-1 is implemented as a minimal targeted block; M-11 is not applicable here. A broader 24.05 dbviewer hardening (porting SER-2122 + filter scope + M-11) is left for a separate change.
+- M-14 (`--disable-web-security`): the flag was never present in 24.05's puppeteer args, so the master fix is a no-op; only an explanatory comment was added.
+- L-7 (drop wildcard CORS from reports preview/pdf): intentionally **not** backported — the wildcard is needed for puppeteer PDF rendering against `data:` URL documents (sub-resource fetches). Same decision as on master where the L-7 fix was reverted.
+
+Earlier in this 24.05.50 release:
+- [star-rating] Close stored XSS in feedback widget logo upload/preview; restrict uploads to image MIME types and validate magic bytes (backport of #7532)
+- [star-rating] Defense-in-depth on image upload/serve routes
+- [data_migration] Constrain export/import paths to allowed directories; reject path-traversal in `target_path`, multipart filenames, and exportid (backport of #7491)
+- [errorlogs] Reject path-traversal in admin log file paths
+- [system-utility] Harden streamed responses with error handlers
+- [crashes] Add error handlers to crash report streamed responses
+- [exports] Add stream error handlers to export download
+- [reports] Add stream error handlers
+- [dashboards] Constrain public screenshot route paths and stream error handling
+- [core] Add `common.resolvePathInBase` helper for safe path containment checks
+
+## Version 24.05.49
+Fixes:
+- [alerts] Fixed alert jobs using system's timezone instead of application's
+- [compliance-hub] Correctly merge user history on user merge
+- [onboarding] Fix redirection to newsletter page
+- [star-rating] Fix active status checkbox in drawer
+- [star-rating] Fix consent fields in drawer
+
+Enterprise Fixes:
+- [retention_segments] Adding null check for breakdown filtering
+
+## Version 24.05.48
+Fixes:
+- [push] Better FCM error handling
+
+## Version 24.05.47
+Fixes:
+- [alerts] Add alert interval validation in the frontend
+
+Enterprise Fixes:
+- [concurrent_users] Fix email check for alert
+
+
+## Version 24.05.46
+Fixes:
+- [core-vis] Fix chart legend click event
+- [data-manager] Fix last modified data for event and segment
+- [views] Fix view name that is displayed in view table
+
+Enterprise Fixes:
+- [concurrent_users] Fix alert threshold comparison
+- [surveys] Handle multiple survey submission from same user based on survey visibility
+- [users] Set correct users widget table rows amount according to selected setting
+
+## Version 24.05.45
+Fixes:
+- [security] Fixed injection possibility on res.expose
+
+Enterprise Fixes:
+- [data-manager] Fixed bug when merging events with ampersand symbol in the name
+- [groups] Add logs for user updates
+- [nps] Sort widgets by internal name and search by name or internal name
+- [surveys] Sort widgets by internal name and search by name or internal name
+
+
+## Version 24.05.44
+Enterprise Fixes:
+- [groups] Fix user permission update after updating user group permission
+- [revenue] Card in revenue page are now correctly identified
+
+
+## Version 24.05.43
+Features:
+- [core] Implement go to link in notification
+- [data-manager] Fixed bug preventing transformation of events ending in a dot
+
+Fixes:
+- [dashboard] Allow users to select text inside the widget without dragging it
+- [jobs] Fix condition for scheduling alert job
+
+Enterprise Fixes:
+- [data-manager] Fixed segment data deletion
+- [license] Stop sending metric after license expired
+- [users] Fix add/remove user to profile group
+- [users] Remove link to profile group page after removing user from group
+
+## Version 24.05.42
+Fixes:
+- [core] Fix multiple ajax request in event selector
+- [mail] add smtp debug option for mail module
+
+Enterprise Fixes:
+- [funnels] Show notification if funnel results are from cache/task manager
+
+
+## Version 24.05.41
+Enterprise Fixes:
+- [cohorts] Fix query transformation for profile group
+- [users] Fix condition for custom property update
+- [users] Update user custom field number formatting
+
+
+## Version 24.05.40
+Fixes:
+- [populator] Fix NPS generator
+
+
+## Version 24.05.39
+Features:
+- [remote-config] Enable comparing newer/older app version in conditions
+
+Fixes:
+- [remote-config] Fix condition matching with compound conditions
+
+
+## Version 24.05.38
+Enterprise Fixes:
+- [home] Fix home download render issue
+
+## Version 24.05.37
+Enterprise Fixes:
+- [license] Update license metric endpoint permission
+
+
+## Version 24.05.36
+Features:
+- [plugins] Add configuration warning tags to settings UI
+
+## Version 24.05.35
+Fixes:
+- [core] Fix mongo connection url parsing
+- [dashboards] Delete associated widgets and reports when a dashboard is removed
+
+Enterprise Fixes:
+- [flows] Null checks on $size when calculating flows.
+
+## Version 24.05.34
+Enterprise Fixes:
+- [drill] Fixed typo issue while getting segment values in drill widgets
+
+## Version 24.05.33
+Fixes:
+- [emails] [puppeteer] [fix] Allow chrome to launch multiple instances
+
+
+## Version 24.05.32
+Enterprise Fixes:
+- [active-users] Fixed bug related to selecting calculation ranges. As a result, some dates were previously calculated on incomplete data set.
+
+
+## Version 24.05.31
+Fixes:
+- [feedback] Uniformize drawer internal name input texts
+- [feedback] Uniformize feedback widgets status tag
+- [star-rating] Allow bulk update of widget status
+- [star-rating] Fix rating score and responses table sorting
+- [UI] Remove white background from input character amount suffix
+
+Enterprise Fixes:
+ -  [retention] Fixed report loading 
+
+
+## Version 24.05.30
+Features:
+- [crashed] Fix unescaped SDK logs
+- [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards
+- [star-rating] Added missing columns to Rating Widgets table edit
+- [ui] Fix alignment of drawers title and close icon
+
+## Version 24.05.29
+Fixes:
+- [core] Allow downloading data also from other databases in dbviewer
+- [crash_symbolication] Symbolication server api end point test fix
+- [push] Fixed push notifications title and content text and variables combination
+- [reports] Correctly match event for email report if event key contains '.'
+
+## Version 24.05.28
+Enterprise Fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
+
 ## Version 24.05.27
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
@@ -57,7 +261,7 @@ Enterprise fixes:
 - [drill] [license] Update license loader to enable supplying db client
 - [users] Format data points displayed in user sidebar
 - [cohorts] Unescape drill texts in cohort component
-   
+
 Dependencies:
 - Bump fs-extra from 11.2.0 to 11.3.0
 - Bump nodemailer from 6.9.16 to 6.10.0
@@ -4495,4 +4699,3 @@ This version provides several features and bugfixes to both server and SDKs. The
     A user of an application can only view analytics for that application 
     and cannot edit its settings.
   * Added csfr protection to all methods provided through app.js.
-

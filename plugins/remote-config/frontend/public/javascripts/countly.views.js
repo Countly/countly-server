@@ -211,7 +211,8 @@
                     value: 1,
                     label: "#6C47FF"
                 },
-                colorTag: COLOR_TAG
+                colorTag: COLOR_TAG,
+                modifyPropType: { 'up.av': countlyQueryBuilder.PropertyType.APP_VERSION_LIST },
             };
         },
         computed: {
@@ -631,7 +632,6 @@
                 name: CV.i18n("remote-config.conditions.random.percentile"),
                 type: countlyQueryBuilder.PropertyType.NUMBER,
                 group: 'User Properties',
-
             }));
             return {
                 remoteConfigFilterRules: remoteConfigFilterRules,
@@ -646,7 +646,8 @@
                     value: 1,
                     label: "#6C47FF"
                 },
-                colorTag: COLOR_TAG
+                colorTag: COLOR_TAG,
+                modifyPropType: { 'up.av': countlyQueryBuilder.PropertyType.APP_VERSION_LIST },
             };
         },
         methods: {
@@ -828,7 +829,7 @@
                             self.onSubmit();
                         });
 
-                    }, [this.i18n["common.no-dont-delete"], this.i18n["remote-config.yes-delete-parameter"]], {title: this.i18n["remote-config.delete-parameter-title"], image: "delete-email-report"});
+                    }, [this.i18n("common.no-dont-delete"), this.i18n("remote-config.yes-delete-parameter")], {title: this.i18n("remote-config.delete-parameter-title"), image: "delete-email-report"});
                     break;
                 }
             },
@@ -912,7 +913,7 @@
                     break;
 
                 case "remove":
-                    CountlyHelpers.confirm(this.i18n("remote-config.confirm-condition-delete", "<b>" + name + "</b>"), "popStyleGreen", function(result) {
+                    CountlyHelpers.confirm(this.i18n("remote-config.confirm-condition-delete", "<b>" + row.condition_name + "</b>"), "popStyleGreen", function(result) {
                         if (!result) {
                             return false;
                         }
@@ -921,7 +922,7 @@
                             self.onSubmit();
                         });
 
-                    }, [this.i18n["common.no-dont-delete"], this.i18n["remote-config.yes-delete-condition"]], {title: this.i18n["remote-config.delete-condition-title"], image: "delete-email-report"});
+                    }, [this.i18n("common.no-dont-delete"), this.i18n("remote-config.yes-delete-condition")], {title: this.i18n("remote-config.delete-condition-title"), image: "delete-email-report"});
                     break;
                 }
             },

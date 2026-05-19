@@ -70,7 +70,8 @@
 					</el-table-column>
 					<el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('views.table.view')" fixed="left">
 						<template slot-scope="scope">
-							{{scope.row.view}}
+							<div :data-test-id="'datatable-analytics-views-view-' + scope.$index">{{unescapeHtml(scope.row.view)}}
+							</div>
 						</template>
 					</el-table-column>
 					<template v-for="(col,idx) in scope.dynamicCols">
@@ -127,7 +128,8 @@
 					</el-table-column>
 					<el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('views.table.view')" fixed="left">
 						<template slot-scope="scope">
-							{{scope.row.view}}
+							<div :data-test-id="'datatable-analytics-views-view-' + scope.$index">{{unescapeHtml(scope.row.view)}}
+							</div>
 						</template>
 					</el-table-column>
 					<template v-for="(col,idx) in scope.dynamicCols">

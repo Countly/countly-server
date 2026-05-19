@@ -22,6 +22,12 @@ plugins.setConfigs("dashboards", {
 
 (function() {
 
+    plugins.register("/master", function() {
+        setTimeout(() => {
+            require('../../../api/parts/jobs').job('dashboards:refreshDashboards').replace().schedule('every 5 minutes');
+        }, 1000);
+    });
+
     /**
      * @api {get} /o/dashboards Get dashboard
      * @apiName GetDashboard
@@ -115,81 +121,88 @@ plugins.setConfigs("dashboards", {
                     memberId = member._id + "";
 
                 common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
-                    if (!err && dashboard) {
-                        async.parallel([
-                            hasViewAccessToDashboard.bind(null, params.member, dashboard),
-                            hasEditAccessToDashboard.bind(null, params.member, dashboard),
-                            fetchMembersData.bind(null, [dashboard.owner_id], [])
-                        ], function(er, res) {
-                            var hasViewAccess = res[0];
-                            var hasEditAccess = res[1];
-                            var ownerData = res[2];
+                    if (err || !dashboard) {
+                        // Return the same response shape as the access-denied
+                        // branch below so an attacker can't distinguish
+                        // "exists but no access" from "doesn't exist".
+                        // Without this, dashboard IDs were enumerable.
+                        return common.returnOutput(params, {error: true, dashboard_access_denied: true});
+                    }
+                    async.parallel([
+                        hasViewAccessToDashboard.bind(null, params.member, dashboard),
+                        hasEditAccessToDashboard.bind(null, params.member, dashboard),
+                        fetchMembersData.bind(null, [dashboard.owner_id], [])
+                    ], function(er, res) {
+                        var hasViewAccess = res[0];
+                        var hasEditAccess = res[1];
+                        var ownerData = res[2];
 
-                            if (er || !hasViewAccess) {
-                                return common.returnOutput(params, {error: true, dashboard_access_denied: true});
-                            }
+                        if (er || !hasViewAccess) {
+                            return common.returnOutput(params, {error: true, dashboard_access_denied: true});
+                        }
 
-                            if (dashboard.owner_id === memberId || member.global_admin) {
-                                dashboard.is_owner = true;
-                            }
+                        if (dashboard.owner_id === memberId || member.global_admin) {
+                            dashboard.is_owner = true;
+                        }
 
-                            if (hasEditAccess) {
-                                dashboard.is_editable = true;
-                            }
-                            else {
-                                dashboard.is_editable = false;
-                            }
+                        if (hasEditAccess) {
+                            dashboard.is_editable = true;
+                        }
+                        else {
+                            dashboard.is_editable = false;
+                        }
 
-                            if (ownerData && ownerData.length) {
-                                dashboard.owner = ownerData[0];
-                            }
+                        if (ownerData && ownerData.length) {
+                            dashboard.owner = ownerData[0];
+                        }
 
-                            var parallelTasks = [
-                                fetchDashboardWidgets.bind(null)
-                            ];
+                        var parallelTasks = [
+                            fetchDashboardWidgets.bind(null)
+                        ];
 
-                            if (!dashboard.share_with) {
-                                if (dashboard.shared_with_edit && dashboard.shared_with_edit.length ||
-                                    dashboard.shared_with_view && dashboard.shared_with_view.length ||
-                                    dashboard.shared_email_edit && dashboard.shared_email_edit.length ||
-                                    dashboard.shared_email_view && dashboard.shared_email_view.length ||
-                                    dashboard.shared_user_groups_edit && dashboard.shared_user_groups_edit.length ||
-                                    dashboard.shared_user_groups_view && dashboard.shared_user_groups_view.length) {
-                                    dashboard.share_with = "selected-users";
-                                }
-                                else {
-                                    dashboard.share_with = "none";
-                                }
-                            }
-
-                            if (canSeeDashboardShares(params.member, dashboard)) {
-                                parallelTasks.push(fetchSharedUsersInfo.bind(null, dashboard));
+                        if (!dashboard.share_with) {
+                            if (dashboard.shared_with_edit && dashboard.shared_with_edit.length ||
+                                dashboard.shared_with_view && dashboard.shared_with_view.length ||
+                                dashboard.shared_email_edit && dashboard.shared_email_edit.length ||
+                                dashboard.shared_email_view && dashboard.shared_email_view.length ||
+                                dashboard.shared_user_groups_edit && dashboard.shared_user_groups_edit.length ||
+                                dashboard.shared_user_groups_view && dashboard.shared_user_groups_view.length) {
+                                dashboard.share_with = "selected-users";
                             }
                             else {
-                                delete dashboard.shared_with_edit;
-                                delete dashboard.shared_with_view;
-                                delete dashboard.shared_email_view;
-                                delete dashboard.shared_email_edit;
-                                delete dashboard.shared_user_groups_edit;
-                                delete dashboard.shared_user_groups_view;
+                                dashboard.share_with = "none";
+                            }
+                        }
+
+                        if (dashboard.refreshRate) {
+                            dashboard.refreshRate = dashboard.refreshRate / 60; //Convert to minutes
+                            dashboard.use_refresh_rate = true;
+                        }
+
+                        if (canSeeDashboardShares(params.member, dashboard)) {
+                            parallelTasks.push(fetchSharedUsersInfo.bind(null, dashboard));
+                        }
+                        else {
+                            delete dashboard.shared_with_edit;
+                            delete dashboard.shared_with_view;
+                            delete dashboard.shared_email_view;
+                            delete dashboard.shared_email_edit;
+                            delete dashboard.shared_user_groups_edit;
+                            delete dashboard.shared_user_groups_view;
+                        }
+
+                        async.parallel(parallelTasks, function(error, result) {
+                            if (error) {
+                                common.returnMessage(params, 401, 'Error while fetching dashboard widget data.');
+                                return true;
                             }
 
-                            async.parallel(parallelTasks, function(error, result) {
-                                if (error) {
-                                    common.returnMessage(params, 401, 'Error while fetching dashboard widget data.');
-                                    return true;
-                                }
+                            var output = dashboard;
+                            output = Object.assign(output, result[0]);
 
-                                var output = dashboard;
-                                output = Object.assign(output, result[0]);
-
-                                common.returnOutput(params, output);
-                            });
+                            common.returnOutput(params, output);
                         });
-                    }
-                    else {
-                        common.returnMessage(params, 404, "Dashboard does not exist");
-                    }
+                    });
 
                     /**
                      * Function to fetch dashboard widgets
@@ -336,24 +349,6 @@ plugins.setConfigs("dashboards", {
                     common.returnMessage(params, 404, "Such dashboard and widget combination does not exist.");
                 }
             });
-        });
-
-        return true;
-    });
-
-    plugins.register("/o/dashboards/test", function(ob) {
-        var params = ob.params,
-            widgets = [];
-
-        try {
-            widgets = JSON.parse(params.qstring.widgets);
-        }
-        catch (ex) {
-            //Error
-        }
-
-        customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
-            common.returnOutput(params, data);
         });
 
         return true;
@@ -597,6 +592,19 @@ plugins.setConfigs("dashboards", {
                 shareWith = params.qstring.share_with || "",
                 copyDashId = params.qstring.copy_dash_id;
 
+            var refreshRate = 0;
+            if (params.qstring.use_refresh_rate && params.qstring.use_refresh_rate !== "false" && params.qstring.refreshRate > 0) {
+                try {
+                    refreshRate = parseInt(params.qstring.refreshRate, 10);
+                    refreshRate = Math.max(5, refreshRate) * 60; //Convert to seconds
+                }
+                catch (ex) {
+                    refreshRate = 0;
+                    log.e("passed unexpected refresh rate");
+                }
+
+            }
+
             try {
                 sharedEmailEdit = JSON.parse(sharedEmailEdit);
             }
@@ -711,6 +719,9 @@ plugins.setConfigs("dashboards", {
                     theme: theme,
                     created_at: new Date().getTime()
                 };
+                if (refreshRate > 0) {
+                    dashData.refreshRate = refreshRate;
+                }
 
                 var widgets = dataObj.newWidgetIds;
                 if (widgets && widgets.length) {
@@ -846,6 +857,19 @@ plugins.setConfigs("dashboards", {
                 send_email_invitation = params.qstring.send_email_invitation,
                 memberId = params.member._id + "";
 
+            var refreshRate = 0;
+            if (params.qstring.use_refresh_rate && params.qstring.use_refresh_rate !== "false" && params.qstring.refreshRate > 0) {
+                try {
+                    refreshRate = parseInt(params.qstring.refreshRate, 10);
+                    refreshRate = Math.max(5, refreshRate) * 60; //Convert to seconds
+                }
+                catch (ex) {
+                    refreshRate = 0;
+                    log.e("passed unexpected refresh rate");
+                }
+            }
+
+
             if (!dashboardId || dashboardId.length !== 24) {
                 common.returnMessage(params, 400, 'Invalid parameter: dashboard_id');
                 return true;
@@ -972,12 +996,19 @@ plugins.setConfigs("dashboards", {
                                 changedFields.shared_user_groups_view = sharedUserGroupView;
                             }
                         }
+                        var unset = {shared_with_view: "", shared_with_edit: ""};
+                        if (refreshRate && refreshRate > 0 && refreshRate !== dashboard.refreshRate) {
+                            changedFields.refreshRate = refreshRate;
+                        }
+                        else if (refreshRate === 0) {
+                            unset.refreshRate = ""; //unset refresh rate for dashboard
+                        }
 
                         common.db.collection("dashboards").update(
                             filterCond,
                             {
                                 $set: changedFields,
-                                $unset: {shared_with_view: "", shared_with_edit: ""}
+                                $unset: unset
                             },
                             async function(e, res) {
                                 if (!e && res) {
@@ -1046,30 +1077,50 @@ plugins.setConfigs("dashboards", {
                 filterCond.owner_id = memberId;
             }
 
-            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
+            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, async function(err, dashboard) {
                 if (err || !dashboard) {
                     common.returnMessage(params, 400, "Dashboard with the given id doesn't exist");
                 }
                 else {
-                    hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
+                    hasViewAccessToDashboard(params.member, dashboard, async function(er, status) {
                         if (er || !status) {
                             return common.returnOutput(params, {error: true, dashboard_access_denied: true});
                         }
 
-                        common.db.collection("dashboards").remove(
-                            filterCond,
-                            function(error, result) {
-                                if (!error && result) {
-                                    if (result && result.result && result.result.n === 1) {
-                                        plugins.dispatch("/systemlogs", {params: params, action: "dashboard_deleted", data: dashboard});
-                                    }
-                                    common.returnOutput(params, result);
-                                }
-                                else {
-                                    common.returnMessage(params, 500, "Failed to delete dashboard");
+                        try {
+                            const dashboardToDelete = await common.db.collection("dashboards").findOne(filterCond);
+
+                            if (!dashboardToDelete) {
+                                return common.returnMessage(params, 404, "Dashboard not found");
+                            }
+
+                            // Collect widget IDs from the dashboard
+                            const widgetIds = (dashboardToDelete.widgets || []).map(w => common.db.ObjectID(w.$oid || w));
+
+                            // Delete widgets and linked reports
+                            for (const wid of widgetIds) {
+                                const widget = await common.db.collection("widgets").findOneAndDelete({ _id: wid });
+
+                                if (widget && widget.value) {
+                                    plugins.dispatch("/dashboard/widget/deleted", { params, widget: widget.value });
                                 }
                             }
-                        );
+
+                            // Remove the dashboard
+                            const result = await common.db.collection("dashboards").deleteOne(filterCond);
+
+                            if (result && result.deletedCount) {
+                                plugins.dispatch("/systemlogs", {params: params, action: "dashboard_deleted", data: dashboard});
+                                common.returnOutput(params, result);
+                            }
+                            else {
+                                common.returnMessage(params, 500, "Failed to delete dashboard");
+                            }
+                        }
+                        catch (error) {
+                            console.error("Error during dashboard deletion:", error);
+                            common.returnMessage(params, 500, "An error occurred while deleting the dashboard");
+                        }
                     });
                 }
             });
