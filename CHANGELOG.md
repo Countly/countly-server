@@ -1,19 +1,64 @@
+
 ## Version 25.03.X
 Fixes:
 - [core] Accept numeric color in saveNote schema so graph note create/edit no longer fails validation
 
+## Version 25.03.44
+Security fixes:
+- [alerts] Validate alertConfig.selectedApps against caller's permissions (cross-app metric exfiltration)
+- [app_users / logger / compliance-hub] Strip dangerous Mongo operators ($where, $expr, $function, $accumulator) from user-supplied queries
+- [app_users] Sanitize user.picture filename before deletion (path traversal)
+- [app_users] Scope export download/delete to caller's app_id; reject path-traversal in filenames
+- [apps] Replace updateApp/createApp mass-assignment with explicit field allowlist
+- [auth] Generate new-member invite prid with crypto.randomBytes (replace predictable HMAC)
+- [auth] Handle req.session.regenerate error in token login
+- [auth] Replace OTP-equality recaptcha bypass with twoFactorPassed session flag
+- [auth] Restrict /login/token/:token to login-purpose tokens; regenerate session id on token login to close fixation
+- [cms / system / systemlogs] /i/cms/save_entries, /o/system/plugins, /i/systemlogs restricted to global admins
+- [core] Add common.resolvePathInBase helper for safe path containment checks
+- [crashes] Add error handlers to crash report streamed responses
+- [dashboards] Constrain public screenshot route paths and stream error handling
+- [dashboards] Identical response for missing/inaccessible dashboard (no enumeration)
+- [dashboards] Require auth + per-widget app permission on /o/dashboards/test; remove the unused endpoint
+- [data_migration] Constrain export/import paths to allowed directories; reject path-traversal in target_path, multipart filenames, and exportid (backport of #7491)
+- [data] Escape regex metacharacters in sSearch parameters (ReDoS)
+- [data] Return 404 (not 500) when event_groups lookup misses
+- [dbviewer] Block $graphLookup aggregation stage (cross-collection data exfiltration)
+- [dbviewer] Wrap non-admin scope as top-level $and so user-supplied $or/$nor cannot bypass per-tenant filter (cross-tenant data exfiltration)
+- [errorlogs] Reject path-traversal in admin log file paths
+- [event_groups] Whitelist updatable fields on create/update; scope reads by app_id
+- [exports] Add stream error handlers to export download
+- [exports] Authorize /o/export/download by task ownership / app_id
+- [notes] Bind notes to permission-checked app_id; check edit permissions against the note's stored app_id
+- [notes] Enforce saveNote schema validation
+- [output] Remove noescape query-string bypass on returnOutput (reflected-XSS via parameter)
+- [push] Bind message create/test/update/one/remove/toggle to query-string app_id (cross-app push injection)
+- [redirect] Apply SSRF protection (api/utils/ssrf-protection.js) to app.redirect_url outbound requests
+- [render] (--disable-web-security) removed from puppeteer
+- [reports] Add stream error handlers
+- [star-rating] Close stored XSS in feedback widget logo upload/preview; restrict uploads to image MIME types and validate magic bytes (backport of #7532)
+- [star-rating] Defense-in-depth on image upload/serve routes
+- [system-utility] Harden streamed responses with error handlers
+- [tasks] Authorize /i/tasks/{update,delete,name,edit} per task ownership / app admin / global admin
+- [users] /users/check/username now requires global admin (parity with email check)
+
+Enterprise Features:
+- [journey_engine] Maker checker approver
+- [journey_engine] Engagement cooldown information added to journey builder and user profiles
+
 Enterprise Fixes:
+- [active_users] Fixed logic to prevent triggering active users calculation if it 
+- [cognito] Fix crash on GET /clogin/:code when body-parser 2.x leaves req.body undefined on requests with no bodyis already running.
 - [drill] Add query hint based on default indexes
 - [drill] Add contextual links in drill table for user IDs and crash groups
 - [drill] Resolve device IDs to user profiles via server-side redirect endpoint
 - [drill] Open crash group and user profile links in new tab
 - [drill] Show user-friendly error message when saving a query fails
-
+- [users] Fix MongoDB dot encoding (&#46;) leaking into user profile UI filters, breakdown dropdown, and URLs
 
 ## Version 25.03.43
 Enterprise Fixes:
 - [flow] Optimize timeline period query
-- [journey_engine] Maker checker approver
 
 Dependencies:
 - Bump follow-redirects from 1.15.11 to 1.16.0 
