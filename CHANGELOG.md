@@ -30,7 +30,7 @@ Security Fixes (backport of #7535 — bug-bounty-style hardening pass):
 - M-14 (`--disable-web-security`): the flag was never present in 24.05's puppeteer args, so the master fix is a no-op; only an explanatory comment was added.
 - L-7 (drop wildcard CORS from reports preview/pdf): intentionally **not** backported — the wildcard is needed for puppeteer PDF rendering against `data:` URL documents (sub-resource fetches). Same decision as on master where the L-7 fix was reverted.
 
-Earlier in this 24.05.50 release:
+Fixes:
 - [star-rating] Close stored XSS in feedback widget logo upload/preview; restrict uploads to image MIME types and validate magic bytes (backport of #7532)
 - [star-rating] Defense-in-depth on image upload/serve routes
 - [data_migration] Constrain export/import paths to allowed directories; reject path-traversal in `target_path`, multipart filenames, and exportid (backport of #7491)
