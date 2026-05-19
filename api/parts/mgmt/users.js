@@ -908,8 +908,11 @@ usersApi.saveNote = async function(params) {
             'type': 'String',
         },
         'color': {
+            // Frontend (countly.common.notes.js COLOR_TAGS) sends a numeric
+            // index 1..5. URL query callers may send "5" as a string.
+            // Mirror the ts handling — IntegerString accepts both.
             'required': true,
-            'type': 'String'
+            'type': 'IntegerString'
         },
         'category': {
             'required': false,
