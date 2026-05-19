@@ -1,4 +1,7 @@
 ## Version 25.03.X
+Fixes:
+- [core] Accept numeric color in saveNote schema so graph note create/edit no longer fails validation
+
 Enterprise Fixes:
 - [drill] Add query hint based on default indexes
 - [drill] Add contextual links in drill table for user IDs and crash groups
