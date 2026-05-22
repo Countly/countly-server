@@ -47,10 +47,13 @@
                     var eventKey = countlyEventsOverview.helpers.decode(data[i].name);
                     event.key = eventKey;
                     event.name = countlyEventsOverview.helpers.getEventLongName(eventKey, map);
+                    if (event.name.indexOf(":") > -1) {
+                        event.name = event.name.replace(/\:/g, ".");
+                    }
                     event.value = countlyCommon.formatNumber((data[i].count));
                     event.change = data[i].change;
                     event.trend = data[i].trend;
-                    event.tooltip = countlyEventsOverview.helpers.getEventLongName(data[i].name, map);
+                    event.tooltip = event.name;
                     event.percentage = ob.totalCount === 0 ? 0 : ((data[i].count / ob.totalCount) * 100).toFixed(1);
                     topEvents.push(event);
                 }
@@ -237,13 +240,18 @@
                         }
                     }
                     else {
+
                         eventKey = countlyEventsOverview.helpers.decode(item.name);
+                        let name = countlyEventsOverview.helpers.getEventLongName(eventKey, map);
+                        if (name.indexOf(":") > -1) {
+                            name = name.replace(/\:/g, ".");
+                        }
                         tableRows.push({
                             "count": item.count,
                             "sum": item.sum,
                             "duration": item.duration,
                             "key": eventKey,
-                            "name": countlyEventsOverview.helpers.getEventLongName(eventKey, map)
+                            "name": name
                         });
                     }
                 });
