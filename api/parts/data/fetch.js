@@ -2014,7 +2014,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     /**
     * Check if obj is a leaf stats object (all keys are known numeric event stat fields).
     * Used to distinguish a correctly stored segment value from an incorrectly nested container.
-    * @param {any} obj
+    * @param {any} obj - object to check
     * @returns {boolean}
     **/
     function isEventStatsObject(obj) {
@@ -2035,7 +2035,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
      * Flatten a nested meta_v2.key sub-object where leaves are `true`.
      * e.g. { "Test": { "Dot": true, "Other": true } } with prefix "Test"
      * produces { "Test.Dot": true, "Test.Other": true }.
-     * @param {object} obj
+     * @param {object} obj - object to flatten
      * @param {string} prefix - the parent key that contained this object
      * @returns {object}
      **/
@@ -2058,8 +2058,8 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     * Flatten segment keys that were incorrectly nested because dots in segment values
     * were written via MongoDB dot notation ($set "d.20.Other.One.c": 3 creates nesting).
     * Joins nested keys with ":" to restore the encoded form ("Other:One").
-    * @param {object} obj
-    * @param {string} [prefix]
+    * @param {object} obj - object to flatten
+    * @param {string} [prefix] - the parent key that contained this object, used for recursion, should be left empty when called on top level
     * @returns {object}
     **/
     function flattenEventDotKeys(obj, prefix) {
