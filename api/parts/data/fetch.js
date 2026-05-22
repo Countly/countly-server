@@ -1860,6 +1860,13 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                     continue;
                 }
 
+                var docAny = /** @type {any} */(dataObjects[i]);
+                if (docAny.e === "all" && docAny._id.indexOf("_all_") !== -1) {
+                    //Normalize documents for total event counts.
+                    dataObjects[i] = normalizeEventDoc(docAny);
+                }
+
+
                 var mSplit = dataObjects[i].m.split(":"),
                     year = mSplit[0],
                     month = mSplit[1];
@@ -2002,6 +2009,110 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
             }
         }
         return mergedDataObj;
+    }
+
+    /**
+    * Check if obj is a leaf stats object (all keys are known numeric event stat fields).
+    * Used to distinguish a correctly stored segment value from an incorrectly nested container.
+    * @param {any} obj - object to check
+    * @returns {boolean}
+    **/
+    function isEventStatsObject(obj) {
+        if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
+            return false;
+        }
+        var keys = Object.keys(obj);
+        if (!keys.length) {
+            return false;
+        }
+        var statsKeys = new Set(['c', 's', 'dur']);
+        return keys.every(function(k) {
+            return statsKeys.has(k) && typeof obj[k] === 'number';
+        });
+    }
+
+    /**
+     * Flatten a nested meta_v2.key sub-object where leaves are `true`.
+     * e.g. { "Test": { "Dot": true, "Other": true } } with prefix "Test"
+     * produces { "Test.Dot": true, "Test.Other": true }.
+     * @param {object} obj - object to flatten
+     * @param {string} prefix - the parent key that contained this object
+     * @returns {object}
+     **/
+    function flattenMeta(obj, prefix) {
+        var result = {};
+        for (var k in obj) {
+            var fullKey = prefix + ':' + k;
+            var val = obj[k];
+            if (val === true) {
+                result[fullKey] = true;
+            }
+            else if (typeof val === 'object' && val !== null) {
+                Object.assign(result, flattenMeta(val, fullKey));
+            }
+        }
+        return result;
+    }
+
+    /**
+    * Flatten segment keys that were incorrectly nested because dots in segment values
+    * were written via MongoDB dot notation ($set "d.20.Other.One.c": 3 creates nesting).
+    * Joins nested keys with ":" to restore the encoded form ("Other:One").
+    * @param {object} obj - object to flatten
+    * @param {string} [prefix] - the parent key that contained this object, used for recursion, should be left empty when called on top level
+    * @returns {object}
+    **/
+    function flattenEventDotKeys(obj, prefix) {
+        var result = {};
+        var entries = Object.entries(obj);
+        for (var ei = 0; ei < entries.length; ei++) {
+            var key = entries[ei][0];
+            var value = entries[ei][1];
+            var fullKey = prefix ? prefix + ':' + key : key;
+            if (isEventStatsObject(value)) {
+                result[fullKey] = value;
+            }
+            else if (typeof value === 'object' && value !== null) {
+                Object.assign(result, flattenEventDotKeys(value, fullKey));
+            }
+        }
+        return result;
+    }
+
+    /**
+    * Normalize the d field and meta of a raw events_data document where e==="all" and s==="key".
+    * Dots in segment values were stored via MongoDB dot notation, causing incorrect nesting in d.
+    * This fixes the d field and updates meta/meta_v2 so their values match the corrected keys.
+    * @param {any} doc - raw MongoDB document
+    * @returns {any} normalized document (new object, original is not mutated)
+    **/
+    function normalizeEventDoc(doc) {
+        var newD = {};
+        if (doc.d) {
+            for (var day in doc.d) {
+                var dayData = doc.d[day];
+                if (typeof dayData !== 'object' || dayData === null) {
+                    newD[day] = dayData;
+                    continue;
+                }
+                newD[day] = flattenEventDotKeys(dayData);
+            }
+            doc.d = newD;
+        }
+        else if (doc.meta_v2 && doc.meta_v2.key) {
+            var newMetaKey = {};
+            for (var key in doc.meta_v2.key) {
+                if (doc.meta_v2.key[key] === true) {
+                    newMetaKey[key] = true;
+                }
+                else {
+                    Object.assign(newMetaKey, flattenMeta(doc.meta_v2.key[key], key));
+                }
+            }
+            doc.meta_v2.key = newMetaKey;
+        }
+
+        return doc;
     }
 }
 
