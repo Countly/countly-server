@@ -2,6 +2,7 @@
 ## Version 25.03.X
 Fixes:
 - [core] Accept numeric color in saveNote schema so graph note create/edit no longer fails validation
+- [core] Fixed topEvents data calculations with event keys containing ".".
 - [groups] Tolerate legacy string `group_id` on members in findGroups aggregation so the groups listing, User Management, Alerts and Preset Management pages no longer 400 with MongoDB Location40081 on tenants with pre-2021 data
 
 ## Version 25.03.44
