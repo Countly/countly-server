@@ -794,7 +794,7 @@
                         ]
                     });*/
                     preparedEventList.push({
-                        "label": 'Push Actioned',
+                        "label": this.i18n('internal-events.[CLY]_push_action'),
                         "name": "[CLY]_push_action",
                         "options": [
                             { label: this.i18n('internal-events.[CLY]_push_action'), value: '[CLY]_push_action' }
