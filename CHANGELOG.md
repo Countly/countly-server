@@ -1,4 +1,12 @@
+
 ## Version 25.03.X
+Fixes:
+- [core] Accept numeric color in saveNote schema so graph note create/edit no longer fails validation
+- [jobs] Filter out jobs, which belongs to disabled plugins on fetching job list.
+- [core] Fixed topEvents data calculations with event keys containing ".".
+- [groups] Tolerate legacy string `group_id` on members in findGroups aggregation so the groups listing, User Management, Alerts and Preset Management pages no longer 400 with MongoDB Location40081 on tenants with pre-2021 data
+
+## Version 25.03.44
 Security fixes:
 - [alerts] Validate alertConfig.selectedApps against caller's permissions (cross-app metric exfiltration)
 - [app_users / logger / compliance-hub] Strip dangerous Mongo operators ($where, $expr, $function, $accumulator) from user-supplied queries
@@ -39,6 +47,7 @@ Security fixes:
 
 Enterprise Features:
 - [journey_engine] Maker checker approver
+- [journey_engine] Engagement cooldown information added to journey builder and user profiles
 
 Enterprise Fixes:
 - [active_users] Fixed logic to prevent triggering active users calculation if it 
@@ -49,9 +58,6 @@ Enterprise Fixes:
 - [drill] Open crash group and user profile links in new tab
 - [drill] Show user-friendly error message when saving a query fails
 - [users] Fix MongoDB dot encoding (&#46;) leaking into user profile UI filters, breakdown dropdown, and URLs
-
-Enterprise Features:
-- [journey_engine] Engagement cooldown information added to journey builder and user profiles
 
 ## Version 25.03.43
 Enterprise Fixes:

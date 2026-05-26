@@ -219,11 +219,23 @@ class Manager {
             name: {$in: this.types}
         };
 
+        var types = [];
+        for (var i = 0; i < this.types.length; i++) {
+            //Skip types of disabled plugins
+            var splitted = this.types[i].split(':');
+            if (manager.isPluginEnabled(splitted[0])) {
+                types.push(this.types[i]);
+            }
+        }
+        find.name.$in = types;
+
         log.d('Looking for jobs ...');
+        log.d("Allowed types: %j", types);
         this.collection.find(find).sort({next: 1}).limit(MAXIMUM_IN_LINE_JOBS_PER_NAME).toArray((err, jobs) => {
             //filter out duplicates except for alerts one.
             var map = {};
             var newJobs = [];
+            jobs = jobs || [];
             //filter out if there is more than 1 scheduled for this name except alerts
             for (var z = 0; z < jobs.length; z++) {
                 if (jobs[z].name && (jobs[z].name === "alerts:monitor" || !map[jobs[z].name])) {
@@ -241,6 +253,7 @@ class Manager {
                 this.checkAfterDelay();
             }
             else {
+                log.d('Found %d job(s) to run', jobs.length);
                 this.process(jobs).catch(e => {
                     log.e('Error during job processing', e);
                     this.checkAfterDelay();
@@ -260,6 +273,7 @@ class Manager {
                     job = this.create(json);
 
                 if (!job) {
+                    log.d('Cannot instantiate job %j, skipping', json);
                     continue;
                 }
 
@@ -275,6 +289,7 @@ class Manager {
                 }
                 var splittedName = job.name.split(':');
                 if (!manager.isPluginEnabled(splittedName[0])) {
+                    log.d('Plugin %s is disabled, skipping job %s:%s:%s', splittedName[0], json.name, json._id, new Date(json.next));
                     continue; //skipping this job as plugin is disabled
                 }
 
