@@ -1,5 +1,5 @@
 
-## Version 25.03.X
+## Version 25.03.45
 Fixes:
 - [core] Accept numeric color in saveNote schema so graph note create/edit no longer fails validation
 - [jobs] Filter out jobs, which belongs to disabled plugins on fetching job list.
