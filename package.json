@@ -111,7 +111,10 @@
     },
     "csurf": {
       "cookie": "^0.7.1"
-    }
+    },
+    "serialize-javascript": "^7.0.5",
+    "uuid": "^11.1.1",
+    "@tootallnate/once": "^2.0.1"
   },
   "jshintConfig": {
     "esversion": 6,
