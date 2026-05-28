@@ -24,6 +24,7 @@ Security Fixes (backport of #7535 — bug-bounty-style hardening pass):
 - [output] Remove `noescape` query-string bypass on `returnOutput` (reflected-XSS via parameter)
 - [auth] Handle `req.session.regenerate` error in token login
 - [data] Return 404 (not 500) when `event_groups` lookup misses
+- [notes] Accept numeric color in saveNote schema so graph note create/edit no longer fails validation after H-5 enforcement (backport of #7578)
 
 24.05-specific notes (some master fixes were not directly applicable):
 - C-1 (`$graphLookup`) and M-11 (dbviewer non-admin filter scope): master uses a `whiteListedAggregationStages` mechanism (added by SER-2122) and a `getBaseAppFilter` per-collection app-id mechanism that 24.05 does not have. C-1 is implemented as a minimal targeted block; M-11 is not applicable here. A broader 24.05 dbviewer hardening (porting SER-2122 + filter scope + M-11) is left for a separate change.
