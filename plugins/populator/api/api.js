@@ -225,6 +225,18 @@ const FEATURE_NAME = 'populator';
                 return false;
             }
 
+            //the stored appId comes from the request body; bind it to the
+            //authorized app so a caller can't create environment records under
+            //another app by supplying a foreign appId
+            var authorizedAppId = params.qstring.app_id + "";
+            var foreignApp = users.some(function(u) {
+                return (u.appId + "") !== authorizedAppId;
+            });
+            if (foreignApp) {
+                common.returnMessage(obParams, 403, "User does not have right");
+                return false;
+            }
+
             const environmentId = common.crypto.createHash('sha1').update(users[0].appId + users[0].environmentName).digest('hex');
             const insertedInformations = [];
             const createdAt = new Date().getTime();
