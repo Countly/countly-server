@@ -37,6 +37,34 @@ function safeDataMigrationId(exportid) {
 }
 
 /**
+ * Whether the member may access an export record. Export records live in the
+ * global data_migrations collection keyed by exportid = SHA1(JSON.stringify(apps)),
+ * which is computable from public app ids - so endpoints that operate on a
+ * record by exportid alone must additionally verify ownership/app access.
+ * @param {object} member - request member
+ * @param {object} exportRecord - data_migrations document
+ * @returns {boolean} true if the member owns it, is a global admin, or has
+ *                    data_migration access to one of the export's apps
+ */
+function memberCanAccessExport(member, exportRecord) {
+    if (!member || !exportRecord) {
+        return false;
+    }
+    if (member.global_admin) {
+        return true;
+    }
+    if (exportRecord.userid && (exportRecord.userid + "") === (member._id + "")) {
+        return true;
+    }
+    var allowedApps = (getAdminApps(member) || [])
+        .concat(getUserAppsForFeaturePermission(member, FEATURE_NAME, 'r') || []);
+    var exportApps = Array.isArray(exportRecord.apps) ? exportRecord.apps : [];
+    return exportApps.some(function(appId) {
+        return allowedApps.indexOf(appId + "") !== -1;
+    });
+}
+
+/**
 *Function to delete all exported files in export folder
 * @returns {Promise} Promise
 */
@@ -329,6 +357,12 @@ function trim_ending_slashes(address) {
                         common.returnMessage(params, 404, err);
                     }
                     else {
+                        //only the owner / an authorized app may delete the export,
+                        //its log and archive (exportid is computable from app ids)
+                        if (res && !memberCanAccessExport(params.member, res)) {
+                            common.returnMessage(ob.params, 404, "data-migration.invalid-exportid");
+                            return;
+                        }
                         if (res) {
                             var data_migrator = new migration_helper(common.db);
 
@@ -450,6 +484,12 @@ function trim_ending_slashes(address) {
                         common.returnMessage(params, 404, err);
                     }
                     else {
+                        //only the owner / an authorized app may stop the export
+                        //(exportid is computable from app ids)
+                        if (res && !memberCanAccessExport(params.member, res)) {
+                            common.returnMessage(ob.params, 404, "data-migration.invalid-exportid");
+                            return;
+                        }
                         if (res) {
                             if (res.status === 'finished') {
                                 common.returnMessage(ob.params, 404, 'data-migration.export-already-finished');
@@ -708,7 +748,9 @@ function trim_ending_slashes(address) {
                         common.returnOutput(ob.params, err.message);
                     }
                     else {
-                        if (res) {
+                        //the record (incl. server_token/server_address) must only
+                        //be returned to its owner / an app the caller can access
+                        if (res && memberCanAccessExport(params.member, res)) {
                             common.returnMessage(params, 200, res);
                         }
                         else {
