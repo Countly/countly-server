@@ -723,6 +723,12 @@ const FEATURE_NAME = 'populator';
             common.returnMessage(obParams, 401, "Missing parameter template_id");
             return false;
         }
+        if (!obParams.qstring.app_id) {
+            //app_id is required to scope the deletion; without it a global
+            //admin request would reach the delete with an undefined scope
+            common.returnMessage(obParams, 401, "Missing parameter app_id");
+            return false;
+        }
         validateDelete(obParams, FEATURE_NAME, function() {
             common.db.collection('populator_environment_users').deleteMany({
                 "_id": {
