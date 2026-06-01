@@ -26,7 +26,7 @@
         </el-table-column>
         <el-table-column test-id="condition" prop="condition_definition" :label="i18n('remote-config.definition')">
           <template v-slot:default="rowScope">
-            <div :data-test-id="'datatable-condition-description-' + rowScope.$index" v-html="rowScope.row.condition_definition"></div>
+            <div :data-test-id="'datatable-condition-description-' + rowScope.$index" v-text="rowScope.row.condition_definition"></div>
           </template>
         </el-table-column>
         <el-table-column test-id="condition" prop="seed_value" :label="i18n('remote-config.seed-value')">
