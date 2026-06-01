@@ -11,6 +11,8 @@ describe('Testing dashboards widget-layout access control', function() {
     var API_KEY_ADMIN = "";
     var dashboardId = "";
     var otherApiKey = "";
+    var otherUserId = "";
+    var uniq = Date.now();
 
     it('should create a private dashboard as admin', function(done) {
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
@@ -29,20 +31,21 @@ describe('Testing dashboards widget-layout access control', function() {
 
     it('should create a separate non-admin user', function(done) {
         var userParams = {
-            full_name: "dashoutsider",
-            username: "dashoutsider",
+            full_name: "dashoutsider" + uniq,
+            username: "dashoutsider" + uniq,
             password: "p4ssw0rD!",
-            email: "dashoutsider@mail.test",
+            email: "dashoutsider" + uniq + "@mail.test",
             permission: { _: { a: [], u: [] }, c: {}, r: {}, u: {}, d: {} }
         };
         request
-            .get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify(userParams))
+            .get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify(userParams)))
             .expect(200)
             .end(function(err, res) {
                 if (err) {
                     return done(err);
                 }
                 otherApiKey = res.body.api_key;
+                otherUserId = res.body._id;
                 should.exist(otherApiKey);
                 done();
             });
@@ -80,7 +83,11 @@ describe('Testing dashboards widget-layout access control', function() {
         request
             .get('/i/dashboards/delete?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + dashboardId)
             .end(function() {
-                done();
+                request
+                    .get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [otherUserId]})))
+                    .end(function() {
+                        done();
+                    });
             });
     });
 });

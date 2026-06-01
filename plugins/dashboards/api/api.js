@@ -558,9 +558,11 @@ plugins.setConfigs("dashboards", {
 
         validateUser(params, function() {
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
+                //return the same access-denied shape whether the dashboard is
+                //missing or not viewable, so dashboard ids cannot be enumerated
+                //via response differences (matches /o/dashboards)
                 if (err || !dashboard) {
-                    common.returnMessage(params, 404, "Dashboard does not exist.");
-                    return;
+                    return common.returnOutput(params, {error: true, dashboard_access_denied: true});
                 }
                 //the caller must be allowed to view this dashboard; without this
                 //any authenticated user could read another dashboard's layout
@@ -568,7 +570,8 @@ plugins.setConfigs("dashboards", {
                     if (er || !status) {
                         return common.returnOutput(params, {error: true, dashboard_access_denied: true});
                     }
-                    common.db.collection("widgets").find({_id: {$in: dashboard.widgets}}, {_id: 1, position: 1, size: 1}).toArray(function(e, widgets) {
+                    var widgetIds = Array.isArray(dashboard.widgets) ? dashboard.widgets : [];
+                    common.db.collection("widgets").find({_id: {$in: widgetIds}}, {_id: 1, position: 1, size: 1}).toArray(function(e, widgets) {
                         common.returnOutput(params, widgets || []);
                     });
                 });
