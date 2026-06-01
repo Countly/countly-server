@@ -7,7 +7,7 @@ const fs = require('fs');
 const fse = require('fs-extra');
 var path = require('path');
 var cp = require('child_process'); //call process
-const { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+const { validateCreate, validateRead, validateUpdate, validateDelete, getAdminApps, getUserAppsForFeaturePermission } = require('../../../api/utils/rights.js');
 var NginxConfFile = "";
 try {
     NginxConfFile = require('nginx-conf').NginxConfFile;
@@ -500,7 +500,17 @@ function trim_ending_slashes(address) {
             }
         }
         validateRead(params, FEATURE_NAME, function() {
-            common.db.collection("data_migrations").find().sort({ts: -1}).toArray(function(err, res) {
+            //export records are global, so scope the listing: a non global
+            //admin may only see exports they created or exports targeting apps
+            //they can read, otherwise any user with data_migration read on one
+            //app could enumerate every export (incl. server tokens, owners).
+            var listQuery = {};
+            if (!params.member.global_admin) {
+                var allowedApps = (getAdminApps(params.member) || [])
+                    .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
+                listQuery = {$or: [{userid: params.member._id}, {apps: {$in: allowedApps}}]};
+            }
+            common.db.collection("data_migrations").find(listQuery).sort({ts: -1}).toArray(function(err, res) {
                 if (err) {
                     common.returnMessage(ob.params, 404, err.message);
                 }

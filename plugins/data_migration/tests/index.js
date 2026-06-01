@@ -1217,6 +1217,87 @@ describe("Testing data migration plugin", function() {
         });
     });*/
 
+    describe("Export listing scope", function() {
+        var scopedAppId = "";
+        var scopedApiKey = "";
+        var victimExportId = "victim-export-" + Date.now();
+
+        it("create an app and a user scoped to it only", function(done) {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            request
+                .post('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args={"name":"DM listing app","type":"mobile"}')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    scopedAppId = JSON.parse(res.text)._id;
+                    var perm = { _: {a: [], u: [scopedAppId]}, c: {}, r: {}, u: {}, d: {} };
+                    perm.r[scopedAppId] = {all: false, allowed: {data_migration: true}};
+                    perm.c[scopedAppId] = {all: false, allowed: {data_migration: true}};
+                    var userParams = {full_name: "dmlister", username: "dmlister", password: "p4ssw0rD!", email: "dmlister@mail.test", permission: perm};
+                    request
+                        .post('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify(userParams))
+                        .expect(200)
+                        .end(function(err2, res2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            scopedApiKey = JSON.parse(res2.text).api_key;
+                            should.exist(scopedApiKey);
+                            done();
+                        });
+                });
+        });
+
+        it("seed a victim export owned by another user/app", function(done) {
+            testUtils.db.collection("data_migrations").insert({
+                _id: victimExportId,
+                apps: ["ffffffffffffffffffffffff"],
+                userid: "some-other-user",
+                email: "victim@example.test",
+                server_address: "https://victim.example",
+                server_token: "victim-secret-token",
+                ts: Date.now()
+            }, function(err) {
+                done(err);
+            });
+        });
+
+        it("does not expose other users'/apps' exports to a scoped user", function(done) {
+            request
+                .post('/o/datamigration/getmyexports?api_key=' + scopedApiKey + '&app_id=' + scopedAppId)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    if (typeof ob.result === "string") {
+                        // "data-migration.no-exports" — nothing visible, which is fine
+                        return done();
+                    }
+                    var list = ob.result || ob;
+                    if (Array.isArray(list)) {
+                        list.forEach(function(e) {
+                            (e._id === victimExportId).should.eql(false);
+                        });
+                    }
+                    done();
+                });
+        });
+
+        after(function(done) {
+            testUtils.db.collection("data_migrations").remove({_id: victimExportId}, function() {
+                request
+                    .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"' + scopedAppId + '"}')
+                    .end(function() {
+                        done();
+                    });
+            });
+        });
+    });
+
     describe("cleanup", function() {
 
 
