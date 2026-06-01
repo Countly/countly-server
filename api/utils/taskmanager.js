@@ -637,6 +637,10 @@ taskmanager.editTask = function(options, callback) {
 */
 taskmanager.checkResult = function(options, callback) {
     options.db = options.db || common.db;
+    //when a member is supplied, only report tasks they are authorized for
+    //(own / global admin / app admin); others are reported as "deleted" so a
+    //caller cannot probe another app's task status by id
+    var enforce = !!options.member;
     if (Array.isArray(options.id)) {
         options.db.collection("long_tasks").find({_id: {$in: options.id}}, {
             _id: 1,
@@ -644,7 +648,9 @@ taskmanager.checkResult = function(options, callback) {
             report_name: 1,
             type: 1,
             manually_create: 1,
-            view: 1
+            view: 1,
+            creator: 1,
+            app_id: 1
         }).toArray(function(err, res) {
             if (err) {
                 callback(err);
@@ -655,6 +661,11 @@ taskmanager.checkResult = function(options, callback) {
                     statuses[id] = {_id: id, status: "deleted"}; // if it is present in res, will be overwritten.
                 });
                 res.forEach(function(item) {
+                    if (enforce && !taskmanager.isAuthorizedFor(options.member, item)) {
+                        return; // leave as "deleted" for unauthorized tasks
+                    }
+                    delete item.creator;
+                    delete item.app_id;
                     statuses[item._id] = item;
                 });
                 callback(null, Object.keys(statuses).map(function(_id) {
@@ -669,8 +680,18 @@ taskmanager.checkResult = function(options, callback) {
     else {
         options.db.collection("long_tasks").findOne({_id: options.id}, {
             _id: 0,
-            status: 1
-        }, callback);
+            status: 1,
+            creator: 1,
+            app_id: 1
+        }, function(err, res) {
+            if (err || !res) {
+                return callback(err, res);
+            }
+            if (enforce && !taskmanager.isAuthorizedFor(options.member, res)) {
+                return callback(null, null);
+            }
+            callback(null, {status: res.status});
+        });
     }
 };
 
