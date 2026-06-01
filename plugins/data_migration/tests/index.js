@@ -1217,6 +1217,89 @@ describe("Testing data migration plugin", function() {
         });
     });*/
 
+    describe("Cross-app authorization", function() {
+        var victimApp = null;
+        var attackerApp = null;
+        var attackerApiKey = "";
+
+        it("create a victim app", function(done) {
+            request
+                .post('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args={"name":"Victim app","type":"mobile"}')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    victimApp = JSON.parse(res.text);
+                    done();
+                });
+        });
+
+        it("create an attacker app and a user scoped to it only", function(done) {
+            request
+                .post('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args={"name":"Attacker app","type":"mobile"}')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    attackerApp = JSON.parse(res.text);
+                    var perm = {};
+                    ["c", "r", "u", "d"].forEach(function(t) {
+                        perm[t] = {};
+                        perm[t][attackerApp._id] = {all: false, allowed: {data_migration: true}};
+                    });
+                    perm._ = {a: [], u: [attackerApp._id]};
+                    var userParams = {
+                        full_name: "dmattacker",
+                        username: "dmattacker",
+                        password: "p4ssw0rD!",
+                        email: "dmattacker@mail.test",
+                        permission: perm
+                    };
+                    request
+                        .post('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify(userParams))
+                        .expect(200)
+                        .end(function(err2, res2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            var ob = JSON.parse(res2.text);
+                            attackerApiKey = ob.api_key;
+                            should.exist(attackerApiKey);
+                            done();
+                        });
+                });
+        });
+
+        it("rejects exporting another app via the apps parameter", function(done) {
+            //authorize against the attacker app but request the victim app
+            request
+                .post('/i/datamigration/export?only_export=1&apps=' + victimApp._id + '&api_key=' + attackerApiKey + '&app_id=' + attackerApp._id)
+                .expect(403)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    (ob.result).should.be.exactly("User does not have right");
+                    done();
+                });
+        });
+
+        after(function(done) {
+            request
+                .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"' + victimApp._id + '"}')
+                .end(function() {
+                    request
+                        .post('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args={"app_id":"' + attackerApp._id + '"}')
+                        .end(function() {
+                            done();
+                        });
+                });
+        });
+    });
+
     describe("cleanup", function() {
 
 
