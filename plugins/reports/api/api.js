@@ -258,6 +258,13 @@ const FEATURE_NAME = 'reports';
 
                 convertToTimezone(props);
 
+                //a missing report_type is treated as "core" by the generator
+                //(reports.js: report.report_type || "core"), so normalize it
+                //here too - otherwise the per-app authorization below could be
+                //skipped by omitting report_type while still producing a core
+                //report for arbitrary apps.
+                props.report_type = props.report_type || "core";
+
                 if (props.report_type === "core") {
                     if (!props.apps || !Array.isArray(props.apps) || props.apps.length === 0) {
                         common.returnMessage(params, 400, 'Invalid or missing apps');
@@ -312,27 +319,39 @@ const FEATURE_NAME = 'reports';
 
                 convertToTimezone(props);
 
-                if (props.report_type === "core") {
-                    if (!props.apps || !Array.isArray(props.apps) || props.apps.length === 0) {
-                        common.returnMessage(params, 400, 'Invalid or missing apps');
-                        return;
-                    }
-
-                    let userApps = getUserApps(params.member);
-                    let notPermitted = false;
-                    for (var i = 0; i < props.apps.length; i++) {
-                        if (userApps.indexOf(props.apps[i]) === -1) {
-                            notPermitted = true;
-                        }
-                    }
-                    if (notPermitted && !params.member.global_admin) {
-                        return common.returnMessage(params, 401, 'User does not have right to access this information');
-                    }
-                }
                 common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err_update, report) {
                     if (err_update) {
                         console.log(err_update);
                     }
+                    if (!report) {
+                        return common.returnMessage(params, 404, 'Report not found');
+                    }
+
+                    //determine the effective report type after the update: a
+                    //missing report_type (in the payload and the stored report)
+                    //is treated as "core" by the generator, so authorize the
+                    //apps whenever the merged report is core - otherwise omitting
+                    //report_type on update would bypass the per-app check.
+                    var effectiveType = (typeof props.report_type !== "undefined")
+                        ? props.report_type
+                        : (report.report_type || "core");
+
+                    if (effectiveType === "core" && typeof props.apps !== "undefined") {
+                        if (!Array.isArray(props.apps) || props.apps.length === 0) {
+                            return common.returnMessage(params, 400, 'Invalid or missing apps');
+                        }
+                        let userApps = getUserApps(params.member);
+                        let notPermitted = false;
+                        for (var i = 0; i < props.apps.length; i++) {
+                            if (userApps.indexOf(props.apps[i]) === -1) {
+                                notPermitted = true;
+                            }
+                        }
+                        if (notPermitted && !params.member.global_admin) {
+                            return common.returnMessage(params, 401, 'User does not have right to access this information');
+                        }
+                    }
+
                     common.db.collection('reports').update(recordUpdateOrDeleteQuery(params, id), {$set: props}, function(err_update2) {
                         if (err_update2) {
                             err_update2 = err_update2.err;
