@@ -7,7 +7,7 @@ const fs = require('fs');
 const fse = require('fs-extra');
 var path = require('path');
 var cp = require('child_process'); //call process
-const { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+const { validateCreate, validateRead, validateUpdate, validateDelete, hasCreateRight } = require('../../../api/utils/rights.js');
 var NginxConfFile = "";
 try {
     NginxConfFile = require('nginx-conf').NginxConfFile;
@@ -819,6 +819,16 @@ function trim_ending_slashes(address) {
                 return true;
             }
 
+            //validateCreate only authorizes against params.qstring.app_id, but the apps
+            //list is independent, so verify the caller can export every requested app
+            var unauthorizedApps = apps.filter(function(appId) {
+                return !hasCreateRight(FEATURE_NAME, appId + "", params.member);
+            });
+            if (unauthorizedApps.length) {
+                common.returnMessage(params, 403, 'User does not have right');
+                return true;
+            }
+
             if (!params.qstring.only_export || (parseInt(params.qstring.only_export) !== 1 && parseInt(params.qstring.only_export) !== 2)) {
                 params.qstring.only_export = false;
                 if (!params.qstring.server_token || params.qstring.server_token === '') {
@@ -1001,13 +1011,30 @@ function trim_ending_slashes(address) {
                     params.qstring.redirect_traffic = false;
                 }
 
-                var myreq = JSON.stringify({headers: params.req.headers});
-                update_progress(params.qstring.exportid, "packing", "progress", 100, "", true, {stopped: false, only_export: false, server_address: params.qstring.server_address, server_token: params.qstring.server_token, redirect_traffic: params.qstring.redirect_traffic, userid: params.member._id, email: params.member.email, myreq: myreq});
+                //the export is referenced only by exportid, so verify the caller can
+                //export every app contained in it before re-sending it to a remote server
+                common.db.collection("data_migrations").findOne({_id: params.qstring.exportid + ""}, function(err, exportRecord) {
+                    if (err || !exportRecord) {
+                        common.returnMessage(params, 404, 'data-migration.invalid-exportid');
+                        return;
+                    }
+                    var exportApps = Array.isArray(exportRecord.apps) ? exportRecord.apps : [];
+                    var unauthorizedApps = exportApps.filter(function(appId) {
+                        return !hasCreateRight(FEATURE_NAME, appId + "", params.member);
+                    });
+                    if (!exportApps.length || unauthorizedApps.length) {
+                        common.returnMessage(params, 403, 'User does not have right');
+                        return;
+                    }
 
-                common.returnMessage(params, 200, "Success");
+                    var myreq = JSON.stringify({headers: params.req.headers});
+                    update_progress(params.qstring.exportid, "packing", "progress", 100, "", true, {stopped: false, only_export: false, server_address: params.qstring.server_address, server_token: params.qstring.server_token, redirect_traffic: params.qstring.redirect_traffic, userid: params.member._id, email: params.member.email, myreq: myreq});
 
-                var data_migrator = new migration_helper(common.db);
-                data_migrator.send_export(params.qstring.exportid, common.db);
+                    common.returnMessage(params, 200, "Success");
+
+                    var data_migrator = new migration_helper(common.db);
+                    data_migrator.send_export(params.qstring.exportid, common.db);
+                });
 
             }
             else {
