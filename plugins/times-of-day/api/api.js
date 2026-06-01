@@ -274,8 +274,13 @@ const FEATURE_NAME = 'times_of_day';
                     todType = eventKey;
                 }
 
+                var widgetApps = (data.apps || []).map(function(appId) {
+                    return appId + "";
+                });
+
                 criteria = {
-                    "s": todType
+                    "s": todType,
+                    "a": { $in: widgetApps }
                 };
 
                 var periodRange = getDateRange(period);
