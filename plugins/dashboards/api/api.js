@@ -549,21 +549,30 @@ plugins.setConfigs("dashboards", {
     plugins.register("/o/dashboards/widget-layout", function(ob) {
         var params = ob.params;
 
+        var dashboardId = params.qstring.dashboard_id;
+
+        if (typeof dashboardId === "undefined" || dashboardId.length !== 24) {
+            common.returnMessage(params, 401, 'Invalid parameter: dashboard_id');
+            return true;
+        }
+
         validateUser(params, function() {
-
-            var dashboardId = params.qstring.dashboard_id;
-
-            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, {widgets: 1}, function(err, dashboard) {
+            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                 if (err || !dashboard) {
-                    //Error
+                    common.returnMessage(params, 404, "Dashboard does not exist.");
+                    return;
                 }
-                else {
-                    common.db.collection("widgets").find({_id: {$in: dashboard.widgets}}, {_id: 1, position: 1, size: 1}).toArray(function(er, widgets) {
+                //the caller must be allowed to view this dashboard; without this
+                //any authenticated user could read another dashboard's layout
+                hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
+                    if (er || !status) {
+                        return common.returnOutput(params, {error: true, dashboard_access_denied: true});
+                    }
+                    common.db.collection("widgets").find({_id: {$in: dashboard.widgets}}, {_id: 1, position: 1, size: 1}).toArray(function(e, widgets) {
                         common.returnOutput(params, widgets || []);
                     });
-                }
+                });
             });
-
         });
 
         return true;
