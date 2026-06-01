@@ -991,6 +991,12 @@ function trim_ending_slashes(address) {
         }
         validateCreate(params, FEATURE_NAME, function() {
             if (params.qstring.exportid) {
+                var exportid = safeDataMigrationId(params.qstring.exportid);
+                if (!exportid) {
+                    common.returnMessage(params, 400, "data-migration.invalid-exportid");
+                    return true;
+                }
+
                 if (!params.qstring.server_token || params.qstring.server_token === '') {
                     common.returnMessage(params, 404, 'data-migration.token_missing');
                     return true;
@@ -1013,8 +1019,13 @@ function trim_ending_slashes(address) {
 
                 //the export is referenced only by exportid, so verify the caller can
                 //export every app contained in it before re-sending it to a remote server
-                common.db.collection("data_migrations").findOne({_id: params.qstring.exportid + ""}, function(err, exportRecord) {
-                    if (err || !exportRecord) {
+                common.db.collection("data_migrations").findOne({_id: exportid}, function(err, exportRecord) {
+                    if (err) {
+                        log.e(err);
+                        common.returnMessage(params, 500, 'data-migration.unable-to-load-export');
+                        return;
+                    }
+                    if (!exportRecord) {
                         common.returnMessage(params, 404, 'data-migration.invalid-exportid');
                         return;
                     }
@@ -1028,12 +1039,12 @@ function trim_ending_slashes(address) {
                     }
 
                     var myreq = JSON.stringify({headers: params.req.headers});
-                    update_progress(params.qstring.exportid, "packing", "progress", 100, "", true, {stopped: false, only_export: false, server_address: params.qstring.server_address, server_token: params.qstring.server_token, redirect_traffic: params.qstring.redirect_traffic, userid: params.member._id, email: params.member.email, myreq: myreq});
+                    update_progress(exportid, "packing", "progress", 100, "", true, {stopped: false, only_export: false, server_address: params.qstring.server_address, server_token: params.qstring.server_token, redirect_traffic: params.qstring.redirect_traffic, userid: params.member._id, email: params.member.email, myreq: myreq});
 
                     common.returnMessage(params, 200, "Success");
 
                     var data_migrator = new migration_helper(common.db);
-                    data_migrator.send_export(params.qstring.exportid, common.db);
+                    data_migrator.send_export(exportid, common.db);
                 });
 
             }
