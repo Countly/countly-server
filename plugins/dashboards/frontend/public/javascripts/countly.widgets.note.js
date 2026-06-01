@@ -18,8 +18,18 @@
     NOTE_STYLE_TAGS.forEach(function(tag) {
         noteWhiteList[tag] = ["class", "style"];
     });
+    // Allow the CSS properties the editor emits. js-xss ships a property
+    // allowlist that already permits color, background-color (highlight),
+    // font-family, font-size and text-align, but disallows line-height by
+    // default, so merge it back in (kept safe by the CSS value filter).
+    var noteCSSWhiteList = {};
+    if (typeof filterXSS === "function" && typeof filterXSS.getDefaultCSSWhiteList === "function") {
+        noteCSSWhiteList = filterXSS.getDefaultCSSWhiteList();
+        noteCSSWhiteList["line-height"] = true;
+    }
     var noteXSSOptions = {
         whiteList: noteWhiteList,
+        css: { whiteList: noteCSSWhiteList },
         stripIgnoreTag: true,
         stripIgnoreTagBody: ["script", "style"],
         onIgnoreTagAttr: function(tag, name, value) {
@@ -30,17 +40,9 @@
             }
         },
         onTagAttr: function(tag, name, value) {
-            if (tag === "a" && name === "target") {
-                if (!(value === "_blank" || value === "_self" || value === "_top" || value === "_parent")) {
-                    return "target='_blank'";
-                }
-            }
-            if (tag === "a" && name === "href") {
-                // only allow anchors, root-relative and http(s) links
-                if (!(value.substr(0, 1) === "#" || value.substr(0, 1) === "/" || value.substr(0, 4) === "http")) {
-                    return "href='#'";
-                }
-            }
+            // href/src are left to the library's safeAttrValue, which permits
+            // http(s)/mailto/tel/relative/anchor links and blocks javascript:
+            // and other dangerous schemes - so links in notes keep working.
             if (tag === "input" && name === "type" && value !== "checkbox") {
                 // todo lists only need checkboxes
                 return "type='checkbox'";
