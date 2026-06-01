@@ -536,7 +536,10 @@ const FEATURE_NAME = 'reports';
 
                 var bulk = common.db.collection("reports").initializeUnorderedBulkOp();
                 for (const id in statusList) {
-                    bulk.find({ _id: common.db.ObjectID(id) }).updateOne({ $set: { enabled: statusList[id] } });
+                    //scope to records the caller may modify (owner / global
+                    //admin); otherwise any report's enabled state could be
+                    //toggled by _id alone.
+                    bulk.find(recordUpdateOrDeleteQuery(params, id)).updateOne({ $set: { enabled: statusList[id] } });
                 }
                 if (bulk.length > 0) {
                     bulk.execute(function(err) {
