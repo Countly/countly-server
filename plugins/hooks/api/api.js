@@ -577,7 +577,18 @@ plugins.register("/i/hook/status", function(ob) {
     let paramsInstance = ob.params;
 
     validateUpdate(paramsInstance, FEATURE_NAME, function(params) {
-        const statusList = JSON.parse(params.qstring.status);
+        let statusList;
+        try {
+            statusList = JSON.parse(params.qstring.status);
+        }
+        catch (e) {
+            common.returnMessage(params, 400, "Invalid status payload");
+            return;
+        }
+        if (!statusList || typeof statusList !== "object" || Array.isArray(statusList)) {
+            common.returnMessage(params, 400, "Invalid status payload");
+            return;
+        }
         const hookIds = Object.keys(statusList);
         let objectIds;
         try {
@@ -698,7 +709,7 @@ plugins.register("/i/hook/delete", function(ob) {
                         common.returnMessage(params, 200, "Deleted an hook");
                     }
                     else {
-                        common.returnMessage(params, 500, "Failed to delete an hook" + err.message);
+                        common.returnMessage(params, 500, "Failed to delete a hook: " + err.message);
                     }
                 }
             );
