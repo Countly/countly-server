@@ -411,13 +411,20 @@ function fetchDatapoints(db, filter, options, callback) {
  *  @param {db} db - DB object
  *  @param {object} params - params object
  *  @param {function} callback - callback
+ *  @param {Array=} appList - optional list of app ids to restrict results to (used for non global admins)
  */
-function getTop(db, params, callback) {
+function getTop(db, params, callback, appList) {
     var utcMoment = moment.utc();
     var curMonth = utcMoment.format("YYYY") + ":" + utcMoment.format("M");
     var curDate = utcMoment.format("D");
     var curHour = utcMoment.format("H");
-    db.collection("server_stats_data_points").find({_id: {$regex: ".*_" + curMonth}}, {}).toArray(function(err, data) {
+    var query = {_id: {$regex: ".*_" + curMonth}};
+    //when an app scope is provided (non global admins) restrict the
+    //aggregation to those apps so other apps' datapoints are not disclosed
+    if (Array.isArray(appList)) {
+        query.a = {$in: appList};
+    }
+    db.collection("server_stats_data_points").find(query, {}).toArray(function(err, data) {
         var res = {};
         if (data) {
             for (let i = 0; i < data.length; i++) {

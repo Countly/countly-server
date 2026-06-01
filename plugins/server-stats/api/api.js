@@ -350,9 +350,13 @@ const internalEventsSkipped = ["[CLY]_orientation"];
     plugins.register("/o/server-stats/top", function(ob) {
         var params = ob.params;
         validateUser(params, async() => {
+            //global admins see the instance-wide top apps; everyone else is
+            //restricted to the apps they are allowed to access, so datapoint
+            //totals for other apps are not disclosed
+            var appList = params.member.global_admin ? null : (getUserApps(params.member) || []);
             stats.getTop(common.db, params, function(res) {
                 common.returnOutput(params, res);
-            });
+            }, appList);
         });
         return true;
     });

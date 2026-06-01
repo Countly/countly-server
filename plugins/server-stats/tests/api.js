@@ -207,6 +207,73 @@ describe('Testing data points plugin', function() {
         });
     });
 
+    describe('Top apps cross-app isolation', function() {
+        var scopedAppId = "";
+        var scopedApiKey = "";
+
+        it('should create a separate app and a user scoped to it only', function(done) {
+            request
+                .get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({name: "SS scope app", type: "mobile"}))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    scopedAppId = res.body._id;
+                    var userParams = {
+                        full_name: "ssscopeuser",
+                        username: "ssscopeuser",
+                        password: "p4ssw0rD!",
+                        email: "ssscopeuser@mail.test",
+                        permission: {
+                            _: { a: [], u: [[scopedAppId]] },
+                            c: {},
+                            r: {},
+                            u: {},
+                            d: {}
+                        }
+                    };
+                    request
+                        .get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify(userParams))
+                        .expect(200)
+                        .end(function(err2, res2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            scopedApiKey = res2.body.api_key;
+                            should.exist(scopedApiKey);
+                            done();
+                        });
+                });
+        });
+
+        it('should not expose other apps\' datapoints to a scoped user', function(done) {
+            request
+                .get('/o/server-stats/top?api_key=' + scopedApiKey)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    //the base test app (APP_ID) has datapoints, the scoped user
+                    //has no rights to it and must not see it in the ranking
+                    Object.values(ob).forEach(function(item) {
+                        item.a.should.not.eql(APP_ID);
+                    });
+                    done();
+                });
+        });
+
+        after(function(done) {
+            request
+                .get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({app_id: scopedAppId}))
+                .end(function() {
+                    done();
+                });
+        });
+    });
+
     describe('Get server stats chart data', function() {
         it('should list values for chart data in (30 days)', function(done) {
             request
