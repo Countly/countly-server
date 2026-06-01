@@ -1,4 +1,4 @@
-var should = require('should');
+require('should');
 var utils = require('../api/utils');
 
 // Regression tests for HTML escaping of trigger values substituted into the
