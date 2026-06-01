@@ -645,14 +645,21 @@ function uploadFile(myfile, id, callback) {
     var removeFeedbackWidget = function(ob) {
         var obParams = ob.params;
         validateDelete(obParams, FEATURE_NAME, function(params) {
-            var widgetId = params.qstring.widget_id;
+            var widgetId;
+            try {
+                widgetId = common.db.ObjectID(params.qstring.widget_id);
+            }
+            catch (e) {
+                common.returnMessage(obParams, 400, 'Invalid widget id.');
+                return false;
+            }
             var app = params.qstring.app_id;
             var withData = params.qstring.with_data;
             var collectionName = "feedback_widgets";
-            common.db.collection(collectionName).findOne({"_id": common.db.ObjectID(widgetId), "app_id": params.app_id + "" }, function(err, widget) {
+            common.db.collection(collectionName).findOne({"_id": widgetId, "app_id": params.app_id + "" }, function(err, widget) {
                 if (!err && widget) {
                     common.db.collection(collectionName).remove({
-                        "_id": common.db.ObjectID(widgetId),
+                        "_id": widgetId,
                         "app_id": params.app_id + ""
                     }, function(removeWidgetErr) {
                         if (!removeWidgetErr) {
@@ -662,7 +669,7 @@ function uploadFile(myfile, id, callback) {
                             }
                             // remove widget and related data
                             if (withData) {
-                                removeWidgetData(widgetId, app, function(removeError) {
+                                removeWidgetData(params.qstring.widget_id, app, function(removeError) {
                                     if (removeError) {
                                         common.returnMessage(ob.params, 500, removeError.message);
                                         return false;
@@ -1010,8 +1017,15 @@ function uploadFile(myfile, id, callback) {
 
             for (const key in data) {
                 const newStatusValue = data[key] === true || data[key] === 'true' ? true : false;
-
-                bulk.find({ _id: common.db.ObjectID(key), app_id: params.app_id + "" }).updateOne({ $set: { 'status': newStatusValue } });
+                let widgetObjectId;
+                try {
+                    widgetObjectId = common.db.ObjectID(key);
+                }
+                catch (e) {
+                    common.returnMessage(params, 400, 'Invalid widget id: ' + key);
+                    return false;
+                }
+                bulk.find({ _id: widgetObjectId, app_id: params.app_id + "" }).updateOne({ $set: { 'status': newStatusValue } });
             }
 
             bulk.execute(function(error) {

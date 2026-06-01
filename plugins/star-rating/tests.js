@@ -534,10 +534,12 @@ describe('Testing Rating plugin', function() {
         var victimAppId = "";
         var victimWidgetId = "";
         var scopedApiKey = "";
+        var scopedUserId = "";
+        var uniq = Date.now();
 
         it('creates a victim app with a widget', function(done) {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-            request.get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({name: "SR victim app", type: "mobile"}))
+            request.get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({name: "SRVictimApp", type: "mobile"})))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -545,7 +547,7 @@ describe('Testing Rating plugin', function() {
                     }
                     victimAppId = res.body._id;
                     request.get('/i/feedback/widgets/create?api_key=' + API_KEY_ADMIN + '&app_id=' + victimAppId + '&popup_header_text=victim&popup_comment_callout=c&popup_email_callout=e&popup_button_callout=s&popup_thanks_message=t&trigger_position=mleft&trigger_bg_color=%23123456&trigger_font_color=%23122333&trigger_button_text=fb&target_devices={desktop:false,phone:true,tablet:true}&target_page=selected&target_pages=["/"]&is_active=true&hide_sticker=false')
-                        .expect(200)
+                        .expect(201)
                         .end(function(err2) {
                             if (err2) {
                                 return done(err2);
@@ -570,14 +572,15 @@ describe('Testing Rating plugin', function() {
             ["c", "r", "u", "d"].forEach(function(t) {
                 perm[t][APP_ID] = {all: false, allowed: {star_rating: true}};
             });
-            var userParams = {full_name: "sruser", username: "sruser", password: "p4ssw0rD!", email: "sruser@mail.test", permission: perm};
-            request.get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify(userParams))
+            var userParams = {full_name: "sruser" + uniq, username: "sruser" + uniq, password: "p4ssw0rD!", email: "sruser" + uniq + "@mail.test", permission: perm};
+            request.get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify(userParams)))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
                     scopedApiKey = res.body.api_key;
+                    scopedUserId = res.body._id;
                     should.exist(scopedApiKey);
                     done();
                 });
@@ -594,10 +597,20 @@ describe('Testing Rating plugin', function() {
 
         it('leaves the victim widget intact after cross-app status/edit attempts', function(done) {
             APP_ID = testUtils.get("APP_ID");
+            // bulk status executes but must match nothing in the attacker's app
             request.get('/i/feedback/widgets/status?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&data=' + encodeURIComponent(JSON.stringify({[victimWidgetId]: false})))
-                .end(function() {
+                .expect(200)
+                .end(function(errStatus) {
+                    if (errStatus) {
+                        return done(errStatus);
+                    }
+                    // edit must be rejected for a widget in another app
                     request.get('/i/feedback/widgets/edit?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&widget_id=' + victimWidgetId + '&popup_header_text=hijacked')
-                        .end(function() {
+                        .expect(404)
+                        .end(function(errEdit) {
+                            if (errEdit) {
+                                return done(errEdit);
+                            }
                             request.get('/o/feedback/widget?app_id=' + victimAppId + '&api_key=' + API_KEY_ADMIN + '&widget_id=' + victimWidgetId)
                                 .expect(200)
                                 .end(function(err, res) {
@@ -614,9 +627,12 @@ describe('Testing Rating plugin', function() {
         });
 
         after(function(done) {
-            request.get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({app_id: victimAppId}))
+            request.get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [scopedUserId]})))
                 .end(function() {
-                    done();
+                    request.get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({app_id: victimAppId})))
+                        .end(function() {
+                            done();
+                        });
                 });
         });
     });
