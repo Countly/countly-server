@@ -332,9 +332,10 @@ const FEATURE_NAME = 'reports';
                     //is treated as "core" by the generator, so authorize the
                     //apps whenever the merged report is core - otherwise omitting
                     //report_type on update would bypass the per-app check.
-                    var effectiveType = (typeof props.report_type !== "undefined")
-                        ? props.report_type
-                        : (report.report_type || "core");
+                    //mirror the generator's falsy-defaulting (report_type ||
+                    //"core"): a falsy report_type ("" / null) must not be
+                    //treated as a non-core type to skip the per-app check.
+                    var effectiveType = props.report_type || report.report_type || "core";
 
                     if (effectiveType === "core" && typeof props.apps !== "undefined") {
                         if (!Array.isArray(props.apps) || props.apps.length === 0) {

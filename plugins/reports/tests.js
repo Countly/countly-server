@@ -167,12 +167,14 @@ describe('Testing Reports', function() {
         describe('Cross-app authorization (missing report_type)', function() {
             var victimAppId = "";
             var scopedApiKey = "";
+            var scopedUserId = "";
             var ownedReportId = "";
+            var uniq = Date.now();
 
             it('should create a victim app and a user scoped to the base app only', function(done) {
                 const API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
                 const APP_ID = testUtils.get("APP_ID");
-                request.get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({name: "Reports victim app", type: "mobile"}))
+                request.get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({name: "ReportsVictimApp", type: "mobile"})))
                     .expect(200)
                     .end(function(err, res) {
                         if (err) {
@@ -183,14 +185,15 @@ describe('Testing Reports', function() {
                         ["c", "r", "u", "d"].forEach(function(t) {
                             perm[t][APP_ID] = {all: false, allowed: {reports: true}};
                         });
-                        var userParams = {full_name: "reportsuser", username: "reportsuser", password: "p4ssw0rD!", email: "reportsuser@mail.test", permission: perm};
-                        request.get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify(userParams))
+                        var userParams = {full_name: "reportsuser" + uniq, username: "reportsuser" + uniq, password: "p4ssw0rD!", email: "reportsuser" + uniq + "@mail.test", permission: perm};
+                        request.get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify(userParams)))
                             .expect(200)
                             .end(function(err2, res2) {
                                 if (err2) {
                                     return done(err2);
                                 }
                                 scopedApiKey = res2.body.api_key;
+                                scopedUserId = res2.body._id;
                                 should.exist(scopedApiKey);
                                 done();
                             });
@@ -251,9 +254,16 @@ describe('Testing Reports', function() {
 
             after(function(done) {
                 const API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-                request.get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({app_id: victimAppId}))
+                // best-effort cleanup of the created report, user and app
+                request.get('/i/reports/delete?api_key=' + API_KEY_ADMIN + '&app_id=' + testUtils.get("APP_ID") + '&args=' + encodeURIComponent(JSON.stringify({_id: ownedReportId})))
                     .end(function() {
-                        done();
+                        request.get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [scopedUserId]})))
+                            .end(function() {
+                                request.get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({app_id: victimAppId})))
+                                    .end(function() {
+                                        done();
+                                    });
+                            });
                     });
             });
         });
