@@ -735,7 +735,8 @@ const FEATURE_NAME = 'populator';
                 }
                 else {
                     common.db.collection('populator_environments').deleteOne({
-                        "_id": obParams.qstring.environment_id
+                        "_id": obParams.qstring.environment_id,
+                        "appId": obParams.qstring.app_id + ""
                     }, function(err_) {
                         if (err_) {
                             log.e("Error deleting populator environment", err_, obParams.qstring.environment_id);
