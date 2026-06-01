@@ -649,10 +649,11 @@ function uploadFile(myfile, id, callback) {
             var app = params.qstring.app_id;
             var withData = params.qstring.with_data;
             var collectionName = "feedback_widgets";
-            common.db.collection(collectionName).findOne({"_id": common.db.ObjectID(widgetId) }, function(err, widget) {
+            common.db.collection(collectionName).findOne({"_id": common.db.ObjectID(widgetId), "app_id": params.app_id + "" }, function(err, widget) {
                 if (!err && widget) {
                     common.db.collection(collectionName).remove({
-                        "_id": common.db.ObjectID(widgetId)
+                        "_id": common.db.ObjectID(widgetId),
+                        "app_id": params.app_id + ""
                     }, function(removeWidgetErr) {
                         if (!removeWidgetErr) {
                             if (cohortsEnabled && widget.cohortID) {
@@ -719,11 +720,16 @@ function uploadFile(myfile, id, callback) {
             }
             var changes = validatedArgs.obj;
 
+            //a widget must not be reassigned to another app via edit
+            delete changes.app_id;
+
             if (changes.status) {
                 changes.is_active = changes.status ? "true" : "false";
             }
 
-            common.db.collection("feedback_widgets").findAndModify({"_id": widgetId }, {}, {$set: changes}, function(err, widget) {
+            //scope the update to the authorized app so a widget belonging to
+            //another app cannot be edited by targeting its id
+            common.db.collection("feedback_widgets").findAndModify({"_id": widgetId, "app_id": params.app_id + "" }, {}, {$set: changes}, function(err, widget) {
                 if (!err && widget) {
                     widget = widget.value;
                     if (cohortsEnabled && ((widget.cohortID && !changes.targeting) || JSON.stringify(changes.targeting) !== JSON.stringify(widget.targeting))) {
@@ -1005,7 +1011,7 @@ function uploadFile(myfile, id, callback) {
             for (const key in data) {
                 const newStatusValue = data[key] === true || data[key] === 'true' ? true : false;
 
-                bulk.find({ _id: common.db.ObjectID(key) }).updateOne({ $set: { 'status': newStatusValue } });
+                bulk.find({ _id: common.db.ObjectID(key), app_id: params.app_id + "" }).updateOne({ $set: { 'status': newStatusValue } });
             }
 
             bulk.execute(function(error) {

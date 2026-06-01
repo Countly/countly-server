@@ -530,6 +530,97 @@ describe('Testing Rating plugin', function() {
         });
     });
 
+    describe('Cross-app widget authorization', function() {
+        var victimAppId = "";
+        var victimWidgetId = "";
+        var scopedApiKey = "";
+
+        it('creates a victim app with a widget', function(done) {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            request.get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({name: "SR victim app", type: "mobile"}))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    victimAppId = res.body._id;
+                    request.get('/i/feedback/widgets/create?api_key=' + API_KEY_ADMIN + '&app_id=' + victimAppId + '&popup_header_text=victim&popup_comment_callout=c&popup_email_callout=e&popup_button_callout=s&popup_thanks_message=t&trigger_position=mleft&trigger_bg_color=%23123456&trigger_font_color=%23122333&trigger_button_text=fb&target_devices={desktop:false,phone:true,tablet:true}&target_page=selected&target_pages=["/"]&is_active=true&hide_sticker=false')
+                        .expect(200)
+                        .end(function(err2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            request.get('/o/feedback/widgets?app_id=' + victimAppId + '&api_key=' + API_KEY_ADMIN)
+                                .expect(200)
+                                .end(function(err3, res3) {
+                                    if (err3) {
+                                        return done(err3);
+                                    }
+                                    victimWidgetId = JSON.parse(res3.text)[0]._id;
+                                    should.exist(victimWidgetId);
+                                    done();
+                                });
+                        });
+                });
+        });
+
+        it('creates a user scoped to the base app only', function(done) {
+            APP_ID = testUtils.get("APP_ID");
+            var perm = { _: {a: [], u: [APP_ID]}, c: {}, r: {}, u: {}, d: {} };
+            ["c", "r", "u", "d"].forEach(function(t) {
+                perm[t][APP_ID] = {all: false, allowed: {star_rating: true}};
+            });
+            var userParams = {full_name: "sruser", username: "sruser", password: "p4ssw0rD!", email: "sruser@mail.test", permission: perm};
+            request.get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify(userParams))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    scopedApiKey = res.body.api_key;
+                    should.exist(scopedApiKey);
+                    done();
+                });
+        });
+
+        it('rejects removing another app\'s widget', function(done) {
+            APP_ID = testUtils.get("APP_ID");
+            request.get('/i/feedback/widgets/remove?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&widget_id=' + victimWidgetId)
+                .expect(404)
+                .end(function(err) {
+                    return done(err);
+                });
+        });
+
+        it('leaves the victim widget intact after cross-app status/edit attempts', function(done) {
+            APP_ID = testUtils.get("APP_ID");
+            request.get('/i/feedback/widgets/status?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&data=' + encodeURIComponent(JSON.stringify({[victimWidgetId]: false})))
+                .end(function() {
+                    request.get('/i/feedback/widgets/edit?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&widget_id=' + victimWidgetId + '&popup_header_text=hijacked')
+                        .end(function() {
+                            request.get('/o/feedback/widget?app_id=' + victimAppId + '&api_key=' + API_KEY_ADMIN + '&widget_id=' + victimWidgetId)
+                                .expect(200)
+                                .end(function(err, res) {
+                                    if (err) {
+                                        return done(err);
+                                    }
+                                    var w = JSON.parse(res.text);
+                                    //edit must not have rewritten the victim widget
+                                    w.should.have.property('popup_header_text', 'victim');
+                                    done();
+                                });
+                        });
+                });
+        });
+
+        after(function(done) {
+            request.get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({app_id: victimAppId}))
+                .end(function() {
+                    done();
+                });
+        });
+    });
+
     describe('Try to get feedback data after reset', function() {
         it('should return 200 and empty object', function(done) {
             APP_ID = testUtils.get("APP_ID") || APP_ID;
