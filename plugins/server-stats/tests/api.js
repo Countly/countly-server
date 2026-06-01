@@ -210,10 +210,12 @@ describe('Testing data points plugin', function() {
     describe('Top apps cross-app isolation', function() {
         var scopedAppId = "";
         var scopedApiKey = "";
+        var scopedUserId = "";
+        var uniq = Date.now();
 
         it('should create a separate app and a user scoped to it only', function(done) {
             request
-                .get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({name: "SS scope app", type: "mobile"}))
+                .get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({name: "SSscopeApp", type: "mobile"})))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -221,10 +223,10 @@ describe('Testing data points plugin', function() {
                     }
                     scopedAppId = res.body._id;
                     var userParams = {
-                        full_name: "ssscopeuser",
-                        username: "ssscopeuser",
+                        full_name: "ssscopeuser" + uniq,
+                        username: "ssscopeuser" + uniq,
                         password: "p4ssw0rD!",
-                        email: "ssscopeuser@mail.test",
+                        email: "ssscopeuser" + uniq + "@mail.test",
                         permission: {
                             _: { a: [], u: [[scopedAppId]] },
                             c: {},
@@ -234,13 +236,14 @@ describe('Testing data points plugin', function() {
                         }
                     };
                     request
-                        .get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify(userParams))
+                        .get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify(userParams)))
                         .expect(200)
                         .end(function(err2, res2) {
                             if (err2) {
                                 return done(err2);
                             }
                             scopedApiKey = res2.body.api_key;
+                            scopedUserId = res2.body._id;
                             should.exist(scopedApiKey);
                             done();
                         });
@@ -267,9 +270,13 @@ describe('Testing data points plugin', function() {
 
         after(function(done) {
             request
-                .get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({app_id: scopedAppId}))
+                .get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [scopedUserId]})))
                 .end(function() {
-                    done();
+                    request
+                        .get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({app_id: scopedAppId})))
+                        .end(function() {
+                            done();
+                        });
                 });
         });
     });

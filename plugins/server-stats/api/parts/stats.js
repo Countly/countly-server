@@ -418,7 +418,9 @@ function getTop(db, params, callback, appList) {
     var curMonth = utcMoment.format("YYYY") + ":" + utcMoment.format("M");
     var curDate = utcMoment.format("D");
     var curHour = utcMoment.format("H");
-    var query = {_id: {$regex: ".*_" + curMonth}};
+    //match on the stored month field instead of a leading-wildcard regex on
+    //_id (which can't use an index and forces a collection scan)
+    var query = {m: curMonth};
     //when an app scope is provided (non global admins) restrict the
     //aggregation to those apps so other apps' datapoints are not disclosed
     if (Array.isArray(appList)) {
