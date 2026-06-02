@@ -238,6 +238,14 @@ const processRequest = (params) => {
         }
     }
 
+    //make sure scalar identity parameters are strings, not query operators
+    var stringParams = ["app_key", "device_id", "old_device_id"];
+    for (let s = 0; s < stringParams.length; s++) {
+        if (typeof params.qstring[stringParams[s]] !== "undefined" && params.qstring[stringParams[s]] !== null) {
+            params.qstring[stringParams[s]] = params.qstring[stringParams[s]] + "";
+        }
+    }
+
     if (params.qstring.app_id && params.qstring.app_id.length !== 24) {
         common.returnMessage(params, 400, 'Invalid parameter "app_id"');
         return false;
