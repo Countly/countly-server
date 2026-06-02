@@ -85,6 +85,51 @@ taskmanager.loadIfAuthorized = function(db, id, member, cb) {
 };
 
 /**
+ * Whether a member may READ a task's result/status. Read access is broader
+ * than write: in addition to creator / global-admin / app-admin
+ * (isAuthorizedFor), a task explicitly marked global (global !== false) is
+ * readable by any authenticated user - matching the /o/tasks/all listing
+ * filter ({global: {$ne: false}}). Write routes must keep using
+ * isAuthorizedFor, not this.
+ * @param {object} member - request member
+ * @param {object} task - long_tasks document
+ * @returns {boolean} true if the member may read the task
+ */
+taskmanager.isReadableBy = function(member, task) {
+    if (!task) {
+        return false;
+    }
+    if (task.global !== false) {
+        return true;
+    }
+    return taskmanager.isAuthorizedFor(member, task);
+};
+
+/**
+ * Load a task by id, then call cb(err, task) only if `member` may READ it
+ * (see isReadableBy). cb('forbidden') if not readable.
+ * @param {object} db - database connection
+ * @param {string} id - task id
+ * @param {object} member - params.member
+ * @param {function} cb - cb(err, task)
+ */
+taskmanager.loadIfReadable = function(db, id, member, cb) {
+    db = db || common.db;
+    db.collection("long_tasks").findOne({_id: id}, function(err, task) {
+        if (err) {
+            return cb(err);
+        }
+        if (!task) {
+            return cb('not_found');
+        }
+        if (!taskmanager.isReadableBy(member, task)) {
+            return cb('forbidden');
+        }
+        cb(null, task);
+    });
+};
+
+/**
 * Monitors DB query or some other potentially long task and switches to long task manager if it exceeds threshold
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
@@ -637,6 +682,10 @@ taskmanager.editTask = function(options, callback) {
 */
 taskmanager.checkResult = function(options, callback) {
     options.db = options.db || common.db;
+    //when a member is supplied, only report tasks they are authorized for
+    //(own / global admin / app admin); others are reported as "deleted" so a
+    //caller cannot probe another app's task status by id
+    var enforce = !!options.member;
     if (Array.isArray(options.id)) {
         options.db.collection("long_tasks").find({_id: {$in: options.id}}, {
             _id: 1,
@@ -644,7 +693,9 @@ taskmanager.checkResult = function(options, callback) {
             report_name: 1,
             type: 1,
             manually_create: 1,
-            view: 1
+            view: 1,
+            creator: 1,
+            app_id: 1
         }).toArray(function(err, res) {
             if (err) {
                 callback(err);
@@ -655,6 +706,11 @@ taskmanager.checkResult = function(options, callback) {
                     statuses[id] = {_id: id, status: "deleted"}; // if it is present in res, will be overwritten.
                 });
                 res.forEach(function(item) {
+                    if (enforce && !taskmanager.isReadableBy(options.member, item)) {
+                        return; // leave as "deleted" for unauthorized tasks
+                    }
+                    delete item.creator;
+                    delete item.app_id;
                     statuses[item._id] = item;
                 });
                 callback(null, Object.keys(statuses).map(function(_id) {
@@ -669,8 +725,18 @@ taskmanager.checkResult = function(options, callback) {
     else {
         options.db.collection("long_tasks").findOne({_id: options.id}, {
             _id: 0,
-            status: 1
-        }, callback);
+            status: 1,
+            creator: 1,
+            app_id: 1
+        }, function(err, res) {
+            if (err || !res) {
+                return callback(err, res);
+            }
+            if (enforce && !taskmanager.isReadableBy(options.member, res)) {
+                return callback(null, null);
+            }
+            callback(null, {status: res.status});
+        });
     }
 };
 
