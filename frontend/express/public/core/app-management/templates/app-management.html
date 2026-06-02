@@ -162,41 +162,6 @@
                                                 </el-input>
                                             </cly-inline-form-field>
                                         </div>
-                                        <div v-if="!newApp && acceptedKeys.length">
-                                            <cly-inline-form-field
-                                                :label="i18n('management-applications.accepted-keys')"
-                                                :help="i18n('management-applications.accepted-keys.hint')"
-                                                test-id="accepted-keys"
-                                            >
-                                                <el-table :data="acceptedKeys" class="accepted-keys-table" test-id="accepted-keys-table">
-                                                    <el-table-column :label="i18n('management-applications.accepted-keys.key')" min-width="220">
-                                                        <template v-slot="scope">
-                                                            <span style="font-family: monospace;" data-test-id="accepted-key-value">{{scope.row.key}}</span>
-                                                            <el-tag v-if="scope.row.isCurrent" size="mini" type="success" class="bu-ml-2" data-test-id="accepted-key-current-tag">{{i18n('management-applications.accepted-keys.current')}}</el-tag>
-                                                        </template>
-                                                    </el-table-column>
-                                                    <el-table-column :label="i18n('management-applications.accepted-keys.last-data')" min-width="170">
-                                                        <template v-slot="scope">
-                                                            <span data-test-id="accepted-key-last-data">{{formatKeyTime(scope.row.last_data)}}</span>
-                                                        </template>
-                                                    </el-table-column>
-                                                    <el-table-column width="110" align="right">
-                                                        <template v-slot="scope">
-                                                            <el-button
-                                                                v-if="!scope.row.isCurrent && !isDisabled()"
-                                                                type="text"
-                                                                size="small"
-                                                                class="text-red"
-                                                                @click="removeKey(scope.row.key)"
-                                                                data-test-id="retire-key-button"
-                                                            >
-                                                                {{i18n('management-applications.accepted-keys.retire')}}
-                                                            </el-button>
-                                                        </template>
-                                                    </el-table-column>
-                                                </el-table>
-                                            </cly-inline-form-field>
-                                        </div>
                                         <div v-if="formScope.editedObject.type === 'web'">
                                             <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-domain')" test-id="app-domain">
                                                 {{formScope.editedObject.app_domain}}
@@ -294,6 +259,39 @@
                                 <p class="account-upload-instructions" data-test-id="account-upload-instructions-label">{{i18n('management-applications.icon-error')}}</p>
                             </div>
                         </div>
+                    </div>
+                </cly-section>
+                <cly-section v-if="!newApp && acceptedKeys.length">
+                    <div class="bu-p-5">
+                        <h3 class="bu-mb-1" data-test-id="accepted-keys-title">{{i18n('management-applications.accepted-keys')}}</h3>
+                        <p class="bu-mb-4 text-small color-cool-gray-50" style="max-width: 720px;" data-test-id="accepted-keys-hint">{{i18n('management-applications.accepted-keys.hint')}}</p>
+                        <el-table :data="acceptedKeys" class="accepted-keys-table" style="width: 100%;" test-id="accepted-keys-table">
+                            <el-table-column :label="i18n('management-applications.accepted-keys.key')" min-width="280">
+                                <template v-slot="scope">
+                                    <span style="font-family: monospace;" data-test-id="accepted-key-value">{{scope.row.key}}</span>
+                                    <el-tag v-if="scope.row.isCurrent" size="mini" type="success" class="bu-ml-2" data-test-id="accepted-key-current-tag">{{i18n('management-applications.accepted-keys.current')}}</el-tag>
+                                </template>
+                            </el-table-column>
+                            <el-table-column :label="i18n('management-applications.accepted-keys.last-data')" min-width="200">
+                                <template v-slot="scope">
+                                    <span data-test-id="accepted-key-last-data">{{formatKeyTime(scope.row.last_data)}}</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column width="140" align="right">
+                                <template v-slot="scope">
+                                    <el-button
+                                        v-if="!scope.row.isCurrent && !isDisabled()"
+                                        type="text"
+                                        size="small"
+                                        class="text-red"
+                                        @click="removeKey(scope.row.key)"
+                                        data-test-id="retire-key-button"
+                                    >
+                                        {{i18n('management-applications.accepted-keys.retire')}}
+                                    </el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
                     </div>
                 </cly-section>
                 <cly-section>
