@@ -737,7 +737,9 @@ function uploadFile(myfile, id, callback) {
             //scope the update to the authorized app so a widget belonging to
             //another app cannot be edited by targeting its id
             common.db.collection("feedback_widgets").findAndModify({"_id": widgetId, "app_id": params.app_id + "" }, {}, {$set: changes}, function(err, widget) {
-                if (!err && widget) {
+                //widget.value is null when no widget matched the id+app_id
+                //(e.g. cross-app attempt) - treat that as not found, not success
+                if (!err && widget && widget.value) {
                     widget = widget.value;
                     if (cohortsEnabled && ((widget.cohortID && !changes.targeting) || JSON.stringify(changes.targeting) !== JSON.stringify(widget.targeting))) {
                         if (widget.cohortID) {
