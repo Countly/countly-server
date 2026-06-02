@@ -157,6 +157,43 @@ describe('App key rotation keeps user identity stable', function() {
         });
     });
 
+    describe('same device via bulk request with the new key', function() {
+        it('should accept the bulk request', function(done) {
+            var requests = [
+                {device_id: DEVICE_ID, app_key: NEW_KEY, begin_session: 1, metrics: METRICS}
+            ];
+            request
+                .get('/i/bulk?requests=' + JSON.stringify(requests))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'Success');
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                });
+        });
+
+        it('should still resolve to the SAME single user', function(done) {
+            var sameId = userId(ORIGINAL_KEY, DEVICE_ID);
+            var newKeyId = userId(NEW_KEY, DEVICE_ID);
+            testUtils.db.collection('app_users' + APP_ID).findOne({'_id': sameId}, function(err, user) {
+                should.not.exist(err);
+                should.exist(user);
+                user.should.have.property('uid', '1');
+                testUtils.db.collection('app_users' + APP_ID).findOne({'_id': newKeyId}, function(err2, ghost) {
+                    should.not.exist(err2);
+                    should.not.exist(ghost);
+                    testUtils.db.collection('app_users' + APP_ID).count({did: {$exists: true}}, function(err3, count) {
+                        should.not.exist(err3);
+                        count.should.equal(1);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
     after(function(done) {
         var params = {app_id: APP_ID};
         request
