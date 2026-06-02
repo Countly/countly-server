@@ -1980,17 +1980,27 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "task_id"');
                             return false;
                         }
-                        taskmanager.getResult({
-                            db: common.db,
-                            id: params.qstring.task_id,
-                            subtask_key: params.qstring.subtask_key
-                        }, (err, res) => {
-                            if (res) {
-                                common.returnOutput(params, res);
-                            }
-                            else {
+                        //long_tasks is a global collection keyed by task id; gate
+                        //access so a caller can only read a task they own / are
+                        //authorized for (or one explicitly marked global), not
+                        //an arbitrary private task id from another app
+                        taskmanager.loadIfReadable(common.db, params.qstring.task_id, params.member, (authErr) => {
+                            if (authErr) {
                                 common.returnMessage(params, 400, 'Task does not exist');
+                                return;
                             }
+                            taskmanager.getResult({
+                                db: common.db,
+                                id: params.qstring.task_id,
+                                subtask_key: params.qstring.subtask_key
+                            }, (err, res) => {
+                                if (res) {
+                                    common.returnOutput(params, res);
+                                }
+                                else {
+                                    common.returnMessage(params, 400, 'Task does not exist');
+                                }
+                            });
                         });
                     });
                     break;
@@ -2014,7 +2024,8 @@ const processRequest = (params) => {
 
                         taskmanager.checkResult({
                             db: common.db,
-                            id: tasks
+                            id: tasks,
+                            member: params.member
                         }, (err, res) => {
                             if (isMulti && res) {
                                 common.returnMessage(params, 200, res);
