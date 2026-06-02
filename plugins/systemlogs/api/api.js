@@ -97,6 +97,7 @@ plugins.setConfigs("systemlogs", {
             if (typeof params.qstring.query === "string") {
                 try {
                     query = JSON.parse(params.qstring.query);
+                    common.stripUnsafeMongoOperators(query);
                 }
                 catch (ex) {
                     console.log("Can't parse systelogs query");

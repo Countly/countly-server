@@ -521,6 +521,7 @@ fetch.fetchAllApps = function(params) {
     if (params.qstring.filter) {
         try {
             filter = JSON.parse(params.qstring.filter);
+            common.stripUnsafeMongoOperators(filter);
         }
         catch (ex) {
             filter = {};
