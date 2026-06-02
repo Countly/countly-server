@@ -1,5 +1,6 @@
 const { URL } = require('url'),
-    log = require('../../../api/utils/log')('push:proxy');
+    log = require('../../../api/utils/log')('push:proxy'),
+    ssrfProtection = require('../../../api/utils/ssrf-protection');
 let protos = {
     http: require('http'),
     https: require('https'),
@@ -160,6 +161,11 @@ function request(url, method, conf) {
         opts = {method};
         proto = url.substr(0, url.indexOf(':'));
     }
+
+    // Validate the resolved IP at connect time (matches getSsrfSafeOptions for
+    // library-based callers). Applies to direct connections; when a proxy is
+    // configured below the proxy performs resolution.
+    opts.lookup = ssrfProtection.safeLookup;
 
     if (conf && conf.proxyhost && conf.proxyport) {
         let Agent = proxyAgent(url, {
