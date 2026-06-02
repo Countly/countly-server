@@ -203,7 +203,7 @@ mail.sendToNewMember = function(member, memberPassword) {
     const password = mail.escapedHTMLString(memberPassword);
     mail.lookup(function(err, host) {
         localize.getProperties(member.lang, function(err2, properties) {
-            var message = localize.format(properties["mail.new-member"], mail.getUserFirstName(member), host, member.username, password);
+            var message = localize.format(properties["mail.new-member"], mail.escapedHTMLString(mail.getUserFirstName(member)), host, mail.escapedHTMLString(member.username), password);
             mail.sendMessage(member.email, properties["mail.new-member-subject"], message);
         });
     });

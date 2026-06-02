@@ -13,6 +13,25 @@ const ssrfProtection = require('../../../api/utils/ssrf-protection');
 
 const FEATURE_NAME = 'hooks';
 
+/**
+ * Check that the member holds the given right for every app a hook targets.
+ * Hook write endpoints authorize against params.qstring.app_id only, so the
+ * apps actually affected by the operation must be re-checked to prevent a
+ * user with hooks rights on one app from touching hooks of another app.
+ * @param {function} rightFn - rights.hasCreateRight/hasUpdateRight/hasDeleteRight
+ * @param {object} member - request member object
+ * @param {Array} apps - app ids the hook targets
+ * @returns {boolean} true only if member has the right for every app
+ */
+function memberHasRightForAllApps(rightFn, member, apps) {
+    if (!Array.isArray(apps) || apps.length === 0) {
+        return false;
+    }
+    return apps.every(function(appId) {
+        return rightFn(FEATURE_NAME, appId + "", member);
+    });
+}
+
 plugins.setConfigs("hooks", {
     batchActionSize: 0, // size for processing actions each time
     refreshRulesPeriod: 3000, // miliseconds to fetch hook records
@@ -302,6 +321,19 @@ plugins.register("/i/hook/save", function(ob) {
                 if (hookConfig._id) {
                     const id = hookConfig._id;
                     delete hookConfig._id;
+                    const existingHook = await common.db.collection("hooks").findOne({ _id: common.db.ObjectID(id) });
+                    if (!existingHook) {
+                        common.returnMessage(params, 404, "Hook not found");
+                        return true;
+                    }
+                    // must be allowed to update the hook's current apps, and any
+                    // new set of apps it is being retargeted to
+                    if (!params.member.global_admin &&
+                        (!memberHasRightForAllApps(rights.hasUpdateRight, params.member, existingHook.apps) ||
+                            (hookConfig.apps && !memberHasRightForAllApps(rights.hasUpdateRight, params.member, hookConfig.apps)))) {
+                        common.returnMessage(params, 403, "User does not have right");
+                        return true;
+                    }
                     return common.db.collection("hooks").findAndModify(
                         { _id: common.db.ObjectID(id) },
                         {},
@@ -337,6 +369,11 @@ plugins.register("/i/hook/save", function(ob) {
             if (hookConfig) {
                 hookConfig.createdBy = params.member._id; // Accessing property now with proper check
                 hookConfig.created_at = new Date().getTime();
+            }
+            // a new hook may only target apps the caller can create hooks on
+            if (!params.member.global_admin && !memberHasRightForAllApps(rights.hasCreateRight, params.member, hookConfig.apps)) {
+                common.returnMessage(params, 403, "User does not have right");
+                return true;
             }
             return common.db.collection("hooks").insert(
                 hookConfig,
@@ -540,30 +577,70 @@ plugins.register("/i/hook/status", function(ob) {
     let paramsInstance = ob.params;
 
     validateUpdate(paramsInstance, FEATURE_NAME, function(params) {
-        const statusList = JSON.parse(params.qstring.status);
-        const batch = [];
-        for (const appID in statusList) {
-            batch.push(
-                common.db.collection("hooks").findAndModify(
-                    { _id: common.db.ObjectID(appID) },
-                    {},
-                    { $set: { enabled: statusList[appID] } },
-                    { new: false, upsert: false }
-                )
-            );
+        let statusList;
+        try {
+            statusList = JSON.parse(params.qstring.status);
         }
-        Promise.all(batch).then(function() {
-            log.d("hooks all updated.");
-            // Audit log: Hook status updated
-            plugins.dispatch("/systemlogs", {
-                params: params,
-                action: "hook_status_updated",
-                data: { updatedHooksCount: Object.keys(statusList).length, requestedBy: params.member._id }
+        catch (e) {
+            common.returnMessage(params, 400, "Invalid status payload");
+            return;
+        }
+        if (!statusList || typeof statusList !== "object" || Array.isArray(statusList)) {
+            common.returnMessage(params, 400, "Invalid status payload");
+            return;
+        }
+        const hookIds = Object.keys(statusList);
+        let objectIds;
+        try {
+            objectIds = hookIds.map(function(id) {
+                return common.db.ObjectID(id);
             });
-            common.returnOutput(params, true);
-        }).catch(function(err) {
-            log.e('Failed to update hook statuses: ', err);
-            common.returnMessage(params, 500, "Failed to update hook statuses: " + err.message);
+        }
+        catch (e) {
+            common.returnMessage(params, 400, "Invalid hook id");
+            return;
+        }
+        //statusList is keyed by hook _id; verify the caller may update every
+        //affected hook (across its apps) before toggling any of them
+        common.db.collection("hooks").find({ _id: { $in: objectIds } }, { projection: { apps: 1 } }).toArray(function(findErr, hooksFound) {
+            if (findErr) {
+                log.e('Failed to load hooks for status update: ', findErr);
+                common.returnMessage(params, 500, "Failed to update hook statuses");
+                return;
+            }
+            var allowed = !params.member.global_admin
+                ? (hooksFound.length === hookIds.length && hooksFound.every(function(h) {
+                    return memberHasRightForAllApps(rights.hasUpdateRight, params.member, h.apps);
+                }))
+                : true;
+            if (!allowed) {
+                common.returnMessage(params, 403, "User does not have right");
+                return;
+            }
+            const batch = [];
+            for (const hookId in statusList) {
+                batch.push(
+                    common.db.collection("hooks").findAndModify(
+                        { _id: common.db.ObjectID(hookId) },
+                        {},
+                        { $set: { enabled: statusList[hookId] } },
+                        { new: false, upsert: false }
+                    )
+                );
+            }
+            Promise.all(batch).then(function() {
+                log.d("hooks all updated.");
+                // Audit log: Hook status updated
+                plugins.dispatch("/systemlogs", {
+                    params: params,
+                    action: "hook_status_updated",
+                    data: { updatedHooksCount: Object.keys(statusList).length, requestedBy: params.member._id }
+                });
+                common.returnOutput(params, true);
+            }).catch(function(err) {
+                log.e('Failed to update hook statuses: ', err);
+                common.returnMessage(params, 500, "Failed to update hook statuses: " + err.message);
+            });
         });
     }, paramsInstance);
     return true;
@@ -591,9 +668,32 @@ plugins.register("/i/hook/delete", function(ob) {
 
     validateDelete(paramsInstance, FEATURE_NAME, function(params) {
         let hookID = params.qstring.hookID;
+        let objId;
         try {
+            objId = common.db.ObjectID(hookID);
+        }
+        catch (err) {
+            common.returnMessage(params, 400, "Invalid hook id");
+            return;
+        }
+        //load the hook first so its apps can be authorized; the request was
+        //only validated against params.qstring.app_id, not the hook's apps
+        common.db.collection("hooks").findOne({ "_id": objId }, function(findErr, hook) {
+            if (findErr) {
+                log.e('delete hook failed', hookID, findErr);
+                common.returnMessage(params, 500, "Failed to delete an hook");
+                return;
+            }
+            if (!hook) {
+                common.returnMessage(params, 404, "Hook not found");
+                return;
+            }
+            if (!params.member.global_admin && !memberHasRightForAllApps(rights.hasDeleteRight, params.member, hook.apps)) {
+                common.returnMessage(params, 403, "User does not have right");
+                return;
+            }
             common.db.collection("hooks").remove(
-                { "_id": common.db.ObjectID(hookID) },
+                { "_id": objId },
                 function(err, result) {
                     log.d(err, result, "delete an hook");
                     if (!err) {
@@ -608,13 +708,12 @@ plugins.register("/i/hook/delete", function(ob) {
                         });
                         common.returnMessage(params, 200, "Deleted an hook");
                     }
+                    else {
+                        common.returnMessage(params, 500, "Failed to delete a hook: " + err.message);
+                    }
                 }
             );
-        }
-        catch (err) {
-            log.e('delete hook failed', hookID, err);
-            common.returnMessage(params, 500, "Failed to delete an hook" + err.message);
-        }
+        });
     }, paramsInstance);
     return true;
 });
