@@ -3266,7 +3266,10 @@ const processBulkRequest = (i, requests, params) => {
     }
 
     if (!requests[i] || (!requests[i].app_key && !appKey)) {
-        return processBulkRequest(i + 1, requests, params);
+        //defer to the next tick so a long run of skipped entries does not
+        //grow the call stack synchronously (the valid path below is already
+        //async); otherwise a large array of empty entries overflows the stack
+        return setImmediate(processBulkRequest, i + 1, requests, params);
     }
     if (params.qstring.safe_api_response) {
         requests[i].safe_api_response = true;
@@ -3293,7 +3296,7 @@ const processBulkRequest = (i, requests, params) => {
     tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
 
     if (!tmpParams.qstring.device_id) {
-        return processBulkRequest(i + 1, requests, params);
+        return setImmediate(processBulkRequest, i + 1, requests, params);
     }
     else {
         //make sure device_id is string
