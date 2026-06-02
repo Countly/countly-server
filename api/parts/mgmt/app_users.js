@@ -49,7 +49,7 @@ usersApi.create = function(app_id, doc, params, callback) {
             callback("App does not exist");
             return;
         }
-        var _id = common.crypto.createHash('sha1').update(app.key + doc.did + "").digest('hex');
+        var _id = common.getAppUserId(app, doc.did);
         if (doc._id && doc._id !== _id) {
             callback("Based on app key and device_id, provided _id property should be " + _id + ". Do not provide _id if you want api to use correct one");
             return;
