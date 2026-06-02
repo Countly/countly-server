@@ -1974,8 +1974,9 @@ const processRequest = (params) => {
                         }
                         //long_tasks is a global collection keyed by task id; gate
                         //access so a caller can only read a task they own / are
-                        //authorized for, not an arbitrary id from another app
-                        taskmanager.loadIfAuthorized(common.db, params.qstring.task_id, params.member, (authErr) => {
+                        //authorized for (or one explicitly marked global), not
+                        //an arbitrary private task id from another app
+                        taskmanager.loadIfReadable(common.db, params.qstring.task_id, params.member, (authErr) => {
                             if (authErr) {
                                 common.returnMessage(params, 400, 'Task does not exist');
                                 return;
