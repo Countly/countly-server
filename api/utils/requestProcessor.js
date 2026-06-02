@@ -3482,7 +3482,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         return done ? done() : false;
     }
 
-    common.readBatcher.getOne("apps", {'key': params.qstring.app_key + ""}, (err, app) => {
+    common.readBatcher.getOne("apps", {$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
@@ -3516,6 +3516,9 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         if (params.qstring.device_id) {
             params.app_user_id = common.getAppUserId(app, params.qstring.device_id);
         }
+
+        //track when this specific key last received data (for safe key retirement)
+        common.recordAppKeyUsage(app, params.qstring.app_key);
 
         var time = Date.now().valueOf();
         time = Math.round((time || 0) / 1000);
@@ -3633,7 +3636,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
     if (ignorePossibleDevices(params)) {
         return done ? done() : false;
     }
-    common.readBatcher.getOne("apps", {'key': params.qstring.app_key}, (err, app) => {
+    common.readBatcher.getOne("apps", {$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
@@ -3653,6 +3656,9 @@ const validateAppForFetchAPI = (params, done, try_times) => {
         if (params.qstring.device_id) {
             params.app_user_id = common.getAppUserId(app, params.qstring.device_id);
         }
+
+        //track when this specific key last received data (for safe key retirement)
+        common.recordAppKeyUsage(app, params.qstring.app_key);
 
         if (!checksumSaltVerification(params)) {
             return done ? done() : false;
