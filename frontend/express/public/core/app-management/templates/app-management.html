@@ -269,7 +269,7 @@
                             <el-table-column :label="i18n('management-applications.accepted-keys.key')" min-width="280">
                                 <template v-slot="scope">
                                     <span style="font-family: monospace;" data-test-id="accepted-key-value">{{scope.row.key}}</span>
-                                    <el-tag v-if="scope.row.isCurrent" size="mini" type="success" class="bu-ml-2" data-test-id="accepted-key-current-tag">{{i18n('management-applications.accepted-keys.current')}}</el-tag>
+                                    <span v-if="scope.row.isCurrent" class="bu-tag bu-is-success bu-is-light bu-has-text-weight-medium bu-ml-2" data-test-id="accepted-key-current-tag">{{i18n('management-applications.accepted-keys.current')}}</span>
                                 </template>
                             </el-table-column>
                             <el-table-column :label="i18n('management-applications.accepted-keys.last-data')" min-width="200">
