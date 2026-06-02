@@ -3528,7 +3528,10 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 if (err1) {
                     console.log("Failed to update apps collection " + err1);
                 }
-                common.readBatcher.invalidate("apps", {"key": params.app.key}, {}, false); //because we load app by key  on incoming requests. so invalidate also by key
+                //invalidate using the same query the request loaded the app
+                //with (current key OR an accepted old key), so the cache entry
+                //for old-key requests is also cleared
+                common.readBatcher.invalidate("apps", {$or: [{"key": params.qstring.app_key + ""}, {"keys.key": params.qstring.app_key + ""}]}, {}, false);
             });
         }
 

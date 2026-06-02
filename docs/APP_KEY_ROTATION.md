@@ -41,6 +41,13 @@ A key must be unique across all applications, including keys that are still
 accepted from previous rotations. If you choose a value already in use, the save
 is rejected.
 
+> **Note:** the management dashboard screens described below (listing accepted
+> keys, showing per-key "last received" time, and removing old keys) may not be
+> available in your build yet. The same capabilities are available through the
+> apps management API in the meantime: rotate by setting a new `key`, retire an
+> old key by passing `remove_keys`, and read each key's `last_data` from the
+> app's `keys` array.
+
 ## Seeing which keys are still receiving data
 
 In the application's key management view you will see the **list of accepted
