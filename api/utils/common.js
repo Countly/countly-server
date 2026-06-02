@@ -420,6 +420,22 @@ common.sha1Hash = function(str, addSalt) {
     return crypto.createHmac('sha1', salt + '').update(str + '').digest('hex');
 };
 
+/**
+* Derive the internal app user id (_id of the app_users document) from an app
+* and a device id. The id is derived from the app's immutable identity key
+* (app.id_key) rather than its current app key, so the app key can be rotated
+* without re-keying existing users. For apps that predate id_key the value is
+* absent and we fall back to the current key, which equals the value the id was
+* originally derived from, keeping existing ids byte-identical (no migration).
+* @param {object} app - the app document (must have key and optionally id_key)
+* @param {string} deviceId - the device id from the SDK request
+* @returns {string} sha1 hex app user id
+*/
+common.getAppUserId = function(app, deviceId) {
+    var idKey = (app && (app.id_key || app.key)) || "";
+    return crypto.createHash('sha1').update(idKey + deviceId + "").digest('hex');
+};
+
 common.sha512Hash = function(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : '';
     return crypto.createHmac('sha512', salt + '').update(str + '').digest('hex');

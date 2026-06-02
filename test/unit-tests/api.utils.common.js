@@ -383,4 +383,45 @@ describe("Common API utility functions", function() {
             });
         });
     });
+
+    describe("getAppUserId", function() {
+        var crypto = require("crypto");
+        var deviceId = "device-123";
+        /**
+        * Legacy derivation that existing app user ids were created with.
+        * @param {string} key - value used as the identity input
+        * @returns {string} sha1 hex id
+        */
+        function legacyId(key) {
+            return crypto.createHash("sha1").update(key + deviceId + "").digest("hex");
+        }
+
+        it("falls back to the app key when id_key is absent (no migration)", function() {
+            var app = { key: "appkey_AAAA" };
+            common.getAppUserId(app, deviceId).should.equal(legacyId("appkey_AAAA"));
+        });
+
+        it("produces the same id as the previous inline derivation", function() {
+            // guarantees existing app_users documents keep matching
+            var key = "1f2e3d4c5b6a7980abcdef0123456789abcdef01";
+            common.getAppUserId({ key: key }, deviceId).should.equal(legacyId(key));
+        });
+
+        it("uses id_key when present", function() {
+            var app = { key: "newkey_BBBB", id_key: "oldkey_AAAA" };
+            common.getAppUserId(app, deviceId).should.equal(legacyId("oldkey_AAAA"));
+        });
+
+        it("keeps the id stable across an app key rotation", function() {
+            var before = { key: "originalkey" };
+            // simulate the freeze-on-update: id_key captures the old key, then key rotates
+            var after = { key: "rotatedkey", id_key: "originalkey" };
+            common.getAppUserId(after, deviceId).should.equal(common.getAppUserId(before, deviceId));
+        });
+
+        it("prefers id_key over key when both are set", function() {
+            common.getAppUserId({ key: "k", id_key: "i" }, deviceId)
+                .should.not.equal(common.getAppUserId({ key: "k" }, deviceId));
+        });
+    });
 });

@@ -3510,6 +3510,12 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
+        //derive the app user id from the app's immutable identity key (falls
+        //back to the current key for apps without id_key), so app key rotation
+        //does not re-key existing users
+        if (params.qstring.device_id) {
+            params.app_user_id = common.getAppUserId(app, params.qstring.device_id);
+        }
 
         var time = Date.now().valueOf();
         time = Math.round((time || 0) / 1000);
@@ -3640,6 +3646,13 @@ const validateAppForFetchAPI = (params, done, try_times) => {
         params.appTimezone = app.timezone;
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+
+        //derive the app user id from the app's immutable identity key (falls
+        //back to the current key for apps without id_key), so app key rotation
+        //does not re-key existing users
+        if (params.qstring.device_id) {
+            params.app_user_id = common.getAppUserId(app, params.qstring.device_id);
+        }
 
         if (!checksumSaltVerification(params)) {
             return done ? done() : false;
@@ -3786,9 +3799,7 @@ function processUser(params, initiator, done, try_times) {
         }
         //check if device id was changed
         else if (params && params.qstring && params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
-            const old_id = common.crypto.createHash('sha1')
-                .update(params.qstring.app_key + params.qstring.old_device_id + "")
-                .digest('hex');
+            const old_id = common.getAppUserId(params.app, params.qstring.old_device_id);
 
             countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function(err) {
                 if (err) {
