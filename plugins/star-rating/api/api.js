@@ -645,14 +645,22 @@ function uploadFile(myfile, id, callback) {
     var removeFeedbackWidget = function(ob) {
         var obParams = ob.params;
         validateDelete(obParams, FEATURE_NAME, function(params) {
-            var widgetId = params.qstring.widget_id;
+            var widgetId;
+            try {
+                widgetId = common.db.ObjectID(params.qstring.widget_id);
+            }
+            catch (e) {
+                common.returnMessage(obParams, 400, 'Invalid widget id.');
+                return false;
+            }
             var app = params.qstring.app_id;
             var withData = params.qstring.with_data;
             var collectionName = "feedback_widgets";
-            common.db.collection(collectionName).findOne({"_id": common.db.ObjectID(widgetId) }, function(err, widget) {
+            common.db.collection(collectionName).findOne({"_id": widgetId, "app_id": params.app_id + "" }, function(err, widget) {
                 if (!err && widget) {
                     common.db.collection(collectionName).remove({
-                        "_id": common.db.ObjectID(widgetId)
+                        "_id": widgetId,
+                        "app_id": params.app_id + ""
                     }, function(removeWidgetErr) {
                         if (!removeWidgetErr) {
                             if (cohortsEnabled && widget.cohortID) {
@@ -661,7 +669,7 @@ function uploadFile(myfile, id, callback) {
                             }
                             // remove widget and related data
                             if (withData) {
-                                removeWidgetData(widgetId, app, function(removeError) {
+                                removeWidgetData(params.qstring.widget_id, app, function(removeError) {
                                     if (removeError) {
                                         common.returnMessage(ob.params, 500, removeError.message);
                                         return false;
@@ -719,12 +727,19 @@ function uploadFile(myfile, id, callback) {
             }
             var changes = validatedArgs.obj;
 
+            //a widget must not be reassigned to another app via edit
+            delete changes.app_id;
+
             if (changes.status) {
                 changes.is_active = changes.status ? "true" : "false";
             }
 
-            common.db.collection("feedback_widgets").findAndModify({"_id": widgetId }, {}, {$set: changes}, function(err, widget) {
-                if (!err && widget) {
+            //scope the update to the authorized app so a widget belonging to
+            //another app cannot be edited by targeting its id
+            common.db.collection("feedback_widgets").findAndModify({"_id": widgetId, "app_id": params.app_id + "" }, {}, {$set: changes}, function(err, widget) {
+                //widget.value is null when no widget matched the id+app_id
+                //(e.g. cross-app attempt) - treat that as not found, not success
+                if (!err && widget && widget.value) {
                     widget = widget.value;
                     if (cohortsEnabled && ((widget.cohortID && !changes.targeting) || JSON.stringify(changes.targeting) !== JSON.stringify(widget.targeting))) {
                         if (widget.cohortID) {
@@ -1004,8 +1019,15 @@ function uploadFile(myfile, id, callback) {
 
             for (const key in data) {
                 const newStatusValue = data[key] === true || data[key] === 'true' ? true : false;
-
-                bulk.find({ _id: common.db.ObjectID(key) }).updateOne({ $set: { 'status': newStatusValue } });
+                let widgetObjectId;
+                try {
+                    widgetObjectId = common.db.ObjectID(key);
+                }
+                catch (e) {
+                    common.returnMessage(params, 400, 'Invalid widget id: ' + key);
+                    return false;
+                }
+                bulk.find({ _id: widgetObjectId, app_id: params.app_id + "" }).updateOne({ $set: { 'status': newStatusValue } });
             }
 
             bulk.execute(function(error) {
