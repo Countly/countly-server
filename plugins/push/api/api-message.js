@@ -1228,7 +1228,11 @@ async function mimeInfo(url, method = 'HEAD') {
     // target, so the destination of a followed redirect is validated too.
     const safe = await ssrfProtection.isUrlSafe(url);
     if (!safe.safe) {
-        throw new ValidationError('Provided URL is not allowed: ' + (safe.error || 'blocked target'));
+        // Keep the detailed reason server-side only: it can include the
+        // resolved private IP, which would otherwise hand the caller the exact
+        // SSRF oracle this check is meant to remove.
+        log.e('Blocked media URL', url, safe.error);
+        throw new ValidationError('Provided URL is not allowed');
     }
 
     return new Promise((resolve, reject) => {
