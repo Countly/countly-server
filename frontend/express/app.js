@@ -1737,6 +1737,16 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 return true;
             }
 
+            //a member may only set their own image; managing another member's
+            //image (the user-management flow) is global-admin only. Without
+            //this an app-admin (who passes the global_upload check via their
+            //own app) could overwrite any member's avatar by id.
+            if (!(params.member && (params.member.global_admin || (req.body.member_image_id + "") === (params.member._id + "")))) {
+                fs.unlink(req.files.member_image.path, function() {});
+                res.status(403).send(false);
+                return true;
+            }
+
             req.body.member_image_id = common.sanitizeFilename(req.body.member_image_id);
             var tmp_path = req.files.member_image.path,
                 target_path = __dirname + '/public/memberimages/' + req.body.member_image_id + ".png",
