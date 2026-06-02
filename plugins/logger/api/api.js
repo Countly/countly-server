@@ -313,7 +313,7 @@ plugins.setConfigs("logger", {
             processSDKRequest(params);
         }
         else {
-            common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
+            common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
                 if (!err && app) {
                     params.app_id = app._id;
                     params.app_cc = app.country;
