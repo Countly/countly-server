@@ -100,7 +100,7 @@ plugins.setConfigs("systemlogs", {
                     common.stripUnsafeMongoOperators(query);
                 }
                 catch (ex) {
-                    console.log("Can't parse systelogs query");
+                    console.log("Can't parse systemlogs query");
                     query = {};
                 }
             }
