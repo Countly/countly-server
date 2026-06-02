@@ -134,14 +134,7 @@ const processRequest = (params) => {
         }
     }
 
-    //Normalize known scalar identity parameters to strings before they reach
-    //any database lookup. These are always strings by SDK/API contract, so a
-    //non-string value (for example an object) would only ever be an attempt to
-    //pass a query operator into a lookup. This is the single authoritative
-    //place that normalizes them, so individual handlers and queries must not
-    //re-cast. Bulk sub-requests carry their own per-item app_key/device_id
-    //(not the top-level qstring) and are normalized separately in
-    //processBulkRequest.
+    //make sure scalar identity parameters are strings, not query operators
     var stringParams = ["app_key", "device_id", "old_device_id"];
     for (let s = 0; s < stringParams.length; s++) {
         if (typeof params.qstring[stringParams[s]] !== "undefined" && params.qstring[stringParams[s]] !== null) {
@@ -1558,8 +1551,10 @@ const processRequest = (params) => {
                     return false;
                 }
                 else {
+                    //make sure device_id is string
+                    params.qstring.device_id += "";
+                    params.qstring.app_key += "";
                     // Set app_user_id that is unique for each user of an application.
-                    // app_key/device_id are already normalized to strings in processRequest.
                     params.app_user_id = common.crypto.createHash('sha1')
                         .update(params.qstring.app_key + params.qstring.device_id + "")
                         .digest('hex');
@@ -2989,7 +2984,7 @@ const processRequest = (params) => {
                     return false;
                 }
                 else {
-                    // app_key/device_id are already normalized to strings in processRequest.
+                    params.qstring.device_id += "";
                     params.app_user_id = common.crypto.createHash('sha1')
                         .update(params.qstring.app_key + params.qstring.device_id + "")
                         .digest('hex');
@@ -3012,7 +3007,7 @@ const processRequest = (params) => {
                     return false;
                 }
                 else {
-                    // app_key/device_id are already normalized to strings in processRequest.
+                    params.qstring.device_id += "";
                     params.app_user_id = common.crypto.createHash('sha1')
                         .update(params.qstring.app_key + params.qstring.device_id + "")
                         .digest('hex');
@@ -3495,7 +3490,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         return done ? done() : false;
     }
 
-    common.readBatcher.getOne("apps", {'key': params.qstring.app_key}, (err, app) => {
+    common.readBatcher.getOne("apps", {'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
