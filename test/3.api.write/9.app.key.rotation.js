@@ -194,6 +194,41 @@ describe('App key rotation keeps user identity stable', function() {
         });
     });
 
+    describe('same device via /o/sdk fetch with the new key', function() {
+        it('should accept the fetch request', function(done) {
+            // status may depend on enabled SDK plugins; the user is processed in
+            // the fetch validator regardless, so we only require no transport
+            // error and then assert the resulting user state below
+            request
+                .get('/o/sdk?method=fetch_remote_config&device_id=' + DEVICE_ID + '&app_key=' + NEW_KEY)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                });
+        });
+
+        it('should still resolve to the SAME single user', function(done) {
+            var sameId = userId(ORIGINAL_KEY, DEVICE_ID);
+            var newKeyId = userId(NEW_KEY, DEVICE_ID);
+            testUtils.db.collection('app_users' + APP_ID).findOne({'_id': sameId}, function(err, user) {
+                should.not.exist(err);
+                should.exist(user);
+                user.should.have.property('uid', '1');
+                testUtils.db.collection('app_users' + APP_ID).findOne({'_id': newKeyId}, function(err2, ghost) {
+                    should.not.exist(err2);
+                    should.not.exist(ghost);
+                    testUtils.db.collection('app_users' + APP_ID).count({did: {$exists: true}}, function(err3, count) {
+                        should.not.exist(err3);
+                        count.should.equal(1);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
     after(function(done) {
         var params = {app_id: APP_ID};
         request
