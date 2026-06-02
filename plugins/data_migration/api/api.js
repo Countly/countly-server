@@ -21,7 +21,29 @@ var Promise = require("bluebird");
 var authorize = require('../../../api/utils/authorizer.js'); //for token
 
 const request = require('countly-request')(plugins.getConfig("security"));
+const ssrfProtection = require('../../../api/utils/ssrf-protection');
 const FEATURE_NAME = 'data_migration';
+
+/**
+ * Run cb() only if the user-supplied migration server address is not an
+ * internal/private/metadata target (SSRF guard). The data migration feature
+ * legitimately targets an external Countly server, so external hosts are
+ * allowed; only dangerous internal targets are blocked.
+ * @param {string} serverAddress - user supplied destination URL
+ * @param {object} params - request params (for the error response)
+ * @param {function} cb - called when the address is safe to contact
+ */
+function withSafeServerAddress(serverAddress, params, cb) {
+    ssrfProtection.isUrlSafe(serverAddress).then(function(check) {
+        if (!check || !check.safe) {
+            common.returnMessage(params, 400, 'data-migration.target-server-not-valid');
+            return;
+        }
+        cb();
+    }).catch(function() {
+        common.returnMessage(params, 400, 'data-migration.target-server-not-valid');
+    });
+}
 
 /**
  * Validate a data migration id before using it as a path segment.
@@ -859,30 +881,40 @@ function trim_ending_slashes(address) {
 
 
 
-            var data_migrator = new migration_helper();
-            if (params.qstring.only_commands) {
-                data_migrator.create_export_commands(apps, params, common.db, log).then(
-                    function(result) {
-                        //convert string to buffer
-                        if (typeof result === "string") {
-                            result = Buffer.from(result, 'utf8');
+            var runExport = function() {
+                var data_migrator = new migration_helper();
+                if (params.qstring.only_commands) {
+                    data_migrator.create_export_commands(apps, params, common.db, log).then(
+                        function(result) {
+                            //convert string to buffer
+                            if (typeof result === "string") {
+                                result = Buffer.from(result, 'utf8');
+                            }
+                            common.returnRaw(params, 200, result, {'Content-Type': 'text/plain; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-export-commands.log'});
+                        },
+                        function(error) {
+                            common.returnMessage(params, 404, error.message);
                         }
-                        common.returnRaw(params, 200, result, {'Content-Type': 'text/plain; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-export-commands.log'});
-                    },
-                    function(error) {
-                        common.returnMessage(params, 404, error.message);
-                    }
-                );
+                    );
+                }
+                else {
+                    data_migrator.export_data(apps, params, common.db, log).then(
+                        function(result) {
+                            common.returnMessage(params, 200, result);
+                        },
+                        function(error) {
+                            common.returnMessage(params, 404, error.message);
+                        }
+                    );
+                }
+            };
+
+            //when the export is sent to a remote server, block internal SSRF targets first
+            if (params.qstring.server_address) {
+                withSafeServerAddress(params.qstring.server_address, params, runExport);
             }
             else {
-                data_migrator.export_data(apps, params, common.db, log).then(
-                    function(result) {
-                        common.returnMessage(params, 200, result);
-                    },
-                    function(error) {
-                        common.returnMessage(params, 404, error.message);
-                    }
-                );
+                runExport();
             }
 
         });
@@ -957,8 +989,10 @@ function trim_ending_slashes(address) {
             }
             //remove forvarding slashes
             params.qstring.server_address = trim_ending_slashes(params.qstring.server_address);
-            var r = request.post({url: params.qstring.server_address + '/i/datamigration/import?test_con=1&auth_token=' + params.qstring.server_token}, requestCallback);
-            r.form();
+            withSafeServerAddress(params.qstring.server_address, params, function() {
+                var r = request.post({url: params.qstring.server_address + '/i/datamigration/import?test_con=1&auth_token=' + params.qstring.server_token}, requestCallback);
+                r.form();
+            });
         });
         return true;
 
@@ -1001,13 +1035,15 @@ function trim_ending_slashes(address) {
                     params.qstring.redirect_traffic = false;
                 }
 
-                var myreq = JSON.stringify({headers: params.req.headers});
-                update_progress(params.qstring.exportid, "packing", "progress", 100, "", true, {stopped: false, only_export: false, server_address: params.qstring.server_address, server_token: params.qstring.server_token, redirect_traffic: params.qstring.redirect_traffic, userid: params.member._id, email: params.member.email, myreq: myreq});
+                withSafeServerAddress(params.qstring.server_address, params, function() {
+                    var myreq = JSON.stringify({headers: params.req.headers});
+                    update_progress(params.qstring.exportid, "packing", "progress", 100, "", true, {stopped: false, only_export: false, server_address: params.qstring.server_address, server_token: params.qstring.server_token, redirect_traffic: params.qstring.redirect_traffic, userid: params.member._id, email: params.member.email, myreq: myreq});
 
-                common.returnMessage(params, 200, "Success");
+                    common.returnMessage(params, 200, "Success");
 
-                var data_migrator = new migration_helper(common.db);
-                data_migrator.send_export(params.qstring.exportid, common.db);
+                    var data_migrator = new migration_helper(common.db);
+                    data_migrator.send_export(params.qstring.exportid, common.db);
+                });
 
             }
             else {
