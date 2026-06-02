@@ -1566,7 +1566,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
         if (common.drillDb && params.qstring && params.qstring.view) {
             if (params.req.headers["countly-token"]) {
-                common.readBatcher.getOne("apps", {'key': params.qstring.app_key}, (err1, app) => {
+                common.readBatcher.getOne("apps", {$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err1, app) => {
                     if (!app) {
                         common.returnMessage(params, 401, 'User does not have view right for this application');
                         return false;
