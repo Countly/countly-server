@@ -49,6 +49,21 @@ describe("SSRF protection utility", function() {
                 done();
             });
         });
+        it("with options.all returns an array of validated addresses", function(done) {
+            ssrf.safeLookup("8.8.8.8", {all: true}, function(err, addresses) {
+                should.not.exist(err);
+                Array.isArray(addresses).should.equal(true);
+                addresses[0].address.should.equal("8.8.8.8");
+                done();
+            });
+        });
+        it("with options.all rejects when an address is blocked", function(done) {
+            ssrf.safeLookup("127.0.0.1", {all: true}, function(err) {
+                should.exist(err);
+                err.code.should.equal("ESSRFBLOCKED");
+                done();
+            });
+        });
     });
 
     describe("getSsrfSafeOptions", function() {
