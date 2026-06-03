@@ -1733,7 +1733,20 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         var params = paramsGenerator({req, res});
         validateCreate(params, 'global_upload', async function() {
             if (!req.files.member_image || !req.body.member_image_id) {
+                //remove the already-uploaded temp file so a missing id cannot
+                //be used to leak files into the upload directory
+                if (req.files.member_image && req.files.member_image.path) {
+                    fs.unlink(req.files.member_image.path, function() {});
+                }
                 res.end();
+                return true;
+            }
+
+            //member_image_id is always a member _id; require a valid ObjectId
+            //so it cannot be used to build an arbitrary file path
+            if (!/^[a-f0-9]{24}$/i.test(req.body.member_image_id + "")) {
+                fs.unlink(req.files.member_image.path, function() {});
+                res.status(400).send(false);
                 return true;
             }
 
@@ -1742,6 +1755,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             //this an app-admin (who passes the global_upload check via their
             //own app) could overwrite any member's avatar by id.
             if (!(params.member && (params.member.global_admin || (req.body.member_image_id + "") === (params.member._id + "")))) {
+                fs.unlink(req.files.member_image.path, function() {});
                 res.status(403).send(false);
                 return true;
             }
