@@ -539,6 +539,33 @@ common.getAppUserId = function(app, deviceId) {
 };
 
 /**
+* Record the last time data was received for the specific app key used on a
+* request. Lets administrators see whether an old (rotated-away) key is still
+* in use before retiring it. Throttled to at most one write per key per hour to
+* keep it off the hot path; also updates the in-memory copy so a cached app
+* document does not trigger repeated writes within the cache window.
+* @param {object} app - the app document (with keys array)
+* @param {string} usedKey - the app key value the request authenticated with
+* @returns {void}
+*/
+common.recordAppKeyUsage = function(app, usedKey) {
+    if (!app || !Array.isArray(app.keys) || !common.db) {
+        return;
+    }
+    var k = usedKey + "";
+    var nowSec = Math.floor(Date.now() / 1000);
+    for (var i = 0; i < app.keys.length; i++) {
+        if (app.keys[i].key === k) {
+            if (!app.keys[i].last_data || app.keys[i].last_data < nowSec - 3600) {
+                app.keys[i].last_data = nowSec;
+                common.db.collection("apps").update({_id: app._id, "keys.key": k}, {$set: {"keys.$.last_data": nowSec}}, function() {});
+            }
+            return;
+        }
+    }
+};
+
+/**
 * Create HMAC sha512 hash from provided value and optional salt
 * @param {string} str - value to hash
 * @param {string=} addSalt - optional salt, uses ms timestamp by default
