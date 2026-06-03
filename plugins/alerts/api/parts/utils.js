@@ -10,6 +10,7 @@ const fs = require('fs');
 var Promise = require("bluebird");
 const _ = require("lodash");
 const log = require('../../../../api/utils/log.js')('alert:utils');
+const ssrfProtection = require('../../../../api/utils/ssrf-protection');
 
 const utils = {_apps: {}};
 utils.sendEmail = function(to, subject, message, callback) {
@@ -18,10 +19,27 @@ utils.sendEmail = function(to, subject, message, callback) {
 };
 
 utils.sendRequest = function(url, callback) {
-    return request(url, function(error, response, body) {
-        log.d('will send Alert request', error, response, body);
+    //validate the (potentially user/config-supplied) URL against SSRF before
+    //the server fetches it, and pin the connect-time IP via safeLookup so an
+    //internal/private/link-local target cannot be reached
+    ssrfProtection.isUrlSafe(url).then(function(urlCheck) {
+        if (!urlCheck.safe) {
+            log.e('Alert request blocked by SSRF protection:', urlCheck.error);
+            if (callback) {
+                callback(new Error('SSRF protection: ' + urlCheck.error));
+            }
+            return;
+        }
+        request(ssrfProtection.getSsrfSafeOptions({ uri: url }), function(error, response, body) {
+            log.d('will send Alert request', error, response, body);
+            if (callback) {
+                callback(error, body);
+            }
+        });
+    }).catch(function(e) {
+        log.e('Alert request SSRF validation error:', e);
         if (callback) {
-            callback(error, body);
+            callback(e);
         }
     });
 };
