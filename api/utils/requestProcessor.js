@@ -3519,14 +3519,17 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         }
 
         if (app.paused) {
-            common.returnMessage(params, 400, 'App is currently not accepting data');
+            //return the same response as an unknown app so a valid app key for
+            //a paused app cannot be distinguished from an invalid one
+            common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App is currently not accepting data";
             plugins.dispatch("/sdk/cancel", {params: params});
             return done ? done() : false;
         }
 
         if ((params.populator || params.qstring.populator) && app.locked) {
-            common.returnMessage(params, 403, "App is locked");
+            //same uniform response (no app key existence oracle)
+            common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App is locked";
             plugins.dispatch("/sdk/cancel", {params: params});
             return false;
