@@ -41,31 +41,30 @@ A key must be unique across all applications, including keys that are still
 accepted from previous rotations. If you choose a value already in use, the save
 is rejected.
 
-> **Note:** the management dashboard screens described below (listing accepted
-> keys, showing per-key "last received" time, and removing old keys) may not be
-> available in your build yet. The same capabilities are available through the
-> apps management API in the meantime: rotate by setting a new `key`, retire an
-> old key by passing `remove_keys`, and read each key's `last_data` from the
-> app's `keys` array.
+> **Note on dashboard support.** A dedicated key-management screen (listing all
+> accepted keys, showing per-key "last received" time, and removing old keys) is
+> not part of the dashboard yet. Today the app edit form lets you set the
+> current key; the workflows below for listing and retiring accepted keys are
+> performed through the apps management API. This section will be updated when
+> the dashboard UI lands.
 
 ## Seeing which keys are still receiving data
 
-In the application's key management view you will see the **list of accepted
-keys** for the app. For each key, Countly shows the **last time data was
-received** using that key. This lets you tell, at a glance, whether an old key
+Each application stores its accepted keys in a `keys` array. Every entry records
+the key value, when it was added, and the **last time data was received** using
+that key (`last_data`). Reading the app object (for example via the apps
+management API, `/o/apps`) returns this array, so you can tell whether an old key
 is still being used by clients in the field.
 
-The "last received" time is updated as data arrives, so a key that no longer
-shows recent activity is a good candidate for removal.
+The per-key "last received" time is updated as data arrives, so a key that no
+longer shows recent activity is a good candidate for removal.
 
 ## Retiring an old key
 
 When you are confident an old key is no longer needed (for example its "last
 received" time stopped advancing some time ago, after your client population has
-upgraded), you can remove it:
-
-1. Open the application's key management view.
-2. Remove the old key from the list of accepted keys and save.
+upgraded), you can remove it by editing the application through the apps
+management API and passing the key(s) to retire in the `remove_keys` field.
 
 Once removed, that key is no longer accepted: requests sent with it are rejected
 as if the application did not exist. The **current key cannot be removed** — an
@@ -78,8 +77,9 @@ need and retire it whenever you decide it is safe.
 
 1. Set the new key and start using it for new deployments.
 2. Roll the new key out to your clients/integrations over time.
-3. Watch the "last received" time on the old key.
-4. When the old key has been quiet long enough for your situation, remove it.
+3. Watch the per-key "last received" time (`last_data`) on the old key.
+4. When the old key has been quiet long enough for your situation, retire it
+   with `remove_keys`.
 
 ## Frequently asked questions
 
@@ -97,4 +97,5 @@ applications.
 
 **What happens to requests sent with a removed key?**
 They are rejected. Make sure no clients you care about are still using a key
-before you remove it — the "last received" time is there to help you decide.
+before you remove it — the per-key "last received" time is there to help you
+decide.
