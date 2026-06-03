@@ -93,6 +93,34 @@ describe('Testing Reports', function() {
                     });
             });
 
+            it('should not change the report owner on update', function(done) {
+                const reportID = reports[0]._id;
+                const originalUser = reports[0].user + "";
+                const bogusUser = "000000000000000000000000";
+                const reportConfig = Object.assign({}, reports[0], {user: bogusUser});
+                request.get(getRequestURL('/i/reports/update') + "&args=" + encodeURIComponent(JSON.stringify(reportConfig)))
+                    .expect(200)
+                    .end(function(err) {
+                        if (err) {
+                            return done(err);
+                        }
+                        request.get(getRequestURL('/o/reports/all'))
+                            .expect(200)
+                            .end(function(err2, res) {
+                                if (err2) {
+                                    return done(err2);
+                                }
+                                var updated = res.body.filter(function(r) {
+                                    return r._id === reportID;
+                                })[0];
+                                should.exist(updated);
+                                (updated.user + "").should.not.equal(bogusUser);
+                                (updated.user + "").should.equal(originalUser);
+                                done();
+                            });
+                    });
+            });
+
             it('should able to change report status', function(done) {
                 const reportID = reports[0]._id;
                 request.get(getRequestURL('/i/reports/status') + "&args=" + encodeURIComponent(JSON.stringify({[reportID]: false})))
