@@ -52,7 +52,7 @@ utils.parseStringTemplate = function(str, data, httpMethod, escapeHtml) {
         //when the result is rendered as HTML (e.g. an email body) escape the
         //substituted values so trigger data cannot inject markup/scripts
         if (escapeHtml) {
-            return ("" + d).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            return ("" + d).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
         return d;
     };
