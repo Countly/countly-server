@@ -884,6 +884,7 @@ plugins.setConfigs("crashes", {
         else if (obParams.qstring.method === 'crashes') {
             validateRead(obParams, FEATURE_NAME, async function(params) {
                 if (params.qstring.group) {
+                    params.qstring.group = params.qstring.group + "";
                     if (params.qstring.userlist) {
                         common.db.collection('app_crashusers' + params.app_id).find({group: params.qstring.group}, {uid: 1, _id: 0}).toArray(function(err, uids) {
                             var res = [];
@@ -1019,6 +1020,7 @@ plugins.setConfigs("crashes", {
                     if (params.qstring.query && params.qstring.query !== "") {
                         try {
                             filter = JSON.parse(params.qstring.query);
+                            common.stripUnsafeMongoOperators(filter);
                         }
                         catch (ex) {
                             console.log("Cannot parse crashes query", params.qstring.query);
@@ -1450,10 +1452,11 @@ plugins.setConfigs("crashes", {
             break;
         case 'share':
             validateUpdate(obParams, FEATURE_NAME, function(params) {
-                var id = common.crypto.createHash('sha1').update(params.qstring.app_id + params.qstring.args.crash_id + "").digest('hex');
-                common.db.collection('crash_share').insert({_id: id, app_id: params.qstring.app_id + "", crash_id: params.qstring.args.crash_id + ""}, function() {
-                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set": {is_public: true}}, function() {});
-                    plugins.dispatch("/systemlogs", {params: params, action: "crash_shared", data: {app_id: params.qstring.app_id, crash_id: params.qstring.args.crash_id}});
+                var crashId = params.qstring.args.crash_id + "";
+                var id = common.crypto.createHash('sha1').update(params.qstring.app_id + crashId).digest('hex');
+                common.db.collection('crash_share').insert({_id: id, app_id: params.qstring.app_id + "", crash_id: crashId}, function() {
+                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': crashId }, {"$set": {is_public: true}}, function() {});
+                    plugins.dispatch("/systemlogs", {params: params, action: "crash_shared", data: {app_id: params.qstring.app_id, crash_id: crashId}});
                     common.returnMessage(params, 200, 'Success');
                     return true;
                 });
@@ -1461,10 +1464,11 @@ plugins.setConfigs("crashes", {
             break;
         case 'unshare':
             validateUpdate(obParams, FEATURE_NAME, function(params) {
-                var id = common.crypto.createHash('sha1').update(params.qstring.app_id + params.qstring.args.crash_id + "").digest('hex');
+                var crashId = params.qstring.args.crash_id + "";
+                var id = common.crypto.createHash('sha1').update(params.qstring.app_id + crashId).digest('hex');
                 common.db.collection('crash_share').remove({'_id': id }, function() {
-                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set": {is_public: false}}, function() {});
-                    plugins.dispatch("/systemlogs", {params: params, action: "crash_unshared", data: {app_id: params.qstring.app_id, crash_id: params.qstring.args.crash_id}});
+                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': crashId }, {"$set": {is_public: false}}, function() {});
+                    plugins.dispatch("/systemlogs", {params: params, action: "crash_unshared", data: {app_id: params.qstring.app_id, crash_id: crashId}});
                     common.returnMessage(params, 200, 'Success');
                     return true;
                 });
@@ -1473,8 +1477,9 @@ plugins.setConfigs("crashes", {
         case 'modify_share':
             validateUpdate(obParams, FEATURE_NAME, function(params) {
                 if (params.qstring.args.data) {
-                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set": {share: params.qstring.args.data}}, function() {
-                        plugins.dispatch("/systemlogs", {params: params, action: "crash_modify_share", data: {app_id: params.qstring.app_id, crash_id: params.qstring.args.crash_id, data: params.qstring.args.data}});
+                    var crashId = params.qstring.args.crash_id + "";
+                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': crashId }, {"$set": {share: params.qstring.args.data}}, function() {
+                        plugins.dispatch("/systemlogs", {params: params, action: "crash_modify_share", data: {app_id: params.qstring.app_id, crash_id: crashId, data: params.qstring.args.data}});
                         common.returnMessage(params, 200, 'Success');
                         return true;
                     });
