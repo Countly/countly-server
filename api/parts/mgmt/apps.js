@@ -295,6 +295,10 @@ appsApi.createApp = async function(params) {
     //key rotation does not break already-deployed SDK clients.
     newApp.keys = [{key: newApp.key, added_at: Math.floor(Date.now() / 1000), last_data: 0}];
 
+    //run the uniqueness check against the actual key being stored, including
+    //an auto-generated one (checkUniqueKey only inspects args.key and would
+    //otherwise skip validation entirely when the key was generated)
+    params.qstring.args.key = newApp.key;
     checkUniqueKey(params, function() {
         common.db.collection('apps').insert(newApp, function(err, app) {
             if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
