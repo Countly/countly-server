@@ -287,6 +287,9 @@ appsApi.createApp = async function(params) {
     if (!newApp.key || newApp.key === "") {
         newApp.key = appKey;
     }
+    //freeze the immutable identity key used to derive app user ids, so the app
+    //key can later be rotated without re-keying existing users
+    newApp.id_key = newApp.key;
 
     checkUniqueKey(params, function() {
         common.db.collection('apps').insert(newApp, function(err, app) {
@@ -429,6 +432,12 @@ appsApi.updateApp = function(params) {
             common.returnMessage(params, 404, 'App not found');
         }
         else {
+            //freeze the immutable identity key before any change is applied. If
+            //this app predates id_key, capture the current (old) key now so app
+            //user ids stay derived from it even if this update rotates the key.
+            if (typeof appBefore.id_key === "undefined" || appBefore.id_key === null) {
+                updatedApp.id_key = appBefore.key;
+            }
             checkUniqueKey(params, function() {
                 if ((params.member && params.member.global_admin) || hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
                     common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
