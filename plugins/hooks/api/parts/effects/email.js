@@ -49,10 +49,12 @@ class EmailEffect {
         };
         const sendTasks = [];
         await emailAddress.forEach(address => {
-            let formatedEmailContent = "<pre>" + JSON.stringify(params, null, 2) + "</pre>";
+            let formatedEmailContent = "<pre>" + mail.escapedHTMLString(JSON.stringify(params, null, 2)) + "</pre>";
             if (emailTemplate && emailTemplate.length > 0) {
                 try {
-                    formatedEmailContent = utils.parseStringTemplate(emailTemplate, params);
+                    //escape substituted trigger values; the admin-authored
+                    //template markup itself is preserved
+                    formatedEmailContent = utils.parseStringTemplate(emailTemplate, params, null, true);
                     formatedEmailContent = formatedEmailContent.replace(/\n/g, "<br />");
                 }
                 catch (e) {
