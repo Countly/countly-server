@@ -3608,7 +3608,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         return done ? done() : false;
     }
 
-    common.readBatcher.getOne("apps", {'key': params.qstring.app_key + ""}, (err, app) => {
+    common.readBatcher.getOne("apps", {$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
@@ -3639,6 +3639,15 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
+        //derive the app user id from the app's immutable identity key (falls
+        //back to the current key for apps without id_key), so app key rotation
+        //does not re-key existing users
+        if (params.qstring.device_id) {
+            params.app_user_id = common.getAppUserId(app, params.qstring.device_id);
+        }
+
+        //track when this specific key last received data (for safe key retirement)
+        common.recordAppKeyUsage(app, params.qstring.app_key);
 
         var time = Date.now().valueOf();
         time = Math.round((time || 0) / 1000);
@@ -3648,7 +3657,10 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 if (err1) {
                     console.log("Failed to update apps collection " + err1);
                 }
-                common.readBatcher.invalidate("apps", {"key": params.app.key}, {}, false); //because we load app by key  on incoming requests. so invalidate also by key
+                //invalidate using the same query the request loaded the app
+                //with (current key OR an accepted old key), so the cache entry
+                //for old-key requests is also cleared
+                common.readBatcher.invalidate("apps", {$or: [{"key": params.qstring.app_key + ""}, {"keys.key": params.qstring.app_key + ""}]}, {}, false);
             });
         }
 
@@ -3756,7 +3768,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
     if (ignorePossibleDevices(params)) {
         return done ? done() : false;
     }
-    common.readBatcher.getOne("apps", {'key': params.qstring.app_key}, (err, app) => {
+    common.readBatcher.getOne("apps", {$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
@@ -3769,6 +3781,16 @@ const validateAppForFetchAPI = (params, done, try_times) => {
         params.appTimezone = app.timezone;
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+
+        //derive the app user id from the app's immutable identity key (falls
+        //back to the current key for apps without id_key), so app key rotation
+        //does not re-key existing users
+        if (params.qstring.device_id) {
+            params.app_user_id = common.getAppUserId(app, params.qstring.device_id);
+        }
+
+        //track when this specific key last received data (for safe key retirement)
+        common.recordAppKeyUsage(app, params.qstring.app_key);
 
         if (!checksumSaltVerification(params)) {
             return done ? done() : false;
@@ -3914,10 +3936,8 @@ function processUser(params, initiator, done, try_times) {
             });
         }
         //check if device id was changed
-        else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
-            const old_id = common.crypto.createHash('sha1')
-                .update(params.qstring.app_key + params.qstring.old_device_id + "")
-                .digest('hex');
+        else if (params && params.qstring && params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
+            const old_id = common.getAppUserId(params.app, params.qstring.old_device_id);
 
             countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function(err) {
                 if (err) {
