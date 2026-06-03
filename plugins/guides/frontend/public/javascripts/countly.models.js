@@ -16,7 +16,7 @@
     countlyGuides.memberViewedGuides = function(user_id) {
         CV.$.ajax({
             type: "POST",
-            url: "/guides/viewed",
+            url: (countlyGlobal.path || "") + "/guides/viewed",
             dataType: "json",
             data: {
                 "user_id": user_id,

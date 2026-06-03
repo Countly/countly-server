@@ -225,6 +225,18 @@ const FEATURE_NAME = 'populator';
                 return false;
             }
 
+            //the stored appId comes from the request body; bind it to the
+            //authorized app so a caller can't create environment records under
+            //another app by supplying a foreign appId
+            var authorizedAppId = params.qstring.app_id + "";
+            var foreignApp = users.some(function(u) {
+                return (u.appId + "") !== authorizedAppId;
+            });
+            if (foreignApp) {
+                common.returnMessage(obParams, 403, "User does not have right");
+                return false;
+            }
+
             const environmentId = common.crypto.createHash('sha1').update(users[0].appId + users[0].environmentName).digest('hex');
             const insertedInformations = [];
             const createdAt = new Date().getTime();
@@ -723,6 +735,12 @@ const FEATURE_NAME = 'populator';
             common.returnMessage(obParams, 401, "Missing parameter template_id");
             return false;
         }
+        if (!obParams.qstring.app_id) {
+            //app_id is required to scope the deletion; without it a global
+            //admin request would reach the delete with an undefined scope
+            common.returnMessage(obParams, 401, "Missing parameter app_id");
+            return false;
+        }
         validateDelete(obParams, FEATURE_NAME, function() {
             common.db.collection('populator_environment_users').deleteMany({
                 "_id": {
@@ -735,7 +753,8 @@ const FEATURE_NAME = 'populator';
                 }
                 else {
                     common.db.collection('populator_environments').deleteOne({
-                        "_id": obParams.qstring.environment_id
+                        "_id": obParams.qstring.environment_id,
+                        "appId": obParams.qstring.app_id + ""
                     }, function(err_) {
                         if (err_) {
                             log.e("Error deleting populator environment", err_, obParams.qstring.environment_id);

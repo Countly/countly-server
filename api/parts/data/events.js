@@ -329,6 +329,10 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 if (segKey === "") {
                     continue;
                 }
+                //skip keys that map to object prototype members when used as field names
+                if (segKey === "__proto__" || segKey === "constructor" || segKey === "prototype") {
+                    continue;
+                }
 
                 if (pluginsGetConfig.event_segmentation_limit &&
                         appSegments[currEvent.key] &&

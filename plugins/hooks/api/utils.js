@@ -32,7 +32,7 @@ utils.addErrorRecord = function addErrorRecord(hookId, error, params, effectStep
 };
 
 
-utils.parseStringTemplate = function(str, data, httpMethod) {
+utils.parseStringTemplate = function(str, data, httpMethod, escapeHtml) {
     const parseData = function(obj) {
         let d = "";
         if (typeof obj === 'object') {
@@ -48,6 +48,11 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
         }
         if (httpMethod === 'get') {
             return encodeURIComponent(d);
+        }
+        //when the result is rendered as HTML (e.g. an email body) escape the
+        //substituted values so trigger data cannot inject markup/scripts
+        if (escapeHtml) {
+            return ("" + d).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
         return d;
     };

@@ -338,7 +338,7 @@
                                                 type="text" 
                                                 @click.stop="onChange(key, '')"
                                                 class="bu-p-0 feedback-settings__button">{{i18n('feedback.delete-logo')}}</el-button>
-                                            <img :src="'/feedback/preview/' + conf.value + '?' + Date.now()">
+                                            <img :src="(countlyGlobal.path || '') + '/feedback/preview/' + conf.value + '?' + Date.now()">
                                         </div>
                                         <div v-else class="bu-is-flex">
                                             <el-button type="default" style="display:flex;margin:auto;">{{i18n('feedback.choose-file')}}</el-button>
