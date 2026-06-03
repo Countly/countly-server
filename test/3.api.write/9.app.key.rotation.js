@@ -107,16 +107,16 @@ describe('App key rotation keeps user identity stable', function() {
             });
         });
 
-        it('should reject the old key (no dual-key support yet)', function(done) {
+        it('should still accept the old key after rotation (grace period)', function(done) {
             request
                 .get('/i?device_id=' + DEVICE_ID + '&app_key=' + ORIGINAL_KEY + '&begin_session=1&metrics=' + JSON.stringify(METRICS))
-                .expect(400)
+                .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
-                    JSON.parse(res.text).should.have.property('result', 'App does not exist');
-                    done();
+                    JSON.parse(res.text).should.have.property('result', 'Success');
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
     });

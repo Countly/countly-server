@@ -51,7 +51,7 @@ usersApi.create = function(app_id, doc, params, callback) {
         }
         var _id = common.getAppUserId(app, doc.did);
         if (doc._id && doc._id !== _id) {
-            callback("Based on app key and device_id, provided _id property should be " + _id + ". Do not provide _id if you want api to use correct one");
+            callback("Based on the app identity and device_id, provided _id property should be " + _id + ". Do not provide _id if you want api to use correct one");
             return;
         }
         doc._id = _id;
