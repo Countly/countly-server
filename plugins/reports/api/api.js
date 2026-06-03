@@ -303,6 +303,11 @@ const FEATURE_NAME = 'reports';
                 props = params.qstring.args;
                 var id = props._id;
                 delete props._id;
+                //the report owner is set at creation and must not be changed on
+                //update: repointing it to an unresolvable id would make the
+                //scheduled sender fall back to a global admin and render the
+                //report (e.g. a dashboard) with elevated access
+                delete props.user;
                 if (props.frequency !== "daily" && props.frequency !== "weekly" && props.frequency !== "monthly") {
                     delete props.frequency;
                 }
