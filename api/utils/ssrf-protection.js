@@ -202,9 +202,67 @@ async function isUrlSafe(urlString) {
 }
 
 /**
+ * Build a blocked-target error for the connect-time lookup guard.
+ * @param {string} hostname - hostname being resolved
+ * @param {string} address - resolved IP that was blocked
+ * @returns {Error} error with an identifiable code
+ */
+function blockedLookupError(hostname, address) {
+    const err = new Error(`Blocked SSRF target: "${hostname}" resolved to private/reserved IP "${address}"`);
+    err.code = 'ESSRFBLOCKED';
+    return err;
+}
+
+/**
+ * A dns.lookup-compatible function that resolves a hostname and then rejects
+ * the lookup if the resolved address is private/reserved/internal. Passing this
+ * as the `lookup` option of an HTTP request (got, node http/https) validates the
+ * IP AT CONNECT TIME, which closes the DNS-rebinding (TOCTOU) gap left by a
+ * parse-time-only check: even if a name resolves to a safe IP during isUrlSafe
+ * and to an internal IP a moment later, the socket only ever connects to an
+ * address that passed isBlockedIP here.
+ *
+ * @param {string} hostname - hostname to resolve
+ * @param {object|function} options - dns.lookup options, or the callback
+ * @param {function} [callback] - callback(err, address, family); when
+ *        options.all is true it is called as callback(err, addresses) where
+ *        addresses is an array of {address, family} objects
+ * @returns {void}
+ */
+function safeLookup(hostname, options, callback) {
+    if (typeof options === 'function') {
+        callback = options;
+        options = {};
+    }
+    options = options || {};
+    dns.lookup(hostname, options, function(err, address, family) {
+        if (err) {
+            return callback(err);
+        }
+        // options.all === true -> address is an array of {address, family}
+        if (options.all) {
+            const list = Array.isArray(address) ? address : [address];
+            for (let i = 0; i < list.length; i++) {
+                if (isBlockedIP(list[i].address)) {
+                    return callback(blockedLookupError(hostname, list[i].address));
+                }
+            }
+            return callback(null, list);
+        }
+        if (isBlockedIP(address)) {
+            return callback(blockedLookupError(hostname, address));
+        }
+        callback(null, address, family);
+    });
+}
+
+/**
  * Build got-compatible request options with SSRF protection baked in.
  *
- * Disables redirects to prevent redirect-based SSRF bypasses.
+ * Disables redirects to prevent redirect-based SSRF bypasses, and pins DNS
+ * resolution through safeLookup so the connected IP is validated at connect
+ * time (DNS-rebinding protection). Callers that issue requests via raw node
+ * http/https can pass `lookup: safeLookup` directly.
  *
  * @param {object} requestOptions - base request options (uri, timeout, headers, etc.)
  * @returns {object} the same options object with SSRF settings injected
@@ -215,10 +273,14 @@ function getSsrfSafeOptions(requestOptions) {
     // Disable redirects entirely — prevents redirect-based SSRF bypasses
     options.followRedirect = false;
 
+    // Validate the resolved IP at connect time (DNS-rebinding protection)
+    options.lookup = safeLookup;
+
     return options;
 }
 
 module.exports = {
     isUrlSafe,
     getSsrfSafeOptions,
+    safeLookup,
 };

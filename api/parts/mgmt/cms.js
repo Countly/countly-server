@@ -200,6 +200,7 @@ cmsApi.getEntriesWithUpdate = function(params) {
 
     try {
         params.qstring.query = JSON.parse(params.qstring.query);
+        common.stripUnsafeMongoOperators(params.qstring.query);
     }
     catch (ex) {
         params.qstring.query = null;
@@ -284,6 +285,7 @@ cmsApi.getEntries = function(params) {
 
     try {
         params.qstring.query = JSON.parse(params.qstring.query);
+        common.stripUnsafeMongoOperators(params.qstring.query);
     }
     catch (ex) {
         params.qstring.query = null;
