@@ -200,7 +200,7 @@
                     acceptedFiles: 'application/gzip,application/x-gzip',
                     dictDefaultMessage: this.i18n('feedback.drop-message'),
                     dictRemoveFile: this.i18n('feedback.remove-file'),
-                    url: "/i/datamigration/import",
+                    url: countlyGlobal.path + "/i/datamigration/import",
                     paramName: "import_file",
                     params: { api_key: countlyGlobal.member.api_key, app_id: countlyCommon.ACTIVE_APP_ID }
                 },
