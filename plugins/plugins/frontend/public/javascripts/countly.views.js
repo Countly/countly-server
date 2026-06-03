@@ -835,7 +835,7 @@
                 else {
                     countlyPlugins.deleteAccount({password: pv}, function(err, msg) {
                         if (msg === true || msg === 'true') {
-                            window.location = "/login"; //deleted. go to login
+                            window.location = countlyGlobal.path + "/login"; //deleted. go to login
                         }
                         else if (msg === 'password not valid' || msg === 'password mandatory' || msg === 'global admin limit') {
                             CountlyHelpers.notify({title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings." + msg], sticky: true, clearAll: true, type: "error"});

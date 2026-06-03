@@ -388,13 +388,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.set('view engine', 'html');
     app.set('view options', {layout: false});
 
-    app.use('/stylesheets/ionicons/fonts/', function(req, res, next) {
+    app.use(countlyConfig.path + '/stylesheets/ionicons/fonts/', function(req, res, next) {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         next();
     });
 
-    app.use('/fonts/', function(req, res, next) {
+    app.use(countlyConfig.path + '/fonts/', function(req, res, next) {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         next();
@@ -881,7 +881,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         }
     });
     app.get(countlyConfig.path + '/dashboard', checkRequestForSession);
-    app.post('*', checkRequestForSession);
+    app.post(countlyConfig.path + '/*', checkRequestForSession);
 
     app.get(countlyConfig.path + '/logout', function(req, res) {
         if (req.query.message) {

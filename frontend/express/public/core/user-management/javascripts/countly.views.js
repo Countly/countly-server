@@ -248,7 +248,7 @@
                 filteredFeatures: [],
                 dropzoneOptions: {
                     member: null,
-                    url: "/member/icon",
+                    url: (countlyGlobal.path || "") + "/member/icon",
                     autoProcessQueue: false,
                     acceptedFiles: 'image/*',
                     maxFiles: 1,
