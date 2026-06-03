@@ -179,6 +179,14 @@ var spawn = require('child_process').spawn,
                 filter = {};
             }
 
+            //strip server-side-JS Mongo operators ($where/$expr/$function/
+            //$accumulator) from the user-supplied filter and sort so the db
+            //viewer query cannot be abused to execute code on the server
+            common.stripUnsafeMongoOperators(filter);
+            if (sort && typeof sort === 'object') {
+                common.stripUnsafeMongoOperators(sort);
+            }
+
             if (dbs[dbNameOnParam]) {
                 try {
                     var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, { projection });
