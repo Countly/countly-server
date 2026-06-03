@@ -992,6 +992,7 @@ plugins.setConfigs("crashes", {
                     if (params.qstring.query && params.qstring.query !== "") {
                         try {
                             filter = JSON.parse(params.qstring.query);
+                            common.stripUnsafeMongoOperators(filter);
                         }
                         catch (ex) {
                             console.log("Cannot parse crashes query", params.qstring.query);
