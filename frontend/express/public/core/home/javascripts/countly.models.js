@@ -13,7 +13,7 @@
             downloadScreen: function(context) {
                 return CV.$.ajax({
                     type: "POST",
-                    url: "/o/render?view=/dashboard&route=/" + countlyCommon.ACTIVE_APP_ID + "/",
+                    url: countlyCommon.API_PARTS.data.r + "/render?view=/dashboard&route=/" + countlyCommon.ACTIVE_APP_ID + "/",
                     data: {
                         app_id: countlyCommon.ACTIVE_APP_ID,
                         "id": "main_home_view",
