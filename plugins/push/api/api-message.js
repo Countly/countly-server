@@ -3,7 +3,8 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
     moment = require('moment-timezone'),
-    { request } = require('./proxy');
+    { request } = require('./proxy'),
+    ssrfProtection = require('../../../api/utils/ssrf-protection');
 
 
 /**
@@ -1200,7 +1201,7 @@ async function generateDemoData(msg, demo) {
  * @param {string} method - http method to use
  * @returns {Promise} - {status, headers} in case of success, PushError otherwise
  */
-function mimeInfo(url, method = 'HEAD') {
+async function mimeInfo(url, method = 'HEAD') {
     let conf = common.plugins.getConfig('push'),
         ok = common.validateArgs({url}, {
             url: {type: 'URLString', required: true},
@@ -1211,6 +1212,19 @@ function mimeInfo(url, method = 'HEAD') {
     }
     else {
         throw new ValidationError(ok.errors);
+    }
+
+    // The URL is attacker-controllable and the request is issued by the server,
+    // so block loopback, link-local (cloud metadata) and private/internal
+    // targets before contacting it. mimeInfo is also called for any redirect
+    // target, so the destination of a followed redirect is validated too.
+    const safe = await ssrfProtection.isUrlSafe(url);
+    if (!safe.safe) {
+        // Keep the detailed reason server-side only: it can include the
+        // resolved private IP, which would otherwise hand the caller the exact
+        // SSRF oracle this check is meant to remove.
+        log.e('Blocked media URL', url, safe.error);
+        throw new ValidationError('Provided URL is not allowed');
     }
 
     return new Promise((resolve, reject) => {
