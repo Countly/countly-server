@@ -1740,11 +1740,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         if (!filePath) {
             return;
         }
-        var uploadDir = path.resolve(__dirname + '/uploads');
-        var resolved = path.resolve(filePath + "");
-        if (resolved === uploadDir || resolved.indexOf(uploadDir + path.sep) === 0) {
-            fs.unlink(resolved, function() {});
-        }
+        //strip any directory component and re-root under the upload dir, so the
+        //request-derived value cannot reference anything outside it
+        var safePath = path.join(path.resolve(__dirname + '/uploads'), path.basename(filePath + ""));
+        fs.unlink(safePath, function() {});
     }
 
     app.post(countlyConfig.path + '/member/icon', async function(req, res, next) {
