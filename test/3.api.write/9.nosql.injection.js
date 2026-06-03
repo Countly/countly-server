@@ -110,4 +110,59 @@ describe('NoSQL injection through SDK API params', function() {
                 });
         });
     });
+
+    // The bulk endpoint returns 200 and swallows per-item results, so the
+    // injection is verified by its effect: an injected sub-request must not
+    // write any data into the real app, while a valid one does.
+    describe('app_key operator injection on /i/bulk', function() {
+        var APP_ID = "";
+        var injectDevice = "nosql-bulk-inject-" + Date.now();
+        var controlDevice = "nosql-bulk-control-" + Date.now();
+
+        before(function() {
+            APP_ID = testUtils.get("APP_ID");
+        });
+
+        it('should not write data to the real app for an injected sub-request', function(done) {
+            var requests = [{app_key: {"$regex": realKeyPrefix()}, device_id: injectDevice, begin_session: 1}];
+            request
+                .get('/i/bulk?requests=' + encodeURIComponent(JSON.stringify(requests)))
+                .expect(200)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    setTimeout(function() {
+                        testUtils.db.collection('app_users' + APP_ID).findOne({did: injectDevice}, function(e, user) {
+                            if (e) {
+                                return done(e);
+                            }
+                            (user === null || typeof user === "undefined").should.equal(true);
+                            done();
+                        });
+                    }, 1000 * testUtils.testScalingFactor);
+                });
+        });
+
+        it('control: a valid app_key sub-request does write to the real app', function(done) {
+            var requests = [{app_key: APP_KEY, device_id: controlDevice, begin_session: 1}];
+            request
+                .get('/i/bulk?requests=' + encodeURIComponent(JSON.stringify(requests)))
+                .expect(200)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    setTimeout(function() {
+                        testUtils.db.collection('app_users' + APP_ID).findOne({did: controlDevice}, function(e, user) {
+                            if (e) {
+                                return done(e);
+                            }
+                            (!!user).should.equal(true);
+                            done();
+                        });
+                    }, 1000 * testUtils.testScalingFactor);
+                });
+        });
+    });
 });
