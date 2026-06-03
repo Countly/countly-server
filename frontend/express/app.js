@@ -1884,6 +1884,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     countlyDb.collection('apps').createIndex({"key": 1}, { unique: true }, function() {});
+    //index every accepted app key so incoming requests resolve by current OR
+    //rotated-but-still-accepted key without a collection scan. Ensured at
+    //startup (idempotent) so existing apps are covered after an upgrade with no
+    //migration script; createApp also ensures it for new apps.
+    countlyDb.collection('apps').createIndex({"keys.key": 1}, { background: true }, function() {});
     countlyDb.collection('members').createIndex({"api_key": 1}, { unique: true }, function() {});
     countlyDb.collection('members').createIndex({ email: 1 }, { unique: true }, function() {});
     countlyDb.collection('jobs').createIndex({ finished: 1 }, function() {});
