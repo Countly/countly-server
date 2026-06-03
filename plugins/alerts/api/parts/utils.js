@@ -22,11 +22,13 @@ utils.sendRequest = function(url, callback) {
     //validate the (potentially user/config-supplied) URL against SSRF before
     //the server fetches it, and pin the connect-time IP via safeLookup so an
     //internal/private/link-local target cannot be reached
-    ssrfProtection.isUrlSafe(url).then(function(urlCheck) {
+    //returns the promise chain; the callback always uses an (err, body)
+    //signature on every path for a consistent contract
+    return ssrfProtection.isUrlSafe(url).then(function(urlCheck) {
         if (!urlCheck.safe) {
             log.e('Alert request blocked by SSRF protection:', urlCheck.error);
             if (callback) {
-                callback(new Error('SSRF protection: ' + urlCheck.error));
+                callback(new Error('SSRF protection: ' + urlCheck.error), null);
             }
             return;
         }
@@ -39,7 +41,7 @@ utils.sendRequest = function(url, callback) {
     }).catch(function(e) {
         log.e('Alert request SSRF validation error:', e);
         if (callback) {
-            callback(e);
+            callback(e, null);
         }
     });
 };
