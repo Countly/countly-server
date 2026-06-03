@@ -264,9 +264,7 @@ var spawn = require('child_process').spawn,
             //$accumulator) from the user-supplied filter and sort so the db
             //viewer query cannot be abused to execute code on the server
             common.stripUnsafeMongoOperators(filter);
-            if (sort && typeof sort === 'object') {
-                common.stripUnsafeMongoOperators(sort);
-            }
+            common.stripUnsafeMongoOperators(sort);
 
             var base_filter = {};
             if (!params.member.global_admin) {
