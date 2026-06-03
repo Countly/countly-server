@@ -1728,6 +1728,25 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         });
     });
 
+    /**
+     * Safely delete a formidable upload temp file: only unlink it if it
+     * resolves inside the configured upload directory. The path originates from
+     * the request, so this guards it from being used to remove anything outside
+     * the upload dir.
+     * @param {string} filePath - path of the uploaded temp file to remove
+     * @returns {void}
+     */
+    function removeUploadFile(filePath) {
+        if (!filePath) {
+            return;
+        }
+        var uploadDir = path.resolve(__dirname + '/uploads');
+        var resolved = path.resolve(filePath + "");
+        if (resolved === uploadDir || resolved.indexOf(uploadDir + path.sep) === 0) {
+            fs.unlink(resolved, function() {});
+        }
+    }
+
     app.post(countlyConfig.path + '/member/icon', async function(req, res, next) {
 
         var params = paramsGenerator({req, res});
@@ -1735,9 +1754,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             if (!req.files.member_image || !req.body.member_image_id) {
                 //remove the already-uploaded temp file so a missing id cannot
                 //be used to leak files into the upload directory
-                if (req.files.member_image && req.files.member_image.path) {
-                    fs.unlink(req.files.member_image.path, function() {});
-                }
+                removeUploadFile(req.files.member_image && req.files.member_image.path);
                 res.end();
                 return true;
             }
@@ -1745,7 +1762,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             //member_image_id is always a member _id; require a valid ObjectId
             //so it cannot be used to build an arbitrary file path
             if (!/^[a-f0-9]{24}$/i.test(req.body.member_image_id + "")) {
-                fs.unlink(req.files.member_image.path, function() {});
+                removeUploadFile(req.files.member_image.path);
                 res.status(400).send(false);
                 return true;
             }
@@ -1755,7 +1772,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             //this an app-admin (who passes the global_upload check via their
             //own app) could overwrite any member's avatar by id.
             if (!(params.member && (params.member.global_admin || (req.body.member_image_id + "") === (params.member._id + "")))) {
-                fs.unlink(req.files.member_image.path, function() {});
+                removeUploadFile(req.files.member_image.path);
                 res.status(403).send(false);
                 return true;
             }
@@ -1766,7 +1783,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 type = req.files.member_image.type;
 
             if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
-                fs.unlink(tmp_path, function() {});
+                removeUploadFile(tmp_path);
                 res.send(false);
                 return true;
             }
@@ -1776,14 +1793,14 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 const image = await jimp.Jimp.read(tmp_path);
 
                 if (!image) {
-                    fs.unlink(tmp_path, function() {});
+                    removeUploadFile(tmp_path);
                     res.status(400).send(false);
                     return true;
                 }
             }
             catch (err) {
                 console.log(err.stack);
-                fs.unlink(tmp_path, function() {});
+                removeUploadFile(tmp_path);
                 res.status(400).send(false);
                 return true;
             }
@@ -1801,7 +1818,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 console.log("Problem uploading member icon", e);
                 res.status(400).send(false);
             }
-            fs.unlink(tmp_path, function() {});
+            removeUploadFile(tmp_path);
         });
     });
 
