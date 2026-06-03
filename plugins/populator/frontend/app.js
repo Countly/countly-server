@@ -38,7 +38,7 @@ var exported = {},
                 scripts: path.resolve(__dirname, 'public/templates/demo-scripts.html'),
             };
 
-            const response = ejs.render(pageSourceCode, { pageIndex, includes });
+            const response = ejs.render(pageSourceCode, { pageIndex, includes, countlyPath: countlyConfig.path || '' });
 
             res.writeHead(200, { 'Content-Type': 'text/html' });
             res.end(response);

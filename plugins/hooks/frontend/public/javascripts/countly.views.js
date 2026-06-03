@@ -661,7 +661,7 @@
         },
         computed: {
             url: function() {
-                return window.location.protocol + "//" + window.location.host + "/o/hooks/" + this.value.path;
+                return window.location.protocol + "//" + window.location.host + (countlyGlobal.path || "") + "/o/hooks/" + this.value.path;
             },
             valuePath: function() {
                 return this.value.path;
