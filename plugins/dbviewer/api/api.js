@@ -229,12 +229,20 @@ var spawn = require('child_process').spawn,
             catch (SyntaxError) {
                 sort = {};
             }
+            //EJSON.parse("null") yields null (typeof null === "object"), so
+            //normalize to a plain object before any property access / query use
+            if (!sort || typeof sort !== 'object' || Array.isArray(sort)) {
+                sort = {};
+            }
             try {
                 filter = EJSON.parse(filter);
             }
             catch (SyntaxError) {
                 common.returnMessage(params, 400, "Failed to parse query. " + SyntaxError.message);
                 return false;
+            }
+            if (!filter || typeof filter !== 'object' || Array.isArray(filter)) {
+                filter = {};
             }
             if (filter._id && isObjectId(filter._id)) {
                 filter._id = common.db.ObjectID(filter._id);
