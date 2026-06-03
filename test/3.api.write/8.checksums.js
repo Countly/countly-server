@@ -46,14 +46,14 @@ describe("Testing checksum validations", function() {
             request
                 .get("/i")
                 .query({device_id: DEVICE_ID, app_key: APP_KEY})
-                .expect(200)
+                .expect(400)
                 .end(function(error, response) {
                     if (error) {
                         return done(error);
                     }
 
                     const responseObject = JSON.parse(response.text);
-                    responseObject.should.have.property("result", "Request does not have checksum");
+                    responseObject.should.have.property("result", "App does not exist");
                     setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
@@ -66,14 +66,14 @@ describe("Testing checksum validations", function() {
             request
                 .get("/i")
                 .query({device_id: DEVICE_ID, app_key: APP_KEY, checksum: checksum}).sortQuery()
-                .expect(200)
+                .expect(400)
                 .end(function(error, response) {
                     if (error) {
                         return done(error);
                     }
 
                     const responseObject = JSON.parse(response.text);
-                    responseObject.should.have.property("result", "Request does not match checksum");
+                    responseObject.should.have.property("result", "App does not exist");
                     setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
@@ -86,14 +86,14 @@ describe("Testing checksum validations", function() {
             request
                 .get("/i")
                 .query({device_id: DEVICE_ID, app_key: APP_KEY, checksum256: checksum}).sortQuery()
-                .expect(200)
+                .expect(400)
                 .end(function(error, response) {
                     if (error) {
                         return done(error);
                     }
 
                     const responseObject = JSON.parse(response.text);
-                    responseObject.should.have.property("result", "Request does not match checksum");
+                    responseObject.should.have.property("result", "App does not exist");
                     setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });

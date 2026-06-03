@@ -238,6 +238,14 @@ const processRequest = (params) => {
         }
     }
 
+    //make sure scalar identity parameters are strings, not query operators
+    var stringParams = ["app_key", "device_id", "old_device_id"];
+    for (let s = 0; s < stringParams.length; s++) {
+        if (typeof params.qstring[stringParams[s]] !== "undefined" && params.qstring[stringParams[s]] !== null) {
+            params.qstring[stringParams[s]] = params.qstring[stringParams[s]] + "";
+        }
+    }
+
     if (params.qstring.app_id && params.qstring.app_id.length !== 24) {
         common.returnMessage(params, 400, 'Invalid parameter "app_id"');
         return false;
@@ -2086,17 +2094,27 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "task_id"');
                             return false;
                         }
-                        taskmanager.getResult({
-                            db: common.db,
-                            id: params.qstring.task_id,
-                            subtask_key: params.qstring.subtask_key
-                        }, (err, res) => {
-                            if (res) {
-                                common.returnOutput(params, res);
-                            }
-                            else {
+                        //long_tasks is a global collection keyed by task id; gate
+                        //access so a caller can only read a task they own / are
+                        //authorized for (or one explicitly marked global), not
+                        //an arbitrary private task id from another app
+                        taskmanager.loadIfReadable(common.db, params.qstring.task_id, params.member, (authErr) => {
+                            if (authErr) {
                                 common.returnMessage(params, 400, 'Task does not exist');
+                                return;
                             }
+                            taskmanager.getResult({
+                                db: common.db,
+                                id: params.qstring.task_id,
+                                subtask_key: params.qstring.subtask_key
+                            }, (err, res) => {
+                                if (res) {
+                                    common.returnOutput(params, res);
+                                }
+                                else {
+                                    common.returnMessage(params, 400, 'Task does not exist');
+                                }
+                            });
                         });
                     });
                     break;
@@ -2120,7 +2138,8 @@ const processRequest = (params) => {
 
                         taskmanager.checkResult({
                             db: common.db,
-                            id: tasks
+                            id: tasks,
+                            member: params.member
                         }, (err, res) => {
                             if (isMulti && res) {
                                 common.returnMessage(params, 200, res);
@@ -3355,7 +3374,10 @@ const processBulkRequest = (i, requests, params) => {
     }
 
     if (!requests[i] || (!requests[i].app_key && !appKey)) {
-        return processBulkRequest(i + 1, requests, params);
+        //defer to the next tick so a long run of skipped entries does not
+        //grow the call stack synchronously (the valid path below is already
+        //async); otherwise a large array of empty entries overflows the stack
+        return setImmediate(processBulkRequest, i + 1, requests, params);
     }
     if (params.qstring.safe_api_response) {
         requests[i].safe_api_response = true;
@@ -3382,7 +3404,7 @@ const processBulkRequest = (i, requests, params) => {
     tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
 
     if (!tmpParams.qstring.device_id) {
-        return processBulkRequest(i + 1, requests, params);
+        return setImmediate(processBulkRequest, i + 1, requests, params);
     }
     else {
         //make sure device_id is string
@@ -3438,7 +3460,10 @@ const checksumSaltVerification = (params) => {
                 payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
-                common.returnMessage(params, 200, 'Request does not match checksum');
+                //return the same response as an unknown app so a valid app key
+                //with a wrong/absent checksum cannot be distinguished from an
+                //invalid app key (avoids an app key validity oracle)
+                common.returnMessage(params, 400, 'App does not exist');
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha1';
                 plugins.dispatch("/sdk/cancel", {params: params});
@@ -3451,7 +3476,10 @@ const checksumSaltVerification = (params) => {
                 payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
-                common.returnMessage(params, 200, 'Request does not match checksum');
+                //return the same response as an unknown app so a valid app key
+                //with a wrong/absent checksum cannot be distinguished from an
+                //invalid app key (avoids an app key validity oracle)
+                common.returnMessage(params, 400, 'App does not exist');
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha256';
                 plugins.dispatch("/sdk/cancel", {params: params});
@@ -3459,7 +3487,8 @@ const checksumSaltVerification = (params) => {
             }
         }
         else {
-            common.returnMessage(params, 200, 'Request does not have checksum');
+            //same uniform response as above (no app key validity oracle)
+            common.returnMessage(params, 400, 'App does not exist');
             console.log("Request does not have checksum", params.href, params.req.body);
             params.cancelRequest = "Request does not have checksum";
             plugins.dispatch("/sdk/cancel", {params: params});
@@ -3587,14 +3616,17 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         }
 
         if (app.paused) {
-            common.returnMessage(params, 400, 'App is currently not accepting data');
+            //return the same response as an unknown app so a valid app key for
+            //a paused app cannot be distinguished from an invalid one
+            common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App is currently not accepting data";
             plugins.dispatch("/sdk/cancel", {params: params});
             return done ? done() : false;
         }
 
         if ((params.populator || params.qstring.populator) && app.locked) {
-            common.returnMessage(params, 403, "App is locked");
+            //same uniform response (no app key existence oracle)
+            common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App is locked";
             plugins.dispatch("/sdk/cancel", {params: params});
             return false;
