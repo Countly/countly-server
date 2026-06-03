@@ -287,11 +287,25 @@ appsApi.createApp = async function(params) {
     if (!newApp.key || newApp.key === "") {
         newApp.key = appKey;
     }
+    //freeze the immutable identity key used to derive app user ids, so the app
+    //key can later be rotated without re-keying existing users
+    newApp.id_key = newApp.key;
+    //all currently accepted keys, including the current one. Old keys remain
+    //valid (and are tracked with last_data) until an admin removes them, so a
+    //key rotation does not break already-deployed SDK clients.
+    newApp.keys = [{key: newApp.key, added_at: Math.floor(Date.now() / 1000), last_data: 0}];
 
+    //run the uniqueness check against the actual key being stored, including
+    //an auto-generated one (checkUniqueKey only inspects args.key and would
+    //otherwise skip validation entirely when the key was generated)
+    params.qstring.args.key = newApp.key;
     checkUniqueKey(params, function() {
         common.db.collection('apps').insert(newApp, function(err, app) {
             if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
                 newApp._id = app.ops[0]._id;
+
+                //index for resolving incoming requests by any accepted key
+                common.db.collection('apps').ensureIndex({"keys.key": 1}, { background: true }, function() {});
 
                 common.db.collection('app_users' + app.ops[0]._id).ensureIndex({ls: -1}, { background: true }, function() {});
                 common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"uid": 1}, { background: true }, function() {});
@@ -416,7 +430,22 @@ appsApi.updateApp = function(params) {
     // argProps explicitly (or, for plugin-namespaced settings, routed through
     // /i/apps/update/plugins/<name>).
 
-    if (Object.keys(updatedApp).length === 0) {
+    //optional list of old keys to retire. Read directly (not part of the
+    //schema) so users cannot set arbitrary key metadata; only remove by value.
+    var removeKeys = params.qstring.args.remove_keys;
+    if (typeof removeKeys === "string") {
+        try {
+            removeKeys = JSON.parse(removeKeys);
+        }
+        catch (e) {
+            removeKeys = [removeKeys];
+        }
+    }
+    if (!Array.isArray(removeKeys)) {
+        removeKeys = [];
+    }
+
+    if (Object.keys(updatedApp).length === 0 && removeKeys.length === 0) {
         common.returnMessage(params, 200, 'Nothing changed');
         return true;
     }
@@ -429,6 +458,34 @@ appsApi.updateApp = function(params) {
             common.returnMessage(params, 404, 'App not found');
         }
         else {
+            //freeze the immutable identity key before any change is applied. If
+            //this app predates id_key, capture the current (old) key now so app
+            //user ids stay derived from it even if this update rotates the key.
+            if (typeof appBefore.id_key === "undefined" || appBefore.id_key === null) {
+                updatedApp.id_key = appBefore.key;
+            }
+
+            //maintain the set of accepted keys. Lazily materialize it for apps
+            //that predate the keys array (no upgrade script needed), keep old
+            //keys valid after a rotation, and apply any requested removals
+            //(never the current key, which always stays accepted).
+            var nowSec = Math.floor(Date.now() / 1000);
+            var keysArr = (Array.isArray(appBefore.keys) && appBefore.keys.length)
+                ? appBefore.keys.slice()
+                : [{key: appBefore.key, added_at: appBefore.created_at || nowSec, last_data: appBefore.last_data || 0}];
+            var currentKey = (typeof updatedApp.key !== "undefined" && updatedApp.key !== "") ? updatedApp.key : appBefore.key;
+            if (removeKeys.length) {
+                keysArr = keysArr.filter(function(k) {
+                    return removeKeys.indexOf(k.key) === -1 || k.key === currentKey;
+                });
+            }
+            if (!keysArr.some(function(k) {
+                return k.key === currentKey;
+            })) {
+                keysArr.push({key: currentKey, added_at: nowSec, last_data: 0});
+            }
+            updatedApp.keys = keysArr;
+
             checkUniqueKey(params, function() {
                 if ((params.member && params.member.global_admin) || hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
                     common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
@@ -1044,6 +1101,7 @@ function packApps(apps) {
             'category': apps[i].category,
             'country': apps[i].country,
             'key': apps[i].key,
+            'keys': apps[i].keys || [{key: apps[i].key, added_at: apps[i].created_at || 0, last_data: apps[i].last_data || 0}],
             'name': apps[i].name,
             'timezone': apps[i].timezone,
             'salt': apps[i].salt || apps[i].checksum_salt || "",
@@ -1155,7 +1213,10 @@ function checkUniqueKey(params, callback, update) {
         callback();
     }
     else {
-        var query = {key: params.qstring.args.key};
+        //a key must be globally unique across every app's current key AND every
+        //app's set of still-accepted (old) keys
+        var key = params.qstring.args.key + "";
+        var query = {$or: [{key: key}, {"keys.key": key}]};
         if (update) {
             query._id = {$ne: common.db.ObjectID(params.qstring.args.app_id + "")};
         }

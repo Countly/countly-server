@@ -178,20 +178,37 @@ const FEATURE_NAME = 'times_of_day';
         var params = ob.params;
 
         if (params.qstring.method === "times-of-day") {
-            // var appId = params.qstring.app_id;  can be deleted
             var todType = params.qstring.tod_type;
-
-            var criteria = {
-                "s": todType
-            };
-
-            if (params.qstring.date_range) {
-                criteria.m = { $in: params.qstring.date_range.split(',') };
-            }
 
             var collectionName = "times_of_day";
 
             validateRead(params, FEATURE_NAME, function() {
+                //validateRead does not require app_id for global admins, so
+                //guard it here: a missing/invalid id would otherwise make
+                //ObjectID("undefined") throw and 500 the endpoint
+                if (!params.qstring.app_id) {
+                    common.returnMessage(params, 400, "Missing parameter app_id");
+                    return false;
+                }
+                var appObjId;
+                try {
+                    appObjId = common.db.ObjectID(params.qstring.app_id + "");
+                }
+                catch (e) {
+                    common.returnMessage(params, 400, "Invalid app_id");
+                    return false;
+                }
+                //scope to the authorized app; the app id is stored as an
+                //ObjectId in the "a" field of each times_of_day document
+                var criteria = {
+                    "s": todType,
+                    "a": appObjId
+                };
+
+                if (params.qstring.date_range) {
+                    criteria.m = { $in: params.qstring.date_range.split(',') };
+                }
+
                 fetchTodData(collectionName, criteria, function(err, result) {
                     if (err) {
                         console.log("Error while fetching times of day data: ", err.message);
@@ -273,8 +290,15 @@ const FEATURE_NAME = 'times_of_day';
                     todType = eventKey;
                 }
 
+                //app id is stored as an ObjectId in the "a" field; scope the
+                //widget query to the apps it is configured for
+                var widgetApps = (data.apps || []).map(function(appId) {
+                    return common.db.ObjectID(appId + "");
+                });
+
                 criteria = {
-                    "s": todType
+                    "s": todType,
+                    "a": { $in: widgetApps }
                 };
 
                 var periodRange = getDateRange(period);

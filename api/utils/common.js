@@ -523,6 +523,49 @@ common.sha1Hash = function(str, addSalt) {
 };
 
 /**
+* Derive the internal app user id (_id of the app_users document) from an app
+* and a device id. The id is derived from the app's immutable identity key
+* (app.id_key) rather than its current app key, so the app key can be rotated
+* without re-keying existing users. For apps that predate id_key the value is
+* absent and we fall back to the current key, which equals the value the id was
+* originally derived from, keeping existing ids byte-identical (no migration).
+* @param {object} app - the app document (must have key and optionally id_key)
+* @param {string} deviceId - the device id from the SDK request
+* @returns {string} sha1 hex app user id
+*/
+common.getAppUserId = function(app, deviceId) {
+    var idKey = (app && (app.id_key || app.key)) || "";
+    return crypto.createHash('sha1').update(idKey + deviceId + "").digest('hex');
+};
+
+/**
+* Record the last time data was received for the specific app key used on a
+* request. Lets administrators see whether an old (rotated-away) key is still
+* in use before retiring it. Throttled to at most one write per key per hour to
+* keep it off the hot path; also updates the in-memory copy so a cached app
+* document does not trigger repeated writes within the cache window.
+* @param {object} app - the app document (with keys array)
+* @param {string} usedKey - the app key value the request authenticated with
+* @returns {void}
+*/
+common.recordAppKeyUsage = function(app, usedKey) {
+    if (!app || !Array.isArray(app.keys) || !common.db) {
+        return;
+    }
+    var k = usedKey + "";
+    var nowSec = Math.floor(Date.now() / 1000);
+    for (var i = 0; i < app.keys.length; i++) {
+        if (app.keys[i].key === k) {
+            if (!app.keys[i].last_data || app.keys[i].last_data < nowSec - 3600) {
+                app.keys[i].last_data = nowSec;
+                common.db.collection("apps").update({_id: app._id, "keys.key": k}, {$set: {"keys.$.last_data": nowSec}}, function() {});
+            }
+            return;
+        }
+    }
+};
+
+/**
 * Create HMAC sha512 hash from provided value and optional salt
 * @param {string} str - value to hash
 * @param {string=} addSalt - optional salt, uses ms timestamp by default
