@@ -252,6 +252,14 @@ var spawn = require('child_process').spawn,
                 filter = {};
             }
 
+            //strip server-side-JS Mongo operators ($where/$expr/$function/
+            //$accumulator) from the user-supplied filter and sort so the db
+            //viewer query cannot be abused to execute code on the server
+            common.stripUnsafeMongoOperators(filter);
+            if (sort && typeof sort === 'object') {
+                common.stripUnsafeMongoOperators(sort);
+            }
+
             var base_filter = {};
             if (!params.member.global_admin) {
                 base_filter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection);
