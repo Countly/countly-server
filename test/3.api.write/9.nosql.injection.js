@@ -89,23 +89,18 @@ describe('NoSQL injection through SDK API params', function() {
         });
     });
 
-    describe('control: a valid app_key is still accepted', function() {
-        it('should not return "App does not exist" for the real key', function(done) {
+    describe('control: a valid app_key is accepted', function() {
+        it('should process a request with the real app_key', function(done) {
             request
-                .post('/o/sdk')
-                .send({method: "fetch_remote_config", device_id: DEVICE_ID, app_key: APP_KEY})
+                .get('/i?device_id=' + DEVICE_ID + '&begin_session=1&app_key=' + APP_KEY)
+                .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
-                    var ob = {};
-                    try {
-                        ob = JSON.parse(res.text);
-                    }
-                    catch (e) {
-                        ob = {};
-                    }
-                    (ob.result === 'App does not exist').should.equal(false);
+                    // a positive success signal (not just "not App does not exist")
+                    // so the control cannot pass for unrelated reasons
+                    JSON.parse(res.text).should.have.property('result', 'Success');
                     done();
                 });
         });
