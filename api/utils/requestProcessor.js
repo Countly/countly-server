@@ -134,6 +134,14 @@ const processRequest = (params) => {
         }
     }
 
+    //make sure scalar identity parameters are strings, not query operators
+    var stringParams = ["app_key", "device_id", "old_device_id"];
+    for (let s = 0; s < stringParams.length; s++) {
+        if (typeof params.qstring[stringParams[s]] !== "undefined" && params.qstring[stringParams[s]] !== null) {
+            params.qstring[stringParams[s]] = params.qstring[stringParams[s]] + "";
+        }
+    }
+
     if (params.qstring.app_id && params.qstring.app_id.length !== 24) {
         common.returnMessage(params, 400, 'Invalid parameter "app_id"');
         return false;
@@ -1972,17 +1980,27 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "task_id"');
                             return false;
                         }
-                        taskmanager.getResult({
-                            db: common.db,
-                            id: params.qstring.task_id,
-                            subtask_key: params.qstring.subtask_key
-                        }, (err, res) => {
-                            if (res) {
-                                common.returnOutput(params, res);
-                            }
-                            else {
+                        //long_tasks is a global collection keyed by task id; gate
+                        //access so a caller can only read a task they own / are
+                        //authorized for (or one explicitly marked global), not
+                        //an arbitrary private task id from another app
+                        taskmanager.loadIfReadable(common.db, params.qstring.task_id, params.member, (authErr) => {
+                            if (authErr) {
                                 common.returnMessage(params, 400, 'Task does not exist');
+                                return;
                             }
+                            taskmanager.getResult({
+                                db: common.db,
+                                id: params.qstring.task_id,
+                                subtask_key: params.qstring.subtask_key
+                            }, (err, res) => {
+                                if (res) {
+                                    common.returnOutput(params, res);
+                                }
+                                else {
+                                    common.returnMessage(params, 400, 'Task does not exist');
+                                }
+                            });
                         });
                     });
                     break;
@@ -2006,7 +2024,8 @@ const processRequest = (params) => {
 
                         taskmanager.checkResult({
                             db: common.db,
-                            id: tasks
+                            id: tasks,
+                            member: params.member
                         }, (err, res) => {
                             if (isMulti && res) {
                                 common.returnMessage(params, 200, res);
@@ -3258,7 +3277,10 @@ const processBulkRequest = (i, requests, params) => {
     }
 
     if (!requests[i] || (!requests[i].app_key && !appKey)) {
-        return processBulkRequest(i + 1, requests, params);
+        //defer to the next tick so a long run of skipped entries does not
+        //grow the call stack synchronously (the valid path below is already
+        //async); otherwise a large array of empty entries overflows the stack
+        return setImmediate(processBulkRequest, i + 1, requests, params);
     }
     if (params.qstring.safe_api_response) {
         requests[i].safe_api_response = true;
@@ -3285,7 +3307,7 @@ const processBulkRequest = (i, requests, params) => {
     tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
 
     if (!tmpParams.qstring.device_id) {
-        return processBulkRequest(i + 1, requests, params);
+        return setImmediate(processBulkRequest, i + 1, requests, params);
     }
     else {
         //make sure device_id is string
