@@ -41,12 +41,11 @@ A key must be unique across all applications, including keys that are still
 accepted from previous rotations. If you choose a value already in use, the save
 is rejected.
 
-> **Note on dashboard support.** A dedicated key-management screen (listing all
-> accepted keys, showing per-key "last received" time, and removing old keys) is
-> not part of the dashboard yet. Today the app edit form lets you set the
-> current key; the workflows below for listing and retiring accepted keys are
-> performed through the apps management API. This section will be updated when
-> the dashboard UI lands.
+> **Dashboard support.** The application management screen lists all accepted
+> keys under "Accepted app keys", showing the current/primary key and each old
+> key with its per-key "last received" time, and lets you retire an old key once
+> it is no longer receiving data. The same workflows are also available through
+> the apps management API described below.
 
 ## Seeing which keys are still receiving data
 

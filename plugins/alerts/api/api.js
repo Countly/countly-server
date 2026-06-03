@@ -466,6 +466,12 @@ function getScheduleTextExpression(period, offset) {
                     //the user no longer has access to are not disclosed
                     var allowedApps = (getAdminApps(params.member) || [])
                         .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
+                    //legacy members (no permission object) are not covered by
+                    //getUserAppsForFeaturePermission, so include their user_of
+                    //apps too, otherwise they would see none of their own alerts
+                    if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                        allowedApps = allowedApps.concat(params.member.user_of);
+                    }
                     query = { createdBy: params.member._id, selectedApps: { $in: allowedApps } };
                     count_query = {_id: 'email:' + params.member.email};
                 }
