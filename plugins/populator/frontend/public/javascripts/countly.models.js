@@ -1481,7 +1481,7 @@
 
         this.saveEnvironment = function(environmentUserList, setEnviromentInformationOnce) {
             const data = {
-                app_key: countlyCommon.ACTIVE_APP_KEY,
+                app_id: countlyCommon.ACTIVE_APP_ID,
                 users: JSON.stringify(environmentUserList),
                 populator: true
             };
