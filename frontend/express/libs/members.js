@@ -1149,6 +1149,10 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     user.approver = !!data.approver;
     user.approver_bypass = !!data.approver_bypass;
 
+    // journey approver permission
+    user.journey_approver = !!data.journey_approver;
+    user.journey_approver_bypass = !!data.journey_approver_bypass;
+
     try {
         if (deleteDuplicate && (existingMembers.length >= 2 || (existingMembers.length === 1 && existingMembers[0].provider_id !== user.provider_id))) {
             await membersUtility.removeMembers(query);
