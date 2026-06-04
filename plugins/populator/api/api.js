@@ -225,24 +225,23 @@ const FEATURE_NAME = 'populator';
                 return false;
             }
 
-            //the stored appId comes from the request body; bind it to the
-            //authorized app so a caller can't create environment records under
-            //another app by supplying a foreign appId
-            var authorizedAppId = params.qstring.app_id + "";
-            var foreignApp = users.some(function(u) {
-                return (u.appId + "") !== authorizedAppId;
-            });
-            if (foreignApp) {
-                common.returnMessage(obParams, 403, "User does not have right");
+            if (!params.qstring.app_id) {
+                common.returnMessage(obParams, 400, "Missing parameter app_id");
                 return false;
             }
+            //derive every stored id/appId from the authorized app_id (enforced
+            //by validateCreate) rather than the client-supplied users[].appId,
+            //so a caller can only create environment records under the app they
+            //are authorized for. Consistent with the check/list/get/remove
+            //endpoints, which already key by params.qstring.app_id.
+            const appId = params.qstring.app_id + "";
 
-            const environmentId = common.crypto.createHash('sha1').update(users[0].appId + users[0].environmentName).digest('hex');
+            const environmentId = common.crypto.createHash('sha1').update(appId + users[0].environmentName).digest('hex');
             const insertedInformations = [];
             const createdAt = new Date().getTime();
             for (let i = 0; i < users.length; i++) {
                 insertedInformations.push({
-                    _id: users[i].appId + "_" + users[i].templateId + "_" + environmentId + "_" + users[i].deviceId,
+                    _id: appId + "_" + users[i].templateId + "_" + environmentId + "_" + users[i].deviceId,
                     userName: users[i].userName,
                     platform: users[i].platform,
                     device: users[i].device,
@@ -257,14 +256,14 @@ const FEATURE_NAME = 'populator';
                     _id: environmentId,
                     name: users[0].environmentName,
                     templateId: users[0].templateId,
-                    appId: users[0].appId,
+                    appId: appId,
                     createdAt: createdAt
                 }, function(err) {
                     if (err) {
                         common.returnMessage(ob.params, 500, err.message);
                         return false;
                     }
-                    plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_created", data: {environmentId: environmentId, environmentName: users[0].environmentName, appId: users[0].appId, templateId: users[0].templateId}});
+                    plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_created", data: {environmentId: environmentId, environmentName: users[0].environmentName, appId: appId, templateId: users[0].templateId}});
                 });
             }
             common.db.collection('populator_environment_users').insertMany(insertedInformations, function(err) {
