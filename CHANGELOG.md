@@ -1,4 +1,9 @@
 
+## Version 25.03.x
+Enterprise Features:
+ - [active_directory] Journey approver group added
+ - [ldap] Journey approver group added
+ 
 ## Version 25.03.45
 Fixes:
 - [core] Accept numeric color in saveNote schema so graph note create/edit no longer fails validation
