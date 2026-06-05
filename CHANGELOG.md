@@ -2,7 +2,7 @@
 ## Version 25.03.46
 Fixes:
  - Overall security Fixes
- - Ensuring Countly working from a netwrek subdirectory
+ - Ensuring Countly working from a network subdirectory
  
 Enterprise Features:
  - [active_directory] Journey approver group added
