@@ -100,13 +100,31 @@ fetch.fetchEventData = function(collection, params) {
 * The return the event groups data by _id.
 * @param {Object} params - params object
 * @param {string} params._id - The id of the event group id.
+* @returns {boolean|undefined} false on validation failure
 **/
 fetch.fetchEventGroupById = function(params) {
     const COLLECTION_NAME = "event_groups";
-    const { qstring: { _id } } = params;
-    common.db.collection(COLLECTION_NAME).findOne({ _id }, function(error, result) {
-        if (error || !result) {
+    // Coerce _id to a string to defeat NoSQL operator-injection. Always
+    // scope the lookup to params.app_id so an attacker who knows or
+    // enumerates an event-group _id from another tenant cannot read it
+    // back via this endpoint. validateRead ensures params.app_id is a
+    // tenant the caller is allowed on.
+    const _id = (params.qstring._id || "") + "";
+    if (!_id) {
+        common.returnMessage(params, 400, 'Missing parameter "_id"');
+        return false;
+    }
+    common.db.collection(COLLECTION_NAME).findOne({ _id, app_id: params.app_id + "" }, function(error, result) {
+        if (error) {
             common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        if (!result) {
+            // Distinguish "no such doc in this app's scope" (a normal client
+            // error / cross-tenant probe) from an actual server error. With
+            // app_id scoping introduced in H-17, the not-found case became
+            // common and returning 500 was misleading to callers.
+            common.returnMessage(params, 404, 'Event group not found');
             return false;
         }
         common.returnOutput(params, result);
@@ -159,9 +177,20 @@ fetch.fetchMergedEventGroups = function(params) {
 */
 fetch.getMergedEventGroups = function(params, event, options, callback) {
     const COLLECTION_NAME = "event_groups";
-    common.db.collection(COLLECTION_NAME).findOne({ _id: event }, function(error, result) {
-        if (error || !result) {
+    // Same scoping rule as fetchEventGroupById — confine the lookup to
+    // params.app_id so a caller can't merge another tenant's event group
+    // by knowing/guessing its _id.
+    const eventId = (event || "") + "";
+    common.db.collection(COLLECTION_NAME).findOne({ _id: eventId, app_id: params.app_id + "" }, function(error, result) {
+        if (error) {
             common.returnMessage(params, 500, `error: ${error}`);
+            return false;
+        }
+        if (!result) {
+            // Same rationale as fetchEventGroupById — with app_id scoping in
+            // place, "not found" is a normal client error (often a probe
+            // for a foreign tenant's _id), not a server error.
+            common.returnMessage(params, 404, 'Event group not found');
             return false;
         }
         options = options || {};
@@ -1831,6 +1860,13 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                     continue;
                 }
 
+                var docAny = /** @type {any} */(dataObjects[i]);
+                if (docAny.e === "all" && docAny._id.indexOf("_all_") !== -1) {
+                    //Normalize documents for total event counts.
+                    dataObjects[i] = normalizeEventDoc(docAny);
+                }
+
+
                 var mSplit = dataObjects[i].m.split(":"),
                     year = mSplit[0],
                     month = mSplit[1];
@@ -1974,6 +2010,110 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         }
         return mergedDataObj;
     }
+
+    /**
+    * Check if obj is a leaf stats object (all keys are known numeric event stat fields).
+    * Used to distinguish a correctly stored segment value from an incorrectly nested container.
+    * @param {any} obj - object to check
+    * @returns {boolean}
+    **/
+    function isEventStatsObject(obj) {
+        if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
+            return false;
+        }
+        var keys = Object.keys(obj);
+        if (!keys.length) {
+            return false;
+        }
+        var statsKeys = new Set(['c', 's', 'dur']);
+        return keys.every(function(k) {
+            return statsKeys.has(k) && typeof obj[k] === 'number';
+        });
+    }
+
+    /**
+     * Flatten a nested meta_v2.key sub-object where leaves are `true`.
+     * e.g. { "Test": { "Dot": true, "Other": true } } with prefix "Test"
+     * produces { "Test.Dot": true, "Test.Other": true }.
+     * @param {object} obj - object to flatten
+     * @param {string} prefix - the parent key that contained this object
+     * @returns {object}
+     **/
+    function flattenMeta(obj, prefix) {
+        var result = {};
+        for (var k in obj) {
+            var fullKey = prefix + ':' + k;
+            var val = obj[k];
+            if (val === true) {
+                result[fullKey] = true;
+            }
+            else if (typeof val === 'object' && val !== null) {
+                Object.assign(result, flattenMeta(val, fullKey));
+            }
+        }
+        return result;
+    }
+
+    /**
+    * Flatten segment keys that were incorrectly nested because dots in segment values
+    * were written via MongoDB dot notation ($set "d.20.Other.One.c": 3 creates nesting).
+    * Joins nested keys with ":" to restore the encoded form ("Other:One").
+    * @param {object} obj - object to flatten
+    * @param {string} [prefix] - the parent key that contained this object, used for recursion, should be left empty when called on top level
+    * @returns {object}
+    **/
+    function flattenEventDotKeys(obj, prefix) {
+        var result = {};
+        var entries = Object.entries(obj);
+        for (var ei = 0; ei < entries.length; ei++) {
+            var key = entries[ei][0];
+            var value = entries[ei][1];
+            var fullKey = prefix ? prefix + ':' + key : key;
+            if (isEventStatsObject(value)) {
+                result[fullKey] = value;
+            }
+            else if (typeof value === 'object' && value !== null) {
+                Object.assign(result, flattenEventDotKeys(value, fullKey));
+            }
+        }
+        return result;
+    }
+
+    /**
+    * Normalize the d field and meta of a raw events_data document where e==="all" and s==="key".
+    * Dots in segment values were stored via MongoDB dot notation, causing incorrect nesting in d.
+    * This fixes the d field and updates meta/meta_v2 so their values match the corrected keys.
+    * @param {any} doc - raw MongoDB document
+    * @returns {any} normalized document (new object, original is not mutated)
+    **/
+    function normalizeEventDoc(doc) {
+        var newD = {};
+        if (doc.d) {
+            for (var day in doc.d) {
+                var dayData = doc.d[day];
+                if (typeof dayData !== 'object' || dayData === null) {
+                    newD[day] = dayData;
+                    continue;
+                }
+                newD[day] = flattenEventDotKeys(dayData);
+            }
+            doc.d = newD;
+        }
+        else if (doc.meta_v2 && doc.meta_v2.key) {
+            var newMetaKey = {};
+            for (var key in doc.meta_v2.key) {
+                if (doc.meta_v2.key[key] === true) {
+                    newMetaKey[key] = true;
+                }
+                else {
+                    Object.assign(newMetaKey, flattenMeta(doc.meta_v2.key[key], key));
+                }
+            }
+            doc.meta_v2.key = newMetaKey;
+        }
+
+        return doc;
+    }
 }
 
 /**
@@ -2086,7 +2226,13 @@ fetch.alljobs = async function(metric, params) {
     if (params.qstring.sSearch) {
         var rr;
         try {
-            rr = new RegExp(params.qstring.sSearch, "i");
+            // Cap input length and escape regex metacharacters before
+            // building the RegExp. A user-supplied raw pattern such as
+            // "^(a+)+$" can exhibit catastrophic backtracking and stall
+            // the worker (and Mongo CPU) across the whole jobs collection.
+            var raw = (params.qstring.sSearch + "").slice(0, 256);
+            var escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            rr = new RegExp(escaped, "i");
             pipeline.unshift({
                 $match: { name: { $regex: rr } }
             });

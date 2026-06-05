@@ -7,20 +7,13 @@ const log = require('../../../../api/utils/log.js')('alert:sessions');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
-const { ObjectId } = require('mongodb');
 
 const METRIC_ENUM = {
     NUM_OF_SESSIONS: "# of sessions",
     AVG_SESSION_DURATION: "average session duration",
 };
 
-module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) => {
-    const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
-    if (!app) {
-        log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-        return done();
-    }
-
+module.exports.check = async({ alert, app, done, scheduledTo: date }) => {
     let { alertDataSubType, period, compareType, compareValue } = alert;
     compareValue = Number(compareValue);
 
@@ -42,9 +35,11 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
         log.e(`Metric "${alert.alertDataSubType}" couldn't be mapped for alert ${alert._id.toString()}`);
         return done();
     }
+    log.d(alert._id, "value on", date, "is", metricValue);
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
+            log.d(alert._id, "triggered because", metricValue, "is more than", compareValue);
             await commonLib.trigger({ alert, app, metricValue, date }, log);
         }
     }
@@ -67,6 +62,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             }
             metricValueBefore = sessionDuration / numberOfSessionsBefore / 60;
         }
+        log.d(alert._id, "value on", before, "is", metricValueBefore);
 
         if (!metricValueBefore) {
             return done();
@@ -78,6 +74,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             : change <= -compareValue;
 
         if (shouldTrigger) {
+            log.d(alert._id, "triggered because", compareType, String(change) + "%");
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
@@ -130,51 +127,3 @@ async function getSessionMetricByDate(app, metric, date, period) {
 
     return number;
 }
-
-/*
-(async function() {
-    await new Promise(res => setTimeout(res, 2000));
-    const app = {
-        _id: "65c1f875a12e98a328d5eb9e",
-        timezone: "Europe/Istanbul"
-    };
-    const dates = [
-        new Date("2024-02-01"),
-        new Date("2024-02-02"),
-        new Date("2024-02-03"),
-        new Date("2024-02-04"),
-        new Date("2024-02-05"),
-        new Date("2024-02-06"),
-        new Date("2024-02-07"),
-        new Date("2024-02-09"),
-        new Date("2024-02-12"),
-        new Date("2024-02-13"),
-        new Date("2024-02-16"),
-        new Date("2024-02-19"),
-        new Date("2024-02-20"),
-    ];
-    let totalMonthlyValue = 0;
-    for (let date of dates) {
-        const dailyValue = await getSessionMetricByDate(app, "t", date, "daily");
-        if (typeof dailyValue !== "undefined") {
-            totalMonthlyValue += dailyValue;
-        }
-    }
-    const monthlyValue = await getSessionMetricByDate(app, "t", new Date("2024-02-01"), "monthly");
-
-    console.log("sum of daily values", totalMonthlyValue);
-    console.log("monthly value", monthlyValue);
-
-    const hours = [
-        new Date("2024-02-01T00:00:00.000Z"),
-    ];
-    let totalDailyValue = 0;
-    for (const hour of hours) {
-        const hourlyValue = await getSessionMetricByDate(app, "t", hour, "hourly");
-        if (typeof hourlyValue !== "undefined") {
-            totalDailyValue += hourlyValue;
-        }
-    }
-    console.log(totalDailyValue);
-})();
-*/

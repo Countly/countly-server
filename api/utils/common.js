@@ -25,6 +25,7 @@ const mongodb = require('mongodb');
 const getRandomValues = require('get-random-values');
 const semver = require('semver');
 const _ = require('lodash');
+const path = require('path');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
@@ -1396,27 +1397,33 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
                 log.e(`Error writing header in 'returnMessage' ${err}`);
                 params.res.writeHead(returnCode, defaultHeaders);
             }
-            if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
-            }
-            else {
-                params.res.write(JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities));
-            }
-
+            params.res.write(JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities));
             params.res.end();
         }
         else {
             console.error("Output already closed, can't write more");
             console.trace();
-            console.log(params);
+            // Don't dump the full params object — req.body/req.headers can
+            // contain credentials, session cookies, or other secrets. Log
+            // only the pathname (query string can carry api_key/auth_token).
+            console.log({pathname: params.urlParts && params.urlParts.pathname, apiPath: params.apiPath, qstringKeys: params.qstring && Object.keys(params.qstring)});
         }
     }
 };
 
 common.returnOutput = function(params, output, noescape, heads) {
-    if (params && params.qstring && params.qstring.noescape) {
-        noescape = params.qstring.noescape;
-    }
+    // The function previously honored params.qstring.noescape — letting any
+    // caller disable HTML-entity escaping on the API response by appending
+    // ?noescape=1 to the URL. The dashboard relies on returnOutput escaping
+    // attacker-controllable strings (crash names, segmentation values, etc)
+    // before rendering them with v-html. With ?noescape=1 honored at the
+    // qstring level, an attacker could craft a URL that, when loaded by an
+    // admin, returned unescaped JSON which then executed as script in
+    // v-html sinks (reflected XSS via parameter manipulation).
+    //
+    // Keep `noescape` as a function argument for internal callers that
+    // intentionally bypass escaping (binary, pre-escaped content); never
+    // accept it from the request.
     var escape = noescape ? undefined : function(k, v) {
         return escape_html_entities(k, v, true);
     };
@@ -1475,19 +1482,16 @@ common.returnOutput = function(params, output, noescape, heads) {
                 log.e(`Error writing header in 'returnMessage' ${err}`);
                 params.res.writeHead(200, defaultHeaders);
             }
-            if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
-            }
-            else {
-                params.res.write(JSON.stringify(output, escape));
-            }
-
+            params.res.write(JSON.stringify(output, escape));
             params.res.end();
         }
         else {
             console.error("Output already closed, can't write more");
             console.trace();
-            console.log(params);
+            // Don't dump the full params object — req.body/req.headers can
+            // contain credentials, session cookies, or other secrets. Log
+            // only the pathname (query string can carry api_key/auth_token).
+            console.log({pathname: params.urlParts && params.urlParts.pathname, apiPath: params.apiPath, qstringKeys: params.qstring && Object.keys(params.qstring)});
         }
     }
 };
@@ -2326,6 +2330,58 @@ common.checkPromise = function(func, count, interval) {
     });
 };
 
+/**
+ * Recursively remove MongoDB operators that allow arbitrary JavaScript
+ * execution or comparison-bypass against trusted server state from a
+ * user-supplied query object. Strips:
+ *
+ *   $where        — evaluates a JS function on every doc; supports
+ *                   `while(true){}` DoS and timing-based exfiltration.
+ *   $expr         — evaluates aggregation expressions against the doc;
+ *                   can be chained with $function/$accumulator below.
+ *   $function     — Mongo 4.4+ server-side JS execution.
+ *   $accumulator  — server-side JS aggregation execution.
+ *
+ * Use this anywhere a request body / query string is passed straight
+ * into MongoDB find/update/delete/count/aggregate as the filter. It is
+ * a defence-in-depth helper, not a substitute for a strict allowlist
+ * of fields.
+ *
+ * @param {*} query - user-supplied query (any depth)
+ * @returns {*} the same query with the dangerous operators removed
+ */
+common.stripUnsafeMongoOperators = function(query) {
+    var BLOCKED = ["$where", "$expr", "$function", "$accumulator"];
+    /**
+     * Recursive walk that strips blocked operators in-place.
+     * @param {*} v - current node
+     * @returns {void}
+     */
+    function walk(v) {
+        if (!v || typeof v !== "object") {
+            return;
+        }
+        if (Array.isArray(v)) {
+            for (var ai = 0; ai < v.length; ai++) {
+                walk(v[ai]);
+            }
+            return;
+        }
+        for (var bi = 0; bi < BLOCKED.length; bi++) {
+            if (Object.prototype.hasOwnProperty.call(v, BLOCKED[bi])) {
+                delete v[BLOCKED[bi]];
+            }
+        }
+        for (var k in v) {
+            if (Object.prototype.hasOwnProperty.call(v, k)) {
+                walk(v[k]);
+            }
+        }
+    }
+    walk(query);
+    return query;
+};
+
 common.clearClashingQueryOperations = function(query) {
     var map = {};
     var field;
@@ -2345,9 +2401,9 @@ common.clearClashingQueryOperations = function(query) {
         }
     }
 
-    for (var path in map) {
-        if (map[path] > 1) {
-            badPaths.push(path);
+    for (var fieldPath in map) {
+        if (map[fieldPath] > 1) {
+            badPaths.push(fieldPath);
         }
     }
     if (badPaths.length > 0) {
@@ -2817,6 +2873,25 @@ common.sanitizeFilename = (filename, replacement = "") => {
         .replace(/[\/\?<>\\:\*\|"]/g, replacement)
         .replace(/^\.{1,2}$/, replacement)
         .replace(/^\.+/, replacement);
+};
+
+/**
+ * Resolve an input path under a base directory and reject path traversal.
+ * @param {string} basePath - base directory for allowed paths
+ * @param {string} inputPath - user-supplied path segment or relative path
+ * @returns {string|null} contained absolute path or null
+ */
+common.resolvePathInBase = (basePath, inputPath) => {
+    basePath = path.resolve(basePath + "");
+    inputPath = (inputPath + "").replace(/\\/g, "/");
+    while (inputPath.indexOf("/") === 0) {
+        inputPath = inputPath.substring(1);
+    }
+    let resolvedPath = path.resolve(basePath, inputPath);
+    if (resolvedPath === basePath || resolvedPath.indexOf(basePath + path.sep) === 0) {
+        return resolvedPath;
+    }
+    return null;
 };
 
 common.sanitizeHTML = (html, extendedWhitelist) => {

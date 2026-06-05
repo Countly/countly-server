@@ -26,7 +26,9 @@ const whiteListedAggregationStages = {
     "$facet": true,
     "$fill": true,
     "$geoNear": true,
-    "$graphLookup": true,
+    // "$graphLookup": false — removed: lets attacker pull joined documents from any collection in the same DB,
+    //                        bypassing the per-collection access check. Use $lookup instead if cross-collection
+    //                        joins are ever needed (currently also disallowed).
     "$group": true,
     //"$indexStats": false,
     "$limit": true,
@@ -256,17 +258,17 @@ var spawn = require('child_process').spawn,
             }
 
             if (base_filter && Object.keys(base_filter).length > 0) {
-                for (var key in base_filter) {
-                    if (filter[key]) {
-                        filter.$and = filter.$and || [];
-                        filter.$and.push({[key]: base_filter[key]});
-                        filter.$and.push({[key]: filter[key]});
-                        delete filter[key];
-                    }
-                    else {
-                        filter[key] = base_filter[key];
-                    }
-                }
+                // Wrap as a top-level $and of [base_filter, user_filter].
+                // Previously the code merged base_filter keys INTO the user
+                // filter at the top level. That left top-level operators in
+                // the user filter (e.g. {"$or":[{}]}) free to OR away the
+                // base scope: {a:{$in:[<my apps>]}, $or:[{}]} matches every
+                // doc because the $or:[{}] clause is satisfied by every doc
+                // and is AND'd at the top level alongside the scope, but
+                // {} matches everything so the AND is always true.
+                // Wrapping as $and forces both clauses to apply on every
+                // document and removes the bypass entirely.
+                filter = {$and: [base_filter, filter]};
             }
 
             if (dbs[dbNameOnParam]) {

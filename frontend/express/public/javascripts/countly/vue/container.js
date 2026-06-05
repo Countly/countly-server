@@ -148,10 +148,17 @@
             data: function() {
                 var ob = Object.keys(mapping).reduce(function(acc, val) {
                     acc[val] = (self.dict[mapping[val]] ? self.dict[mapping[val]].tabs : []).filter(function(tab) {
+                        var permissionOk;
                         if (tab.permission) {
-                            return countlyAuth.validateRead(tab.permission);
+                            permissionOk = countlyAuth.validateRead(tab.permission);
                         }
-                        return countlyAuth.validateGlobalAdmin();
+                        else {
+                            permissionOk = countlyAuth.validateGlobalAdmin();
+                        }
+                        if (!permissionOk) {
+                            return false;
+                        }
+                        return !tab.condition || tab.condition();
                     });
                     return acc;
                 }, {});
@@ -212,10 +219,17 @@
 
         ids.forEach(function(id) {
             var tabs = (self.dict[id] ? self.dict[id].tabs : []).filter(function(tab) {
+                var permissionOk;
                 if (tab.permission) {
-                    return countlyAuth.validateRead(tab.permission);
+                    permissionOk = countlyAuth.validateRead(tab.permission);
                 }
-                return countlyAuth.validateGlobalAdmin();
+                else {
+                    permissionOk = countlyAuth.validateGlobalAdmin();
+                }
+                if (!permissionOk) {
+                    return false;
+                }
+                return !tab.condition || tab.condition();
             });
 
             tabs.forEach(function(t) {

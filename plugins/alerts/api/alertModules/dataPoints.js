@@ -6,54 +6,40 @@ const log = require('../../../../api/utils/log.js')('alert:dataPoints');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
-const { ObjectId } = require('mongodb');
 
 const DATA_POINT_PROPERTY = "dp";
 
-module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
-    const selectedApp = alert.selectedApps[0];
-    let apps;
-    if (selectedApp === "all") {
-        apps = await common.readBatcher.getMany("apps", {});
+module.exports.check = async function({ alert, app, done, scheduledTo: date }) {
+    let { period, compareType, compareValue } = alert;
+    compareValue = Number(compareValue);
+
+    const metricValue = await getDataPointByDate(app, date, period) || 0;
+    log.d(alert._id, "value on", date, "is", metricValue);
+
+    if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
+        if (metricValue > compareValue) {
+            log.d(alert._id, "triggered because", metricValue, "is more than", compareValue);
+            await commonLib.trigger({ alert, app, metricValue, date }, log);
+        }
     }
     else {
-        apps = [await common.readBatcher.getOne("apps", { _id: new ObjectId(selectedApp) })];
-    }
-
-    for (let app of apps) {
-        if (!app) {
-            log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-            continue;
+        const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
+        const metricValueBefore = await getDataPointByDate(app, before, period);
+        log.d(alert._id, "value on", before, "is", metricValueBefore);
+        if (!metricValueBefore) {
+            return done();
         }
 
-        let { period, compareType, compareValue } = alert;
-        compareValue = Number(compareValue);
+        const change = (metricValue / metricValueBefore - 1) * 100;
+        const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
+            ? change >= compareValue
+            : change <= -compareValue;
 
-        const metricValue = await getDataPointByDate(app, date, period) || 0;
-
-        if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
-            if (metricValue > compareValue) {
-                await commonLib.trigger({ alert, app, metricValue, date }, log);
-            }
-        }
-        else {
-            const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
-            const metricValueBefore = await getDataPointByDate(app, before, period);
-            if (!metricValueBefore) {
-                continue;
-            }
-
-            const change = (metricValue / metricValueBefore - 1) * 100;
-            const shouldTrigger = compareType === commonLib.COMPARE_TYPE_ENUM.INCREASED_BY
-                ? change >= compareValue
-                : change <= -compareValue;
-
-            if (shouldTrigger) {
-                await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
-            }
+        if (shouldTrigger) {
+            log.d(alert._id, "triggered because", compareType, String(change) + "%");
+            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
-
     done();
 };
 
@@ -117,17 +103,3 @@ function dailySum(dailyData) {
     }
     return dailyValue;
 }
-/*
-(async function() {
-    await new Promise(res => setTimeout(res, 2000));
-    const app = { _id: ObjectId("65c1f875a12e98a328d5eb9e"), timezone: "Europe/Istanbul" };
-    const date1 = new Date("2024-01-07T10:00:00.000Z");
-    const date2 = new Date("2024-02-07T10:00:00.000Z");
-    const date3 = new Date("2024-03-07T10:00:00.000Z");
-    let monthlyData1 = await getDataPointByDate(app, date1, "monthly");
-    let monthlyData2 = await getDataPointByDate(app, date2, "monthly");
-    let monthlyData3 = await getDataPointByDate(app, date3, "monthly");
-    console.log("monthly:", monthlyData1, monthlyData2, monthlyData3);
-    console.log("all:", monthlyData1 + monthlyData2 + monthlyData3);
-})();
-*/

@@ -330,7 +330,7 @@
           for (var s = 2; s < pair.length; s++) {
             value += '=' + pair[s];
           }
-          value = value.replace(/^\s\s*/, '').replace(/\s\s*$/, '').replace(/\\\\=/g, '=').replace(/\\\\:/g, ':').replace(/\\\\!/g, '!').replace(/\\=/g, '=').replace(/\\:/g, ':').replace(/\\!/g, '!'); // trim
+          value = value.replace(/^\s\s*/, '').replace(/\s\s*$/, '').replace(/\\\\=/g, '=').replace(/\\\\:/g, ':').replace(/\\\\!/g, '!').replace(/\\\\'/g, "'").replace(/\\=/g, '=').replace(/\\:/g, ':').replace(/\\!/g, '!').replace(/\\'/g, "'"); // trim
 
           /** Mode: bundle keys in a map */
           if (mode == 'map' || mode == 'both') {

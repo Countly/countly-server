@@ -1281,6 +1281,15 @@ plugins.setConfigs("crashes", {
                             'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_bin.dmp"
                         });
                         let stream = new Duplex();
+                        stream.on("error", function(streamErr) {
+                            log.e(streamErr);
+                            if (!params.res.headersSent) {
+                                common.returnMessage(params, 500, "Binary stream error");
+                            }
+                            else {
+                                params.res.end();
+                            }
+                        });
                         stream.push(buf);
                         stream.push(null);
                         stream.pipe(params.res);

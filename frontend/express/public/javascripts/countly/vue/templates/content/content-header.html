@@ -55,6 +55,18 @@
         :tabs="tabs"
     />
     <div class="cly-vue-content-builder-header__actions">
+        <div
+            v-if="cooldownBadge && cooldownBadge.show"
+            v-tooltip="cooldownBadge.tooltip"
+            class="cly-vue-content-builder-header__cooldown-badge"
+            data-test-id="content-header-cooldown-badge"
+        >
+            <cly-status-badge
+                :label="cooldownBadge.label"
+                :mode="cooldownBadge.mode"
+                :show-icon="false"
+            />
+        </div>
         <cly-status-badge
             v-if="status.show"
             class="cly-vue-content-builder-header__badge"

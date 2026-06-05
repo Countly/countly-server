@@ -1,7 +1,8 @@
 /**
- * @module plugins/hooks/api/ssrf-protection
+ * @module api/utils/ssrf-protection
  * @description SSRF (Server-Side Request Forgery) protection utilities
- * for the Hooks plugin's HTTPEffect.
+ * shared by the core API (validateRedirect for app.redirect_url) and
+ * the Hooks plugin's HTTPEffect.
  *
  * Provides IP blocklist checking, DNS-level validation, and URL safety
  * verification to prevent requests to internal/private network addresses,

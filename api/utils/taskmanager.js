@@ -15,6 +15,76 @@ var plugins = require('../../plugins/pluginManager.js');
 const log = require('./log.js')('core:taskmanager');
 
 /**
+ * Authorize a member to act on a long_tasks document.
+ *
+ * A task is operatable only by:
+ *   - global admins,
+ *   - the member who created it (task.creator === member._id),
+ *   - app-admins of the task's app_id (when task.app_id is set).
+ *
+ * The /i/tasks/{update,delete,name,edit} endpoints used to be reachable
+ * by any logged-in user (validateUserForWrite is just validateUser),
+ * which made it possible to rerun, rename, edit, or delete tasks
+ * belonging to other users / apps. rerunTask in particular replays the
+ * original request using the creator's api_key, which is a cross-tenant
+ * privilege escalation.
+ *
+ * @param {object} member - params.member from request context
+ * @param {object} task - long_tasks document
+ * @returns {boolean} true if the member is allowed to operate on this task
+ */
+taskmanager.isAuthorizedFor = function(member, task) {
+    if (!member || !task) {
+        return false;
+    }
+    if (member.global_admin) {
+        return true;
+    }
+    if (task.creator && (task.creator + "") === (member._id + "")) {
+        return true;
+    }
+    if (task.app_id) {
+        try {
+            // Lazy require to avoid a circular dependency: rights.js requires
+            // common.js which is required at the top of this module.
+            var rights = require('./rights.js');
+            if (rights.hasAdminAccess(member, task.app_id + "")) {
+                return true;
+            }
+        }
+        catch (e) {
+            log.e("Failed to load rights.js for task auth check", e);
+        }
+    }
+    return false;
+};
+
+/**
+ * Load a task by id, then call cb(err, task) only if `member` is authorized
+ * for it. If unauthorized, cb is called with err === 'forbidden'.
+ *
+ * @param {object} db - database connection
+ * @param {string} id - task id
+ * @param {object} member - params.member
+ * @param {function} cb - cb(err, task)
+ */
+taskmanager.loadIfAuthorized = function(db, id, member, cb) {
+    db = db || common.db;
+    db.collection("long_tasks").findOne({_id: id}, function(err, task) {
+        if (err) {
+            return cb(err);
+        }
+        if (!task) {
+            return cb('not_found');
+        }
+        if (!taskmanager.isAuthorizedFor(member, task)) {
+            return cb('forbidden');
+        }
+        cb(null, task);
+    });
+};
+
+/**
 * Monitors DB query or some other potentially long task and switches to long task manager if it exceeds threshold
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
