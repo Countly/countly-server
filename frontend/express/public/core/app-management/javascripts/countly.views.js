@@ -480,7 +480,7 @@
                         error: function(xhr, status, error) {
                             CountlyHelpers.notify({
                                 title: jQuery.i18n.map["configs.not-saved"],
-                                message: error || jQuery.i18n.map["configs.not-changed"],
+                                message: (xhr && xhr.responseJSON && xhr.responseJSON.result) || error || jQuery.i18n.map["configs.not-changed"],
                                 type: "error"
                             });
                         }
@@ -538,9 +538,12 @@
                         });
                     },
                     error: function(xhr, status, error) {
+                        // Revert the rejected/edited values so the form reflects the actual
+                        // saved state instead of leaving the failed value on screen.
+                        self.discardForm();
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.not-saved"],
-                            message: error || jQuery.i18n.map["configs.not-changed"],
+                            message: (xhr && xhr.responseJSON && xhr.responseJSON.result) || error || jQuery.i18n.map["configs.not-changed"],
                             type: "error"
                         });
                     }
