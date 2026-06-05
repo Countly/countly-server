@@ -1995,7 +1995,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     if (countlyConfig.web.ssl && countlyConfig.web.ssl.enabled) {
         const sslOptions = {
             key: fs.readFileSync(countlyConfig.web.ssl.key),
-            cert: fs.readFileSync(countlyConfig.web.ssl.cert)
+            cert: fs.readFileSync(countlyConfig.web.ssl.cert),
+            // Enforce TLS 1.2 as the minimum negotiated protocol. Without this
+            // Node falls back to its default range, which still permits the
+            // deprecated/insecure SSLv3/TLSv1.0/TLSv1.1 protocols.
+            minVersion: "TLSv1.2"
         };
         if (countlyConfig.web.ssl.ca) {
             sslOptions.ca = fs.readFileSync(countlyConfig.web.ssl.ca);

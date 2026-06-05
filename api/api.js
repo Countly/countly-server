@@ -439,7 +439,11 @@ plugins.connectToAllDatabases().then(function() {
         if (common.config.api.ssl && common.config.api.ssl.enabled) {
             const sslOptions = {
                 key: fs.readFileSync(common.config.api.ssl.key),
-                cert: fs.readFileSync(common.config.api.ssl.cert)
+                cert: fs.readFileSync(common.config.api.ssl.cert),
+                // Enforce TLS 1.2 as the minimum negotiated protocol. Without this
+                // Node falls back to its default range, which still permits the
+                // deprecated/insecure SSLv3/TLSv1.0/TLSv1.1 protocols.
+                minVersion: "TLSv1.2"
             };
             if (common.config.api.ssl.ca) {
                 sslOptions.ca = fs.readFileSync(common.config.api.ssl.ca);
