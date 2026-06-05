@@ -25,22 +25,30 @@ The highest‑value concrete fix was enforcing a **TLS 1.2 minimum** on both HTT
 
 ## 2. Fixes applied in this branch
 
-### 2.1 Insecure Transport: Weak SSL Protocol — **Critical ×2** ✅ FIXED
-`api/api.js`, `frontend/express/app.js`
+### 2.1 Insecure Transport: Weak SSL Protocol — **Critical ×2** ✅ ADDRESSED (opt‑in)
+`api/api.js`, `frontend/express/app.js`, `api/config.sample.js`, `frontend/express/config.sample.js`
 
-The HTTPS servers were created with only `key`/`cert`/`ca`. Node then negotiates down its full
-default protocol range, which historically permitted SSLv3 / TLSv1.0 / TLSv1.1. Added an explicit
-minimum:
+The HTTPS servers were created with only `key`/`cert`/`ca`, so Node negotiates its full default
+protocol range. The protocol floor is now **operator‑configurable** rather than forced, because
+some customers still require older TLS versions and many terminate TLS at nginx / their own
+webserver (where they already control the policy). New **optional** config keys:
 
 ```js
-const sslOptions = {
-    key: fs.readFileSync(...),
-    cert: fs.readFileSync(...),
-    minVersion: "TLSv1.2"   // reject SSLv3/TLS1.0/TLS1.1
-};
+ssl: {
+    enabled: true,
+    key: "...", cert: "...",
+    // minVersion: "TLSv1.2",  // optional — unset keeps Node's defaults
+    // maxVersion: "TLSv1.3",  // optional
+}
 ```
 
-Low risk: TLS 1.2 has been the de‑facto floor since ~2018; all supported clients negotiate ≥1.2.
+```js
+if (config.ssl.minVersion) { sslOptions.minVersion = config.ssl.minVersion; }
+if (config.ssl.maxVersion) { sslOptions.maxVersion = config.ssl.maxVersion; }
+```
+
+**No behavior change by default** (keys unset ⇒ Node defaults ⇒ older‑TLS customers unaffected).
+Operators who want to enforce a floor set one line; those terminating TLS upstream keep doing so.
 
 ### 2.2 Kubernetes Misconfiguration — **High ×5** ✅ FIXED
 Improper Deployment Access Control (×3), Improper StatefulSet Access Control (×1) — the RBAC one is

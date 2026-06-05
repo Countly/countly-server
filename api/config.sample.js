@@ -74,6 +74,8 @@ var countlyConfig = {
             key: "/path/to/ssl/private.key",
             cert: "/path/to/ssl/certificate.crt",
             // ca: "/path/to/ssl/ca_bundle.crt" // Optional: for client certificate verification, uncomment to activate
+            // minVersion: "TLSv1.2", // Optional: pin the lowest allowed TLS protocol (e.g. "TLSv1.2"). Unset = Node defaults
+            // maxVersion: "TLSv1.3", // Optional: pin the highest allowed TLS protocol. Unset = Node defaults
         }
     },
     /**
