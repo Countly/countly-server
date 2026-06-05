@@ -341,6 +341,10 @@ plugins.setConfigs("logger", {
                     filter = {};
                 }
             }
+            // Reject Mongo $where / $expr / $function / $accumulator in
+            // user-supplied filter — they enable server-side JS execution
+            // (DoS, blind-timing exfiltration).
+            common.stripUnsafeMongoOperators(filter);
 
             validateRead(params, FEATURE_NAME, function(parameters) {
                 common.db.collection('logs' + parameters.app_id).find(filter).limit(1000).toArray(function(err, items) {

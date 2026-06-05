@@ -6,7 +6,6 @@ const log = require('../../../../api/utils/log.js')('alert:crashes');
 const moment = require('moment-timezone');
 const common = require('../../../../api/utils/common.js');
 const commonLib = require("../parts/common-lib.js");
-const { ObjectId } = require('mongodb');
 
 const METRIC_TO_PROPERTY_MAP = {
     "non-fatal crashes/errors per session": "crnfses",
@@ -49,26 +48,23 @@ async function triggerByEvent(payload) {
 }
 
 
-module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
-    const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
-    if (!app) {
-        log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-        return done();
-    }
-
+module.exports.check = async function({ alert, app, done, scheduledTo: date }) {
     let { alertDataSubType, period, compareType, compareValue, filterValue } = alert;
     compareValue = Number(compareValue);
 
     const metricValue = await calculateMetricByDate(app, alertDataSubType, date, period, filterValue) || 0;
+    log.d(alert._id, "value on", date, "is", metricValue);
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
+            log.d(alert._id, "triggered because", metricValue, "is more than", compareValue);
             await commonLib.trigger({ alert, app, metricValue, date }, log);
         }
     }
     else {
         const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
         const metricValueBefore = await calculateMetricByDate(app, alertDataSubType, before, period, filterValue);
+        log.d(alert._id, "value on", before, "is", metricValueBefore);
         if (!metricValueBefore) {
             return done();
         }
@@ -79,6 +75,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
             : change <= -compareValue;
 
         if (shouldTrigger) {
+            log.d(alert._id, "triggered because", compareType, String(change) + "%");
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
@@ -87,7 +84,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
 };
 
 /**
- * Abstraction on top of getCrashDataByDate to calculate composite metrics. 
+ * Abstraction on top of getCrashDataByDate to calculate composite metrics.
  * Possible metricStrings:
  *   - non-fatal crashes/errors per session
  *   - fatal crashes/errors per session
@@ -174,15 +171,3 @@ async function getCrashDataByDate(app, metric, date, period, versions) {
     }
     return number;
 }
-
-/*
-(async function() {
-    await new Promise(res => setTimeout(res, 2000));
-    const app = { _id: ObjectId("65c1f875a12e98a328d5eb9e"), timezone: "Europe/Istanbul" };
-    const date = new Date("2024-02-07T12:00:00.000Z");
-    let monthlyData = await getCrashDataByDate(app, "cr_u", date, "monthly");
-    let dailyData = await getCrashDataByDate(app, "cr_u", date, "daily", ["4:02:0", "4:01:2"]);
-    console.log(monthlyData, dailyData);
-    console.log(await calculateMetricByDate(app, "# of crashes/errors", date, "daily"));
-})();
-*/

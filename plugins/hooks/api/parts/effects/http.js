@@ -2,7 +2,7 @@ const plugins = require("../../../../pluginManager.js");
 const request = require("countly-request")(plugins.getConfig("security"));
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
-const ssrfProtection = require('../../ssrf-protection');
+const ssrfProtection = require('../../../../../api/utils/ssrf-protection');
 const log = common.log("hooks:api:api_endpoint_trigger");
 
 /**

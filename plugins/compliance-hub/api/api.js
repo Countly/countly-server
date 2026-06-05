@@ -148,6 +148,11 @@ const FEATURE_NAME = 'compliance_hub';
                         query = {};
                     }
                 }
+                common.stripUnsafeMongoOperators(query);
+                // Force scope to the request's app_id even though this lookup
+                // is in app_users<app_id>; defense-in-depth in case a future
+                // refactor changes the collection.
+                query.app_id = params.app_id.toString();
                 common.db.collection("app_users" + params.qstring.app_id).findOne(query, function(err, res) {
                     common.returnOutput(params, res?.consent || {});
                 });
@@ -169,6 +174,7 @@ const FEATURE_NAME = 'compliance_hub';
                         query = {};
                     }
                 }
+                common.stripUnsafeMongoOperators(query);
                 query.app_id = params.app_id.toString();
                 common.db.collection("consent_history").countDocuments(query, function(err, total) {
                     if (err) {
@@ -187,6 +193,7 @@ const FEATURE_NAME = 'compliance_hub';
                                 params.qstring.query = {};
                             }
                         }
+                        common.stripUnsafeMongoOperators(params.qstring.query);
 
                         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                             try {

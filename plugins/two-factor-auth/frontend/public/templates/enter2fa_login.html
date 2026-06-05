@@ -88,8 +88,8 @@
                     <%- inject_template.form %>
                 <% } %>
                 <div>
-                    <input type="hidden" value="<%- username %>" name="username"/>
-                    <input type="hidden" value="<%- password %>" name="password"/>
+                    <input type="hidden" value="<%= username %>" name="username"/>
+                    <input type="hidden" value="<%= password %>" name="password"/>
                     <input type="hidden" value="<%= csrf %>" name="_csrf" />
                     <input type="hidden" value="en" name="lang" id="form-lang" />
                     <input id="login-button" value="Continue" type="submit" data-localize="two-factor-auth.continue"/>

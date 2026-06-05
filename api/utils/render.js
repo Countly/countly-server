@@ -68,7 +68,13 @@ exports.renderView = function(options, cb) {
                     XDG_CONFIG_HOME: pathModule.resolve(__dirname, "../../.cache/chrome/tmp/.chromium"),
                     XDG_CACHE_HOME: pathModule.resolve(__dirname, "../../.cache/chrome/tmp/.chromium")
                 },
-                args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors', '--disable-web-security'],
+                // --no-sandbox / --disable-setuid-sandbox: needed when running as root in containers.
+                // --ignore-certificate-errors: needed because the renderer fetches the local
+                //   dashboard at https://localhost which often has a self-signed certificate.
+                // CSP is already bypassed via page.setBypassCSP(true) below; --disable-web-security
+                //   was previously also passed here, but it weakens same-origin protection across
+                //   the rendering session and is not necessary for this flow. Removed.
+                args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'],
                 ignoreHTTPSErrors: true,
                 userDataDir: pathModule.resolve(__dirname, "../../dump/chrome/" + Date.now())
             };

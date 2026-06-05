@@ -71,6 +71,11 @@
                 type: String
             },
 
+            cooldownBadge: {
+                default: () => ({ show: false }),
+                type: Object
+            },
+
             status: {
                 default: () => ({
                     label: 'Status',
@@ -309,7 +314,7 @@
                 required: true,
                 default: 'primary',
                 validator: function(value) {
-                    return ['primary', 'secondary', 'info'].includes(value);
+                    return ['primary', 'secondary', 'info', 'warning'].includes(value);
                 }
             },
             label: {
@@ -329,6 +334,7 @@
                     primary: { background: '#E2E4E8', color: '#81868D', icon: 'cly-is cly-is-status' },
                     secondary: { background: '#EBFAEE', color: '#12AF51', icon: 'cly-is cly-is-status' },
                     info: { background: '#E1EFFF', color: '#0166D6', icon: 'cly-is cly-is-status' },
+                    warning: { background: '#FFF4E1', color: '#D97706', icon: 'cly-is cly-is-status' },
                     // Add more modes here if needed
                 }
             };

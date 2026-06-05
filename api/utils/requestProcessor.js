@@ -22,6 +22,7 @@ const log = require('./log.js')('core:api');
 const fs = require('fs');
 var countlyFs = require('./countlyFs.js');
 var path = require('path');
+var ssrfProtection = require('./ssrf-protection.js');
 const validateUserForWriteAPI = validateUser;
 const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
@@ -756,57 +757,105 @@ const processRequest = (params) => {
                 switch (paths[3]) {
                 case 'update':
                     validateUserForWrite(params, () => {
-                        taskmanager.rerunTask({
-                            db: common.db,
-                            id: params.qstring.task_id
-                        }, (err, res) => {
-                            common.returnMessage(params, 200, res);
+                        // Authorize: only the task's creator, an admin of the task's
+                        // app_id, or a global admin can rerun a task. Otherwise
+                        // rerunTask would replay the original request using the
+                        // creator's api_key (cross-tenant privilege escalation).
+                        taskmanager.loadIfAuthorized(common.db, params.qstring.task_id, params.member, (authErr) => {
+                            if (authErr === 'forbidden') {
+                                return common.returnMessage(params, 403, 'Not allowed');
+                            }
+                            if (authErr === 'not_found') {
+                                return common.returnMessage(params, 404, 'Task not found');
+                            }
+                            if (authErr) {
+                                return common.returnMessage(params, 500, 'Server error');
+                            }
+                            taskmanager.rerunTask({
+                                db: common.db,
+                                id: params.qstring.task_id
+                            }, (err, res) => {
+                                common.returnMessage(params, 200, res);
+                            });
                         });
                     });
                     break;
                 case 'delete':
                     validateUserForWrite(params, () => {
-                        taskmanager.deleteResult({
-                            db: common.db,
-                            id: params.qstring.task_id
-                        }, (err, task) => {
-                            plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_deleted", data: task});
-                            common.returnMessage(params, 200, "Success");
+                        taskmanager.loadIfAuthorized(common.db, params.qstring.task_id, params.member, (authErr) => {
+                            if (authErr === 'forbidden') {
+                                return common.returnMessage(params, 403, 'Not allowed');
+                            }
+                            if (authErr === 'not_found') {
+                                return common.returnMessage(params, 404, 'Task not found');
+                            }
+                            if (authErr) {
+                                return common.returnMessage(params, 500, 'Server error');
+                            }
+                            taskmanager.deleteResult({
+                                db: common.db,
+                                id: params.qstring.task_id
+                            }, (err, task) => {
+                                plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_deleted", data: task});
+                                common.returnMessage(params, 200, "Success");
+                            });
                         });
                     });
                     break;
                 case 'name':
                     validateUserForWrite(params, () => {
-                        taskmanager.nameResult({
-                            db: common.db,
-                            id: params.qstring.task_id,
-                            name: params.qstring.name
-                        }, () => {
-                            common.returnMessage(params, 200, "Success");
+                        taskmanager.loadIfAuthorized(common.db, params.qstring.task_id, params.member, (authErr) => {
+                            if (authErr === 'forbidden') {
+                                return common.returnMessage(params, 403, 'Not allowed');
+                            }
+                            if (authErr === 'not_found') {
+                                return common.returnMessage(params, 404, 'Task not found');
+                            }
+                            if (authErr) {
+                                return common.returnMessage(params, 500, 'Server error');
+                            }
+                            taskmanager.nameResult({
+                                db: common.db,
+                                id: params.qstring.task_id,
+                                name: params.qstring.name
+                            }, () => {
+                                common.returnMessage(params, 200, "Success");
+                            });
                         });
                     });
                     break;
                 case 'edit':
                     validateUserForWrite(params, () => {
-                        const data = {
-                            "report_name": params.qstring.report_name,
-                            "report_desc": params.qstring.report_desc,
-                            "global": params.qstring.global + "" === 'true',
-                            "autoRefresh": params.qstring.autoRefresh + "" === 'true',
-                            "period_desc": params.qstring.period_desc
-                        };
-                        taskmanager.editTask({
-                            db: common.db,
-                            data: data,
-                            id: params.qstring.task_id
-                        }, (err, d) => {
-                            if (err) {
-                                common.returnMessage(params, 503, "Error");
+                        taskmanager.loadIfAuthorized(common.db, params.qstring.task_id, params.member, (authErr) => {
+                            if (authErr === 'forbidden') {
+                                return common.returnMessage(params, 403, 'Not allowed');
                             }
-                            else {
-                                common.returnMessage(params, 200, "Success");
+                            if (authErr === 'not_found') {
+                                return common.returnMessage(params, 404, 'Task not found');
                             }
-                            plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_updated", data: d});
+                            if (authErr) {
+                                return common.returnMessage(params, 500, 'Server error');
+                            }
+                            const data = {
+                                "report_name": params.qstring.report_name,
+                                "report_desc": params.qstring.report_desc,
+                                "global": params.qstring.global + "" === 'true',
+                                "autoRefresh": params.qstring.autoRefresh + "" === 'true',
+                                "period_desc": params.qstring.period_desc
+                            };
+                            taskmanager.editTask({
+                                db: common.db,
+                                data: data,
+                                id: params.qstring.task_id
+                            }, (err, d) => {
+                                if (err) {
+                                    common.returnMessage(params, 503, "Error");
+                                }
+                                else {
+                                    common.returnMessage(params, 200, "Success");
+                                }
+                                plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_updated", data: d});
+                            });
                         });
                     });
                     break;
@@ -1628,8 +1677,29 @@ const processRequest = (params) => {
                  */
                 case 'download': {
                     if (paths[4] && paths[4] !== '') {
+                        // Reject filenames containing path separators / traversal
+                        // characters before any further parsing. The legitimate
+                        // shape is "appUser_<24hex>_<uid>(.json|.tar.gz)" or a
+                        // task-result id.
+                        if (typeof paths[4] !== 'string' || /[^A-Za-z0-9_.-]/.test(paths[4])) {
+                            common.returnMessage(params, 400, 'Invalid filename');
+                            return false;
+                        }
                         validateUserForRead(params, function() {
                             var filename = paths[4].split('.');
+                            // Cross-tenant guard: an appUser_<app_id>_<uid> export
+                            // belongs to <app_id>. validateUserForRead only verifies
+                            // the caller has read on params.qstring.app_id (which
+                            // can be any app they have access to), so without this
+                            // check, a member of app A could pull exports owned by
+                            // app B simply by guessing the filename.
+                            if (filename[0].startsWith("appUser_")) {
+                                var nameParts = filename[0].split('_');
+                                if (nameParts.length >= 2 && !params.member.global_admin && (params.qstring.app_id + "") !== (nameParts[1] + "")) {
+                                    common.returnMessage(params, 403, 'Not allowed (export belongs to a different app)');
+                                    return false;
+                                }
+                            }
                             new Promise(function(resolve) {
                                 if (filename[0].startsWith("appUser_")) {
                                     filename[0] = filename[0] + '.tar.gz';
@@ -1683,6 +1753,15 @@ const processRequest = (params) => {
                                                 common.returnMessage(params, 400, "Export doesn't exist");
                                             }
                                             else {
+                                                stream.on("error", function(streamErr) {
+                                                    log.e(streamErr);
+                                                    if (!params.res.headersSent) {
+                                                        common.returnMessage(params, 500, "Export stream error");
+                                                    }
+                                                    else {
+                                                        params.res.end();
+                                                    }
+                                                });
                                                 params.res.writeHead(200, {
                                                     'Content-Type': 'application/x-gzip',
                                                     'Content-Length': size,
@@ -1965,9 +2044,12 @@ const processRequest = (params) => {
                     }, params);
                     break;
                 case 'plugins':
-                    validateUserForMgmtReadAPI(() => {
+                    // Listing installed plugins (paid/enterprise modules
+                    // included) is sensitive recon for attackers. Restrict
+                    // to global admins.
+                    validateUserForGlobalAdmin(params, () => {
                         common.returnOutput(params, plugins.getPlugins());
-                    }, params);
+                    });
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -2227,6 +2309,17 @@ const processRequest = (params) => {
                                 if (err) {
                                     common.returnMessage(params, 400, err);
                                 }
+                                else if (!data) {
+                                    common.returnMessage(params, 404, 'Export not found');
+                                }
+                                else if (!taskmanager.isAuthorizedFor(params.member, data)) {
+                                    // Without this check, validateRead only verifies the user has
+                                    // 'core:read' on the qstring app_id — which can be any app
+                                    // they have access to — while the long_tasks document itself
+                                    // (and its on-disk export) belongs to potentially a different
+                                    // app or another user's tenant scope. Cross-app data leak.
+                                    common.returnMessage(params, 403, 'Not allowed');
+                                }
                                 else {
                                     var filename = data.report_name;
                                     var type = filename.split(".");
@@ -2260,6 +2353,15 @@ const processRequest = (params) => {
                                                     common.returnMessage(params, 400, "Export stream does not exist");
                                                 }
                                                 else {
+                                                    stream.on("error", function(streamErr) {
+                                                        log.e(streamErr);
+                                                        if (!params.res.headersSent) {
+                                                            common.returnMessage(params, 500, "Export stream error");
+                                                        }
+                                                        else {
+                                                            params.res.end();
+                                                        }
+                                                    });
                                                     headers = {};
                                                     headers["Content-Type"] = countlyApi.data.exports.getType(type);
                                                     headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
@@ -2926,7 +3028,12 @@ const processRequest = (params) => {
             case '/i/cms': {
                 switch (paths[3]) {
                 case 'save_entries':
-                    validateUserForWrite(params, countlyApi.mgmt.cms.saveEntries);
+                    // Restrict CMS cache writes to global admins. The CMS
+                    // entries seed help/onboarding content rendered to other
+                    // dashboard users; before this, validateUserForWrite (an
+                    // alias of validateUser) allowed any logged-in user to
+                    // pollute the cache.
+                    validateUserForGlobalAdmin(params, countlyApi.mgmt.cms.saveEntries);
                     break;
                 case 'clear':
                     validateUserForWrite(countlyApi.mgmt.cms.clearCache, params);
@@ -3284,8 +3391,10 @@ function validateRedirect(ob) {
             newPath += "?";
         }
 
+        var fullUri = app.redirect_url + newPath + '&ip_address=' + params.ip_address;
+
         var opts = {
-            uri: app.redirect_url + newPath + '&ip_address=' + params.ip_address,
+            uri: fullUri,
             method: 'GET'
         };
 
@@ -3299,36 +3408,52 @@ function validateRedirect(ob) {
             }
         }
 
-        request(opts, function(error, response, body) {
-            var code = 400;
-            var message = "Redirect error. Tried to redirect to:" + app.redirect_url;
-
-            if (response && response.statusCode) {
-                code = response.statusCode;
-            }
-
-
-            if (response && response.body) {
-                try {
-                    var resp = JSON.parse(response.body);
-                    message = resp.result || resp;
+        // SSRF guard: validate the resolved URL against the shared block list
+        // (private/loopback/cloud-metadata) before issuing the request, and
+        // disable redirects in the underlying client. The redirect_url is set
+        // by app admins and would otherwise let any app-admin pivot the SDK
+        // ingestion stream into internal services or a proxy/harvest endpoint.
+        ssrfProtection.isUrlSafe(opts.uri).then(function(check) {
+            if (!check.safe) {
+                log.e("Redirect SSRF guard blocked %s: %s", opts.uri, check.error);
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
+                    common.returnMessage(params, 400, 'Redirect blocked by SSRF protection: ' + check.error);
                 }
-                catch (e) {
-                    if (response.result) {
-                        message = response.result;
+                return;
+            }
+            request(ssrfProtection.getSsrfSafeOptions(opts), function(error, response, body) {
+                var code = 400;
+                var message = "Redirect error. Tried to redirect to:" + app.redirect_url;
+
+                if (response && response.statusCode) {
+                    code = response.statusCode;
+                }
+
+
+                if (response && response.body) {
+                    try {
+                        var resp = JSON.parse(response.body);
+                        message = resp.result || resp;
                     }
-                    else {
-                        message = response.body;
+                    catch (e) {
+                        if (response.result) {
+                            message = response.result;
+                        }
+                        else {
+                            message = response.body;
+                        }
                     }
                 }
-            }
-            if (error) { //error
-                log.e("Redirect error", error, body, opts, app, params);
-            }
+                if (error) { //error
+                    log.e("Redirect error", error, body, opts, app, params);
+                }
 
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
-                common.returnMessage(params, code, message);
-            }
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
+                    common.returnMessage(params, code, message);
+                }
+            });
+        }).catch(function(e) {
+            log.e("Redirect SSRF guard error", e);
         });
         params.cancelRequest = "Redirected: " + app.redirect_url;
         params.waitForResponse = false;

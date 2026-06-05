@@ -155,7 +155,8 @@ plugins.register("/permissions/features", function(ob) {
                     common.returnOutput(params, res.config || {});
                 })
                     .catch(function(err) {
-                        common.returnMessage(params, 400, 'Error: ' + err);
+                        console.error("Error retrieving SDK config", err);
+                        common.returnMessage(params, 400, 'Error retrieving SDK config');
                     });
             });
 

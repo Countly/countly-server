@@ -43,8 +43,14 @@ const readFromEnd = (file, size) => {
 };
 
 (function() {
-    var logs = {api: "../../../log/countly-api.log", dashboard: "../../../log/countly-dashboard.log"};
-    var dir = path.resolve(__dirname, '');
+    var logs = {api: "countly-api.log", dashboard: "countly-dashboard.log"};
+    var logDirectory = path.resolve(__dirname, "../../../log");
+    var getLogPath = function(logFileName) {
+        if (!logFileName || common.sanitizeFilename(logFileName) !== logFileName) {
+            return null;
+        }
+        return common.resolvePathInBase(logDirectory, logFileName);
+    };
     //write api call
     plugins.register("/o/errorlogs", function(ob) {
         //get parameters
@@ -53,7 +59,7 @@ const readFromEnd = (file, size) => {
         var bytes = obParams.qstring.bytes ? parseInt(obParams.qstring.bytes) : 0;
 
         validate(obParams, function(params) {
-            walk(dir + "/../../../log", function(errList, logfiles) {
+            walk(logDirectory, function(errList, logfiles) {
                 if (errList) {
                     console.error(errList);
                 }
@@ -61,9 +67,14 @@ const readFromEnd = (file, size) => {
                     logs = {...logs, ...logfiles};
                 }
                 if (params.qstring.log && logs[params.qstring.log]) {
+                    var selectedLogPath = getLogPath(logs[params.qstring.log]);
+                    if (!selectedLogPath) {
+                        common.returnOutput(params, "");
+                        return;
+                    }
                     if (params.qstring.download) {
                         if (bytes === 0) {
-                            fs.readFile(dir + "/" + logs[params.qstring.log], 'utf8', function(err, data) {
+                            fs.readFile(selectedLogPath, 'utf8', function(err, data) {
                                 if (err) {
                                     data = "";
                                 }
@@ -71,7 +82,7 @@ const readFromEnd = (file, size) => {
                             });
                         }
                         else {
-                            readFromEnd(dir + "/" + logs[params.qstring.log], bytes)
+                            readFromEnd(selectedLogPath, bytes)
                                 .then(function(data) {
                                     common.returnRaw(params, 200, data, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-' + params.qstring.log + '.log'});
                                 }).catch(function() {
@@ -83,7 +94,7 @@ const readFromEnd = (file, size) => {
                     }
                     else {
                         if (bytes === 0) {
-                            fs.readFile(dir + "/" + logs[params.qstring.log], 'utf8', function(err, data) {
+                            fs.readFile(selectedLogPath, 'utf8', function(err, data) {
                                 if (err) {
                                     data = "";
                                 }
@@ -91,7 +102,7 @@ const readFromEnd = (file, size) => {
                             });
                         }
                         else {
-                            readFromEnd(dir + "/" + logs[params.qstring.log], bytes)
+                            readFromEnd(selectedLogPath, bytes)
                                 .then(function(data) {
                                     common.returnOutput(params, data);
                                 }).catch(function() {
@@ -105,8 +116,13 @@ const readFromEnd = (file, size) => {
                 else {
                     var readLog = function(key, done) {
                         var finished = false;
+                        var logPath = getLogPath(logs[key]);
+                        if (!logPath) {
+                            done(null, {key: key, val: ""});
+                            return;
+                        }
                         if (bytes === 0) {
-                            fs.readFile(dir + "/" + logs[key], 'utf8', function(err, data) {
+                            fs.readFile(logPath, 'utf8', function(err, data) {
                                 if (err) {
                                     data = "";
                                 }
@@ -114,7 +130,7 @@ const readFromEnd = (file, size) => {
                             });
                         }
                         else {
-                            readFromEnd(dir + "/" + logs[key], bytes)
+                            readFromEnd(logPath, bytes)
                                 .then(function(data) {
                                     if (!finished) {
                                         finished = true;
@@ -147,7 +163,7 @@ const readFromEnd = (file, size) => {
         var validate = ob.validateUserForGlobalAdmin; //user validation
 
         validate(obParams, function(params) {
-            walk(dir + "/../../../log", function(errList, logfiles) {
+            walk(logDirectory, function(errList, logfiles) {
                 if (errList) {
                     console.error(errList);
                 }
@@ -155,8 +171,13 @@ const readFromEnd = (file, size) => {
                     logs = logfiles;
                 }
                 if (params.qstring.log && logs[params.qstring.log]) {
+                    var selectedLogPath = getLogPath(logs[params.qstring.log]);
+                    if (!selectedLogPath) {
+                        common.returnMessage(params, 200, "Invalid log file");
+                        return;
+                    }
                     plugins.dispatch("/systemlogs", {params: params, action: "errologs_clear", data: {log: params.qstring.log}});
-                    fs.truncate(dir + "/" + logs[params.qstring.log], 0, function(err) {
+                    fs.truncate(selectedLogPath, 0, function(err) {
                         if (err) {
                             common.returnMessage(params, 200, err);
                         }
@@ -185,7 +206,7 @@ const readFromEnd = (file, size) => {
             }
             list.forEach(function(file) {
                 if (file && file.startsWith("countly-") && file.endsWith(".log")) {
-                    results[file.replace("countly-", "").replace(".log", "")] = '../../../log/' + file;
+                    results[file.replace("countly-", "").replace(".log", "")] = file;
                     if (!--pending) {
                         done(null, results);
                     }
