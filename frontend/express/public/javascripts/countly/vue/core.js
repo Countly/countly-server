@@ -619,6 +619,18 @@
 
     Vue.prototype.$route = new BackboneRouteAdapter();
 
+    // countlyGlobal is a window-level global, but Vue 2's render proxy does not fall
+    // through to window for identifiers in template expressions, so a bare
+    // countlyGlobal.* in a template resolves to undefined and throws during render.
+    // Expose it on the prototype (via a getter so it always reflects the current
+    // window.countlyGlobal) so templates can use countlyGlobal.* safely.
+    Object.defineProperty(Vue.prototype, "countlyGlobal", {
+        configurable: true,
+        get: function() {
+            return window.countlyGlobal;
+        }
+    });
+
     var DummyCompAPI = VueCompositionAPI.defineComponent({
         name: "DummyCompAPI",
         template: '<div></div>',

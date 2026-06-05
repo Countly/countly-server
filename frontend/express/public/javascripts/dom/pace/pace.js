@@ -497,7 +497,7 @@
     for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
       pattern = _ref2[_j];
       if (typeof pattern === 'string') {
-        if (url.indexOf(pattern) !== -1) {
+        if (url && url.indexOf(pattern) !== -1) {
           return true;
         }
       } else {
