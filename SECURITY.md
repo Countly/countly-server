@@ -17,7 +17,7 @@ All software related security bugs with severity of medium and higher will be aw
 
 The following are out of scope. They may still be reported, and configuration issues will be forwarded to the relevant parties, but they do not qualify for a bounty reward:
 
-1. **Deployment & server configuration.** Server-specific and deployment-specific configuration issues, due to the on-premise nature of our software (TLS setup, reverse-proxy/CORS/header configuration, exposed ports, OS/database hardening, rate-limiting tuning, etc.). These are forwarded to the relevant departments/parties/companies but carry no bounty guarantee.
+1. **Deployment & server configuration.** Server-specific and deployment-specific configuration issues, due to the on-premises nature of our software (TLS setup, reverse-proxy/CORS/header configuration, exposed ports, OS/database hardening, rate-limiting tuning, etc.). These are forwarded to the relevant departments/parties/companies but carry no bounty guarantee.
 
 2. **Privileged / admin-only endpoints behaving as designed.** Endpoints intended to be used only by authenticated global administrators or trusted server operators — for example `/mobile-login` and other operator/management endpoints — are not vulnerabilities when they require the privileges they are designed to require. "A global admin can do X across the system" is by design; global admin is a fully trusted role.
 
@@ -31,4 +31,4 @@ The following are out of scope. They may still be reported, and configuration is
 
 7. **Duplicates and already-known issues.** Reports duplicating an already-reported or already-fixed issue; only the first actionable report is eligible.
 
-8. **Theoretical issues without a working proof of concept**, self-inflicted issues (self-XSS, pasting attacker scripts into one's own console/session), and missing best-practice hardening that does not itself lead to an exploit (covered under "Low" above).
+8. **Theoretical, self-inflicted, or hardening-only issues.** Issues without a working proof of concept, self-inflicted issues (self-XSS, pasting attacker scripts into one's own console/session), and missing best-practice hardening that does not itself lead to an exploit (covered under "Low" above).
