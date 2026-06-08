@@ -12,55 +12,10 @@ const { MongoInvalidArgumentError } = require('mongodb');
 const { EJSON } = require('bson');
 
 const FEATURE_NAME = 'dbviewer';
-const whiteListedAggregationStages = {
-    "$addFields": true,
-    "$bucket": true,
-    "$bucketAuto": true,
-    //"$changeStream": false,
-    //"$changeStreamSplitLargeEvents": false,
-    //"$collStats": false,
-    "$count": true,
-    //"$currentOp": false,
-    "$densify": true,
-    //"$documents": false
-    "$facet": true,
-    "$fill": true,
-    "$geoNear": true,
-    // "$graphLookup": false — removed: lets attacker pull joined documents from any collection in the same DB,
-    //                        bypassing the per-collection access check. Use $lookup instead if cross-collection
-    //                        joins are ever needed (currently also disallowed).
-    "$group": true,
-    //"$indexStats": false,
-    "$limit": true,
-    //"$listLocalSessions": false
-    //"$listSampledQueries": false
-    //"$listSearchIndexes": false
-    //"$listSessions": false
-    //"$lookup": false
-    "$match": true,
-    //"$merge": false
-    //"$mergeCursors": false
-    //"$out": false
-    //"$planCacheStats": false,
-    "$project": true,
-    "$querySettings": true,
-    "$redact": true,
-    "$replaceRoot": true,
-    "$replaceWith": true,
-    "$sample": true,
-    "$search": true,
-    "$searchMeta": true,
-    "$set": true,
-    "$setWindowFields": true,
-    //"$sharedDataDistribution": false,
-    "$skip": true,
-    "$sort": true,
-    "$sortByCount": true,
-    //"$unionWith": false,
-    "$unset": true,
-    "$unwind": true,
-    "$vectorSearch": true //atlas specific
-};
+// Aggregation-stage allow-list and the recursive sanitizer that strips blocked
+// stages at every depth (including inside $facet sub-pipelines). Kept in a
+// dedicated module so it can be unit-tested in isolation.
+const { escapeNotAllowedAggregationStages } = require('./parts/aggregation_guard.js');
 var spawn = require('child_process').spawn,
     child;
 
@@ -68,27 +23,6 @@ var spawn = require('child_process').spawn,
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
-    /**
-     * Function removes not allowed aggregation stages from the pipeline
-     * @param {array} aggregation  - current aggregation pipeline
-     * @returns {object} changes - object with information which operations were removed
-     */
-    function escapeNotAllowedAggregationStages(aggregation) {
-        var changes = {};
-        for (var z = 0; z < aggregation.length; z++) {
-            for (var key in aggregation[z]) {
-                if (!whiteListedAggregationStages[key]) {
-                    changes[key] = true;
-                    delete aggregation[z][key];
-                }
-            }
-            if (Object.keys(aggregation[z]).length === 0) {
-                aggregation.splice(z, 1);
-                z--;
-            }
-        }
-        return changes;
-    }
 
     /**
      * @api {get} /o/db Access database
