@@ -1,5 +1,6 @@
 var request = require('supertest');
 var should = require('should');
+var http = require('http');
 var testUtils = require('../../../test/testUtils');
 request = request(testUtils.url);
 
@@ -91,20 +92,45 @@ describe('SSRF Protection', () => {
         // v8-sandbox enables its built-in httpRequest() by default, which would
         // let custom hook code make server-side requests to internal targets,
         // bypassing the SSRF validation that protects the HTTPEffect path. The
-        // sandbox is created with httpEnabled:false; in v8-sandbox httpRequest
-        // remains defined but any call fails ("httpRequest is disabled"), so a
-        // successful httpRequest() must never be observable from custom code.
-        it('should not allow httpRequest() to succeed inside custom code', async() => {
+        // sandbox is created with httpEnabled:false, so custom code must not be
+        // able to reach any HTTP server via httpRequest().
+        //
+        // We run a real local server and assert the sandbox never reaches it.
+        // This is independent of how /i/hook/test reports the (failed) effect:
+        // if httpRequest were enabled the server would be hit; with it disabled
+        // the call fails and the hit counter stays at 0.
+        var probe, probeHits = 0, probePort;
+
+        before('start local probe server', function(done) {
+            probe = http.createServer(function(req, res) {
+                probeHits++;
+                res.end('PROBE');
+            });
+            probe.listen(0, '127.0.0.1', function() {
+                probePort = probe.address().port;
+                done();
+            });
+        });
+
+        after('stop local probe server', function(done) {
+            if (probe) {
+                probe.close(function() {
+                    done();
+                });
+            }
+            else {
+                done();
+            }
+        });
+
+        it('should not let httpRequest() reach a server from custom code', async() => {
             var APP_ID = testUtils.get('APP_ID');
-            // Attempt an httpRequest and record the outcome. With http disabled
-            // the call fails: either it throws (caught here -> "blocked") or it
-            // aborts the script (setResult is never reached, so no step reports
-            // "allowed"). Either way "allowed" must not appear in any step.
-            var code = "try { httpRequest({url:'http://127.0.0.1:1/'}); params.httpResult = 'allowed'; }"
-                + " catch (e) { params.httpResult = 'blocked'; }";
+            // Try (and tolerate failure of) an httpRequest to our local probe.
+            var code = "try { httpRequest({url:'http://127.0.0.1:" + probePort + "/poke'}); }"
+                + " catch (e) { /* httpRequest disabled -> call fails, expected */ }";
             var hookConfig = {
                 name: 'custom-code-no-http',
-                description: 'verify httpRequest cannot succeed in the sandbox',
+                description: 'verify httpRequest cannot reach a server from the sandbox',
                 apps: [APP_ID],
                 trigger: {
                     type: 'APIEndPointTrigger',
@@ -122,17 +148,13 @@ describe('SSRF Protection', () => {
                 enabled: true,
             };
 
-            const res = await request.post(getRequestURL('/i/hook/test'))
-                .send({hook_config: JSON.stringify(hookConfig), mock_data: JSON.stringify({})})
-                .expect(200);
+            // Status is irrelevant (a disabled httpRequest makes the effect
+            // error, which the endpoint may report as non-200). The security
+            // assertion is purely that our probe server was never contacted.
+            await request.post(getRequestURL('/i/hook/test'))
+                .send({hook_config: JSON.stringify(hookConfig), mock_data: JSON.stringify({})});
 
-            // /i/hook/test returns an array of per-step results. Assert on the
-            // parsed structure: no step's params may report the call as allowed.
-            should(res.body).be.an.Array();
-            var allowed = res.body.some(function(step) {
-                return step && step.params && step.params.httpResult === 'allowed';
-            });
-            should(allowed).equal(false);
+            should(probeHits).equal(0);
         });
     });
 
