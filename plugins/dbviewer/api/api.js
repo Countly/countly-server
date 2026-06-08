@@ -204,6 +204,12 @@ var spawn = require('child_process').spawn,
             catch (SyntaxError) {
                 projection = {};
             }
+            //EJSON.parse("null") yields null and an array is also typeof
+            //"object"; normalize anything that isn't a plain object to {} so an
+            //invalid projection can't reach find()
+            if (!projection || typeof projection !== 'object' || Array.isArray(projection)) {
+                projection = {};
+            }
             if (typeof filter !== 'object' || Array.isArray(filter)) {
                 filter = {};
             }

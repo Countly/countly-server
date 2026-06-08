@@ -9,12 +9,15 @@
 /**
  * Restrict a find() projection to plain field inclusion / exclusion.
  *
- * A projection value is only allowed to be a number or boolean (1/0/true/false).
- * Any other value is dropped, because since MongoDB 4.4 a find() projection may
- * contain expressions and field-path aliases — e.g. { leak: "$password" } or
- * { x: { $function: ... } } — which would compute new fields from, or rename,
- * fields the viewer otherwise removes from the response. Keeping projections to
- * pure include/exclude removes that whole avenue.
+ * A projection value is only allowed to be 0, 1 or a boolean (strict
+ * include/exclude). Any other value is dropped:
+ *  - expressions and field-path aliases — e.g. { leak: "$password" } or
+ *    { x: { $function: ... } } — would compute new fields from, or rename,
+ *    fields the viewer otherwise removes from the response (MongoDB 4.4+ find()
+ *    projections accept expressions);
+ *  - other numbers (2, NaN, …) are not valid include/exclude values and can
+ *    make the query throw.
+ * Keeping projections to strict include/exclude removes that whole avenue.
  *
  * @param {object} projection - parsed projection object (mutated in place)
  * @returns {object} changes - keys are the projection fields that were dropped
@@ -27,7 +30,7 @@ function sanitizeProjection(projection) {
     for (var key in projection) {
         if (Object.prototype.hasOwnProperty.call(projection, key)) {
             var value = projection[key];
-            if (typeof value !== "number" && typeof value !== "boolean") {
+            if (value !== 0 && value !== 1 && value !== true && value !== false) {
                 changes[key] = true;
                 delete projection[key];
             }

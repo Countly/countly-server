@@ -29,6 +29,20 @@ describe("dbviewer query guard", function() {
             p.should.not.have.property("y");
             p.should.have.property("name", 1);
         });
+        it("drops numeric values that are not strictly 0 or 1", function() {
+            var p = {a: 2, b: NaN, c: -1, ok: 1, off: 0, t: true, f: false};
+            var changes = qguard.sanitizeProjection(p);
+            changes.should.have.property("a");
+            changes.should.have.property("b");
+            changes.should.have.property("c");
+            p.should.not.have.property("a");
+            p.should.not.have.property("b");
+            p.should.not.have.property("c");
+            p.should.have.property("ok", 1);
+            p.should.have.property("off", 0);
+            p.should.have.property("t", true);
+            p.should.have.property("f", false);
+        });
     });
 
     describe("escapeRegExp", function() {
