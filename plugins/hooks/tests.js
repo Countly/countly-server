@@ -1,5 +1,6 @@
 var request = require('supertest');
 var should = require('should');
+var http = require('http');
 var crypto = require('crypto');
 var moment = require('moment-timezone');
 var testUtils = require("../../test/testUtils");
@@ -167,6 +168,65 @@ describe('Testing Hooks', function() {
                         done();
                     });
             });
+        });
+    });
+
+    describe('CustomCodeEffect HTTP surface', function() {
+        // v8-sandbox enables its built-in httpRequest() by default, which would
+        // let custom hook code make server-side requests to internal targets,
+        // bypassing the SSRF validation that protects the HTTPEffect path. The
+        // sandbox is created with httpEnabled:false, so custom code must not be
+        // able to reach any HTTP server via httpRequest().
+        //
+        // We run a real local server and assert the sandbox never reaches it.
+        // This is independent of how /i/hook/test reports the (failed) effect:
+        // if httpRequest were enabled the server would be hit; with it disabled
+        // the call fails and the hit counter stays at 0.
+        var probe, probeHits = 0, probePort;
+
+        before('start local probe server', function(done) {
+            probe = http.createServer(function(req, res) {
+                probeHits++;
+                res.end('PROBE');
+            });
+            probe.listen(0, '127.0.0.1', function() {
+                probePort = probe.address().port;
+                done();
+            });
+        });
+
+        after('stop local probe server', function(done) {
+            if (probe) {
+                probe.close(function() {
+                    done();
+                });
+            }
+            else {
+                done();
+            }
+        });
+
+        it('should not let httpRequest() reach a server from custom code', function(done) {
+            const APP_ID = testUtils.get("APP_ID");
+            // Try (and tolerate failure of) an httpRequest to our local probe.
+            var code = "try { httpRequest({url:'http://127.0.0.1:" + probePort + "/poke'}); }"
+                + " catch (e) { /* httpRequest disabled -> call fails, expected */ }";
+            var hookConfig = {
+                name: "custom-code-no-http",
+                description: "verify httpRequest cannot reach a server from the sandbox",
+                apps: [APP_ID],
+                trigger: {type: "APIEndPointTrigger", configuration: {path: "cc-nohttp-" + crypto.randomBytes(6).toString("hex"), method: "get"}},
+                effects: [{type: "CustomCodeEffect", configuration: {code: code}}],
+                enabled: true,
+            };
+            // Status is irrelevant (a disabled httpRequest makes the effect
+            // error, which the endpoint may report as non-200). The security
+            // assertion is purely that our probe server was never contacted.
+            request.get(getRequestURL('/i/hook/test') + "&hook_config=" + JSON.stringify(hookConfig) + "&mock_data=" + JSON.stringify({}))
+                .end(function() {
+                    probeHits.should.equal(0);
+                    done();
+                });
         });
     });
 
