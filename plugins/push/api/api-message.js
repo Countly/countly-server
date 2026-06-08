@@ -617,7 +617,7 @@ module.exports.estimate = async params => {
     // app B's user profiles. Force the body's app to match the
     // permission-checked qstring.app_id.
     if (params.qstring.app_id && data.app && (data.app + "") !== (params.qstring.app_id + "")) {
-        common.returnMessage(params, 400, {errors: ['app does not match request app_id']}, null, true);
+        common.returnMessage(params, 400, {errors: ['args.app does not match request app_id']}, null, true);
         return true;
     }
 
