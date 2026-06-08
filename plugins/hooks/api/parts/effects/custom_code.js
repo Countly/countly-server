@@ -41,7 +41,14 @@ class CustomCodeEffect {
                     ${code}
                     setResult({ value: params });
                 `;
-                const sandbox = new Sandbox();
+                // Disable the sandbox's built-in httpRequest helper. v8-sandbox
+                // enables it by default, which would let custom code make
+                // arbitrary server-side requests (to loopback, link-local,
+                // cloud-metadata and other internal targets) completely
+                // bypassing the SSRF validation applied to the HTTPEffect path.
+                // Hooks that need outbound HTTP must use the HTTPEffect, whose
+                // URL is checked with ssrfProtection.isUrlSafe().
+                const sandbox = new Sandbox({ httpEnabled: false });
 
                 (async() => {
                     const { error, value } = await sandbox.execute({ code: genCode, timeout: 3000, globals: { params } });
