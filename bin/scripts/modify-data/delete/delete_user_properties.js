@@ -29,6 +29,7 @@ function buildUnset(properties, drillPrefix) {
         else {
             unset[prop] = "";
         }
+    }
     return unset;
 }
 
