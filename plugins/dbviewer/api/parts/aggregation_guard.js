@@ -66,8 +66,46 @@ const whiteListedAggregationStages = {
 };
 
 /**
+ * Sanitize every sub-pipeline a KEPT (whitelisted) stage carries, so a blocked
+ * stage cannot hide nested inside an allowed pipeline-bearing stage. This is
+ * driven by structure, not by a hard-coded stage name, so it keeps holding if
+ * the allow-list ever gains another pipeline-bearing stage:
+ *  - $facet exposes its sub-pipelines as the values of an object
+ *    ({ <name>: [ ...stages ], ... }); each value is sanitized, and a value
+ *    emptied by sanitization is dropped (Mongo rejects an empty $facet
+ *    sub-pipeline). Today $facet is the only allow-listed such stage.
+ *  - any stage that exposes a `.pipeline` array (e.g. $lookup / $unionWith, were
+ *    they ever allow-listed) has that pipeline sanitized.
+ * @param {string} key - the stage operator (e.g. "$facet")
+ * @param {*} value - the stage's value
+ * @param {object} changes - accumulator: keys are removed stage names
+ * @returns {boolean} true if `value` ended up empty and the stage should be dropped
+ */
+function sanitizeNestedPipelines(key, value, changes) {
+    if (!value || typeof value !== "object") {
+        return false;
+    }
+    if (key === "$facet") {
+        for (var facetName in value) {
+            if (Array.isArray(value[facetName])) {
+                sanitizePipeline(value[facetName], changes);
+                if (value[facetName].length === 0) {
+                    delete value[facetName];
+                }
+            }
+        }
+        return Object.keys(value).length === 0;
+    }
+    if (Array.isArray(value.pipeline)) {
+        sanitizePipeline(value.pipeline, changes);
+    }
+    return false;
+}
+
+/**
  * Recursively remove non-whitelisted stages from an aggregation pipeline,
- * descending into $facet sub-pipelines. The pipeline is mutated in place.
+ * descending into the sub-pipelines of any kept pipeline-bearing stage. The
+ * pipeline is mutated in place.
  * @param {Array} pipeline - aggregation pipeline (array of stage objects)
  * @param {object} changes - accumulator: keys are removed stage names
  * @returns {object} the changes accumulator
@@ -86,21 +124,10 @@ function sanitizePipeline(pipeline, changes) {
                 changes[key] = true;
                 delete stage[key];
             }
-            else if (key === "$facet" && stage[key] && typeof stage[key] === "object") {
-                // $facet: { <name>: [ <sub-pipeline> ], ... } — sanitize each
-                // sub-pipeline so blocked stages cannot hide inside $facet.
-                for (var facetName in stage[key]) {
-                    sanitizePipeline(stage[key][facetName], changes);
-                    // a sub-pipeline emptied by sanitization would make Mongo
-                    // reject the whole $facet ("pipeline cannot be empty"), so
-                    // drop it.
-                    if (Array.isArray(stage[key][facetName]) && stage[key][facetName].length === 0) {
-                        delete stage[key][facetName];
-                    }
-                }
-                if (Object.keys(stage[key]).length === 0) {
-                    delete stage[key];
-                }
+            else if (sanitizeNestedPipelines(key, stage[key], changes)) {
+                // the kept stage's nested content was fully emptied by
+                // sanitization — drop the now-meaningless stage operator.
+                delete stage[key];
             }
         }
         if (Object.keys(stage).length === 0) {

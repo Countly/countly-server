@@ -77,4 +77,30 @@ describe("dbviewer aggregation guard", function() {
             pipeline.length.should.equal(0);
         });
     });
+
+    // Future-proofing: $facet is the only allow-listed pipeline-bearing stage
+    // today, but the sanitizer is structural — any kept stage exposing a
+    // `.pipeline` array also has it sanitized. Simulate a future allow-listed
+    // pipeline-bearing stage to prove blocked stages can't hide in its pipeline.
+    describe("generic nested-pipeline handling (future-proofing)", function() {
+        var FAKE = "$fakePipelineStage";
+        beforeEach(function() {
+            guard.whiteListedAggregationStages[FAKE] = true;
+        });
+        afterEach(function() {
+            delete guard.whiteListedAggregationStages[FAKE];
+        });
+
+        it("strips a blocked stage nested in a kept stage's .pipeline", function() {
+            var pipeline = [{}];
+            pipeline[0][FAKE] = {pipeline: [{$match: {a: 1}}, {$lookup: {from: "members", as: "m"}}]};
+            var changes = guard.escapeNotAllowedAggregationStages(pipeline);
+            changes.should.have.property("$lookup");
+            JSON.stringify(pipeline).indexOf("$lookup").should.equal(-1);
+            // the kept stage and its legitimate $match remain
+            pipeline[0].should.have.property(FAKE);
+            pipeline[0][FAKE].pipeline.length.should.equal(1);
+            pipeline[0][FAKE].pipeline[0].should.have.property("$match");
+        });
+    });
 });
