@@ -259,7 +259,7 @@ function findWriteStage(pipeline) {
             continue;
         }
         for (var key in stage) {
-            if (WRITE_STAGES[key]) {
+            if (WRITE_STAGES[key] === true) {
                 return key;
             }
             var val = stage[key];
