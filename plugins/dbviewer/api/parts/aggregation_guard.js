@@ -147,7 +147,94 @@ function escapeNotAllowedAggregationStages(aggregation) {
     return sanitizePipeline(aggregation, {});
 }
 
+/**
+ * Collections whose contents are redacted by DB Viewer (credentials / tokens)
+ * and which therefore must never be reachable through a join. The redaction is
+ * only applied when these are the top-level source collection, so a join into
+ * them (e.g. $lookup { from: "members" }) would return the raw, un-redacted
+ * documents — including api_key / password / token values. This must hold even
+ * for global admins, who are intentionally denied raw credentials through DB
+ * Viewer (the top-level redaction applies to them too).
+ */
+const PROTECTED_JOIN_COLLECTIONS = {
+    "members": true,
+    "auth_tokens": true
+};
+
+/**
+ * Collection names a single stage joins / unions from.
+ * @param {object} stage - one aggregation stage
+ * @returns {string[]} target collection names referenced by join/union operators
+ */
+function joinTargetsOf(stage) {
+    var targets = [];
+    if (!stage || typeof stage !== "object") {
+        return targets;
+    }
+    if (stage.$lookup && typeof stage.$lookup === "object" && typeof stage.$lookup.from === "string") {
+        targets.push(stage.$lookup.from);
+    }
+    if (stage.$graphLookup && typeof stage.$graphLookup === "object" && typeof stage.$graphLookup.from === "string") {
+        targets.push(stage.$graphLookup.from);
+    }
+    if (stage.$unionWith) {
+        if (typeof stage.$unionWith === "string") {
+            targets.push(stage.$unionWith);
+        }
+        else if (typeof stage.$unionWith === "object" && typeof stage.$unionWith.coll === "string") {
+            targets.push(stage.$unionWith.coll);
+        }
+    }
+    return targets;
+}
+
+/**
+ * Recursively scan a pipeline for a join/union into a protected (redacted)
+ * collection, at every depth (including $facet sub-pipelines and nested
+ * .pipeline arrays). Used to block such joins regardless of the caller's role,
+ * since the per-collection redaction cannot follow data pulled in via a join.
+ * @param {Array} pipeline - aggregation pipeline (not mutated)
+ * @returns {string|null} the protected collection name if one is joined, else null
+ */
+function findProtectedCollectionJoin(pipeline) {
+    if (!Array.isArray(pipeline)) {
+        return null;
+    }
+    for (var i = 0; i < pipeline.length; i++) {
+        var stage = pipeline[i];
+        if (!stage || typeof stage !== "object") {
+            continue;
+        }
+        var targets = joinTargetsOf(stage);
+        for (var t = 0; t < targets.length; t++) {
+            if (PROTECTED_JOIN_COLLECTIONS[targets[t]]) {
+                return targets[t];
+            }
+        }
+        for (var key in stage) {
+            var val = stage[key];
+            if (key === "$facet" && val && typeof val === "object") {
+                for (var facetName in val) {
+                    var found = findProtectedCollectionJoin(val[facetName]);
+                    if (found) {
+                        return found;
+                    }
+                }
+            }
+            else if (val && typeof val === "object" && Array.isArray(val.pipeline)) {
+                var nested = findProtectedCollectionJoin(val.pipeline);
+                if (nested) {
+                    return nested;
+                }
+            }
+        }
+    }
+    return null;
+}
+
 module.exports = {
     whiteListedAggregationStages,
-    escapeNotAllowedAggregationStages
+    PROTECTED_JOIN_COLLECTIONS,
+    escapeNotAllowedAggregationStages,
+    findProtectedCollectionJoin
 };

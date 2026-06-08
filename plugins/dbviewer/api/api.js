@@ -15,7 +15,7 @@ const FEATURE_NAME = 'dbviewer';
 // Aggregation-stage allow-list and the recursive sanitizer that strips blocked
 // stages at every depth (including inside $facet sub-pipelines). Kept in a
 // dedicated module so it can be unit-tested in isolation.
-const { escapeNotAllowedAggregationStages } = require('./parts/aggregation_guard.js');
+const { escapeNotAllowedAggregationStages, findProtectedCollectionJoin } = require('./parts/aggregation_guard.js');
 var spawn = require('child_process').spawn,
     child;
 
@@ -527,6 +527,16 @@ var spawn = require('child_process').spawn,
                 if (params.member.global_admin) {
                     try {
                         let aggregation = EJSON.parse(params.qstring.aggregation);
+                        // A join into a redacted collection (members / auth_tokens)
+                        // would return raw credentials, since the redaction only
+                        // applies to the top-level source collection. This is
+                        // blocked even for global admins, who are intentionally
+                        // denied raw api_key / password / tokens via DB Viewer.
+                        var protectedJoin = findProtectedCollectionJoin(aggregation);
+                        if (protectedJoin) {
+                            common.returnMessage(params, 400, 'Aggregation may not join the "' + protectedJoin + '" collection');
+                            return true;
+                        }
                         aggregate(params.qstring.collection, aggregation);
                     }
                     catch (e) {
@@ -539,6 +549,11 @@ var spawn = require('child_process').spawn,
                         if (hasAccess || params.qstring.collection === "events_data" || params.qstring.collection === "drill_events") {
                             try {
                                 let aggregation = EJSON.parse(params.qstring.aggregation);
+                                var protectedJoinRef = findProtectedCollectionJoin(aggregation);
+                                if (protectedJoinRef) {
+                                    common.returnMessage(params, 400, 'Aggregation may not join the "' + protectedJoinRef + '" collection');
+                                    return true;
+                                }
                                 var changes = escapeNotAllowedAggregationStages(aggregation);
                                 if (changes && Object.keys(changes).length > 0) {
                                     log.d("Removed stages from pipeline: ", JSON.stringify(changes));

@@ -103,4 +103,34 @@ describe("dbviewer aggregation guard", function() {
             pipeline[0][FAKE].pipeline[0].should.have.property("$match");
         });
     });
+
+    // Blocks joins into redacted collections (members / auth_tokens) at any
+    // depth, for everyone — including global admins, who skip the stage
+    // sanitizer but are still denied raw credentials via DB Viewer.
+    describe("findProtectedCollectionJoin", function() {
+        it("returns null for a pipeline with no joins", function() {
+            (guard.findProtectedCollectionJoin([{$match: {a: 1}}, {$group: {_id: "$x"}}]) === null).should.equal(true);
+        });
+        it("ignores a join into a non-protected collection", function() {
+            (guard.findProtectedCollectionJoin([{$lookup: {from: "events", as: "e"}}]) === null).should.equal(true);
+        });
+        it("detects a top-level $lookup into members", function() {
+            guard.findProtectedCollectionJoin([{$lookup: {from: "members", as: "m"}}]).should.equal("members");
+        });
+        it("detects a $lookup into members nested in $facet", function() {
+            guard.findProtectedCollectionJoin([{$facet: {leak: [{$lookup: {from: "members", as: "m"}}]}}]).should.equal("members");
+        });
+        it("detects a $lookup into members nested in another stage's .pipeline", function() {
+            guard.findProtectedCollectionJoin([{$lookup: {from: "events", pipeline: [{$lookup: {from: "members", as: "m"}}], as: "x"}}]).should.equal("members");
+        });
+        it("detects $unionWith (object form) into auth_tokens", function() {
+            guard.findProtectedCollectionJoin([{$unionWith: {coll: "auth_tokens", pipeline: []}}]).should.equal("auth_tokens");
+        });
+        it("detects $unionWith (string shorthand) into members", function() {
+            guard.findProtectedCollectionJoin([{$unionWith: "members"}]).should.equal("members");
+        });
+        it("detects $graphLookup into members", function() {
+            guard.findProtectedCollectionJoin([{$graphLookup: {from: "members", startWith: "$x", connectFromField: "a", connectToField: "b", as: "m"}}]).should.equal("members");
+        });
+    });
 });
