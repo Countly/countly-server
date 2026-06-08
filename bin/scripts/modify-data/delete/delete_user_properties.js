@@ -6,9 +6,9 @@
  */
 
 //app id
-var APP_ID = "5ab0c3ef92938d0e61cf77f4";
-//path to property
-var PROPERTY = "custom.k2";
+var APP_ID = "69f208be3956eabf8824be88";
+//paths to properties
+var PROPERTIES = ["custom.k2", "email"];
 //delete historic properties too
 var HISTORIC = true;
 
@@ -18,13 +18,24 @@ var asyncjs = require("async");
 var crypto = require("crypto");
 
 var internal_events = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device", "[CLY]_consent"];
-var unset = {};
-unset[PROPERTY] = "";
+
+function buildUnset(properties, drillPrefix) {
+    var unset = {};
+    for (var i = 0; i < properties.length; i++) {
+        var prop = properties[i];
+        if (drillPrefix && !prop.startsWith("custom") && !prop.startsWith("cmp")) {
+            unset["up." + prop] = "";
+        }
+        else {
+            unset[prop] = "";
+        }
+    return unset;
+}
 
 var Promise = require("bluebird");
-Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).spread(function(db, dbDrill) {
-    console.log("Deleting property from app users");
-    db.collection('app_users' + APP_ID).updateMany({}, {$unset: unset}, function(err,) {
+Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).then(async function([db, dbDrill]) {
+    console.log("Deleting properties from app users:", PROPERTIES);
+    db.collection('app_users' + APP_ID).updateMany({}, {$unset: buildUnset(PROPERTIES, false)}, function(err,) {
         if (err) {
             console.log("Error", err);
         }
@@ -42,16 +53,7 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                             done();
                         }
                     }, function() {
-                        //delete property from merged drill events collection
-                        var unset = {};
-                        if (PROPERTY.startsWith("custom") || PROPERTY.startsWith("cmp")) {
-                            unset[PROPERTY] = "";
-                        }
-                        else {
-                            unset["up." + PROPERTY] = "";
-                        }
-
-                        dbDrill.collection("drill_events").updateMany({"a": (APP_ID + "")}, {$unset: unset}, function(err) {
+                        dbDrill.collection("drill_events").updateMany({"a": (APP_ID + "")}, {$unset: buildUnset(PROPERTIES, true)}, function(err) {
                             if (err) {
                                 console.log("Error", err);
                             }
@@ -70,18 +72,10 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
         }
     });
 
-    //name, email, picture
     function deleteDrillUserProperties(event, done) {
-        console.log("Deleting historic property from", event);
-        var unset = {};
-        if (PROPERTY.startsWith("custom") || PROPERTY.startsWith("cmp")) {
-            unset[PROPERTY] = "";
-        }
-        else {
-            unset["up." + PROPERTY] = "";
-        }
+        console.log("Deleting historic properties from", event);
         var collection = "drill_events" + crypto.createHash('sha1').update(event + APP_ID).digest('hex');
-        dbDrill.collection(collection).updateMany({}, {$unset: unset}, function(err) {
+        dbDrill.collection(collection).updateMany({}, {$unset: buildUnset(PROPERTIES, true)}, function(err) {
             if (err) {
                 console.log("Error", err);
             }
