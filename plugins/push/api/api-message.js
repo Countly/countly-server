@@ -609,6 +609,18 @@ module.exports.estimate = async params => {
         return true;
     }
 
+    // Cross-app guard. validateRead only checks the caller's permission against
+    // params.qstring.app_id, while the body's "app" field selects which app's
+    // push audience is counted. Without this binding a user with push:read on
+    // app A could pass app_id=A and body app=B to read app B's audience count,
+    // locale distribution and run filter.user/filter.drill segment queries over
+    // app B's user profiles. Force the body's app to match the
+    // permission-checked qstring.app_id.
+    if (params.qstring.app_id && data.app && (data.app + "") !== (params.qstring.app_id + "")) {
+        common.returnMessage(params, 400, {errors: ['app does not match request app_id']}, null, true);
+        return true;
+    }
+
     let app = await common.db.collection('apps').findOne({_id: data.app});
     if (!app) {
         common.returnMessage(params, 400, {errors: ['No such app']}, null, true);
