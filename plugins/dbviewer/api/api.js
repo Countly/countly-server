@@ -388,17 +388,16 @@ var spawn = require('child_process').spawn,
                 common.returnMessage(params, 500, "The aggregation pipeline must be of the type array");
             }
             else {
-                var addProjectionAt = 0;
-                if (aggregation[0] && aggregation[0].$match) {
-                    while (aggregation.length > addProjectionAt && aggregation[addProjectionAt].$match) {
-                        addProjectionAt++;
-                    }
-                }
                 if (collection === 'members') {
-                    aggregation.splice(addProjectionAt, 0, {"$project": {"password": 0, "api_key": 0, "two_factor_auth": 0}});
+                    // Insert the redaction as the very first stage so no
+                    // user-supplied stage — including a leading $match using
+                    // $expr, or a $project/$group that aliases or references the
+                    // field — can read the raw credential fields before they are
+                    // removed.
+                    aggregation.splice(0, 0, {"$project": {"password": 0, "api_key": 0, "two_factor_auth": 0}});
                 }
                 else if (collection === 'auth_tokens') {
-                    aggregation.splice(addProjectionAt, 0, {"$addFields": {"_id": "***redacted***"}});
+                    aggregation.splice(0, 0, {"$addFields": {"_id": "***redacted***"}});
                 }
                 else if ((collection === "events_data" || collection === "drill_events") && !params.member.global_admin) {
                     var base_filter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection);
