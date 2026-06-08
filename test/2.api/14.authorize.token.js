@@ -268,6 +268,60 @@ describe('Creating token to allow only paths under /o/users/', function() {
 });
 
 
+describe('App-scoped token enforces its app restriction', function() {
+    var appScopedToken = "";
+    // an app id the token is NOT scoped to
+    var OTHER_APP_ID = "aaaaaaaaaaaaaaaaaaaaaaaa";
+
+    it('creating a token scoped to a single app', function(done) {
+        authorize.save({
+            db: testUtils.db,
+            endpoint: "^/o/actions",
+            multi: true,
+            app: [APP_ID + ""],
+            owner: testowner,
+            callback: function(err, token) {
+                if (err) {
+                    return done(err);
+                }
+                if (token) {
+                    appScopedToken = token;
+                    done();
+                }
+                else {
+                    done("token not created");
+                }
+            }
+        });
+    });
+
+    it('is valid for its own app when app_id matches', function(done) {
+        authorize.verify_return({
+            db: testUtils.db,
+            token: appScopedToken,
+            req_path: "/o/actions",
+            qstring: {app_id: APP_ID + ""},
+            callback: function(valid) {
+                should(valid).be.ok(); // owner id (truthy) on success
+                done();
+            }
+        });
+    });
+
+    it('is rejected for a different app_id', function(done) {
+        authorize.verify_return({
+            db: testUtils.db,
+            token: appScopedToken,
+            req_path: "/o/actions",
+            qstring: {app_id: OTHER_APP_ID},
+            callback: function(valid) {
+                (valid === false).should.be.exactly(true);
+                done();
+            }
+        });
+    });
+});
+
 describe("cleaning up", function() {
     it('remove token and user', function(done) {
         var params = {user_ids: [testowner]};

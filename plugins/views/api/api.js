@@ -1538,6 +1538,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         db: common.db,
                         token: params.req.headers["countly-token"],
                         req_path: params.fullPath,
+                        // pass qstring so the token's app restriction is enforced
+                        // against the app resolved from app_key above. Without it,
+                        // verify_token skips the app check entirely and an
+                        // app-scoped token would be accepted for any other app.
+                        qstring: params.qstring,
                         callback: function(owner, expires_after) {
                             if (owner) {
                                 var token = params.req.headers["countly-token"];
