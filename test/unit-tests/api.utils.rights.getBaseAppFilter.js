@@ -1,4 +1,4 @@
-var should = require("should");
+require("should");
 var rights = require("../../api/utils/rights.js");
 
 // getBaseAppFilter() builds the app-scoping filter applied to events_data /
