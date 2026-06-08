@@ -1,4 +1,7 @@
 
+## Version 25.03.xx
+Fixes:
+ - [journey_engine] Journey blocks are made available as readonly when it is in running state
 ## Version 25.03.46
 Fixes:
  - Overall security Fixes
