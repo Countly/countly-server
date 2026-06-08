@@ -120,7 +120,9 @@ function sanitizePipeline(pipeline, changes) {
             continue;
         }
         for (var key in stage) {
-            if (!whiteListedAggregationStages[key]) {
+            // require an explicit `true` so inherited Object.prototype keys
+            // (constructor, __proto__, …) are never treated as allow-listed
+            if (whiteListedAggregationStages[key] !== true) {
                 changes[key] = true;
                 delete stage[key];
             }
@@ -207,7 +209,7 @@ function findProtectedCollectionJoin(pipeline) {
         }
         var targets = joinTargetsOf(stage);
         for (var t = 0; t < targets.length; t++) {
-            if (PROTECTED_JOIN_COLLECTIONS[targets[t]]) {
+            if (PROTECTED_JOIN_COLLECTIONS[targets[t]] === true) {
                 return targets[t];
             }
         }
