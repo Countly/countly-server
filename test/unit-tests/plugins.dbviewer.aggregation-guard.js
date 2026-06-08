@@ -21,6 +21,15 @@ describe("dbviewer aggregation guard", function() {
             pipeline.length.should.equal(1);
             pipeline[0].should.have.property("$limit");
         });
+        it("strips inherited Object.prototype keys (constructor / __proto__) as non-allow-listed", function() {
+            // a stage key like "constructor" resolves to a truthy inherited
+            // property on the allow-list object; the guard must still strip it
+            var pipeline = [JSON.parse('{"constructor": {"x": 1}}'), JSON.parse('{"__proto__": {"y": 1}}'), {$limit: 5}];
+            guard.escapeNotAllowedAggregationStages(pipeline);
+            // only the legitimate $limit stage survives
+            pipeline.length.should.equal(1);
+            pipeline[0].should.have.property("$limit");
+        });
     });
 
     describe("nested inside $facet (the bypass)", function() {
