@@ -73,4 +73,22 @@ describe("dbviewer query guard", function() {
             aguard.findWriteStage([{$facet: {w: [{$out: "x"}]}}]).should.equal("$out");
         });
     });
+
+    describe("findServerSideJs", function() {
+        it("returns null when no server-side-JS operator is present", function() {
+            (aguard.findServerSideJs([{$project: {x: 1}}, {$group: {_id: "$a", n: {$sum: 1}}}]) === null).should.equal(true);
+        });
+        it("detects $function inside a $project expression", function() {
+            aguard.findServerSideJs([{$project: {x: {$function: {body: "f", args: [], lang: "js"}}}}]).should.equal("$function");
+        });
+        it("detects $accumulator inside a $group", function() {
+            aguard.findServerSideJs([{$group: {_id: null, v: {$accumulator: {init: "f", accumulate: "g", accumulateArgs: [], merge: "h", lang: "js"}}}}]).should.equal("$accumulator");
+        });
+        it("detects $where", function() {
+            aguard.findServerSideJs([{$match: {$where: "this.a==1"}}]).should.equal("$where");
+        });
+        it("detects a server-side-JS operator nested deep inside $facet", function() {
+            aguard.findServerSideJs([{$facet: {f: [{$addFields: {y: {$function: {body: "f", args: [], lang: "js"}}}}]}}]).should.equal("$function");
+        });
+    });
 });

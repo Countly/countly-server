@@ -15,7 +15,7 @@ const FEATURE_NAME = 'dbviewer';
 // Aggregation-stage allow-list and the recursive sanitizer that strips blocked
 // stages at every depth (including inside $facet sub-pipelines). Kept in a
 // dedicated module so it can be unit-tested in isolation.
-const { escapeNotAllowedAggregationStages, findProtectedCollectionJoin, findWriteStage } = require('./parts/aggregation_guard.js');
+const { escapeNotAllowedAggregationStages, findProtectedCollectionJoin, findWriteStage, findServerSideJs } = require('./parts/aggregation_guard.js');
 const { sanitizeProjection, escapeRegExp } = require('./parts/query_guard.js');
 var spawn = require('child_process').spawn,
     child;
@@ -556,6 +556,11 @@ var spawn = require('child_process').spawn,
                         // applies to the top-level source collection. This is
                         // blocked even for global admins, who are intentionally
                         // denied raw api_key / password / tokens via DB Viewer.
+                        var jsOp = findServerSideJs(aggregation);
+                        if (jsOp) {
+                            common.returnMessage(params, 400, 'Aggregation may not use the "' + jsOp + '" operator');
+                            return true;
+                        }
                         var writeStage = findWriteStage(aggregation);
                         if (writeStage) {
                             common.returnMessage(params, 400, 'Aggregation may not use the "' + writeStage + '" stage');
@@ -578,6 +583,11 @@ var spawn = require('child_process').spawn,
                         if (hasAccess || params.qstring.collection === "events_data" || params.qstring.collection === "drill_events") {
                             try {
                                 let aggregation = EJSON.parse(params.qstring.aggregation);
+                                var jsOpRef = findServerSideJs(aggregation);
+                                if (jsOpRef) {
+                                    common.returnMessage(params, 400, 'Aggregation may not use the "' + jsOpRef + '" operator');
+                                    return true;
+                                }
                                 var writeStageRef = findWriteStage(aggregation);
                                 if (writeStageRef) {
                                     common.returnMessage(params, 400, 'Aggregation may not use the "' + writeStageRef + '" stage');

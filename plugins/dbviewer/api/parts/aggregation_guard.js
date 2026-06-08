@@ -282,11 +282,58 @@ function findWriteStage(pipeline) {
     return null;
 }
 
+/**
+ * Aggregation EXPRESSION operators that execute server-side JavaScript. These
+ * are not stages, so the stage allow-list does not catch them — they live
+ * inside otherwise-allowed stages ($project / $group / $addFields / $match …).
+ * They must never run via DB Viewer (the find() path already strips the
+ * equivalent operators from filter/sort).
+ */
+const SERVER_SIDE_JS_OPERATORS = {
+    "$function": true,
+    "$accumulator": true,
+    "$where": true
+};
+
+/**
+ * Deep-scan an aggregation pipeline (objects and arrays, at every depth,
+ * including expression values) for a server-side-JavaScript operator.
+ * @param {*} node - pipeline / stage / expression node
+ * @returns {string|null} the operator name if present, else null
+ */
+function findServerSideJs(node) {
+    if (Array.isArray(node)) {
+        for (var i = 0; i < node.length; i++) {
+            var inArr = findServerSideJs(node[i]);
+            if (inArr) {
+                return inArr;
+            }
+        }
+        return null;
+    }
+    if (node && typeof node === "object") {
+        for (var key in node) {
+            if (Object.prototype.hasOwnProperty.call(node, key)) {
+                if (SERVER_SIDE_JS_OPERATORS[key] === true) {
+                    return key;
+                }
+                var inVal = findServerSideJs(node[key]);
+                if (inVal) {
+                    return inVal;
+                }
+            }
+        }
+    }
+    return null;
+}
+
 module.exports = {
     whiteListedAggregationStages,
     PROTECTED_JOIN_COLLECTIONS,
     WRITE_STAGES,
+    SERVER_SIDE_JS_OPERATORS,
     escapeNotAllowedAggregationStages,
     findProtectedCollectionJoin,
-    findWriteStage
+    findWriteStage,
+    findServerSideJs
 };
