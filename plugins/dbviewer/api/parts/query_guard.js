@@ -1,0 +1,54 @@
+/**
+ * @module plugins/dbviewer/api/parts/query_guard
+ * @description Helpers that harden the user-supplied parts of a DB Viewer
+ * find() query (projection and the _id search term).
+ */
+
+'use strict';
+
+/**
+ * Restrict a find() projection to plain field inclusion / exclusion.
+ *
+ * A projection value is only allowed to be a number or boolean (1/0/true/false).
+ * Any other value is dropped, because since MongoDB 4.4 a find() projection may
+ * contain expressions and field-path aliases — e.g. { leak: "$password" } or
+ * { x: { $function: ... } } — which would compute new fields from, or rename,
+ * fields the viewer otherwise removes from the response. Keeping projections to
+ * pure include/exclude removes that whole avenue.
+ *
+ * @param {object} projection - parsed projection object (mutated in place)
+ * @returns {object} changes - keys are the projection fields that were dropped
+ */
+function sanitizeProjection(projection) {
+    var changes = {};
+    if (!projection || typeof projection !== "object" || Array.isArray(projection)) {
+        return changes;
+    }
+    for (var key in projection) {
+        if (Object.prototype.hasOwnProperty.call(projection, key)) {
+            var value = projection[key];
+            if (typeof value !== "number" && typeof value !== "boolean") {
+                changes[key] = true;
+                delete projection[key];
+            }
+        }
+    }
+    return changes;
+}
+
+/**
+ * Escape a string for safe use as a literal inside a RegExp, so a user-supplied
+ * search term cannot introduce a pathological pattern (catastrophic
+ * backtracking / ReDoS).
+ *
+ * @param {string} str - raw search term
+ * @returns {string} the term with all RegExp metacharacters escaped
+ */
+function escapeRegExp(str) {
+    return String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+module.exports = {
+    sanitizeProjection,
+    escapeRegExp
+};

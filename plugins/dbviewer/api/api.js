@@ -15,7 +15,8 @@ const FEATURE_NAME = 'dbviewer';
 // Aggregation-stage allow-list and the recursive sanitizer that strips blocked
 // stages at every depth (including inside $facet sub-pipelines). Kept in a
 // dedicated module so it can be unit-tested in isolation.
-const { escapeNotAllowedAggregationStages, findProtectedCollectionJoin } = require('./parts/aggregation_guard.js');
+const { escapeNotAllowedAggregationStages, findProtectedCollectionJoin, findWriteStage } = require('./parts/aggregation_guard.js');
+const { sanitizeProjection, escapeRegExp } = require('./parts/query_guard.js');
 var spawn = require('child_process').spawn,
     child;
 
@@ -123,11 +124,22 @@ var spawn = require('child_process').spawn,
                     params.qstring.document = common.db.ObjectID(params.qstring.document);
                 }
                 if (dbs[dbNameOnParam]) {
-                    dbs[dbNameOnParam].collection(params.qstring.collection).findOne({ _id: params.qstring.document }, function(err, results) {
+                    // Scope the lookup to the member's apps the same way the
+                    // collection listing does, so a document cannot be fetched
+                    // outside the caller's app scope by supplying its _id.
+                    var docFilter = { _id: params.qstring.document };
+                    if (!params.member.global_admin) {
+                        var docBaseFilter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection);
+                        if (docBaseFilter && Object.keys(docBaseFilter).length > 0) {
+                            docFilter = { $and: [docBaseFilter, docFilter] };
+                        }
+                    }
+                    dbs[dbNameOnParam].collection(params.qstring.collection).findOne(docFilter, function(err, results) {
                         if (!err) {
                             if (params.qstring.collection === 'members' && results) {
                                 delete results.password;
                                 delete results.api_key;
+                                delete results.two_factor_auth;
                             }
                             else if (params.qstring.collection === 'auth_tokens' && results) {
                                 if (results._id) {
@@ -182,7 +194,9 @@ var spawn = require('child_process').spawn,
                 filter._id = common.db.ObjectID(filter._id);
             }
             if (sSearch) {
-                filter._id = new RegExp(sSearch);
+                // treat the search term as a literal so a crafted pattern cannot
+                // cause catastrophic regex backtracking (ReDoS)
+                filter._id = new RegExp(escapeRegExp(sSearch));
             }
             try {
                 projection = EJSON.parse(projection);
@@ -199,6 +213,10 @@ var spawn = require('child_process').spawn,
             //viewer query cannot be abused to execute code on the server
             common.stripUnsafeMongoOperators(filter);
             common.stripUnsafeMongoOperators(sort);
+            //restrict the projection to plain field include/exclude — drop any
+            //expression / field-path alias (e.g. {x:"$password"}) that could
+            //compute or rename fields the viewer otherwise removes
+            sanitizeProjection(projection);
 
             var base_filter = {};
             if (!params.member.global_admin) {
@@ -244,6 +262,7 @@ var spawn = require('child_process').spawn,
                             if (params.qstring.collection === 'members' && doc) {
                                 delete doc.password;
                                 delete doc.api_key;
+                                delete doc.two_factor_auth;
                             }
                             else if (params.qstring.collection === 'auth_tokens' && doc) {
                                 if (doc._id) {
@@ -376,7 +395,7 @@ var spawn = require('child_process').spawn,
                     }
                 }
                 if (collection === 'members') {
-                    aggregation.splice(addProjectionAt, 0, {"$project": {"password": 0, "api_key": 0}});
+                    aggregation.splice(addProjectionAt, 0, {"$project": {"password": 0, "api_key": 0, "two_factor_auth": 0}});
                 }
                 else if (collection === 'auth_tokens') {
                     aggregation.splice(addProjectionAt, 0, {"$addFields": {"_id": "***redacted***"}});
@@ -532,6 +551,11 @@ var spawn = require('child_process').spawn,
                         // applies to the top-level source collection. This is
                         // blocked even for global admins, who are intentionally
                         // denied raw api_key / password / tokens via DB Viewer.
+                        var writeStage = findWriteStage(aggregation);
+                        if (writeStage) {
+                            common.returnMessage(params, 400, 'Aggregation may not use the "' + writeStage + '" stage');
+                            return true;
+                        }
                         var protectedJoin = findProtectedCollectionJoin(aggregation);
                         if (protectedJoin) {
                             common.returnMessage(params, 400, 'Aggregation may not join the "' + protectedJoin + '" collection');
@@ -549,6 +573,11 @@ var spawn = require('child_process').spawn,
                         if (hasAccess || params.qstring.collection === "events_data" || params.qstring.collection === "drill_events") {
                             try {
                                 let aggregation = EJSON.parse(params.qstring.aggregation);
+                                var writeStageRef = findWriteStage(aggregation);
+                                if (writeStageRef) {
+                                    common.returnMessage(params, 400, 'Aggregation may not use the "' + writeStageRef + '" stage');
+                                    return true;
+                                }
                                 var protectedJoinRef = findProtectedCollectionJoin(aggregation);
                                 if (protectedJoinRef) {
                                     common.returnMessage(params, 400, 'Aggregation may not join the "' + protectedJoinRef + '" collection');

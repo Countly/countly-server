@@ -232,9 +232,59 @@ function findProtectedCollectionJoin(pipeline) {
     return null;
 }
 
+/**
+ * Aggregation stages that WRITE to a collection. DB Viewer is a read-only tool,
+ * so these must never run — including on the global-admin path, which otherwise
+ * skips the stage allow-list.
+ */
+const WRITE_STAGES = {
+    "$out": true,
+    "$merge": true
+};
+
+/**
+ * Recursively scan a pipeline for a write stage ($out / $merge) at any depth.
+ * @param {Array} pipeline - aggregation pipeline (not mutated)
+ * @returns {string|null} the write stage name if present, else null
+ */
+function findWriteStage(pipeline) {
+    if (!Array.isArray(pipeline)) {
+        return null;
+    }
+    for (var i = 0; i < pipeline.length; i++) {
+        var stage = pipeline[i];
+        if (!stage || typeof stage !== "object") {
+            continue;
+        }
+        for (var key in stage) {
+            if (WRITE_STAGES[key]) {
+                return key;
+            }
+            var val = stage[key];
+            if (key === "$facet" && val && typeof val === "object") {
+                for (var facetName in val) {
+                    var found = findWriteStage(val[facetName]);
+                    if (found) {
+                        return found;
+                    }
+                }
+            }
+            else if (val && typeof val === "object" && Array.isArray(val.pipeline)) {
+                var nested = findWriteStage(val.pipeline);
+                if (nested) {
+                    return nested;
+                }
+            }
+        }
+    }
+    return null;
+}
+
 module.exports = {
     whiteListedAggregationStages,
     PROTECTED_JOIN_COLLECTIONS,
+    WRITE_STAGES,
     escapeNotAllowedAggregationStages,
-    findProtectedCollectionJoin
+    findProtectedCollectionJoin,
+    findWriteStage
 };
