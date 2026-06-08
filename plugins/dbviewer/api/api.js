@@ -12,6 +12,9 @@ const { MongoInvalidArgumentError } = require('mongodb');
 const { EJSON } = require('bson');
 
 const FEATURE_NAME = 'dbviewer';
+// upper bound on rows returned per find()/aggregation page, to keep a crafted
+// limit/iDisplayLength from requesting an unbounded result set
+const MAX_DBVIEWER_LIMIT = 10000;
 // Aggregation-stage allow-list and the recursive sanitizer that strips blocked
 // stages at every depth (including inside $facet sub-pipelines). Kept in a
 // dedicated module so it can be unit-tested in isolation.
@@ -149,7 +152,8 @@ var spawn = require('child_process').spawn,
                             common.returnOutput(params, objectIdCheck(results) || {});
                         }
                         else {
-                            common.returnOutput(params, 500, err);
+                            log.e(err);
+                            common.returnMessage(params, 500, "An unexpected error occurred.");
                         }
                     });
                 }
@@ -162,8 +166,19 @@ var spawn = require('child_process').spawn,
         * Get collection data from db
         **/
         async function dbGetCollection() {
-            var limit = parseInt(params.qstring.limit || 20);
-            var skip = parseInt(params.qstring.skip || 0);
+            // cap page size and guard against NaN so a crafted limit/skip can't
+            // request an unbounded result set
+            var limit = parseInt(params.qstring.limit, 10);
+            if (isNaN(limit) || limit <= 0) {
+                limit = 20;
+            }
+            if (limit > MAX_DBVIEWER_LIMIT) {
+                limit = MAX_DBVIEWER_LIMIT;
+            }
+            var skip = parseInt(params.qstring.skip, 10);
+            if (isNaN(skip) || skip < 0) {
+                skip = 0;
+            }
             var filter = params.qstring.filter || params.qstring.query || "{}";
             var sSearch = params.qstring.sSearch || "";
             var projection = params.qstring.project || params.qstring.projection || "{}";
@@ -316,7 +331,8 @@ var spawn = require('child_process').spawn,
                     }
                 }
                 catch (err) {
-                    common.returnMessage(params, 500, err);
+                    log.e(err);
+                    common.returnMessage(params, 500, "An unexpected error occurred.");
                 }
             }
         }
@@ -388,7 +404,10 @@ var spawn = require('child_process').spawn,
         * */
         function aggregate(collection, aggregation, changes) {
             if (params.qstring.iDisplayLength) {
-                aggregation.push({ "$limit": parseInt(params.qstring.iDisplayLength) });
+                var iDisplayLength = parseInt(params.qstring.iDisplayLength, 10);
+                if (!isNaN(iDisplayLength) && iDisplayLength > 0) {
+                    aggregation.push({ "$limit": Math.min(iDisplayLength, MAX_DBVIEWER_LIMIT) });
+                }
             }
             if (!Array.isArray(aggregation)) {
                 common.returnMessage(params, 500, "The aggregation pipeline must be of the type array");
@@ -448,7 +467,8 @@ var spawn = require('child_process').spawn,
                                     common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result, "removed": (changes || {}) });
                                 }
                                 else {
-                                    common.returnMessage(params, 500, aggregationErr);
+                                    log.e(aggregationErr);
+                                    common.returnMessage(params, 500, "An unexpected error occurred.");
                                 }
                             }
                         });
