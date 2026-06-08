@@ -87,6 +87,44 @@ describe('SSRF Protection', () => {
         }
     });
 
+    describe('CustomCodeEffect HTTP surface', () => {
+        // v8-sandbox exposes httpRequest() by default. If it stays enabled,
+        // custom hook code can make server-side requests to internal targets,
+        // bypassing the SSRF validation that protects the HTTPEffect path.
+        // The sandbox must be created with httpEnabled:false so httpRequest is
+        // not defined inside custom code.
+        it('should not expose httpRequest() inside custom code', async() => {
+            var APP_ID = testUtils.get('APP_ID');
+            var hookConfig = {
+                name: 'custom-code-no-http',
+                description: 'verify httpRequest is disabled in the sandbox',
+                apps: [APP_ID],
+                trigger: {
+                    type: 'APIEndPointTrigger',
+                    configuration: {
+                        path: `cc-nohttp-${Date.now()}`,
+                        method: 'get',
+                    },
+                },
+                effects: [{
+                    type: 'CustomCodeEffect',
+                    configuration: {
+                        code: "params.httpRequestType = typeof httpRequest;",
+                    },
+                }],
+                enabled: true,
+            };
+
+            const res = await request.post(getRequestURL('/i/hook/test'))
+                .send({hook_config: JSON.stringify(hookConfig), mock_data: JSON.stringify({})})
+                .expect(200);
+
+            // /i/hook/test returns the per-step effect results; the custom code
+            // effect's resulting params must report httpRequest as "undefined".
+            should(JSON.stringify(res.body)).match(/"httpRequestType":"undefined"/);
+        });
+    });
+
     describe('Allowed URLs', () => {
         var allowedCases = [
             {url: 'https://example.com/', label: 'example.com (external domain)'},
