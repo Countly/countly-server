@@ -513,9 +513,9 @@ exports.fromDatabase = function(options) {
     // query here at the boundary into the dispatch + DB find.
     var badOp = common.findUnsafeMongoOperator(options.query);
     if (badOp) {
-        log.d("Rejected user query" + common.reqInfo(options.params) + ": " + "Query contains disallowed operator: " + badOp);
+        log.d("Rejected user query" + common.reqInfo(options.params) + ": " + common.unsafeQueryError(badOp));
         if (options.params) {
-            common.returnMessage(options.params, 400, "Query contains disallowed operator: " + badOp);
+            common.returnMessage(options.params, 400, common.unsafeQueryError(badOp));
         }
         return;
     }

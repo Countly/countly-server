@@ -85,7 +85,7 @@ async function validate(args, draft = false, params = null) {
     // first enter from the request.
     let badOp = common.findUnsafeMongoOperator(msg.filter.user) || common.findUnsafeMongoOperator(msg.filter.drill);
     if (badOp) {
-        log.d("Rejected user query" + common.reqInfo(params) + ": " + "Query contains disallowed operator: " + badOp);
+        log.d("Rejected user query" + common.reqInfo(params) + ": " + common.unsafeQueryError(badOp));
         throw new ValidationError('Query contains disallowed operator: ' + badOp);
     }
 
