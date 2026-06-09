@@ -1,5 +1,9 @@
 
-## Version 25.03.x
+## Version 25.03.46
+Fixes:
+ - Overall security Fixes
+ - Ensuring Countly working from a network subdirectory
+ 
 Enterprise Features:
  - [active_directory] Journey approver group added
  - [ldap] Journey approver group added

@@ -25,10 +25,12 @@ The following are out of scope. They may still be reported, and configuration is
 
 4. **Findings that require code already fixed in the current codebase.** Reports reproduced only against an outdated or unpatched running server, demo, or hosted instance — where the issue is already fixed in the current source — are not eligible. Bounty assessment is made against the current code in this repository.
 
-5. **Excluded plugins.** Issues confined to the following plugins/components are out of scope: `consolidate`, `errorlogs`, `system-utility`, `vue-example`.
+5. **Excluded plugins.** Plugins that are not enabled by default — i.e. not listed in `plugins/plugins.default.json` — are out of scope, since they may be experimental, uncommonly used, or deprecated. In addition, the `consolidate` and `errorlogs` plugins are out of scope even though they are enabled by default.
 
 6. **Reliance on already-privileged access.** Issues that require the attacker to already hold rights equal to or greater than the access obtained (e.g. needing global admin to reach data a global admin already sees), or that depend on knowing a non-enumerable identifier of another tenant that is only ever exposed to authorized users.
 
 7. **Duplicates and already-known issues.** Reports duplicating an already-reported or already-fixed issue; only the first actionable report is eligible.
 
 8. **Theoretical, self-inflicted, or hardening-only issues.** Issues without a working proof of concept, self-inflicted issues (self-XSS, pasting attacker scripts into one's own console/session), and missing best-practice hardening that does not itself lead to an exploit (covered under "Low" above).
+
+9. **Hooks custom-code effects.** The Hooks plugin's custom-code effect runs operator-supplied JavaScript and is being migrated to a stronger isolation model (`isolated-vm`) in an upcoming release, which removes the existing execution surface entirely. Issues that depend on the behaviour of the current custom-code sandbox (for example escaping or abusing the bundled sandbox's built-in helpers) are out of scope. Note that the Hooks plugin already requires an authenticated account with the relevant per-app hooks permission, and the custom-code effect executes code the operator themselves configured.
