@@ -229,11 +229,15 @@ var spawn = require('child_process').spawn,
                 filter = {};
             }
 
-            //strip server-side-JS Mongo operators ($where/$expr/$function/
-            //$accumulator) from the user-supplied filter and sort so the db
+            //reject server-side-JS Mongo operators ($where/$function/
+            //$accumulator) in the user-supplied filter and sort so the db
             //viewer query cannot be abused to execute code on the server
-            common.stripUnsafeMongoOperators(filter);
-            common.stripUnsafeMongoOperators(sort);
+            var badOp = common.findUnsafeMongoOperator(filter) || common.findUnsafeMongoOperator(sort);
+            if (badOp) {
+                log.d("Rejected user query" + common.reqInfo(params) + ": " + "Query contains disallowed operator: " + badOp);
+                common.returnMessage(params, 400, "Query contains disallowed operator: " + badOp);
+                return false;
+            }
             //restrict the projection to plain field include/exclude — drop any
             //expression / field-path alias (e.g. {x:"$password"}) that could
             //compute or rename fields the viewer otherwise removes
