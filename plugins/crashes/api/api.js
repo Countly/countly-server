@@ -990,13 +990,13 @@ plugins.setConfigs("crashes", {
                     var columns = ["name", "os", "reports", "lastTs", "users", "latest_version"];
                     var filter = {};
                     if (params.qstring.query && params.qstring.query !== "") {
-                        try {
-                            filter = JSON.parse(params.qstring.query);
-                            common.stripUnsafeMongoOperators(filter);
+                        var parsed = common.parseUserQuery(params.qstring.query);
+                        if (parsed.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsed.error);
+                            common.returnMessage(params, 400, parsed.error);
+                            return;
                         }
-                        catch (ex) {
-                            console.log("Cannot parse crashes query", params.qstring.query);
-                        }
+                        filter = parsed.query;
                     }
                     if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                         var reg;

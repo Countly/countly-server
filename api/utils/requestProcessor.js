@@ -579,15 +579,14 @@ const processRequest = (params) => {
                         common.returnMessage(params, 400, 'Missing parameter "query"');
                         return false;
                     }
-                    else if (typeof params.qstring.query === "string") {
-                        try {
-                            params.qstring.query = JSON.parse(params.qstring.query);
-                        }
-                        catch (ex) {
-                            console.log("Could not parse query", params.qstring.query);
-                            common.returnMessage(params, 400, 'Could not parse parameter "query": ' + params.qstring.query);
+                    else {
+                        let parsedQuery = common.parseUserQuery(params.qstring.query);
+                        if (parsedQuery.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+                            common.returnMessage(params, 400, parsedQuery.error);
                             return false;
                         }
+                        params.qstring.query = parsedQuery.query;
                     }
                     validateUserForWrite(params, function() {
                         countlyApi.mgmt.appUsers.count(params.qstring.app_id, params.qstring.query, function(err, count) {
@@ -620,15 +619,14 @@ const processRequest = (params) => {
                         common.returnMessage(params, 400, 'Missing parameter "query"');
                         return false;
                     }
-                    else if (typeof params.qstring.query === "string") {
-                        try {
-                            params.qstring.query = JSON.parse(params.qstring.query);
-                        }
-                        catch (ex) {
-                            console.log("Could not parse query", params.qstring.query);
-                            common.returnMessage(params, 400, 'Could not parse parameter "query": ' + params.qstring.query);
+                    else {
+                        let parsedQuery = common.parseUserQuery(params.qstring.query);
+                        if (parsedQuery.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+                            common.returnMessage(params, 400, parsedQuery.error);
                             return false;
                         }
+                        params.qstring.query = parsedQuery.query;
                     }
                     if (!Object.keys(params.qstring.query).length) {
                         common.returnMessage(params, 400, 'Parameter "query" cannot be empty, it would delete all users. Use clear app instead');
@@ -644,14 +642,27 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, 'This query would delete more than one user');
                                 return false;
                             }
-                            countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err2) {
-                                if (err2) {
-                                    common.returnMessage(params, 400, err2);
-                                }
-                                else {
-                                    common.returnMessage(params, 200, 'User deleted');
-                                }
-                            });
+                            // Bulk (force) safety net: a force delete whose query matches
+                            // (almost) all users in the app is treated as suspicious and
+                            // requires an explicit confirm_delete_all=true. This catches a
+                            // query that was meant to match a subset but actually matches
+                            // everyone, without blocking legitimate subset deletions.
+                            if (params.qstring.force && !params.qstring.confirm_delete_all) {
+                                common.db.collection("app_users" + params.qstring.app_id).estimatedDocumentCount(function(errTotal, total) {
+                                    if (!errTotal && total >= 100 && count >= total * 0.9) {
+                                        common.returnMessage(params, 400, 'This query matches ' + count + ' of ~' + total + ' app users (nearly all). If this is intended, retry with confirm_delete_all=true, or use clear app data instead.');
+                                        return;
+                                    }
+                                    countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err2) {
+                                        common.returnMessage(params, err2 ? 400 : 200, err2 || 'User deleted');
+                                    });
+                                });
+                            }
+                            else {
+                                countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err2) {
+                                    common.returnMessage(params, err2 ? 400 : 200, err2 || 'User deleted');
+                                });
+                            }
                         });
                     });
                     break;
@@ -729,15 +740,14 @@ const processRequest = (params) => {
                                     common.returnMessage(params, 400, 'Missing parameter "query"');
                                     return false;
                                 }
-                                else if (typeof params.qstring.query === "string") {
-                                    try {
-                                        params.qstring.query = JSON.parse(params.qstring.query);
-                                    }
-                                    catch (ex) {
-                                        console.log("Could not parse query", params.qstring.query);
-                                        common.returnMessage(params, 400, 'Could not parse parameter "query": ' + params.qstring.query);
+                                else {
+                                    let parsedQuery = common.parseUserQuery(params.qstring.query);
+                                    if (parsedQuery.error) {
+                                        log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+                                        common.returnMessage(params, 400, parsedQuery.error);
                                         return false;
                                     }
+                                    params.qstring.query = parsedQuery.query;
                                 }
 
                                 var my_name = "";

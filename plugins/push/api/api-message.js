@@ -78,6 +78,17 @@ async function validate(args, draft = false, params = null) {
         }
     }
 
+    // Reject (never modify) audience/drill queries that contain disallowed
+    // Mongo operators ($where/$function/$accumulator). These queries are later
+    // dispatched to /drill/preprocess_query and run against the database; the
+    // dispatch hook no longer strips them, so they must be validated where they
+    // first enter from the request.
+    let badOp = common.findUnsafeMongoOperator(msg.filter.user) || common.findUnsafeMongoOperator(msg.filter.drill);
+    if (badOp) {
+        log.d("Rejected user query" + common.reqInfo(params) + ": " + "Query contains disallowed operator: " + badOp);
+        throw new ValidationError('Query contains disallowed operator: ' + badOp);
+    }
+
     let app = await common.db.collection('apps').findOne(msg.app);
     if (app) {
         msg.info.appName = app.name;

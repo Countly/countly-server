@@ -358,4 +358,83 @@ describe("Common API utility functions", function() {
                 .should.not.equal(common.getAppUserId({ key: "k" }, deviceId));
         });
     });
+
+    describe("findUnsafeMongoOperator", function() {
+        it("returns null for a clean query", function() {
+            should.equal(common.findUnsafeMongoOperator({ lac: { $lt: 1777320900 } }), null);
+            should.equal(common.findUnsafeMongoOperator({}), null);
+            should.equal(common.findUnsafeMongoOperator({ uid: { $in: ["1", "2"] } }), null);
+        });
+        it("detects the JS-execution operators at the top level", function() {
+            common.findUnsafeMongoOperator({ $where: "1==1" }).should.equal("$where");
+            common.findUnsafeMongoOperator({ $function: {} }).should.equal("$function");
+            common.findUnsafeMongoOperator({ $accumulator: {} }).should.equal("$accumulator");
+        });
+        it("detects operators nested at any depth (arrays, $and)", function() {
+            common.findUnsafeMongoOperator({ $and: [{ uid: { $ne: null } }, { $where: "x" }] }).should.equal("$where");
+        });
+        it("allows $expr but still detects a JS operator wrapped inside it", function() {
+            // $expr alone is permitted (no JS execution)
+            should.equal(common.findUnsafeMongoOperator({ $expr: { $lt: ["$lac", 1777320900] } }), null);
+            // but a $function nested inside $expr is still caught
+            common.findUnsafeMongoOperator({ $expr: { $function: { body: "...", lang: "js" } } }).should.equal("$function");
+        });
+        it("inspects keys only, not values (no false positive on string values)", function() {
+            should.equal(common.findUnsafeMongoOperator({ note: "see the $where docs" }), null);
+            should.equal(common.findUnsafeMongoOperator({ url: { $eq: "http://x/$function" } }), null);
+        });
+    });
+
+    describe("parseUserQuery", function() {
+        it("parses a JSON string into an object", function() {
+            var r = common.parseUserQuery('{"uid":{"$in":["1"]}}');
+            should.not.exist(r.error);
+            r.query.should.eql({ uid: { $in: ["1"] } });
+        });
+        it("treats empty / null / undefined as an empty query", function() {
+            common.parseUserQuery("").query.should.eql({});
+            common.parseUserQuery(null).query.should.eql({});
+            common.parseUserQuery(undefined).query.should.eql({});
+        });
+        it("rejects invalid JSON", function() {
+            common.parseUserQuery("{not json").error.should.equal("Invalid query JSON");
+        });
+        it("rejects non-object JSON values (arrays, scalars)", function() {
+            common.parseUserQuery("[]").error.should.equal("Query must be an object");
+            common.parseUserQuery("[{}]").error.should.equal("Query must be an object");
+            common.parseUserQuery([]).error.should.equal("Query must be an object");
+            common.parseUserQuery("5").error.should.equal("Query must be an object");
+        });
+        it("rejects pathologically deep nesting instead of overflowing the stack", function() {
+            var deep = {};
+            var cur = deep;
+            for (var i = 0; i < 5000; i++) {
+                cur.a = {};
+                cur = cur.a;
+            }
+            common.parseUserQuery(deep).error.should.equal("Query is nested too deeply");
+        });
+        it("accepts an already-parsed object", function() {
+            var r = common.parseUserQuery({ lac: { $lt: 1 } });
+            should.not.exist(r.error);
+            r.query.should.eql({ lac: { $lt: 1 } });
+        });
+        it("rejects a disallowed operator with the operator name", function() {
+            common.parseUserQuery('{"$where":"1==1"}').error.should.equal("Query contains disallowed operator: $where");
+        });
+        it("cannot be evaded by JSON unicode-escaping the operator key", function() {
+            // \\u0024 decodes to '$' — JSON.parse yields a real {$where:...} key
+            common.parseUserQuery('{"\\u0024where":"sleep(5000)||true"}').error.should.equal("Query contains disallowed operator: $where");
+        });
+        it("allows a legitimate $expr query over multiple timestamp fields", function() {
+            var q = '{"$and":[{"$expr":{"$lt":[{"$max":["$ls","$lac","$last_sync"]},1777320900]}},{"uid":{"$ne":null}}]}';
+            var r = common.parseUserQuery(q);
+            should.not.exist(r.error);
+            r.query.$and.length.should.equal(2);
+        });
+        it("rejects a JS operator wrapped in $expr", function() {
+            common.parseUserQuery('{"$expr":{"$function":{"body":"x","lang":"js"}}}').error
+                .should.equal("Query contains disallowed operator: $function");
+        });
+    });
 });
