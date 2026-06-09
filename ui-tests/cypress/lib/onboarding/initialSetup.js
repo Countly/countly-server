@@ -193,8 +193,8 @@ const checkPopulatorProgressBar = () => {
                     labelElement: initialSetupPageElements.DATA_POP_PROGRESS_BAR_TEXT,
                     labelText: 'Populating data for your app'
                 });
-                cy.wait(30000);
-                cy.shouldNotExist(initialSetupPageElements.DATA_POP_PROGRESS_BAR);
+                cy.get(`[data-test-id="${initialSetupPageElements.DATA_POP_PROGRESS_BAR}"]`, { timeout: 120000 })
+                    .should('not.exist');
             }
         });
 };

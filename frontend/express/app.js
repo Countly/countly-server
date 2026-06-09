@@ -1997,6 +1997,17 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             key: fs.readFileSync(countlyConfig.web.ssl.key),
             cert: fs.readFileSync(countlyConfig.web.ssl.cert)
         };
+        // Optional: let operators pin the negotiated TLS protocol range
+        // (e.g. minVersion "TLSv1.2"). Left unset by default so Node keeps
+        // its built-in defaults — deployments that still require older
+        // protocols, or that terminate TLS at nginx/their webserver, are
+        // unaffected.
+        if (countlyConfig.web.ssl.minVersion) {
+            sslOptions.minVersion = countlyConfig.web.ssl.minVersion;
+        }
+        if (countlyConfig.web.ssl.maxVersion) {
+            sslOptions.maxVersion = countlyConfig.web.ssl.maxVersion;
+        }
         if (countlyConfig.web.ssl.ca) {
             sslOptions.ca = fs.readFileSync(countlyConfig.web.ssl.ca);
         }
