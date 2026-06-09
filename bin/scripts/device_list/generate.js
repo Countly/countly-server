@@ -25,7 +25,8 @@ csv()
 //Shift + Cmd + P -> Convert Encoding -> Save with encoding -> UTF-8
 //from https://support.google.com/googleplay/answer/1727131?hl=en-GB
     .fromFile("./supported_devices.csv")
-    .on('json', (jsonObj)=>{
+    // csvtojson v2 removed the 'json' event; subscribe() yields each parsed row instead.
+    .subscribe((jsonObj)=>{
         //process.stderr.write("Parsed data/json line: " + jsonObj);
         var d = jsonObj["Marketing Name"] + "";
         var i = jsonObj["Model"] + "";
