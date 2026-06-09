@@ -244,36 +244,31 @@ const WRITE_STAGES = {
 };
 
 /**
- * Recursively scan a pipeline for a write stage ($out / $merge) at any depth.
- * @param {Array} pipeline - aggregation pipeline (not mutated)
+ * Deep-scan an aggregation pipeline node (object/array, at every depth) for a
+ * write stage ($out / $merge). Detection-only, so a blanket deep walk is safe
+ * and stays correct for any (incl. future) nested stage shape.
+ * @param {*} node - pipeline / stage / expression node (not mutated)
  * @returns {string|null} the write stage name if present, else null
  */
-function findWriteStage(pipeline) {
-    if (!Array.isArray(pipeline)) {
+function findWriteStage(node) {
+    if (Array.isArray(node)) {
+        for (var i = 0; i < node.length; i++) {
+            var inArr = findWriteStage(node[i]);
+            if (inArr) {
+                return inArr;
+            }
+        }
         return null;
     }
-    for (var i = 0; i < pipeline.length; i++) {
-        var stage = pipeline[i];
-        if (!stage || typeof stage !== "object") {
-            continue;
-        }
-        for (var key in stage) {
-            if (WRITE_STAGES[key] === true) {
-                return key;
-            }
-            var val = stage[key];
-            if (key === "$facet" && val && typeof val === "object") {
-                for (var facetName in val) {
-                    var found = findWriteStage(val[facetName]);
-                    if (found) {
-                        return found;
-                    }
+    if (node && typeof node === "object") {
+        for (var key in node) {
+            if (Object.prototype.hasOwnProperty.call(node, key)) {
+                if (WRITE_STAGES[key] === true) {
+                    return key;
                 }
-            }
-            else if (val && typeof val === "object" && Array.isArray(val.pipeline)) {
-                var nested = findWriteStage(val.pipeline);
-                if (nested) {
-                    return nested;
+                var inVal = findWriteStage(node[key]);
+                if (inVal) {
+                    return inVal;
                 }
             }
         }
