@@ -506,6 +506,20 @@ exports.fromDatabase = function(options) {
     options.projection = options.projection || {};
     options.writeHeaders = true;
 
+    // Reject (never modify) export queries that contain disallowed Mongo
+    // operators ($where/$function/$accumulator). options.query is dispatched to
+    // /drill/preprocess_query and then run against the database; the dispatch
+    // hook no longer strips these operators, so validate the already-parsed
+    // query here at the boundary into the dispatch + DB find.
+    var badOp = common.findUnsafeMongoOperator(options.query);
+    if (badOp) {
+        log.d("Rejected user query" + common.reqInfo(options.params) + ": " + "Query contains disallowed operator: " + badOp);
+        if (options.params) {
+            common.returnMessage(options.params, 400, "Query contains disallowed operator: " + badOp);
+        }
+        return;
+    }
+
     if (options.params && options.params.qstring && options.params.qstring.formatFields) {
         options.mapper = options.params.qstring.formatFields;
     }

@@ -50,6 +50,25 @@ countly shellcheck           # Validate shell scripts
 
 5. **Never use v-html with user data** in Vue templates.
 
+6. **Validate user-supplied Mongo queries — reject, never strip**. Any query/filter that comes from a request and reaches `find`/`aggregate`/`update`/`delete` must be checked with the `common` helpers at the endpoint where it is first parsed (NOT inside deep helpers or the `/drill/preprocess_query` hook). The query is run exactly as submitted or the request is rejected with `400` — it is never modified.
+   ```javascript
+   // raw query STRING from a request param → parse + validate in one step
+   var parsed = common.parseUserQuery(params.qstring.query); // accepts string OR object
+   if (parsed.error) {
+       log.d("Rejected user query" + common.reqInfo(params) + ": " + parsed.error);
+       return common.returnMessage(params, 400, parsed.error);
+   }
+   var query = parsed.query; // safe to run as-is
+
+   // ALREADY-parsed object (nested in a saved payload, or EJSON like dbviewer) → validate only
+   var badOp = common.findUnsafeMongoOperator(obj);
+   if (badOp) {
+       log.d("Rejected user query" + common.reqInfo(params) + ": Query contains disallowed operator: " + badOp);
+       return common.returnMessage(params, 400, "Query contains disallowed operator: " + badOp);
+   }
+   ```
+   `$expr` is allowed; `$where`/`$function`/`$accumulator` are rejected at any depth (including nested inside `$expr`). Log the rejection at the call site using the file's `log` and `common.reqInfo(params)` (which adds the endpoint path/method, without the api_key). Do NOT pass `params` into `parseUserQuery` and do NOT log inside it.
+
 ## File Locations
 
 | What | Where |
