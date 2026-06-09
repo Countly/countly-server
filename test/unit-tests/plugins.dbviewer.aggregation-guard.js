@@ -115,6 +115,11 @@ describe("dbviewer aggregation guard", function() {
             res.error.type.should.equal("join");
             res.error.name.should.equal("members");
         });
+        it("rejects a $graphLookup into members via the cross-db object form {db, coll}", function() {
+            var res = guard.sanitizeAggregation([{$graphLookup: {from: {db: "countly", coll: "members"}, startWith: "$x", connectFromField: "a", connectToField: "b", as: "m"}}], ADMIN);
+            res.error.type.should.equal("join");
+            res.error.name.should.equal("members");
+        });
     });
 
     describe("global admin allow-list", function() {

@@ -404,7 +404,8 @@ var spawn = require('child_process').spawn,
         * */
         function aggregate(collection, aggregation, changes) {
             if (!Array.isArray(aggregation)) {
-                common.returnMessage(params, 500, "The aggregation pipeline must be of the type array");
+                common.returnMessage(params, 400, "The aggregation pipeline must be of the type array");
+                return;
             }
             else {
                 if (params.qstring.iDisplayLength) {
