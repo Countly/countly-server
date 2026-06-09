@@ -1,171 +1,137 @@
 require("should");
 var guard = require("../../plugins/dbviewer/api/parts/aggregation_guard.js");
 
-// The DB Viewer aggregation guard strips any non-whitelisted stage (e.g.
-// $lookup / $unionWith / $graphLookup) so cross-collection reads cannot bypass
-// the per-collection access check. The key requirement is that this holds at
-// EVERY depth, including inside $facet sub-pipelines.
+var USER = guard.ALLOWED_STAGES_USER;
+var ADMIN = guard.ALLOWED_STAGES_GLOBAL_ADMIN;
+
+// sanitizeAggregation(pipeline, allowedStages) -> { changes, error }
+//  - strips stages not in the role's allow-list (recursively, at every depth)
+//  - rejects (error) server-side-JS operators and joins into redacted
+//    collections, for any role, at any depth
 describe("dbviewer aggregation guard", function() {
-    describe("top level", function() {
-        it("keeps whitelisted stages", function() {
-            var pipeline = [{$match: {a: 1}}, {$group: {_id: "$x"}}, {$limit: 5}];
-            var changes = guard.escapeNotAllowedAggregationStages(pipeline);
-            Object.keys(changes).length.should.equal(0);
-            pipeline.length.should.equal(3);
+    describe("stage allow-list (non-global user)", function() {
+        it("keeps allow-listed stages untouched", function() {
+            var p = [{$match: {a: 1}}, {$group: {_id: "$x"}}, {$limit: 5}];
+            var res = guard.sanitizeAggregation(p, USER);
+            (res.error === null).should.equal(true);
+            Object.keys(res.changes).length.should.equal(0);
+            p.length.should.equal(3);
         });
-        it("strips a blocked $lookup at the top level", function() {
-            var pipeline = [{$lookup: {from: "members", as: "m"}}, {$limit: 5}];
-            var changes = guard.escapeNotAllowedAggregationStages(pipeline);
-            changes.should.have.property("$lookup");
-            // the now-empty $lookup stage is removed, $limit remains
-            pipeline.length.should.equal(1);
-            pipeline[0].should.have.property("$limit");
+        it("strips a non-allowed stage ($lookup) for a normal user", function() {
+            var p = [{$lookup: {from: "events", as: "e"}}, {$limit: 5}];
+            var res = guard.sanitizeAggregation(p, USER);
+            (res.error === null).should.equal(true);
+            res.changes.should.have.property("$lookup");
+            p.length.should.equal(1);
+            p[0].should.have.property("$limit");
         });
-        it("strips inherited Object.prototype keys (constructor / __proto__) as non-allow-listed", function() {
-            // a stage key like "constructor" resolves to a truthy inherited
-            // property on the allow-list object; the guard must still strip it
-            var pipeline = [JSON.parse('{"constructor": {"x": 1}}'), JSON.parse('{"__proto__": {"y": 1}}'), {$limit: 5}];
-            guard.escapeNotAllowedAggregationStages(pipeline);
-            // only the legitimate $limit stage survives
-            pipeline.length.should.equal(1);
-            pipeline[0].should.have.property("$limit");
+        it("strips write stages ($out) for everyone (in no list)", function() {
+            var p = [{$match: {a: 1}}, {$out: "stolen"}];
+            var res = guard.sanitizeAggregation(p, USER);
+            (res.error === null).should.equal(true);
+            res.changes.should.have.property("$out");
+            JSON.stringify(p).indexOf("$out").should.equal(-1);
         });
-    });
-
-    describe("nested inside $facet (the bypass)", function() {
-        it("strips a $lookup smuggled inside a $facet sub-pipeline", function() {
-            var pipeline = [{
-                $facet: {
-                    leak: [
-                        {$lookup: {from: "members", pipeline: [{$project: {email: 1, api_key: 1}}], as: "members"}}
-                    ]
-                }
-            }];
-            var changes = guard.escapeNotAllowedAggregationStages(pipeline);
-            changes.should.have.property("$lookup");
-            // the $lookup must not survive anywhere in the pipeline
-            JSON.stringify(pipeline).indexOf("$lookup").should.equal(-1);
-            JSON.stringify(pipeline).indexOf("members").should.equal(-1);
-        });
-
-        it("strips blocked stages nested in deeper $facet within $facet", function() {
-            var pipeline = [{
-                $facet: {
-                    outer: [
-                        {$match: {a: 1}},
-                        {$facet: {inner: [{$unionWith: {coll: "members"}}]}}
-                    ]
-                }
-            }];
-            var changes = guard.escapeNotAllowedAggregationStages(pipeline);
-            changes.should.have.property("$unionWith");
-            JSON.stringify(pipeline).indexOf("$unionWith").should.equal(-1);
-        });
-
-        it("keeps a $facet whose sub-pipeline only uses whitelisted stages", function() {
-            var pipeline = [{
-                $facet: {
-                    counts: [{$match: {a: 1}}, {$count: "n"}]
-                }
-            }];
-            var changes = guard.escapeNotAllowedAggregationStages(pipeline);
-            Object.keys(changes).length.should.equal(0);
-            pipeline[0].should.have.property("$facet");
-            pipeline[0].$facet.should.have.property("counts");
-            pipeline[0].$facet.counts.length.should.equal(2);
-        });
-
-        it("drops a facet sub-pipeline emptied by sanitization (no empty $facet pipeline sent to mongo)", function() {
-            var pipeline = [{
-                $facet: {
-                    leak: [{$lookup: {from: "members", as: "m"}}]
-                }
-            }];
-            guard.escapeNotAllowedAggregationStages(pipeline);
-            // leak became empty -> removed; $facet became empty -> stage removed
-            pipeline.length.should.equal(0);
+        it("strips inherited Object.prototype keys (constructor / __proto__)", function() {
+            var p = [JSON.parse('{"constructor": {"x": 1}}'), JSON.parse('{"__proto__": {"y": 1}}'), {$limit: 5}];
+            guard.sanitizeAggregation(p, USER);
+            p.length.should.equal(1);
+            p[0].should.have.property("$limit");
         });
     });
 
-    // Future-proofing: $facet is the only allow-listed pipeline-bearing stage
-    // today, but the sanitizer is structural — any kept stage exposing a
-    // `.pipeline` array also has it sanitized. Simulate a future allow-listed
-    // pipeline-bearing stage to prove blocked stages can't hide in its pipeline.
-    describe("generic nested-pipeline handling (future-proofing)", function() {
-        var FAKE = "$fakePipelineStage";
-        beforeEach(function() {
-            guard.whiteListedAggregationStages[FAKE] = true;
+    describe("nested stage stripping (structural, any depth)", function() {
+        it("strips a non-allowed stage nested in $facet", function() {
+            var p = [{$facet: {leak: [{$lookup: {from: "events", as: "e"}}]}}];
+            var res = guard.sanitizeAggregation(p, USER);
+            res.changes.should.have.property("$lookup");
+            JSON.stringify(p).indexOf("$lookup").should.equal(-1);
         });
-        afterEach(function() {
-            delete guard.whiteListedAggregationStages[FAKE];
-        });
-
-        it("strips a blocked stage nested in a kept stage's .pipeline", function() {
-            var pipeline = [{}];
-            pipeline[0][FAKE] = {pipeline: [{$match: {a: 1}}, {$lookup: {from: "members", as: "m"}}]};
-            var changes = guard.escapeNotAllowedAggregationStages(pipeline);
-            changes.should.have.property("$lookup");
-            JSON.stringify(pipeline).indexOf("$lookup").should.equal(-1);
-            // the kept stage and its legitimate $match remain
-            pipeline[0].should.have.property(FAKE);
-            pipeline[0][FAKE].pipeline.length.should.equal(1);
-            pipeline[0][FAKE].pipeline[0].should.have.property("$match");
-        });
-        it("strips a blocked stage in a sub-pipeline under an arbitrary (non-$facet/.pipeline) field", function() {
-            // structural detection: a sub-pipeline carried by any field name,
-            // even an array-of-pipelines shape, is still descended into
-            var pipeline = [{}];
-            pipeline[0][FAKE] = {branches: [[{$match: {a: 1}}, {$lookup: {from: "members", as: "m"}}]]};
-            var changes = guard.escapeNotAllowedAggregationStages(pipeline);
-            changes.should.have.property("$lookup");
-            JSON.stringify(pipeline).indexOf("$lookup").should.equal(-1);
-            // the legitimate $match inside the nested sub-pipeline survives
-            pipeline[0][FAKE].branches[0].length.should.equal(1);
-            pipeline[0][FAKE].branches[0][0].should.have.property("$match");
+        it("strips a non-allowed stage in an arbitrary (non-$facet/.pipeline) nested shape", function() {
+            var p = [{$facet: {b: [{$set: {ok: 1}}]}}];
+            // craft an allowed stage carrying a sub-pipeline under a custom field
+            p[0].$facet.b.push({$project: {z: 1}});
+            var weird = [{$group: {_id: 1}}];
+            weird.push({$lookup: {from: "events", as: "e"}});
+            p[0].$facet.b.push({$set: {nested: {anything: weird}}}); // expression object holding a pipeline-shaped array
+            var res = guard.sanitizeAggregation(p, USER);
+            res.changes.should.have.property("$lookup");
+            JSON.stringify(p).indexOf("$lookup").should.equal(-1);
         });
         it("does not mistake an ordinary expression array for a sub-pipeline", function() {
-            // {$concat:["$a","$b"]} is an expression, not a pipeline; it must be left intact
-            var pipeline = [{$project: {full: {$concat: ["$a", "$b"]}}}];
-            var changes = guard.escapeNotAllowedAggregationStages(pipeline);
-            Object.keys(changes).length.should.equal(0);
-            pipeline.length.should.equal(1);
-            pipeline[0].$project.full.$concat.length.should.equal(2);
+            var p = [{$project: {full: {$concat: ["$a", "$b"]}}}];
+            var res = guard.sanitizeAggregation(p, USER);
+            Object.keys(res.changes).length.should.equal(0);
+            p[0].$project.full.$concat.length.should.equal(2);
+        });
+        it("drops a $facet branch emptied by stripping", function() {
+            var p = [{$facet: {leak: [{$lookup: {from: "events", as: "e"}}]}}];
+            guard.sanitizeAggregation(p, USER);
+            // leak emptied -> removed; $facet emptied -> stage removed
+            p.length.should.equal(0);
         });
     });
 
-    // Blocks joins into redacted collections (members / auth_tokens) at any
-    // depth, for everyone — including global admins, who skip the stage
-    // sanitizer but are still denied raw credentials via DB Viewer.
-    describe("findProtectedCollectionJoin", function() {
-        it("returns null for a pipeline with no joins", function() {
-            (guard.findProtectedCollectionJoin([{$match: {a: 1}}, {$group: {_id: "$x"}}]) === null).should.equal(true);
+    describe("hard rule: server-side JavaScript (any role, any depth)", function() {
+        it("rejects $function inside a $project expression", function() {
+            var p = [{$project: {x: {$function: {body: "f", args: [], lang: "js"}}}}];
+            var res = guard.sanitizeAggregation(p, ADMIN);
+            res.error.type.should.equal("operator");
+            res.error.name.should.equal("$function");
         });
-        it("ignores a join into a non-protected collection", function() {
-            (guard.findProtectedCollectionJoin([{$lookup: {from: "events", as: "e"}}]) === null).should.equal(true);
+        it("rejects $accumulator inside $group", function() {
+            var p = [{$group: {_id: null, v: {$accumulator: {init: "f", accumulate: "g", accumulateArgs: [], merge: "h", lang: "js"}}}}];
+            guard.sanitizeAggregation(p, USER).error.name.should.equal("$accumulator");
         });
-        it("detects a top-level $lookup into members", function() {
-            guard.findProtectedCollectionJoin([{$lookup: {from: "members", as: "m"}}]).should.equal("members");
+        it("rejects $where", function() {
+            guard.sanitizeAggregation([{$match: {$where: "this.a==1"}}], USER).error.name.should.equal("$where");
         });
-        it("detects a $lookup into members nested in $facet", function() {
-            guard.findProtectedCollectionJoin([{$facet: {leak: [{$lookup: {from: "members", as: "m"}}]}}]).should.equal("members");
+        it("rejects $function nested deep in $facet", function() {
+            var p = [{$facet: {f: [{$addFields: {y: {$function: {body: "f", args: [], lang: "js"}}}}]}}];
+            guard.sanitizeAggregation(p, ADMIN).error.name.should.equal("$function");
         });
-        it("detects a $lookup into members nested in another stage's .pipeline", function() {
-            guard.findProtectedCollectionJoin([{$lookup: {from: "events", pipeline: [{$lookup: {from: "members", as: "m"}}], as: "x"}}]).should.equal("members");
+    });
+
+    describe("hard rule: joins into redacted collections (any role, any depth)", function() {
+        it("rejects a $lookup into members (even for global admin)", function() {
+            var res = guard.sanitizeAggregation([{$lookup: {from: "members", as: "m"}}], ADMIN);
+            res.error.type.should.equal("join");
+            res.error.name.should.equal("members");
         });
-        it("detects $unionWith (object form) into auth_tokens", function() {
-            guard.findProtectedCollectionJoin([{$unionWith: {coll: "auth_tokens", pipeline: []}}]).should.equal("auth_tokens");
+        it("rejects $unionWith (object form) into auth_tokens", function() {
+            guard.sanitizeAggregation([{$unionWith: {coll: "auth_tokens", pipeline: []}}], ADMIN).error.name.should.equal("auth_tokens");
         });
-        it("detects $unionWith (string shorthand) into members", function() {
-            guard.findProtectedCollectionJoin([{$unionWith: "members"}]).should.equal("members");
+        it("rejects $unionWith (string shorthand) into members", function() {
+            guard.sanitizeAggregation([{$unionWith: "members"}], ADMIN).error.name.should.equal("members");
         });
-        it("detects $graphLookup into members", function() {
-            guard.findProtectedCollectionJoin([{$graphLookup: {from: "members", startWith: "$x", connectFromField: "a", connectToField: "b", as: "m"}}]).should.equal("members");
+        it("rejects $graphLookup into members", function() {
+            guard.sanitizeAggregation([{$graphLookup: {from: "members", startWith: "$x", connectFromField: "a", connectToField: "b", as: "m"}}], ADMIN).error.name.should.equal("members");
         });
-        it("detects a join nested in an arbitrary (non-$facet, non-.pipeline) stage shape", function() {
-            // future-proofing: a join smuggled under some unknown stage shape
-            // that isn't $facet and doesn't use a .pipeline key must still be found
-            var pipeline = [{$someFutureStage: {branches: [[{$lookup: {from: "members", as: "m"}}]]}}];
-            guard.findProtectedCollectionJoin(pipeline).should.equal("members");
+        it("rejects a join into members nested inside $facet", function() {
+            guard.sanitizeAggregation([{$facet: {leak: [{$lookup: {from: "members", as: "m"}}]}}], ADMIN).error.name.should.equal("members");
+        });
+    });
+
+    describe("global admin allow-list", function() {
+        it("allows $lookup into a non-protected collection (kept, no error)", function() {
+            var p = [{$lookup: {from: "events", pipeline: [{$match: {a: 1}}], as: "e"}}, {$limit: 5}];
+            var res = guard.sanitizeAggregation(p, ADMIN);
+            (res.error === null).should.equal(true);
+            Object.keys(res.changes).length.should.equal(0);
+            p[0].should.have.property("$lookup");
+        });
+        it("still strips a non-allowed stage ($out) for an admin", function() {
+            var p = [{$match: {a: 1}}, {$out: "x"}];
+            var res = guard.sanitizeAggregation(p, ADMIN);
+            (res.error === null).should.equal(true);
+            res.changes.should.have.property("$out");
+        });
+        it("does NOT allow $lookup for a normal user (stripped)", function() {
+            var p = [{$lookup: {from: "events", as: "e"}}];
+            var res = guard.sanitizeAggregation(p, USER);
+            (res.error === null).should.equal(true);
+            res.changes.should.have.property("$lookup");
+            p.length.should.equal(0);
         });
     });
 });

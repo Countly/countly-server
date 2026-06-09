@@ -18,7 +18,7 @@ const MAX_DBVIEWER_LIMIT = 10000;
 // Aggregation-stage allow-list and the recursive sanitizer that strips blocked
 // stages at every depth (including inside $facet sub-pipelines). Kept in a
 // dedicated module so it can be unit-tested in isolation.
-const { escapeNotAllowedAggregationStages, findProtectedCollectionJoin, findWriteStage, findServerSideJs } = require('./parts/aggregation_guard.js');
+const { sanitizeAggregation, ALLOWED_STAGES_USER, ALLOWED_STAGES_GLOBAL_ADMIN } = require('./parts/aggregation_guard.js');
 const { sanitizeProjection, escapeRegExp } = require('./parts/query_guard.js');
 var spawn = require('child_process').spawn,
     child;
@@ -568,66 +568,39 @@ var spawn = require('child_process').spawn,
             }
             // handle aggregation request
             else if (isContainDb && params.qstring.aggregation) {
-                if (params.member.global_admin) {
+                // Validate the pipeline against the caller's allow-list and run
+                // it. Global admins get the broader list (may join/union, but
+                // still no writes and never into a redacted collection); other
+                // users get the restricted list. Disallowed stages are stripped;
+                // server-side-JS operators and joins into members/auth_tokens
+                // reject the request.
+                var runAggregation = function(allowedStages) {
                     try {
                         let aggregation = EJSON.parse(params.qstring.aggregation);
-                        // A join into a redacted collection (members / auth_tokens)
-                        // would return raw credentials, since the redaction only
-                        // applies to the top-level source collection. This is
-                        // blocked even for global admins, who are intentionally
-                        // denied raw api_key / password / tokens via DB Viewer.
-                        var jsOp = findServerSideJs(aggregation);
-                        if (jsOp) {
-                            common.returnMessage(params, 400, 'Aggregation may not use the "' + jsOp + '" operator');
-                            return true;
+                        var guard = sanitizeAggregation(aggregation, allowedStages);
+                        if (guard.error) {
+                            var msg = guard.error.type === "join"
+                                ? 'Aggregation may not join the "' + guard.error.name + '" collection'
+                                : 'Aggregation may not use the "' + guard.error.name + '" operator';
+                            common.returnMessage(params, 400, msg);
+                            return;
                         }
-                        var writeStage = findWriteStage(aggregation);
-                        if (writeStage) {
-                            common.returnMessage(params, 400, 'Aggregation may not use the "' + writeStage + '" stage');
-                            return true;
+                        if (guard.changes && Object.keys(guard.changes).length > 0) {
+                            log.d("Removed stages from pipeline: ", JSON.stringify(guard.changes));
                         }
-                        var protectedJoin = findProtectedCollectionJoin(aggregation);
-                        if (protectedJoin) {
-                            common.returnMessage(params, 400, 'Aggregation may not join the "' + protectedJoin + '" collection');
-                            return true;
-                        }
-                        aggregate(params.qstring.collection, aggregation);
+                        aggregate(params.qstring.collection, aggregation, guard.changes);
                     }
                     catch (e) {
                         common.returnMessage(params, 500, 'Aggregation object is not valid.');
-                        return true;
                     }
+                };
+                if (params.member.global_admin) {
+                    runAggregation(ALLOWED_STAGES_GLOBAL_ADMIN);
                 }
                 else {
                     userHasAccess(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess || params.qstring.collection === "events_data" || params.qstring.collection === "drill_events") {
-                            try {
-                                let aggregation = EJSON.parse(params.qstring.aggregation);
-                                var jsOpRef = findServerSideJs(aggregation);
-                                if (jsOpRef) {
-                                    common.returnMessage(params, 400, 'Aggregation may not use the "' + jsOpRef + '" operator');
-                                    return true;
-                                }
-                                var writeStageRef = findWriteStage(aggregation);
-                                if (writeStageRef) {
-                                    common.returnMessage(params, 400, 'Aggregation may not use the "' + writeStageRef + '" stage');
-                                    return true;
-                                }
-                                var protectedJoinRef = findProtectedCollectionJoin(aggregation);
-                                if (protectedJoinRef) {
-                                    common.returnMessage(params, 400, 'Aggregation may not join the "' + protectedJoinRef + '" collection');
-                                    return true;
-                                }
-                                var changes = escapeNotAllowedAggregationStages(aggregation);
-                                if (changes && Object.keys(changes).length > 0) {
-                                    log.d("Removed stages from pipeline: ", JSON.stringify(changes));
-                                }
-                                aggregate(params.qstring.collection, aggregation, changes);
-                            }
-                            catch (e) {
-                                common.returnMessage(params, 500, 'Aggregation object is not valid.');
-                                return true;
-                            }
+                            runAggregation(ALLOWED_STAGES_USER);
                         }
                         else {
                             common.returnMessage(params, 401, 'User does not have right tot view this colleciton');

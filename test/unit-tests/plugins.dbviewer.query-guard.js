@@ -1,6 +1,5 @@
 require("should");
 var qguard = require("../../plugins/dbviewer/api/parts/query_guard.js");
-var aguard = require("../../plugins/dbviewer/api/parts/aggregation_guard.js");
 
 describe("dbviewer query guard", function() {
     describe("sanitizeProjection", function() {
@@ -56,39 +55,6 @@ describe("dbviewer query guard", function() {
             var re = new RegExp(qguard.escapeRegExp("(a+)+"));
             re.test("(a+)+").should.equal(true);
             re.test("aaaa").should.equal(false);
-        });
-    });
-
-    describe("findWriteStage", function() {
-        it("returns null when no write stage is present", function() {
-            (aguard.findWriteStage([{$match: {a: 1}}, {$group: {_id: "$x"}}]) === null).should.equal(true);
-        });
-        it("detects a top-level $out", function() {
-            aguard.findWriteStage([{$match: {a: 1}}, {$out: "stolen"}]).should.equal("$out");
-        });
-        it("detects a top-level $merge", function() {
-            aguard.findWriteStage([{$merge: {into: "members"}}]).should.equal("$merge");
-        });
-        it("detects a write stage nested in $facet", function() {
-            aguard.findWriteStage([{$facet: {w: [{$out: "x"}]}}]).should.equal("$out");
-        });
-    });
-
-    describe("findServerSideJs", function() {
-        it("returns null when no server-side-JS operator is present", function() {
-            (aguard.findServerSideJs([{$project: {x: 1}}, {$group: {_id: "$a", n: {$sum: 1}}}]) === null).should.equal(true);
-        });
-        it("detects $function inside a $project expression", function() {
-            aguard.findServerSideJs([{$project: {x: {$function: {body: "f", args: [], lang: "js"}}}}]).should.equal("$function");
-        });
-        it("detects $accumulator inside a $group", function() {
-            aguard.findServerSideJs([{$group: {_id: null, v: {$accumulator: {init: "f", accumulate: "g", accumulateArgs: [], merge: "h", lang: "js"}}}}]).should.equal("$accumulator");
-        });
-        it("detects $where", function() {
-            aguard.findServerSideJs([{$match: {$where: "this.a==1"}}]).should.equal("$where");
-        });
-        it("detects a server-side-JS operator nested deep inside $facet", function() {
-            aguard.findServerSideJs([{$facet: {f: [{$addFields: {y: {$function: {body: "f", args: [], lang: "js"}}}}]}}]).should.equal("$function");
         });
     });
 });

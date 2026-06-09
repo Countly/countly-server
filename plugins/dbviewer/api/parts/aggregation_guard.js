@@ -1,50 +1,37 @@
 /**
  * @module plugins/dbviewer/api/parts/aggregation_guard
- * @description Whitelist of MongoDB aggregation stages the DB Viewer permits for
- * non-global users, plus a sanitizer that strips any non-whitelisted stage at
- * EVERY depth.
+ * @description Validates a DB Viewer aggregation pipeline against a role-specific
+ * allow-list of stages, and rejects pipelines that use server-side-JavaScript
+ * operators or join/union into a redacted (credential) collection.
  *
- * Stages such as $lookup, $graphLookup, $unionWith, $out and $merge are not
- * whitelisted because they read from / write to a second collection and would
- * bypass the per-collection access check (and the top-level-only members /
- * auth_tokens redaction). $facet IS whitelisted, but it carries sub-pipelines;
- * if those sub-pipelines are not inspected, a blocked stage (e.g. $lookup) can
- * be smuggled in nested under $facet. The sanitizer therefore recurses into
- * $facet sub-pipelines so the boundary holds at any depth.
+ * One routine, two lists:
+ *  - non-global users get ALLOWED_STAGES_USER (no joins, no writes);
+ *  - global admins get ALLOWED_STAGES_GLOBAL_ADMIN (the same plus join/union
+ *    stages).
+ * Anything not in the applicable list is stripped from the pipeline at every
+ * depth. Two hard rules apply to everyone, at any depth, and reject the request:
+ *  - no $function / $accumulator / $where (server-side JavaScript);
+ *  - no join/union into members / auth_tokens (their field redaction only
+ *    applies to the top-level source collection, so a join would return raw
+ *    credentials — denied even for global admins).
  */
 
 'use strict';
 
-const whiteListedAggregationStages = {
+// Stages a non-global user may run. No joins/unions (they read a second
+// collection, bypassing the per-collection access check) and no writes.
+const ALLOWED_STAGES_USER = {
     "$addFields": true,
     "$bucket": true,
     "$bucketAuto": true,
-    //"$changeStream": false,
-    //"$changeStreamSplitLargeEvents": false,
-    //"$collStats": false,
     "$count": true,
-    //"$currentOp": false,
     "$densify": true,
-    //"$documents": false
     "$facet": true,
     "$fill": true,
     "$geoNear": true,
-    // "$graphLookup": false — removed: lets attacker pull joined documents from any collection in the same DB,
-    //                        bypassing the per-collection access check. Use $lookup instead if cross-collection
-    //                        joins are ever needed (currently also disallowed).
     "$group": true,
-    //"$indexStats": false,
     "$limit": true,
-    //"$listLocalSessions": false
-    //"$listSampledQueries": false
-    //"$listSearchIndexes": false
-    //"$listSessions": false
-    //"$lookup": false
     "$match": true,
-    //"$merge": false
-    //"$mergeCursors": false
-    //"$out": false
-    //"$planCacheStats": false,
     "$project": true,
     "$querySettings": true,
     "$redact": true,
@@ -55,29 +42,42 @@ const whiteListedAggregationStages = {
     "$searchMeta": true,
     "$set": true,
     "$setWindowFields": true,
-    //"$sharedDataDistribution": false,
     "$skip": true,
     "$sort": true,
     "$sortByCount": true,
-    //"$unionWith": false,
     "$unset": true,
     "$unwind": true,
     "$vectorSearch": true //atlas specific
 };
 
-/**
- * Recognized aggregation STAGE operators (allow-listed plus the known blocked
- * ones). Used to tell a nested aggregation sub-pipeline (an array of stage
- * objects) apart from an ordinary expression array, so the sanitizer can
- * descend into sub-pipelines wherever they appear — $facet's branch arrays, a
- * stage's `.pipeline`, or any future nested-pipeline shape — without a
- * hard-coded stage name and without mistaking an expression array for a
- * pipeline.
- */
-const KNOWN_STAGE_OPERATORS = Object.assign({
+// Global admins may additionally use the join/union stages. Still no write
+// stages, and still never into a protected collection (see findHardViolation).
+const ALLOWED_STAGES_GLOBAL_ADMIN = Object.assign({}, ALLOWED_STAGES_USER, {
     "$lookup": true,
     "$graphLookup": true,
-    "$unionWith": true,
+    "$unionWith": true
+});
+
+// Expression operators that run server-side JavaScript. Never allowed for
+// anyone, at any depth — they live inside otherwise-allowed stages.
+const DENIED_OPERATORS = {
+    "$function": true,
+    "$accumulator": true,
+    "$where": true
+};
+
+// Collections whose contents DB Viewer redacts. A join/union into them would
+// return the raw documents (redaction only applies to the top-level source),
+// so such joins are rejected for everyone — including global admins.
+const PROTECTED_JOIN_COLLECTIONS = {
+    "members": true,
+    "auth_tokens": true
+};
+
+// All recognized aggregation STAGE operators (any role's allow-list plus the
+// known blocked stages), used to recognize a nested array as a sub-pipeline
+// (array of stage objects) and tell it apart from an ordinary expression array.
+const KNOWN_STAGE_OPERATORS = Object.assign({
     "$out": true,
     "$merge": true,
     "$documents": true,
@@ -93,146 +93,7 @@ const KNOWN_STAGE_OPERATORS = Object.assign({
     "$changeStreamSplitLargeEvents": true,
     "$mergeCursors": true,
     "$sharedDataDistribution": true
-}, whiteListedAggregationStages);
-
-/**
- * Does this array look like an aggregation sub-pipeline — i.e. a non-empty
- * array whose every element is a stage object (an object carrying a recognized
- * stage operator key)? Expression arrays (e.g. $concat's operands) do not match.
- * @param {*} arr - candidate value
- * @returns {boolean} true if it is a sub-pipeline
- */
-function isSubPipeline(arr) {
-    if (!Array.isArray(arr) || arr.length === 0) {
-        return false;
-    }
-    for (var i = 0; i < arr.length; i++) {
-        var el = arr[i];
-        if (!el || typeof el !== "object" || Array.isArray(el)) {
-            return false;
-        }
-        var isStage = false;
-        for (var k in el) {
-            if (Object.prototype.hasOwnProperty.call(el, k) && KNOWN_STAGE_OPERATORS[k] === true) {
-                isStage = true;
-                break;
-            }
-        }
-        if (!isStage) {
-            return false;
-        }
-    }
-    return true;
-}
-
-/**
- * Walk a kept (allow-listed) stage's value and sanitize every nested
- * sub-pipeline found anywhere within it — not just $facet branches or a
- * `.pipeline` field — so a blocked stage cannot hide inside any (including
- * future) nested-pipeline shape. A sub-pipeline that becomes empty after
- * sanitization is removed from its parent object (Mongo rejects an empty $facet
- * branch).
- * @param {*} value - the stage value (or any nested node) to scan
- * @param {object} changes - accumulator: keys are removed stage names
- * @returns {void}
- */
-function sanitizeNestedPipelines(value, changes) {
-    if (Array.isArray(value)) {
-        if (isSubPipeline(value)) {
-            sanitizePipeline(value, changes);
-        }
-        else {
-            for (var i = 0; i < value.length; i++) {
-                sanitizeNestedPipelines(value[i], changes);
-            }
-        }
-        return;
-    }
-    if (value && typeof value === "object") {
-        for (var k in value) {
-            if (!Object.prototype.hasOwnProperty.call(value, k)) {
-                continue;
-            }
-            var child = value[k];
-            if (Array.isArray(child) && isSubPipeline(child)) {
-                sanitizePipeline(child, changes);
-                if (child.length === 0) {
-                    delete value[k];
-                }
-            }
-            else {
-                sanitizeNestedPipelines(child, changes);
-            }
-        }
-    }
-}
-
-/**
- * Recursively remove non-whitelisted stages from an aggregation pipeline,
- * descending into the sub-pipelines of any kept stage at every depth. The
- * pipeline is mutated in place.
- * @param {Array} pipeline - aggregation pipeline (array of stage objects)
- * @param {object} changes - accumulator: keys are removed stage names
- * @returns {object} the changes accumulator
- */
-function sanitizePipeline(pipeline, changes) {
-    if (!Array.isArray(pipeline)) {
-        return changes;
-    }
-    for (var z = 0; z < pipeline.length; z++) {
-        var stage = pipeline[z];
-        if (!stage || typeof stage !== "object") {
-            continue;
-        }
-        for (var key in stage) {
-            // require an explicit `true` so inherited Object.prototype keys
-            // (constructor, __proto__, …) are never treated as allow-listed
-            if (whiteListedAggregationStages[key] !== true) {
-                changes[key] = true;
-                delete stage[key];
-            }
-            else {
-                // kept stage — sanitize any sub-pipeline nested anywhere in its
-                // value (structural, not keyed on a specific stage name)
-                sanitizeNestedPipelines(stage[key], changes);
-                // drop the stage if sanitization emptied its content (e.g. a
-                // $facet whose every branch was removed — Mongo rejects that)
-                var v = stage[key];
-                if (v && typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0) {
-                    delete stage[key];
-                }
-            }
-        }
-        if (Object.keys(stage).length === 0) {
-            pipeline.splice(z, 1);
-            z--;
-        }
-    }
-    return changes;
-}
-
-/**
- * Remove all not-allowed aggregation stages from the pipeline, at every depth.
- * @param {Array} aggregation - current aggregation pipeline (mutated in place)
- * @returns {object} changes - object whose keys are the removed stage names
- */
-function escapeNotAllowedAggregationStages(aggregation) {
-    return sanitizePipeline(aggregation, {});
-}
-
-/**
- * Collections whose contents are redacted by DB Viewer (credentials / tokens)
- * and which therefore must never be reachable through a join. The redaction is
- * only applied when these are the top-level source collection, so a join into
- * them (e.g. $lookup { from: "members" }) would return the raw, un-redacted
- * documents — including api_key / password / token values. This must hold even
- * for global admins, who are intentionally denied raw credentials through DB
- * Viewer (the top-level redaction applies to them too).
- */
-const PROTECTED_JOIN_COLLECTIONS = {
-    "members": true,
-    "auth_tokens": true
-};
+}, ALLOWED_STAGES_GLOBAL_ADMIN);
 
 /**
  * Collection names a single stage joins / unions from.
@@ -262,23 +123,47 @@ function joinTargetsOf(stage) {
 }
 
 /**
- * Deep-scan an aggregation pipeline node (object/array, at every depth) for a
- * join/union into a protected (redacted) collection. Used to block such joins
- * regardless of the caller's role, since the per-collection redaction cannot
- * follow data pulled in via a join.
- *
- * This walks ALL nested structures rather than only known sub-pipeline
- * locations ($facet / .pipeline), so a join smuggled inside any future stage
- * shape is still detected. Detection-only (no mutation), so a blanket deep walk
- * is safe here — unlike the stage sanitizer, which must stay targeted to avoid
- * mangling expressions.
- * @param {*} node - pipeline / stage / expression node (not mutated)
- * @returns {string|null} the protected collection name if one is joined, else null
+ * Does this array look like an aggregation sub-pipeline — a non-empty array
+ * whose every element is a stage object (an object carrying a recognized stage
+ * operator key)? Expression arrays (e.g. $concat operands) do not match.
+ * @param {*} arr - candidate value
+ * @returns {boolean} true if it is a sub-pipeline
  */
-function findProtectedCollectionJoin(node) {
+function isSubPipeline(arr) {
+    if (!Array.isArray(arr) || arr.length === 0) {
+        return false;
+    }
+    for (var i = 0; i < arr.length; i++) {
+        var el = arr[i];
+        if (!el || typeof el !== "object" || Array.isArray(el)) {
+            return false;
+        }
+        var isStage = false;
+        for (var k in el) {
+            if (Object.prototype.hasOwnProperty.call(el, k) && KNOWN_STAGE_OPERATORS[k] === true) {
+                isStage = true;
+                break;
+            }
+        }
+        if (!isStage) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Deep-walk a node for a hard-rule violation that must reject the whole request,
+ * regardless of role: a server-side-JS operator, or a join/union into a
+ * protected (redacted) collection. Detection-only (no mutation), so a blanket
+ * deep walk is safe and stays correct for any (incl. future) nested shape.
+ * @param {*} node - pipeline / stage / expression node
+ * @returns {{type: string, name: string}|null} the violation, or null
+ */
+function findHardViolation(node) {
     if (Array.isArray(node)) {
         for (var i = 0; i < node.length; i++) {
-            var inArr = findProtectedCollectionJoin(node[i]);
+            var inArr = findHardViolation(node[i]);
             if (inArr) {
                 return inArr;
             }
@@ -289,15 +174,19 @@ function findProtectedCollectionJoin(node) {
         var targets = joinTargetsOf(node);
         for (var t = 0; t < targets.length; t++) {
             if (PROTECTED_JOIN_COLLECTIONS[targets[t]] === true) {
-                return targets[t];
+                return { type: "join", name: targets[t] };
             }
         }
         for (var key in node) {
-            if (Object.prototype.hasOwnProperty.call(node, key)) {
-                var inVal = findProtectedCollectionJoin(node[key]);
-                if (inVal) {
-                    return inVal;
-                }
+            if (!Object.prototype.hasOwnProperty.call(node, key)) {
+                continue;
+            }
+            if (DENIED_OPERATORS[key] === true) {
+                return { type: "operator", name: key };
+            }
+            var inVal = findHardViolation(node[key]);
+            if (inVal) {
+                return inVal;
             }
         }
     }
@@ -305,100 +194,112 @@ function findProtectedCollectionJoin(node) {
 }
 
 /**
- * Aggregation stages that WRITE to a collection. DB Viewer is a read-only tool,
- * so these must never run — including on the global-admin path, which otherwise
- * skips the stage allow-list.
+ * Walk a kept stage's value and strip disallowed stages from any sub-pipeline
+ * nested anywhere within it (structural — $facet branches, a .pipeline field,
+ * or any other nested-pipeline shape). A sub-pipeline emptied by stripping is
+ * removed from its parent object (Mongo rejects an empty $facet branch).
+ * @param {*} value - the stage value (or any nested node)
+ * @param {object} allowedStages - the role's allow-list
+ * @param {object} changes - accumulator: keys are removed stage names
+ * @returns {void}
  */
-const WRITE_STAGES = {
-    "$out": true,
-    "$merge": true
-};
-
-/**
- * Deep-scan an aggregation pipeline node (object/array, at every depth) for a
- * write stage ($out / $merge). Detection-only, so a blanket deep walk is safe
- * and stays correct for any (incl. future) nested stage shape.
- * @param {*} node - pipeline / stage / expression node (not mutated)
- * @returns {string|null} the write stage name if present, else null
- */
-function findWriteStage(node) {
-    if (Array.isArray(node)) {
-        for (var i = 0; i < node.length; i++) {
-            var inArr = findWriteStage(node[i]);
-            if (inArr) {
-                return inArr;
+function stripNested(value, allowedStages, changes) {
+    if (Array.isArray(value)) {
+        if (isSubPipeline(value)) {
+            stripStages(value, allowedStages, changes);
+        }
+        else {
+            for (var i = 0; i < value.length; i++) {
+                stripNested(value[i], allowedStages, changes);
             }
         }
-        return null;
+        return;
     }
-    if (node && typeof node === "object") {
-        for (var key in node) {
-            if (Object.prototype.hasOwnProperty.call(node, key)) {
-                if (WRITE_STAGES[key] === true) {
-                    return key;
+    if (value && typeof value === "object") {
+        for (var k in value) {
+            if (!Object.prototype.hasOwnProperty.call(value, k)) {
+                continue;
+            }
+            var child = value[k];
+            if (Array.isArray(child) && isSubPipeline(child)) {
+                stripStages(child, allowedStages, changes);
+                if (child.length === 0) {
+                    delete value[k];
                 }
-                var inVal = findWriteStage(node[key]);
-                if (inVal) {
-                    return inVal;
-                }
+            }
+            else {
+                stripNested(child, allowedStages, changes);
             }
         }
     }
-    return null;
 }
 
 /**
- * Aggregation EXPRESSION operators that execute server-side JavaScript. These
- * are not stages, so the stage allow-list does not catch them — they live
- * inside otherwise-allowed stages ($project / $group / $addFields / $match …).
- * They must never run via DB Viewer (the find() path already strips the
- * equivalent operators from filter/sort).
+ * Recursively remove stages not in `allowedStages` from a pipeline, at every
+ * depth. Mutates the pipeline in place.
+ * @param {Array} pipeline - aggregation pipeline
+ * @param {object} allowedStages - the role's allow-list (values must be === true)
+ * @param {object} changes - accumulator: keys are removed stage names
+ * @returns {void}
  */
-const SERVER_SIDE_JS_OPERATORS = {
-    "$function": true,
-    "$accumulator": true,
-    "$where": true
-};
+function stripStages(pipeline, allowedStages, changes) {
+    if (!Array.isArray(pipeline)) {
+        return;
+    }
+    for (var z = 0; z < pipeline.length; z++) {
+        var stage = pipeline[z];
+        if (!stage || typeof stage !== "object") {
+            continue;
+        }
+        for (var key in stage) {
+            if (!Object.prototype.hasOwnProperty.call(stage, key)) {
+                continue;
+            }
+            // require an explicit `true` so inherited Object.prototype keys
+            // (constructor, __proto__, …) are never treated as allow-listed
+            if (allowedStages[key] !== true) {
+                changes[key] = true;
+                delete stage[key];
+            }
+            else {
+                stripNested(stage[key], allowedStages, changes);
+                var v = stage[key];
+                if (v && typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0) {
+                    delete stage[key];
+                }
+            }
+        }
+        if (Object.keys(stage).length === 0) {
+            pipeline.splice(z, 1);
+            z--;
+        }
+    }
+}
 
 /**
- * Deep-scan an aggregation pipeline (objects and arrays, at every depth,
- * including expression values) for a server-side-JavaScript operator.
- * @param {*} node - pipeline / stage / expression node
- * @returns {string|null} the operator name if present, else null
+ * Validate and sanitize an aggregation pipeline for a given role's allow-list.
+ * Rejects (without mutating) when a hard rule is violated; otherwise strips any
+ * stage not in the allow-list and returns what was removed.
+ * @param {Array} pipeline - aggregation pipeline (mutated in place when valid)
+ * @param {object} allowedStages - ALLOWED_STAGES_USER or ALLOWED_STAGES_GLOBAL_ADMIN
+ * @returns {{changes: object, error: ({type: string, name: string}|null)}}
+ *          When error is set the caller must reject the request and not run the
+ *          pipeline. Otherwise changes lists the removed stage names.
  */
-function findServerSideJs(node) {
-    if (Array.isArray(node)) {
-        for (var i = 0; i < node.length; i++) {
-            var inArr = findServerSideJs(node[i]);
-            if (inArr) {
-                return inArr;
-            }
-        }
-        return null;
+function sanitizeAggregation(pipeline, allowedStages) {
+    var violation = findHardViolation(pipeline);
+    if (violation) {
+        return { changes: {}, error: violation };
     }
-    if (node && typeof node === "object") {
-        for (var key in node) {
-            if (Object.prototype.hasOwnProperty.call(node, key)) {
-                if (SERVER_SIDE_JS_OPERATORS[key] === true) {
-                    return key;
-                }
-                var inVal = findServerSideJs(node[key]);
-                if (inVal) {
-                    return inVal;
-                }
-            }
-        }
-    }
-    return null;
+    var changes = {};
+    stripStages(pipeline, allowedStages, changes);
+    return { changes: changes, error: null };
 }
 
 module.exports = {
-    whiteListedAggregationStages,
+    ALLOWED_STAGES_USER,
+    ALLOWED_STAGES_GLOBAL_ADMIN,
+    DENIED_OPERATORS,
     PROTECTED_JOIN_COLLECTIONS,
-    WRITE_STAGES,
-    SERVER_SIDE_JS_OPERATORS,
-    escapeNotAllowedAggregationStages,
-    findProtectedCollectionJoin,
-    findWriteStage,
-    findServerSideJs
+    sanitizeAggregation
 };
