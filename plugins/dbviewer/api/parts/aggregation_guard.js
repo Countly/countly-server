@@ -191,42 +191,41 @@ function joinTargetsOf(stage) {
 }
 
 /**
- * Recursively scan a pipeline for a join/union into a protected (redacted)
- * collection, at every depth (including $facet sub-pipelines and nested
- * .pipeline arrays). Used to block such joins regardless of the caller's role,
- * since the per-collection redaction cannot follow data pulled in via a join.
- * @param {Array} pipeline - aggregation pipeline (not mutated)
+ * Deep-scan an aggregation pipeline node (object/array, at every depth) for a
+ * join/union into a protected (redacted) collection. Used to block such joins
+ * regardless of the caller's role, since the per-collection redaction cannot
+ * follow data pulled in via a join.
+ *
+ * This walks ALL nested structures rather than only known sub-pipeline
+ * locations ($facet / .pipeline), so a join smuggled inside any future stage
+ * shape is still detected. Detection-only (no mutation), so a blanket deep walk
+ * is safe here — unlike the stage sanitizer, which must stay targeted to avoid
+ * mangling expressions.
+ * @param {*} node - pipeline / stage / expression node (not mutated)
  * @returns {string|null} the protected collection name if one is joined, else null
  */
-function findProtectedCollectionJoin(pipeline) {
-    if (!Array.isArray(pipeline)) {
+function findProtectedCollectionJoin(node) {
+    if (Array.isArray(node)) {
+        for (var i = 0; i < node.length; i++) {
+            var inArr = findProtectedCollectionJoin(node[i]);
+            if (inArr) {
+                return inArr;
+            }
+        }
         return null;
     }
-    for (var i = 0; i < pipeline.length; i++) {
-        var stage = pipeline[i];
-        if (!stage || typeof stage !== "object") {
-            continue;
-        }
-        var targets = joinTargetsOf(stage);
+    if (node && typeof node === "object") {
+        var targets = joinTargetsOf(node);
         for (var t = 0; t < targets.length; t++) {
             if (PROTECTED_JOIN_COLLECTIONS[targets[t]] === true) {
                 return targets[t];
             }
         }
-        for (var key in stage) {
-            var val = stage[key];
-            if (key === "$facet" && val && typeof val === "object") {
-                for (var facetName in val) {
-                    var found = findProtectedCollectionJoin(val[facetName]);
-                    if (found) {
-                        return found;
-                    }
-                }
-            }
-            else if (val && typeof val === "object" && Array.isArray(val.pipeline)) {
-                var nested = findProtectedCollectionJoin(val.pipeline);
-                if (nested) {
-                    return nested;
+        for (var key in node) {
+            if (Object.prototype.hasOwnProperty.call(node, key)) {
+                var inVal = findProtectedCollectionJoin(node[key]);
+                if (inVal) {
+                    return inVal;
                 }
             }
         }

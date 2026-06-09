@@ -141,5 +141,11 @@ describe("dbviewer aggregation guard", function() {
         it("detects $graphLookup into members", function() {
             guard.findProtectedCollectionJoin([{$graphLookup: {from: "members", startWith: "$x", connectFromField: "a", connectToField: "b", as: "m"}}]).should.equal("members");
         });
+        it("detects a join nested in an arbitrary (non-$facet, non-.pipeline) stage shape", function() {
+            // future-proofing: a join smuggled under some unknown stage shape
+            // that isn't $facet and doesn't use a .pipeline key must still be found
+            var pipeline = [{$someFutureStage: {branches: [[{$lookup: {from: "members", as: "m"}}]]}}];
+            guard.findProtectedCollectionJoin(pipeline).should.equal("members");
+        });
     });
 });
