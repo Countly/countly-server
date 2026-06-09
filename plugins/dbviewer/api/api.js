@@ -403,16 +403,16 @@ var spawn = require('child_process').spawn,
         * @param {object} changes - object referencing removed stages from pipeline
         * */
         function aggregate(collection, aggregation, changes) {
-            if (params.qstring.iDisplayLength) {
-                var iDisplayLength = parseInt(params.qstring.iDisplayLength, 10);
-                if (!isNaN(iDisplayLength) && iDisplayLength > 0) {
-                    aggregation.push({ "$limit": Math.min(iDisplayLength, MAX_DBVIEWER_LIMIT) });
-                }
-            }
             if (!Array.isArray(aggregation)) {
                 common.returnMessage(params, 500, "The aggregation pipeline must be of the type array");
             }
             else {
+                if (params.qstring.iDisplayLength) {
+                    var iDisplayLength = parseInt(params.qstring.iDisplayLength, 10);
+                    if (!isNaN(iDisplayLength) && iDisplayLength > 0) {
+                        aggregation.push({ "$limit": Math.min(iDisplayLength, MAX_DBVIEWER_LIMIT) });
+                    }
+                }
                 if (collection === 'members') {
                     // Insert the redaction as the very first stage so no
                     // user-supplied stage — including a leading $match using
