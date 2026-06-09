@@ -111,6 +111,26 @@ describe("dbviewer aggregation guard", function() {
             pipeline[0][FAKE].pipeline.length.should.equal(1);
             pipeline[0][FAKE].pipeline[0].should.have.property("$match");
         });
+        it("strips a blocked stage in a sub-pipeline under an arbitrary (non-$facet/.pipeline) field", function() {
+            // structural detection: a sub-pipeline carried by any field name,
+            // even an array-of-pipelines shape, is still descended into
+            var pipeline = [{}];
+            pipeline[0][FAKE] = {branches: [[{$match: {a: 1}}, {$lookup: {from: "members", as: "m"}}]]};
+            var changes = guard.escapeNotAllowedAggregationStages(pipeline);
+            changes.should.have.property("$lookup");
+            JSON.stringify(pipeline).indexOf("$lookup").should.equal(-1);
+            // the legitimate $match inside the nested sub-pipeline survives
+            pipeline[0][FAKE].branches[0].length.should.equal(1);
+            pipeline[0][FAKE].branches[0][0].should.have.property("$match");
+        });
+        it("does not mistake an ordinary expression array for a sub-pipeline", function() {
+            // {$concat:["$a","$b"]} is an expression, not a pipeline; it must be left intact
+            var pipeline = [{$project: {full: {$concat: ["$a", "$b"]}}}];
+            var changes = guard.escapeNotAllowedAggregationStages(pipeline);
+            Object.keys(changes).length.should.equal(0);
+            pipeline.length.should.equal(1);
+            pipeline[0].$project.full.$concat.length.should.equal(2);
+        });
     });
 
     // Blocks joins into redacted collections (members / auth_tokens) at any
