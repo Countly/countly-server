@@ -60,8 +60,10 @@ countly shellcheck           # Validate shell scripts
    }
    var query = parsed.query; // safe to run as-is
 
-   // ALREADY-parsed object (nested in a saved payload, or EJSON like dbviewer) → validate only
-   var badOp = common.findUnsafeMongoOperator(obj);
+   // ALREADY-parsed object — e.g. dbviewer parses with EJSON, or the query is
+   // nested in a larger saved payload. Validate that parsed object directly:
+   var parsedQuery = EJSON.parse(params.qstring.filter); // example: already parsed (EJSON / stored doc)
+   var badOp = common.findUnsafeMongoOperator(parsedQuery);
    if (badOp) {
        log.d("Rejected user query" + common.reqInfo(params) + ": Query contains disallowed operator: " + badOp);
        return common.returnMessage(params, 400, "Query contains disallowed operator: " + badOp);
