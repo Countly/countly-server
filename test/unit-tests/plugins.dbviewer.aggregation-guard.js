@@ -110,6 +110,11 @@ describe("dbviewer aggregation guard", function() {
         it("rejects a join into members nested inside $facet", function() {
             guard.sanitizeAggregation([{$facet: {leak: [{$lookup: {from: "members", as: "m"}}]}}], ADMIN).error.name.should.equal("members");
         });
+        it("rejects a $lookup into members via the cross-db object form {db, coll}", function() {
+            var res = guard.sanitizeAggregation([{$lookup: {from: {db: "countly", coll: "members"}, as: "m"}}], ADMIN);
+            res.error.type.should.equal("join");
+            res.error.name.should.equal("members");
+        });
     });
 
     describe("global admin allow-list", function() {

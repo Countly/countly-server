@@ -364,16 +364,16 @@ var spawn = require('child_process').spawn,
         * @param {object} aggregation - aggregation object
         * */
         function aggregate(collection, aggregation) {
-            if (params.qstring.iDisplayLength) {
-                var iDisplayLength = parseInt(params.qstring.iDisplayLength, 10);
-                if (!isNaN(iDisplayLength) && iDisplayLength > 0) {
-                    aggregation.push({ "$limit": Math.min(iDisplayLength, MAX_DBVIEWER_LIMIT) });
-                }
-            }
             if (!Array.isArray(aggregation)) {
                 common.returnMessage(params, 500, "The aggregation pipeline must be of the type array");
             }
             else {
+                if (params.qstring.iDisplayLength) {
+                    var iDisplayLength = parseInt(params.qstring.iDisplayLength, 10);
+                    if (!isNaN(iDisplayLength) && iDisplayLength > 0) {
+                        aggregation.push({ "$limit": Math.min(iDisplayLength, MAX_DBVIEWER_LIMIT) });
+                    }
+                }
                 // The pipeline has already been validated/sanitized by
                 // sanitizeAggregation() (allow-list of stages, no server-side JS,
                 // no joins into redacted collections) before this point.

@@ -96,6 +96,23 @@ const KNOWN_STAGE_OPERATORS = Object.assign({
 }, ALLOWED_STAGES_GLOBAL_ADMIN);
 
 /**
+ * Extract the collection name from a join "from"/"coll" reference, which may be
+ * a plain string ("members") or the cross-database object form
+ * ({ db, coll }). Returns [] when no collection name can be determined.
+ * @param {*} from - a $lookup.from / $graphLookup.from / $unionWith.coll value
+ * @returns {string[]} the referenced collection name(s)
+ */
+function collectionOf(from) {
+    if (typeof from === "string") {
+        return [from];
+    }
+    if (from && typeof from === "object" && typeof from.coll === "string") {
+        return [from.coll];
+    }
+    return [];
+}
+
+/**
  * Collection names a single stage joins / unions from.
  * @param {object} stage - one aggregation stage
  * @returns {string[]} target collection names referenced by join/union operators
@@ -105,18 +122,18 @@ function joinTargetsOf(stage) {
     if (!stage || typeof stage !== "object") {
         return targets;
     }
-    if (stage.$lookup && typeof stage.$lookup === "object" && typeof stage.$lookup.from === "string") {
-        targets.push(stage.$lookup.from);
+    if (stage.$lookup && typeof stage.$lookup === "object") {
+        targets = targets.concat(collectionOf(stage.$lookup.from));
     }
-    if (stage.$graphLookup && typeof stage.$graphLookup === "object" && typeof stage.$graphLookup.from === "string") {
-        targets.push(stage.$graphLookup.from);
+    if (stage.$graphLookup && typeof stage.$graphLookup === "object") {
+        targets = targets.concat(collectionOf(stage.$graphLookup.from));
     }
     if (stage.$unionWith) {
         if (typeof stage.$unionWith === "string") {
             targets.push(stage.$unionWith);
         }
-        else if (typeof stage.$unionWith === "object" && typeof stage.$unionWith.coll === "string") {
-            targets.push(stage.$unionWith.coll);
+        else if (typeof stage.$unionWith === "object") {
+            targets = targets.concat(collectionOf(stage.$unionWith.coll));
         }
     }
     return targets;
