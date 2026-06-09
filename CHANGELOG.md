@@ -1,4 +1,7 @@
 
+## Version 25.03
+Fixes:
+- [journey_engine] resut tab made available for running journeys
 ## Version 25.03.46
 Fixes:
  - Overall security Fixes
