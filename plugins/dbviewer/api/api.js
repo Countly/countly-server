@@ -12,6 +12,11 @@ const { MongoInvalidArgumentError } = require('mongodb');
 const { EJSON } = require('bson');
 
 const FEATURE_NAME = 'dbviewer';
+// upper bound on rows returned per find()/aggregation page
+const MAX_DBVIEWER_LIMIT = 10000;
+// role-parameterized aggregation guard + find() query hardening helpers
+const { sanitizeAggregation, ALLOWED_STAGES_USER, ALLOWED_STAGES_GLOBAL_ADMIN } = require('./parts/aggregation_guard.js');
+const { sanitizeProjection, escapeRegExp } = require('./parts/query_guard.js');
 var spawn = require('child_process').spawn,
     child;
 (function() {
@@ -121,6 +126,7 @@ var spawn = require('child_process').spawn,
                             if (params.qstring.collection === 'members' && results) {
                                 delete results.password;
                                 delete results.api_key;
+                                delete results.two_factor_auth;
                             }
                             else if (params.qstring.collection === 'auth_tokens' && results) {
                                 if (results._id) {
@@ -130,7 +136,8 @@ var spawn = require('child_process').spawn,
                             common.returnOutput(params, objectIdCheck(results) || {});
                         }
                         else {
-                            common.returnOutput(params, 500, err);
+                            log.e(err);
+                            common.returnMessage(params, 500, "An unexpected error occurred.");
                         }
                     });
                 }
@@ -143,8 +150,19 @@ var spawn = require('child_process').spawn,
         * Get collection data from db
         **/
         async function dbGetCollection() {
-            var limit = parseInt(params.qstring.limit || 20);
-            var skip = parseInt(params.qstring.skip || 0);
+            // cap page size and guard against NaN so a crafted limit/skip can't
+            // request an unbounded result set
+            var limit = parseInt(params.qstring.limit, 10);
+            if (isNaN(limit) || limit <= 0) {
+                limit = 20;
+            }
+            if (limit > MAX_DBVIEWER_LIMIT) {
+                limit = MAX_DBVIEWER_LIMIT;
+            }
+            var skip = parseInt(params.qstring.skip, 10);
+            if (isNaN(skip) || skip < 0) {
+                skip = 0;
+            }
             var filter = params.qstring.filter || params.qstring.query || "{}";
             var sSearch = params.qstring.sSearch || "";
             var projection = params.qstring.project || params.qstring.projection || "{}";
@@ -175,12 +193,19 @@ var spawn = require('child_process').spawn,
                 filter._id = common.db.ObjectID(filter._id);
             }
             if (sSearch) {
-                filter._id = new RegExp(sSearch);
+                // treat the search term as a literal so a crafted pattern cannot
+                // cause catastrophic regex backtracking (ReDoS)
+                filter._id = new RegExp(escapeRegExp(sSearch));
             }
             try {
                 projection = EJSON.parse(projection);
             }
             catch (SyntaxError) {
+                projection = {};
+            }
+            //normalize a non-object projection (null/array) to {} so it can't
+            //reach find()
+            if (!projection || typeof projection !== 'object' || Array.isArray(projection)) {
                 projection = {};
             }
             if (typeof filter !== 'object' || Array.isArray(filter)) {
@@ -192,6 +217,9 @@ var spawn = require('child_process').spawn,
             //viewer query cannot be abused to execute code on the server
             common.stripUnsafeMongoOperators(filter);
             common.stripUnsafeMongoOperators(sort);
+            //restrict the projection to plain field include/exclude — drop any
+            //expression / field-path alias (e.g. {x:"$password"})
+            sanitizeProjection(projection);
 
             if (dbs[dbNameOnParam]) {
                 try {
@@ -217,6 +245,7 @@ var spawn = require('child_process').spawn,
                             if (params.qstring.collection === 'members' && doc) {
                                 delete doc.password;
                                 delete doc.api_key;
+                                delete doc.two_factor_auth;
                             }
                             else if (params.qstring.collection === 'auth_tokens' && doc) {
                                 if (doc._id) {
@@ -264,7 +293,8 @@ var spawn = require('child_process').spawn,
                     }
                 }
                 catch (err) {
-                    common.returnMessage(params, 500, err);
+                    log.e(err);
+                    common.returnMessage(params, 500, "An unexpected error occurred.");
                 }
             }
         }
@@ -334,40 +364,26 @@ var spawn = require('child_process').spawn,
         * @param {object} aggregation - aggregation object
         * */
         function aggregate(collection, aggregation) {
-            if (params.qstring.iDisplayLength) {
-                aggregation.push({ "$limit": parseInt(params.qstring.iDisplayLength) });
-            }
             if (!Array.isArray(aggregation)) {
                 common.returnMessage(params, 500, "The aggregation pipeline must be of the type array");
             }
             else {
-                // Reject $graphLookup. Its `from:` lets a user pull joined
-                // documents from any other collection in the same DB,
-                // bypassing the per-collection access check
-                // (dbUserHasAccessToCollection) and getBaseAppFilter — the
-                // base filter only applies to the source pipeline. The
-                // members/auth_tokens redaction below only fires when the
-                // source collection is one of those, not when those docs
-                // come in via the join. (Master 25.x has a broader
-                // aggregation-stage whitelist; this is the minimal 24.05
-                // backport of the same intent — see PR #7535 commit C-1.)
-                for (var stageIdx = 0; stageIdx < aggregation.length; stageIdx++) {
-                    if (aggregation[stageIdx] && Object.prototype.hasOwnProperty.call(aggregation[stageIdx], "$graphLookup")) {
-                        common.returnMessage(params, 400, "Aggregation stage \"$graphLookup\" is not allowed");
-                        return;
+                if (params.qstring.iDisplayLength) {
+                    var iDisplayLength = parseInt(params.qstring.iDisplayLength, 10);
+                    if (!isNaN(iDisplayLength) && iDisplayLength > 0) {
+                        aggregation.push({ "$limit": Math.min(iDisplayLength, MAX_DBVIEWER_LIMIT) });
                     }
                 }
-                var addProjectionAt = 0;
-                if (aggregation[0] && aggregation[0].$match) {
-                    while (aggregation.length > addProjectionAt && aggregation[addProjectionAt].$match) {
-                        addProjectionAt++;
-                    }
-                }
+                // The pipeline has already been validated/sanitized by
+                // sanitizeAggregation() (allow-list of stages, no server-side JS,
+                // no joins into redacted collections) before this point.
+                // Insert the redaction as the very first stage so no user stage
+                // can read the raw credential fields before they are removed.
                 if (collection === 'members') {
-                    aggregation.splice(addProjectionAt, 0, {"$project": {"password": 0, "api_key": 0}});
+                    aggregation.splice(0, 0, {"$project": {"password": 0, "api_key": 0, "two_factor_auth": 0}});
                 }
                 else if (collection === 'auth_tokens') {
-                    aggregation.splice(addProjectionAt, 0, {"$addFields": {"_id": "***redacted***"}});
+                    aggregation.splice(0, 0, {"$addFields": {"_id": "***redacted***"}});
                 }
                 // check task is already running?
                 taskManager.checkIfRunning({
@@ -408,7 +424,8 @@ var spawn = require('child_process').spawn,
                                     common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result });
                                 }
                                 else {
-                                    common.returnMessage(params, 500, aggregationErr);
+                                    log.e(aggregationErr);
+                                    common.returnMessage(params, 500, "An unexpected error occurred.");
                                 }
                             }
                         });
@@ -503,27 +520,36 @@ var spawn = require('child_process').spawn,
             }
             // handle aggregation request
             else if (isContainDb && params.qstring.aggregation) {
-                if (params.member.global_admin) {
+                // Validate the pipeline against the caller's allow-list and run
+                // it. Global admins get the broader list (may join/union, but
+                // still no writes and never into a redacted collection); other
+                // users get the restricted list. Disallowed stages are stripped;
+                // server-side-JS operators and joins into members/auth_tokens
+                // reject the request.
+                var runAggregation = function(allowedStages) {
                     try {
                         let aggregation = EJSON.parse(params.qstring.aggregation);
+                        var guard = sanitizeAggregation(aggregation, allowedStages);
+                        if (guard.error) {
+                            var msg = guard.error.type === "join"
+                                ? 'Aggregation may not join the "' + guard.error.name + '" collection'
+                                : 'Aggregation may not use the "' + guard.error.name + '" operator';
+                            common.returnMessage(params, 400, msg);
+                            return;
+                        }
                         aggregate(params.qstring.collection, aggregation);
                     }
                     catch (e) {
                         common.returnMessage(params, 500, 'Aggregation object is not valid.');
-                        return true;
                     }
+                };
+                if (params.member.global_admin) {
+                    runAggregation(ALLOWED_STAGES_GLOBAL_ADMIN);
                 }
                 else {
                     userHasAccess(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
-                            try {
-                                let aggregation = EJSON.parse(params.qstring.aggregation);
-                                aggregate(params.qstring.collection, aggregation);
-                            }
-                            catch (e) {
-                                common.returnMessage(params, 500, 'Aggregation object is not valid.');
-                                return true;
-                            }
+                            runAggregation(ALLOWED_STAGES_USER);
                         }
                         else {
                             common.returnMessage(params, 401, 'User does not have right tot view this colleciton');
