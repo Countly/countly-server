@@ -217,8 +217,8 @@ var spawn = require('child_process').spawn,
             //viewer query cannot be abused to execute code on the server
             var badOp = common.findUnsafeMongoOperator(filter) || common.findUnsafeMongoOperator(sort);
             if (badOp) {
-                log.d("Rejected user query" + common.reqInfo(params) + ": " + "Query contains disallowed operator: " + badOp);
-                common.returnMessage(params, 400, "Query contains disallowed operator: " + badOp);
+                log.d("Rejected user query" + common.reqInfo(params) + ": " + common.unsafeQueryError(badOp));
+                common.returnMessage(params, 400, common.unsafeQueryError(badOp));
                 return false;
             }
             //restrict the projection to plain field include/exclude — drop any

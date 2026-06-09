@@ -647,7 +647,7 @@ const processRequest = (params) => {
                             // requires an explicit confirm_delete_all=true. This catches a
                             // query that was meant to match a subset but actually matches
                             // everyone, without blocking legitimate subset deletions.
-                            if (params.qstring.force && !params.qstring.confirm_delete_all) {
+                            if (params.qstring.force && params.qstring.confirm_delete_all !== true && params.qstring.confirm_delete_all !== "true") {
                                 common.db.collection("app_users" + params.qstring.app_id).estimatedDocumentCount(function(errTotal, total) {
                                     if (!errTotal && total >= 100 && count >= total * 0.9) {
                                         common.returnMessage(params, 400, 'This query matches ' + count + ' of ~' + total + ' app users (nearly all). If this is intended, retry with confirm_delete_all=true, or use clear app data instead.');
