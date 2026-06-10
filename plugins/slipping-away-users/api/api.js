@@ -2,6 +2,7 @@
 
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common.js'),
+    log = common.log('slipping-away-users:api'),
     BPromise = require('bluebird'),
     moment = require('moment-timezone'),
     { validateRead } = require('../../../api/utils/rights.js');
@@ -77,15 +78,13 @@ catch (ex) {
     plugins.register("/o/slipping", function(ob) {
         const params = ob.params;
         const app_id = params.qstring.app_id;
-        let user_query = params.qstring.query || {};
-        if (typeof user_query === "string") {
-            try {
-                user_query = JSON.parse(user_query);
-            }
-            catch (e) {
-                console.log(e);
-            }
+        const parsedQuery = common.parseUserQuery(params.qstring.query);
+        if (parsedQuery.error) {
+            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+            common.returnMessage(params, 400, parsedQuery.error);
+            return true;
         }
+        let user_query = parsedQuery.query;
 
         if (cohorts) {
             var cohortQuery = cohorts.preprocessQuery(user_query);
