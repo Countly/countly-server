@@ -51,7 +51,7 @@ async function check(params, push) {
     let txFilter = new Filter(data.filter);
     let badOp = common.findUnsafeMongoOperator(txFilter.user) || common.findUnsafeMongoOperator(txFilter.drill);
     if (badOp) {
-        log.d("Rejected user query" + common.reqInfo(params) + ": " + "Query contains disallowed operator: " + badOp);
+        log.d("Rejected user query" + common.reqInfo(params) + ": " + common.unsafeQueryError(badOp));
         throw new ValidationError('Query contains disallowed operator: ' + badOp);
     }
 

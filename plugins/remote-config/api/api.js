@@ -518,7 +518,7 @@ plugins.setConfigs("remote-config", {
         // here, where it first enters from the request.
         var badOp = common.findUnsafeMongoOperator(config);
         if (badOp) {
-            log.d("Rejected user query" + common.reqInfo(params) + ": " + "Query contains disallowed operator: " + badOp);
+            log.d("Rejected user query" + common.reqInfo(params) + ": " + common.unsafeQueryError(badOp));
             common.returnMessage(params, 400, 'Query contains disallowed operator: ' + badOp);
             return true;
         }
