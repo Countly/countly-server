@@ -510,6 +510,19 @@ plugins.setConfigs("remote-config", {
             return true;
         }
 
+        // Reject (never modify) configs whose condition query contains disallowed
+        // Mongo operators ($where/$function/$accumulator). The stored
+        // condition.condition is later JSON.parsed and dispatched to
+        // /drill/preprocess_query and run against the database; the dispatch hook
+        // no longer strips them, so the whole parsed config payload is validated
+        // here, where it first enters from the request.
+        var badOp = common.findUnsafeMongoOperator(config);
+        if (badOp) {
+            log.d("Rejected user query" + common.reqInfo(params) + ": " + common.unsafeQueryError(badOp));
+            common.returnMessage(params, 400, 'Query contains disallowed operator: ' + badOp);
+            return true;
+        }
+
         var maximumParametersAllowed = plugins.getConfig("remote-config").maximum_allowed_parameters;
         var maximumConditionsAllowed = plugins.getConfig("remote-config").conditions_per_paramaeters;
 
@@ -1165,6 +1178,21 @@ plugins.setConfigs("remote-config", {
             return true;
         }
 
+        // Reject (never modify) condition queries that contain disallowed Mongo
+        // operators ($where/$function/$accumulator). The stored condition.condition
+        // is later JSON.parsed and dispatched to /drill/preprocess_query and run
+        // against the database; the dispatch hook no longer strips them, so they
+        // must be validated where they first enter from the request.
+        var parsedCondition = common.parseUserQuery(condition.condition);
+        if (parsedCondition.error) {
+            if (params.internal) {
+                return parsedCondition.error;
+            }
+            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedCondition.error);
+            common.returnMessage(params, 400, parsedCondition.error);
+            return true;
+        }
+
         if (typeof condition.condition !== typeof '') {
             condition.condition = JSON.stringify(condition.condition);
         }
@@ -1349,6 +1377,21 @@ plugins.setConfigs("remote-config", {
                 return 'Invalid parameter: condition';
             }
             common.returnMessage(params, 400, 'Invalid parameter: condition');
+            return true;
+        }
+
+        // Reject (never modify) condition queries that contain disallowed Mongo
+        // operators ($where/$function/$accumulator). The stored condition.condition
+        // is later JSON.parsed and dispatched to /drill/preprocess_query and run
+        // against the database; the dispatch hook no longer strips them, so they
+        // must be validated where they first enter from the request.
+        var parsedCondition = common.parseUserQuery(condition.condition);
+        if (parsedCondition.error) {
+            if (params.internal) {
+                return parsedCondition.error;
+            }
+            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedCondition.error);
+            common.returnMessage(params, 400, parsedCondition.error);
             return true;
         }
 

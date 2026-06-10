@@ -8,6 +8,7 @@ const { getAdminApps, getUserApps } = require('../../utils/rights.js');
 /** @lends module:api/parts/data/fetch */
 var fetch = {},
     common = require('./../../utils/common.js'),
+    log = common.log('core:api'),
     moment = require('moment-timezone'),
     async = require('async'),
     countlyModel = require('../../lib/countly.model.js'),
@@ -515,13 +516,13 @@ fetch.fetchAllApps = function(params) {
     var filter = {};
 
     if (params.qstring.filter) {
-        try {
-            filter = JSON.parse(params.qstring.filter);
-            common.stripUnsafeMongoOperators(filter);
+        var parsed = common.parseUserQuery(params.qstring.filter);
+        if (parsed.error) {
+            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsed.error);
+            common.returnMessage(params, 400, parsed.error);
+            return;
         }
-        catch (ex) {
-            filter = {};
-        }
+        filter = parsed.query;
     }
 
     if (!params.member.global_admin) {
