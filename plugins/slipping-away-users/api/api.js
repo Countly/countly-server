@@ -82,7 +82,7 @@ catch (ex) {
         if (parsedQuery.error) {
             log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
             common.returnMessage(params, 400, parsedQuery.error);
-            return;
+            return true;
         }
         let user_query = parsedQuery.query;
 
