@@ -2397,6 +2397,32 @@ var pluginManager = function pluginManager() {
                 if (!callback) {
                     return;
                 }
+                /**
+                 * Check if the caller declared this error code as expected via options.ignore_errors
+                 * @param {Error} err - error from the operation
+                 * @returns {boolean} true if the error should not be logged as an error
+                 **/
+                var isErrorIgnored = function(err) {
+                    //options position depends on operation signature: findAndModify(query, sort, doc, options), others (selector, doc, options)
+                    var opOptions = data && data.args && data.args[(data.name === "findAndModify") ? 3 : 2];
+                    return !!(opOptions && opOptions.ignore_errors && opOptions.ignore_errors.indexOf(err.code) !== -1);
+                };
+                /**
+                 * Log operation error honoring ignore_errors
+                 * @param {Error} err - error from the operation
+                 **/
+                var logWriteError = function(err) {
+                    if (isErrorIgnored(err)) {
+                        logDbWrite.d("Ignoring expected error writing " + collection + " %j %s", data, err);
+                    }
+                    else {
+                        logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
+                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                        if (e) {
+                            logDbWrite.e(e.stack);
+                        }
+                    }
+                };
                 return function(err, res) {
                     if (res) {
                         if (!res.value && data && data.name === "findAndModify" && data.args && data.args[3] && data.args[3].remove) {
@@ -2413,33 +2439,13 @@ var pluginManager = function pluginManager() {
                         }
                     }
                     if (err) {
-                        if (retry && err.code === 11000) {
-                            if (typeof retry === "function") {
-                                logDbWrite.d("Retrying writing " + collection + " %j", data);
-                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                                retry();
-                            }
-                            else {
-                                if (!(data.args && data.args[2] && data.args[2].ignore_errors && data.args[2].ignore_errors.indexOf(err.code) !== -1)) {
-                                    logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
-                                    logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                                    if (e) {
-                                        logDbWrite.e(e.stack);
-                                    }
-                                }
-                                if (callback) {
-                                    callback(err, res);
-                                }
-                            }
+                        if (retry && err.code === 11000 && typeof retry === "function") {
+                            logDbWrite.d("Retrying writing " + collection + " %j", data);
+                            logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                            retry();
                         }
                         else {
-                            if (!(data.args && data.args[2] && data.args[2].ignore_errors && data.args[2].ignore_errors.indexOf(err.code) !== -1)) {
-                                logDbWrite.e("Error writing " + collection + " %j %s %j", data, err, err);
-                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                                if (e) {
-                                    logDbWrite.e(e.stack);
-                                }
-                            }
+                            logWriteError(err);
                             if (callback) {
                                 callback(err, res);
                             }
@@ -2479,16 +2485,20 @@ var pluginManager = function pluginManager() {
 
                 logDbWrite.d("findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
                 logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                //capture original call arguments once: inside the retry closure below
+                //"arguments" would refer to the closure's own (empty) arguments, losing
+                //the operation context and the ignore_errors option on the retried attempt
+                var data = copyArguments(arguments, "findAndModify");
                 if (options.upsert) {
                     var self = this;
-                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, function() {
+                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, data, retryifNeeded(callback, function() {
                         logDbWrite.d("retrying findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
                         logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        return handlePromiseErrors(self._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
-                    }, e, copyArguments(arguments, "findAndModify")));
+                        return handlePromiseErrors(self._findAndModify(query, sort, doc, options), e, data, retryifNeeded(callback, null, e, data));
+                    }, e, data));
                 }
                 else {
-                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
+                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, data, retryifNeeded(callback, null, e, data));
                 }
             };
 
@@ -2524,16 +2534,20 @@ var pluginManager = function pluginManager() {
 
                     logDbWrite.d(name + " " + collection + " %j %j %j" + at, selector, doc, options);
                     logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                    //capture original call arguments once: inside the retry closure below
+                    //"arguments" would refer to the closure's own (empty) arguments, losing
+                    //the operation context and the ignore_errors option on the retried attempt
+                    var data = copyArguments(arguments, name);
                     if (options.upsert) {
                         var self = this;
-                        return handlePromiseErrors(this["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, function() {
+                        return handlePromiseErrors(this["_" + name](selector, doc, options), e, data, retryifNeeded(callback, function() {
                             logDbWrite.d("retrying " + name + " " + collection + " %j %j %j" + at, selector, doc, options);
                             logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                            return handlePromiseErrors(self["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
-                        }, e, copyArguments(arguments, name)));
+                            return handlePromiseErrors(self["_" + name](selector, doc, options), e, data, retryifNeeded(callback, null, e, data));
+                        }, e, data));
                     }
                     else {
-                        return handlePromiseErrors(this["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
+                        return handlePromiseErrors(this["_" + name](selector, doc, options), e, data, retryifNeeded(callback, null, e, data));
                     }
                 };
             };
