@@ -660,15 +660,19 @@ function uploadFile(myfile, id, callback) {
 
         //widget.created_by = common.db.ObjectID(obParams.member._id);
         validateCreate(obParams, FEATURE_NAME, function(params) {
+            //reject unsafe targeting queries before persisting the widget, so a
+            //rejected query does not leave an orphaned widget in the database
+            if (cohortsEnabled && widget.targeting) {
+                var targetingErr = unsafeTargetingError(widget.targeting);
+                if (targetingErr) {
+                    log.d("Rejected user query" + common.reqInfo(params) + ": " + targetingErr);
+                    common.returnMessage(params, 400, targetingErr);
+                    return false;
+                }
+            }
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
                     if (cohortsEnabled && widget.targeting) {
-                        var targetingErr = unsafeTargetingError(widget.targeting);
-                        if (targetingErr) {
-                            log.d("Rejected user query" + common.reqInfo(params) + ": " + targetingErr);
-                            common.returnMessage(params, 400, targetingErr);
-                            return false;
-                        }
                         widget.targeting.app_id = params.app_id + "";//has to be string
                         // eslint-disable-next-line
                         createCohort(params, type, result.insertedIds[0], widget.targeting, function(cohortId) { //create cohort using this
@@ -795,6 +799,17 @@ function uploadFile(myfile, id, callback) {
                 changes.is_active = changes.status ? "true" : "false";
             }
 
+            //reject unsafe targeting queries before persisting any changes, so a
+            //rejected query does not leave the widget partially updated
+            if (cohortsEnabled && changes.targeting) {
+                var editTargetingErr = unsafeTargetingError(changes.targeting);
+                if (editTargetingErr) {
+                    log.d("Rejected user query" + common.reqInfo(params) + ": " + editTargetingErr);
+                    common.returnMessage(params, 400, editTargetingErr);
+                    return false;
+                }
+            }
+
             //scope the update to the authorized app so a widget belonging to
             //another app cannot be edited by targeting its id
             common.db.collection("feedback_widgets").findAndModify({"_id": widgetId, "app_id": params.app_id + "" }, {}, {$set: changes}, function(err, widget) {
@@ -803,14 +818,6 @@ function uploadFile(myfile, id, callback) {
                 if (!err && widget && widget.value) {
                     widget = widget.value;
                     if (cohortsEnabled && ((widget.cohortID && !changes.targeting) || JSON.stringify(changes.targeting) !== JSON.stringify(widget.targeting))) {
-                        if (changes.targeting) {
-                            var editTargetingErr = unsafeTargetingError(changes.targeting);
-                            if (editTargetingErr) {
-                                log.d("Rejected user query" + common.reqInfo(params) + ": " + editTargetingErr);
-                                common.returnMessage(params, 400, editTargetingErr);
-                                return false;
-                            }
-                        }
                         if (widget.cohortID) {
                             if (changes.targeting) { //we are not setting to empty one
                                 //changes.targeting.app_id = widget.app_id + "";
