@@ -3295,15 +3295,36 @@ describe('Testing Crashes', function() {
                 '_app_version': '79.0.0',
             };
 
-            await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashDataA)}`).expect(200);
-            await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashDataB)}`).expect(200);
+            const wait = function(ms) {
+                return new Promise(function(resolve) {
+                    setTimeout(resolve, ms);
+                });
+            };
+
+            await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${encodeURIComponent(JSON.stringify(crashDataA))}`).expect(200);
+            await wait(100 * testUtils.testScalingFactor);
+            await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${encodeURIComponent(JSON.stringify(crashDataB))}`).expect(200);
+            await wait(100 * testUtils.testScalingFactor);
 
             const crashGroupQuery = JSON.stringify({
                 os: crashDataA._os,
                 latest_version: crashDataA._app_version,
             });
-            let crashGroupResponse = await request
-                .get(`/o?method=crashes&api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&query=${crashGroupQuery}`);
+            // crash ingestion is fire-and-forget (/i returns 200 before the
+            // group upsert lands in app_crashgroups), so poll until at least
+            // one group is visible and the count is stable across two polls
+            let crashGroupResponse;
+            let previousLength = -1;
+            for (let attempt = 0; attempt < 10; attempt++) {
+                crashGroupResponse = await request
+                    .get(`/o?method=crashes&api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&query=${crashGroupQuery}`);
+                const currentLength = (crashGroupResponse.body.aaData || []).length;
+                if (currentLength >= 1 && currentLength === previousLength) {
+                    break;
+                }
+                previousLength = currentLength;
+                await wait(200 * testUtils.testScalingFactor);
+            }
             crashGroupResponse.body.aaData.should.have.lengthOf(1);
             const crashGroup = crashGroupResponse.body.aaData[0];
 
