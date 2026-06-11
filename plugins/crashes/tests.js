@@ -3173,6 +3173,145 @@ describe('Testing Crashes', function() {
         });
     });
 
+    describe('Crash grouping seed (groupStrategy)', function() {
+        var stacktrace = require('./api/parts/stacktrace.js');
+        var SMART_SETTINGS = {grouping_strategy: 'error_and_file', smart_preprocessing: true, smart_regexes: ''};
+
+        /**
+         *  Compute the grouping seed produced by groupStrategy for given inputs
+         *  @param {Array} stack - processed stacktrace lines
+         *  @param {Object} crash - crash object (e.g. {_name: "..."})
+         *  @param {Object} settings - crashes config override; all three keys
+         *      (grouping_strategy, smart_preprocessing, smart_regexes) must be
+         *      passed explicitly because the Mocha process never runs
+         *      plugins.setConfigs("crashes", ...)
+         *  @returns {Promise<string>} resolves with the seed
+         */
+        function getSeed(stack, crash, settings) {
+            return new Promise(function(resolve) {
+                stacktrace.groupStrategy(stack, crash, resolve, {crashes: settings});
+            });
+        }
+
+        it('iOS SIGTRAP pair produces identical seeds', async() => {
+            var crashName = 'App terminated by SIGTRAP';
+            var seedA = await getSeed(['MyApp    0x0000000104a3c5d8 0x104a30000 + 50648'], {_name: crashName}, SMART_SETTINGS);
+            var seedB = await getSeed(['MyApp  0x000000010472f8a0   0x104728000 + 51360'], {_name: crashName}, SMART_SETTINGS);
+            should(seedA).equal(seedB);
+            should(seedA).equal('App terminated by SIGTRAPMyApp');
+            seedA.should.not.containEql('0x');
+            should(/(?:^|\s)\d+(?:\s|$)/.test(seedA)).equal(false, 'seed should not contain digits-only tokens');
+            seedA.should.not.containEql('  ');
+            should(seedA).equal(seedA.trim());
+        });
+
+        it('bare hex addresses without 0x prefix are normalized', async() => {
+            var crashName = 'App terminated by SIGTRAP';
+            var seedA = await getSeed(['MyApp <0000000104a3c5d8> main + 120'], {_name: crashName}, SMART_SETTINGS);
+            var seedB = await getSeed(['MyApp <000000010472f8a0> main + 168'], {_name: crashName}, SMART_SETTINGS);
+            should(seedA).equal(seedB);
+            should(/[0-9a-f]{4,}/i.test(seedA)).equal(false, 'seed should not contain bare hex sequences');
+            should(/[0-9]/.test(seedA)).equal(false, 'seed should not contain digits');
+        });
+
+        it('frame offsets are removed as a unit', async() => {
+            var crashName = 'App terminated by SIGTRAP';
+            var seedA = await getSeed(['fn + 600'], {_name: crashName}, SMART_SETTINGS);
+            var seedB = await getSeed(['fn +84556'], {_name: crashName}, SMART_SETTINGS);
+            var seedC = await getSeed(['fn + 0x1a4'], {_name: crashName}, SMART_SETTINGS);
+            should(seedA).equal(seedB);
+            should(seedB).equal(seedC);
+            seedA.should.not.containEql('+');
+        });
+
+        it('genuinely different crashes keep different seeds', async() => {
+            var seedA = await getSeed(['MyApp    0x0000000104a3c5d8 0x104a30000 + 50648'], {_name: 'App terminated by SIGTRAP'}, SMART_SETTINGS);
+            var seedB = await getSeed(['CoreFoundation 0x00000001e5669ebc __exceptionPreprocess + 252'], {_name: '-[NSNull length]: unrecognized selector sent to instance'}, SMART_SETTINGS);
+            should(seedA).not.equal(seedB);
+        });
+
+        it('custom smart_regexes remove all matches case-insensitively across lines', async() => {
+            var settings = {grouping_strategy: 'stacktrace', smart_preprocessing: true, smart_regexes: 'token[a-z]+'};
+            var seed = await getSeed(['Error TOKENone happened', 'at tokentwo place'], {}, settings);
+            should(seed.toLowerCase().indexOf('token')).equal(-1, 'all matches should be removed case-insensitively');
+            should(seed.indexOf('gim')).equal(-1, 'the literal string "gim" should never be injected into the seed');
+            should(seed).equal('Error happened at place');
+        });
+
+        it('invalid custom regex does not throw and other rules still apply', async() => {
+            var settings = {grouping_strategy: 'error_and_file', smart_preprocessing: true, smart_regexes: '(['};
+            var seed = await getSeed(['fn   call   here'], {_name: 'Error   in    module'}, settings);
+            seed.should.not.containEql('  ');
+            should(seed).equal('Error in modulefn call here');
+        });
+
+        it('no smart preprocessing → seed passes through unchanged', async() => {
+            var crashName = 'App terminated by SIGTRAP';
+            var stackLine = 'MyApp    0x0000000104a3c5d8 0x104a30000 + 50648';
+            var settings = {grouping_strategy: 'error_and_file', smart_preprocessing: false, smart_regexes: ''};
+            var seed = await getSeed([stackLine], {_name: crashName}, settings);
+            should(seed).equal(crashName + stackLine);
+        });
+
+        it('stacktrace strategy groups multi-line traces differing only by addresses', async() => {
+            var settings = {grouping_strategy: 'stacktrace', smart_preprocessing: true, smart_regexes: ''};
+            var seedA = await getSeed([
+                'MyApp 0x0000000104a3c5d8 0x104a30000 + 50648',
+                'CoreFoundation 0x00000001e55f40e0 CFRunLoopRunSpecific + 436',
+                'libdyld.dylib 0x00000001e50b2bb4 start + 4'
+            ], {}, settings);
+            var seedB = await getSeed([
+                'MyApp  0x000000010472f8a0   0x104728000 + 51360',
+                'CoreFoundation   0x00000001e55f4112 CFRunLoopRunSpecific + 412',
+                'libdyld.dylib 0x00000001e50b2aa0  start + 16'
+            ], {}, settings);
+            should(seedA).equal(seedB);
+            seedA.should.not.containEql('\n');
+        });
+
+        it('existing standalone-id rule still works', async() => {
+            var seedA = await getSeed([], {_name: 'MongoServerError: cursor id 8983374575113418154 not found'}, SMART_SETTINGS);
+            var seedB = await getSeed([], {_name: 'MongoServerError: cursor id 1234567890123456789 not found'}, SMART_SETTINGS);
+            should(seedA).equal(seedB);
+            seedA.should.containEql('cursor id');
+        });
+
+        it('two partially symbolicated iOS crashes land in one crash group', async() => {
+            // _os "tvOS" bypasses the ios-only masking branch in preprocessCrash,
+            // so raw addresses reach groupStrategy like in the customer case;
+            // depends on server-level config smart_preprocessing=true (default)
+            const crashDataA = {
+                '_name': 'App terminated by SIGTRAP',
+                '_error': 'MyApp    0x0000000104a3c5d8 0x104a30000 + 50648',
+                '_os_version': '17.4',
+                '_os': 'tvOS',
+                '_app_version': '79.0.0',
+            };
+            const crashDataB = {
+                '_name': 'App terminated by SIGTRAP',
+                '_error': 'MyApp  0x000000010472f8a0   0x104728000 + 51360',
+                '_os_version': '17.4',
+                '_os': 'tvOS',
+                '_app_version': '79.0.0',
+            };
+
+            await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashDataA)}`).expect(200);
+            await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashDataB)}`).expect(200);
+
+            const crashGroupQuery = JSON.stringify({
+                os: crashDataA._os,
+                latest_version: crashDataA._app_version,
+            });
+            let crashGroupResponse = await request
+                .get(`/o?method=crashes&api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&query=${crashGroupQuery}`);
+            crashGroupResponse.body.aaData.should.have.lengthOf(1);
+            const crashGroup = crashGroupResponse.body.aaData[0];
+
+            await request
+                .get('/i/crashes/delete?args=' + JSON.stringify({ crash_id: crashGroup._id }) + '&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN);
+        });
+    });
+
     describe('Reset app', function() {
         it('should reset data', function(done) {
             var params = {app_id: APP_ID, period: "reset"};
