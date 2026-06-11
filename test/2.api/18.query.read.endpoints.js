@@ -104,4 +104,20 @@ describe('Testing query-validated read endpoints (happy path)', function() {
                 });
         });
     });
+
+    describe('GET /o (method=all_apps)', function() {
+        it('should read all apps with a valid filter', function(done) {
+            //app_id is required by the /o dispatcher even though all_apps spans apps
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=all_apps&period=month&filter=' + emptyQuery)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text);
+                    done();
+                });
+        });
+    });
 });
