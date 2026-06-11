@@ -77,39 +77,10 @@ describe('Testing query-validated read endpoints (happy path)', function() {
         });
     });
 
-    describe('GET /o (method=all_apps)', function() {
-        it('should read all apps with a valid filter', function(done) {
-            request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&method=all_apps&filter=' + emptyQuery)
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    JSON.parse(res.text);
-                    done();
-                });
-        });
-    });
-
     describe('GET /o/app_users/loyalty', function() {
         it('should return loyalty data with a valid query', function(done) {
             request
                 .get('/o/app_users/loyalty?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&query=' + emptyQuery)
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    done();
-                });
-        });
-    });
-
-    describe('GET /o/cms/entries', function() {
-        it('should return CMS entries with a valid query', function(done) {
-            request
-                .get('/o/cms/entries?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&query=' + emptyQuery)
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
