@@ -1961,17 +1961,13 @@ const processRequest = (params) => {
                 switch (paths[3]) {
                 case 'all':
                     validateRead(params, 'core', () => {
-                        if (!params.qstring.query) {
-                            params.qstring.query = {};
+                        var parsedQuery = common.parseUserQuery(params.qstring.query);
+                        if (parsedQuery.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+                            common.returnMessage(params, 400, parsedQuery.error);
+                            return;
                         }
-                        if (typeof params.qstring.query === "string") {
-                            try {
-                                params.qstring.query = JSON.parse(params.qstring.query);
-                            }
-                            catch (ex) {
-                                params.qstring.query = {};
-                            }
-                        }
+                        params.qstring.query = parsedQuery.query;
                         if (params.qstring.query.$or) {
                             params.qstring.query.$and = [
                                 {"$or": Object.assign([], params.qstring.query.$or) },
@@ -2004,17 +2000,13 @@ const processRequest = (params) => {
                     break;
                 case 'count':
                     validateRead(params, 'core', () => {
-                        if (!params.qstring.query) {
-                            params.qstring.query = {};
+                        var parsedQuery = common.parseUserQuery(params.qstring.query);
+                        if (parsedQuery.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+                            common.returnMessage(params, 400, parsedQuery.error);
+                            return;
                         }
-                        if (typeof params.qstring.query === "string") {
-                            try {
-                                params.qstring.query = JSON.parse(params.qstring.query);
-                            }
-                            catch (ex) {
-                                params.qstring.query = {};
-                            }
-                        }
+                        params.qstring.query = parsedQuery.query;
                         if (params.qstring.query.$or) {
                             params.qstring.query.$and = [
                                 {"$or": Object.assign([], params.qstring.query.$or) },
@@ -2039,17 +2031,13 @@ const processRequest = (params) => {
                     break;
                 case 'list':
                     validateRead(params, 'core', () => {
-                        if (!params.qstring.query) {
-                            params.qstring.query = {};
+                        var parsedQuery = common.parseUserQuery(params.qstring.query);
+                        if (parsedQuery.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+                            common.returnMessage(params, 400, parsedQuery.error);
+                            return;
                         }
-                        if (typeof params.qstring.query === "string") {
-                            try {
-                                params.qstring.query = JSON.parse(params.qstring.query);
-                            }
-                            catch (ex) {
-                                params.qstring.query = {};
-                            }
-                        }
+                        params.qstring.query = parsedQuery.query;
                         params.qstring.query.$and = [];
                         if (params.qstring.query.creator && params.qstring.query.creator === params.member._id) {
                             params.qstring.query.$and.push({"creator": params.member._id + ""});
@@ -2938,6 +2926,14 @@ const processRequest = (params) => {
                 case 'geodata': {
                     validateRead(params, 'core', function() {
                         if (params.qstring.loadFor === "cities") {
+                            if (typeof params.qstring.query !== "undefined") {
+                                var pq = common.parseUserQuery(params.qstring.query);
+                                if (pq.error) {
+                                    log.d("Rejected user query" + common.reqInfo(params) + ": " + pq.error);
+                                    common.returnMessage(params, 400, pq.error);
+                                    return;
+                                }
+                            }
                             countlyApi.data.geoData.loadCityCoordiantes({"query": params.qstring.query}, function(err, data) {
                                 common.returnOutput(params, data);
                             });
