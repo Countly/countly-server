@@ -74,7 +74,7 @@ describe('Testing query-validated app_users write endpoints (happy path)', funct
     describe('GET /i/app_users/update', function() {
         it('should update the matching user with a valid query', function(done) {
             var query = encodeURIComponent(JSON.stringify({did: DEVICE_1}));
-            var update = encodeURIComponent(JSON.stringify({"custom.qtestflag": "1"}));
+            var update = encodeURIComponent(JSON.stringify({"$set": {"custom.qtestflag": "1"}}));
             request
                 .get('/i/app_users/update?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&query=' + query + '&update=' + update)
                 .expect(200)
