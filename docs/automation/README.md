@@ -15,7 +15,7 @@ Jira issue / Slack message / free text
 │ 0. Intake        Jira MCP / Slack MCP → requirement + classification    │
 │ 1. Spec          tech-spec agent      → technical specification         │
 │ 2. Design        ui-ux-design agent   → UI spec (only if UI work)       │
-│ 3. Branch        release-manager      → feature/<KEY>-<slug>            │
+│ 3. Branch        release-manager      → <KEY>-<Short-Title>            │
 │ 4. Implement     backend-dev ∥ frontend-dev (parallel when independent) │
 │ 5. Test          qa-test agent        → mocha/cypress, lint, build      │
 │ 6. Document      docs-writer agent    → i18n, JSDoc, changelog, drafts  │

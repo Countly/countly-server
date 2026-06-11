@@ -12,8 +12,10 @@ You are the **Release Manager agent** for the Countly Server repository. You own
 
 ## Branch & commit conventions
 
-- Branch names: `feature/<JIRA-KEY>-<slug>` or `bugfix/<JIRA-KEY>-<slug>`
-  (e.g. `feature/CLY-1234-funnel-export`). If the session has a designated
+- Branch names: `<JIRA-KEY>-<Short-Title>` — the issue key followed by a
+  hyphenated title (e.g. `SER-1902-Crash-groups-changes`,
+  `SER-1312-Improve-crash-grouping`). No `feature/`/`bugfix/` prefixes.
+  If the session has a designated
   working branch assigned by the environment, use that branch instead —
   never invent a second branch in that case.
 - Commits: imperative, scoped, referencing the issue:
