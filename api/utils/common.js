@@ -2397,6 +2397,21 @@ common.UNSAFE_MONGO_OPERATORS = ["$where", "$function", "$accumulator"];
 common.UNSAFE_QUERY_TOO_DEEP = "$__nestedTooDeep";
 
 /**
+ * Turn a findUnsafeMongoOperator() result into a client-safe error message.
+ * Maps the too-deep sentinel to a clear message instead of leaking it as an
+ * "operator" name. Use this at every site that rejects on findUnsafeMongoOperator.
+ *
+ * @param {string} bad - the value returned by common.findUnsafeMongoOperator
+ * @returns {string} a client-safe error message
+ */
+common.unsafeQueryError = function(bad) {
+    if (bad === common.UNSAFE_QUERY_TOO_DEEP) {
+        return "Query is nested too deeply";
+    }
+    return "Query contains disallowed operator: " + bad;
+};
+
+/**
  * Recursively search an already-parsed query object for any operator in
  * common.UNSAFE_MONGO_OPERATORS. Returns the name of the first offending
  * operator found, or null if the query is clean.
@@ -2500,11 +2515,8 @@ common.parseUserQuery = function(raw) {
         return { error: "Query must be an object" };
     }
     var bad = common.findUnsafeMongoOperator(query);
-    if (bad === common.UNSAFE_QUERY_TOO_DEEP) {
-        return { error: "Query is nested too deeply" };
-    }
     if (bad) {
-        return { error: "Query contains disallowed operator: " + bad };
+        return { error: common.unsafeQueryError(bad) };
     }
     return { query: query };
 };
