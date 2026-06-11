@@ -1,5 +1,4 @@
 var request = require('supertest');
-var should = require('should');
 var testUtils = require("../testUtils");
 request = request(testUtils.url);
 
