@@ -523,6 +523,26 @@ plugins.setConfigs("remote-config", {
             return true;
         }
 
+        // The config's condition(s) carry a condition.condition query that may
+        // arrive as a JSON string (which findUnsafeMongoOperator above does not
+        // descend into). Validate each via parseUserQuery (string- or object-safe)
+        // to match the add/update-condition handlers, since condition.condition is
+        // later JSON.parsed and dispatched to /drill/preprocess_query.
+        var conditionsToCheck = Array.isArray(config.conditions) ? config.conditions : [];
+        if (condition && Object.keys(condition).length) {
+            conditionsToCheck = conditionsToCheck.concat([condition]);
+        }
+        for (var ci = 0; ci < conditionsToCheck.length; ci++) {
+            if (conditionsToCheck[ci] && typeof conditionsToCheck[ci].condition !== "undefined") {
+                var parsedCompleteCondition = common.parseUserQuery(conditionsToCheck[ci].condition);
+                if (parsedCompleteCondition.error) {
+                    log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedCompleteCondition.error);
+                    common.returnMessage(params, 400, parsedCompleteCondition.error);
+                    return true;
+                }
+            }
+        }
+
         var maximumParametersAllowed = plugins.getConfig("remote-config").maximum_allowed_parameters;
         var maximumConditionsAllowed = plugins.getConfig("remote-config").conditions_per_paramaeters;
 

@@ -2829,6 +2829,14 @@ const processRequest = (params) => {
                 case 'geodata': {
                     validateRead(params, 'core', function() {
                         if (params.qstring.loadFor === "cities") {
+                            if (typeof params.qstring.query !== "undefined") {
+                                var pq = common.parseUserQuery(params.qstring.query);
+                                if (pq.error) {
+                                    log.d("Rejected user query" + common.reqInfo(params) + ": " + pq.error);
+                                    common.returnMessage(params, 400, pq.error);
+                                    return;
+                                }
+                            }
                             countlyApi.data.geoData.loadCityCoordiantes({"query": params.qstring.query}, function(err, data) {
                                 common.returnOutput(params, data);
                             });
