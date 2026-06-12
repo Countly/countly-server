@@ -3,6 +3,8 @@
 // Usage: mongosh "mongodb://localhost" backfill_eventtimes_cd.js
 // (any connection string works — the script selects the countly database itself)
 
+/* global db, print */
+
 var countlyDb = db.getSiblingDB("countly");
 var totals = { matched: 0, modified: 0 };
 
