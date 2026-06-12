@@ -1,7 +1,13 @@
 
-## Version 25.03
+## Version 25.03.47
 Fixes:
+- [content] Bugfixes for content showing
+- [core] Improved validation for user passed queries.
 - [journey_engine] resut tab made available for running journeys
+
+Enterprise Features:
+-[data-manager] Improved user propertly value table to allow filtering all values.
+
 ## Version 25.03.46
 Fixes:
  - Overall security Fixes
