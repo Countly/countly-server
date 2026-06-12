@@ -69,6 +69,9 @@ var trace = {
 
         //seed cleanup
         if (plugins.getConfig("crashes", overrideSettings || {}, true).smart_preprocessing) {
+            //remove frame offsets as one unit (MyApp 0x104a3c5d8 0x104a30000 + 50648)
+            seed = seed.replace(/\s\+\s*(0x)?[0-9a-fA-F]+(?!\S)/g, "");
+
             //remove stand alone numbers like ids (MongoServerError: cursor id 8983374575113418154 not found)
             seed = seed.replace(/(?<!\S)\d+(?!\S)/gim, "");
 
@@ -103,18 +106,24 @@ var trace = {
             //remove uuids
             seed = seed.replace(/[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}/gi, "");
 
+            //remove bare hex sequences without 0x prefix (load addresses like 104a30000, <0000000104a3c5d8>)
+            seed = seed.replace(/\b(?=[0-9a-fA-F]*\d)[0-9a-fA-F]{4,}\b/g, "");
+
             //remove additional custom provided regexes
             var regexes = (plugins.getConfig("crashes", overrideSettings || {}, true).smart_regexes || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
             for (let i = 0; i < regexes.length; i++) {
                 if (regexes[i] && regexes[i].length) {
                     try {
-                        seed = seed.replace(new RegExp(regexes[i]), "gim");
+                        seed = seed.replace(new RegExp(regexes[i], "gim"), "");
                     }
                     catch (ex) {
                         console.log("Error in smart regex for crash", regexes[i], ex);
                     }
                 }
             }
+
+            //collapse whitespace runs and trim so alignment differences don't change the seed
+            seed = seed.replace(/\s+/g, " ").trim();
         }
 
         callback(seed);

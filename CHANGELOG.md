@@ -1,6 +1,9 @@
 
 ## Version 25.03
 Fixes:
+- [crashes] Improve crash grouping normalization for partially symbolicated stack traces when smart preprocessing is enabled: frame offsets, bare hex addresses and whitespace alignment differences no longer split identical crashes into separate groups
+- [crashes] Fixed custom smart_regexes applying only the first match case-sensitively and injecting the literal text "gim" into grouping seeds; all matches are now removed with gim flags as documented in the setting's help text
+- [crashes] Note: on apps with smart preprocessing enabled, grouping seeds change after upgrade, so new incoming crashes may form new crash groups instead of joining pre-upgrade groups (one-time regrouping effect; existing groups remain intact and readable)
 - [journey_engine] resut tab made available for running journeys
 ## Version 25.03.46
 Fixes:
