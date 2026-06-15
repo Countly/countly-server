@@ -2092,6 +2092,12 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "collection"');
                             return false;
                         }
+                        // keep the db export surface aligned with DB Viewer: internal
+                        // index metadata and the dashboard session store are not exportable
+                        if (params.qstring.collection.indexOf("system.indexes") !== -1 || params.qstring.collection.indexOf("sessions_") !== -1) {
+                            common.returnMessage(params, 403, 'User does not have access right for this collection');
+                            return false;
+                        }
                         if (typeof params.qstring.filter === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.filter, common.reviver);

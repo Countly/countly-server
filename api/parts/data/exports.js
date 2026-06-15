@@ -500,6 +500,50 @@ function isObjectId(id) {
 * @param {string} [options.filename] - name of the file to output, by default auto generated
 * @param {function} options.output - callback function where to pass data, by default outputs as file based on type
 */
+
+/**
+* Credential fields stripped from privileged collections on export, mirroring
+* the DB Viewer read paths so the same data cannot be obtained through export.
+*/
+var EXPORT_REDACTIONS = {
+    "members": ["password", "api_key", "two_factor_auth"],
+    "auth_tokens": ["_id"]
+};
+
+/**
+* Whether documents from the given collection require credential redaction on export
+* @param {string} collection - collection name
+* @returns {boolean} true if the collection is redacted on export
+*/
+exports.redactsExportCollection = function(collection) {
+    return Object.prototype.hasOwnProperty.call(EXPORT_REDACTIONS, collection);
+};
+
+/**
+* Remove/mask credential fields from a document before it is written to an export
+* @param {string} collection - collection the document belongs to
+* @param {object} doc - document to redact (mutated and returned)
+* @returns {object} the redacted document
+*/
+exports.redactExportDoc = function(collection, doc) {
+    if (!doc || !exports.redactsExportCollection(collection)) {
+        return doc;
+    }
+    var fields = EXPORT_REDACTIONS[collection];
+    for (var i = 0; i < fields.length; i++) {
+        if (fields[i] === "_id") {
+            // _id is always returned by the driver, so mask rather than delete
+            if (typeof doc._id !== "undefined") {
+                doc._id = "***redacted***";
+            }
+        }
+        else {
+            delete doc[fields[i]];
+        }
+    }
+    return doc;
+};
+
 exports.fromDatabase = function(options) {
     options.db = options.db || common.db;
     options.query = options.query || {};
@@ -566,6 +610,15 @@ exports.fromDatabase = function(options) {
                 options.query._id = common.db.ObjectID(options.query._id);
             }
             var cursor = options.db.collection(options.collection).find(options.query, {"projection": options.projection});
+            // Strip credential material from privileged collections before it
+            // can reach an export file, mirroring the DB Viewer read paths. This
+            // runs at the cursor level so it applies regardless of output type
+            // (json/csv/xls) and regardless of the caller supplied projection.
+            if (exports.redactsExportCollection(options.collection)) {
+                cursor = cursor.map(function(doc) {
+                    return exports.redactExportDoc(options.collection, doc);
+                });
+            }
             if (options.sort) {
                 cursor.sort(options.sort);
             }
