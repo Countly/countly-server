@@ -2,6 +2,41 @@ const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
 const log = common.log('hooks:internalEventTrigger');
+
+// Event types that are global (not scoped to a single app): new-member events,
+// the master tick, and the system-log stream. These carry instance-wide data
+// and must only be delivered to hooks owned by a global admin.
+const GLOBAL_EVENT_TYPES = {
+    "/i/users/create": true,
+    "/i/users/update": true,
+    "/i/users/delete": true,
+    "/master": true,
+    "/systemlogs": true
+};
+
+/**
+ * Whether the hook's owner (createdBy) is a global admin. Used to gate the
+ * global, non app-scoped event types so an app-scoped hook created by a
+ * non-global member cannot receive instance-wide data (e.g. new-member objects
+ * or the system-log stream). A hook with no resolvable owner is treated as not
+ * authorized.
+ * @param {object} rule - hook rule
+ * @returns {Promise<boolean>} true if the owner is a global admin
+ */
+async function isRuleOwnerGlobalAdmin(rule) {
+    if (!rule || !rule.createdBy) {
+        return false;
+    }
+    try {
+        const owner = await common.db.collection("members").findOne({_id: common.db.ObjectID(rule.createdBy + "")}, {projection: {global_admin: 1}});
+        return !!(owner && owner.global_admin);
+    }
+    catch (e) {
+        log.e("Failed to resolve hook owner for global-event scope check", e);
+        return false;
+    }
+}
+
 /**
  * Internal event trigger
  */
@@ -75,7 +110,13 @@ class InternalEventTrigger {
         if (!rules.length) {
             return;
         }
-        rules.forEach((rule) => {
+        for (const rule of rules) {
+            // global (non app-scoped) events must only reach hooks owned by a
+            // global admin — an app-scoped hook from a non-global member must
+            // not receive instance-wide member/system data.
+            if (GLOBAL_EVENT_TYPES[eventType] && !await isRuleOwnerGlobalAdmin(rule)) {
+                continue;
+            }
             switch (eventType) {
             case "/cohort/enter":
             case "/cohort/exit": {
@@ -234,7 +275,7 @@ class InternalEventTrigger {
                 break;
             }
             }
-        });
+        }
     }
 
     /**

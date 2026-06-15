@@ -286,9 +286,15 @@ usersApi.createUser = async function(params) {
                         mail.sendToNewMemberLink(member[0], prid);
                     });
 
+                    // Broadcast a credential-free copy of the new member to
+                    // event listeners (e.g. hooks): the member's password hash
+                    // and api_key must never be forwarded into a hook payload.
+                    var createdMemberEventData = Object.assign({}, member[0]);
+                    delete createdMemberEventData.password;
+                    delete createdMemberEventData.api_key;
                     plugins.dispatch("/i/users/create", {
                         params: params,
-                        data: member[0]
+                        data: createdMemberEventData
                     });
                     delete member[0].password;
 
