@@ -699,7 +699,12 @@ var spawn = require('child_process').spawn,
 
         }
         if (isView) {
-            pretty = "app_viewdata" + getCollectionName(name);
+            var viewEntry = getCollectionName(name);
+            //getCollectionName returns the input unchanged when there is no mapping,
+            //prepending it then would double the prefix (app_viewdataapp_viewdata...)
+            if (viewEntry !== name) {
+                pretty = "app_viewdata" + viewEntry;
+            }
         }
         else if (!isEvent) {
             for (let i in apps) {
