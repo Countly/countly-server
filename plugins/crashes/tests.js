@@ -1363,6 +1363,25 @@ describe('Testing Crashes', function() {
         });
     });
 
+    describe('Mark crash as viewed', function() {
+        it('should success', function(done) {
+            var args = {
+                crash_id: CRASHES[2]
+            };
+            request
+                .get('/i/crashes/view?args=' + JSON.stringify(args) + '&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                });
+        });
+    });
+
     /*
     describe('Check public crash', function() {
         it('should be found', function(done) {
