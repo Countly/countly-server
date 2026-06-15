@@ -2,6 +2,54 @@ const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
 const log = common.log('hooks:internalEventTrigger');
+
+// Event types that are global (not scoped to a single app): new-member events,
+// the master tick, and the system-log stream. These carry instance-wide data
+// and must only be delivered to hooks owned by a global admin.
+const GLOBAL_EVENT_TYPES = {
+    "/i/users/create": true,
+    "/i/users/update": true,
+    "/i/users/delete": true,
+    "/master": true,
+    "/systemlogs": true
+};
+
+/**
+ * Whether the hook's owner (createdBy) is a global admin. Used to gate the
+ * global, non app-scoped event types so an app-scoped hook created by a
+ * non-global member cannot receive instance-wide data (e.g. new-member objects
+ * or the system-log stream). A hook with no resolvable owner is treated as not
+ * authorized.
+ * @param {object} rule - hook rule
+ * @param {Map} [cache] - optional owner-id -> boolean cache, scoped to one
+ *        event dispatch, so each distinct owner is resolved only once
+ * @returns {Promise<boolean>} true if the owner is a global admin
+ */
+async function isRuleOwnerGlobalAdmin(rule, cache) {
+    if (!rule || !rule.createdBy) {
+        return false;
+    }
+    const ownerId = rule.createdBy + "";
+    // memoize per process() call so each distinct owner is resolved once per
+    // event dispatch (avoids an N+1 lookup when many hooks share owners)
+    if (cache && cache.has(ownerId)) {
+        return cache.get(ownerId);
+    }
+    let result = false;
+    try {
+        const owner = await common.db.collection("members").findOne({_id: common.db.ObjectID(ownerId)}, {projection: {global_admin: 1}});
+        result = !!(owner && owner.global_admin);
+    }
+    catch (e) {
+        log.e("Failed to resolve hook owner for global-event scope check (hook " + (rule._id || "?") + ", createdBy " + ownerId + ")", e);
+        result = false;
+    }
+    if (cache) {
+        cache.set(ownerId, result);
+    }
+    return result;
+}
+
 /**
  * Internal event trigger
  */
@@ -75,7 +123,16 @@ class InternalEventTrigger {
         if (!rules.length) {
             return;
         }
-        rules.forEach((rule) => {
+        // cache of owner-id -> isGlobalAdmin, scoped to this dispatch, so a
+        // global event reaching many hooks resolves each owner only once
+        const ownerGlobalAdminCache = new Map();
+        for (const rule of rules) {
+            // global (non app-scoped) events must only reach hooks owned by a
+            // global admin: an app-scoped hook from a non-global member must
+            // not receive instance-wide member/system data.
+            if (GLOBAL_EVENT_TYPES[eventType] && !await isRuleOwnerGlobalAdmin(rule, ownerGlobalAdminCache)) {
+                continue;
+            }
             switch (eventType) {
             case "/cohort/enter":
             case "/cohort/exit": {
@@ -234,7 +291,7 @@ class InternalEventTrigger {
                 break;
             }
             }
-        });
+        }
     }
 
     /**
@@ -248,6 +305,10 @@ class InternalEventTrigger {
         });
     }
 }
+
+// exposed so the save handler can reject non-global-admins creating/updating
+// hooks that subscribe to these global event types
+InternalEventTrigger.GLOBAL_EVENT_TYPES = GLOBAL_EVENT_TYPES;
 
 module.exports = InternalEventTrigger;
 const InternalEvents = [

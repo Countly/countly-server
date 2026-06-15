@@ -1,4 +1,5 @@
 const Triggers = require('./parts/triggers/index.js');
+const InternalEventTrigger = require('./parts/triggers/internal_event.js');
 const Effects = require('./parts/effects/index.js');
 const asyncLib = require('async');
 const EventEmitter = require('events');
@@ -307,6 +308,18 @@ plugins.register("/i/hook/save", function(ob) {
                 // Null check for hookConfig
                 if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
                     common.returnMessage(params, 400, 'Not enough args');
+                    return true;
+                }
+
+                // Only global admins may create or update hooks that subscribe
+                // to global (non app-scoped) internal events such as
+                // /i/users/* or /systemlogs — these carry instance-wide data.
+                if (!params.member.global_admin
+                    && hookConfig.trigger
+                    && hookConfig.trigger.type === "InternalEventTrigger"
+                    && hookConfig.trigger.configuration
+                    && InternalEventTrigger.GLOBAL_EVENT_TYPES[hookConfig.trigger.configuration.eventType]) {
+                    common.returnMessage(params, 403, "User does not have right to subscribe to this event");
                     return true;
                 }
 
