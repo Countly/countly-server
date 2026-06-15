@@ -3623,7 +3623,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         return done ? done() : false;
     }
 
-    common.readBatcher.getOne("apps", {$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err, app) => {
+    common.resolveAppByKey(params.qstring.app_key, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
@@ -3672,10 +3672,10 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 if (err1) {
                     console.log("Failed to update apps collection " + err1);
                 }
-                //invalidate using the same query the request loaded the app
-                //with (current key OR an accepted old key), so the cache entry
-                //for old-key requests is also cleared
-                common.readBatcher.invalidate("apps", {$or: [{"key": params.qstring.app_key + ""}, {"keys.key": params.qstring.app_key + ""}]}, {}, false);
+                //invalidate both cache shapes the request may have loaded the
+                //app with (accepted-keys lookup, then current-key fallback), so
+                //the cache entry for old-key requests is also cleared
+                common.invalidateAppByKey(params.qstring.app_key);
             });
         }
 
@@ -3783,7 +3783,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
     if (ignorePossibleDevices(params)) {
         return done ? done() : false;
     }
-    common.readBatcher.getOne("apps", {$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err, app) => {
+    common.resolveAppByKey(params.qstring.app_key, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
