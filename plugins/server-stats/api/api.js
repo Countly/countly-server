@@ -465,7 +465,10 @@ function getServerStatsApps(member) {
                             });
                         }
                         else {
-                            //access denied
+                            //the member cannot read server-stats for the selected app;
+                            //reject explicitly rather than returning an all-zero card
+                            common.returnMessage(params, 401, "User does not have access to selected app");
+                            return;
                         }
                     }
                     else {
