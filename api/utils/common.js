@@ -566,10 +566,56 @@ common.recordAppKeyUsage = function(app, usedKey) {
 };
 
 /**
+* Resolve an app by an incoming SDK app key for the ingestion/fetch hot path.
+* Looks up the accepted-keys array first, then falls back to the current-key
+* field. This is deliberately two single-field index lookups rather than one
+* {$or:[{key},{keys.key}]} query: MongoDB cannot reliably serve such an $or via
+* index union, so on this hot path it degrades to a full collection scan of the
+* apps collection. Each lookup here is an indexed equality, and the readBatcher
+* caches both (including misses), so the DB sees at most one query per shape per
+* cache period.
+*
+* The keys.key lookup matches every app once its accepted-keys array exists
+* (createApp/updateApp populate it, plus a one-time startup backfill), and also
+* matches a rotated-away old key during its grace period. The key fallback keeps
+* apps that predate the array — or that have not been backfilled yet — fully
+* resolvable, so correctness never depends on the backfill having run.
+* @param {string} appKey - incoming SDK app key
+* @param {function} callback - callback(err, app) with the resolved app or null
+* @returns {void}
+*/
+common.resolveAppByKey = function(appKey, callback) {
+    var key = appKey + "";
+    common.readBatcher.getOne("apps", {"keys.key": key}, function(err, app) {
+        if (app) {
+            return callback(err, app);
+        }
+        common.readBatcher.getOne("apps", {"key": key}, function(err2, app2) {
+            if (app2) {
+                return callback(err2, app2);
+            }
+            return callback(err2 || err, null);
+        });
+    });
+};
+
+/**
+* Invalidate any cached apps entry that resolveAppByKey may have loaded for an
+* incoming SDK key, covering both lookup shapes (keys.key and key).
+* @param {string} appKey - incoming SDK app key
+* @returns {void}
+*/
+common.invalidateAppByKey = function(appKey) {
+    var key = appKey + "";
+    common.readBatcher.invalidate("apps", {"keys.key": key}, {}, false);
+    common.readBatcher.invalidate("apps", {"key": key}, {}, false);
+};
+
+/**
 * Create HMAC sha512 hash from provided value and optional salt
 * @param {string} str - value to hash
 * @param {string=} addSalt - optional salt, uses ms timestamp by default
-* @returns {string} HMAC sha1 hash
+* @returns {string} HMAC sha512 hash
 */
 common.sha512Hash = function(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : '';

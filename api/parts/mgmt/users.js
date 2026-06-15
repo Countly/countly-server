@@ -286,9 +286,15 @@ usersApi.createUser = async function(params) {
                         mail.sendToNewMemberLink(member[0], prid);
                     });
 
+                    // Broadcast a credential-free copy of the new member to
+                    // event listeners (e.g. hooks): the member's password hash
+                    // and api_key must never be forwarded into a hook payload.
+                    var createdMemberEventData = Object.assign({}, member[0]);
+                    delete createdMemberEventData.password;
+                    delete createdMemberEventData.api_key;
                     plugins.dispatch("/i/users/create", {
                         params: params,
-                        data: member[0]
+                        data: createdMemberEventData
                     });
                     delete member[0].password;
 
@@ -558,10 +564,17 @@ usersApi.updateUser = async function(params) {
             common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err2, member) {
                 if (member && !err2) {
                     updatedMember._id = params.qstring.args.user_id;
+                    // never forward credentials into event payloads (e.g. hooks)
+                    var updatedMemberEventData = Object.assign({}, updatedMember);
+                    delete updatedMemberEventData.password;
+                    delete updatedMemberEventData.api_key;
+                    var memberBeforeEventData = Object.assign({}, memberBefore);
+                    delete memberBeforeEventData.password;
+                    delete memberBeforeEventData.api_key;
                     plugins.dispatch("/i/users/update", {
                         params: params,
-                        data: updatedMember,
-                        member: memberBefore
+                        data: updatedMemberEventData,
+                        member: memberBeforeEventData
                     });
                     if (params.qstring.args.send_notification && passwordNoHash) {
                         mail.sendToUpdatedMember(member, passwordNoHash);
@@ -616,10 +629,14 @@ usersApi.deleteUser = async function(params) {
         else {
             const user = await common.db.collection('members').findOne({ '_id': common.db.ObjectID(userIds[i]) });
             const promisifiedDispatch = function(prms, data) {
+                // never forward credentials into event payloads (e.g. hooks)
+                var safeData = Object.assign({}, data);
+                delete safeData.password;
+                delete safeData.api_key;
                 return new Promise((resolve, reject) => {
                     plugins.dispatch("/i/users/delete", {
                         params: prms,
-                        data,
+                        data: safeData,
                     }, async(__, otherPluginResults) => {
                         const rejectReasons = otherPluginResults.reduce((acc, result) => {
                             if (result.status === "rejected") {
@@ -813,6 +830,10 @@ usersApi.deleteOwnAccount = function(params) {
             };
 
             if (member) {
+                // never forward credentials into event payloads (e.g. hooks)
+                var memberEventData = Object.assign({}, member);
+                delete memberEventData.password;
+                delete memberEventData.api_key;
                 if (member.global_admin) {
                     common.db.collection('members').count({'global_admin': true}, function(err2, count) {
                         if (err2) {
@@ -825,7 +846,7 @@ usersApi.deleteOwnAccount = function(params) {
                         else {
                             plugins.dispatch("/i/users/delete", {
                                 params: params,
-                                data: member
+                                data: memberEventData
                             }, dispatchDeleteCallback);
                         }
                     });
@@ -833,7 +854,7 @@ usersApi.deleteOwnAccount = function(params) {
                 else {
                     plugins.dispatch("/i/users/delete", {
                         params: params,
-                        data: member
+                        data: memberEventData
                     }, dispatchDeleteCallback);
                 }
             }
