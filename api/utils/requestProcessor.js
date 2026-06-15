@@ -1981,7 +1981,9 @@ const processRequest = (params) => {
                         params.qstring.query.subtask = {$exists: false};
                         params.qstring.query.app_id = params.qstring.app_id;
                         if (params.qstring.app_ids && params.qstring.app_ids !== "") {
-                            var ll = params.qstring.app_ids.split(",");
+                            var ll = params.qstring.app_ids.split(",").map(function(id) {
+                                return id.trim();
+                            }).filter(Boolean);
                             if (ll.length > 1) {
                                 // validateRead only checked the single app_id; every app
                                 // in the multi-app list must also be one the member can read
