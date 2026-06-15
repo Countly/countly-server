@@ -1,6 +1,7 @@
 const plugins = require('../../pluginManager.js');
 const common = require('../../../api/utils/common.js');
 const { processRequest } = require('../../../api/utils/requestProcessor');
+const rights = require('../../../api/utils/rights.js');
 
 //write api call
 plugins.register("/sdk/pre", function(ob) {
@@ -88,16 +89,31 @@ plugins.register("/i", async function(ob) {
 
 });
 
-plugins.register('/i/apps/update/plugins/consolidate', async function({app, config}) {
+plugins.register('/i/apps/update/plugins/consolidate', async function({params, app, config}) {
+    const addedSourceApps = config && config.selectedApps;
+    const initialSourceApps = config && config.initialApps;
+
+    if (!addedSourceApps || !initialSourceApps) {
+        return "Nothing changed";
+    }
+
+    // Apply the config only to source apps the member has access to (the same set the
+    // App Management UI offers: admin_of + user_of). Global admins pass. Kept outside the
+    // try below so the reason propagates instead of being masked as a generic failure.
+    const member = params && params.member;
+    if (!member || !member.global_admin) {
+        const allowedApps = new Set(
+            [].concat(rights.getUserApps(member) || [], rights.getAdminApps(member) || [])
+                .map((id) => id + "")
+        );
+        const unauthorized = addedSourceApps.filter((id) => !allowedApps.has(id + ""));
+        if (unauthorized.length) {
+            throw new Error('No access to source app(s): ' + unauthorized.join(', '));
+        }
+    }
+
     try {
         console.log('Updating app %s config: %j', app._id, config);
-        const addedSourceApps = config.selectedApps;
-        const initialSourceApps = config.initialApps;
-
-        if (!addedSourceApps || !initialSourceApps) {
-            return "Nothing changed";
-        }
-
         const removedSourceApps = addedSourceApps
             .filter(x => !initialSourceApps.includes(x))
             .concat(initialSourceApps.filter(x => !addedSourceApps.includes(x)));
