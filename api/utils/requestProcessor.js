@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getAdminApps, getUserAppsForFeaturePermission } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -1981,8 +1981,25 @@ const processRequest = (params) => {
                         params.qstring.query.subtask = {$exists: false};
                         params.qstring.query.app_id = params.qstring.app_id;
                         if (params.qstring.app_ids && params.qstring.app_ids !== "") {
-                            var ll = params.qstring.app_ids.split(",");
+                            var ll = params.qstring.app_ids.split(",").map(function(id) {
+                                return id.trim();
+                            }).filter(Boolean);
                             if (ll.length > 1) {
+                                // validateRead only checked the single app_id; every app
+                                // in the multi-app list must also be one the member can read
+                                if (!params.member.global_admin) {
+                                    var allowedTaskApps = (getAdminApps(params.member) || [])
+                                        .concat(getUserAppsForFeaturePermission(params.member, 'core', 'r') || []);
+                                    if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                                        allowedTaskApps = allowedTaskApps.concat(params.member.user_of);
+                                    }
+                                    for (var taskAppIdx = 0; taskAppIdx < ll.length; taskAppIdx++) {
+                                        if (allowedTaskApps.indexOf(ll[taskAppIdx]) === -1) {
+                                            common.returnMessage(params, 401, 'User does not have access to one or more of the requested apps');
+                                            return;
+                                        }
+                                    }
+                                }
                                 params.qstring.query.app_id = {$in: ll};
                             }
                         }

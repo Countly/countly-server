@@ -1,4 +1,5 @@
 const Triggers = require('./parts/triggers/index.js');
+const InternalEventTrigger = require('./parts/triggers/internal_event.js');
 const Effects = require('./parts/effects/index.js');
 const asyncLib = require('async');
 const EventEmitter = require('events');
@@ -306,6 +307,18 @@ plugins.register("/i/hook/save", function(ob) {
 
             if (hookConfig && hookConfig.effects && !validateEffects(hookConfig.effects)) {
                 common.returnMessage(params, 400, 'Invalid configuration for effects');
+                return true;
+            }
+
+            // Only global admins may create or update hooks that subscribe
+            // to global (non app-scoped) internal events such as
+            // /i/users/* or /systemlogs — these carry instance-wide data.
+            if (!params.member.global_admin
+                && hookConfig.trigger
+                && hookConfig.trigger.type === "InternalEventTrigger"
+                && hookConfig.trigger.configuration
+                && InternalEventTrigger.GLOBAL_EVENT_TYPES[hookConfig.trigger.configuration.eventType]) {
+                common.returnMessage(params, 403, "User does not have right to subscribe to this event");
                 return true;
             }
 
@@ -677,6 +690,7 @@ plugins.register("/i/hook/test", function(ob) {
 
             if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
                 common.returnMessage(params, 403, "hook config invalid");
+                return;
             }
 
             if (hookConfig && hookConfig.effects && !validateEffects(hookConfig.effects)) {
@@ -684,7 +698,16 @@ plugins.register("/i/hook/test", function(ob) {
                 return true;
             }
 
-            // trigger process            
+            // a user may only test a hook for apps they could actually manage;
+            // validateCreate above only checked the request app_id, so re-check
+            // every app the hook targets to keep test from running effects (or
+            // probing data) against apps the member has no hooks rights on
+            if (!params.member.global_admin && !memberHasRightForAllApps(rights.hasCreateRight, params.member, hookConfig.apps)) {
+                common.returnMessage(params, 403, "User does not have right");
+                return;
+            }
+
+            // trigger process
             log.d(JSON.stringify(hookConfig), "[hook test config]");
             const results = [];
 
