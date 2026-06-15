@@ -1,4 +1,5 @@
 var request = require('supertest');
+var should = require('should');
 var testUtils = require("../testUtils");
 request = request(testUtils.url);
 
@@ -100,6 +101,34 @@ describe('Testing query-validated read endpoints (happy path)', function() {
                     if (err) {
                         return done(err);
                     }
+                    done();
+                });
+        });
+
+        it('should not export the session store collection', function(done) {
+            request
+                .get('/o/export/db?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&collection=sessions_&type=json&filter=' + emptyQuery)
+                .expect(401)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'User does not have access right for this collection');
+                    done();
+                });
+        });
+
+        it('should not export system index metadata', function(done) {
+            request
+                .get('/o/export/db?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&collection=system.indexes&type=json&filter=' + emptyQuery)
+                .expect(401)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'User does not have access right for this collection');
                     done();
                 });
         });
