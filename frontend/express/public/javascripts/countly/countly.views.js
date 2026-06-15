@@ -1,4 +1,4 @@
-/* global countlyView, countlyCommon, app, CountlyHelpers, countlyGlobal, countlyTaskManager, countlyVersionHistoryManager, DownloadView, Backbone, jQuery, $*/
+/* global countlyView, countlyCommon, app, CountlyHelpers, countlyGlobal, countlyVersionHistoryManager, DownloadView, Backbone, jQuery, $*/
 
 window.DashboardView = countlyView.extend({
     renderCommon: function() {
@@ -17,44 +17,51 @@ window.DownloadView = countlyView.extend({
     renderCommon: function() {
         var self = this;
         if (!this.task_id) {
-            $(this.el).html('<div id="no-app-type"><h1>' + jQuery.i18n.map["downloading-view.download-not-available-title"] + '</h1><p>' + jQuery.i18n.map["downloading-view.download-not-available-text"] + '</p></div>');
+            self.renderUnavailable();
             return;
         }
+        // each route sets its own path; default protects direct/legacy entry
         this.path = this.path || "/app_users/download/";
-        var myhtml;
-        if (this.path) {
-            myhtml = '<div id="no-app-type"><h1>' + jQuery.i18n.map["downloading-view.download-title"] + '</h1>';
-            self.link = countlyCommon.API_PARTS.data.r + self.path + self.task_id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
-            window.location = self.link;
-
-            if (self.link) {
-                myhtml += '<p><a href="' + self.link + '">' + jQuery.i18n.map["downloading-view.if-not-start"] + '</a></p>';
-            }
-            myhtml += "</div>";
-            $(self.el).html(myhtml);
+        self.link = self.buildLink(self.task_id);
+        window.location = self.link;
+        self.renderDownloadLink(self.link);
+    },
+    // Build the download URL. The id segment can originate from the URL hash
+    // (route parameter), so every segment is encoded before it is placed in
+    // the URL to keep it a single, well-formed path/query component.
+    buildLink: function(id) {
+        return countlyCommon.API_PARTS.data.r + this.path + encodeURIComponent(id) +
+            "?auth_token=" + encodeURIComponent(countlyGlobal.auth_token) +
+            "&app_id=" + encodeURIComponent(countlyCommon.ACTIVE_APP_ID);
+    },
+    // Render via DOM APIs (textContent / href property) rather than building an
+    // HTML string, so the link value is never parsed as markup.
+    renderDownloadLink: function(link) {
+        var container = document.createElement("div");
+        container.id = "no-app-type";
+        var title = document.createElement("h1");
+        title.textContent = jQuery.i18n.map["downloading-view.download-title"];
+        container.appendChild(title);
+        if (link) {
+            var paragraph = document.createElement("p");
+            var anchor = document.createElement("a");
+            anchor.href = link;
+            anchor.textContent = jQuery.i18n.map["downloading-view.if-not-start"];
+            paragraph.appendChild(anchor);
+            container.appendChild(paragraph);
         }
-        else {
-            this.path = "/app_users/download/";
-            countlyTaskManager.fetchResult(this.task_id, function(res) {
-                myhtml = '<div id="no-app-type"><h1>' + jQuery.i18n.map["downloading-view.download-title"] + '</h1>';
-                if (res && res.data) {
-                    res.data = res.data.replace(new RegExp("&quot;", 'g'), "");
-                    self.link = countlyCommon.API_PARTS.data.r + self.path + res.data + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
-                    window.location = self.link;
-
-
-                    if (self.link) {
-                        myhtml += '<p><a href="' + self.link + '">' + jQuery.i18n.map["downloading-view.if-not-start"] + '</a></p>';
-                    }
-                    myhtml += "</div>";
-                }
-                else {
-                    myhtml = '<div id="no-app-type"><h1>' + jQuery.i18n.map["downloading-view.download-not-available-title"] + '</h1><p>' + jQuery.i18n.map["downloading-view.download-not-available-text"] + '</p></div>';
-                }
-                $(self.el).html(myhtml);
-
-            });
-        }
+        $(this.el).empty().append(container);
+    },
+    renderUnavailable: function() {
+        var container = document.createElement("div");
+        container.id = "no-app-type";
+        var title = document.createElement("h1");
+        title.textContent = jQuery.i18n.map["downloading-view.download-not-available-title"];
+        var text = document.createElement("p");
+        text.textContent = jQuery.i18n.map["downloading-view.download-not-available-text"];
+        container.appendChild(title);
+        container.appendChild(text);
+        $(this.el).empty().append(container);
     }
 });
 
@@ -82,6 +89,7 @@ app.DownloadView = new DownloadView();
 
 app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function(task_id) {
     this.DownloadView.task_id = task_id;
+    this.DownloadView.path = "/app_users/download/";
     this.renderWhenReady(this.DownloadView);
 });
 
