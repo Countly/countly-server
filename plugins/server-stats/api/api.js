@@ -27,7 +27,9 @@ function getServerStatsApps(member) {
     if (typeof member.permission === "undefined" && Array.isArray(member.user_of)) {
         apps = apps.concat(member.user_of);
     }
-    return apps;
+    // an app can be both administered and feature-granted; de-duplicate so the
+    // $in filters and membership loops do not carry repeated ids
+    return Array.from(new Set(apps));
 }
 
 (function() {
