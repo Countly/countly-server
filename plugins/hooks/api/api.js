@@ -677,6 +677,7 @@ plugins.register("/i/hook/test", function(ob) {
 
             if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
                 common.returnMessage(params, 403, "hook config invalid");
+                return;
             }
 
             if (hookConfig && hookConfig.effects && !validateEffects(hookConfig.effects)) {
