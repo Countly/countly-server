@@ -36,8 +36,18 @@ var STAR_RATING_EXT_TO_MIME = {
                 countlyPath = `/${countlyPath}`;
             }
 
+            // Static assets in the popup are fetched by the browser relative to the
+            // iframe's document URL. The widget is frequently served behind a reverse
+            // proxy mounted on an arbitrary, app-specific sub-folder that the Countly
+            // server has no knowledge of, so an absolute path (built from countlyPath)
+            // can never resolve there. We emit document-relative paths instead, which
+            // resolve under whatever sub-folder the widget was loaded from.
+            // The popup is reachable at '/feedback/rating' (two segments -> one level
+            // up) and the legacy '/feedback' (one segment -> same level).
+            const assetPrefix = /\/feedback\/?$/.test(req.path) ? '' : '../';
+
             res.removeHeader('X-Frame-Options');
-            res.render('../../../plugins/star-rating/frontend/public/templates/feedback-popup', { countlyPath });
+            res.render('../../../plugins/star-rating/frontend/public/templates/feedback-popup', { countlyPath, assetPrefix });
         }
 
         app.get(countlyConfig.path + '/feedback/rating', renderPopup);

@@ -1,4 +1,8 @@
 
+## Version 25.03.X
+Fixes:
+- [star-rating] Serve feedback widget assets via document-relative paths so they resolve when the widget is loaded through a reverse proxy on an app-specific sub-folder
+
 ## Version 25.03.47
 Fixes:
 - [content] Bugfixes for content showing
