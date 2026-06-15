@@ -461,6 +461,15 @@
             }
         },
         mounted: function() {
+            // global (non app-scoped) internal events carry instance-wide data
+            // and may only be subscribed to by global admins; hide them for
+            // everyone else (the server also rejects them on save).
+            if (!countlyGlobal.member.global_admin) {
+                var globalEventTypes = {"/i/users/create": true, "/i/users/update": true, "/i/users/delete": true, "/master": true, "/systemlogs": true};
+                this.internalEventOptions = this.internalEventOptions.filter(function(option) {
+                    return !globalEventTypes[option.value];
+                });
+            }
             this.getCohortOptioins();
             this.getHookOptions();
             this.getAlertOptions();

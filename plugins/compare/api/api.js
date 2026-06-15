@@ -8,7 +8,7 @@ var exported = {},
     crypto = require('crypto'),
     async = require('async'),
     log = common.log('compare:api'),
-    { validateRead, getUserApps } = require('../../../api/utils/rights.js');
+    { validateRead, getAdminApps, getUserAppsForFeaturePermission } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'compare';
 
@@ -153,16 +153,19 @@ const FEATURE_NAME = 'compare';
         params.qstring.app_id = appsToFetch[0];
 
         validateRead(params, FEATURE_NAME, function() {
-            const userApps = getUserApps(params.member);
             if (!params.member.global_admin) {
+                // every requested app must be one the member can read with the
+                // compare feature, not merely an app they belong to; admin apps
+                // include the feature implicitly
+                var allowedApps = (getAdminApps(params.member) || [])
+                    .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
+                // legacy members (no permission object) are not covered by
+                // getUserAppsForFeaturePermission, so fall back to their user_of
+                if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                    allowedApps = allowedApps.concat(params.member.user_of);
+                }
                 for (var i = 0; i < appsToFetch.length; i++) {
-                    if (params.member && userApps) {
-                        if (userApps.indexOf(appsToFetch[i]) === -1) {
-                            common.returnMessage(params, 401, 'User does not have view rights for one or more apps provided in apps parameter');
-                            return true;
-                        }
-                    }
-                    else {
+                    if (allowedApps.indexOf(appsToFetch[i]) === -1) {
                         common.returnMessage(params, 401, 'User does not have view rights for one or more apps provided in apps parameter');
                         return true;
                     }
