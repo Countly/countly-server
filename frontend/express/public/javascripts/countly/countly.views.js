@@ -1,4 +1,4 @@
-/* global countlyView, countlyCommon, app, CountlyHelpers, countlyGlobal, countlyTaskManager, countlyVersionHistoryManager, DownloadView, Backbone, jQuery, $*/
+/* global countlyView, countlyCommon, app, CountlyHelpers, countlyGlobal, countlyVersionHistoryManager, DownloadView, Backbone, jQuery, $*/
 
 window.DashboardView = countlyView.extend({
     renderCommon: function() {
@@ -20,26 +20,11 @@ window.DownloadView = countlyView.extend({
             self.renderUnavailable();
             return;
         }
+        // each route sets its own path; default protects direct/legacy entry
         this.path = this.path || "/app_users/download/";
-        if (this.path) {
-            self.link = self.buildLink(self.task_id);
-            window.location = self.link;
-            self.renderDownloadLink(self.link);
-        }
-        else {
-            this.path = "/app_users/download/";
-            countlyTaskManager.fetchResult(this.task_id, function(res) {
-                if (res && res.data) {
-                    res.data = res.data.replace(new RegExp("&quot;", 'g'), "");
-                    self.link = self.buildLink(res.data);
-                    window.location = self.link;
-                    self.renderDownloadLink(self.link);
-                }
-                else {
-                    self.renderUnavailable();
-                }
-            });
-        }
+        self.link = self.buildLink(self.task_id);
+        window.location = self.link;
+        self.renderDownloadLink(self.link);
     },
     // Build the download URL. The id segment can originate from the URL hash
     // (route parameter), so every segment is encoded before it is placed in
@@ -104,6 +89,7 @@ app.DownloadView = new DownloadView();
 
 app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function(task_id) {
     this.DownloadView.task_id = task_id;
+    this.DownloadView.path = "/app_users/download/";
     this.renderWhenReady(this.DownloadView);
 });
 
