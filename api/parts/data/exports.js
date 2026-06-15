@@ -533,7 +533,8 @@ exports.redactExportDoc = function(collection, doc) {
     var fields = EXPORT_REDACTIONS[collection];
     for (var i = 0; i < fields.length; i++) {
         if (fields[i] === "_id") {
-            // _id is always returned by the driver, so mask rather than delete
+            // _id is normally present (fromDatabase keeps it unless explicitly
+            // excluded via projection), so mask its value rather than deleting it
             if (typeof doc._id !== "undefined") {
                 doc._id = "***redacted***";
             }
