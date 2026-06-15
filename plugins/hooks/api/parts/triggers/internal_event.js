@@ -306,6 +306,10 @@ class InternalEventTrigger {
     }
 }
 
+// exposed so the save handler can reject non-global-admins creating/updating
+// hooks that subscribe to these global event types
+InternalEventTrigger.GLOBAL_EVENT_TYPES = GLOBAL_EVENT_TYPES;
+
 module.exports = InternalEventTrigger;
 const InternalEvents = [
     "/i/apps/create",
