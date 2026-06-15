@@ -1,6 +1,7 @@
 const plugins = require('../../pluginManager.js');
 const common = require('../../../api/utils/common.js');
 const { processRequest } = require('../../../api/utils/requestProcessor');
+const rights = require('../../../api/utils/rights.js');
 
 //write api call
 plugins.register("/sdk/pre", function(ob) {
@@ -88,7 +89,7 @@ plugins.register("/i", async function(ob) {
 
 });
 
-plugins.register('/i/apps/update/plugins/consolidate', async function({app, config}) {
+plugins.register('/i/apps/update/plugins/consolidate', async function({params, app, config}) {
     try {
         console.log('Updating app %s config: %j', app._id, config);
         const addedSourceApps = config.selectedApps;
@@ -96,6 +97,17 @@ plugins.register('/i/apps/update/plugins/consolidate', async function({app, conf
 
         if (!addedSourceApps || !initialSourceApps) {
             return "Nothing changed";
+        }
+
+        // Apply the config only to source apps the member has access to (the same set
+        // the App Management UI offers). Global admins pass.
+        const member = params && params.member;
+        if (!member || !member.global_admin) {
+            const allowedApps = (member && rights.getUserApps(member)) || [];
+            const unauthorized = addedSourceApps.filter((id) => allowedApps.indexOf(id + "") === -1);
+            if (unauthorized.length) {
+                throw new Error('No access to source app(s): ' + unauthorized.join(', '));
+            }
         }
 
         const removedSourceApps = addedSourceApps
