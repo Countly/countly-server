@@ -43,8 +43,13 @@ issue has one). Review against the Design Checklist.
 
 ## Phase 3 — Branch
 
-Delegate to **release-manager** to create/checkout the working branch.
-(In a managed session with a pre-assigned branch, use that branch.)
+Delegate to **release-manager** to create/checkout the working branch. The
+name MUST be meaningful and derived from the source: `<JIRA-KEY>-<Issue-Title>`
+from the Jira issue summary (Phase 0), or — for Slack/free-text triggers with
+no Jira key — a concise descriptive name extracted from the thread topic /
+request (e.g. `ios-sigtrap-crash-grouping`). No generic slugs, no
+`feature/`/`bugfix/` prefix. (In a managed session with a pre-assigned branch,
+use that branch instead.)
 
 ## Phase 4 — Implementation
 

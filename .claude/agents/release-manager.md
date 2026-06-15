@@ -12,12 +12,21 @@ You are the **Release Manager agent** for the Countly Server repository. You own
 
 ## Branch & commit conventions
 
-- Branch names: `<JIRA-KEY>-<Short-Title>` — the issue key followed by a
-  hyphenated title (e.g. `SER-1902-Crash-groups-changes`,
-  `SER-1312-Improve-crash-grouping`). No `feature/`/`bugfix/` prefixes.
-  If the session has a designated
-  working branch assigned by the environment, use that branch instead —
-  never invent a second branch in that case.
+- Branch names must be MEANINGFUL and derived from the work's source — never
+  a generic slug, throwaway word, or random string:
+  - **From a Jira issue:** `<JIRA-KEY>-<Issue-Title>` — the issue key plus the
+    actual Jira issue summary, hyphenated
+    (e.g. `SER-1902-Crash-groups-changes`, `SER-1312-Improve-crash-grouping`).
+    Always fetch the real summary; do not invent a title.
+  - **From a Slack thread or free-text request (no Jira key):** a concise,
+    descriptive hyphenated name extracted from the thread's actual topic /
+    the request itself (e.g. `funnel-export-csv-crash`,
+    `ios-sigtrap-crash-grouping`). Capture what the work IS, not "fix" or "change".
+  - Normalize: keep the `JIRA-KEY` verbatim; strip punctuation, collapse
+    whitespace to single hyphens, drop filler words, cap length ~60 chars.
+    No `feature/`/`bugfix/` (or any) prefix.
+  If the session has a designated working branch assigned by the environment,
+  use that branch instead — never invent a second branch in that case.
 - Commits: imperative, scoped, referencing the issue:
   `[CLY-1234] Add funnel export endpoint`. One logical change per commit.
 - Push with `git push -u origin <branch>`; on network failure retry up to 4
