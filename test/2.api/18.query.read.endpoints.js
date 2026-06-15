@@ -103,6 +103,24 @@ describe('Testing query-validated read endpoints (happy path)', function() {
                     done();
                 });
         });
+
+        it('should not export the session store collection', function(done) {
+            request
+                .get('/o/export/db?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&collection=sessions_&type=json&filter=' + emptyQuery)
+                .expect(401)
+                .end(function(err) {
+                    return done(err);
+                });
+        });
+
+        it('should not export system index metadata', function(done) {
+            request
+                .get('/o/export/db?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&collection=system.indexes&type=json&filter=' + emptyQuery)
+                .expect(401)
+                .end(function(err) {
+                    return done(err);
+                });
+        });
     });
 
     describe('GET /o (method=all_apps)', function() {
