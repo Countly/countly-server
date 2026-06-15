@@ -765,6 +765,15 @@ plugins.register("/i/hook/test", function(ob) {
                 }
             }
 
+            // a user may only test a hook for apps they could actually manage;
+            // validateCreate above only checked the request app_id, so re-check
+            // every app the hook targets to keep test from running effects (or
+            // probing data) against apps the member has no hooks rights on
+            if (!params.member.global_admin && !memberHasRightForAllApps(rights.hasCreateRight, params.member, hookConfig.apps)) {
+                common.returnMessage(params, 403, "User does not have right");
+                return;
+            }
+
 
             // trigger process            
             log.d(JSON.stringify(hookConfig), "[hook test config]");
