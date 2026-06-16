@@ -184,32 +184,18 @@ const verifyDefaultPageElements = (isDemoApp) => {
 };
 
 const checkPopulatorProgressBar = () => {
-    cy
-        .elementExists(initialSetupPageElements.DATA_POP_PROGRESS_BAR)
-        .then((isExists) => {
-            if (isExists) {
-                cy.verifyElement({
-                    element: initialSetupPageElements.DATA_POP_PROGRESS_BAR_IMG,
-                    labelElement: initialSetupPageElements.DATA_POP_PROGRESS_BAR_TEXT,
-                    labelText: 'Populating data for your app'
-                });
-                cy.get(`[data-test-id="${initialSetupPageElements.DATA_POP_PROGRESS_BAR}"]`, { timeout: 120000 })
-                    .should('not.exist');
-            }
-        });
-};
-
-const verifyPopulatorProgressImg = () => {
+    cy.get(`[data-test-id="${initialSetupPageElements.DATA_POP_PROGRESS_BAR}"]`, { timeout: 15000 })
+        .should('exist');
     cy.verifyElement({
-        element: initialSetupPageElements.DATA_POP_PROGRESS_BAR_IMG,
+        labelElement: initialSetupPageElements.DATA_POP_PROGRESS_BAR_TEXT,
+        labelText: 'Populating data for your app'
     });
 };
 
 const verifyPopulatorContinueButton = () => {
-    cy.verifyElement({
-        element: initialSetupPageElements.CONTINUE_BUTTON,
-        elementText: 'Continue'
-    });
+    cy.get(`[data-test-id="${initialSetupPageElements.CONTINUE_BUTTON}"]`, { timeout: 180000 })
+        .should('be.visible')
+        .and('contain', 'Continue');
 };
 
 const clickPopulatorContinueButton = () => {
