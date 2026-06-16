@@ -211,7 +211,7 @@ const verifyCountriesMetricCard = ({
 
     cy.verifyElement({ element: countriesMetricCardElements.TOTAL_SESSIONS_NUMBER, elementText: "0", shouldNot: true });
     cy.verifyElement({ element: countriesMetricCardElements.TOTAL_SESSIONS_NUMBER, elementText: "NA", shouldNot: true });
-  
+
     cy.verifyElement({
         element: countriesMetricCardElements.TOTAL_SESSIONS_TREND_ICON,
     });
