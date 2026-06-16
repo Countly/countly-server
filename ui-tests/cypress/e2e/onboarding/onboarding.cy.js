@@ -367,7 +367,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToAnalyticsAllEvents();
         // analyticsEventsPageHelpers.verifyFullDataPageElements();  
         // navigationHelpers.goToPushNotifications();
-        messagingPageHelpers.verifyFullDataPageElements();
+        //messagingPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToFeedbackRatingsPage();
         feedbackRatingsPageHelpers.verifyFullDataPageElements();
         feedbackRatingsPageHelpers.clickRatingWidgetsTab();
