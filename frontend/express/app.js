@@ -1981,6 +1981,33 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     //startup (idempotent) so existing apps are covered after an upgrade with no
     //migration script; createApp also ensures it for new apps.
     countlyDb.collection('apps').createIndex({"keys.key": 1}, { background: true }, function() {});
+    //backfill the accepted-keys array for apps that predate key rotation, so the
+    //SDK app lookup resolves them via the indexed keys.key field on its first
+    //query instead of falling back to the current-key field. Idempotent (only
+    //touches apps missing the array, and is guarded again per-app at write time)
+    //and self-disabling once filled, so it is safe to run on every startup; this
+    //process runs in low replica count and the apps collection is small, so no
+    //migration script or cross-process coordination is needed. App resolution
+    //stays correct before this completes via the current-key fallback in
+    //common.resolveAppByKey, so it does not need to gate startup.
+    countlyDb.collection('apps').find({ keys: { $exists: false } }, { projection: { key: 1, created_at: 1, last_data: 1 } }).toArray(function(ferr, legacyApps) {
+        if (ferr) {
+            console.log("Failed to read apps for accepted-keys backfill", ferr);
+            return;
+        }
+        var nowSec = Math.floor(Date.now() / 1000);
+        (legacyApps || []).forEach(function(legacyApp) {
+            countlyDb.collection('apps').updateOne(
+                { _id: legacyApp._id, keys: { $exists: false } },
+                { $set: { keys: [{ key: legacyApp.key, added_at: legacyApp.created_at || nowSec, last_data: legacyApp.last_data || 0 }] } },
+                function(uerr) {
+                    if (uerr) {
+                        console.log("Failed to backfill accepted-keys array for app", legacyApp._id, uerr);
+                    }
+                }
+            );
+        });
+    });
     countlyDb.collection('members').createIndex({"api_key": 1}, { unique: true }, function() {});
     countlyDb.collection('members').createIndex({ email: 1 }, { unique: true }, function() {});
     countlyDb.collection('jobs').createIndex({ finished: 1 }, function() {});
