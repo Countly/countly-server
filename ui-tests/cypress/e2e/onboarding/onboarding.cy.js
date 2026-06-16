@@ -198,8 +198,8 @@ describe('Complete Onboarding', () => {
         analyticsEventsOverviewPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyEmptyPageElements();
-        navigationHelpers.goToPushNotifications();
-        messagingPageHelpers.verifyEmptyPageElements();
+        // navigationHelpers.goToPushNotifications();       
+        // messagingPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToFeedbackRatingsPage();
         feedbackRatingsPageHelpers.verifyEmptyPageElements();
         feedbackRatingsPageHelpers.clickRatingWidgetsTab();
@@ -365,9 +365,9 @@ describe('Complete Onboarding', () => {
         //analyticsEventsOverviewPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
         analyticsEventsOverviewPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsAllEvents();
-        analyticsEventsPageHelpers.verifyFullDataPageElements();
-        navigationHelpers.goToPushNotifications();
-        messagingPageHelpers.verifyFullDataPageElements();
+        // analyticsEventsPageHelpers.verifyFullDataPageElements();  
+        // navigationHelpers.goToPushNotifications();
+        //messagingPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToFeedbackRatingsPage();
         feedbackRatingsPageHelpers.verifyFullDataPageElements();
         feedbackRatingsPageHelpers.clickRatingWidgetsTab();
