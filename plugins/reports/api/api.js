@@ -7,7 +7,7 @@ var common = require('../../../api/utils/common.js'),
     fs = require("fs"),
     plugins = require('../../pluginManager.js'),
     pdf = require('../../../api/utils/pdf'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, getUserApps, } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete, getAdminApps, getUserAppsForFeaturePermission } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'reports';
 
@@ -271,15 +271,18 @@ const FEATURE_NAME = 'reports';
                         return;
                     }
 
-                    let userApps = getUserApps(params.member);
-                    let notPermitted = false;
-                    for (var i = 0; i < props.apps.length; i++) {
-                        if (userApps.indexOf(props.apps[i]) === -1) {
-                            notPermitted = true;
+                    if (!params.member.global_admin) {
+                        let allowedApps = (getAdminApps(params.member) || [])
+                            .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
+                        if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                            allowedApps = allowedApps.concat(params.member.user_of);
                         }
-                    }
-                    if (notPermitted && !params.member.global_admin) {
-                        return common.returnMessage(params, 401, 'User does not have right to access this information');
+                        let notPermitted = props.apps.some(function(appId) {
+                            return allowedApps.indexOf(appId) === -1;
+                        });
+                        if (notPermitted) {
+                            return common.returnMessage(params, 401, 'User does not have right to access this information');
+                        }
                     }
                 }
 
@@ -346,15 +349,18 @@ const FEATURE_NAME = 'reports';
                         if (!Array.isArray(props.apps) || props.apps.length === 0) {
                             return common.returnMessage(params, 400, 'Invalid or missing apps');
                         }
-                        let userApps = getUserApps(params.member);
-                        let notPermitted = false;
-                        for (var i = 0; i < props.apps.length; i++) {
-                            if (userApps.indexOf(props.apps[i]) === -1) {
-                                notPermitted = true;
+                        if (!params.member.global_admin) {
+                            let allowedApps = (getAdminApps(params.member) || [])
+                                .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
+                            if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                                allowedApps = allowedApps.concat(params.member.user_of);
                             }
-                        }
-                        if (notPermitted && !params.member.global_admin) {
-                            return common.returnMessage(params, 401, 'User does not have right to access this information');
+                            let notPermitted = props.apps.some(function(appId) {
+                                return allowedApps.indexOf(appId) === -1;
+                            });
+                            if (notPermitted) {
+                                return common.returnMessage(params, 401, 'User does not have right to access this information');
+                            }
                         }
                     }
 

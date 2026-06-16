@@ -12,7 +12,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter, getAdminApps, getUserAppsForFeaturePermission } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -1867,8 +1867,25 @@ const processRequest = (params) => {
                         params.qstring.query.subtask = {$exists: false};
                         params.qstring.query.app_id = params.qstring.app_id;
                         if (params.qstring.app_ids && params.qstring.app_ids !== "") {
-                            var ll = params.qstring.app_ids.split(",");
+                            var ll = params.qstring.app_ids.split(",").map(function(id) {
+                                return id.trim();
+                            }).filter(Boolean);
                             if (ll.length > 1) {
+                                // validateRead only checked the single app_id; every app
+                                // in the multi-app list must also be one the member can read
+                                if (!params.member.global_admin) {
+                                    var allowedTaskApps = (getAdminApps(params.member) || [])
+                                        .concat(getUserAppsForFeaturePermission(params.member, 'core', 'r') || []);
+                                    if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                                        allowedTaskApps = allowedTaskApps.concat(params.member.user_of);
+                                    }
+                                    for (var taskAppIdx = 0; taskAppIdx < ll.length; taskAppIdx++) {
+                                        if (allowedTaskApps.indexOf(ll[taskAppIdx]) === -1) {
+                                            common.returnMessage(params, 401, 'User does not have access to one or more of the requested apps');
+                                            return;
+                                        }
+                                    }
+                                }
                                 params.qstring.query.app_id = {$in: ll};
                             }
                         }
@@ -2090,6 +2107,15 @@ const processRequest = (params) => {
                     validateUserForMgmtReadAPI(() => {
                         if (!params.qstring.collection) {
                             common.returnMessage(params, 400, 'Missing parameter "collection"');
+                            return false;
+                        }
+                        // query params can be parsed into arrays/objects; force a
+                        // plain string before any substring check or access lookup
+                        params.qstring.collection = params.qstring.collection + "";
+                        // keep the db export surface aligned with DB Viewer: internal
+                        // index metadata and the dashboard session store are not exportable
+                        if (params.qstring.collection.indexOf("system.indexes") !== -1 || params.qstring.collection.indexOf("sessions_") !== -1) {
+                            common.returnMessage(params, 401, 'User does not have access right for this collection');
                             return false;
                         }
                         if (typeof params.qstring.filter === "string") {
@@ -3517,7 +3543,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         return done ? done() : false;
     }
 
-    common.readBatcher.getOne("apps", {$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err, app) => {
+    common.resolveAppByKey(params.qstring.app_key, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
@@ -3566,10 +3592,10 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 if (err1) {
                     console.log("Failed to update apps collection " + err1);
                 }
-                //invalidate using the same query the request loaded the app
-                //with (current key OR an accepted old key), so the cache entry
-                //for old-key requests is also cleared
-                common.readBatcher.invalidate("apps", {$or: [{"key": params.qstring.app_key + ""}, {"keys.key": params.qstring.app_key + ""}]}, {}, false);
+                //invalidate both cache shapes the request may have loaded the
+                //app with (accepted-keys lookup, then current-key fallback), so
+                //the cache entry for old-key requests is also cleared
+                common.invalidateAppByKey(params.qstring.app_key);
             });
         }
 
@@ -3677,7 +3703,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
     if (ignorePossibleDevices(params)) {
         return done ? done() : false;
     }
-    common.readBatcher.getOne("apps", {$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err, app) => {
+    common.resolveAppByKey(params.qstring.app_key, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
