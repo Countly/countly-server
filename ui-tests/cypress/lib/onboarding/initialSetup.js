@@ -242,7 +242,6 @@ module.exports = {
     clickContinueSubmitButton,
     completeOnboardingInitialSetup,
     checkPopulatorProgressBar,
-    verifyPopulatorProgressImg,
     verifyPopulatorContinueButton,
     clickPopulatorContinueButton
 };
