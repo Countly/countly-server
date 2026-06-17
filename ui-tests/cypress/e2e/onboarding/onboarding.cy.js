@@ -198,8 +198,8 @@ describe('Complete Onboarding', () => {
         analyticsEventsOverviewPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyEmptyPageElements();
-        // navigationHelpers.goToPushNotifications();       
-        // messagingPageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToPushNotifications();
+        messagingPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToFeedbackRatingsPage();
         feedbackRatingsPageHelpers.verifyEmptyPageElements();
         feedbackRatingsPageHelpers.clickRatingWidgetsTab();
@@ -366,8 +366,8 @@ describe('Complete Onboarding', () => {
         analyticsEventsOverviewPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsAllEvents();
         // analyticsEventsPageHelpers.verifyFullDataPageElements();  
-        // navigationHelpers.goToPushNotifications();
-        //messagingPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToPushNotifications();
+        messagingPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToFeedbackRatingsPage();
         feedbackRatingsPageHelpers.verifyFullDataPageElements();
         feedbackRatingsPageHelpers.clickRatingWidgetsTab();
