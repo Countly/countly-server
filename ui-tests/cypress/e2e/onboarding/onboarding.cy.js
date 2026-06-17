@@ -198,7 +198,7 @@ describe('Complete Onboarding', () => {
         analyticsEventsOverviewPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyEmptyPageElements();
-        navigationHelpers.goToPushNotifications();       
+        navigationHelpers.goToPushNotifications();
         messagingPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToFeedbackRatingsPage();
         feedbackRatingsPageHelpers.verifyEmptyPageElements();
