@@ -365,7 +365,7 @@ describe('Complete Onboarding', () => {
         //analyticsEventsOverviewPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
         analyticsEventsOverviewPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsAllEvents();
-        analyticsEventsPageHelpers.verifyFullDataPageElements();  
+        analyticsEventsPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToPushNotifications();
         messagingPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToFeedbackRatingsPage();
