@@ -37,8 +37,21 @@ gates, and report honestly.
      if the environment is unavailable in this session, say so explicitly —
      never claim tests passed without running them)
    - `npx grunt dist-all` if frontend files changed
-4. For critical UI flows, add Cypress specs per `docs/UI_TESTING.md`
-   using the `data-test-id` selectors from the design spec.
+4. For critical UI flows, add Cypress specs that follow the **authoritative
+   Countly UI testing guidelines** — `ui-tests/TESTING_GUIDELINES.md` in the
+   `countly-web-ui` repo
+   (https://github.com/Countly/countly-web-ui/blob/main/ui-tests/TESTING_GUIDELINES.md).
+   These are the canonical rules for spec structure, selector strategy
+   (`data-test-id`), test naming, fixtures/setup, and the run command; follow
+   them over any local convention. READ them at the start of any UI-test work:
+   - if `countly-web-ui` is in this session's scope, fetch via the GitHub MCP
+     (`get_file_contents`, owner `Countly`, repo `countly-web-ui`,
+     path `ui-tests/TESTING_GUIDELINES.md`);
+   - otherwise `gh api repos/Countly/countly-web-ui/contents/ui-tests/TESTING_GUIDELINES.md --jq .content | base64 -d`.
+   It is a private repo, so an unauthenticated web fetch will 404. If you
+   cannot reach the document in this session, say so explicitly in your
+   handoff, fall back to `docs/UI_TESTING.md` for `data-test-id` selectors, and do NOT
+   invent UI-testing conventions.
 
 ## Hard rules
 
