@@ -96,15 +96,23 @@ describe('Testing views weekly-unique counting', function() {
                     docs.should.not.be.empty();
                     // Only DEVICE_ID viewed VIEW_NAME, so every weekly-unique bucket must be 1.
                     var offending = [];
+                    var weeklyBucketsChecked = 0;
                     docs.forEach(function(doc) {
                         if (doc.d) {
                             for (var key in doc.d) {
-                                if (/^w[0-9]+$/.test(key) && doc.d[key] && typeof doc.d[key].u !== "undefined" && doc.d[key].u !== 1) {
-                                    offending.push(doc._id + "." + key + ".u=" + doc.d[key].u);
+                                if (/^w[0-9]+$/.test(key) && doc.d[key] && typeof doc.d[key].u !== "undefined") {
+                                    weeklyBucketsChecked++;
+                                    if (doc.d[key].u !== 1) {
+                                        offending.push(doc._id + "." + key + ".u=" + doc.d[key].u);
+                                    }
                                 }
                             }
                         }
                     });
+                    // Guard against a vacuous pass: a weekly-unique bucket must actually
+                    // have been written and inspected, otherwise an empty offending list
+                    // would "pass" even if weekly data stopped being recorded entirely.
+                    weeklyBucketsChecked.should.be.above(0);
                     offending.should.eql([]);
                     done();
                 });

@@ -2228,7 +2228,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
 
-                    var lastMoment = new moment(lastViewTimestamp);
+                    // lastViewTimestamp is a unix timestamp in seconds (like the
+                    // other gates below compare it). new moment(Number) treats the
+                    // value as milliseconds, placing it in 1970, so isoWeek() was a
+                    // tiny number that is almost always < weeklyISO — making the
+                    // weekly-unique gate fire on every repeat view in the same week
+                    // (over-counting weekly unique). Use moment.unix() for seconds.
+                    var lastMoment = moment.unix(lastViewTimestamp);
                     lastMoment.tz(params.appTimezone);
 
                     if (lastViewTimestamp < (params.time.timestamp - secInMin)) {
