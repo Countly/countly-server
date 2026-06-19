@@ -1,4 +1,8 @@
 
+## Version 25.03.xx
+Enterprise Fixes:
+- [journey_engine] Avoid throwing on duplicate events and prevent overwriting existing event map entries during event creation
+
 ## Version 25.03.47
 Fixes:
 - [content] Bugfixes for content showing
