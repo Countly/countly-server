@@ -268,6 +268,15 @@ describe('Testing data points plugin', function() {
                 });
         });
 
+        it('should reject punch-card for an app the scoped user cannot read', function(done) {
+            request
+                .get('/o/server-stats/punch-card?period=30days&selected_app=' + APP_ID + '&api_key=' + scopedApiKey)
+                .expect(401)
+                .end(function(err) {
+                    return done(err);
+                });
+        });
+
         after(function(done) {
             request
                 .get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [scopedUserId]})))
