@@ -1,5 +1,8 @@
 
 ## Version 25.03.xx
+Fixes:
+- [two-factor-auth] Toggling global 2FA now propagates to all users: disabling it turns the 2FA switch off for every user (so users created while it was enabled are no longer prompted), and enabling it turns the switch on for all users
+
 Enterprise Fixes:
 - [journey_engine] Avoid throwing on duplicate events and prevent overwriting existing event map entries during event creation
 

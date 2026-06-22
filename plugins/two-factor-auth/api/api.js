@@ -9,8 +9,48 @@ var plugin = {},
 const { generateQRCode } = require('../lib.js');
 const FEATURE_NAME = 'two_factor_auth';
 
+// Tracks the global 2FA state this process has already reconciled to the
+// members collection, so the onchange handler only reacts to an actual admin
+// toggle and not to the initial config load that happens on every startup.
+var lastGlobalState;
+
+/**
+ * Propagate a change of the global 2FA setting to every member's per-user
+ * switch (SER-2911). Enabling it globally turns the 2FA switch on for all
+ * users; disabling it globally turns the switch off for all users and clears
+ * any stored secret. While 2FA is globally disabled users may still enable or
+ * disable it individually for their own account.
+ * @param {boolean} enabled - new value of two-factor-auth.globally_enabled
+ */
+function propagateGlobalToMembers(enabled) {
+    if (typeof lastGlobalState === "undefined") {
+        // first call is the initial config load - record it, do not touch members
+        lastGlobalState = enabled;
+        return;
+    }
+    if (lastGlobalState === enabled || !common.db) {
+        return;
+    }
+    lastGlobalState = enabled;
+
+    var update = enabled
+        ? {$set: {"two_factor_auth.enabled": true}}
+        : {$set: {"two_factor_auth.enabled": false}, $unset: {"two_factor_auth.secret_token": ""}};
+
+    common.db.collection("members").updateMany({}, update, function(err) {
+        if (err) {
+            log.e(`Failed to propagate global 2FA (${enabled}) to members: ${err.message}`);
+        }
+        else {
+            log.i(`Global 2FA ${enabled ? "enabled" : "disabled"} - updated 2FA switch for all members`);
+        }
+    });
+}
+
 plugins.setConfigs("two-factor-auth", {
     globally_enabled: false
+}, false, function(config) {
+    propagateGlobalToMembers(!!config.globally_enabled);
 });
 
 plugins.register("/permissions/features", function(ob) {
