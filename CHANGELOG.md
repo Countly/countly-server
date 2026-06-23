@@ -1,5 +1,5 @@
 
-## Version 25.03.xx
+## Version 25.03.48
 Fixes:
 - [core] Don't show the "no access" or initial-setup page to users who already have app access — redirect them to their default app instead
 
