@@ -1,5 +1,8 @@
 
 ## Version 25.03.xx
+Fixes:
+- [core] Don't show the "no access" or initial-setup page to users who already have app access — redirect them to their default app instead
+
 Enterprise Fixes:
 - [journey_engine] Avoid throwing on duplicate events and prevent overwriting existing event map entries during event creation
 

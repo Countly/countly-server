@@ -1359,6 +1359,13 @@
     });
 
     app.route('/account-settings/no-access', 'account-settings', function() {
+        if (!_.isEmpty(countlyGlobal.apps)) {
+            // The member actually has app access; don't render the no-access
+            // dead-end (e.g. reached via a stale restored route). Send them to
+            // their default app instead.
+            app.navigate("/" + (countlyGlobal.defaultApp && countlyGlobal.defaultApp._id ? countlyGlobal.defaultApp._id : ""), true);
+            return;
+        }
         var view = getAccountView();
         view.params = {noaccess: true};
         this.renderWhenReady(view);
