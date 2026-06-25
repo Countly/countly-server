@@ -20,7 +20,7 @@
     "notifications"
   ],
   "dependencies": {
-    "firebase-admin": "12.1.0",
+    "firebase-admin": "14.1.0",
     "jsonwebtoken": "9.0.3",
     "node-forge": "1.4.0"
   },
