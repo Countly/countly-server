@@ -1405,7 +1405,7 @@ describe('Testing views weekly-unique counting', function() {
                     if (err2) {
                         return done(err2);
                     }
-                    docs.should.not.be.empty();
+                    docs.should.not.be.empty;
                     // Only WU_DEVICE_ID viewed WU_VIEW_NAME, so every weekly-unique bucket must be 1.
                     var offending = [];
                     var weeklyBucketsChecked = 0;
@@ -1430,5 +1430,20 @@ describe('Testing views weekly-unique counting', function() {
                 });
             });
         });
+    });
+
+    // Reset the app so the view data written above does not leak into
+    // subsequent test files that reuse the same APP_ID.
+    after(function(done) {
+        var params = {app_id: APP_ID, "period": "reset"};
+        request
+            .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
+            .expect(200)
+            .end(function(err) {
+                if (err) {
+                    return done(err);
+                }
+                setTimeout(done, testUtils.testWaitTimeForResetApp * testUtils.testScalingFactor);
+            });
     });
 });
