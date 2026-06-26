@@ -121,6 +121,15 @@ describe('Testing Hooks cross-app authorization', function() {
             });
     });
 
+    it('should reject testing a hook targeting another app', function(done) {
+        var hookConfig = Object.assign({}, baseHookConfig, {apps: [VICTIM_APP_ID]});
+        request.get('/i/hook/test?api_key=' + ATTACKER_API_KEY + '&app_id=' + ATTACKER_APP_ID + '&hook_config=' + encodeURIComponent(JSON.stringify(hookConfig)) + '&mock_data=' + encodeURIComponent(JSON.stringify({})))
+            .expect(403)
+            .end(function(err) {
+                return done(err);
+            });
+    });
+
     it('should confirm the victim hook still exists and is unchanged', function(done) {
         var API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         request.get('/o/hook/list?api_key=' + API_KEY_ADMIN + '&app_id=' + VICTIM_APP_ID + '&id=' + victimHookId)
