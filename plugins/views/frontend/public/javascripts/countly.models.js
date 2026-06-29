@@ -497,6 +497,7 @@
                 omittedSegments: [],
                 domains: [],
                 totalViewsCount: 0,
+                viewsNames: {},
             };
         };
 
@@ -646,6 +647,9 @@
             },
             setSelectedProperty: function(state, value) {
                 state.selectedProperty = value;
+            },
+            setViewsNames: function(state, value) {
+                state.viewsNames = value;
             },
             setSelectedSegment: function(state, value) {
                 state.selectedSegment = value;
@@ -804,6 +808,10 @@
                     for (var i = 0; i < json.length; i++) {
                         _viewsNames[json[i].view] = json[i].display || json[i].view;
                     }
+                }
+                var store = countlyVue.vuex.getGlobalStore();
+                if (store) {
+                    store.commit("countlyViews/setViewsNames", Object.assign({}, _viewsNames));
                 }
             }
         });
