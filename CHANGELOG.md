@@ -9,8 +9,6 @@ Enterprise Fixes:
 
 Enterprise Features:
 - [block] Allow using regex for event filter
-
-Tests:
 - [journey_engine] Added an end-to-end API test suite covering every trigger type (event/session/crash incoming-data, profile-update, journey-exit, profile-group entry/exit) that delivers in-app content through the queue
 
 ## Version 25.03.47
