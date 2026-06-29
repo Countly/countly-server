@@ -5,6 +5,7 @@ Fixes:
 
 Enterprise Fixes:
 - [journey_engine] Avoid throwing on duplicate events and prevent overwriting existing event map entries during event creation
+- [journey_engine] Fixed incoming-data journeys double-entering a user when a single request carried multiple events (e.g. a custom event together with begin_session's session event)
 
 Enterprise Features:
 - [block] Allow using regex for event filter
