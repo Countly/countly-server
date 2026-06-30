@@ -1,3 +1,6 @@
+## Version 25.03.XX
+Fixes:
+- [views] Refresh drawer on app change
 
 ## Version 25.03.48
 Fixes:
