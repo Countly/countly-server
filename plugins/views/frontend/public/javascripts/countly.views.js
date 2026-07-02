@@ -156,7 +156,7 @@
         },
         computed: {
             views: function() {
-                return Object.entries(countlyViews.getViewsNames()).map(function([key, value]) {
+                return Object.entries(this.$store.state.countlyViews.viewsNames || {}).map(function([key, value]) {
                     return {
                         value: key,
                         label: value
