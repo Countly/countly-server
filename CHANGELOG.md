@@ -1,6 +1,8 @@
 ## Version 25.03.XX
 Fixes:
+- [journey_engine] Added user merge handling: running journeys are remapped to the surviving user, keeping the furthest-progressed instance and stopping duplicates
 - [views] Refresh drawer on app change
+
 
 ## Version 25.03.48
 Fixes:
