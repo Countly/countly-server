@@ -835,7 +835,7 @@
                 else {
                     countlyPlugins.deleteAccount({password: pv}, function(err, msg) {
                         if (msg === true || msg === 'true') {
-                            window.location = "/login"; //deleted. go to login
+                            window.location = countlyGlobal.path + "/login"; //deleted. go to login
                         }
                         else if (msg === 'password not valid' || msg === 'password mandatory' || msg === 'global admin limit') {
                             CountlyHelpers.notify({title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings." + msg], sticky: true, clearAll: true, type: "error"});
@@ -1359,6 +1359,13 @@
     });
 
     app.route('/account-settings/no-access', 'account-settings', function() {
+        if (!_.isEmpty(countlyGlobal.apps)) {
+            // The member actually has app access; don't render the no-access
+            // dead-end (e.g. reached via a stale restored route). Send them to
+            // their default app instead.
+            app.navigate("/" + (countlyGlobal.defaultApp && countlyGlobal.defaultApp._id ? countlyGlobal.defaultApp._id : ""), true);
+            return;
+        }
         var view = getAccountView();
         view.params = {noaccess: true};
         this.renderWhenReady(view);

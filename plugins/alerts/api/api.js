@@ -5,7 +5,7 @@ var Promise = require("bluebird");
 const JOB = require('../../../api/parts/jobs');
 const utils = require('./parts/utils.js');
 const _ = require('lodash');
-const { validateCreate, validateRead, validateUpdate, hasCreateRight } = require('../../../api/utils/rights.js');
+const { validateCreate, validateRead, validateUpdate, hasCreateRight, getAdminApps, getUserAppsForFeaturePermission } = require('../../../api/utils/rights.js');
 const FEATURE_NAME = 'alerts';
 const commonLib = require("./parts/common-lib.js");
 const moment = require('moment-timezone');
@@ -461,7 +461,18 @@ function getScheduleTextExpression(period, offset) {
                 let query = {};
                 let count_query = { _id: 'meta'};
                 if (params.member.global_admin !== true) {
-                    query = { createdBy: params.member._id};
+                    //scope to the caller's own alerts AND only those targeting
+                    //apps they can currently read alerts on, so alerts on apps
+                    //the user no longer has access to are not disclosed
+                    var allowedApps = (getAdminApps(params.member) || [])
+                        .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
+                    //legacy members (no permission object) are not covered by
+                    //getUserAppsForFeaturePermission, so include their user_of
+                    //apps too, otherwise they would see none of their own alerts
+                    if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                        allowedApps = allowedApps.concat(params.member.user_of);
+                    }
+                    query = { createdBy: params.member._id, selectedApps: { $in: allowedApps } };
                     count_query = {_id: 'email:' + params.member.email};
                 }
                 common.db.collection("alerts").find(query).toArray(function(err, alertsList) {

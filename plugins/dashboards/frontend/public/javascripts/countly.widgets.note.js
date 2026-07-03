@@ -1,6 +1,66 @@
-/*global countlyVue, CV, countlyCommon, ElementTiptap */
+/*global countlyVue, CV, countlyCommon, ElementTiptap, filterXSS */
 
 (function() {
+    // Note content is rich text (TipTap editor) and is rendered with v-html
+    // after unescapeHtml(), which undoes the API's output escaping. Sanitize
+    // it with an allowlist covering only the formatting the editor produces,
+    // so a note cannot inject scripts/handlers/unsafe tags that would execute
+    // when another user views the dashboard.
+    var NOTE_STYLE_TAGS = ["p", "div", "span", "h1", "h2", "h3", "h4", "h5", "h6",
+        "strong", "b", "em", "i", "u", "s", "strike", "mark", "sub", "sup",
+        "ul", "ol", "li", "blockquote", "pre", "code", "hr"];
+    var noteWhiteList = {
+        a: ["href", "target", "class", "style", "title"],
+        br: [],
+        input: ["type", "checked", "disabled"],
+        label: ["class"]
+    };
+    NOTE_STYLE_TAGS.forEach(function(tag) {
+        noteWhiteList[tag] = ["class", "style"];
+    });
+    // Allow the CSS properties the editor emits. js-xss ships a property
+    // allowlist that already permits color, background-color (highlight),
+    // font-family, font-size and text-align, but disallows line-height by
+    // default, so merge it back in (kept safe by the CSS value filter).
+    var noteCSSWhiteList = {};
+    if (typeof filterXSS === "function" && typeof filterXSS.getDefaultCSSWhiteList === "function") {
+        noteCSSWhiteList = filterXSS.getDefaultCSSWhiteList();
+        noteCSSWhiteList["line-height"] = true;
+    }
+    var noteXSSOptions = {
+        whiteList: noteWhiteList,
+        css: { whiteList: noteCSSWhiteList },
+        stripIgnoreTag: true,
+        stripIgnoreTagBody: ["script", "style"],
+        onIgnoreTagAttr: function(tag, name, value) {
+            // preserve data-* attributes (used by the editor for e.g. todo
+            // lists); they are not script execution vectors
+            if (name.substr(0, 5) === "data-") {
+                return name + '="' + filterXSS.escapeAttrValue(value) + '"';
+            }
+        },
+        onTagAttr: function(tag, name, value) {
+            // href/src are left to the library's safeAttrValue, which permits
+            // http(s)/mailto/tel/relative/anchor links and blocks javascript:
+            // and other dangerous schemes - so links in notes keep working.
+            if (tag === "input" && name === "type" && value !== "checkbox") {
+                // todo lists only need checkboxes
+                return "type='checkbox'";
+            }
+        }
+    };
+    /**
+     * Sanitize note HTML content for safe rendering with v-html
+     * @param {string} html - raw (unescaped) note html
+     * @returns {string} sanitized html
+     */
+    function sanitizeNoteHTML(html) {
+        if (typeof filterXSS === "function") {
+            return filterXSS(html, noteXSSOptions);
+        }
+        // if the sanitizer is unavailable, fail closed by escaping
+        return countlyCommon.encodeHtml(html);
+    }
     var WidgetComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/note/widget.html'),
         mixins: [countlyVue.mixins.customDashboards.global],
@@ -19,7 +79,7 @@
             widgetHTML: function() {
                 var unescapedHTML = countlyCommon.unescapeHtml(this.data.contenthtml);
                 unescapedHTML = unescapedHTML.replace(/<p[^>]*><\/p>/g, '<br>');
-                return unescapedHTML;
+                return sanitizeNoteHTML(unescapedHTML);
             }
         },
     });

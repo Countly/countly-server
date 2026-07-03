@@ -756,6 +756,21 @@ describe('PUSH INTEGRATION TESTS', () => {
         db.close();
     }).timeout(100000);
 
+    it('should pop tx message', async() => {
+        // remove notifications from the API message with a valid filter
+        await supertest.post(`/i/push/message/pop?api_key=${api_key}&app_id=${aid}`)
+            .send({
+                _id: m3._id,
+                filter: {
+                    user: JSON.stringify({la: {$in: ['en']}})
+                }
+            })
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+            });
+    }).timeout(30000);
+
     it('should return 5-user dashboard with actioned', async() => {
         await supertest.get(`/o/push/dashboard?api_key=${api_key}&app_id=${aid}`)
             .expect('Content-Type', /json/)

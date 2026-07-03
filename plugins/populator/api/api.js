@@ -225,12 +225,23 @@ const FEATURE_NAME = 'populator';
                 return false;
             }
 
-            const environmentId = common.crypto.createHash('sha1').update(users[0].appId + users[0].environmentName).digest('hex');
+            if (!params.qstring.app_id) {
+                common.returnMessage(obParams, 400, "Missing parameter app_id");
+                return false;
+            }
+            //derive every stored id/appId from the authorized app_id (enforced
+            //by validateCreate) rather than the client-supplied users[].appId,
+            //so a caller can only create environment records under the app they
+            //are authorized for. Consistent with the check/list/get/remove
+            //endpoints, which already key by params.qstring.app_id.
+            const appId = params.qstring.app_id + "";
+
+            const environmentId = common.crypto.createHash('sha1').update(appId + users[0].environmentName).digest('hex');
             const insertedInformations = [];
             const createdAt = new Date().getTime();
             for (let i = 0; i < users.length; i++) {
                 insertedInformations.push({
-                    _id: users[i].appId + "_" + users[i].templateId + "_" + environmentId + "_" + users[i].deviceId,
+                    _id: appId + "_" + users[i].templateId + "_" + environmentId + "_" + users[i].deviceId,
                     userName: users[i].userName,
                     platform: users[i].platform,
                     device: users[i].device,
@@ -245,14 +256,14 @@ const FEATURE_NAME = 'populator';
                     _id: environmentId,
                     name: users[0].environmentName,
                     templateId: users[0].templateId,
-                    appId: users[0].appId,
+                    appId: appId,
                     createdAt: createdAt
                 }, function(err) {
                     if (err) {
                         common.returnMessage(ob.params, 500, err.message);
                         return false;
                     }
-                    plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_created", data: {environmentId: environmentId, environmentName: users[0].environmentName, appId: users[0].appId, templateId: users[0].templateId}});
+                    plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_created", data: {environmentId: environmentId, environmentName: users[0].environmentName, appId: appId, templateId: users[0].templateId}});
                 });
             }
             common.db.collection('populator_environment_users').insertMany(insertedInformations, function(err) {
@@ -723,6 +734,12 @@ const FEATURE_NAME = 'populator';
             common.returnMessage(obParams, 401, "Missing parameter template_id");
             return true;
         }
+        if (!obParams.qstring.app_id) {
+            //app_id is required to scope the deletion; without it a global
+            //admin request would reach the delete with an undefined scope
+            common.returnMessage(obParams, 401, "Missing parameter app_id");
+            return false;
+        }
         validateDelete(obParams, FEATURE_NAME, function() {
             common.db.collection('populator_environment_users').deleteMany({
                 "_id": {
@@ -735,7 +752,8 @@ const FEATURE_NAME = 'populator';
                 }
                 else {
                     common.db.collection('populator_environments').deleteOne({
-                        "_id": obParams.qstring.environment_id
+                        "_id": obParams.qstring.environment_id,
+                        "appId": obParams.qstring.app_id + ""
                     }, function(err_) {
                         if (err_) {
                             log.e("Error deleting populator environment", err_, obParams.qstring.environment_id);

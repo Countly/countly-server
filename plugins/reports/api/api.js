@@ -7,7 +7,7 @@ var common = require('../../../api/utils/common.js'),
     fs = require("fs"),
     plugins = require('../../pluginManager.js'),
     pdf = require('../../../api/utils/pdf'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, getUserApps, } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete, getAdminApps, getUserAppsForFeaturePermission } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'reports';
 
@@ -258,21 +258,31 @@ const FEATURE_NAME = 'reports';
 
                 convertToTimezone(props);
 
+                //a missing report_type is treated as "core" by the generator
+                //(reports.js: report.report_type || "core"), so normalize it
+                //here too - otherwise the per-app authorization below could be
+                //skipped by omitting report_type while still producing a core
+                //report for arbitrary apps.
+                props.report_type = props.report_type || "core";
+
                 if (props.report_type === "core") {
                     if (!props.apps || !Array.isArray(props.apps) || props.apps.length === 0) {
                         common.returnMessage(params, 400, 'Invalid or missing apps');
                         return;
                     }
 
-                    let userApps = getUserApps(params.member);
-                    let notPermitted = false;
-                    for (var i = 0; i < props.apps.length; i++) {
-                        if (userApps.indexOf(props.apps[i]) === -1) {
-                            notPermitted = true;
+                    if (!params.member.global_admin) {
+                        let allowedApps = (getAdminApps(params.member) || [])
+                            .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
+                        if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                            allowedApps = allowedApps.concat(params.member.user_of);
                         }
-                    }
-                    if (notPermitted && !params.member.global_admin) {
-                        return common.returnMessage(params, 401, 'User does not have right to access this information');
+                        let notPermitted = props.apps.some(function(appId) {
+                            return allowedApps.indexOf(appId) === -1;
+                        });
+                        if (notPermitted) {
+                            return common.returnMessage(params, 401, 'User does not have right to access this information');
+                        }
                     }
                 }
 
@@ -296,6 +306,11 @@ const FEATURE_NAME = 'reports';
                 props = params.qstring.args;
                 var id = props._id;
                 delete props._id;
+                //the report owner is set at creation and must not be changed on
+                //update: repointing it to an unresolvable id would make the
+                //scheduled sender fall back to a global admin and render the
+                //report (e.g. a dashboard) with elevated access
+                delete props.user;
                 if (props.frequency !== "daily" && props.frequency !== "weekly" && props.frequency !== "monthly") {
                     delete props.frequency;
                 }
@@ -312,27 +327,43 @@ const FEATURE_NAME = 'reports';
 
                 convertToTimezone(props);
 
-                if (props.report_type === "core") {
-                    if (!props.apps || !Array.isArray(props.apps) || props.apps.length === 0) {
-                        common.returnMessage(params, 400, 'Invalid or missing apps');
-                        return;
-                    }
-
-                    let userApps = getUserApps(params.member);
-                    let notPermitted = false;
-                    for (var i = 0; i < props.apps.length; i++) {
-                        if (userApps.indexOf(props.apps[i]) === -1) {
-                            notPermitted = true;
-                        }
-                    }
-                    if (notPermitted && !params.member.global_admin) {
-                        return common.returnMessage(params, 401, 'User does not have right to access this information');
-                    }
-                }
                 common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err_update, report) {
                     if (err_update) {
                         console.log(err_update);
                     }
+                    if (!report) {
+                        return common.returnMessage(params, 404, 'Report not found');
+                    }
+
+                    //determine the effective report type after the update: a
+                    //missing report_type (in the payload and the stored report)
+                    //is treated as "core" by the generator, so authorize the
+                    //apps whenever the merged report is core - otherwise omitting
+                    //report_type on update would bypass the per-app check.
+                    //mirror the generator's falsy-defaulting (report_type ||
+                    //"core"): a falsy report_type ("" / null) must not be
+                    //treated as a non-core type to skip the per-app check.
+                    var effectiveType = props.report_type || report.report_type || "core";
+
+                    if (effectiveType === "core" && typeof props.apps !== "undefined") {
+                        if (!Array.isArray(props.apps) || props.apps.length === 0) {
+                            return common.returnMessage(params, 400, 'Invalid or missing apps');
+                        }
+                        if (!params.member.global_admin) {
+                            let allowedApps = (getAdminApps(params.member) || [])
+                                .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
+                            if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                                allowedApps = allowedApps.concat(params.member.user_of);
+                            }
+                            let notPermitted = props.apps.some(function(appId) {
+                                return allowedApps.indexOf(appId) === -1;
+                            });
+                            if (notPermitted) {
+                                return common.returnMessage(params, 401, 'User does not have right to access this information');
+                            }
+                        }
+                    }
+
                     common.db.collection('reports').update(recordUpdateOrDeleteQuery(params, id), {$set: props}, function(err_update2) {
                         if (err_update2) {
                             err_update2 = err_update2.err;
@@ -517,7 +548,10 @@ const FEATURE_NAME = 'reports';
 
                 var bulk = common.db.collection("reports").initializeUnorderedBulkOp();
                 for (const id in statusList) {
-                    bulk.find({ _id: common.db.ObjectID(id) }).updateOne({ $set: { enabled: statusList[id] } });
+                    //scope to records the caller may modify (owner / global
+                    //admin); otherwise any report's enabled state could be
+                    //toggled by _id alone.
+                    bulk.find(recordUpdateOrDeleteQuery(params, id)).updateOne({ $set: { enabled: statusList[id] } });
                 }
                 if (bulk.length > 0) {
                     bulk.execute(function(err) {

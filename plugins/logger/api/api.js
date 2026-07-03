@@ -313,7 +313,7 @@ plugins.setConfigs("logger", {
             processSDKRequest(params);
         }
         else {
-            common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
+            common.db.collection('apps').findOne({$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err, app) => {
                 if (!err && app) {
                     params.app_id = app._id;
                     params.app_cc = app.country;
@@ -334,17 +334,17 @@ plugins.setConfigs("logger", {
         if (params.qstring.method === 'logs') {
             var filter = {};
             if (typeof params.qstring.filter !== "undefined") {
-                try {
-                    filter = JSON.parse(params.qstring.filter);
+                // Reject Mongo $where / $function / $accumulator in
+                // user-supplied filter — they enable server-side JS execution
+                // (DoS, blind-timing exfiltration).
+                var parsed = common.parseUserQuery(params.qstring.filter);
+                if (parsed.error) {
+                    log.d("Rejected user query" + common.reqInfo(params) + ": " + parsed.error);
+                    common.returnMessage(params, 400, parsed.error);
+                    return true;
                 }
-                catch (ex) {
-                    filter = {};
-                }
+                filter = parsed.query;
             }
-            // Reject Mongo $where / $expr / $function / $accumulator in
-            // user-supplied filter — they enable server-side JS execution
-            // (DoS, blind-timing exfiltration).
-            common.stripUnsafeMongoOperators(filter);
 
             validateRead(params, FEATURE_NAME, function(parameters) {
                 common.db.collection('logs' + parameters.app_id).find(filter).limit(1000).toArray(function(err, items) {

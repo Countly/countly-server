@@ -49,9 +49,9 @@ usersApi.create = function(app_id, doc, params, callback) {
             callback("App does not exist");
             return;
         }
-        var _id = common.crypto.createHash('sha1').update(app.key + doc.did + "").digest('hex');
+        var _id = common.getAppUserId(app, doc.did);
         if (doc._id && doc._id !== _id) {
-            callback("Based on app key and device_id, provided _id property should be " + _id + ". Do not provide _id if you want api to use correct one");
+            callback("Based on the app identity and device_id, provided _id property should be " + _id + ". Do not provide _id if you want api to use correct one");
             return;
         }
         doc._id = _id;
@@ -121,7 +121,6 @@ usersApi.update = function(app_id, query, update, params, callback) {
         callback = params;
         params = {};
     }
-    common.stripUnsafeMongoOperators(query);
     plugins.dispatch("/drill/preprocess_query", {
         query: query
     });
@@ -178,7 +177,6 @@ usersApi.delete = function(app_id, query, params, callback) {
             query = {};
         }
     }
-    common.stripUnsafeMongoOperators(query);
     plugins.dispatch("/drill/preprocess_query", {
         query: query
     });
@@ -303,7 +301,6 @@ usersApi.search = function(app_id, query, project, sort, limit, skip, callback) 
             query = {};
         }
     }
-    common.stripUnsafeMongoOperators(query);
 
     plugins.dispatch("/drill/preprocess_query", {
         query: query
@@ -364,7 +361,6 @@ usersApi.count = function(app_id, query, callback) {
             query = {};
         }
     }
-    common.stripUnsafeMongoOperators(query);
 
     plugins.dispatch("/drill/preprocess_query", {
         query: query
@@ -1037,7 +1033,6 @@ usersApi.export = function(app_id, query, params, callback) {
         });
     }
 
-    common.stripUnsafeMongoOperators(query);
     plugins.dispatch("/drill/preprocess_query", {
         query: query
     });
@@ -1293,22 +1288,17 @@ usersApi.loyalty = function(params) {
     const collectionName = 'app_users' + params.qstring.app_id;
     let query = params.qstring.query || {};
 
-    if (typeof query === "string") {
-        try {
-            query = JSON.parse(query);
-            common.stripUnsafeMongoOperators(query);
-            plugins.dispatch("/drill/preprocess_query", {
-                query: query,
-                params
-            });
-        }
-        catch (error) {
-            query = {};
-        }
+    var parsedQuery = common.parseUserQuery(query);
+    if (parsedQuery.error) {
+        log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+        common.returnMessage(params, 400, parsedQuery.error);
+        return;
     }
-    else {
-        common.stripUnsafeMongoOperators(query);
-    }
+    query = parsedQuery.query;
+    plugins.dispatch("/drill/preprocess_query", {
+        query: query,
+        params
+    });
 
     if (cohorts) {
         var cohortQuery = cohorts.preprocessQuery(query);

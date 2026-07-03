@@ -441,6 +441,17 @@ plugins.connectToAllDatabases().then(function() {
                 key: fs.readFileSync(common.config.api.ssl.key),
                 cert: fs.readFileSync(common.config.api.ssl.cert)
             };
+            // Optional: let operators pin the negotiated TLS protocol range
+            // (e.g. minVersion "TLSv1.2"). Left unset by default so Node keeps
+            // its built-in defaults — deployments that still require older
+            // protocols, or that terminate TLS at nginx/their webserver, are
+            // unaffected.
+            if (common.config.api.ssl.minVersion) {
+                sslOptions.minVersion = common.config.api.ssl.minVersion;
+            }
+            if (common.config.api.ssl.maxVersion) {
+                sslOptions.maxVersion = common.config.api.ssl.maxVersion;
+            }
             if (common.config.api.ssl.ca) {
                 sslOptions.ca = fs.readFileSync(common.config.api.ssl.ca);
             }

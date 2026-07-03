@@ -31,6 +31,26 @@
             },
             authToken: function() {
                 return countlyGlobal.auth_token;
+            },
+            acceptedKeys: function() {
+                if (this.newApp || !this.apps[this.selectedApp]) {
+                    return [];
+                }
+                var current = this.apps[this.selectedApp].key;
+                var keys = this.apps[this.selectedApp].keys;
+                if (!Array.isArray(keys) || !keys.length) {
+                    //legacy app whose keys array has not been materialized yet:
+                    //surface at least the current key so the section is useful
+                    return current ? [{key: current, last_data: this.apps[this.selectedApp].last_data || 0, isCurrent: true}] : [];
+                }
+                return keys.map(function(item) {
+                    return {
+                        key: item.key,
+                        added_at: item.added_at,
+                        last_data: item.last_data,
+                        isCurrent: item.key === current
+                    };
+                });
             }
         },
         data: function() {
@@ -460,7 +480,7 @@
                         error: function(xhr, status, error) {
                             CountlyHelpers.notify({
                                 title: jQuery.i18n.map["configs.not-saved"],
-                                message: error || jQuery.i18n.map["configs.not-changed"],
+                                message: (xhr && xhr.responseJSON && xhr.responseJSON.result) || error || jQuery.i18n.map["configs.not-changed"],
                                 type: "error"
                             });
                         }
@@ -518,13 +538,77 @@
                         });
                     },
                     error: function(xhr, status, error) {
+                        // Revert the rejected/edited values so the form reflects the actual
+                        // saved state instead of leaving the failed value on screen.
+                        self.discardForm();
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.not-saved"],
-                            message: error || jQuery.i18n.map["configs.not-changed"],
+                            message: (xhr && xhr.responseJSON && xhr.responseJSON.result) || error || jQuery.i18n.map["configs.not-changed"],
                             type: "error"
                         });
                     }
                 });
+            },
+            formatKeyTime: function(ts) {
+                ts = parseInt(ts, 10);
+                if (!ts) {
+                    return CV.i18n("management-applications.accepted-keys.never");
+                }
+                if (Math.round(ts).toString().length === 10) {
+                    ts *= 1000;
+                }
+                return moment(new Date(ts)).format("ddd, D MMM YYYY, HH:mm");
+            },
+            removeKey: function(key) {
+                var self = this;
+                CountlyHelpers.confirm(
+                    jQuery.i18n.map["management-applications.retire-key-confirm"],
+                    "red",
+                    function(result) {
+                        if (!result) {
+                            return true;
+                        }
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.apps.w + '/update',
+                            data: {
+                                args: JSON.stringify({app_id: self.selectedApp, remove_keys: [key]}),
+                                app_id: self.selectedApp
+                            },
+                            dataType: "json",
+                            success: function(data) {
+                                //optimistically drop the retired key in case the
+                                //response does not echo the keys array back
+                                var existing = (countlyGlobal.apps[self.selectedApp].keys || []).filter(function(k) {
+                                    return k.key !== key;
+                                });
+                                countlyGlobal.apps[self.selectedApp].keys = existing;
+                                if (countlyGlobal.admin_apps[self.selectedApp]) {
+                                    countlyGlobal.admin_apps[self.selectedApp].keys = existing;
+                                }
+                                for (var modAttr in data) {
+                                    countlyGlobal.apps[self.selectedApp][modAttr] = data[modAttr];
+                                    if (countlyGlobal.admin_apps[self.selectedApp]) {
+                                        countlyGlobal.admin_apps[self.selectedApp][modAttr] = data[modAttr];
+                                    }
+                                }
+                                CountlyHelpers.notify({
+                                    title: jQuery.i18n.map["configs.changed"],
+                                    message: jQuery.i18n.map["management-applications.retire-key-success"]
+                                });
+                            },
+                            error: function(xhr, status, error) {
+                                CountlyHelpers.notify({
+                                    title: jQuery.i18n.map["configs.not-saved"],
+                                    message: error || jQuery.i18n.map["configs.not-changed"],
+                                    type: "error"
+                                });
+                            }
+                        });
+                    },
+                    [jQuery.i18n.map["common.cancel"], jQuery.i18n.map["management-applications.retire-key-confirm-button"]],
+                    {title: jQuery.i18n.map["management-applications.retire-key-title"]}
+                );
             },
             loadDetails: function() {
                 this.loadingDetails = true;

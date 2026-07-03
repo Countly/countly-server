@@ -43,8 +43,26 @@ async function check(params, push) {
         throw new ValidationError(data.errors);
     }
 
+    // Reject (never modify) audience/drill queries that contain disallowed Mongo
+    // operators ($where/$function/$accumulator). This request-supplied filter
+    // overrides the cached message's filter and is dispatched to
+    // /drill/preprocess_query and run against the database; the dispatch hook no
+    // longer strips them, so validate where it first enters from the request.
+    let txFilter = new Filter(data.filter);
+    let badOp = common.findUnsafeMongoOperator(txFilter.user) || common.findUnsafeMongoOperator(txFilter.drill);
+    if (badOp) {
+        log.d("Rejected user query" + common.reqInfo(params) + ": " + common.unsafeQueryError(badOp));
+        throw new ValidationError('Query contains disallowed operator: ' + badOp);
+    }
+
     let message = await plugins.getPluginsApis().push.cache.read(data._id.toString());
     if (!message) {
+        throw new PushError('No such message or it doesn\'t have API trigger', ERROR.DATA_COUNTLY);
+    }
+
+    // Ensure the message belongs to the request app before use, consistent with the
+    // other message handlers that scope their lookups by app.
+    if (!message.app || message.app.toString() !== params.app._id.toString()) {
         throw new PushError('No such message or it doesn\'t have API trigger', ERROR.DATA_COUNTLY);
     }
 

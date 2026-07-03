@@ -445,13 +445,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.set('view engine', 'html');
     app.set('view options', {layout: false});
 
-    app.use('/stylesheets/ionicons/fonts/', function(req, res, next) {
+    app.use(countlyConfig.path + '/stylesheets/ionicons/fonts/', function(req, res, next) {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         next();
     });
 
-    app.use('/fonts/', function(req, res, next) {
+    app.use(countlyConfig.path + '/fonts/', function(req, res, next) {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         next();
@@ -927,7 +927,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         }
     });
     app.get(countlyConfig.path + '/dashboard', checkRequestForSession);
-    app.post('*', checkRequestForSession);
+    app.post(countlyConfig.path + '/*', checkRequestForSession);
 
     app.get(countlyConfig.path + '/logout', function(req, res) {
         if (req.query.message) {
@@ -1763,12 +1763,51 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         });
     });
 
+    /**
+     * Safely delete a formidable upload temp file: only unlink it if it
+     * resolves inside the configured upload directory. The path originates from
+     * the request, so this guards it from being used to remove anything outside
+     * the upload dir.
+     * @param {string} filePath - path of the uploaded temp file to remove
+     * @returns {void}
+     */
+    function removeUploadFile(filePath) {
+        if (!filePath) {
+            return;
+        }
+        //strip any directory component and re-root under the upload dir, so the
+        //request-derived value cannot reference anything outside it
+        var safePath = path.join(path.resolve(__dirname + '/uploads'), path.basename(filePath + ""));
+        fs.unlink(safePath, function() {});
+    }
+
     app.post(countlyConfig.path + '/member/icon', async function(req, res, next) {
 
         var params = paramsGenerator({req, res});
         validateCreate(params, 'global_upload', async function() {
             if (!req.files.member_image || !req.body.member_image_id) {
+                //remove the already-uploaded temp file so a missing id cannot
+                //be used to leak files into the upload directory
+                removeUploadFile(req.files.member_image && req.files.member_image.path);
                 res.end();
+                return true;
+            }
+
+            //member_image_id is always a member _id; require a valid ObjectId
+            //so it cannot be used to build an arbitrary file path
+            if (!/^[a-f0-9]{24}$/i.test(req.body.member_image_id + "")) {
+                removeUploadFile(req.files.member_image.path);
+                res.status(400).send(false);
+                return true;
+            }
+
+            //a member may only set their own image; managing another member's
+            //image (the user-management flow) is global-admin only. Without
+            //this an app-admin (who passes the global_upload check via their
+            //own app) could overwrite any member's avatar by id.
+            if (!(params.member && (params.member.global_admin || (req.body.member_image_id + "") === (params.member._id + "")))) {
+                removeUploadFile(req.files.member_image.path);
+                res.status(403).send(false);
                 return true;
             }
 
@@ -1778,7 +1817,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 type = req.files.member_image.type;
 
             if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
-                fs.unlink(tmp_path, function() {});
+                removeUploadFile(tmp_path);
                 res.send(false);
                 return true;
             }
@@ -1788,14 +1827,14 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 const image = await jimp.Jimp.read(tmp_path);
 
                 if (!image) {
-                    fs.unlink(tmp_path, function() {});
+                    removeUploadFile(tmp_path);
                     res.status(400).send(false);
                     return true;
                 }
             }
             catch (err) {
                 console.log(err.stack);
-                fs.unlink(tmp_path, function() {});
+                removeUploadFile(tmp_path);
                 res.status(400).send(false);
                 return true;
             }
@@ -1813,7 +1852,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 console.log("Problem uploading member icon", e);
                 res.status(400).send(false);
             }
-            fs.unlink(tmp_path, function() {});
+            removeUploadFile(tmp_path);
         });
     });
 
@@ -1972,6 +2011,38 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     countlyDb.collection('apps').createIndex({"key": 1}, { unique: true }, function() {});
+    //index every accepted app key so incoming requests resolve by current OR
+    //rotated-but-still-accepted key without a collection scan. Ensured at
+    //startup (idempotent) so existing apps are covered after an upgrade with no
+    //migration script; createApp also ensures it for new apps.
+    countlyDb.collection('apps').createIndex({"keys.key": 1}, { background: true }, function() {});
+    //backfill the accepted-keys array for apps that predate key rotation, so the
+    //SDK app lookup resolves them via the indexed keys.key field on its first
+    //query instead of falling back to the current-key field. Idempotent (only
+    //touches apps missing the array, and is guarded again per-app at write time)
+    //and self-disabling once filled, so it is safe to run on every startup; this
+    //process runs in low replica count and the apps collection is small, so no
+    //migration script or cross-process coordination is needed. App resolution
+    //stays correct before this completes via the current-key fallback in
+    //common.resolveAppByKey, so it does not need to gate startup.
+    countlyDb.collection('apps').find({ keys: { $exists: false } }, { projection: { key: 1, created_at: 1, last_data: 1 } }).toArray(function(ferr, legacyApps) {
+        if (ferr) {
+            console.log("Failed to read apps for accepted-keys backfill", ferr);
+            return;
+        }
+        var nowSec = Math.floor(Date.now() / 1000);
+        (legacyApps || []).forEach(function(legacyApp) {
+            countlyDb.collection('apps').updateOne(
+                { _id: legacyApp._id, keys: { $exists: false } },
+                { $set: { keys: [{ key: legacyApp.key, added_at: legacyApp.created_at || nowSec, last_data: legacyApp.last_data || 0 }] } },
+                function(uerr) {
+                    if (uerr) {
+                        console.log("Failed to backfill accepted-keys array for app", legacyApp._id, uerr);
+                    }
+                }
+            );
+        });
+    });
     countlyDb.collection('members').createIndex({"api_key": 1}, { unique: true }, function() {});
     countlyDb.collection('members').createIndex({ email: 1 }, { unique: true }, function() {});
     countlyDb.collection('jobs').createIndex({ finished: 1 }, function() {});
@@ -1988,6 +2059,17 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             key: fs.readFileSync(countlyConfig.web.ssl.key),
             cert: fs.readFileSync(countlyConfig.web.ssl.cert)
         };
+        // Optional: let operators pin the negotiated TLS protocol range
+        // (e.g. minVersion "TLSv1.2"). Left unset by default so Node keeps
+        // its built-in defaults — deployments that still require older
+        // protocols, or that terminate TLS at nginx/their webserver, are
+        // unaffected.
+        if (countlyConfig.web.ssl.minVersion) {
+            sslOptions.minVersion = countlyConfig.web.ssl.minVersion;
+        }
+        if (countlyConfig.web.ssl.maxVersion) {
+            sslOptions.maxVersion = countlyConfig.web.ssl.maxVersion;
+        }
         if (countlyConfig.web.ssl.ca) {
             sslOptions.ca = fs.readFileSync(countlyConfig.web.ssl.ca);
         }

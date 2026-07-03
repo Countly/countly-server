@@ -1,5 +1,6 @@
 var pluginOb = {},
     common = require('../../../api/utils/common.js'),
+    systemlog = common.log('systemlogs:api'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
     { validateGlobalAdmin } = require('../../../api/utils/rights.js');
@@ -95,13 +96,13 @@ plugins.setConfigs("systemlogs", {
         if (params.qstring.method === 'systemlogs') {
             var query = {};
             if (typeof params.qstring.query === "string") {
-                try {
-                    query = JSON.parse(params.qstring.query);
+                var parsed = common.parseUserQuery(params.qstring.query);
+                if (parsed.error) {
+                    systemlog.d("Rejected user query" + common.reqInfo(params) + ": " + parsed.error);
+                    common.returnMessage(params, 400, parsed.error);
+                    return true;
                 }
-                catch (ex) {
-                    console.log("Can't parse systelogs query");
-                    query = {};
-                }
+                query = parsed.query;
             }
             if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                 var reg;

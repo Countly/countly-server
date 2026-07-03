@@ -122,13 +122,13 @@
 <script type="text/x-template" id="mobile-message-preview">
     <div class="cly-vue-push-notification-mobile-preview">
         <div class="cly-vue-push-notification-mobile-preview__images">
-            <img v-if="isIOSPlatformSelected" src="/images/push/preview.i.png" />
-            <img v-else-if="isAndroidPlatformSelected" src="/images/push/preview.a.png" />
+            <img v-if="isIOSPlatformSelected" :src="countlyGlobal.path + '/images/push/preview.i.png'" />
+            <img v-else-if="isAndroidPlatformSelected" :src="countlyGlobal.path + '/images/push/preview.a.png'" />
         </div>
     
         <div v-if="isIOSPlatformSelected" class="cly-vue-push-notification-mobile-preview__ios-message">
             <div class="cly-vue-push-notification-mobile-preview__ios-header">
-                <img class="cly-vue-push-notification-mobile-preview__ios-header-image" src="/appimages/5ea4bd674bb4a33298a81727.png" />
+                <img class="cly-vue-push-notification-mobile-preview__ios-header-image" :src="countlyGlobal.path + '/appimages/5ea4bd674bb4a33298a81727.png'" />
                 <span class="cly-vue-push-notification-mobile-preview__ios-header-app-name">
                     {{appName}}
                 </span>
@@ -165,7 +165,7 @@
         </div>
         <div v-else-if="isAndroidPlatformSelected" class="cly-vue-push-notification-mobile-preview__android-message">
             <div class="cly-vue-push-notification-mobile-preview__android-header">
-                <img class="cly-vue-push-notification-mobile-preview__android-header-image" src="/appimages/5ea4bd674bb4a33298a81727.png" />
+                <img class="cly-vue-push-notification-mobile-preview__android-header-image" :src="countlyGlobal.path + '/appimages/5ea4bd674bb4a33298a81727.png'" />
                 <span class="cly-vue-push-notification-mobile-preview__android-header-app-name">
                     {{appName}}
                 </span>

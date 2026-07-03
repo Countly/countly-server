@@ -24,5 +24,10 @@
     "jsonwebtoken": "9.0.3",
     "node-forge": "1.4.0"
   },
+  "overrides": {
+    "uuid": "^11.1.1",
+    "@tootallnate/once": "^2.0.1",
+    "protobufjs": "^7.6.4"
+  },
   "private": true
 }

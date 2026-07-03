@@ -128,6 +128,17 @@ async function validate(params, skipMpl, skipAppsPlatforms) {
 
     data = data.obj;
 
+    // Reject (never modify) audience/drill queries that contain disallowed Mongo
+    // operators ($where/$function/$accumulator). These conditions become the
+    // message filter that is dispatched to /drill/preprocess_query and run against
+    // the database; the dispatch hook no longer strips them, so validate where
+    // they first enter from the request.
+    var badOp = common.findUnsafeMongoOperator(data.userConditions) || common.findUnsafeMongoOperator(data.drillConditions);
+    if (badOp) {
+        log.d("Rejected user query" + common.reqInfo(params) + ": " + common.unsafeQueryError(badOp));
+        return [{error: 'Query contains disallowed operator: ' + badOp}];
+    }
+
     data.autoOnEntry = params.qstring.args.autoOnEntry;
 
     log.d('validating args %j, data %j', params.qstring.args, data);

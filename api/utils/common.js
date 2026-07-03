@@ -420,6 +420,95 @@ common.sha1Hash = function(str, addSalt) {
     return crypto.createHmac('sha1', salt + '').update(str + '').digest('hex');
 };
 
+/**
+* Derive the internal app user id (_id of the app_users document) from an app
+* and a device id. The id is derived from the app's immutable identity key
+* (app.id_key) rather than its current app key, so the app key can be rotated
+* without re-keying existing users. For apps that predate id_key the value is
+* absent and we fall back to the current key, which equals the value the id was
+* originally derived from, keeping existing ids byte-identical (no migration).
+* @param {object} app - the app document (must have key and optionally id_key)
+* @param {string} deviceId - the device id from the SDK request
+* @returns {string} sha1 hex app user id
+*/
+common.getAppUserId = function(app, deviceId) {
+    var idKey = (app && (app.id_key || app.key)) || "";
+    return crypto.createHash('sha1').update(idKey + deviceId + "").digest('hex');
+};
+
+/**
+* Record the last time data was received for the specific app key used on a
+* request. Lets administrators see whether an old (rotated-away) key is still
+* in use before retiring it. Throttled to at most one write per key per hour to
+* keep it off the hot path; also updates the in-memory copy so a cached app
+* document does not trigger repeated writes within the cache window.
+* @param {object} app - the app document (with keys array)
+* @param {string} usedKey - the app key value the request authenticated with
+* @returns {void}
+*/
+common.recordAppKeyUsage = function(app, usedKey) {
+    if (!app || !Array.isArray(app.keys) || !common.db) {
+        return;
+    }
+    var k = usedKey + "";
+    var nowSec = Math.floor(Date.now() / 1000);
+    for (var i = 0; i < app.keys.length; i++) {
+        if (app.keys[i].key === k) {
+            if (!app.keys[i].last_data || app.keys[i].last_data < nowSec - 3600) {
+                app.keys[i].last_data = nowSec;
+                common.db.collection("apps").update({_id: app._id, "keys.key": k}, {$set: {"keys.$.last_data": nowSec}}, function() {});
+            }
+            return;
+        }
+    }
+};
+
+/**
+* Resolve an app by an incoming SDK app key for the ingestion/fetch hot path.
+* Looks up the accepted-keys array first, then falls back to the current-key
+* field. This is deliberately two single-field index lookups rather than one
+* {$or:[{key},{keys.key}]} query: MongoDB cannot reliably serve such an $or via
+* index union, so on this hot path it degrades to a full collection scan of the
+* apps collection. Each lookup here is an indexed equality, and the readBatcher
+* caches both (including misses), so the DB sees at most one query per shape per
+* cache period.
+*
+* The keys.key lookup matches every app once its accepted-keys array exists
+* (createApp/updateApp populate it, plus a one-time startup backfill), and also
+* matches a rotated-away old key during its grace period. The key fallback keeps
+* apps that predate the array — or that have not been backfilled yet — fully
+* resolvable, so correctness never depends on the backfill having run.
+* @param {string} appKey - incoming SDK app key
+* @param {function} callback - callback(err, app) with the resolved app or null
+* @returns {void}
+*/
+common.resolveAppByKey = function(appKey, callback) {
+    var key = appKey + "";
+    common.readBatcher.getOne("apps", {"keys.key": key}, function(err, app) {
+        if (app) {
+            return callback(err, app);
+        }
+        common.readBatcher.getOne("apps", {"key": key}, function(err2, app2) {
+            if (app2) {
+                return callback(err2, app2);
+            }
+            return callback(err2 || err, null);
+        });
+    });
+};
+
+/**
+* Invalidate any cached apps entry that resolveAppByKey may have loaded for an
+* incoming SDK key, covering both lookup shapes (keys.key and key).
+* @param {string} appKey - incoming SDK app key
+* @returns {void}
+*/
+common.invalidateAppByKey = function(appKey) {
+    var key = appKey + "";
+    common.readBatcher.invalidate("apps", {"keys.key": key}, {}, false);
+    common.readBatcher.invalidate("apps", {"key": key}, {}, false);
+};
+
 common.sha512Hash = function(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : '';
     return crypto.createHmac('sha512', salt + '').update(str + '').digest('hex');
@@ -1338,7 +1427,10 @@ common.returnRaw = function(params, returnCode, body, heads) {
         else {
             console.error("Output already closed, can't write more");
             console.trace();
-            console.log(params);
+            // Don't dump the full params object — req.body/req.headers can
+            // contain credentials, session cookies, or other secrets. Log
+            // only the pathname (query string can carry api_key/auth_token).
+            console.log({pathname: params.urlParts && params.urlParts.pathname, apiPath: params.apiPath, qstringKeys: params.qstring && Object.keys(params.qstring)});
         }
     }
 };
@@ -2331,55 +2423,171 @@ common.checkPromise = function(func, count, interval) {
 };
 
 /**
- * Recursively remove MongoDB operators that allow arbitrary JavaScript
- * execution or comparison-bypass against trusted server state from a
- * user-supplied query object. Strips:
+ * MongoDB query operators that allow arbitrary server-side JavaScript
+ * execution. These have no legitimate use in a user-supplied query and
+ * are rejected outright (never stripped) wherever a query enters the API.
  *
  *   $where        — evaluates a JS function on every doc; supports
  *                   `while(true){}` DoS and timing-based exfiltration.
- *   $expr         — evaluates aggregation expressions against the doc;
- *                   can be chained with $function/$accumulator below.
  *   $function     — Mongo 4.4+ server-side JS execution.
  *   $accumulator  — server-side JS aggregation execution.
  *
- * Use this anywhere a request body / query string is passed straight
- * into MongoDB find/update/delete/count/aggregate as the filter. It is
- * a defence-in-depth helper, not a substitute for a strict allowlist
- * of fields.
- *
- * @param {*} query - user-supplied query (any depth)
- * @returns {*} the same query with the dangerous operators removed
+ * $expr is intentionally NOT listed: it executes no JS by itself and has
+ * legitimate uses (e.g. cross-field comparisons). The walk below still
+ * descends into a $expr sub-expression, so a $function/$accumulator/$where
+ * nested inside $expr is still detected.
  */
-common.stripUnsafeMongoOperators = function(query) {
-    var BLOCKED = ["$where", "$expr", "$function", "$accumulator"];
+common.UNSAFE_MONGO_OPERATORS = ["$where", "$function", "$accumulator"];
+
+/**
+ * Sentinel returned by findUnsafeMongoOperator when a query is nested deeper
+ * than the recursion cap. Not a real operator; treated as a rejection.
+ */
+common.UNSAFE_QUERY_TOO_DEEP = "$__nestedTooDeep";
+
+/**
+ * Turn a findUnsafeMongoOperator() result into a client-safe error message.
+ * Maps the too-deep sentinel to a clear message instead of leaking it as an
+ * "operator" name. Use this at every site that rejects on findUnsafeMongoOperator.
+ *
+ * @param {string} bad - the value returned by common.findUnsafeMongoOperator
+ * @returns {string} a client-safe error message
+ */
+common.unsafeQueryError = function(bad) {
+    if (bad === common.UNSAFE_QUERY_TOO_DEEP) {
+        return "Query is nested too deeply";
+    }
+    return "Query contains disallowed operator: " + bad;
+};
+
+/**
+ * Recursively search an already-parsed query object for any operator in
+ * common.UNSAFE_MONGO_OPERATORS. Returns the name of the first offending
+ * operator found, or null if the query is clean.
+ *
+ * Only object KEYS are inspected — operators are always keys, never
+ * values — so a string value that merely contains "$where" is not a false
+ * positive. Detection runs on the decoded object, so it cannot be evaded
+ * by JSON unicode-escaping the operator key (e.g. "$where").
+ *
+ * @param {*} query - parsed query (any depth)
+ * @returns {string|null} the offending operator name, or null
+ */
+common.findUnsafeMongoOperator = function(query) {
+    var BLOCKED = common.UNSAFE_MONGO_OPERATORS;
+    // Cap recursion so a deeply nested payload cannot overflow the stack
+    // (a DoS in the very check meant to block DoS). Real queries are shallow;
+    // anything past this depth is rejected via the TOO_DEEP sentinel.
+    var MAX_DEPTH = 100;
+    var found = null;
     /**
-     * Recursive walk that strips blocked operators in-place.
+     * Recursive walk that records the first blocked operator key (or the
+     * too-deep sentinel).
      * @param {*} v - current node
+     * @param {number} depth - current recursion depth
      * @returns {void}
      */
-    function walk(v) {
-        if (!v || typeof v !== "object") {
+    function walk(v, depth) {
+        if (found || !v || typeof v !== "object") {
+            return;
+        }
+        if (depth > MAX_DEPTH) {
+            found = common.UNSAFE_QUERY_TOO_DEEP;
             return;
         }
         if (Array.isArray(v)) {
-            for (var ai = 0; ai < v.length; ai++) {
-                walk(v[ai]);
+            for (var ai = 0; ai < v.length && !found; ai++) {
+                walk(v[ai], depth + 1);
             }
             return;
         }
         for (var bi = 0; bi < BLOCKED.length; bi++) {
             if (Object.prototype.hasOwnProperty.call(v, BLOCKED[bi])) {
-                delete v[BLOCKED[bi]];
+                found = BLOCKED[bi];
+                return;
             }
         }
         for (var k in v) {
+            if (found) {
+                break;
+            }
             if (Object.prototype.hasOwnProperty.call(v, k)) {
-                walk(v[k]);
+                walk(v[k], depth + 1);
             }
         }
     }
-    walk(query);
-    return query;
+    walk(query, 0);
+    return found;
+};
+
+/**
+ * Parse and validate a user-supplied MongoDB query received at an API
+ * endpoint. Accepts either a JSON string (as queries arrive on the wire)
+ * or an already-parsed object. The query is validated as a decoded object
+ * and is NEVER modified — it is either accepted exactly as submitted or
+ * rejected as a whole:
+ *
+ *   - empty / null / undefined        -> { query: {} }
+ *   - invalid JSON string             -> { error: "Invalid query JSON" }
+ *   - not an object                   -> { error: "Query must be an object" }
+ *   - contains a disallowed operator  -> { error: "Query contains disallowed operator: $where" }
+ *   - otherwise                       -> { query: <parsed object> }
+ *
+ * Callers run result.query exactly as submitted, or return result.error to
+ * the client. The query is never silently rewritten, so its meaning cannot
+ * change between what the caller sent and what runs.
+ *
+ * Note: this uses JSON.parse. Endpoints that accept extended JSON (EJSON,
+ * e.g. dbviewer with ObjectIds) should parse with EJSON themselves and
+ * then validate the parsed object via common.findUnsafeMongoOperator.
+ *
+ * @param {string|object} raw - the raw query parameter
+ * @returns {{query: object}|{error: string}} result
+ */
+common.parseUserQuery = function(raw) {
+    var query = raw;
+    if (typeof raw === "string") {
+        if (raw.length === 0) {
+            return { query: {} };
+        }
+        try {
+            query = JSON.parse(raw);
+        }
+        catch (ex) {
+            return { error: "Invalid query JSON" };
+        }
+    }
+    if (query === null || typeof query === "undefined") {
+        return { query: {} };
+    }
+    if (typeof query !== "object" || Array.isArray(query)) {
+        return { error: "Query must be an object" };
+    }
+    var bad = common.findUnsafeMongoOperator(query);
+    if (bad) {
+        return { error: common.unsafeQueryError(bad) };
+    }
+    return { query: query };
+};
+
+/**
+ * Build a short, log-safe label identifying the request's endpoint, for use in
+ * log messages (e.g. query-rejection logs). Returns the request path plus the
+ * `method` query param when present, e.g. " [/i/app_users/delete]" or
+ * " [/o method=logs]", or "" when no context is available. The query string is
+ * dropped (apart from method) so request api_key etc. are not written to logs.
+ *
+ * @param {object} [params] - request params object (may be null/undefined)
+ * @returns {string} bracketed endpoint label with a leading space, or ""
+ */
+common.reqInfo = function(params) {
+    var ctx = "";
+    if (params) {
+        var reqPath = params.href ? ("" + params.href).split("?")[0] : "";
+        var reqMethod = (params.qstring && params.qstring.method) ? " method=" + params.qstring.method : "";
+        ctx = (reqPath + reqMethod).trim();
+    }
+    return ctx ? " [" + ctx + "]" : "";
 };
 
 common.clearClashingQueryOperations = function(query) {
