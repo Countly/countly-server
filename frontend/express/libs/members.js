@@ -797,6 +797,15 @@ membersUtility.reset = function(req, callback) {
                         callback(false, undefined);
                         return;
                     }
+                    //enforce the same 10 minute expiry the reset page checks; the
+                    //password change endpoint previously did not, so an expired
+                    //(e.g. leaked/old) reset link stayed usable indefinitely
+                    var nowTs = Math.round(new Date().getTime() / 1000);
+                    if (nowTs > (passwordReset.timestamp + 600)) {
+                        membersUtility.db.collection('password_reset').remove({ prid: req.body.prid }, function() { });
+                        callback(false, undefined);
+                        return;
+                    }
                     membersUtility.db.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function(err2, member) {
                         member = member && member.ok ? member.value : null;
                         killOtherSessionsForUser(passwordReset.user_id + "", null, null, membersUtility.db);
@@ -1139,6 +1148,10 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     // push approver permission
     user.approver = !!data.approver;
     user.approver_bypass = !!data.approver_bypass;
+
+    // journey approver permission
+    user.journey_approver = !!data.journey_approver;
+    user.journey_approver_bypass = !!data.journey_approver_bypass;
 
     try {
         if (deleteDuplicate && (existingMembers.length >= 2 || (existingMembers.length === 1 && existingMembers[0].provider_id !== user.provider_id))) {

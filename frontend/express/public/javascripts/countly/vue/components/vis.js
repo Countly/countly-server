@@ -2002,12 +2002,12 @@
             '<div class="chart-type-annotation-wrapper">\
                 <el-dropdown data-test-id="chart-type-annotation-button" trigger="click" @command="graphNotesHandleCommand($event)">\
                     <el-button size="small">\
-                        <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon" data-test-id="chart-type-annotation-icon"/>\
+                        <img :src="getIconUrl(\'notation-icon\')" class="chart-type-annotation-wrapper__icon" data-test-id="chart-type-annotation-icon"/>\
                     </el-button>\
                     <el-dropdown-menu slot="dropdown">\
-                        <el-dropdown-item data-test-id="chart-type-annotation-item-add-note" v-if="hasCreateRight" command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
-                        <el-dropdown-item data-test-id="chart-type-annotation-item-manage-notes" command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
-                        <el-dropdown-item data-test-id="chart-type-annotation-item-hide-notes" v-if="hasUpdateRight" command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
+                        <el-dropdown-item data-test-id="chart-type-annotation-item-add-note" v-if="hasCreateRight" command="add"><img :src="getIconUrl(\'add-icon\')" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
+                        <el-dropdown-item data-test-id="chart-type-annotation-item-manage-notes" command="manage"><img :src="getIconUrl(\'manage-icon\')" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
+                        <el-dropdown-item data-test-id="chart-type-annotation-item-hide-notes" v-if="hasUpdateRight" command="show"><img :src="getIconUrl(\'show-icon\')" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
                     </el-dropdown-menu>\
                 </el-dropdown>\
                 <drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>\

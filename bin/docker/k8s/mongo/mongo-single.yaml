@@ -37,6 +37,9 @@ spec:
       labels:
         app: mongo
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       terminationGracePeriodSeconds: 10
       containers:
         - name: mongo

@@ -20,7 +20,10 @@ const plugins = require('../../pluginManager'),
     apis = {
         o: {
             dashboard: [validateRead, dashboard],
-            mime: [validateRead, mime],
+            // mime triggers a server-side fetch of a user-supplied media URL as
+            // part of composing a notification, so it requires create rights,
+            // not just read.
+            mime: [validateCreate, mime],
             message: {
                 estimate: [validateRead, estimate],
                 all: [validateRead, all],

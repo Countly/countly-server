@@ -1,6 +1,7 @@
 var plugin = {},
     crypto = require('crypto'),
     common = require('../../../api/utils/common.js'),
+    log = common.log('compliance:api'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     appUsers = require('../../../api/parts/mgmt/app_users.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
@@ -139,16 +140,13 @@ const FEATURE_NAME = 'compliance_hub';
                 return true;
             }
             validateRead(params, FEATURE_NAME, function() {
-                var query = params.qstring.query || {};
-                if (typeof query === "string" && query.length) {
-                    try {
-                        query = JSON.parse(query);
-                    }
-                    catch (ex) {
-                        query = {};
-                    }
+                var parsed = common.parseUserQuery(params.qstring.query);
+                if (parsed.error) {
+                    log.d("Rejected user query" + common.reqInfo(params) + ": " + parsed.error);
+                    common.returnMessage(params, 400, parsed.error);
+                    return;
                 }
-                common.stripUnsafeMongoOperators(query);
+                var query = parsed.query;
                 // Force scope to the request's app_id even though this lookup
                 // is in app_users<app_id>; defense-in-depth in case a future
                 // refactor changes the collection.
@@ -165,16 +163,13 @@ const FEATURE_NAME = 'compliance_hub';
                 return true;
             }
             validateRead(params, FEATURE_NAME, function() {
-                var query = params.qstring.query || {};
-                if (typeof query === "string" && query.length) {
-                    try {
-                        query = JSON.parse(query);
-                    }
-                    catch (ex) {
-                        query = {};
-                    }
+                var parsed = common.parseUserQuery(params.qstring.query);
+                if (parsed.error) {
+                    log.d("Rejected user query" + common.reqInfo(params) + ": " + parsed.error);
+                    common.returnMessage(params, 400, parsed.error);
+                    return;
                 }
-                common.stripUnsafeMongoOperators(query);
+                var query = parsed.query;
                 query.app_id = params.app_id.toString();
                 common.db.collection("consent_history").countDocuments(query, function(err, total) {
                     if (err) {
@@ -184,16 +179,13 @@ const FEATURE_NAME = 'compliance_hub';
                         params.qstring.query = params.qstring.query || params.qstring.filter || {};
                         params.qstring.project = params.qstring.project || params.qstring.projection || {};
 
-                        params.qstring.query = params.qstring.query || {};
-                        if (typeof params.qstring.query === "string" && params.qstring.query.length) {
-                            try {
-                                params.qstring.query = JSON.parse(params.qstring.query);
-                            }
-                            catch (ex) {
-                                params.qstring.query = {};
-                            }
+                        var parsedSearch = common.parseUserQuery(params.qstring.query);
+                        if (parsedSearch.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedSearch.error);
+                            common.returnMessage(params, 400, parsedSearch.error);
+                            return;
                         }
-                        common.stripUnsafeMongoOperators(params.qstring.query);
+                        params.qstring.query = parsedSearch.query;
 
                         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                             try {
@@ -295,6 +287,13 @@ const FEATURE_NAME = 'compliance_hub';
                     }
                     else if (total > 0) {
                         params.qstring.query = params.qstring.query || params.qstring.filter || {};
+                        var parsedC = common.parseUserQuery(params.qstring.query);
+                        if (parsedC.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedC.error);
+                            common.returnMessage(params, 400, parsedC.error);
+                            return;
+                        }
+                        params.qstring.query = parsedC.query;
                         params.qstring.project = params.qstring.project || params.qstring.projection || {"did": 1, "d": 1, "av": 1, "consent": 1, "lac": 1, "uid": 1, "appUserExport": 1};
 
                         if (params.qstring.sSearch && params.qstring.sSearch !== "") {

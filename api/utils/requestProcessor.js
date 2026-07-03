@@ -12,7 +12,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter, getAdminApps, getUserAppsForFeaturePermission } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -131,6 +131,14 @@ const processRequest = (params) => {
     if (params.req.body && typeof params.req.body === "object") {
         for (let i in params.req.body) {
             params.qstring[i] = params.req.body[i];
+        }
+    }
+
+    //make sure scalar identity parameters are strings, not query operators
+    var stringParams = ["app_key", "device_id", "old_device_id"];
+    for (let s = 0; s < stringParams.length; s++) {
+        if (typeof params.qstring[stringParams[s]] !== "undefined" && params.qstring[stringParams[s]] !== null) {
+            params.qstring[stringParams[s]] = params.qstring[stringParams[s]] + "";
         }
     }
 
@@ -467,15 +475,14 @@ const processRequest = (params) => {
                         common.returnMessage(params, 400, 'Missing parameter "query"');
                         return false;
                     }
-                    else if (typeof params.qstring.query === "string") {
-                        try {
-                            params.qstring.query = JSON.parse(params.qstring.query);
-                        }
-                        catch (ex) {
-                            console.log("Could not parse query", params.qstring.query);
-                            common.returnMessage(params, 400, 'Could not parse parameter "query": ' + params.qstring.query);
+                    else {
+                        let parsedQuery = common.parseUserQuery(params.qstring.query);
+                        if (parsedQuery.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+                            common.returnMessage(params, 400, parsedQuery.error);
                             return false;
                         }
+                        params.qstring.query = parsedQuery.query;
                     }
                     validateUserForWrite(params, function() {
                         countlyApi.mgmt.appUsers.count(params.qstring.app_id, params.qstring.query, function(err, count) {
@@ -508,15 +515,14 @@ const processRequest = (params) => {
                         common.returnMessage(params, 400, 'Missing parameter "query"');
                         return false;
                     }
-                    else if (typeof params.qstring.query === "string") {
-                        try {
-                            params.qstring.query = JSON.parse(params.qstring.query);
-                        }
-                        catch (ex) {
-                            console.log("Could not parse query", params.qstring.query);
-                            common.returnMessage(params, 400, 'Could not parse parameter "query": ' + params.qstring.query);
+                    else {
+                        let parsedQuery = common.parseUserQuery(params.qstring.query);
+                        if (parsedQuery.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+                            common.returnMessage(params, 400, parsedQuery.error);
                             return false;
                         }
+                        params.qstring.query = parsedQuery.query;
                     }
                     if (!Object.keys(params.qstring.query).length) {
                         common.returnMessage(params, 400, 'Parameter "query" cannot be empty, it would delete all users. Use clear app instead');
@@ -532,14 +538,27 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, 'This query would delete more than one user');
                                 return false;
                             }
-                            countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err2) {
-                                if (err2) {
-                                    common.returnMessage(params, 400, err2);
-                                }
-                                else {
-                                    common.returnMessage(params, 200, 'User deleted');
-                                }
-                            });
+                            // Bulk (force) safety net: a force delete whose query matches
+                            // (almost) all users in the app is treated as suspicious and
+                            // requires an explicit confirm_delete_all=true. This catches a
+                            // query that was meant to match a subset but actually matches
+                            // everyone, without blocking legitimate subset deletions.
+                            if (params.qstring.force && params.qstring.confirm_delete_all !== true && params.qstring.confirm_delete_all !== "true") {
+                                common.db.collection("app_users" + params.qstring.app_id).estimatedDocumentCount(function(errTotal, total) {
+                                    if (!errTotal && total >= 100 && count >= total * 0.9) {
+                                        common.returnMessage(params, 400, 'This query matches ' + count + ' of ~' + total + ' app users (nearly all). If this is intended, retry with confirm_delete_all=true, or use clear app data instead.');
+                                        return;
+                                    }
+                                    countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err2) {
+                                        common.returnMessage(params, err2 ? 400 : 200, err2 || 'User deleted');
+                                    });
+                                });
+                            }
+                            else {
+                                countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err2) {
+                                    common.returnMessage(params, err2 ? 400 : 200, err2 || 'User deleted');
+                                });
+                            }
                         });
                     });
                     break;
@@ -617,15 +636,14 @@ const processRequest = (params) => {
                                     common.returnMessage(params, 400, 'Missing parameter "query"');
                                     return false;
                                 }
-                                else if (typeof params.qstring.query === "string") {
-                                    try {
-                                        params.qstring.query = JSON.parse(params.qstring.query);
-                                    }
-                                    catch (ex) {
-                                        console.log("Could not parse query", params.qstring.query);
-                                        common.returnMessage(params, 400, 'Could not parse parameter "query": ' + params.qstring.query);
+                                else {
+                                    let parsedQuery = common.parseUserQuery(params.qstring.query);
+                                    if (parsedQuery.error) {
+                                        log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+                                        common.returnMessage(params, 400, parsedQuery.error);
                                         return false;
                                     }
+                                    params.qstring.query = parsedQuery.query;
                                 }
 
                                 var my_name = "";
@@ -1829,17 +1847,13 @@ const processRequest = (params) => {
                 switch (paths[3]) {
                 case 'all':
                     validateRead(params, 'core', () => {
-                        if (!params.qstring.query) {
-                            params.qstring.query = {};
+                        var parsedQuery = common.parseUserQuery(params.qstring.query);
+                        if (parsedQuery.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+                            common.returnMessage(params, 400, parsedQuery.error);
+                            return;
                         }
-                        if (typeof params.qstring.query === "string") {
-                            try {
-                                params.qstring.query = JSON.parse(params.qstring.query);
-                            }
-                            catch (ex) {
-                                params.qstring.query = {};
-                            }
-                        }
+                        params.qstring.query = parsedQuery.query;
                         if (params.qstring.query.$or) {
                             params.qstring.query.$and = [
                                 {"$or": Object.assign([], params.qstring.query.$or) },
@@ -1853,8 +1867,25 @@ const processRequest = (params) => {
                         params.qstring.query.subtask = {$exists: false};
                         params.qstring.query.app_id = params.qstring.app_id;
                         if (params.qstring.app_ids && params.qstring.app_ids !== "") {
-                            var ll = params.qstring.app_ids.split(",");
+                            var ll = params.qstring.app_ids.split(",").map(function(id) {
+                                return id.trim();
+                            }).filter(Boolean);
                             if (ll.length > 1) {
+                                // validateRead only checked the single app_id; every app
+                                // in the multi-app list must also be one the member can read
+                                if (!params.member.global_admin) {
+                                    var allowedTaskApps = (getAdminApps(params.member) || [])
+                                        .concat(getUserAppsForFeaturePermission(params.member, 'core', 'r') || []);
+                                    if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                                        allowedTaskApps = allowedTaskApps.concat(params.member.user_of);
+                                    }
+                                    for (var taskAppIdx = 0; taskAppIdx < ll.length; taskAppIdx++) {
+                                        if (allowedTaskApps.indexOf(ll[taskAppIdx]) === -1) {
+                                            common.returnMessage(params, 401, 'User does not have access to one or more of the requested apps');
+                                            return;
+                                        }
+                                    }
+                                }
                                 params.qstring.query.app_id = {$in: ll};
                             }
                         }
@@ -1872,17 +1903,13 @@ const processRequest = (params) => {
                     break;
                 case 'count':
                     validateRead(params, 'core', () => {
-                        if (!params.qstring.query) {
-                            params.qstring.query = {};
+                        var parsedQuery = common.parseUserQuery(params.qstring.query);
+                        if (parsedQuery.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+                            common.returnMessage(params, 400, parsedQuery.error);
+                            return;
                         }
-                        if (typeof params.qstring.query === "string") {
-                            try {
-                                params.qstring.query = JSON.parse(params.qstring.query);
-                            }
-                            catch (ex) {
-                                params.qstring.query = {};
-                            }
-                        }
+                        params.qstring.query = parsedQuery.query;
                         if (params.qstring.query.$or) {
                             params.qstring.query.$and = [
                                 {"$or": Object.assign([], params.qstring.query.$or) },
@@ -1907,17 +1934,13 @@ const processRequest = (params) => {
                     break;
                 case 'list':
                     validateRead(params, 'core', () => {
-                        if (!params.qstring.query) {
-                            params.qstring.query = {};
+                        var parsedQuery = common.parseUserQuery(params.qstring.query);
+                        if (parsedQuery.error) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedQuery.error);
+                            common.returnMessage(params, 400, parsedQuery.error);
+                            return;
                         }
-                        if (typeof params.qstring.query === "string") {
-                            try {
-                                params.qstring.query = JSON.parse(params.qstring.query);
-                            }
-                            catch (ex) {
-                                params.qstring.query = {};
-                            }
-                        }
+                        params.qstring.query = parsedQuery.query;
                         params.qstring.query.$and = [];
                         if (params.qstring.query.creator && params.qstring.query.creator === params.member._id) {
                             params.qstring.query.$and.push({"creator": params.member._id + ""});
@@ -1972,17 +1995,27 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "task_id"');
                             return false;
                         }
-                        taskmanager.getResult({
-                            db: common.db,
-                            id: params.qstring.task_id,
-                            subtask_key: params.qstring.subtask_key
-                        }, (err, res) => {
-                            if (res) {
-                                common.returnOutput(params, res);
-                            }
-                            else {
+                        //long_tasks is a global collection keyed by task id; gate
+                        //access so a caller can only read a task they own / are
+                        //authorized for (or one explicitly marked global), not
+                        //an arbitrary private task id from another app
+                        taskmanager.loadIfReadable(common.db, params.qstring.task_id, params.member, (authErr) => {
+                            if (authErr) {
                                 common.returnMessage(params, 400, 'Task does not exist');
+                                return;
                             }
+                            taskmanager.getResult({
+                                db: common.db,
+                                id: params.qstring.task_id,
+                                subtask_key: params.qstring.subtask_key
+                            }, (err, res) => {
+                                if (res) {
+                                    common.returnOutput(params, res);
+                                }
+                                else {
+                                    common.returnMessage(params, 400, 'Task does not exist');
+                                }
+                            });
                         });
                     });
                     break;
@@ -2006,7 +2039,8 @@ const processRequest = (params) => {
 
                         taskmanager.checkResult({
                             db: common.db,
-                            id: tasks
+                            id: tasks,
+                            member: params.member
                         }, (err, res) => {
                             if (isMulti && res) {
                                 common.returnMessage(params, 200, res);
@@ -2073,6 +2107,15 @@ const processRequest = (params) => {
                     validateUserForMgmtReadAPI(() => {
                         if (!params.qstring.collection) {
                             common.returnMessage(params, 400, 'Missing parameter "collection"');
+                            return false;
+                        }
+                        // query params can be parsed into arrays/objects; force a
+                        // plain string before any substring check or access lookup
+                        params.qstring.collection = params.qstring.collection + "";
+                        // keep the db export surface aligned with DB Viewer: internal
+                        // index metadata and the dashboard session store are not exportable
+                        if (params.qstring.collection.indexOf("system.indexes") !== -1 || params.qstring.collection.indexOf("sessions_") !== -1) {
+                            common.returnMessage(params, 401, 'User does not have access right for this collection');
                             return false;
                         }
                         if (typeof params.qstring.filter === "string") {
@@ -2812,6 +2855,14 @@ const processRequest = (params) => {
                 case 'geodata': {
                     validateRead(params, 'core', function() {
                         if (params.qstring.loadFor === "cities") {
+                            if (typeof params.qstring.query !== "undefined") {
+                                var pq = common.parseUserQuery(params.qstring.query);
+                                if (pq.error) {
+                                    log.d("Rejected user query" + common.reqInfo(params) + ": " + pq.error);
+                                    common.returnMessage(params, 400, pq.error);
+                                    return;
+                                }
+                            }
                             countlyApi.data.geoData.loadCityCoordiantes({"query": params.qstring.query}, function(err, data) {
                                 common.returnOutput(params, data);
                             });
@@ -3258,7 +3309,10 @@ const processBulkRequest = (i, requests, params) => {
     }
 
     if (!requests[i] || (!requests[i].app_key && !appKey)) {
-        return processBulkRequest(i + 1, requests, params);
+        //defer to the next tick so a long run of skipped entries does not
+        //grow the call stack synchronously (the valid path below is already
+        //async); otherwise a large array of empty entries overflows the stack
+        return setImmediate(processBulkRequest, i + 1, requests, params);
     }
     if (params.qstring.safe_api_response) {
         requests[i].safe_api_response = true;
@@ -3285,7 +3339,7 @@ const processBulkRequest = (i, requests, params) => {
     tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
 
     if (!tmpParams.qstring.device_id) {
-        return processBulkRequest(i + 1, requests, params);
+        return setImmediate(processBulkRequest, i + 1, requests, params);
     }
     else {
         //make sure device_id is string
@@ -3341,7 +3395,10 @@ const checksumSaltVerification = (params) => {
                 payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
-                common.returnMessage(params, 200, 'Request does not match checksum');
+                //return the same response as an unknown app so a valid app key
+                //with a wrong/absent checksum cannot be distinguished from an
+                //invalid app key (avoids an app key validity oracle)
+                common.returnMessage(params, 400, 'App does not exist');
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha1';
                 plugins.dispatch("/sdk/cancel", {params: params});
@@ -3354,7 +3411,10 @@ const checksumSaltVerification = (params) => {
                 payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
             }
             if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
-                common.returnMessage(params, 200, 'Request does not match checksum');
+                //return the same response as an unknown app so a valid app key
+                //with a wrong/absent checksum cannot be distinguished from an
+                //invalid app key (avoids an app key validity oracle)
+                common.returnMessage(params, 400, 'App does not exist');
                 console.log("Checksum did not match", params.href, params.req.body, payloads);
                 params.cancelRequest = 'Request does not match checksum sha256';
                 plugins.dispatch("/sdk/cancel", {params: params});
@@ -3362,7 +3422,8 @@ const checksumSaltVerification = (params) => {
             }
         }
         else {
-            common.returnMessage(params, 200, 'Request does not have checksum');
+            //same uniform response as above (no app key validity oracle)
+            common.returnMessage(params, 400, 'App does not exist');
             console.log("Request does not have checksum", params.href, params.req.body);
             params.cancelRequest = "Request does not have checksum";
             plugins.dispatch("/sdk/cancel", {params: params});
@@ -3482,7 +3543,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         return done ? done() : false;
     }
 
-    common.readBatcher.getOne("apps", {'key': params.qstring.app_key + ""}, (err, app) => {
+    common.resolveAppByKey(params.qstring.app_key, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
@@ -3490,14 +3551,17 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         }
 
         if (app.paused) {
-            common.returnMessage(params, 400, 'App is currently not accepting data');
+            //return the same response as an unknown app so a valid app key for
+            //a paused app cannot be distinguished from an invalid one
+            common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App is currently not accepting data";
             plugins.dispatch("/sdk/cancel", {params: params});
             return done ? done() : false;
         }
 
         if ((params.populator || params.qstring.populator) && app.locked) {
-            common.returnMessage(params, 403, "App is locked");
+            //same uniform response (no app key existence oracle)
+            common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App is locked";
             plugins.dispatch("/sdk/cancel", {params: params});
             return false;
@@ -3510,6 +3574,15 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
+        //derive the app user id from the app's immutable identity key (falls
+        //back to the current key for apps without id_key), so app key rotation
+        //does not re-key existing users
+        if (params.qstring.device_id) {
+            params.app_user_id = common.getAppUserId(app, params.qstring.device_id);
+        }
+
+        //track when this specific key last received data (for safe key retirement)
+        common.recordAppKeyUsage(app, params.qstring.app_key);
 
         var time = Date.now().valueOf();
         time = Math.round((time || 0) / 1000);
@@ -3519,7 +3592,10 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 if (err1) {
                     console.log("Failed to update apps collection " + err1);
                 }
-                common.readBatcher.invalidate("apps", {"key": params.app.key}, {}, false); //because we load app by key  on incoming requests. so invalidate also by key
+                //invalidate both cache shapes the request may have loaded the
+                //app with (accepted-keys lookup, then current-key fallback), so
+                //the cache entry for old-key requests is also cleared
+                common.invalidateAppByKey(params.qstring.app_key);
             });
         }
 
@@ -3627,7 +3703,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
     if (ignorePossibleDevices(params)) {
         return done ? done() : false;
     }
-    common.readBatcher.getOne("apps", {'key': params.qstring.app_key}, (err, app) => {
+    common.resolveAppByKey(params.qstring.app_key, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
@@ -3640,6 +3716,16 @@ const validateAppForFetchAPI = (params, done, try_times) => {
         params.appTimezone = app.timezone;
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+
+        //derive the app user id from the app's immutable identity key (falls
+        //back to the current key for apps without id_key), so app key rotation
+        //does not re-key existing users
+        if (params.qstring.device_id) {
+            params.app_user_id = common.getAppUserId(app, params.qstring.device_id);
+        }
+
+        //track when this specific key last received data (for safe key retirement)
+        common.recordAppKeyUsage(app, params.qstring.app_key);
 
         if (!checksumSaltVerification(params)) {
             return done ? done() : false;
@@ -3786,9 +3872,7 @@ function processUser(params, initiator, done, try_times) {
         }
         //check if device id was changed
         else if (params && params.qstring && params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
-            const old_id = common.crypto.createHash('sha1')
-                .update(params.qstring.app_key + params.qstring.old_device_id + "")
-                .digest('hex');
+            const old_id = common.getAppUserId(params.app, params.qstring.old_device_id);
 
             countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function(err) {
                 if (err) {

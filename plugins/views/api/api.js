@@ -1566,7 +1566,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
         if (common.drillDb && params.qstring && params.qstring.view) {
             if (params.req.headers["countly-token"]) {
-                common.readBatcher.getOne("apps", {'key': params.qstring.app_key}, (err1, app) => {
+                common.readBatcher.getOne("apps", {$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err1, app) => {
                     if (!app) {
                         common.returnMessage(params, 401, 'User does not have view right for this application');
                         return false;
@@ -1576,6 +1576,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         db: common.db,
                         token: params.req.headers["countly-token"],
                         req_path: params.fullPath,
+                        // pass qstring so the token's app restriction is enforced
+                        // against the app resolved from app_key above. Without it,
+                        // verify_token skips the app check entirely and an
+                        // app-scoped token would be accepted for any other app.
+                        qstring: params.qstring,
                         callback: function(owner, expires_after) {
                             if (owner) {
                                 var token = params.req.headers["countly-token"];
@@ -2223,7 +2228,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
 
 
-                    var lastMoment = new moment(lastViewTimestamp);
+                    // lastViewTimestamp is a unix timestamp in seconds (like the
+                    // other gates below compare it). new moment(Number) treats the
+                    // value as milliseconds, placing it in 1970, so isoWeek() was a
+                    // tiny number that is almost always < weeklyISO — making the
+                    // weekly-unique gate fire on every repeat view in the same week
+                    // (over-counting weekly unique). Use moment.unix() for seconds.
+                    var lastMoment = moment.unix(lastViewTimestamp);
                     lastMoment.tz(params.appTimezone);
 
                     if (lastViewTimestamp < (params.time.timestamp - secInMin)) {

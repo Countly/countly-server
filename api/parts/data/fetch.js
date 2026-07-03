@@ -8,6 +8,7 @@ const { getAdminApps, getUserApps } = require('../../utils/rights.js');
 /** @lends module:api/parts/data/fetch */
 var fetch = {},
     common = require('./../../utils/common.js'),
+    log = common.log('core:api'),
     moment = require('moment-timezone'),
     async = require('async'),
     countlyModel = require('../../lib/countly.model.js'),
@@ -519,12 +520,13 @@ fetch.fetchAllApps = function(params) {
     var filter = {};
 
     if (params.qstring.filter) {
-        try {
-            filter = JSON.parse(params.qstring.filter);
+        var parsed = common.parseUserQuery(params.qstring.filter);
+        if (parsed.error) {
+            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsed.error);
+            common.returnMessage(params, 400, parsed.error);
+            return;
         }
-        catch (ex) {
-            filter = {};
-        }
+        filter = parsed.query;
     }
 
     if (!params.member.global_admin) {
@@ -2263,6 +2265,9 @@ fetch.alljobs = async function(metric, params) {
 fetch.jobDetails = async function(metric, params) {
     const columns = ["schedule", "next", "finished", "status", "data", "duration"];
     let sort = {};
+    if (typeof params.qstring.name !== "undefined" && params.qstring.name !== null) {
+        params.qstring.name = params.qstring.name + "";
+    }
     const total = await common.db.collection('jobs').count({ name: params.qstring.name });
     const cursor = common.db.collection('jobs').find({ name: params.qstring.name });
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;

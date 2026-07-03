@@ -25,6 +25,9 @@ spec:
       labels:
         app: countly-ingestion
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: countly-ingestion
         image: countly/api:23.03

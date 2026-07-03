@@ -1,4 +1,4 @@
-const { getUserApps } = require('../../../api/utils/rights.js');
+const { getAdminApps, getUserAppsForFeaturePermission } = require('../../../api/utils/rights.js');
 
 var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js'),
@@ -11,6 +11,26 @@ var log = common.log('data-points:api');
 const FEATURE_NAME = 'server-stats';
 
 const internalEventsSkipped = ["[CLY]_orientation"];
+
+/**
+ * Apps a non-global member may see server-stats for: those they administer or
+ * have server-stats read on. Plain app membership is not sufficient, otherwise
+ * a member could read data-point counts for apps they were not granted the
+ * server-stats feature on.
+ * @param {object} member - request member object
+ * @returns {Array} list of app ids the member may read server-stats for
+ */
+function getServerStatsApps(member) {
+    var apps = (getAdminApps(member) || [])
+        .concat(getUserAppsForFeaturePermission(member, FEATURE_NAME, 'r') || []);
+    // legacy members (no permission object) predate per-feature permissions
+    if (typeof member.permission === "undefined" && Array.isArray(member.user_of)) {
+        apps = apps.concat(member.user_of);
+    }
+    // an app can be both administered and feature-granted; de-duplicate so the
+    // $in filters and membership loops do not carry repeated ids
+    return Array.from(new Set(apps));
+}
 
 (function() {
 
@@ -276,7 +296,7 @@ const internalEventsSkipped = ["[CLY]_orientation"];
 
         validateUser(params, function() {
             if (!params.member.global_admin) {
-                var apps = getUserApps(params.member) || [];
+                var apps = getServerStatsApps(params.member);
                 for (let i = 0; i < periodsToFetch.length; i++) {
                     for (let j = 0; j < apps.length; j++) {
                         if (params.qstring.selected_app && params.qstring.selected_app !== "") {
@@ -349,10 +369,14 @@ const internalEventsSkipped = ["[CLY]_orientation"];
     */
     plugins.register("/o/server-stats/top", function(ob) {
         var params = ob.params;
-        validateUser(params, async() => {
+        validateUser(params, () => {
+            //global admins see the instance-wide top apps; everyone else is
+            //restricted to the apps they are allowed to access, so datapoint
+            //totals for other apps are not disclosed
+            var appList = params.member.global_admin ? null : getServerStatsApps(params.member);
             stats.getTop(common.db, params, function(res) {
                 common.returnOutput(params, res);
-            });
+            }, appList);
         });
         return true;
     });
@@ -435,7 +459,7 @@ const internalEventsSkipped = ["[CLY]_orientation"];
                 let filter = {"m": {$in: periodsToFetch} };
                 if (!params.member.global_admin) {
                     filter._id = {"$in": []};
-                    const hasUserApps = getUserApps(params.member) || [];
+                    const hasUserApps = getServerStatsApps(params.member);
                     if (params.qstring.selected_app) {
                         if (hasUserApps.indexOf(params.qstring.selected_app) > -1) {
                             periodsToFetch.forEach((period) => {
@@ -443,7 +467,10 @@ const internalEventsSkipped = ["[CLY]_orientation"];
                             });
                         }
                         else {
-                            //access denied
+                            //the member cannot read server-stats for the selected app;
+                            //reject explicitly rather than returning an all-zero card
+                            common.returnMessage(params, 401, "User does not have access to selected app");
+                            return;
                         }
                     }
                     else {

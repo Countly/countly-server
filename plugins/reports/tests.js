@@ -93,6 +93,34 @@ describe('Testing Reports', function() {
                     });
             });
 
+            it('should not change the report owner on update', function(done) {
+                const reportID = reports[0]._id;
+                const originalUser = reports[0].user + "";
+                const bogusUser = "000000000000000000000000";
+                const reportConfig = Object.assign({}, reports[0], {user: bogusUser});
+                request.get(getRequestURL('/i/reports/update') + "&args=" + encodeURIComponent(JSON.stringify(reportConfig)))
+                    .expect(200)
+                    .end(function(err) {
+                        if (err) {
+                            return done(err);
+                        }
+                        request.get(getRequestURL('/o/reports/all'))
+                            .expect(200)
+                            .end(function(err2, res) {
+                                if (err2) {
+                                    return done(err2);
+                                }
+                                var updated = res.body.filter(function(r) {
+                                    return r._id === reportID;
+                                })[0];
+                                should.exist(updated);
+                                (updated.user + "").should.not.equal(bogusUser);
+                                (updated.user + "").should.equal(originalUser);
+                                done();
+                            });
+                    });
+            });
+
             it('should able to change report status', function(done) {
                 const reportID = reports[0]._id;
                 request.get(getRequestURL('/i/reports/status') + "&args=" + encodeURIComponent(JSON.stringify({[reportID]: false})))
@@ -160,6 +188,110 @@ describe('Testing Reports', function() {
                             return done(err);
                         }
                         done();
+                    });
+            });
+        });
+
+        describe('Cross-app authorization (missing report_type)', function() {
+            var victimAppId = "";
+            var scopedApiKey = "";
+            var scopedUserId = "";
+            var ownedReportId = "";
+            var uniq = Date.now();
+
+            it('should create a victim app and a user scoped to the base app only', function(done) {
+                const API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+                const APP_ID = testUtils.get("APP_ID");
+                request.get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({name: "ReportsVictimApp", type: "mobile"})))
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        victimAppId = res.body._id;
+                        var perm = { _: {a: [], u: [APP_ID]}, c: {}, r: {}, u: {}, d: {} };
+                        ["c", "r", "u", "d"].forEach(function(t) {
+                            perm[t][APP_ID] = {all: false, allowed: {reports: true}};
+                        });
+                        var userParams = {full_name: "reportsuser" + uniq, username: "reportsuser" + uniq, password: "p4ssw0rD!", email: "reportsuser" + uniq + "@mail.test", permission: perm};
+                        request.get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify(userParams)))
+                            .expect(200)
+                            .end(function(err2, res2) {
+                                if (err2) {
+                                    return done(err2);
+                                }
+                                scopedApiKey = res2.body.api_key;
+                                scopedUserId = res2.body._id;
+                                should.exist(scopedApiKey);
+                                done();
+                            });
+                    });
+            });
+
+            it('should reject creating a report for another app when report_type is omitted', function(done) {
+                const APP_ID = testUtils.get("APP_ID");
+                var cfg = {title: "sneaky", apps: [victimAppId], emails: ["a@abc.com"], metrics: {analytics: true}, frequency: "daily", timezone: "Etc/GMT", day: 1, hour: 0, minute: 0};
+                request.get('/i/reports/create?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&args=' + JSON.stringify(cfg))
+                    .expect(401)
+                    .end(function(err) {
+                        return done(err);
+                    });
+            });
+
+            it('should allow creating a report for the owned app (report_type omitted)', function(done) {
+                const APP_ID = testUtils.get("APP_ID");
+                var cfg = {title: "ownedNoType", apps: [APP_ID], emails: ["a@abc.com"], metrics: {analytics: true}, frequency: "daily", timezone: "Etc/GMT", day: 1, hour: 0, minute: 0};
+                request.get('/i/reports/create?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&args=' + JSON.stringify(cfg))
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        res.body.should.have.property('result', 'Success');
+                        done();
+                    });
+            });
+
+            it('should fetch the owned report id', function(done) {
+                const APP_ID = testUtils.get("APP_ID");
+                request.get('/o/reports/all?api_key=' + scopedApiKey + '&app_id=' + APP_ID)
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        var list = res.body;
+                        var owned = Array.isArray(list) && list.filter(function(r) {
+                            return r.title === "ownedNoType";
+                        })[0];
+                        should.exist(owned);
+                        ownedReportId = owned._id;
+                        done();
+                    });
+            });
+
+            it('should reject updating an owned report to another app when report_type is omitted', function(done) {
+                const APP_ID = testUtils.get("APP_ID");
+                var cfg = {_id: ownedReportId, apps: [victimAppId], frequency: "daily", timezone: "Etc/GMT", day: 1, hour: 0, minute: 0};
+                request.get('/i/reports/update?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&args=' + JSON.stringify(cfg))
+                    .expect(401)
+                    .end(function(err) {
+                        return done(err);
+                    });
+            });
+
+            after(function(done) {
+                const API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+                // best-effort cleanup of the created report, user and app
+                request.get('/i/reports/delete?api_key=' + API_KEY_ADMIN + '&app_id=' + testUtils.get("APP_ID") + '&args=' + encodeURIComponent(JSON.stringify({_id: ownedReportId})))
+                    .end(function() {
+                        request.get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [scopedUserId]})))
+                            .end(function() {
+                                request.get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({app_id: victimAppId})))
+                                    .end(function() {
+                                        done();
+                                    });
+                            });
                     });
             });
         });

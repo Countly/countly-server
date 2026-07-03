@@ -198,11 +198,14 @@ cmsApi.getEntriesWithUpdate = function(params) {
 
     var query = { '_id': { '$regex': `^${params.qstring._id}` } };
 
-    try {
-        params.qstring.query = JSON.parse(params.qstring.query);
-    }
-    catch (ex) {
-        params.qstring.query = null;
+    if (params.qstring.query) {
+        var parsed = common.parseUserQuery(params.qstring.query);
+        if (parsed.error) {
+            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsed.error);
+            common.returnMessage(params, 400, parsed.error);
+            return false;
+        }
+        params.qstring.query = parsed.query;
     }
 
     if (params.qstring.query) {
@@ -282,11 +285,14 @@ cmsApi.getEntries = function(params) {
 
     var query = { '_id': { '$regex': `^${params.qstring._id}` } };
 
-    try {
-        params.qstring.query = JSON.parse(params.qstring.query);
-    }
-    catch (ex) {
-        params.qstring.query = null;
+    if (params.qstring.query) {
+        var parsed = common.parseUserQuery(params.qstring.query);
+        if (parsed.error) {
+            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsed.error);
+            common.returnMessage(params, 400, parsed.error);
+            return false;
+        }
+        params.qstring.query = parsed.query;
     }
 
     if (params.qstring.query) {

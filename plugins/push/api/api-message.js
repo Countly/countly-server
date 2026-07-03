@@ -3,7 +3,8 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
     moment = require('moment-timezone'),
-    { request } = require('./proxy');
+    { request } = require('./proxy'),
+    ssrfProtection = require('../../../api/utils/ssrf-protection');
 
 
 /**
@@ -75,6 +76,17 @@ async function validate(args, draft = false, params = null) {
         else {
             throw new ValidationError(msg.errors);
         }
+    }
+
+    // Reject (never modify) audience/drill queries that contain disallowed
+    // Mongo operators ($where/$function/$accumulator). These queries are later
+    // dispatched to /drill/preprocess_query and run against the database; the
+    // dispatch hook no longer strips them, so they must be validated where they
+    // first enter from the request.
+    let badOp = common.findUnsafeMongoOperator(msg.filter.user) || common.findUnsafeMongoOperator(msg.filter.drill);
+    if (badOp) {
+        log.d("Rejected user query" + common.reqInfo(params) + ": " + common.unsafeQueryError(badOp));
+        throw new ValidationError('Query contains disallowed operator: ' + badOp);
     }
 
     let app = await common.db.collection('apps').findOne(msg.app);
@@ -605,6 +617,18 @@ module.exports.estimate = async params => {
     }
     else {
         common.returnMessage(params, 400, {errors: data.errors}, null, true);
+        return true;
+    }
+
+    // Cross-app guard. validateRead only checks the caller's permission against
+    // params.qstring.app_id, while the body's "app" field selects which app's
+    // push audience is counted. Without this binding a user with push:read on
+    // app A could pass app_id=A and body app=B to read app B's audience count,
+    // locale distribution and run filter.user/filter.drill segment queries over
+    // app B's user profiles. Force the body's app to match the
+    // permission-checked qstring.app_id.
+    if (params.qstring.app_id && data.app && (data.app + "") !== (params.qstring.app_id + "")) {
+        common.returnMessage(params, 400, {errors: ['args.app does not match request app_id']}, null, true);
         return true;
     }
 
@@ -1208,7 +1232,7 @@ async function generateDemoData(msg, demo) {
  * @param {string} method - http method to use
  * @returns {Promise} - {status, headers} in case of success, PushError otherwise
  */
-function mimeInfo(url, method = 'HEAD') {
+async function mimeInfo(url, method = 'HEAD') {
     let conf = common.plugins.getConfig('push'),
         ok = common.validateArgs({url}, {
             url: {type: 'URLString', required: true},
@@ -1219,6 +1243,19 @@ function mimeInfo(url, method = 'HEAD') {
     }
     else {
         throw new ValidationError(ok.errors);
+    }
+
+    // The URL is attacker-controllable and the request is issued by the server,
+    // so block loopback, link-local (cloud metadata) and private/internal
+    // targets before contacting it. mimeInfo is also called for any redirect
+    // target, so the destination of a followed redirect is validated too.
+    const safe = await ssrfProtection.isUrlSafe(url);
+    if (!safe.safe) {
+        // Keep the detailed reason server-side only: it can include the
+        // resolved private IP, which would otherwise hand the caller the exact
+        // SSRF oracle this check is meant to remove.
+        log.e('Blocked media URL', url, safe.error);
+        throw new ValidationError('Provided URL is not allowed');
     }
 
     return new Promise((resolve, reject) => {

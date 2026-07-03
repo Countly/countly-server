@@ -2,6 +2,42 @@
 Dependencies:
 - Remove SQLite
 
+## Version 25.03.XX
+Fixes:
+- [journey_engine] Added user merge handling: running journeys are remapped to the surviving user, keeping the furthest-progressed instance and stopping duplicates
+- [views] Refresh drawer on app change
+
+
+## Version 25.03.48
+Fixes:
+- [core] Don't show the "no access" or initial-setup page to users who already have app access — redirect them to their default app instead
+
+Enterprise Fixes:
+- [journey_engine] Avoid throwing on duplicate events and prevent overwriting existing event map entries during event creation
+- [journey_engine] Fixed incoming-data journeys double-entering a user when a single request carried multiple events (e.g. a custom event together with begin_session's session event)
+
+Enterprise Features:
+- [block] Allow using regex for event filter
+- [journey_engine] Added an end-to-end API test suite covering every trigger type (event/session/crash incoming-data, profile-update, journey-exit, profile-group entry/exit) that delivers in-app content through the queue
+
+## Version 25.03.47
+Fixes:
+- [content] Bugfixes for content showing
+- [core] Improved validation for user passed queries.
+- [journey_engine] resut tab made available for running journeys
+
+Enterprise Features:
+-[data-manager] Improved user propertly value table to allow filtering all values.
+
+## Version 25.03.46
+Fixes:
+ - Overall security Fixes
+ - Ensuring Countly working from a network subdirectory
+ 
+Enterprise Features:
+ - [active_directory] Journey approver group added
+ - [ldap] Journey approver group added
+ 
 ## Version 25.03.45
 Fixes:
 - [core] Accept numeric color in saveNote schema so graph note create/edit no longer fails validation

@@ -585,6 +585,37 @@ describe('Testing Compliance Hub', function() {
         });
     });
 
+    describe('Check consent current', function() {
+        it('should return current consent', function(done) {
+            request
+                .get('/o/consent/current?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.be.an.Object;
+                    setTimeout(done, 100);
+                });
+        });
+    });
+    describe('Check app_users consents', function() {
+        it('should list app users with consent data', function(done) {
+            request
+                .get('/o/app_users/consents?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.be.an.Object;
+                    setTimeout(done, 100);
+                });
+        });
+    });
+
     describe('Reset App', function() {
         it('should reset data', function(done) {
             var params = {app_id: APP_ID, period: "reset"};

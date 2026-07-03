@@ -1093,18 +1093,33 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
 exports.getBaseAppFilter = function(member, dbName, collectionName) {
     var base_filter = {};
     var apps = exports.getUserApps(member);
+    // getUserApps() returns [] both for a global admin (meaning "all apps") and
+    // for a non-global member that has no app access at all. Those two cases
+    // must NOT be treated the same: a global admin should see everything, but a
+    // non-global member with an empty app list must be scoped to nothing.
+    // Without this guard the empty list produced an empty {} filter, which the
+    // callers treat as "no scope" and therefore returned every app's rows.
+    var hasApps = Array.isArray(apps) && apps.length > 0;
     if (dbName === "countly_drill" && collectionName === "drill_events") {
-        if (Array.isArray(apps) && apps.length > 0) {
+        if (hasApps) {
             base_filter.a = {"$in": apps};
+        }
+        else if (!member.global_admin) {
+            // non-global member without app access: match nothing
+            base_filter.a = {"$in": []};
         }
     }
     else if (dbName === "countly" && collectionName === "events_data") {
-        var in_array = [];
-        if (Array.isArray(apps) && apps.length > 0) {
+        if (hasApps) {
+            var in_array = [];
             for (var i = 0; i < apps.length; i++) {
                 in_array.push(new RegExp("^" + apps[i] + "_.*"));
             }
             base_filter = {"_id": {"$in": in_array}};
+        }
+        else if (!member.global_admin) {
+            // non-global member without app access: match nothing
+            base_filter = {"_id": {"$in": []}};
         }
     }
     return base_filter;
