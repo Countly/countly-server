@@ -13,14 +13,7 @@ updates:
     labels:
       - dependencies
     versioning-strategy: increase-if-necessary
-    ignore:
-      # sass >= 1.100.0 depends on ESM-only chokidar 5 and requires Node >= 20.19.0.
-      # The CI container (countly/countly-core:pipelines-*) ships Node 20.18.2, where
-      # require() of an ESM module throws ERR_REQUIRE_ESM during `countly task dist-all`.
-      # Keep sass on 1.99.x (chokidar ^4, dual CJS/ESM). Remove once CI Node >= 20.19.0.
-      - dependency-name: "sass"
-        versions: [">=1.100.0"]
-
+    
   - package-ecosystem: npm
     directory: "/ui-tests"
     schedule:
@@ -33,13 +26,6 @@ updates:
     labels:
       - dependencies
     versioning-strategy: increase-if-necessary
-    ignore:
-      # @faker-js/faker >= 10 is ESM-only (no `require` export). The CJS fixture
-      # generator (require('@faker-js/faker')) throws ERR_REQUIRE_ESM on Node 20.18.2.
-      # Keep faker on 9.x (dual CJS/ESM). Remove once CI Node >= 20.19.0 or the
-      # generator scripts are converted to ESM / dynamic import().
-      - dependency-name: "@faker-js/faker"
-        versions: [">=10.0.0"]
 
   # API utilities
   - package-ecosystem: npm
