@@ -33,6 +33,13 @@ updates:
     labels:
       - dependencies
     versioning-strategy: increase-if-necessary
+    ignore:
+      # @faker-js/faker >= 10 is ESM-only (no `require` export). The CJS fixture
+      # generator (require('@faker-js/faker')) throws ERR_REQUIRE_ESM on Node 20.18.2.
+      # Keep faker on 9.x (dual CJS/ESM). Remove once CI Node >= 20.19.0 or the
+      # generator scripts are converted to ESM / dynamic import().
+      - dependency-name: "@faker-js/faker"
+        versions: [">=10.0.0"]
 
   # API utilities
   - package-ecosystem: npm
