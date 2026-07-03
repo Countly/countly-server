@@ -13,7 +13,14 @@ updates:
     labels:
       - dependencies
     versioning-strategy: increase-if-necessary
-    
+    ignore:
+      # sass >= 1.100.0 depends on ESM-only chokidar 5 and requires Node >= 20.19.0.
+      # The CI container (countly/countly-core:pipelines-*) ships Node 20.18.2, where
+      # require() of an ESM module throws ERR_REQUIRE_ESM during `countly task dist-all`.
+      # Keep sass on 1.99.x (chokidar ^4, dual CJS/ESM). Remove once CI Node >= 20.19.0.
+      - dependency-name: "sass"
+        versions: [">=1.100.0"]
+
   - package-ecosystem: npm
     directory: "/ui-tests"
     schedule:
