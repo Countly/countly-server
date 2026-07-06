@@ -1,6 +1,8 @@
 ## Version 25.03.XX
 Fixes:
+- [journey_engine] Added user merge handling: running journeys are remapped to the surviving user, keeping the furthest-progressed instance and stopping duplicates
 - [views] Refresh drawer on app change
+
 
 ## Version 25.03.48
 Fixes:
@@ -8,9 +10,11 @@ Fixes:
 
 Enterprise Fixes:
 - [journey_engine] Avoid throwing on duplicate events and prevent overwriting existing event map entries during event creation
+- [journey_engine] Fixed incoming-data journeys double-entering a user when a single request carried multiple events (e.g. a custom event together with begin_session's session event)
 
 Enterprise Features:
 - [block] Allow using regex for event filter
+- [journey_engine] Added an end-to-end API test suite covering every trigger type (event/session/crash incoming-data, profile-update, journey-exit, profile-group entry/exit) that delivers in-app content through the queue
 
 ## Version 25.03.47
 Fixes:
