@@ -8,7 +8,95 @@ var APP_ID = "";
 var APP_KEY = "";
 var DEVICE_ID = "123456789";
 var WIDGET_ID = "";
+
+/**
+ * Pull out every locally-referenced asset path (href/src attributes and
+ * CSS url(...) references) from a rendered feedback-popup page, ignoring
+ * absolute URLs like the "https://count.ly" footer link.
+ * @param {string} html - rendered feedback-popup HTML
+ * @returns {Array} list of path strings found in the markup
+ */
+function extractLocalAssetPaths(html) {
+    var paths = [];
+    var attrRe = /(?:href|src)\s*=\s*["']([^"']+)["']/g;
+    var urlRe = /url\(\s*['"]?([^'")]+)['"]?\s*\)/g;
+    var m;
+    while ((m = attrRe.exec(html)) !== null) {
+        if (m[1].startsWith('/')) {
+            paths.push(m[1]);
+        }
+    }
+    while ((m = urlRe.exec(html)) !== null) {
+        if (m[1].startsWith('/')) {
+            paths.push(m[1]);
+        }
+    }
+    return paths;
+}
+
 describe('Testing Rating plugin', function() {
+
+    describe('Feedback popup asset paths with provided_url', function() {
+        it('should prefix asset paths with countlyConfig.path when provided_url is not passed', function(done) {
+            request.get('/feedback/rating')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var paths = extractLocalAssetPaths(res.text);
+                    paths.length.should.be.above(15);
+                    paths.forEach(function(p) {
+                        p.should.startWith('/');
+                        p.should.not.startWith('//');
+                    });
+                    var dataAttr = res.text.match(/data-countly-path="([^"]*)"/);
+                    should.exist(dataAttr);
+                    dataAttr[1].should.eql('');
+                    done();
+                });
+        });
+
+        it('should prefix every asset path with provided_url when it has a leading slash', function(done) {
+            var providedUrl = '/reverse-proxy/countly';
+            request.get('/feedback/rating?provided_url=' + encodeURIComponent(providedUrl))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var paths = extractLocalAssetPaths(res.text);
+                    paths.length.should.be.above(15);
+                    paths.forEach(function(p) {
+                        p.should.startWith(providedUrl + '/');
+                    });
+                    var dataAttr = res.text.match(/data-countly-path="([^"]*)"/);
+                    should.exist(dataAttr);
+                    dataAttr[1].should.eql(providedUrl);
+                    done();
+                });
+        });
+
+        it('should add a leading slash to provided_url when missing and still prefix every asset path', function(done) {
+            var providedUrl = 'reverse-proxy/countly';
+            request.get('/feedback/rating?provided_url=' + encodeURIComponent(providedUrl))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var paths = extractLocalAssetPaths(res.text);
+                    paths.length.should.be.above(15);
+                    paths.forEach(function(p) {
+                        p.should.startWith('/' + providedUrl + '/');
+                    });
+                    var dataAttr = res.text.match(/data-countly-path="([^"]*)"/);
+                    should.exist(dataAttr);
+                    dataAttr[1].should.eql('/' + providedUrl);
+                    done();
+                });
+        });
+    });
 
     describe('Get empty widget list', function() {
         it('should return 200 and empty widget list', function(done) {
