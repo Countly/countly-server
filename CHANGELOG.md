@@ -6,6 +6,9 @@ Fixes:
 Features:
 - [star-rating] Use passed path from sdk as asset path in star rating plugin
 
+Enterprise Features:
+-[surveys] Use passed path as asset path if one provided by sdk
+
 ## Version 25.03.48
 Fixes:
 - [core] Don't show the "no access" or initial-setup page to users who already have app access — redirect them to their default app instead
