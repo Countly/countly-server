@@ -1,3 +1,7 @@
+## Version 25.03.XX
+Enterprise Fixes:
+- [journey_engine] Store appId on journey_events and journey_logs so app reset/delete removes them directly by appId (avoids oversized instance-id queries); added upgrade scripts to backfill appId on existing documents
+
 ## Version 25.03.49
 Fixes:
 - [journey_engine] Added user merge handling: running journeys are remapped to the surviving user, keeping the furthest-progressed instance and stopping duplicates
