@@ -1,12 +1,12 @@
-## Version 25.03.XX
+## Version 25.03.49
 Fixes:
 - [journey_engine] Added user merge handling: running journeys are remapped to the surviving user, keeping the furthest-progressed instance and stopping duplicates
 - [journey_engine] Fix for user profile values in view trigger
 - [views] Refresh drawer on app change
 
 Features:
-- [star-rating] Use passed path from sdk as asset path in star rating plugin
 - [content] Use passed path from sdk as asset path in content plugin
+- [star-rating] Use passed path from sdk as asset path in star rating plugin
 
 Enterprise Features:
 -[surveys] Use passed path as asset path if one provided by sdk
