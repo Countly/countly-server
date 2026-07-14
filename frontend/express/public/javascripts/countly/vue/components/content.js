@@ -835,9 +835,10 @@
     // SER-2915: "Add User Property" popover for URL/deep-link button actions in
     // the content builder — mirrors the push notifications Add User Property
     // popover (internal/external property tabs, property selector, capitalize
-    // switch and fallback value). Confirming appends a visible
-    // `{property|fallback|c}` placeholder to the action URL, which is resolved
-    // per targeted user when the content is served.
+    // switch and fallback value) plus a parameter name input. Confirming
+    // appends a visible `name={property|fallback|c}` query parameter to the
+    // action URL, which is resolved per targeted user when the content is
+    // served.
     Vue.component('cly-content-dynamic-params-input', countlyVue.components.create({
         props: {
             disabled: {
@@ -873,6 +874,7 @@
                 property: {
                     fallback: '',
                     isUppercase: false,
+                    key: '',
                     value: ''
                 },
                 selectedPropertyCategory: 'internal'
@@ -881,7 +883,7 @@
 
         computed: {
             isConfirmDisabled() {
-                return !this.property.value;
+                return !this.property.value || !this.property.key.trim();
             },
 
             propertyCategoryOptions() {
@@ -899,6 +901,21 @@
         },
 
         methods: {
+            // appends `name={property}` as a query parameter, keeping any hash
+            // fragment at the end and picking the right ?/& separator
+            appendQueryParam(url, pair) {
+                const hashIndex = url.indexOf('#');
+                const hash = hashIndex === -1 ? '' : url.slice(hashIndex);
+                const base = hashIndex === -1 ? url : url.slice(0, hashIndex);
+                let separator = base.indexOf('?') === -1 ? '?' : '&';
+
+                if (base.endsWith('?') || base.endsWith('&')) {
+                    separator = '';
+                }
+
+                return base + separator + pair + hash;
+            },
+
             onAddButtonClick() {
                 this.isPanelOpen = !this.isPanelOpen;
             },
@@ -924,7 +941,9 @@
 
                 placeholder += '}';
 
-                this.$emit('input', (this.value || '') + placeholder);
+                const pair = encodeURIComponent(this.property.key.trim()) + '=' + placeholder;
+
+                this.$emit('input', this.appendQueryParam(this.value || '', pair));
                 this.resetPanel();
             },
 
@@ -938,6 +957,7 @@
                 this.property = {
                     fallback: '',
                     isUppercase: false,
+                    key: '',
                     value: ''
                 };
             }

@@ -22,6 +22,14 @@
     <div class="bu-mb-3 text-medium bu-has-text-weight-medium">
       {{ i18n('content.dynamic-params.add-user-property') }}
     </div>
+    <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.parameter-name') }}</div>
+    <el-input
+      v-model="property.key"
+      class="bu-mb-4"
+      autocomplete="off"
+      :placeholder="i18n('content.dynamic-params.enter-parameter-name')"
+      :data-test-id="testId + '-parameter-name-input'"
+    />
     <div class="bu-is-flex bu-is-align-items-center bu-mb-4">
       <el-radio-group
         v-model="selectedPropertyCategory"
