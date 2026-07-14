@@ -2,70 +2,100 @@
   class="cly-vue-content-dynamic-params-input"
   :data-test-id="testId"
 >
-  <div
-    v-for="(row, index) in rows"
-    class="cly-vue-content-dynamic-params-input__row bu-mb-3"
-    :key="`dynamic-param-${index}`"
-  >
-    <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-space-between bu-mb-1">
-      <span class="text-small color-cool-gray-50">{{ i18n('content.dynamic-params.parameter', index + 1) }}</span>
-      <el-button
-        class="cly-vue-content-dynamic-params-input__remove-button"
-        :disabled="disabled"
-        icon="cly-io cly-io-trash"
-        size="mini"
-        type="text"
-        :data-test-id="testId + '-remove-button-' + index"
-        @click="onRemoveRow(index)"
-      />
-    </div>
-    <el-input
-      class="bu-mb-1"
-      :disabled="disabled"
-      :placeholder="i18n('content.dynamic-params.parameter-name')"
-      :value="row.key"
-      :data-test-id="testId + '-key-input-' + index"
-      @input="onRowFieldChange(index, 'key', $event)"
-    />
-    <el-select
-      class="bu-mb-1 cly-vue-content-dynamic-params-input__property-select"
-      filterable
-      :disabled="disabled"
-      :placeholder="i18n('content.dynamic-params.user-property')"
-      :value="row.property"
-      :data-test-id="testId + '-property-select-' + index"
-      @input="onRowFieldChange(index, 'property', $event)"
-    >
-      <el-option-group
-        v-for="group in groupedOptions"
-        :key="group.label"
-        :label="group.label"
-      >
-        <el-option
-          v-for="option in group.options"
-          :key="option.value"
-          :label="option.label"
-          :value="option.value"
-        />
-      </el-option-group>
-    </el-select>
-    <el-input
-      :disabled="disabled"
-      :placeholder="i18n('content.dynamic-params.fallback')"
-      :value="row.fallback"
-      :data-test-id="testId + '-fallback-input-' + index"
-      @input="onRowFieldChange(index, 'fallback', $event)"
-    />
-  </div>
   <el-button
     class="cly-vue-content-dynamic-params-input__add-button"
     :disabled="disabled"
     icon="cly-io cly-io-plus"
     size="small"
     type="text"
-    :data-test-id="testId + '-add-button'"
-    @click="onAddRow"
+    :data-test-id="testId + '-add-user-property-button'"
+    @click="onAddButtonClick"
   >
-    {{ i18n('content.dynamic-params.add') }}
+    {{ i18n('content.dynamic-params.add-user-property') }}
   </el-button>
+  <div
+    v-if="isPanelOpen"
+    class="cly-vue-content-dynamic-params-input__panel bu-p-3 bu-mt-1"
+    style="background: #FFFFFF; border: 1px solid #E2E4E8; border-radius: 4px;"
+    :data-test-id="testId + '-panel'"
+  >
+    <div class="bu-mb-3 text-medium bu-has-text-weight-medium">
+      {{ i18n('content.dynamic-params.add-user-property') }}
+    </div>
+    <div class="bu-is-flex bu-is-align-items-center bu-mb-4">
+      <el-radio-group
+        v-model="selectedPropertyCategory"
+        size="small"
+        :data-test-id="testId + '-property-category'"
+      >
+        <el-radio-button
+          v-for="item in propertyCategoryOptions"
+          :key="item.value"
+          :label="item.value"
+        >
+          {{ item.label }}
+        </el-radio-button>
+      </el-radio-group>
+    </div>
+    <template v-if="selectedPropertyCategory === 'external'">
+      <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.api-property') }}</div>
+      <el-input
+        class="bu-mb-4"
+        autocomplete="off"
+        :placeholder="i18n('content.dynamic-params.enter-value')"
+        :value="property.value"
+        :data-test-id="testId + '-api-property-input'"
+        @input="onPropertySelect"
+      />
+    </template>
+    <template v-else>
+      <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.property') }}</div>
+      <cly-select-x
+        class="bu-mb-4"
+        mode="single-list"
+        :hide-all-options-tab="false"
+        :options="options"
+        :placeholder="i18n('content.dynamic-params.select-property')"
+        :search-placeholder="i18n('content.dynamic-params.search-in-properties')"
+        :value="property.value"
+        :width="264"
+        :data-test-id="testId + '-property-select'"
+        @change="onPropertySelect"
+      />
+    </template>
+    <el-checkbox
+      v-model="property.isUppercase"
+      class="bu-mb-4"
+      :data-test-id="testId + '-uppercase-checkbox'"
+    >
+      {{ i18n('content.dynamic-params.start-with-capital-letter') }}
+    </el-checkbox>
+    <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.fallback-value') }}</div>
+    <el-input
+      v-model="property.fallback"
+      class="bu-mb-4"
+      autocomplete="off"
+      :placeholder="i18n('content.dynamic-params.enter-fallback-value')"
+      :data-test-id="testId + '-fallback-input'"
+    />
+    <div class="bu-is-flex bu-is-justify-content-flex-end">
+      <el-button
+        size="small"
+        type="default"
+        :data-test-id="testId + '-cancel-button'"
+        @click="onCancel"
+      >
+        {{ i18n('common.cancel') }}
+      </el-button>
+      <el-button
+        size="small"
+        type="success"
+        :disabled="isConfirmDisabled"
+        :data-test-id="testId + '-confirm-button'"
+        @click="onConfirm"
+      >
+        {{ i18n('content.dynamic-params.confirm') }}
+      </el-button>
+    </div>
+  </div>
 </div>

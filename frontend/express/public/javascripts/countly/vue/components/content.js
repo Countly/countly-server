@@ -669,7 +669,7 @@
                     }
 
                     if (this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DYNAMIC_PARAMS) {
-                        return Array.isArray(this.value) ? this.value : [];
+                        return countlyCommon.unescapeHtml(this.value) || '';
                     }
 
                     if (this.isListBlockInput) {
@@ -832,10 +832,12 @@
         template: CV.T('/javascripts/countly/vue/templates/content/UI/content-block-list-input.html'),
     }));
 
-    // SER-2915: repeater used by the content builder to attach dynamic query
-    // string parameters to URL/deep-link button actions. Each row holds the
-    // parameter name, the user property that provides its value at send time
-    // and a fallback used when the property is missing on the target user.
+    // SER-2915: "Add User Property" popover for URL/deep-link button actions in
+    // the content builder — mirrors the push notifications Add User Property
+    // popover (internal/external property tabs, property selector, capitalize
+    // switch and fallback value). Confirming appends a visible
+    // `{property|fallback|c}` placeholder to the action URL, which is resolved
+    // per targeted user when the content is served.
     Vue.component('cly-content-dynamic-params-input', countlyVue.components.create({
         props: {
             disabled: {
@@ -854,8 +856,8 @@
             },
 
             value: {
-                default: () => [],
-                type: Array
+                default: '',
+                type: String
             }
         },
 
@@ -865,42 +867,79 @@
 
         mixins: [countlyVue.mixins.i18n],
 
+        data() {
+            return {
+                isPanelOpen: false,
+                property: {
+                    fallback: '',
+                    isUppercase: false,
+                    value: ''
+                },
+                selectedPropertyCategory: 'internal'
+            };
+        },
+
         computed: {
-            groupedOptions() {
-                return (this.options || []).filter(group => Array.isArray(group.options) && group.options.length);
+            isConfirmDisabled() {
+                return !this.property.value;
             },
 
-            rows() {
-                return Array.isArray(this.value) ? this.value : [];
+            propertyCategoryOptions() {
+                return [
+                    { label: this.i18n('content.dynamic-params.internal-properties'), value: 'internal' },
+                    { label: this.i18n('content.dynamic-params.external-properties'), value: 'external' }
+                ];
+            }
+        },
+
+        watch: {
+            selectedPropertyCategory() {
+                this.property.value = '';
             }
         },
 
         methods: {
-            emitRows(rows) {
-                this.$emit('input', rows);
+            onAddButtonClick() {
+                this.isPanelOpen = !this.isPanelOpen;
             },
 
-            onAddRow() {
-                this.emitRows(this.rows.concat([{ fallback: '', key: '', property: null }]));
+            onCancel() {
+                this.resetPanel();
             },
 
-            onRemoveRow(index) {
-                const rows = this.rows.slice();
+            onConfirm() {
+                if (this.isConfirmDisabled) {
+                    return;
+                }
 
-                rows.splice(index, 1);
-                this.emitRows(rows);
+                let placeholder = '{' + this.property.value;
+
+                if (this.property.fallback || this.property.isUppercase) {
+                    placeholder += '|' + this.property.fallback;
+                }
+
+                if (this.property.isUppercase) {
+                    placeholder += '|c';
+                }
+
+                placeholder += '}';
+
+                this.$emit('input', (this.value || '') + placeholder);
+                this.resetPanel();
             },
 
-            onRowFieldChange(index, field, fieldValue) {
-                const rows = this.rows.map((row, rowIndex) => {
-                    if (rowIndex !== index) {
-                        return row;
-                    }
+            onPropertySelect(value) {
+                this.property.value = value;
+            },
 
-                    return { ...row, [field]: fieldValue };
-                });
-
-                this.emitRows(rows);
+            resetPanel() {
+                this.isPanelOpen = false;
+                this.selectedPropertyCategory = 'internal';
+                this.property = {
+                    fallback: '',
+                    isUppercase: false,
+                    value: ''
+                };
             }
         },
 
