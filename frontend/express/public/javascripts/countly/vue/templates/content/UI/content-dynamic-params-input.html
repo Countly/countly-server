@@ -43,23 +43,21 @@
       :placeholder="i18n('content.dynamic-params.enter-parameter-name')"
       :data-test-id="testId + '-parameter-name-input'"
     />
-    <div class="bu-mb-4">
-      <el-radio-group
-        v-model="selectedPropertyCategory"
-        size="small"
-        style="display: flex; flex-wrap: wrap; row-gap: 4px;"
-        :data-test-id="testId + '-property-category'"
-        @change="onCategoryChange"
-      >
-        <el-radio-button
-          v-for="item in propertyCategoryOptions"
-          :key="item.value"
-          :label="item.value"
-        >
-          {{ item.label }}
-        </el-radio-button>
-      </el-radio-group>
-    </div>
+    <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.value-type') }}</div>
+    <el-select
+      v-model="selectedPropertyCategory"
+      class="bu-mb-4"
+      style="width: 100%;"
+      :data-test-id="testId + '-property-category'"
+      @change="onCategoryChange"
+    >
+      <el-option
+        v-for="item in propertyCategoryOptions"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      />
+    </el-select>
     <template v-if="selectedPropertyCategory === 'static'">
       <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.parameter-value') }}</div>
       <el-input
@@ -100,9 +98,12 @@
       <el-checkbox
         v-model="property.isUppercase"
         class="bu-mb-4"
+        style="display: flex; align-items: flex-start; white-space: normal;"
         :data-test-id="testId + '-uppercase-checkbox'"
       >
-        {{ i18n('content.dynamic-params.start-with-capital-letter') }}
+        <span style="white-space: normal; word-break: normal; display: inline-block;">
+          {{ i18n('content.dynamic-params.start-with-capital-letter') }}
+        </span>
       </el-checkbox>
       <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.fallback-value') }}</div>
       <el-input
