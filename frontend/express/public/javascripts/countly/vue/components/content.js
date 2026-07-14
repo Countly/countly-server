@@ -377,6 +377,7 @@
 
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER = 'color-picker';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN = 'dropdown';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DYNAMIC_PARAMS = 'dynamic-params';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_IMAGE_RADIO = 'image-radio';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT = 'input';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_LIST_BLOCK = 'list-block';
@@ -514,6 +515,7 @@
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE = {
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER]: 'cly-colorpicker',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN]: 'el-select',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DYNAMIC_PARAMS]: 'cly-content-dynamic-params-input',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_IMAGE_RADIO]: 'div',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT]: 'el-input',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_LIST_BLOCK]: 'cly-content-block-list-input',
@@ -664,6 +666,10 @@
 
                     if (this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER) {
                         return +this.value || 0;
+                    }
+
+                    if (this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DYNAMIC_PARAMS) {
+                        return Array.isArray(this.value) ? this.value : [];
                     }
 
                     if (this.isListBlockInput) {
@@ -824,6 +830,81 @@
         },
 
         template: CV.T('/javascripts/countly/vue/templates/content/UI/content-block-list-input.html'),
+    }));
+
+    // SER-2915: repeater used by the content builder to attach dynamic query
+    // string parameters to URL/deep-link button actions. Each row holds the
+    // parameter name, the user property that provides its value at send time
+    // and a fallback used when the property is missing on the target user.
+    Vue.component('cly-content-dynamic-params-input', countlyVue.components.create({
+        props: {
+            disabled: {
+                default: false,
+                type: Boolean
+            },
+
+            options: {
+                default: () => [],
+                type: Array
+            },
+
+            testId: {
+                default: 'content-dynamic-params-input',
+                type: String
+            },
+
+            value: {
+                default: () => [],
+                type: Array
+            }
+        },
+
+        emits: [
+            'input'
+        ],
+
+        mixins: [countlyVue.mixins.i18n],
+
+        computed: {
+            groupedOptions() {
+                return (this.options || []).filter(group => Array.isArray(group.options) && group.options.length);
+            },
+
+            rows() {
+                return Array.isArray(this.value) ? this.value : [];
+            }
+        },
+
+        methods: {
+            emitRows(rows) {
+                this.$emit('input', rows);
+            },
+
+            onAddRow() {
+                this.emitRows(this.rows.concat([{ fallback: '', key: '', property: null }]));
+            },
+
+            onRemoveRow(index) {
+                const rows = this.rows.slice();
+
+                rows.splice(index, 1);
+                this.emitRows(rows);
+            },
+
+            onRowFieldChange(index, field, fieldValue) {
+                const rows = this.rows.map((row, rowIndex) => {
+                    if (rowIndex !== index) {
+                        return row;
+                    }
+
+                    return { ...row, [field]: fieldValue };
+                });
+
+                this.emitRows(rows);
+            }
+        },
+
+        template: CV.T('/javascripts/countly/vue/templates/content/UI/content-dynamic-params-input.html')
     }));
 
     Vue.component("cly-option-swapper", countlyVue.components.create({

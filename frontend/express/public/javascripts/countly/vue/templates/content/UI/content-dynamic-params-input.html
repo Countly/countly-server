@@ -1,0 +1,71 @@
+<div
+  class="cly-vue-content-dynamic-params-input"
+  :data-test-id="testId"
+>
+  <div
+    v-for="(row, index) in rows"
+    class="cly-vue-content-dynamic-params-input__row bu-mb-3"
+    :key="`dynamic-param-${index}`"
+  >
+    <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-space-between bu-mb-1">
+      <span class="text-small color-cool-gray-50">{{ i18n('content.dynamic-params.parameter', index + 1) }}</span>
+      <el-button
+        class="cly-vue-content-dynamic-params-input__remove-button"
+        :disabled="disabled"
+        icon="cly-io cly-io-trash"
+        size="mini"
+        type="text"
+        :data-test-id="testId + '-remove-button-' + index"
+        @click="onRemoveRow(index)"
+      />
+    </div>
+    <el-input
+      class="bu-mb-1"
+      :disabled="disabled"
+      :placeholder="i18n('content.dynamic-params.parameter-name')"
+      :value="row.key"
+      :data-test-id="testId + '-key-input-' + index"
+      @input="onRowFieldChange(index, 'key', $event)"
+    />
+    <el-select
+      class="bu-mb-1 cly-vue-content-dynamic-params-input__property-select"
+      filterable
+      :disabled="disabled"
+      :placeholder="i18n('content.dynamic-params.user-property')"
+      :value="row.property"
+      :data-test-id="testId + '-property-select-' + index"
+      @input="onRowFieldChange(index, 'property', $event)"
+    >
+      <el-option-group
+        v-for="group in groupedOptions"
+        :key="group.label"
+        :label="group.label"
+      >
+        <el-option
+          v-for="option in group.options"
+          :key="option.value"
+          :label="option.label"
+          :value="option.value"
+        />
+      </el-option-group>
+    </el-select>
+    <el-input
+      :disabled="disabled"
+      :placeholder="i18n('content.dynamic-params.fallback')"
+      :value="row.fallback"
+      :data-test-id="testId + '-fallback-input-' + index"
+      @input="onRowFieldChange(index, 'fallback', $event)"
+    />
+  </div>
+  <el-button
+    class="cly-vue-content-dynamic-params-input__add-button"
+    :disabled="disabled"
+    icon="cly-io cly-io-plus"
+    size="small"
+    type="text"
+    :data-test-id="testId + '-add-button'"
+    @click="onAddRow"
+  >
+    {{ i18n('content.dynamic-params.add') }}
+  </el-button>
+</div>
