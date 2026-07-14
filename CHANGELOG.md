@@ -1,3 +1,7 @@
+## Version 24.05.xx
+Enterprise Fixes:
+- [data-manager] Fixed bug in event and view transformations occasionally not applying to incoming data
+
 ## Version 24.05.50
 Security Fixes (backport of #7535 — bug-bounty-style hardening pass):
 - [auth] Restrict `/login/token/:token` to login-purpose tokens; regenerate session id on token login to close fixation
