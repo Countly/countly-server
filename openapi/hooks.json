@@ -1,0 +1,800 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Hooks API",
+    "description": "API for managing hooks in Countly Server. Hooks allow you to trigger automated actions (effects) based on specific events (triggers) within your application. Note: Some operations may return 502 errors for malformed requests or URL encoding issues with complex parameters.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/hook/save": {
+      "get": {
+        "summary": "Create or update a hook",
+        "description": "Create a new hook or update an existing hook configuration. Requires hooks feature permissions.",
+        "tags": [
+          "Hooks"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hook_config",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing the hook configuration object",
+            "schema": {
+              "type": "string",
+              "example": "{\"name\":\"test\",\"description\":\"desc\",\"apps\":[\"app_id\"],\"trigger\":{\"type\":\"APIEndPointTrigger\",\"configuration\":{\"path\":\"path\",\"method\":\"get\"}},\"effects\":[{\"type\":\"EmailEffect\",\"configuration\":{\"address\":[\"a@test.com\"],\"emailTemplate\":\"content\"}}],\"enabled\":true}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hook created or updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "description": "Hook ID when creating a new hook",
+                      "example": "6262779e46bd55a8c555cfb9"
+                    },
+                    {
+                      "type": "object",
+                      "description": "Updated hook object when updating existing hook",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "description": "Hook ID"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Hook name"
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Hook description"
+                        },
+                        "apps": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Array of application IDs"
+                        },
+                        "trigger": {
+                          "$ref": "#/components/schemas/Trigger"
+                        },
+                        "effects": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Effect"
+                          }
+                        },
+                        "enabled": {
+                          "type": "boolean",
+                          "description": "Whether the hook is enabled"
+                        },
+                        "createdBy": {
+                          "type": "string",
+                          "description": "ID of the user who created the hook"
+                        },
+                        "created_at": {
+                          "type": "number",
+                          "description": "Creation timestamp"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid hook configuration or missing parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message",
+                      "enum": ["Invalid hookConfig", "Not enough args", "Invalid configuration for effects"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message",
+                      "enum": ["Failed to save an hook", "Failed to create an hook", "No result found"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/hook/list": {
+      "get": {
+        "summary": "List hooks",
+        "description": "Retrieve list of hooks or a specific hook by ID. Returns hooks based on user permissions and app access.",
+        "tags": [
+          "Hooks"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "Specific hook ID to retrieve. If not provided, returns all accessible hooks.",
+            "schema": {
+              "type": "string",
+              "example": "6262779e46bd55a8c555cfb9"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hooks retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "hooksList": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Hook"
+                      },
+                      "description": "Array of hook objects"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway - Server error, often due to malformed parameters or URL encoding issues",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML error page"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/hook/status": {
+      "get": {
+        "summary": "Update hook status",
+        "description": "Enable or disable hooks by updating their status. Can update multiple hooks at once.",
+        "tags": [
+          "Hooks"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing hook ID to status boolean mapping",
+            "schema": {
+              "type": "string",
+              "example": "{\"6262779e46bd55a8c555cfb9\": true, \"6262779e46bd55a8c555cfba\": false}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hook statuses updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Insufficient update permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway - Server error, often due to malformed JSON in status parameter",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML error page"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/hook/delete": {
+      "get": {
+        "summary": "Delete a hook",
+        "description": "Delete a hook by its ID. Requires delete permissions for the hooks feature.",
+        "tags": [
+          "Hooks"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hookID",
+            "in": "query",
+            "required": true,
+            "description": "ID of the hook to delete",
+            "schema": {
+              "type": "string",
+              "example": "6262779e46bd55a8c555cfb9"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hook deleted successfully - Note: API returns success even for non-existent or invalid hook IDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Deleted an hook"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/hook/test": {
+      "get": {
+        "summary": "Test a hook configuration",
+        "description": "Test a hook configuration with mock data to see the execution results for triggers and effects.",
+        "tags": [
+          "Hooks"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hook_config",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing the hook configuration to test",
+            "schema": {
+              "type": "string",
+              "example": "{\"name\":\"test\",\"trigger\":{\"type\":\"APIEndPointTrigger\",\"configuration\":{\"path\":\"path\",\"method\":\"get\"}},\"effects\":[{\"type\":\"EmailEffect\",\"configuration\":{\"address\":[\"a@test.com\"],\"emailTemplate\":\"content\"}}]}"
+            }
+          },
+          {
+            "name": "mock_data",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing mock data to use for testing the hook",
+            "schema": {
+              "type": "string",
+              "example": "{\"qstring\":{\"paramA\":\"abc\",\"paramB\":123},\"paths\":[\"localhost\",\"o\",\"hooks\",\"test-path\"]}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hook test completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "description": "Test result for each step (trigger + effects)"
+                      },
+                      "description": "Array of test results showing the execution of trigger and each effect"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid configuration or missing parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message",
+                      "enum": ["Invalid hookConfig", "Parsed hookConfig is invalid", "Config invalid", "Trigger is missing"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions or invalid hook config",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message starting with 'hook config invalid'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway - Server error with URL encoding or malformed requests",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML error page"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Hook": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Unique hook identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Hook name",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "Hook description"
+          },
+          "apps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of application IDs this hook applies to",
+            "minItems": 1
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/Trigger"
+          },
+          "effects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Effect"
+            },
+            "description": "Array of effects to execute when trigger conditions are met",
+            "minItems": 1
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the hook is currently enabled"
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "ID of the user who created this hook"
+          },
+          "createdByUser": {
+            "type": "string",
+            "description": "Full name of the user who created this hook"
+          },
+          "created_at": {
+            "type": "number",
+            "description": "Unix timestamp when the hook was created"
+          }
+        },
+        "required": ["name", "apps", "trigger", "effects", "enabled"]
+      },
+      "Trigger": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["APIEndPointTrigger", "InternalEventTrigger", "IncomingDataTrigger", "ScheduledTrigger"],
+            "description": "Type of trigger"
+          },
+          "configuration": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/APIEndPointTriggerConfig"
+              },
+              {
+                "$ref": "#/components/schemas/InternalEventTriggerConfig"
+              },
+              {
+                "$ref": "#/components/schemas/IncomingDataTriggerConfig"
+              },
+              {
+                "$ref": "#/components/schemas/ScheduledTriggerConfig"
+              }
+            ]
+          }
+        },
+        "required": ["type", "configuration"]
+      },
+      "APIEndPointTriggerConfig": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "API endpoint path to monitor"
+          },
+          "method": {
+            "type": "string",
+            "enum": ["get", "post", "put", "delete"],
+            "description": "HTTP method to monitor"
+          }
+        },
+        "required": ["path", "method"]
+      },
+      "InternalEventTriggerConfig": {
+        "type": "object",
+        "properties": {
+          "eventName": {
+            "type": "string",
+            "description": "Internal event name to listen for"
+          }
+        },
+        "required": ["eventName"]
+      },
+      "IncomingDataTriggerConfig": {
+        "type": "object",
+        "properties": {
+          "dataType": {
+            "type": "string",
+            "description": "Type of incoming data to monitor"
+          }
+        },
+        "required": ["dataType"]
+      },
+      "ScheduledTriggerConfig": {
+        "type": "object",
+        "properties": {
+          "schedule": {
+            "type": "string",
+            "description": "Cron expression for scheduled execution"
+          }
+        },
+        "required": ["schedule"]
+      },
+      "Effect": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["HTTPEffect", "EmailEffect", "CustomCodeEffect"],
+            "description": "Type of effect to execute"
+          },
+          "configuration": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/HTTPEffectConfig"
+              },
+              {
+                "$ref": "#/components/schemas/EmailEffectConfig"
+              },
+              {
+                "$ref": "#/components/schemas/CustomCodeEffectConfig"
+              }
+            ]
+          }
+        },
+        "required": ["type", "configuration"]
+      },
+      "HTTPEffectConfig": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to send HTTP request to"
+          },
+          "method": {
+            "type": "string",
+            "enum": ["get", "post", "put", "delete"],
+            "description": "HTTP method to use"
+          },
+          "requestData": {
+            "type": "string",
+            "description": "Data to send with the request"
+          }
+        },
+        "required": ["url", "method"]
+      },
+      "EmailEffectConfig": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "email"
+            },
+            "description": "Array of email addresses to send to"
+          },
+          "emailTemplate": {
+            "type": "string",
+            "description": "Email template content"
+          }
+        },
+        "required": ["address", "emailTemplate"]
+      },
+      "CustomCodeEffectConfig": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "JavaScript code to execute"
+          }
+        },
+        "required": ["code"]
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}

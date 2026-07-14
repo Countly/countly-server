@@ -1,0 +1,629 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Database Viewer API",
+    "description": "API for accessing and querying database collections in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/o/db": {
+      "get": {
+        "summary": "Database access endpoint",
+        "description": "Access database, get collections, indexes and data. Supports multiple operations based on query parameters.",
+        "tags": [
+          "Database Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "db",
+            "in": "query",
+            "required": false,
+            "description": "Database name (countly, countly_drill, countly_out, countly_fs)",
+            "schema": {
+              "type": "string",
+              "enum": ["countly", "countly_drill", "countly_out", "countly_fs"]
+            }
+          },
+          {
+            "name": "dbs",
+            "in": "query",
+            "required": false,
+            "description": "Alternative parameter name for database",
+            "schema": {
+              "type": "string",
+              "enum": ["countly", "countly_drill", "countly_out", "countly_fs"]
+            }
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "required": false,
+            "description": "Collection name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "description": "Action to perform",
+            "schema": {
+              "type": "string",
+              "enum": ["get_indexes"]
+            }
+          },
+          {
+            "name": "document",
+            "in": "query",
+            "required": false,
+            "description": "Document unique identifier (_id) to get specific document details",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "aggregation",
+            "in": "query",
+            "required": false,
+            "description": "Aggregation pipeline in JSON format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "required": false,
+            "description": "Query filter in JSON format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "description": "Alternative parameter name for filter",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projection",
+            "in": "query",
+            "required": false,
+            "description": "Fields to include in JSON format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "query",
+            "required": false,
+            "description": "Alternative parameter name for projection",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Sort criteria in JSON format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of documents to return (default: 20)",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "description": "Number of documents to skip (default: 0)",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "sSearch",
+            "in": "query",
+            "required": false,
+            "description": "Search term for document _id field",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": false,
+            "description": "Application ID to filter results",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "iDisplayLength",
+            "in": "query",
+            "required": false,
+            "description": "Display length for aggregation results",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sEcho",
+            "in": "query",
+            "required": false,
+            "description": "Echo parameter for DataTables compatibility",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "save_report",
+            "in": "query",
+            "required": false,
+            "description": "Whether to save the query as a report",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "report_name",
+            "in": "query",
+            "required": false,
+            "description": "Name for saved report",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "report_desc",
+            "in": "query",
+            "required": false,
+            "description": "Description for saved report",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period_desc",
+            "in": "query",
+            "required": false,
+            "description": "Period description for saved report",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "global",
+            "in": "query",
+            "required": false,
+            "description": "Whether the report is global",
+            "schema": {
+              "type": "string",
+              "enum": ["true", "false"]
+            }
+          },
+          {
+            "name": "autoRefresh",
+            "in": "query",
+            "required": false,
+            "description": "Whether the report should auto-refresh",
+            "schema": {
+              "type": "string",
+              "enum": ["true", "false"]
+            }
+          },
+          {
+            "name": "manually_create",
+            "in": "query",
+            "required": false,
+            "description": "Whether the report was manually created",
+            "schema": {
+              "type": "string",
+              "enum": ["true", "false"]
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Report type/format",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operation completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "description": "Database structure (when no specific db/collection specified)",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Database name"
+                          },
+                          "collections": {
+                            "type": "object",
+                            "description": "Collections in the database",
+                            "additionalProperties": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "description": "Collection indexes (when action=get_indexes)",
+                      "properties": {
+                        "limit": {
+                          "type": "integer"
+                        },
+                        "start": {
+                          "type": "integer"
+                        },
+                        "end": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "pages": {
+                          "type": "integer"
+                        },
+                        "curPage": {
+                          "type": "integer"
+                        },
+                        "collections": {
+                          "type": "array",
+                          "description": "Index information",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "description": "Single document (when document parameter specified)",
+                      "additionalProperties": true
+                    },
+                    {
+                      "type": "object",
+                      "description": "Collection data with pagination",
+                      "properties": {
+                        "limit": {
+                          "type": "integer",
+                          "description": "Number of documents per page"
+                        },
+                        "start": {
+                          "type": "integer",
+                          "description": "Starting document number"
+                        },
+                        "end": {
+                          "type": "integer",
+                          "description": "Ending document number"
+                        },
+                        "total": {
+                          "type": "integer",
+                          "description": "Total number of documents"
+                        },
+                        "pages": {
+                          "type": "integer",
+                          "description": "Total number of pages"
+                        },
+                        "curPage": {
+                          "type": "integer",
+                          "description": "Current page number"
+                        },
+                        "collections": {
+                          "type": "array",
+                          "description": "Array of documents",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "description": "Aggregation result",
+                      "properties": {
+                        "sEcho": {
+                          "type": "string"
+                        },
+                        "iTotalRecords": {
+                          "type": "integer"
+                        },
+                        "iTotalDisplayRecords": {
+                          "type": "integer"
+                        },
+                        "aaData": {
+                          "type": "array",
+                          "description": "Aggregation result documents",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "removed": {
+                          "type": "object",
+                          "description": "Information about removed aggregation stages"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "description": "Task reference for long-running operations",
+                      "properties": {
+                        "task_id": {
+                          "type": "string",
+                          "description": "Task identifier for tracking long-running operations"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - User does not have permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - Database or collection not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/db/mongotop": {
+      "get": {
+        "summary": "Get MongoDB top statistics",
+        "description": "Fetch mongotop data showing collection-level activity. Requires global admin privileges.",
+        "tags": [
+          "Database Management",
+          "Monitoring"
+        ],
+        "responses": {
+          "200": {
+            "description": "MongoDB top statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Array of mongotop data rows",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Global admin privileges required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/db/mongostat": {
+      "get": {
+        "summary": "Get MongoDB statistics",
+        "description": "Fetch mongostat data showing MongoDB server statistics. Requires global admin privileges.",
+        "tags": [
+          "Database Management",
+          "Monitoring"
+        ],
+        "responses": {
+          "200": {
+            "description": "MongoDB statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Array of mongostat data rows",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Global admin privileges required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Get MongoDB statistics",
+        "description": "Fetch mongostat data showing MongoDB server statistics. Requires global admin privileges. Same functionality as GET method.",
+        "tags": [
+          "Database Management",
+          "Monitoring"
+        ],
+        "responses": {
+          "200": {
+            "description": "MongoDB statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "description": "Array of mongostat data rows",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Global admin privileges required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    }
+  ]
+}

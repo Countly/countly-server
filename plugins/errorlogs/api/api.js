@@ -64,7 +64,7 @@ const readFromEnd = (file, size) => {
                     console.error(errList);
                 }
                 else {
-                    logs = logfiles;
+                    logs = {...logs, ...logfiles};
                 }
                 if (params.qstring.log && logs[params.qstring.log]) {
                     var selectedLogPath = getLogPath(logs[params.qstring.log]);
@@ -185,6 +185,9 @@ const readFromEnd = (file, size) => {
                             common.returnMessage(params, 200, 'Success');
                         }
                     });
+                }
+                else {
+                    common.returnMessage(params, 200, 'Invalid log');
                 }
             });
         });

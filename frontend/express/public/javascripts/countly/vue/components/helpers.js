@@ -443,6 +443,10 @@
             placement: {
                 type: String,
                 default: 'auto'
+            },
+            tooltipClass: {
+                type: String,
+                default: ''
             }
         },
         computed: {
@@ -453,7 +457,7 @@
                 };
             }
         },
-        template: '<i v-if="tooltip" :class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltipConf"></i>'
+        template: '<i v-if="tooltip" :class="\'cly-vue-tooltip-icon \' + icon + \' \' + tooltipClass" v-tooltip="tooltipConf"></i>'
     }));
 
     Vue.component("cly-remover", countlyBaseComponent.extend({
@@ -838,6 +842,16 @@
                     else {
                         self.isLoading = true;
                         $.when(countlyEvent.refreshEvents()).then(function() {
+                            const events = countlyEvent.getEvents();
+                            preparedEventList[1].options = events.map(function(event) {
+                                return {label: countlyCommon.unescapeHtml(event.name), value: event.key};
+                            });
+                            preparedEventList = preparedEventList.filter(function(evt) {
+                                return !(self.blacklistedEvents.includes(evt.name));
+                            });
+                            self.isLoading = false;
+                            resolve(preparedEventList);
+                        }, function() {
                             const events = countlyEvent.getEvents();
                             preparedEventList[1].options = events.map(function(event) {
                                 return {label: countlyCommon.unescapeHtml(event.name), value: event.key};

@@ -1,0 +1,568 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Star Rating API",
+    "description": "API for managing star ratings and feedback in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/star-rating/create": {
+      "post": {
+        "summary": "Create rating widget",
+        "description": "Create a new star rating widget",
+        "tags": [
+          "Star Rating"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "popup_header_text": {
+                    "type": "string",
+                    "description": "Header text for the rating popup"
+                  },
+                  "popup_comment_callout": {
+                    "type": "string",
+                    "description": "Comment callout text"
+                  },
+                  "popup_email_callout": {
+                    "type": "string",
+                    "description": "Email callout text"
+                  },
+                  "popup_button_callout": {
+                    "type": "string",
+                    "description": "Button callout text"
+                  },
+                  "popup_thanks_message": {
+                    "type": "string",
+                    "description": "Thank you message text"
+                  },
+                  "trigger_position": {
+                    "type": "string",
+                    "description": "Position of the trigger button",
+                    "enum": [
+                      "left",
+                      "right",
+                      "bottom-left",
+                      "bottom-right"
+                    ]
+                  },
+                  "target_devices": {
+                    "type": "object",
+                    "description": "Target devices for the widget",
+                    "properties": {
+                      "desktop": {
+                        "type": "boolean"
+                      },
+                      "tablet": {
+                        "type": "boolean"
+                      },
+                      "phone": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "target_pages": {
+                    "type": "string",
+                    "description": "Target pages for the widget"
+                  },
+                  "target_page_exceptions": {
+                    "type": "string",
+                    "description": "Pages to exclude from targeting"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "description": "Whether the widget is active"
+                  },
+                  "hide_sticker": {
+                    "type": "boolean",
+                    "description": "Whether to hide the feedback sticker"
+                  },
+                  "contact_enable": {
+                    "type": "boolean",
+                    "description": "Whether to enable contact form"
+                  },
+                  "comment_enable": {
+                    "type": "boolean",
+                    "description": "Whether to enable comments"
+                  },
+                  "platform": {
+                    "type": "array",
+                    "description": "Platforms to target",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "android",
+                        "ios",
+                        "web"
+                      ]
+                    }
+                  },
+                  "rating_symbol": {
+                    "type": "string",
+                    "description": "Symbol to use for rating",
+                    "enum": [
+                      "star",
+                      "heart",
+                      "thumbs",
+                      "emoticon"
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Widget status",
+                    "enum": [
+                      "active",
+                      "inactive"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Widget created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/star-rating/edit": {
+      "post": {
+        "summary": "Edit rating widget",
+        "description": "Edit an existing star rating widget",
+        "tags": [
+          "Star Rating"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "widget_id": {
+                    "type": "string",
+                    "description": "ID of the widget to edit",
+                    "required": true
+                  },
+                  "popup_header_text": {
+                    "type": "string",
+                    "description": "Header text for the rating popup"
+                  },
+                  "popup_comment_callout": {
+                    "type": "string",
+                    "description": "Comment callout text"
+                  },
+                  "popup_email_callout": {
+                    "type": "string",
+                    "description": "Email callout text"
+                  },
+                  "popup_button_callout": {
+                    "type": "string",
+                    "description": "Button callout text"
+                  },
+                  "popup_thanks_message": {
+                    "type": "string",
+                    "description": "Thank you message text"
+                  },
+                  "trigger_position": {
+                    "type": "string",
+                    "description": "Position of the trigger button"
+                  },
+                  "target_devices": {
+                    "type": "object",
+                    "description": "Target devices for the widget"
+                  },
+                  "target_pages": {
+                    "type": "string",
+                    "description": "Target pages for the widget"
+                  },
+                  "target_page_exceptions": {
+                    "type": "string",
+                    "description": "Pages to exclude from targeting"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "description": "Whether the widget is active"
+                  },
+                  "hide_sticker": {
+                    "type": "boolean",
+                    "description": "Whether to hide the feedback sticker"
+                  },
+                  "contact_enable": {
+                    "type": "boolean",
+                    "description": "Whether to enable contact form"
+                  },
+                  "comment_enable": {
+                    "type": "boolean",
+                    "description": "Whether to enable comments"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Widget updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/star-rating/remove": {
+      "post": {
+        "summary": "Remove rating widget",
+        "description": "Remove an existing star rating widget",
+        "tags": [
+          "Star Rating"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "widget_id": {
+                    "type": "string",
+                    "description": "ID of the widget to remove",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Widget removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/star-rating/widgets": {
+      "get": {
+        "summary": "Get rating widgets",
+        "description": "Get all star rating widgets for an app",
+        "tags": [
+          "Star Rating"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Widgets retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "Widget ID"
+                      },
+                      "popup_header_text": {
+                        "type": "string",
+                        "description": "Header text for the rating popup"
+                      },
+                      "popup_comment_callout": {
+                        "type": "string",
+                        "description": "Comment callout text"
+                      },
+                      "popup_email_callout": {
+                        "type": "string",
+                        "description": "Email callout text"
+                      },
+                      "popup_button_callout": {
+                        "type": "string",
+                        "description": "Button callout text"
+                      },
+                      "popup_thanks_message": {
+                        "type": "string",
+                        "description": "Thank you message text"
+                      },
+                      "trigger_position": {
+                        "type": "string",
+                        "description": "Position of the trigger button"
+                      },
+                      "target_devices": {
+                        "type": "object",
+                        "description": "Target devices for the widget"
+                      },
+                      "target_pages": {
+                        "type": "string",
+                        "description": "Target pages for the widget"
+                      },
+                      "target_page_exceptions": {
+                        "type": "string",
+                        "description": "Pages to exclude from targeting"
+                      },
+                      "is_active": {
+                        "type": "boolean",
+                        "description": "Whether the widget is active"
+                      },
+                      "hide_sticker": {
+                        "type": "boolean",
+                        "description": "Whether to hide the feedback sticker"
+                      },
+                      "created_at": {
+                        "type": "integer",
+                        "description": "Creation timestamp"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/star-rating/ratings": {
+      "get": {
+        "summary": "Get ratings data",
+        "description": "Get star ratings data for an app",
+        "tags": [
+          "Star Rating"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Time period for the data",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "widget_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by widget ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ratings data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ratings": {
+                      "type": "array",
+                      "description": "List of ratings",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "Rating ID"
+                          },
+                          "uid": {
+                            "type": "string",
+                            "description": "User ID"
+                          },
+                          "rating": {
+                            "type": "integer",
+                            "description": "Rating value (1-5)"
+                          },
+                          "comment": {
+                            "type": "string",
+                            "description": "User comment"
+                          },
+                          "email": {
+                            "type": "string",
+                            "description": "User email"
+                          },
+                          "ts": {
+                            "type": "integer",
+                            "description": "Timestamp"
+                          },
+                          "widget_id": {
+                            "type": "string",
+                            "description": "Widget ID"
+                          }
+                        }
+                      }
+                    },
+                    "aggregate": {
+                      "type": "object",
+                      "description": "Aggregate rating statistics",
+                      "properties": {
+                        "1": {
+                          "type": "integer",
+                          "description": "Number of 1-star ratings"
+                        },
+                        "2": {
+                          "type": "integer",
+                          "description": "Number of 2-star ratings"
+                        },
+                        "3": {
+                          "type": "integer",
+                          "description": "Number of 3-star ratings"
+                        },
+                        "4": {
+                          "type": "integer",
+                          "description": "Number of 4-star ratings"
+                        },
+                        "5": {
+                          "type": "integer",
+                          "description": "Number of 5-star ratings"
+                        },
+                        "avg": {
+                          "type": "number",
+                          "description": "Average rating"
+                        },
+                        "count": {
+                          "type": "integer",
+                          "description": "Total number of ratings"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      },
+      "AppKey": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "app_key"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    },
+    {
+      "AppKey": []
+    }
+  ]
+}

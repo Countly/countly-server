@@ -71,10 +71,7 @@
                     });
                     break;
                 case "send-comment":
-                    var overlay = $("#overlay").clone();
-                    overlay.show();
                     $.when(countlyReporting.send(scope.row._id)).always(function(sendResult) {
-                        overlay.hide();
                         if (sendResult && sendResult.result === "Success") {
                             CountlyHelpers.notify({
                                 message: jQuery.i18n.map["reports.sent"],

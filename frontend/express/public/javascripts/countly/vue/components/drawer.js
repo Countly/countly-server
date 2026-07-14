@@ -60,7 +60,7 @@
                     var classes = {
                         'is-mounted': this.isMounted,
                         'is-open': this.isOpened,
-                        'has-sidecars': this.hasSidecars
+                        'has-sidecars': this.hasSidecars,
                     };
                     // NOTE: currentScreenMode variable seems to be not defined it should be defined or removed
                     classes["cly-vue-drawer--" + this.currentScreenMode + "-screen"] = true;

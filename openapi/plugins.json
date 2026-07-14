@@ -1,0 +1,474 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Plugins API",
+    "description": "API for managing plugins, themes, and system utilities in Countly Server. This includes enabling/disabling plugins, checking installation status, managing themes, and testing email functionality. Note: Authentication failures and missing required parameters typically return HTTP 400 (Bad Request) rather than 401 (Unauthorized), as they are treated as parameter validation errors.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/plugins": {
+      "get": {
+        "summary": "Enable or disable plugins",
+        "description": "Enable or disable plugins in the Countly server. Requires global admin permissions.",
+        "tags": [
+          "Plugin Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "plugin",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing plugin states (plugin_name: true/false). Use plugin code names, not display names.",
+            "schema": {
+              "type": "string",
+              "example": "{\"crashes\":true,\"push\":false,\"star-rating\":true}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plugin update started successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "started"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing required parameters (api_key, app_id), invalid plugin parameter, or update error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Error message describing the validation or update error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/plugins-check": {
+      "get": {
+        "summary": "Check plugin installation status",
+        "description": "Check the current status of plugin installation/updates. Returns 'completed', 'busy', or 'failed'.",
+        "tags": [
+          "Plugin Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plugin status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": ["completed", "busy", "failed"],
+                      "description": "Current plugin installation status"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - requires global admin permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Authentication error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/plugins": {
+      "get": {
+        "summary": "Get list of available plugins",
+        "description": "Retrieve a list of all available plugins with their metadata, including enabled/disabled status.",
+        "tags": [
+          "Plugin Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of plugins retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Plugin"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - requires global admin permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Authentication error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/internal-events": {
+      "get": {
+        "summary": "Get internal events",
+        "description": "Retrieve a list of internal events supported by the system.",
+        "tags": [
+          "System Information"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Internal events retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Array of internal event names"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - requires read permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Authentication error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/themes": {
+      "get": {
+        "summary": "Get available themes",
+        "description": "Retrieve a list of available themes for the frontend.",
+        "tags": [
+          "System Information"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available themes retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Array of theme names"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - requires user authentication",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Authentication error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/email_test": {
+      "get": {
+        "summary": "Send test email",
+        "description": "Send a test email to verify email configuration. Sends email to the requesting user's email address.",
+        "tags": [
+          "System Testing"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test email sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "OK"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - requires global admin permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Authentication error message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable - email sending failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Failed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Plugin": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the plugin is currently enabled"
+          },
+          "code": {
+            "type": "string",
+            "description": "Plugin identifier/code name"
+          },
+          "title": {
+            "type": "string",
+            "description": "Human-readable plugin title"
+          },
+          "name": {
+            "type": "string",
+            "description": "Plugin name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Plugin description"
+          },
+          "version": {
+            "type": "string",
+            "description": "Plugin version"
+          },
+          "author": {
+            "type": "string",
+            "description": "Plugin author"
+          },
+          "homepage": {
+            "type": "string",
+            "description": "Plugin homepage URL"
+          },
+          "cly_dependencies": {
+            "type": "object",
+            "description": "Countly-specific dependencies"
+          },
+          "prepackaged": {
+            "type": "boolean",
+            "description": "Whether the plugin is prepackaged (only present in packaged builds)"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}

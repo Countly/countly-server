@@ -9,17 +9,17 @@
                 <div class="bu-level-left">
                     <div class="bu-level-item">
                         <div class="cly-vue-sidebar__user-info">
-                            <p class="has-ellipsis">{{item.member.full_name}}</p>
-                            <p class="has-ellipsis">{{item.member.email}}</p>
+                            <p class="has-ellipsis">{{member.full_name}}</p>
+                            <p class="has-ellipsis">{{member.email}}</p>
                         </div>
                     </div>
                 </div>
                 <div class="bu-level-right">
                     <div class="bu-level-item">
-                        <div v-if="item.member.image.found"
+                        <div v-if="member.image.found"
                             :class="['cly-vue-sidebar__user-image']"
                             :style="{
-                                backgroundImage: 'url(' + item.member.image.url + ')',
+                                backgroundImage: 'url(' + member.image.url + ')',
                                 backgroundSize: '100%'
                             }">
                         </div>
@@ -27,11 +27,11 @@
                             :class="['cly-vue-sidebar__user-image','bu-is-flex',
                                     'bu-is-align-items-center', 'bu-is-justify-content-center']"
                             :style="{
-                                    backgroundImage: 'url(' + item.member.image.url + ')',
-                                    backgroundPosition: item.member.image.position + 'px',
+                                    backgroundImage: 'url(' + member.image.url + ')',
+                                    backgroundPosition: member.image.position + 'px',
                                     backgroundSize: '600px 60px'
                                 }">
-                            <span class="cly-vue-sidebar__user-initials has-ellipsis">{{item.member.image.initials}}</span>
+                            <span class="cly-vue-sidebar__user-initials has-ellipsis">{{member.image.initials}}</span>
                         </div>
                     </div>
                 </div>
@@ -42,9 +42,9 @@
                         <div class="cly-vue-sidebar__user-api">
                             <p class="has-ellipsis">{{i18nM('sidebar.api_key')}}</p>
                             <p id="user_api_key_item">
-                                <i class="cly-icon-copy cly-icon-btn"  v-clipboard:copy="item.member.api_key" v-clipboard:success="onCopy" v-clipboard:error="onError"></i>
-                                <input :value="item.member.api_key" readonly type="text" onclick="select()" class="has-ellipsis bu-px-0"
-                                    v-clipboard:copy="item.member.api_key"
+                                <i class="cly-icon-copy cly-icon-btn"  v-clipboard:copy="member.api_key" v-clipboard:success="onCopy" v-clipboard:error="onError"></i>
+                                <input :value="member.api_key" readonly type="text" onclick="select()" class="has-ellipsis bu-px-0"
+                                    v-clipboard:copy="member.api_key"
                                     v-clipboard:success="onCopy"
                                     v-clipboard:error="onError"/>
                             </p>
@@ -177,10 +177,10 @@
     </template>
 
     <template v-slot:reference>
-        <div v-if="item.member.image.found"
+        <div v-if="member.image.found"
             :class="['cly-vue-sidebar__user-image']"
             :style="{
-                backgroundImage: 'url(' + item.member.image.url + ')',
+                backgroundImage: 'url(' + member.image.url + ')',
                 backgroundSize: '100%',
                 height: 30 + 'px',
                 width: 30 + 'px'
@@ -190,13 +190,13 @@
             :class="['cly-vue-sidebar__user-image','bu-is-flex',
                     'bu-is-align-items-center', 'bu-is-justify-content-center']"
             :style="{
-                    backgroundImage: 'url(' + item.member.image.url + ')',
-                    backgroundPosition: item.member.image.position + 'px',
+                    backgroundImage: 'url(' + member.image.url + ')',
+                    backgroundPosition: member.image.position + 'px',
                     backgroundSize: '600px 60px',
                     height: 30 + 'px',
                     width: 30 + 'px'
                 }">
-            <span class="cly-vue-sidebar__user-initials has-ellipsis" data-test-id="sidebar-menuoptions-myprofile">{{item.member.image.initials}}</span>
+            <span class="cly-vue-sidebar__user-initials has-ellipsis" data-test-id="sidebar-menuoptions-myprofile">{{member.image.initials}}</span>
         </div>
     </template>
 </el-popover>

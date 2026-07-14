@@ -31,6 +31,7 @@
       </template>
     </el-table-column>
     <el-table-column
+      column-key="popup_header_text"
       data-test-id="ratings-widgets-data-table-widget-name-column"
       fixed
       :label="i18n('feedback.ratings-widget-name')"
@@ -60,6 +61,7 @@
       </template>
     </el-table-column>
     <el-table-column
+      column-key="internalName"
       data-test-id="ratings-widgets-data-table-internal-widget-name-column"
       fixed
       :label="i18n('feedback.ratings-widget-internal-name')"
@@ -80,6 +82,7 @@
     >
       <el-table-column
         v-if="col.value === 'targeting'"
+        column-key="targeting"
         :key="idx"
         :label="i18n('feedback.targeting')"
         min-width="150"
