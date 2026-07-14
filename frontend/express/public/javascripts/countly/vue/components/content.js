@@ -837,7 +837,6 @@
     const CONTENT_DYNAMIC_PARAM_PLACEHOLDER_RE = /^\{([^{}|]+)(?:\|([^{}|]*))?(?:\|(c))?\}$/;
 
     const CONTENT_DYNAMIC_PARAM_NODE_CLASS = 'cly-vue-content-dynamic-params-input__param';
-    const CONTENT_DYNAMIC_PARAMS_PANEL_WIDTH = 440;
     const CONTENT_DYNAMIC_PARAM_NODE_STYLE = 'background: #E1EFFF; color: #0166D6; border-radius: 3px; padding: 0 3px; cursor: pointer;';
     const CONTENT_STATIC_PARAM_NODE_STYLE = 'background: #E2E4E8; color: #383A3F; border-radius: 3px; padding: 0 3px; cursor: pointer;';
 
@@ -885,11 +884,6 @@
                 editingIndex: null,
                 isPanelOpen: false,
                 lastEmittedValue: '',
-                panelPosition: {
-                    left: 8,
-                    maxHeight: 400,
-                    top: 8
-                },
                 property: {
                     fallback: '',
                     isUppercase: false,
@@ -912,24 +906,6 @@
                 }
 
                 return !this.property.value;
-            },
-
-            // the panel floats over the canvas as a fixed-position popover so it
-            // is not constrained by the narrow sidebar width
-            panelStyle() {
-                return {
-                    background: '#FFFFFF',
-                    border: '1px solid #E2E4E8',
-                    borderRadius: '4px',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
-                    left: this.panelPosition.left + 'px',
-                    maxHeight: this.panelPosition.maxHeight + 'px',
-                    overflowY: 'auto',
-                    position: 'fixed',
-                    top: this.panelPosition.top + 'px',
-                    width: CONTENT_DYNAMIC_PARAMS_PANEL_WIDTH + 'px',
-                    zIndex: 1000
-                };
             },
 
             panelTitle() {
@@ -1021,7 +997,7 @@
                 }
 
                 this.resetPanelState();
-                this.openPanel();
+                this.isPanelOpen = true;
             },
 
             onCancel() {
@@ -1105,11 +1081,6 @@
                 this.property.value = value;
             },
 
-            openPanel() {
-                this.positionPanel();
-                this.isPanelOpen = true;
-            },
-
             openPanelForParam(index, pair) {
                 this.resetPanelState();
                 this.editingIndex = index;
@@ -1133,7 +1104,7 @@
                     this.selectedPropertyCategory = 'static';
                 }
 
-                this.openPanel();
+                this.isPanelOpen = true;
             },
 
             parseUrl(url) {
@@ -1146,21 +1117,6 @@
                     hash,
                     params: queryIndex === -1 ? [] : base.slice(queryIndex + 1).split('&').filter(param => param !== ''),
                     path: queryIndex === -1 ? base : base.slice(0, queryIndex)
-                };
-            },
-
-            positionPanel() {
-                const anchor = this.$refs.addButton && this.$refs.addButton.$el ? this.$refs.addButton.$el : this.$el;
-                const rect = anchor.getBoundingClientRect();
-                const viewportWidth = window.innerWidth || rect.right;
-                const viewportHeight = window.innerHeight || 800;
-                const left = Math.max(8, Math.min(rect.right - CONTENT_DYNAMIC_PARAMS_PANEL_WIDTH, viewportWidth - CONTENT_DYNAMIC_PARAMS_PANEL_WIDTH - 8));
-                const top = rect.bottom + 4;
-
-                this.panelPosition = {
-                    left,
-                    maxHeight: Math.max(240, viewportHeight - top - 16),
-                    top
                 };
             },
 

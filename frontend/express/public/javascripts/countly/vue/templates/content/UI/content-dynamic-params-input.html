@@ -28,8 +28,8 @@
   </el-button>
   <div
     v-if="isPanelOpen"
-    class="cly-vue-content-dynamic-params-input__panel bu-p-3"
-    :style="panelStyle"
+    class="cly-vue-content-dynamic-params-input__panel bu-p-3 bu-mt-1"
+    style="background: #FFFFFF; border: 1px solid #E2E4E8; border-radius: 4px;"
     :data-test-id="testId + '-panel'"
   >
     <div class="bu-mb-3 text-medium bu-has-text-weight-medium">
@@ -43,10 +43,11 @@
       :placeholder="i18n('content.dynamic-params.enter-parameter-name')"
       :data-test-id="testId + '-parameter-name-input'"
     />
-    <div class="bu-is-flex bu-is-align-items-center bu-mb-4">
+    <div class="bu-mb-4">
       <el-radio-group
         v-model="selectedPropertyCategory"
         size="small"
+        style="display: flex; flex-wrap: wrap; row-gap: 4px;"
         :data-test-id="testId + '-property-category'"
         @change="onCategoryChange"
       >
@@ -90,7 +91,7 @@
         :placeholder="i18n('content.dynamic-params.select-property')"
         :search-placeholder="i18n('content.dynamic-params.search-in-properties')"
         :value="property.value"
-        :width="380"
+        :width="264"
         :data-test-id="testId + '-property-select'"
         @change="onPropertySelect"
       />
