@@ -6,7 +6,7 @@
     ref="editor"
     class="cly-vue-content-dynamic-params-input__editor"
     spellcheck="false"
-    style="background: #FFFFFF; border: 1px solid #DBDDE1; border-radius: 4px; padding: 5px 12px; min-height: 30px; font-size: 14px; line-height: 20px; color: #383A3F; white-space: nowrap; overflow-x: auto; outline: none;"
+    style="background: #FFFFFF; border: 1px solid #DBDDE1; border-radius: 4px; padding: 5px 12px; min-height: 30px; max-height: 110px; overflow-y: auto; font-size: 14px; line-height: 20px; color: #383A3F; white-space: pre-wrap; word-break: break-all; outline: none;"
     :contenteditable="!disabled"
     :data-test-id="testId + '-url-editor'"
     @click="onEditorClick"
@@ -15,6 +15,7 @@
     @paste="onEditorPaste"
   ></div>
   <el-button
+    ref="addButton"
     class="cly-vue-content-dynamic-params-input__add-button"
     :disabled="disabled"
     icon="cly-io cly-io-plus"
@@ -27,8 +28,8 @@
   </el-button>
   <div
     v-if="isPanelOpen"
-    class="cly-vue-content-dynamic-params-input__panel bu-p-3 bu-mt-1"
-    style="background: #FFFFFF; border: 1px solid #E2E4E8; border-radius: 4px;"
+    class="cly-vue-content-dynamic-params-input__panel bu-p-3"
+    :style="panelStyle"
     :data-test-id="testId + '-panel'"
   >
     <div class="bu-mb-3 text-medium bu-has-text-weight-medium">
@@ -89,7 +90,7 @@
         :placeholder="i18n('content.dynamic-params.select-property')"
         :search-placeholder="i18n('content.dynamic-params.search-in-properties')"
         :value="property.value"
-        :width="264"
+        :width="380"
         :data-test-id="testId + '-property-select'"
         @change="onPropertySelect"
       />
