@@ -2,6 +2,25 @@
   class="cly-vue-content-dynamic-params-input"
   :data-test-id="testId"
 >
+  <div
+    v-if="urlQueryParams.length"
+    class="cly-vue-content-dynamic-params-input__chips bu-mb-2 bu-is-flex bu-is-flex-wrap-wrap"
+    style="gap: 4px;"
+  >
+    <el-tag
+      v-for="(param, index) in urlQueryParams"
+      :key="'content-dynamic-param-' + index"
+      closable
+      size="small"
+      style="cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis;"
+      :type="param.isDynamic ? null : 'info'"
+      :data-test-id="testId + '-param-chip-' + index"
+      @click.native="onParamChipClick(index)"
+      @close="onParamChipRemove(index)"
+    >
+      {{ param.key }}={{ param.rawValue }}
+    </el-tag>
+  </div>
   <el-button
     class="cly-vue-content-dynamic-params-input__add-button"
     :disabled="disabled"
@@ -20,7 +39,7 @@
     :data-test-id="testId + '-panel'"
   >
     <div class="bu-mb-3 text-medium bu-has-text-weight-medium">
-      {{ i18n('content.dynamic-params.add-user-property') }}
+      {{ panelTitle }}
     </div>
     <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.parameter-name') }}</div>
     <el-input
@@ -35,6 +54,7 @@
         v-model="selectedPropertyCategory"
         size="small"
         :data-test-id="testId + '-property-category'"
+        @change="onCategoryChange"
       >
         <el-radio-button
           v-for="item in propertyCategoryOptions"
@@ -45,7 +65,17 @@
         </el-radio-button>
       </el-radio-group>
     </div>
-    <template v-if="selectedPropertyCategory === 'external'">
+    <template v-if="selectedPropertyCategory === 'static'">
+      <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.parameter-value') }}</div>
+      <el-input
+        v-model="property.staticValue"
+        class="bu-mb-4"
+        autocomplete="off"
+        :placeholder="i18n('content.dynamic-params.enter-parameter-value')"
+        :data-test-id="testId + '-static-value-input'"
+      />
+    </template>
+    <template v-else-if="selectedPropertyCategory === 'external'">
       <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.api-property') }}</div>
       <el-input
         class="bu-mb-4"
@@ -71,21 +101,23 @@
         @change="onPropertySelect"
       />
     </template>
-    <el-checkbox
-      v-model="property.isUppercase"
-      class="bu-mb-4"
-      :data-test-id="testId + '-uppercase-checkbox'"
-    >
-      {{ i18n('content.dynamic-params.start-with-capital-letter') }}
-    </el-checkbox>
-    <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.fallback-value') }}</div>
-    <el-input
-      v-model="property.fallback"
-      class="bu-mb-4"
-      autocomplete="off"
-      :placeholder="i18n('content.dynamic-params.enter-fallback-value')"
-      :data-test-id="testId + '-fallback-input'"
-    />
+    <template v-if="selectedPropertyCategory !== 'static'">
+      <el-checkbox
+        v-model="property.isUppercase"
+        class="bu-mb-4"
+        :data-test-id="testId + '-uppercase-checkbox'"
+      >
+        {{ i18n('content.dynamic-params.start-with-capital-letter') }}
+      </el-checkbox>
+      <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.fallback-value') }}</div>
+      <el-input
+        v-model="property.fallback"
+        class="bu-mb-4"
+        autocomplete="off"
+        :placeholder="i18n('content.dynamic-params.enter-fallback-value')"
+        :data-test-id="testId + '-fallback-input'"
+      />
+    </template>
     <div class="bu-is-flex bu-is-justify-content-flex-end">
       <el-button
         size="small"

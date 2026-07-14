@@ -832,13 +832,19 @@
         template: CV.T('/javascripts/countly/vue/templates/content/UI/content-block-list-input.html'),
     }));
 
-    // SER-2915: "Add User Property" popover for URL/deep-link button actions in
-    // the content builder — mirrors the push notifications Add User Property
-    // popover (internal/external property tabs, property selector, capitalize
-    // switch and fallback value) plus a parameter name input. Confirming
-    // appends a visible `name={property|fallback|c}` query parameter to the
-    // action URL, which is resolved per targeted user when the content is
-    // served.
+    // SER-2915: matches a full `{property|fallback|c}` placeholder value —
+    // fallback may be empty ({property||c}), so the flag segment is unambiguous.
+    const CONTENT_DYNAMIC_PARAM_PLACEHOLDER_RE = /^\{([^{}|]+)(?:\|([^{}|]*))?(?:\|(c))?\}$/;
+
+    // SER-2915: parameter editor popover for URL/deep-link button actions in the
+    // content builder — mirrors the push notifications Add User Property popover
+    // (internal/external property tabs, property selector, capitalize switch and
+    // fallback value) plus a parameter name input and a static value mode.
+    // Confirming appends a `name={property|fallback|c}` (or `name=value`) query
+    // parameter to the action URL; placeholders are resolved per targeted user
+    // when the content is served. Every query parameter already present in the
+    // URL is rendered as a highlighted chip that reopens the popover pre-filled
+    // for editing, or removes the parameter via its close icon.
     Vue.component('cly-content-dynamic-params-input', countlyVue.components.create({
         props: {
             disabled: {
@@ -870,11 +876,13 @@
 
         data() {
             return {
+                editingIndex: null,
                 isPanelOpen: false,
                 property: {
                     fallback: '',
                     isUppercase: false,
                     key: '',
+                    staticValue: '',
                     value: ''
                 },
                 selectedPropertyCategory: 'internal'
@@ -883,45 +891,102 @@
 
         computed: {
             isConfirmDisabled() {
-                return !this.property.value || !this.property.key.trim();
+                if (!this.property.key.trim()) {
+                    return true;
+                }
+
+                if (this.selectedPropertyCategory === 'static') {
+                    return !this.property.staticValue.trim();
+                }
+
+                return !this.property.value;
+            },
+
+            panelTitle() {
+                return this.editingIndex === null ?
+                    this.i18n('content.dynamic-params.add-user-property') :
+                    this.i18n('content.dynamic-params.edit-parameter');
             },
 
             propertyCategoryOptions() {
                 return [
                     { label: this.i18n('content.dynamic-params.internal-properties'), value: 'internal' },
-                    { label: this.i18n('content.dynamic-params.external-properties'), value: 'external' }
+                    { label: this.i18n('content.dynamic-params.external-properties'), value: 'external' },
+                    { label: this.i18n('content.dynamic-params.static-value'), value: 'static' }
                 ];
-            }
-        },
+            },
 
-        watch: {
-            selectedPropertyCategory() {
-                this.property.value = '';
+            // query parameters currently present in the URL, each rendered as a
+            // clickable chip; isDynamic marks `{property|fallback|c}` placeholders
+            urlQueryParams() {
+                return this.parseUrl(this.value || '').params.map((pair) => {
+                    const eqIndex = pair.indexOf('=');
+                    const rawKey = eqIndex === -1 ? pair : pair.slice(0, eqIndex);
+                    const rawValue = eqIndex === -1 ? '' : pair.slice(eqIndex + 1);
+
+                    return {
+                        isDynamic: CONTENT_DYNAMIC_PARAM_PLACEHOLDER_RE.test(rawValue),
+                        key: this.safeDecode(rawKey),
+                        rawValue
+                    };
+                });
             }
         },
 
         methods: {
-            // appends `name={property}` as a query parameter, keeping any hash
-            // fragment at the end and picking the right ?/& separator
-            appendQueryParam(url, pair) {
-                const hashIndex = url.indexOf('#');
-                const hash = hashIndex === -1 ? '' : url.slice(hashIndex);
-                const base = hashIndex === -1 ? url : url.slice(0, hashIndex);
-                let separator = base.indexOf('?') === -1 ? '?' : '&';
-
-                if (base.endsWith('?') || base.endsWith('&')) {
-                    separator = '';
+            buildParamValue() {
+                if (this.selectedPropertyCategory === 'static') {
+                    return encodeURIComponent(this.property.staticValue.trim());
                 }
 
-                return base + separator + pair + hash;
+                // reserved characters would break placeholder/query string parsing
+                const fallback = this.property.fallback.replace(/[{}|&=?#]/g, '');
+                let placeholder = '{' + this.property.value;
+
+                if (fallback || this.property.isUppercase) {
+                    placeholder += '|' + fallback;
+                }
+
+                if (this.property.isUppercase) {
+                    placeholder += '|c';
+                }
+
+                return placeholder + '}';
+            },
+
+            buildUrl(parsed) {
+                return parsed.path + (parsed.params.length ? '?' + parsed.params.join('&') : '') + parsed.hash;
+            },
+
+            findPropertyOption(value) {
+                for (let i = 0; i < (this.options || []).length; i++) {
+                    const found = (this.options[i].options || []).find(option => option.value === value);
+
+                    if (found) {
+                        return found;
+                    }
+                }
+
+                return null;
             },
 
             onAddButtonClick() {
-                this.isPanelOpen = !this.isPanelOpen;
+                if (this.isPanelOpen) {
+                    this.resetPanel();
+                    return;
+                }
+
+                this.resetPanelState();
+                this.isPanelOpen = true;
             },
 
             onCancel() {
                 this.resetPanel();
+            },
+
+            onCategoryChange() {
+                this.property.staticValue = '';
+                this.property.value = '';
             },
 
             onConfirm() {
@@ -929,37 +994,110 @@
                     return;
                 }
 
-                let placeholder = '{' + this.property.value;
+                const pair = encodeURIComponent(this.property.key.trim()) + '=' + this.buildParamValue();
+                const parsed = this.parseUrl(this.value || '');
 
-                if (this.property.fallback || this.property.isUppercase) {
-                    placeholder += '|' + this.property.fallback;
+                if (this.editingIndex !== null && this.editingIndex < parsed.params.length) {
+                    parsed.params[this.editingIndex] = pair;
+                }
+                else {
+                    parsed.params.push(pair);
                 }
 
-                if (this.property.isUppercase) {
-                    placeholder += '|c';
-                }
-
-                placeholder += '}';
-
-                const pair = encodeURIComponent(this.property.key.trim()) + '=' + placeholder;
-
-                this.$emit('input', this.appendQueryParam(this.value || '', pair));
+                this.$emit('input', this.buildUrl(parsed));
                 this.resetPanel();
+            },
+
+            onParamChipClick(index) {
+                if (this.disabled) {
+                    return;
+                }
+
+                const param = this.urlQueryParams[index];
+
+                if (!param) {
+                    return;
+                }
+
+                this.resetPanelState();
+                this.editingIndex = index;
+                this.property.key = param.key;
+
+                const match = param.rawValue.match(CONTENT_DYNAMIC_PARAM_PLACEHOLDER_RE);
+
+                if (match) {
+                    this.property.value = match[1];
+                    this.property.fallback = match[2] || '';
+                    this.property.isUppercase = !!match[3];
+                    this.selectedPropertyCategory = this.findPropertyOption(match[1]) ? 'internal' : 'external';
+                }
+                else {
+                    this.property.staticValue = this.safeDecode(param.rawValue);
+                    this.selectedPropertyCategory = 'static';
+                }
+
+                this.isPanelOpen = true;
+            },
+
+            onParamChipRemove(index) {
+                if (this.disabled) {
+                    return;
+                }
+
+                const parsed = this.parseUrl(this.value || '');
+
+                parsed.params.splice(index, 1);
+                this.$emit('input', this.buildUrl(parsed));
+
+                if (this.editingIndex === index) {
+                    this.resetPanel();
+                }
+                else if (this.editingIndex !== null && this.editingIndex > index) {
+                    this.editingIndex -= 1;
+                }
             },
 
             onPropertySelect(value) {
                 this.property.value = value;
             },
 
+            parseUrl(url) {
+                const hashIndex = url.indexOf('#');
+                const hash = hashIndex === -1 ? '' : url.slice(hashIndex);
+                const base = hashIndex === -1 ? url : url.slice(0, hashIndex);
+                const queryIndex = base.indexOf('?');
+
+                return {
+                    hash,
+                    params: queryIndex === -1 ? [] : base.slice(queryIndex + 1).split('&').filter(param => param !== ''),
+                    path: queryIndex === -1 ? base : base.slice(0, queryIndex)
+                };
+            },
+
             resetPanel() {
+                this.resetPanelState();
                 this.isPanelOpen = false;
+            },
+
+            resetPanelState() {
+                this.editingIndex = null;
                 this.selectedPropertyCategory = 'internal';
                 this.property = {
                     fallback: '',
                     isUppercase: false,
                     key: '',
+                    staticValue: '',
                     value: ''
                 };
+            },
+
+            safeDecode(value) {
+                try {
+                    return decodeURIComponent(value);
+                }
+                catch (error) {
+                    return value;
+                }
             }
         },
 
