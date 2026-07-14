@@ -3,24 +3,17 @@
   :data-test-id="testId"
 >
   <div
-    v-if="urlQueryParams.length"
-    class="cly-vue-content-dynamic-params-input__chips bu-mb-2 bu-is-flex bu-is-flex-wrap-wrap"
-    style="gap: 4px;"
-  >
-    <el-tag
-      v-for="(param, index) in urlQueryParams"
-      :key="'content-dynamic-param-' + index"
-      closable
-      size="small"
-      style="cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis;"
-      :type="param.isDynamic ? null : 'info'"
-      :data-test-id="testId + '-param-chip-' + index"
-      @click.native="onParamChipClick(index)"
-      @close="onParamChipRemove(index)"
-    >
-      {{ param.key }}={{ param.rawValue }}
-    </el-tag>
-  </div>
+    ref="editor"
+    class="cly-vue-content-dynamic-params-input__editor"
+    spellcheck="false"
+    style="background: #FFFFFF; border: 1px solid #DBDDE1; border-radius: 4px; padding: 5px 12px; min-height: 30px; font-size: 14px; line-height: 20px; color: #383A3F; white-space: nowrap; overflow-x: auto; outline: none;"
+    :contenteditable="!disabled"
+    :data-test-id="testId + '-url-editor'"
+    @click="onEditorClick"
+    @input="onEditorInput"
+    @keydown.enter.prevent
+    @paste="onEditorPaste"
+  ></div>
   <el-button
     class="cly-vue-content-dynamic-params-input__add-button"
     :disabled="disabled"
@@ -118,24 +111,37 @@
         :data-test-id="testId + '-fallback-input'"
       />
     </template>
-    <div class="bu-is-flex bu-is-justify-content-flex-end">
+    <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-space-between">
       <el-button
+        v-if="editingIndex !== null"
         size="small"
-        type="default"
-        :data-test-id="testId + '-cancel-button'"
-        @click="onCancel"
+        style="color: #D23F00;"
+        type="text"
+        :data-test-id="testId + '-remove-button'"
+        @click="onRemoveParam"
       >
-        {{ i18n('common.cancel') }}
+        {{ i18n('content.dynamic-params.remove') }}
       </el-button>
-      <el-button
-        size="small"
-        type="success"
-        :disabled="isConfirmDisabled"
-        :data-test-id="testId + '-confirm-button'"
-        @click="onConfirm"
-      >
-        {{ i18n('content.dynamic-params.confirm') }}
-      </el-button>
+      <div v-else></div>
+      <div>
+        <el-button
+          size="small"
+          type="default"
+          :data-test-id="testId + '-cancel-button'"
+          @click="onCancel"
+        >
+          {{ i18n('common.cancel') }}
+        </el-button>
+        <el-button
+          size="small"
+          type="success"
+          :disabled="isConfirmDisabled"
+          :data-test-id="testId + '-confirm-button'"
+          @click="onConfirm"
+        >
+          {{ i18n('content.dynamic-params.confirm') }}
+        </el-button>
+      </div>
     </div>
   </div>
 </div>
