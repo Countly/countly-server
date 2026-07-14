@@ -1,6 +1,6 @@
 ## Version 24.05.xx
 Enterprise Fixes:
-- [data-manager] Fixed bug in event and view transformations occasionally not applying to incoming data
+- [data-manager] Fixed bug where event and view transformations occasionally failed to apply to incoming data
 
 ## Version 24.05.50
 Security Fixes (backport of #7535 — bug-bounty-style hardening pass):
