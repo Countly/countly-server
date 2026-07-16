@@ -1,3 +1,8 @@
+## Version 25.03.xx
+Enterprise Features:
+- [journey_engine] dynamic parameter support in deeplinks
+- [journey_engine] dark mode support
+
 ## Version 25.03.49
 Fixes:
 - [journey_engine] Added user merge handling: running journeys are remapped to the surviving user, keeping the furthest-progressed instance and stopping duplicates
