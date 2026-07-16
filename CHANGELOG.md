@@ -1,7 +1,6 @@
 ## Version 25.03.xx
 Enterprise Features:
 - [journey_engine] dynamic parameter support in deeplinks
-- [journey_engine] dark mode support
 
 ## Version 25.03.49
 Fixes:
