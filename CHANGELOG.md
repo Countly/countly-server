@@ -1,3 +1,10 @@
+## Version 25.03.xx
+Fixes:
+- [star-rating] Fix custom widget logo resolving to the wrong path (mis-detected as the global app logo) after editing a widget
+
+Enterprise Fixes: 
+- [data-manager] Fixed bug where event and view transformations occasionally failed to apply to incoming data
+
 ## Version 25.03.49
 Fixes:
 - [journey_engine] Added user merge handling: running journeys are remapped to the surviving user, keeping the furthest-progressed instance and stopping duplicates

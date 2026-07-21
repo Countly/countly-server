@@ -2417,6 +2417,9 @@
 
             var tmpNumber = "";
 
+            if (!isFinite(number)) {
+                return number + "";
+            }
             if (number >= 1000000000 || number <= -1000000000) {
                 tmpNumber = ((number / 1000000000).toFixed(1).replace(".0", "")) + "B";
             }
