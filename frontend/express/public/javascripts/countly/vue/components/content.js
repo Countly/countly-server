@@ -964,11 +964,12 @@
                 return parsed.path + (parsed.params.length ? '?' + parsed.params.join('&') : '') + parsed.hash;
             },
 
-            createParamNode(pair) {
-                const eqIndex = pair.indexOf('=');
-                const rawValue = eqIndex === -1 ? '' : pair.slice(eqIndex + 1);
-                const isDynamic = CONTENT_DYNAMIC_PARAM_PLACEHOLDER_RE.test(rawValue);
-                const node = document.createElement('span');
+createParamNode(pair) {
+    const eqIndex = pair.indexOf('=');
+    const rawValue = eqIndex === -1 ? '' : pair.slice(eqIndex + 1);
+    const decodedValue = this.safeDecode(rawValue);
+    const isDynamic = CONTENT_DYNAMIC_PARAM_PLACEHOLDER_RE.test(decodedValue);
+    const node = document.createElement('span');
 
                 node.textContent = pair;
                 node.setAttribute('contenteditable', 'false');
