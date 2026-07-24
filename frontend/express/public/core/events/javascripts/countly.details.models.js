@@ -10,7 +10,7 @@
             var dur = 0;
             for (var i = 0; i < chartData.length; i++) {
                 graphData[0].push(chartData[i].c ? chartData[i].c : 0);
-                graphData[1].push(chartData[i].s ? chartData[i].s : 0);
+                graphData[1].push(chartData[i].s ? parseFloat(chartData[i].s.toFixed(2)) : 0);
                 let avgDur = (chartData[i].dur || 0) / (chartData[i].c || 1);
                 graphData[2].push(avgDur < 0.1 ? 0 : avgDur);
                 if (chartData[i].c) {
@@ -139,7 +139,7 @@
             var maxLength = eventData.chartData.length > 15 ? 15 : eventData.chartData.length;
             for (var i = 0; i < maxLength; i++) {
                 arrCount.push(eventData.chartData[i].c);
-                arrSum.push(eventData.chartData[i].s);
+                arrSum.push(eventData.chartData[i].s ? parseFloat(eventData.chartData[i].s.toFixed(2)) : eventData.chartData[i].s);
                 arrDuration.push(eventData.chartData[i].dur / (eventData.chartData[i].c || 1));
 
                 xAxisData.push(typeof eventData.chartData[i].curr_segment === 'string' ? countlyAllEvents.helpers.decode(eventData.chartData[i].curr_segment) : eventData.chartData[i].curr_segment);
