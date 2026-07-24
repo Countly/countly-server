@@ -1,6 +1,7 @@
 ## Version 25.03.xx
 Enterprise Features:
 - [journey_engine] dynamic parameter support in deeplinks
+
 ## Version 25.03.50
 Fixes:
 - [star-rating] Fix custom widget logo resolving to the wrong path (mis-detected as the global app logo) after editing a widget
