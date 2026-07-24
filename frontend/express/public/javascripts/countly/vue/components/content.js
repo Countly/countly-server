@@ -957,7 +957,7 @@
                     placeholder += '|c';
                 }
 
-                return placeholder + '}';
+                return encodeURIComponent(placeholder + '}');
             },
 
             buildUrl(parsed) {
