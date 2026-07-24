@@ -1077,9 +1077,11 @@
                 this.resetPanel();
             },
 
-            onPropertySelect(value) {
-                this.property.value = value;
-            },
+onPropertySelect(value) {
+    const sanitized = (value === null || value === undefined) ? '' : String(value);
+    // reserved characters would break placeholder/query string parsing
+    this.property.value = sanitized.replace(/[{}|&=?#]/g, '');
+},
 
             openPanelForParam(index, pair) {
                 this.resetPanelState();
