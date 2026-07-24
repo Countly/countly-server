@@ -38,7 +38,7 @@
     "nyc": "18.0.0",
     "should": "13.2.3",
     "supertest": "7.2.2",
-    "typescript": "^6.0.2"
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "all-the-cities": "3.1.0",
@@ -60,7 +60,7 @@
     "ejs": "5.0.2",
     "errorhandler": "1.5.2",
     "express": "4.22.2",
-    "express-rate-limit": "8.5.2",
+    "express-rate-limit": "8.6.0",
     "express-session": "1.19.0",
     "form-data": "^4.0.0",
     "formidable": "2.1.3",
@@ -86,7 +86,7 @@
     "mcc-mnc-list": "1.1.11",
     "method-override": "3.0.0",
     "moment": "2.30.1",
-    "moment-timezone": "0.6.2",
+    "moment-timezone": "0.6.3",
     "mongodb": "6.20.0",
     "mongodb-connection-string-url": "^7.0.1",
     "nginx-conf": "2.1.0",
@@ -96,7 +96,7 @@
     "properties-parser": "0.6.0",
     "puppeteer": "^24.6.1",
     "rate-limiter-flexible": "^11.0.0",
-    "sass": "1.101.0",
+    "sass": "1.101.3",
     "semver": "^7.7.1",
     "sharp": "^0.35.0",
     "sqlite3": "^5.1.7",
