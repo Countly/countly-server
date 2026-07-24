@@ -2431,7 +2431,7 @@
             }
             else if (number >= 0.1 || number <= -0.1) {
                 number += "";
-                tmpNumber = number.replace(".0", "");
+                tmpNumber = number.replace(/\.0$/, "");
             }
             else {
                 tmpNumber = number + "";

@@ -1,3 +1,7 @@
+## Version 25.03.xx
+Fixes:
+- [events] Fix sum chart tooltip displaying the raw floating-point value instead of a rounded number
+
 ## Version 25.03.50
 Fixes:
 - [star-rating] Fix custom widget logo resolving to the wrong path (mis-detected as the global app logo) after editing a widget
