@@ -1092,20 +1092,21 @@ onPropertySelect(value) {
                 const rawKey = eqIndex === -1 ? pair : pair.slice(0, eqIndex);
                 const rawValue = eqIndex === -1 ? '' : pair.slice(eqIndex + 1);
 
-                this.property.key = this.safeDecode(rawKey);
+this.property.key = this.safeDecode(rawKey);
 
-                const match = rawValue.match(CONTENT_DYNAMIC_PARAM_PLACEHOLDER_RE);
+const decodedValue = this.safeDecode(rawValue);
+const match = decodedValue.match(CONTENT_DYNAMIC_PARAM_PLACEHOLDER_RE);
 
-                if (match) {
-                    this.property.value = match[1];
-                    this.property.fallback = match[2] || '';
-                    this.property.isUppercase = !!match[3];
-                    this.selectedPropertyCategory = this.findPropertyOption(match[1]) ? 'internal' : 'external';
-                }
-                else {
-                    this.property.staticValue = this.safeDecode(rawValue);
-                    this.selectedPropertyCategory = 'static';
-                }
+if (match) {
+    this.property.value = match[1];
+    this.property.fallback = match[2] || '';
+    this.property.isUppercase = !!match[3];
+    this.selectedPropertyCategory = this.findPropertyOption(match[1]) ? 'internal' : 'external';
+}
+else {
+    this.property.staticValue = decodedValue;
+    this.selectedPropertyCategory = 'static';
+}
 
                 this.isPanelOpen = true;
             },
