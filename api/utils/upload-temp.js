@@ -31,19 +31,6 @@ const path = require('path');
 const DEFAULT_DIR_NAME = 'countly-uploads';
 
 /**
- * Every endpoint that consumes params.files lives under /i, so a multipart file
- * is only ever useful there. Nothing under /o accepts an upload.
- */
-const MULTIPART_ROOT = /^\/i(\/|$)/;
-
-/**
- * Raw application/octet-stream bodies are only consumed by symbol uploads,
- * which is also why api/api.js buffers those requests differently. Everywhere
- * else an octet-stream body is never read as a file, so it must not create one.
- */
-const RAW_UPLOAD_PATHS = /^\/i\/crash_symbols\/(add_symbol|upload_symbol|edit_symbol)(\/|$)/;
-
-/**
  * Directory the temp files are expected to live in. Used to make sure
  * discardUploads only ever removes a file formidable itself created.
  */
@@ -65,7 +52,37 @@ function normalizePath(url, installPath) {
         reqPath = reqPath.substring(installPath.length) || '/';
     }
 
+    //so that /i and /i/ are the same path
+    if (reqPath.length > 1 && reqPath.charAt(reqPath.length - 1) === '/') {
+        reqPath = reqPath.substring(0, reqPath.length - 1);
+    }
+
     return reqPath;
+}
+
+/**
+ * Find the declaration a plugin registered for this path, if any.
+ *
+ * Matching is exact: a declaration for /i must not let /i/anything through,
+ * otherwise declaring the SDK write endpoint would reopen the whole /i tree.
+ * @param {Array} uploadPaths - plugins.uploadPaths
+ * @param {string} reqPath - normalized request path
+ * @returns {object|null} the declaration, or null when uploads are not allowed
+ */
+function findDeclaration(uploadPaths, reqPath) {
+    if (!Array.isArray(uploadPaths) || !reqPath) {
+        return null;
+    }
+
+    for (let i = 0; i < uploadPaths.length; i++) {
+        const entry = uploadPaths[i];
+        const declared = (typeof entry === 'string') ? entry : (entry && entry.path);
+        if (declared && declared === reqPath) {
+            return (typeof entry === 'string') ? {path: entry} : entry;
+        }
+    }
+
+    return null;
 }
 
 /**
@@ -82,19 +99,20 @@ function normalizePath(url, installPath) {
  * bodies still populate params.qstring exactly as before.
  * @param {string} url - request url, query string included
  * @param {string} [installPath] - installation subpath (common.config.path)
+ * @param {Array} [uploadPaths] - plugins.uploadPaths, the declared upload paths
  * @returns {object} options to merge into the IncomingForm options
  */
-function parseOptions(url, installPath) {
-    const reqPath = normalizePath(url, installPath);
+function parseOptions(url, installPath, uploadPaths) {
+    const declaration = findDeclaration(uploadPaths, normalizePath(url, installPath));
     const options = {};
 
-    if (!MULTIPART_ROOT.test(reqPath)) {
+    if (!declaration) {
         options.filter = function() {
             return false;
         };
     }
 
-    if (!RAW_UPLOAD_PATHS.test(reqPath)) {
+    if (!declaration || !declaration.raw) {
         options.enabledPlugins = ['querystring', 'multipart', 'json'];
     }
 

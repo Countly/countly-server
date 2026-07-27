@@ -23,7 +23,6 @@ const fs = require('fs');
 var countlyFs = require('./countlyFs.js');
 var path = require('path');
 var ssrfProtection = require('./ssrf-protection.js');
-var uploadTemp = require('./upload-temp.js');
 const validateUserForWriteAPI = validateUser;
 const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
@@ -1558,9 +1557,6 @@ const processRequest = (params) => {
                 params.user = {};
 
                 if (!params.qstring.app_key || !params.qstring.device_id) {
-                    //rejected before dispatch, so nothing can be reading a file
-                    //parsed out of this request body
-                    uploadTemp.discardUploads(params);
                     common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
                     return false;
                 }
@@ -3027,9 +3023,6 @@ const processRequest = (params) => {
                 params.user = {};
 
                 if (!params.qstring.app_key || !params.qstring.device_id) {
-                    //rejected before dispatch, so nothing can be reading a file
-                    //parsed out of this request body
-                    uploadTemp.discardUploads(params);
                     common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
                     return false;
                 }
@@ -3053,9 +3046,6 @@ const processRequest = (params) => {
                 params.user = {};
 
                 if (!params.qstring.app_key || !params.qstring.device_id) {
-                    //rejected before dispatch, so nothing can be reading a file
-                    //parsed out of this request body
-                    uploadTemp.discardUploads(params);
                     common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
                     return false;
                 }
@@ -3182,9 +3172,6 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        //no handler took the request, so nothing claimed a file
-                        //parsed out of its body
-                        uploadTemp.discardUploads(params);
                         common.returnMessage(params, 400, 'Invalid path');
                     }
                 }

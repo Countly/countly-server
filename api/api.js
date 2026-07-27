@@ -28,12 +28,9 @@ common.processRequest = processRequest;
 // OS temp directory
 const uploadDir = uploadTemp.resolveUploadDir(countlyConfig.api);
 
-// An SDK write rejected for a bad app key or a failed checksum is cancelled
-// before it is dispatched, so any file parsed out of its body can never be
-// claimed by a handler and is safe to remove here
-plugins.register("/sdk/cancel", function(ob) {
-    uploadTemp.discardUploads(ob.params);
-});
+// Core endpoints that read params.files. Plugins declare their own.
+plugins.uploadPaths.push({path: "/i/apps/create"});
+plugins.uploadPaths.push({path: "/i/apps/update"});
 
 if (cluster.isMaster) {
     console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
@@ -499,9 +496,26 @@ function handleRequest(req, res) {
             formidableOptions.uploadDir = uploadDir;
         }
         // The body is parsed before the request is routed or authorized, so
-        // without this a POST to a path that never reads a file would still
-        // have its body written to disk, with nothing left to claim it
-        Object.assign(formidableOptions, uploadTemp.parseOptions(req.url, common.config && common.config.path));
+        // uploads are refused unless a plugin declared that this exact path
+        // reads params.files
+        Object.assign(formidableOptions, uploadTemp.parseOptions(req.url, common.config && common.config.path, plugins.uploadPaths));
+
+        // Whatever did get written is removed once the response is done with.
+        // 'close' matters as well as 'finish': an upload aborted mid-stream
+        // leaves a partial file that 'finish' never sees. Handlers that consume
+        // an upload unlink it themselves; this only catches what they did not,
+        // which is every request rejected before reaching a handler at all.
+        /**
+         * Remove any upload temp file the handlers did not consume
+         * @returns {void}
+         */
+        const discardOnce = () => {
+            res.removeListener('finish', discardOnce);
+            res.removeListener('close', discardOnce);
+            uploadTemp.discardUploads(params);
+        };
+        res.on('finish', discardOnce);
+        res.on('close', discardOnce);
 
         const form = new formidable.IncomingForm(formidableOptions);
         if (/crash_symbols\/(add_symbol|upload_symbol)/.test(req.url)) {

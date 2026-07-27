@@ -7,6 +7,26 @@ var uploadTemp = require("../../api/utils/upload-temp");
 // These tests exercise pure path logic and a temp directory created under the
 // OS temp directory, so they touch no request handling and no database.
 describe("upload temp file handling", function() {
+    // stands in for plugins.uploadPaths — what core and the plugins declare
+    var REGISTERED = [
+        {path: "/i"}, // users: SDK user_details picture
+        {path: "/i/apps/create"},
+        {path: "/i/apps/update"},
+        {path: "/i/feedback/upload"},
+        {path: "/i/feedback/logo"},
+        {path: "/i/surveys/create"},
+        {path: "/i/surveys/edit"},
+        {path: "/i/whitelabeling/upload"},
+        {path: "/i/content/asset-upload"},
+        {path: "/i/cohorts/add_users"},
+        {path: "/i/license/upload"},
+        {path: "/i/import"},
+        {path: "/i/data-manager/import-schema"},
+        {path: "/i/crash_symbols/add_symbol", raw: true},
+        {path: "/i/crash_symbols/upload_symbol", raw: true},
+        {path: "/i/crash_symbols/edit_symbol", raw: true}
+    ];
+
     /**
      * Whether these options allow a multipart part to be written to disk
      * @param {object} opts - options returned by parseOptions
@@ -44,14 +64,14 @@ describe("upload temp file handling", function() {
                 "/i/import",
                 "/i/data-manager/import-schema"
             ].forEach(function(url) {
-                allowsMultipart(uploadTemp.parseOptions(url)).should.equal(true, url + " must allow uploads");
+                allowsMultipart(uploadTemp.parseOptions(url, undefined, REGISTERED)).should.equal(true, url + " must allow uploads");
             });
         });
 
         it("refuses uploads on read endpoints, which never consume a file", function() {
-            allowsMultipart(uploadTemp.parseOptions("/o")).should.equal(false);
-            allowsMultipart(uploadTemp.parseOptions("/o/apps")).should.equal(false);
-            allowsMultipart(uploadTemp.parseOptions("/o/export")).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/o", undefined, REGISTERED)).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/o/apps", undefined, REGISTERED)).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/o/export", undefined, REGISTERED)).should.equal(false);
         });
 
         it("refuses uploads on paths no handler serves", function() {
@@ -63,32 +83,64 @@ describe("upload temp file handling", function() {
                 "/.env",
                 "/wp-login.php"
             ].forEach(function(url) {
-                allowsMultipart(uploadTemp.parseOptions(url)).should.equal(false, url + " must refuse uploads");
+                allowsMultipart(uploadTemp.parseOptions(url, undefined, REGISTERED)).should.equal(false, url + " must refuse uploads");
             });
         });
 
+        it("refuses unregistered paths under /i (deny by default)", function() {
+            [
+                "/i/apps",
+                "/i/apps/delete",
+                "/i/apps/reset",
+                "/i/bulk",
+                "/i/users/create",
+                "/i/cohorts/add",
+                "/i/crash_symbols",
+                "/i/whatever",
+                "/i/import/nested"
+            ].forEach(function(url) {
+                allowsMultipart(uploadTemp.parseOptions(url, undefined, REGISTERED))
+                    .should.equal(false, url + " is not declared and must refuse uploads");
+            });
+        });
+
+        it("matches declared paths exactly, so /i does not open the /i tree", function() {
+            allowsMultipart(uploadTemp.parseOptions("/i", undefined, REGISTERED)).should.equal(true);
+            allowsMultipart(uploadTemp.parseOptions("/i/", undefined, REGISTERED)).should.equal(true);
+            allowsMultipart(uploadTemp.parseOptions("/i/anything", undefined, REGISTERED)).should.equal(false);
+        });
+
+        it("refuses everything when no plugin declared anything", function() {
+            allowsMultipart(uploadTemp.parseOptions("/i/apps/update", undefined, [])).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/i/apps/update", undefined, undefined)).should.equal(false);
+        });
+
+        it("accepts a bare string declaration as well as an object", function() {
+            allowsMultipart(uploadTemp.parseOptions("/i/thing", undefined, ["/i/thing"])).should.equal(true);
+        });
+
         it("does not match paths that merely start with i", function() {
-            allowsMultipart(uploadTemp.parseOptions("/iffy")).should.equal(false);
-            allowsMultipart(uploadTemp.parseOptions("/index.php")).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/iffy", undefined, REGISTERED)).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/index.php", undefined, REGISTERED)).should.equal(false);
         });
 
         it("ignores the query string", function() {
-            allowsMultipart(uploadTemp.parseOptions("/i?app_key=x&device_id=y")).should.equal(true);
-            allowsMultipart(uploadTemp.parseOptions("/crowd/x?a=/i")).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/i?app_key=x&device_id=y", undefined, REGISTERED)).should.equal(true);
+            allowsMultipart(uploadTemp.parseOptions("/crowd/x?a=/i", undefined, REGISTERED)).should.equal(false);
         });
 
         it("honours a subdirectory installation path", function() {
-            allowsMultipart(uploadTemp.parseOptions("/countly/i/apps/update", "/countly")).should.equal(true);
-            allowsMultipart(uploadTemp.parseOptions("/countly/i", "/countly")).should.equal(true);
-            allowsMultipart(uploadTemp.parseOptions("/countly/crowd/admin", "/countly")).should.equal(false);
-            allowsMultipart(uploadTemp.parseOptions("/countly", "/countly")).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/countly/i/apps/update", "/countly", REGISTERED)).should.equal(true);
+            allowsMultipart(uploadTemp.parseOptions("/countly/i", "/countly", REGISTERED)).should.equal(true);
+            allowsMultipart(uploadTemp.parseOptions("/countly/crowd/admin", "/countly", REGISTERED)).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/countly", "/countly", REGISTERED)).should.equal(false);
             // a prefix that only looks similar must not be stripped
-            allowsMultipart(uploadTemp.parseOptions("/countlyx/i/apps/update", "/countly")).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/countlyx/i/apps/update", "/countly", REGISTERED)).should.equal(false);
         });
 
         it("handles a missing or empty url", function() {
-            allowsMultipart(uploadTemp.parseOptions(undefined)).should.equal(false);
-            allowsMultipart(uploadTemp.parseOptions("")).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions(undefined, undefined, REGISTERED)).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("", undefined, REGISTERED)).should.equal(false);
         });
 
         it("rejects every part when refusing uploads", function() {
@@ -99,9 +151,9 @@ describe("upload temp file handling", function() {
 
     describe("parseOptions - raw octet-stream", function() {
         it("allows raw bodies only where they are read as files", function() {
-            allowsRaw(uploadTemp.parseOptions("/i/crash_symbols/add_symbol")).should.equal(true);
-            allowsRaw(uploadTemp.parseOptions("/i/crash_symbols/upload_symbol")).should.equal(true);
-            allowsRaw(uploadTemp.parseOptions("/i/crash_symbols/edit_symbol")).should.equal(true);
+            allowsRaw(uploadTemp.parseOptions("/i/crash_symbols/add_symbol", undefined, REGISTERED)).should.equal(true);
+            allowsRaw(uploadTemp.parseOptions("/i/crash_symbols/upload_symbol", undefined, REGISTERED)).should.equal(true);
+            allowsRaw(uploadTemp.parseOptions("/i/crash_symbols/edit_symbol", undefined, REGISTERED)).should.equal(true);
         });
 
         it("refuses raw bodies everywhere else, including other upload endpoints", function() {
@@ -112,10 +164,11 @@ describe("upload temp file handling", function() {
                 "/i/import",
                 "/i/crash_symbols",
                 "/i/crash_symbols/other",
+                "/i/cohorts/add_users",
                 "/o",
                 "/crowd/admin/uploadplugin.action"
             ].forEach(function(url) {
-                allowsRaw(uploadTemp.parseOptions(url)).should.equal(false, url + " must refuse raw bodies");
+                allowsRaw(uploadTemp.parseOptions(url, undefined, REGISTERED)).should.equal(false, url + " must refuse raw bodies");
             });
         });
 
@@ -128,8 +181,8 @@ describe("upload temp file handling", function() {
         });
 
         it("honours a subdirectory installation path", function() {
-            allowsRaw(uploadTemp.parseOptions("/countly/i/crash_symbols/add_symbol", "/countly")).should.equal(true);
-            allowsRaw(uploadTemp.parseOptions("/countly/i/apps/update", "/countly")).should.equal(false);
+            allowsRaw(uploadTemp.parseOptions("/countly/i/crash_symbols/add_symbol", "/countly", REGISTERED)).should.equal(true);
+            allowsRaw(uploadTemp.parseOptions("/countly/i/apps/update", "/countly", REGISTERED)).should.equal(false);
         });
     });
 
