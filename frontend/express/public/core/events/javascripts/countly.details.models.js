@@ -20,8 +20,8 @@
                     dur += chartData[i].dur;
                 }
             }
-            var showSumGraph = graphData[1].some(function(item) {
-                return item !== 0;
+            var showSumGraph = chartData.some(function(item) {
+                return !!item.s; //check raw sums, since tiny non-zero sums round to 0
             });
             var series = [];
             var yAxis = [];
@@ -150,13 +150,8 @@
                     dur += eventData.chartData[i].dur;
                 }
             }
-            var showSumGraph = arrSum.some(function(item) {
-                if (item) { //null, undefined, 0
-                    return true;
-                }
-                else {
-                    return false;
-                }
+            var showSumGraph = eventData.chartData.slice(0, maxLength).some(function(item) {
+                return !!item.s; //check raw sums, since tiny non-zero sums round to 0
             });
             xAxis.data = xAxisData;
             var graphPointsLen = 0;
