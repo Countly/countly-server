@@ -1,3 +1,7 @@
+## Version 24.05.52
+Fixes:
+- [events] Fixed event descriptions (and custom names / count-sum-dur labels) not showing on the Events page for events whose key contains special characters (`.`, `$`, `\`, `&`, `<`, `>`)
+
 ## Version 24.05.51
 Enterprise Fixes:
 - [data-manager] Fixed bug where event and view transformations occasionally failed to apply to incoming data

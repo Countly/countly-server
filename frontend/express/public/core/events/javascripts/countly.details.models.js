@@ -236,7 +236,8 @@
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/<=/g, "&le;").replace(/>=/g, "&ge;");
         },
         getEventLongName: function(eventKey, eventMap) {
-            var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, "\\u002e");
+            //events.map is keyed by the raw event key, exactly as it appears in events.list, so do not escape it here
+            var mapKey = eventKey;
             if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
                 return eventMap[mapKey].name;
             }
@@ -249,7 +250,8 @@
             var allEvents = context.state.allEventsData;
             var groupData = context.state.groupData.displayMap;
             var eventMap = allEvents.map;
-            var mapKey = context.state.selectedEventName.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
+            //events.map is keyed by the raw event key, exactly as it appears in events.list, so do not escape it here
+            var mapKey = context.state.selectedEventName;
             var countString = (mapKey.startsWith('[CLY]_group') && groupData.c) ? groupData.c : (eventMap && eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"];
             var sumString = (mapKey.startsWith('[CLY]_group') && groupData.s) ? groupData.s : (eventMap && eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"];
             var durString = (mapKey.startsWith('[CLY]_group') && groupData.d) ? groupData.d : (eventMap && eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
