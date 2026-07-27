@@ -63,7 +63,6 @@ var countlyConfig = {
     * @property {number} [timeout=120000] - nodejs server request timeout, need to also increase nginx timeout too for longer requests
     * @property {number} maxUploadFileSize - limit the size of uploaded file
     * @property {string} [uploadDir] - directory for temporary files created while parsing uploads, defaults to countly-uploads inside the OS temp directory
-    * @property {number} [uploadTempMaxAge=3600000] - age in ms at which an unclaimed upload temp file is removed
     */
     api: {
         port: 3001,
@@ -72,7 +71,6 @@ var countlyConfig = {
         timeout: 120000,
         maxUploadFileSize: 200 * 1024 * 1024, // 200MB
         // uploadDir: "/opt/countly/uploads", // Optional: override where upload temp files are written
-        // uploadTempMaxAge: 60 * 60 * 1000, // Optional: age at which unclaimed upload temp files are removed
         ssl: {
             enabled: false,
             key: "/path/to/ssl/private.key",

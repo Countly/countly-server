@@ -34,7 +34,6 @@ const OVERRIDES = {
         MAX_SOCKETS: 'max_sockets',
         MAX_UPLOAD_FILE_SIZE: 'maxUploadFileSize',
         UPLOAD_DIR: 'uploadDir',
-        UPLOAD_TEMP_MAX_AGE: 'uploadTempMaxAge',
         SSL: {
             ENABLED: 'enabled',
             KEY: 'key',

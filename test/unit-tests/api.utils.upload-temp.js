@@ -7,15 +7,28 @@ var uploadTemp = require("../../api/utils/upload-temp");
 // These tests exercise pure path logic and a temp directory created under the
 // OS temp directory, so they touch no request handling and no database.
 describe("upload temp file handling", function() {
-    describe("acceptsFileUpload", function() {
-        it("accepts the API write and read roots", function() {
-            uploadTemp.acceptsFileUpload("/i").should.equal(true);
-            uploadTemp.acceptsFileUpload("/o").should.equal(true);
-            uploadTemp.acceptsFileUpload("/i/").should.equal(true);
-        });
+    /**
+     * Whether these options allow a multipart part to be written to disk
+     * @param {object} opts - options returned by parseOptions
+     * @returns {boolean} true when multipart files are allowed
+     */
+    function allowsMultipart(opts) {
+        return typeof opts.filter === "undefined";
+    }
 
-        it("accepts every endpoint that consumes an uploaded file", function() {
+    /**
+     * Whether these options allow a raw octet-stream body to be written to disk
+     * @param {object} opts - options returned by parseOptions
+     * @returns {boolean} true when raw bodies are allowed
+     */
+    function allowsRaw(opts) {
+        return typeof opts.enabledPlugins === "undefined";
+    }
+
+    describe("parseOptions - multipart", function() {
+        it("allows uploads on the endpoints that consume them", function() {
             [
+                "/i",
                 "/i/apps/create",
                 "/i/apps/update",
                 "/i/feedback/upload",
@@ -31,66 +44,92 @@ describe("upload temp file handling", function() {
                 "/i/import",
                 "/i/data-manager/import-schema"
             ].forEach(function(url) {
-                uploadTemp.acceptsFileUpload(url).should.equal(true, url + " must accept uploads");
+                allowsMultipart(uploadTemp.parseOptions(url)).should.equal(true, url + " must allow uploads");
             });
         });
 
-        it("ignores the query string", function() {
-            uploadTemp.acceptsFileUpload("/i?app_key=x&device_id=y").should.equal(true);
-            uploadTemp.acceptsFileUpload("/i/feedback/upload?name=feedback_logo").should.equal(true);
-            uploadTemp.acceptsFileUpload("/crowd/x?a=/i").should.equal(false);
+        it("refuses uploads on read endpoints, which never consume a file", function() {
+            allowsMultipart(uploadTemp.parseOptions("/o")).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/o/apps")).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/o/export")).should.equal(false);
         });
 
-        it("refuses paths that cannot reach a handler", function() {
+        it("refuses uploads on paths no handler serves", function() {
             [
                 "/crowd/admin/uploadplugin.action",
                 "/crowd/plugins/servlet/pdkinstall/installPlugin",
                 "/",
                 "/admin",
                 "/.env",
-                "/wp-login.php",
-                "/api/v1/upload"
+                "/wp-login.php"
             ].forEach(function(url) {
-                uploadTemp.acceptsFileUpload(url).should.equal(false, url + " must not accept uploads");
+                allowsMultipart(uploadTemp.parseOptions(url)).should.equal(false, url + " must refuse uploads");
             });
         });
 
-        it("does not match paths that merely start with i or o", function() {
-            uploadTemp.acceptsFileUpload("/iffy").should.equal(false);
-            uploadTemp.acceptsFileUpload("/output").should.equal(false);
-            uploadTemp.acceptsFileUpload("/index.php").should.equal(false);
+        it("does not match paths that merely start with i", function() {
+            allowsMultipart(uploadTemp.parseOptions("/iffy")).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/index.php")).should.equal(false);
+        });
+
+        it("ignores the query string", function() {
+            allowsMultipart(uploadTemp.parseOptions("/i?app_key=x&device_id=y")).should.equal(true);
+            allowsMultipart(uploadTemp.parseOptions("/crowd/x?a=/i")).should.equal(false);
         });
 
         it("honours a subdirectory installation path", function() {
-            uploadTemp.acceptsFileUpload("/countly/i/apps/update", "/countly").should.equal(true);
-            uploadTemp.acceptsFileUpload("/countly/i", "/countly").should.equal(true);
-            uploadTemp.acceptsFileUpload("/countly/crowd/admin", "/countly").should.equal(false);
-            // the subpath alone is not an API path
-            uploadTemp.acceptsFileUpload("/countly", "/countly").should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/countly/i/apps/update", "/countly")).should.equal(true);
+            allowsMultipart(uploadTemp.parseOptions("/countly/i", "/countly")).should.equal(true);
+            allowsMultipart(uploadTemp.parseOptions("/countly/crowd/admin", "/countly")).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/countly", "/countly")).should.equal(false);
             // a prefix that only looks similar must not be stripped
-            uploadTemp.acceptsFileUpload("/countlyx/i/apps/update", "/countly").should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("/countlyx/i/apps/update", "/countly")).should.equal(false);
         });
 
         it("handles a missing or empty url", function() {
-            uploadTemp.acceptsFileUpload(undefined).should.equal(false);
-            uploadTemp.acceptsFileUpload("").should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions(undefined)).should.equal(false);
+            allowsMultipart(uploadTemp.parseOptions("")).should.equal(false);
+        });
+
+        it("rejects every part when refusing uploads", function() {
+            var opts = uploadTemp.parseOptions("/crowd/admin/uploadplugin.action");
+            opts.filter({name: "file_evil", originalFilename: "evil.jar"}).should.equal(false);
         });
     });
 
-    describe("noFileWriteOptions", function() {
-        it("rejects every multipart part", function() {
-            var opts = uploadTemp.noFileWriteOptions();
-            opts.filter({name: "file_evil", originalFilename: "evil.jar"}).should.equal(false);
+    describe("parseOptions - raw octet-stream", function() {
+        it("allows raw bodies only where they are read as files", function() {
+            allowsRaw(uploadTemp.parseOptions("/i/crash_symbols/add_symbol")).should.equal(true);
+            allowsRaw(uploadTemp.parseOptions("/i/crash_symbols/upload_symbol")).should.equal(true);
+            allowsRaw(uploadTemp.parseOptions("/i/crash_symbols/edit_symbol")).should.equal(true);
         });
 
-        it("disables the octetstream parser, which ignores filter", function() {
-            var opts = uploadTemp.noFileWriteOptions();
+        it("refuses raw bodies everywhere else, including other upload endpoints", function() {
+            [
+                "/i",
+                "/i/apps/update",
+                "/i/license/upload",
+                "/i/import",
+                "/i/crash_symbols",
+                "/i/crash_symbols/other",
+                "/o",
+                "/crowd/admin/uploadplugin.action"
+            ].forEach(function(url) {
+                allowsRaw(uploadTemp.parseOptions(url)).should.equal(false, url + " must refuse raw bodies");
+            });
+        });
+
+        it("drops only the octetstream parser, so fields still parse", function() {
+            var opts = uploadTemp.parseOptions("/i/apps/update");
             opts.enabledPlugins.should.not.containEql("octetstream");
-            // the remaining parsers do not write to disk, and are needed so that
-            // urlencoded and json bodies still populate params.qstring
             opts.enabledPlugins.should.containEql("querystring");
             opts.enabledPlugins.should.containEql("json");
             opts.enabledPlugins.should.containEql("multipart");
+        });
+
+        it("honours a subdirectory installation path", function() {
+            allowsRaw(uploadTemp.parseOptions("/countly/i/crash_symbols/add_symbol", "/countly")).should.equal(true);
+            allowsRaw(uploadTemp.parseOptions("/countly/i/apps/update", "/countly")).should.equal(false);
         });
     });
 
@@ -118,79 +157,67 @@ describe("upload temp file handling", function() {
         });
     });
 
-    describe("sweepStaleUploads", function() {
+    describe("discardUploads", function() {
         var dir;
 
         beforeEach(function() {
-            dir = path.join(os.tmpdir(), "countly-sweep-test-" + process.pid);
+            dir = path.join(os.tmpdir(), "countly-discard-test-" + process.pid);
             fs.rmSync(dir, {recursive: true, force: true});
-            fs.mkdirSync(dir, {recursive: true});
+            uploadTemp.resolveUploadDir({uploadDir: dir});
         });
 
         afterEach(function() {
             fs.rmSync(dir, {recursive: true, force: true});
         });
 
-        it("removes files older than the cutoff", function(done) {
-            var stale = path.join(dir, "stalefile");
-            fs.writeFileSync(stale, "leftover");
-            var old = Date.now() - (2 * 60 * 60 * 1000);
-            fs.utimesSync(stale, new Date(old), new Date(old));
+        it("removes the files parsed out of the request", function(done) {
+            var a = path.join(dir, "aaa");
+            var b = path.join(dir, "bbb");
+            fs.writeFileSync(a, "one");
+            fs.writeFileSync(b, "two");
 
-            uploadTemp.sweepStaleUploads(dir, 60 * 60 * 1000, function(err, removed) {
-                should(err).equal(null);
-                removed.should.equal(1);
-                fs.existsSync(stale).should.equal(false);
+            uploadTemp.discardUploads({files: {one: {path: a}, two: {path: b}}});
+
+            setTimeout(function() {
+                fs.existsSync(a).should.equal(false);
+                fs.existsSync(b).should.equal(false);
                 done();
-            });
+            }, 50);
         });
 
-        it("leaves files that a request may still be using", function(done) {
-            var fresh = path.join(dir, "freshfile");
-            fs.writeFileSync(fresh, "in flight");
+        it("accepts the formidable v2 filepath property", function(done) {
+            var target = path.join(dir, "ccc");
+            fs.writeFileSync(target, "x");
 
-            uploadTemp.sweepStaleUploads(dir, 60 * 60 * 1000, function(err, removed) {
-                should(err).equal(null);
-                removed.should.equal(0);
-                fs.existsSync(fresh).should.equal(true);
+            uploadTemp.discardUploads({files: {one: {filepath: target}}});
+
+            setTimeout(function() {
+                fs.existsSync(target).should.equal(false);
                 done();
-            });
+            }, 50);
         });
 
-        it("reports nothing to do for an empty directory", function(done) {
-            uploadTemp.sweepStaleUploads(dir, 60 * 60 * 1000, function(err, removed) {
-                should(err).equal(null);
-                removed.should.equal(0);
+        it("never removes a path outside the upload directory", function(done) {
+            // crash_symbolication repoints params.files[x].path at files shipped
+            // with the plugin, which must survive
+            var shipped = path.join(os.tmpdir(), "countly-shipped-sample-" + process.pid);
+            fs.writeFileSync(shipped, "shipped asset");
+
+            uploadTemp.discardUploads({files: {symbols: {path: shipped}}});
+
+            setTimeout(function() {
+                fs.existsSync(shipped).should.equal(true);
+                fs.unlinkSync(shipped);
                 done();
-            });
+            }, 50);
         });
 
-        it("does not descend into subdirectories", function(done) {
-            var nested = path.join(dir, "nested");
-            fs.mkdirSync(nested);
-            var old = Date.now() - (2 * 60 * 60 * 1000);
-            fs.utimesSync(nested, new Date(old), new Date(old));
-
-            uploadTemp.sweepStaleUploads(dir, 60 * 60 * 1000, function(err, removed) {
-                should(err).equal(null);
-                removed.should.equal(0);
-                fs.existsSync(nested).should.equal(true);
-                done();
-            });
-        });
-
-        it("does nothing when no directory was resolved", function(done) {
-            uploadTemp.sweepStaleUploads(undefined, 60 * 60 * 1000, function(err, removed) {
-                should(err).equal(null);
-                removed.should.equal(0);
-                done();
-            });
-        });
-
-        it("reports an error for a missing directory", function(done) {
-            uploadTemp.sweepStaleUploads(path.join(dir, "absent"), 60 * 60 * 1000, function(err) {
-                should.exist(err);
-                done();
+        it("tolerates requests with no files", function() {
+            should.doesNotThrow(function() {
+                uploadTemp.discardUploads({});
+                uploadTemp.discardUploads({files: {}});
+                uploadTemp.discardUploads(undefined);
+                uploadTemp.discardUploads({files: {broken: {}}});
             });
         });
     });
