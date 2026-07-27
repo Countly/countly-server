@@ -1,6 +1,7 @@
 ## Version 25.03.xx
 Fixes:
 - [events] Fix sum chart tooltip displaying the raw floating-point value instead of a rounded number
+- [events] Fixed event descriptions (and custom names / count-sum-dur labels) not showing on the Events page for events whose key contains special characters (`.`, `$`, `\`, `&`, `<`, `>`)
 
 ## Version 25.03.50
 Fixes:
