@@ -18,9 +18,15 @@ const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
 const tracker = require('./parts/mgmt/tracker.js');
 const { RateLimiterMemory } = require("rate-limiter-flexible");
+const uploadTemp = require('./utils/upload-temp.js');
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
+
+// Dedicated directory for the temp files formidable writes while parsing POST
+// bodies, so strays are attributable and can be swept without touching
+// unrelated files in the OS temp directory
+const uploadDir = uploadTemp.resolveUploadDir(countlyConfig.api);
 
 if (cluster.isMaster) {
     console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
@@ -348,6 +354,25 @@ plugins.connectToAllDatabases().then(function() {
 
         plugins.dispatch("/master", {});
 
+        /**
+         * Reclaim upload temp files left behind by aborted, unrouted or rejected
+         * requests. Age based, so it cannot race a request that is still using
+         * its file. Master only, since every worker shares the directory.
+         * @returns {void}
+         */
+        const sweepUploads = () => {
+            uploadTemp.sweepStaleUploads(uploadDir, countlyConfig.api.uploadTempMaxAge, (err, removed) => {
+                if (err) {
+                    log.w('Could not sweep upload temp directory %s: %j', uploadDir, err);
+                }
+                else if (removed) {
+                    log.d('Removed %d stale upload temp file(s)', removed);
+                }
+            });
+        };
+        sweepUploads();
+        setInterval(sweepUploads, uploadTemp.SWEEP_INTERVAL).unref();
+
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
             jobs.job('api:topEvents').replace().schedule('at 00:01 am ' + 'every 1 day');
@@ -481,6 +506,15 @@ function handleRequest(req, res) {
         const formidableOptions = {};
         if (countlyConfig.api.maxUploadFileSize) {
             formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
+        }
+        if (uploadDir) {
+            formidableOptions.uploadDir = uploadDir;
+        }
+        // The body is parsed before the request is routed or authorized, so a
+        // POST to a path that cannot reach an upload handler would still have
+        // its body written to disk with nothing left to claim the file
+        if (!uploadTemp.acceptsFileUpload(req.url, common.config && common.config.path)) {
+            Object.assign(formidableOptions, uploadTemp.noFileWriteOptions());
         }
 
         const form = new formidable.IncomingForm(formidableOptions);
