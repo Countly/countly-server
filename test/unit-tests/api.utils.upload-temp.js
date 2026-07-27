@@ -7,13 +7,21 @@ var uploadTemp = require("../../api/utils/upload-temp");
 // These tests exercise pure path logic and a temp directory created under the
 // OS temp directory, so they touch no request handling and no database.
 describe("upload temp file handling", function() {
-    // stands in for plugins.uploadPaths — what core and the plugins declare
-    var REGISTERED = [
-        {path: "/i"}, // users: SDK user_details picture
+    // What THIS repo declares, and the only upload endpoints it serves:
+    // api/api.js and plugins/star-rating/api/api.js. There is no users plugin
+    // here, so nothing in this repo reads an upload on /i.
+    var CORE_DECLARED = [
         {path: "/i/apps/create"},
         {path: "/i/apps/update"},
         {path: "/i/feedback/upload"},
-        {path: "/i/feedback/logo"},
+        {path: "/i/feedback/logo"}
+    ];
+
+    // Declared by the enterprise plugins, in countly-enterprise-plugins, not
+    // here. Listed so the matching behaviour they rely on is covered, and so
+    // the coupling is visible: without those declarations these are refused.
+    var ENTERPRISE_DECLARED = [
+        {path: "/i"}, // users: SDK user_details picture
         {path: "/i/surveys/create"},
         {path: "/i/surveys/edit"},
         {path: "/i/whitelabeling/upload"},
@@ -26,6 +34,9 @@ describe("upload temp file handling", function() {
         {path: "/i/crash_symbols/upload_symbol", raw: true},
         {path: "/i/crash_symbols/edit_symbol", raw: true}
     ];
+
+    // the full stack, which is what a deployed install actually has
+    var REGISTERED = CORE_DECLARED.concat(ENTERPRISE_DECLARED);
 
     /**
      * Whether these options allow a multipart part to be written to disk
@@ -108,6 +119,26 @@ describe("upload temp file handling", function() {
             allowsMultipart(uploadTemp.parseOptions("/i", undefined, REGISTERED)).should.equal(true);
             allowsMultipart(uploadTemp.parseOptions("/i/", undefined, REGISTERED)).should.equal(true);
             allowsMultipart(uploadTemp.parseOptions("/i/anything", undefined, REGISTERED)).should.equal(false);
+        });
+
+        it("allows exactly what this repo declares", function() {
+            CORE_DECLARED.forEach(function(entry) {
+                allowsMultipart(uploadTemp.parseOptions(entry.path, undefined, CORE_DECLARED))
+                    .should.equal(true, entry.path + " is declared here and must be allowed");
+            });
+        });
+
+        it("refuses the enterprise endpoints until the enterprise plugins declare them", function() {
+            // /i is the SDK write endpoint carrying the app user picture, and it
+            // is declared by the users plugin in countly-enterprise-plugins.
+            // With only this repo installed nothing reads an upload on /i, so
+            // refusing it is correct rather than a gap.
+            ENTERPRISE_DECLARED.forEach(function(entry) {
+                allowsMultipart(uploadTemp.parseOptions(entry.path, undefined, CORE_DECLARED))
+                    .should.equal(false, entry.path + " is not declared here");
+                allowsMultipart(uploadTemp.parseOptions(entry.path, undefined, REGISTERED))
+                    .should.equal(true, entry.path + " must be allowed once declared");
+            });
         });
 
         it("refuses everything when no plugin declared anything", function() {
