@@ -62,7 +62,6 @@ var countlyConfig = {
     * @property {number} workers - amount of paralel countly processes to run, defaults to cpu/core amount
     * @property {number} [timeout=120000] - nodejs server request timeout, need to also increase nginx timeout too for longer requests
     * @property {number} maxUploadFileSize - limit the size of uploaded file
-    * @property {string} [uploadDir] - directory for temporary files created while parsing uploads, defaults to countly-uploads inside the OS temp directory
     */
     api: {
         port: 3001,
@@ -70,7 +69,6 @@ var countlyConfig = {
         max_sockets: 1024,
         timeout: 120000,
         maxUploadFileSize: 200 * 1024 * 1024, // 200MB
-        // uploadDir: "/opt/countly/uploads", // Optional: override where upload temp files are written
         ssl: {
             enabled: false,
             key: "/path/to/ssl/private.key",

@@ -186,50 +186,28 @@ describe("upload temp file handling", function() {
         });
     });
 
-    describe("resolveUploadDir", function() {
-        it("defaults to a dedicated directory in the OS temp directory", function() {
-            var dir = uploadTemp.resolveUploadDir({});
-            dir.should.equal(path.join(os.tmpdir(), "countly-uploads"));
-            fs.existsSync(dir).should.equal(true);
-        });
-
-        it("honours a configured directory and creates it", function() {
-            var configured = path.join(os.tmpdir(), "countly-upload-test-" + process.pid);
-            fs.rmSync(configured, {recursive: true, force: true});
-            uploadTemp.resolveUploadDir({uploadDir: configured}).should.equal(configured);
-            fs.existsSync(configured).should.equal(true);
-            fs.rmSync(configured, {recursive: true, force: true});
-        });
-
-        it("falls back to the formidable default when the directory is unusable", function() {
-            // a path under a regular file can never be created
-            var blocker = path.join(os.tmpdir(), "countly-upload-blocker-" + process.pid);
-            fs.writeFileSync(blocker, "x");
-            should(uploadTemp.resolveUploadDir({uploadDir: path.join(blocker, "nested")})).equal(undefined);
-            fs.unlinkSync(blocker);
-        });
-    });
-
     describe("discardUploads", function() {
         var dir;
 
         beforeEach(function() {
             dir = path.join(os.tmpdir(), "countly-discard-test-" + process.pid);
             fs.rmSync(dir, {recursive: true, force: true});
-            uploadTemp.resolveUploadDir({uploadDir: dir});
+            fs.mkdirSync(dir, {recursive: true});
         });
 
         afterEach(function() {
             fs.rmSync(dir, {recursive: true, force: true});
         });
 
-        it("removes the files parsed out of the request", function(done) {
+        it("removes the files formidable produced", function(done) {
             var a = path.join(dir, "aaa");
             var b = path.join(dir, "bbb");
             fs.writeFileSync(a, "one");
             fs.writeFileSync(b, "two");
 
-            uploadTemp.discardUploads({files: {one: {path: a}, two: {path: b}}});
+            var params = {};
+            uploadTemp.trackUploads(params, {one: {filepath: a}, two: {filepath: b}});
+            uploadTemp.discardUploads(params);
 
             setTimeout(function() {
                 fs.existsSync(a).should.equal(false);
@@ -238,11 +216,13 @@ describe("upload temp file handling", function() {
             }, 50);
         });
 
-        it("accepts the formidable v2 filepath property", function(done) {
+        it("accepts the formidable v1 path property", function(done) {
             var target = path.join(dir, "ccc");
             fs.writeFileSync(target, "x");
 
-            uploadTemp.discardUploads({files: {one: {filepath: target}}});
+            var params = {};
+            uploadTemp.trackUploads(params, {one: {path: target}});
+            uploadTemp.discardUploads(params);
 
             setTimeout(function() {
                 fs.existsSync(target).should.equal(false);
@@ -250,27 +230,52 @@ describe("upload temp file handling", function() {
             }, 50);
         });
 
-        it("never removes a path outside the upload directory", function(done) {
-            // crash_symbolication repoints params.files[x].path at files shipped
-            // with the plugin, which must survive
-            var shipped = path.join(os.tmpdir(), "countly-shipped-sample-" + process.pid);
+        it("ignores a path a handler substituted after parsing", function(done) {
+            // crash_symbolication repoints params.files.symbols.path at files
+            // shipped with the plugin when serving populator data
+            var tmp = path.join(dir, "ddd");
+            var shipped = path.join(dir, "shipped-sample");
+            fs.writeFileSync(tmp, "upload");
             fs.writeFileSync(shipped, "shipped asset");
 
-            uploadTemp.discardUploads({files: {symbols: {path: shipped}}});
+            var params = {};
+            uploadTemp.trackUploads(params, {symbols: {filepath: tmp}});
+            //handler swaps the path afterwards
+            params.files = {symbols: {path: shipped}};
+            uploadTemp.discardUploads(params);
 
             setTimeout(function() {
-                fs.existsSync(shipped).should.equal(true);
-                fs.unlinkSync(shipped);
+                fs.existsSync(tmp).should.equal(false, "the upload must be removed");
+                fs.existsSync(shipped).should.equal(true, "the shipped file must survive");
                 done();
             }, 50);
         });
 
-        it("tolerates requests with no files", function() {
+        it("only removes each file once", function(done) {
+            var target = path.join(dir, "eee");
+            fs.writeFileSync(target, "x");
+
+            var params = {};
+            uploadTemp.trackUploads(params, {one: {filepath: target}});
+            uploadTemp.discardUploads(params);
+            params.uploadTempPaths.should.have.length(0);
+            uploadTemp.discardUploads(params);
+
+            setTimeout(function() {
+                fs.existsSync(target).should.equal(false);
+                done();
+            }, 50);
+        });
+
+        it("tolerates requests with no uploads", function() {
             should.doesNotThrow(function() {
                 uploadTemp.discardUploads({});
-                uploadTemp.discardUploads({files: {}});
                 uploadTemp.discardUploads(undefined);
-                uploadTemp.discardUploads({files: {broken: {}}});
+                var params = {};
+                uploadTemp.trackUploads(params, undefined);
+                uploadTemp.discardUploads(params);
+                uploadTemp.trackUploads(params, {broken: {}});
+                uploadTemp.discardUploads(params);
             });
         });
     });

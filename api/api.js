@@ -23,11 +23,6 @@ const uploadTemp = require('./utils/upload-temp.js');
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
 
-// Dedicated directory for the temp files formidable writes while parsing POST
-// bodies, so they are attributable and separable from unrelated files in the
-// OS temp directory
-const uploadDir = uploadTemp.resolveUploadDir(countlyConfig.api);
-
 // Core endpoints that read params.files. Plugins declare their own.
 plugins.uploadPaths.push({path: "/i/apps/create"});
 plugins.uploadPaths.push({path: "/i/apps/update"});
@@ -492,9 +487,6 @@ function handleRequest(req, res) {
         if (countlyConfig.api.maxUploadFileSize) {
             formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
         }
-        if (uploadDir) {
-            formidableOptions.uploadDir = uploadDir;
-        }
         // The body is parsed before the request is routed or authorized, so
         // uploads are refused unless a plugin declared that this exact path
         // reads params.files
@@ -551,6 +543,9 @@ function handleRequest(req, res) {
                 }
             }
             params.files = files;
+            //snapshot the paths formidable produced, before a handler can
+            //repoint params.files[x].path at something that must not be removed
+            uploadTemp.trackUploads(params, files);
             if (multiFormData) {
                 let formDataUrl = [];
                 for (const i in fields) {

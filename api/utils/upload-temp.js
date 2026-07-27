@@ -1,8 +1,7 @@
 /**
  * @module api/utils/upload-temp
  * @description Bounds what the formidable parse in api/api.js is allowed to
- * write to disk, and removes what it wrote when the request is rejected before
- * any handler could claim it.
+ * write to disk, and removes whatever it wrote that no handler consumed.
  *
  * api/api.js parses every POST body with formidable, before the request is
  * routed or authorized. formidable writes multipart parts and raw
@@ -11,30 +10,13 @@
  * handler serves. This module provides:
  *
  *  - parseOptions: formidable options that allow a file to be written only
- *    where an endpoint actually consumes one
- *  - resolveUploadDir: a dedicated directory, so temp uploads are attributable
- *    and separable from unrelated files in the OS temp directory
- *  - discardUploads: removal at the points where a request is rejected before
- *    dispatch, where nothing can be mid-read
+ *    where a plugin declared that the path reads params.files
+ *  - discardUploads: removal of the files a request left behind
  */
 
 'use strict';
 
 const fs = require('fs');
-const os = require('os');
-const path = require('path');
-
-/**
- * Name of the directory created inside the OS temp directory when no explicit
- * uploadDir is configured.
- */
-const DEFAULT_DIR_NAME = 'countly-uploads';
-
-/**
- * Directory the temp files are expected to live in. Used to make sure
- * discardUploads only ever removes a file formidable itself created.
- */
-let effectiveDir = os.tmpdir();
 
 /**
  * Strip the query string and the installation subpath from a request url.
@@ -120,55 +102,57 @@ function parseOptions(url, installPath, uploadPaths) {
 }
 
 /**
- * Resolve, creating it if needed, the directory formidable writes upload temp
- * files into. Falls back to formidable's own default rather than failing
- * uploads if the directory cannot be created.
- * @param {object} apiConfig - countlyConfig.api
- * @returns {string|undefined} directory path, or undefined to keep the default
+ * Record the paths formidable produced for this request, so they can be removed
+ * later without trusting params.files.
+ *
+ * The snapshot is taken before any handler runs, because a handler may repoint
+ * params.files[x].path at something else entirely - crash_symbolication points
+ * it at files shipped with the plugin when serving populator data, which must
+ * never be deleted.
+ * @param {object} params - request params
+ * @param {object} files - the files formidable parsed
+ * @returns {void}
  */
-function resolveUploadDir(apiConfig) {
-    const dir = (apiConfig && apiConfig.uploadDir) || path.join(os.tmpdir(), DEFAULT_DIR_NAME);
-    try {
-        fs.mkdirSync(dir, {recursive: true});
-        effectiveDir = dir;
-        return dir;
-    }
-    catch (ex) {
-        effectiveDir = os.tmpdir();
-        return undefined;
-    }
+function trackUploads(params, files) {
+    const tracked = [];
+
+    Object.keys(files || {}).forEach((key) => {
+        const file = files[key];
+        const target = file && (file.filepath || file.path);
+        if (target) {
+            tracked.push(target);
+        }
+    });
+
+    params.uploadTempPaths = tracked;
 }
 
 /**
- * Remove the temp files formidable created for a request.
+ * Remove the files formidable wrote for this request.
  *
- * Only safe to call where the request is rejected before it is dispatched, so
- * that no handler can be reading the file: some handlers keep using their temp
- * file after responding, so this must never be wired to response teardown.
+ * Handlers that consume an upload unlink it themselves, so in the normal case
+ * these are already gone and the unlink is a no-op. What is left is every
+ * request that was rejected before reaching a handler at all, which is not
+ * enumerable at the rejection sites - rights.js alone rejects in 63 places.
  *
- * Only files directly inside the upload directory are removed. A handler may
- * repoint params.files[x].path at something else entirely - crash_symbolication
- * points it at files shipped with the plugin when serving populator data - and
- * those must never be deleted.
- * @param {object} params - request params carrying files
+ * Only the snapshot from trackUploads is touched, never params.files, so a
+ * handler substituting a path cannot redirect this at another file.
+ * @param {object} params - request params
  * @returns {void}
  */
 function discardUploads(params) {
-    if (!params || !params.files) {
+    if (!params || !params.uploadTempPaths || !params.uploadTempPaths.length) {
         return;
     }
 
-    Object.keys(params.files).forEach((key) => {
-        const file = params.files[key];
-        const target = file && (file.path || file.filepath);
-        if (target && path.dirname(target) === effectiveDir) {
-            fs.unlink(target, function() {});
-        }
+    params.uploadTempPaths.forEach((target) => {
+        fs.unlink(target, function() {});
     });
+    params.uploadTempPaths = [];
 }
 
 module.exports = {
     parseOptions,
-    resolveUploadDir,
+    trackUploads,
     discardUploads
 };

@@ -33,7 +33,6 @@ const OVERRIDES = {
     API: {
         MAX_SOCKETS: 'max_sockets',
         MAX_UPLOAD_FILE_SIZE: 'maxUploadFileSize',
-        UPLOAD_DIR: 'uploadDir',
         SSL: {
             ENABLED: 'enabled',
             KEY: 'key',
