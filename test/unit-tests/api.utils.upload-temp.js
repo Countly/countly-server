@@ -46,6 +46,61 @@ function declaredInSource() {
     return found;
 }
 
+/**
+ * Every URL a plugin test actually attaches a file to.
+ *
+ * The window for each request stops at the next .post(, because a spec often
+ * uploads in one test and posts without a file in the next; a fixed size window
+ * attributes the upload to the wrong URL.
+ * @returns {object} url -> array of spec files posting to it with a file
+ */
+function urlsWithRealUploads() {
+    var repoRoot = path.resolve(__dirname, "..", "..");
+    var pluginsDir = path.join(repoRoot, "plugins");
+    var specs = [];
+
+    fs.readdirSync(pluginsDir).forEach(function(name) {
+        var single = path.join(pluginsDir, name, "tests.js");
+        if (fs.existsSync(single)) {
+            specs.push(single);
+        }
+        var dir = path.join(pluginsDir, name, "tests");
+        if (fs.existsSync(dir)) {
+            fs.readdirSync(dir).forEach(function(entry) {
+                if (entry.endsWith(".js")) {
+                    specs.push(path.join(dir, entry));
+                }
+            });
+        }
+    });
+
+    var out = {};
+    specs.forEach(function(file) {
+        // commented out lines must not count: plugins/push/tests.js has a
+        // whole disabled upload suite that would otherwise look real
+        var src = fs.readFileSync(file, "utf8").replace(/^\s*\/\/.*$/gm, "");
+        if (src.indexOf(".attach(") === -1) {
+            return;
+        }
+        var posts = [];
+        var re = /\.post\(\s*[`'"]([^`'"?]+)/g;
+        var match = re.exec(src);
+        while (match !== null) {
+            posts.push({at: match.index, after: re.lastIndex, url: match[1].replace(/\/$/, "")});
+            match = re.exec(src);
+        }
+        posts.forEach(function(post, i) {
+            var end = (i + 1 < posts.length) ? posts[i + 1].at : src.length;
+            if (src.slice(post.after, end).indexOf(".attach(") !== -1) {
+                out[post.url] = out[post.url] || [];
+                out[post.url].push(path.relative(repoRoot, file));
+            }
+        });
+    });
+
+    return out;
+}
+
 // A synthetic registry. These entries are deliberately not real endpoints: the
 // matcher's behaviour does not depend on which paths happen to exist, and
 // realistic looking data here previously read as if it were the real registry.
@@ -76,11 +131,12 @@ describe("upload temp file handling", function() {
         return typeof opts.enabledPlugins === "undefined";
     }
 
+    var declared = declaredInSource();
+    var registry = declared.map(function(entry) {
+        return entry.path;
+    });
+
     describe("declarations in this repo", function() {
-        var declared = declaredInSource();
-        var registry = declared.map(function(entry) {
-            return entry.path;
-        });
 
         // Update this list when an upload endpoint is added or removed. It is
         // here so that a removal is a visible diff rather than an endpoint
@@ -119,6 +175,27 @@ describe("upload temp file handling", function() {
             declared.forEach(function(entry) {
                 allowsMultipart(uploadTemp.parseOptions(entry.path + "/extra", undefined, registry))
                     .should.equal(false, entry.path + " must not permit a deeper path");
+            });
+        });
+    });
+
+    describe("upload tests and declarations agree", function() {
+        // Catches a declaration whose path shape is wrong - /i/surveys/create
+        // instead of /i/surveys/nps/create, say. Such a declaration matches
+        // nothing, so it refuses the upload it was meant to permit, and only a
+        // real request reveals it.
+        //
+        // This repo currently has no active upload test: the only .attach calls
+        // are commented out in plugins/push/tests.js, so /i/apps/* and
+        // /i/feedback/* have nothing exercising a real multipart POST. The check
+        // is here so that it starts guarding the moment one is added.
+        var uploaded = urlsWithRealUploads();
+
+        it("declares every endpoint a test uploads to", function() {
+            Object.keys(uploaded).sort().forEach(function(url) {
+                registry.indexOf(url).should.not.equal(-1,
+                    url + " is uploaded to by " + uploaded[url].join(", ")
+                    + " but is not declared, so the upload would be refused");
             });
         });
     });
