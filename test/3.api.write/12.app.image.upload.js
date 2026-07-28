@@ -76,3 +76,97 @@ describe('App icon upload', function() {
             });
     });
 });
+
+// The update path needs its own cover: /i/apps/update also answers with the app
+// whether an icon was attached or not. Creating an app without an icon first
+// gives a control - the default must come back - so the change afterwards is
+// decisive rather than resting on what the shared test app happens to hold.
+describe('App icon update upload', function() {
+    var createdId = null;
+    var defaultIcon = fs.readFileSync(path.resolve(__dirname, './../../frontend/express/public/images/default_app_icon.png'));
+    var icon = path.resolve(__dirname, './../../frontend/express/public/images/default_member_icon.png');
+
+    it('should create an app with no icon', function(done) {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        request
+            .get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({name: "Icon Update Test App"}))
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var ob = JSON.parse(res.text);
+                ob.should.have.property('_id');
+                createdId = ob._id;
+                done();
+            });
+    });
+
+    it('should serve the default icon before any upload', function(done) {
+        if (!createdId) {
+            return done(new Error("app was not created"));
+        }
+        request
+            .get('/appimages/' + createdId + '.png')
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                // the control: with nothing stored the route falls back, which is
+                // what makes the assertion after the upload mean something
+                Buffer.compare(res.body, defaultIcon).should.equal(0);
+                done();
+            });
+    });
+
+    it('should accept an icon on update', function(done) {
+        if (!createdId) {
+            return done(new Error("app was not created"));
+        }
+        request
+            .post('/i/apps/update?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({app_id: createdId, name: "Icon Update Test App renamed"}))
+            .attach('app_image', icon)
+            .expect(200)
+            .end(function(err) {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+    });
+
+    it('should serve the uploaded icon after the update', function(done) {
+        if (!createdId) {
+            return done(new Error("app was not created"));
+        }
+        request
+            .get('/appimages/' + createdId + '.png')
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                Buffer.isBuffer(res.body).should.equal(true);
+                res.body.length.should.be.above(0);
+                Buffer.compare(res.body, defaultIcon).should.not.equal(0,
+                    "the default icon still came back, so the uploaded file never reached the handler");
+                done();
+            });
+    });
+
+    it('should remove the test app', function(done) {
+        if (!createdId) {
+            return done(new Error("app was not created"));
+        }
+        request
+            .get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({app_id: createdId}))
+            .expect(200)
+            .end(function(err) {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+    });
+});
