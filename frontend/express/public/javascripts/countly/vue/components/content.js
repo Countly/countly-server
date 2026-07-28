@@ -832,8 +832,8 @@
         template: CV.T('/javascripts/countly/vue/templates/content/UI/content-block-list-input.html'),
     }));
 
-    // SER-2915: matches a full `{property|fallback|c}` placeholder value —
-    // fallback may be empty ({property||c}), so the flag segment is unambiguous.
+    // SER-2915: matches `{property}`, `{property|fallback}` or `{property|fallback|c}` placeholders —
+    // fallback may be empty ({property||c}), so the `|c` segment is unambiguous when present.
     const CONTENT_DYNAMIC_PARAM_PLACEHOLDER_RE = /^\{([^{}|]+)(?:\|([^{}|]*))?(?:\|(c))?\}$/;
 
     const CONTENT_DYNAMIC_PARAM_NODE_CLASS = 'cly-vue-content-dynamic-params-input__param';
@@ -1170,12 +1170,13 @@
 
             safeDecode(value) {
                 try {
-                    return decodeURIComponent(value);
+                    const str = (value === null || value === undefined) ? '' : String(value);
+                    return decodeURIComponent(str.replace(/\+/g, '%20'));
                 }
                 catch (error) {
                     return value;
                 }
-            },
+            }
 
             serializeEditor() {
                 const editor = this.$refs.editor;
