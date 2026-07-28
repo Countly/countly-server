@@ -739,3 +739,45 @@ describe('Testing Rating plugin', function() {
         });
     });
 });
+
+// Uploads are refused unless a plugin declares the request path, so a wrong
+// declaration silently turns /i/feedback/upload into an endpoint that reports an
+// invalid image. The control test establishes what that looks like, which is
+// what makes the second assertion mean something rather than pass for any
+// reason. This endpoint only serves when the surveys plugin is absent, which is
+// the case in this repo.
+describe('Feedback logo upload', function() {
+    var logo = require("path").resolve(__dirname, './../../frontend/express/public/images/favicon.png');
+
+    it('should reject when nothing is attached', function(done) {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        request
+            .post('/i/feedback/upload?api_key=' + API_KEY_ADMIN)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                // with no file there is nothing to store, and the endpoint says so
+                res.text.should.containEql('feedback.image');
+                done();
+            });
+    });
+
+    it('should receive an attached logo', function(done) {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        request
+            .post('/i/feedback/upload?api_key=' + API_KEY_ADMIN)
+            .attach('feedback_logo', logo)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                // if /i/feedback/upload were not declared, the part would be
+                // dropped and this would be the invalid image response
+                var ob = JSON.parse(res.text);
+                ob.should.have.property('result', 'Success');
+                done();
+            });
+    });
+});
