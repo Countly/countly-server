@@ -1119,7 +1119,11 @@
                     });
                 }
                 if (value && value.map && typeof value.map === "object") {
-                    var decodedMap = {};
+                    //null prototype: event keys are arbitrary strings, and assigning a
+                    //"__proto__" key on a plain object reparents the map instead of adding
+                    //an own property, which would let unrelated key lookups resolve through
+                    //the assigned value
+                    var decodedMap = Object.create(null);
                     Object.keys(value.map).forEach(function(eventKey) {
                         decodedMap[countlyCommon.unescapeHtml(eventKey)] = value.map[eventKey];
                     });
