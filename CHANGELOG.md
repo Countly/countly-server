@@ -1,4 +1,7 @@
 ## Version 24.05.51
+Fixes:
+- [hooks] Internal event hooks are now scoped to the apps the hook belongs to: app creation is a global-admin-only event, and remote-config, cohort, alert and hook-chaining events are only delivered when the event's app is one the hook is scoped to
+
 Enterprise Fixes:
 - [data-manager] Fixed bug where event and view transformations occasionally failed to apply to incoming data
 
