@@ -1,7 +1,6 @@
 var should = require('should');
 var InternalEventTrigger = require('../api/parts/triggers/internal_event.js');
 var utils = require('../api/utils.js');
-var common = require('../../../api/utils/common.js');
 
 // Regression tests for app scoping of hooks internal events.
 //
@@ -33,36 +32,22 @@ describe('Testing Hooks internal event app scoping', function() {
     var trigger;
     var delivered;
     var originalUpdateRuleTriggerTime;
-    var originalDb;
+
+    // A well-formed object id that is not a real member, so the global-event
+    // owner lookup resolves to nothing and fails closed. Deliberately not
+    // stubbing common.db: that is shared state for the whole test process, and
+    // replacing it even briefly can break unrelated suites with in-flight work.
+    var UNKNOWN_OWNER_ID = '0123456789abcdef01234567';
 
     before(function() {
         // updateRuleTriggerTime writes through a db batcher that is not available
         // in the test process; the scoping decision is what is under test
         originalUpdateRuleTriggerTime = utils.updateRuleTriggerTime;
         utils.updateRuleTriggerTime = function() {};
-
-        // the global-event gate resolves the hook owner from the members
-        // collection; stub it so a hook created by "global-member" is treated as
-        // global-admin owned and any other owner is not
-        originalDb = common.db;
-        common.db = {
-            ObjectID: function(v) {
-                return v;
-            },
-            collection: function() {
-                return {
-                    findOne: function(query) {
-                        var id = query && query._id;
-                        return Promise.resolve({_id: id, global_admin: id === 'global-member'});
-                    }
-                };
-            }
-        };
     });
 
     after(function() {
         utils.updateRuleTriggerTime = originalUpdateRuleTriggerTime;
-        common.db = originalDb;
     });
 
     beforeEach(function() {
@@ -84,7 +69,7 @@ describe('Testing Hooks internal event app scoping', function() {
     function ruleFor(eventType, apps, extraConfig) {
         return {
             _id: 'hook-under-test',
-            createdBy: 'non-global-member',
+            createdBy: UNKNOWN_OWNER_ID,
             apps: apps,
             trigger: {
                 type: 'InternalEventTrigger',
@@ -107,16 +92,6 @@ describe('Testing Hooks internal event app scoping', function() {
             delivered.length.should.eql(0);
         });
 
-        it('should still deliver to a hook owned by a global admin', async function() {
-            var rule = ruleFor('/i/apps/create', ['appA']);
-            rule.createdBy = 'global-member';
-            trigger._rules = [rule];
-            await trigger.process({
-                appId: 'appB',
-                data: {_id: 'appB', name: 'New App', key: 'sdk-key', id_key: 'sdk-key'}
-            }, '/i/apps/create');
-            delivered.length.should.eql(1);
-        });
     });
 
     describe('/i/remote-config/*', function() {
