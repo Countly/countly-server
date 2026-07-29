@@ -1,4 +1,7 @@
 ## Version 24.05.51
+Fixes:
+- [hooks] Internal event hooks are validated on save: an unknown event type is rejected, and an event that names a cohort, hook or alert must name one belonging to the hook's own apps
+
 Enterprise Fixes:
 - [data-manager] Fixed bug where event and view transformations occasionally failed to apply to incoming data
 

@@ -310,6 +310,12 @@ class InternalEventTrigger {
 // hooks that subscribe to these global event types
 InternalEventTrigger.GLOBAL_EVENT_TYPES = GLOBAL_EVENT_TYPES;
 
+// exposed so the save handler can reject an eventType that is not a real
+// internal event, and can tell which events carry a target id to validate
+InternalEventTrigger.getInternalEvents = function() {
+    return InternalEvents.slice();
+};
+
 module.exports = InternalEventTrigger;
 const InternalEvents = [
     "/i/apps/create",
