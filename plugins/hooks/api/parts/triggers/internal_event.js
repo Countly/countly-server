@@ -4,14 +4,23 @@ const utils = require('../../utils.js');
 const log = common.log('hooks:internalEventTrigger');
 
 // Event types that are global (not scoped to a single app): new-member events,
-// the master tick, and the system-log stream. These carry instance-wide data
-// and must only be delivered to hooks owned by a global admin.
+// the master tick, the system-log stream, and app creation. These carry
+// instance-wide data and must only be delivered to hooks owned by a global
+// admin.
+//
+// /i/apps/create belongs here rather than being app-scoped like the other
+// /i/apps/* events: the app does not exist when the hook is configured, so no
+// hook can legitimately name it in its apps list, and the event payload is the
+// newly created app document including its SDK key, id_key, accepted keys[] and
+// checksum salt. Every case in process() below must either appear in this map or
+// check the event's app id against rule.apps.
 const GLOBAL_EVENT_TYPES = {
     "/i/users/create": true,
     "/i/users/update": true,
     "/i/users/delete": true,
     "/master": true,
-    "/systemlogs": true
+    "/systemlogs": true,
+    "/i/apps/create": true
 };
 
 /**
@@ -137,7 +146,14 @@ class InternalEventTrigger {
             case "/cohort/enter":
             case "/cohort/exit": {
                 const {cohort, uids} = ob;
-                if (rule.trigger.configuration.cohortID === cohort._id) {
+                //cohortID comes from the hook's own configuration and is not
+                //validated on save, so matching on it alone would let a hook
+                //scoped to one app receive another app's cohort definition and
+                //app_users documents (the lookup below reads
+                //app_users<cohort.app_id>). Require the cohort's app to be one
+                //the hook is scoped to.
+                if (rule.trigger.configuration.cohortID === cohort._id
+                    && Array.isArray(rule.apps) && rule.apps.indexOf(cohort.app_id + '') > -1) {
                     common.db.collection('app_users' + cohort.app_id).find({"uid": {"$in": uids}}).toArray(
                         (uidErr, result) => {
                             if (uidErr) {
@@ -254,7 +270,20 @@ class InternalEventTrigger {
                 break;
             }
             case "/hooks/trigger": {
-                if (ob.rule._id + "" === rule.trigger.configuration.hookID) {
+                //hookID comes from the hook's own configuration and is not
+                //validated on save. Matching on it alone would let a hook scoped
+                //to one app subscribe to a hook belonging to another app and
+                //receive that hook's entire document - fetchRules loads hooks
+                //with only error_logs excluded, so ob.rule carries every effect
+                //configuration (HTTP url and headers, custom code, email
+                //recipients) plus the data that fired it. Require the source
+                //hook to be scoped within this hook's own apps.
+                const sourceApps = (ob.rule && Array.isArray(ob.rule.apps)) ? ob.rule.apps : null;
+                const sourceInScope = sourceApps
+                    && Array.isArray(rule.apps)
+                    && sourceApps.length > 0
+                    && sourceApps.every((a) => rule.apps.indexOf(a + '') > -1);
+                if (ob.rule._id + "" === rule.trigger.configuration.hookID && sourceInScope) {
                     try {
                         utils.updateRuleTriggerTime(rule._id);
                     }
@@ -274,20 +303,35 @@ class InternalEventTrigger {
             case "/i/remote-config/remove-parameter":
             case "/i/remote-config/add-condition":
             case "/i/remote-config/update-condition":
-            case "/i/remote-config/remove-condition":
-                utils.updateRuleTriggerTime(rule._id);
-                this.pipeline({
-                    params: ob,
-                    rule: rule,
-                    eventType,
-                });
+            case "/i/remote-config/remove-condition": {
+                //remote-config changes are app-scoped: the parameter key, default
+                //value and the serialized condition query all describe one app's
+                //configuration. The dispatch carries the app id in params.appId.
+                //A dispatch without an app id cannot be scoped, so it is dropped
+                //rather than delivered to every subscriber.
+                const rcAppId = ob && ob.params && ob.params.appId;
+                if (rcAppId && Array.isArray(rule.apps) && rule.apps.indexOf(rcAppId + '') > -1) {
+                    utils.updateRuleTriggerTime(rule._id);
+                    this.pipeline({
+                        params: ob,
+                        rule: rule,
+                        eventType,
+                    });
+                }
                 break;
+            }
             case "/alerts/trigger": {
-                this.pipeline({
-                    params: ob,
-                    rule: rule,
-                    eventType,
-                });
+                //An alert belongs to one app, so only hooks scoped to that app may
+                //be triggered by it. The payload stays empty, as before; appId is
+                //used for scoping only and is not forwarded.
+                const alertAppId = ob && ob.appId;
+                if (alertAppId && Array.isArray(rule.apps) && rule.apps.indexOf(alertAppId + '') > -1) {
+                    this.pipeline({
+                        params: {},
+                        rule: rule,
+                        eventType,
+                    });
+                }
                 break;
             }
             }
