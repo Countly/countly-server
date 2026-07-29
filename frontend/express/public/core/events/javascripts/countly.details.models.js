@@ -10,7 +10,7 @@
             var dur = 0;
             for (var i = 0; i < chartData.length; i++) {
                 graphData[0].push(chartData[i].c ? chartData[i].c : 0);
-                graphData[1].push(chartData[i].s ? chartData[i].s : 0);
+                graphData[1].push(chartData[i].s ? parseFloat(Number(chartData[i].s).toFixed(2)) : 0);
                 let avgDur = (chartData[i].dur || 0) / (chartData[i].c || 1);
                 graphData[2].push(avgDur < 0.1 ? 0 : avgDur);
                 if (chartData[i].c) {
@@ -20,8 +20,8 @@
                     dur += chartData[i].dur;
                 }
             }
-            var showSumGraph = graphData[1].some(function(item) {
-                return item !== 0;
+            var showSumGraph = chartData.some(function(item) {
+                return !!item.s; //check raw sums, since tiny non-zero sums round to 0
             });
             var series = [];
             var yAxis = [];
@@ -139,7 +139,7 @@
             var maxLength = eventData.chartData.length > 15 ? 15 : eventData.chartData.length;
             for (var i = 0; i < maxLength; i++) {
                 arrCount.push(eventData.chartData[i].c);
-                arrSum.push(eventData.chartData[i].s);
+                arrSum.push(eventData.chartData[i].s ? parseFloat(Number(eventData.chartData[i].s).toFixed(2)) : eventData.chartData[i].s);
                 arrDuration.push(eventData.chartData[i].dur / (eventData.chartData[i].c || 1));
 
                 xAxisData.push(typeof eventData.chartData[i].curr_segment === 'string' ? countlyAllEvents.helpers.decode(eventData.chartData[i].curr_segment) : eventData.chartData[i].curr_segment);
@@ -150,13 +150,8 @@
                     dur += eventData.chartData[i].dur;
                 }
             }
-            var showSumGraph = arrSum.some(function(item) {
-                if (item) { //null, undefined, 0
-                    return true;
-                }
-                else {
-                    return false;
-                }
+            var showSumGraph = eventData.chartData.slice(0, maxLength).some(function(item) {
+                return !!item.s; //check raw sums, since tiny non-zero sums round to 0
             });
             xAxis.data = xAxisData;
             var graphPointsLen = 0;
