@@ -316,3 +316,191 @@ describe('Testing Reports', function() {
     });
 });
 
+
+// Regression tests for authorization of non-core report targets.
+//
+// A non-core report_type names the plugin that owns the report, and that plugin
+// authorizes the target through /report/authorize: the dashboards plugin checks
+// view access to the dashboard a "dashboards" report renders. That caller was
+// commented out, so a member with reports rights could schedule a report against
+// any dashboard id, including a private dashboard belonging to someone else.
+//
+// These go through the real HTTP endpoints with a real non-admin member, so the
+// whole path is exercised: validateCreate, the report_type branch, the
+// /report/authorize dispatch into the dashboards plugin, and the insert.
+
+describe('Testing Reports non-core authorization', function() {
+    var API_KEY_ADMIN = "";
+    var APP_ID = "";
+    var adminDashboardId = "";
+    var memberDashboardId = "";
+    var memberApiKey = "";
+    var memberUserId = "";
+    var uniq = Date.now();
+
+    /**
+     * Build a dashboards-type report config
+     * @param {string} dashboardId - dashboard the report renders
+     * @returns {object} report config
+     */
+    function dashboardReport(dashboardId) {
+        return {
+            title: "noncore-authz-" + uniq,
+            report_type: "dashboards",
+            dashboards: dashboardId,
+            emails: ["a@abc.com"],
+            frequency: "daily",
+            timezone: "Europe/Tirane",
+            hour: 4,
+            minute: 0,
+            sendPdf: true
+        };
+    }
+
+    it('should create a private dashboard as admin', function(done) {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        APP_ID = testUtils.get("APP_ID");
+        request.get('/i/dashboards/create?api_key=' + API_KEY_ADMIN + '&name=ReportsPrivateDash' + uniq + '&share_with=none')
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                adminDashboardId = JSON.parse(res.text);
+                should.exist(adminDashboardId);
+                done();
+            });
+    });
+
+    it('should create a non-admin member with reports rights on the test app', function(done) {
+        var permission = {
+            _: {a: [], u: [[APP_ID]]},
+            c: {},
+            r: {},
+            u: {},
+            d: {}
+        };
+        permission.c[APP_ID] = {all: false, allowed: {reports: true}};
+        permission.r[APP_ID] = {all: false, allowed: {reports: true}};
+        permission.u[APP_ID] = {all: false, allowed: {reports: true}};
+        var userParams = {
+            full_name: "reportsmember" + uniq,
+            username: "reportsmember" + uniq,
+            password: "p4ssw0rD!",
+            email: "reportsmember" + uniq + "@mail.test",
+            permission: permission
+        };
+        request.get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify(userParams)))
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                memberApiKey = res.body.api_key;
+                memberUserId = res.body._id;
+                should.exist(memberApiKey);
+                done();
+            });
+    });
+
+    it('should reject a dashboards report for a dashboard the member cannot view', function(done) {
+        request.get('/i/reports/create?api_key=' + memberApiKey + '&app_id=' + APP_ID
+            + '&args=' + encodeURIComponent(JSON.stringify(dashboardReport(adminDashboardId))))
+            .expect(401)
+            .end(function(err) {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+    });
+
+    it('should allow a dashboards report for the member own dashboard', function(done) {
+        request.get('/i/dashboards/create?api_key=' + memberApiKey + '&name=MemberDash' + uniq + '&share_with=none')
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                memberDashboardId = JSON.parse(res.text);
+                request.get('/i/reports/create?api_key=' + memberApiKey + '&app_id=' + APP_ID
+                    + '&args=' + encodeURIComponent(JSON.stringify(dashboardReport(memberDashboardId))))
+                    .expect(200)
+                    .end(function(e, r) {
+                        if (e) {
+                            return done(e);
+                        }
+                        r.body.should.have.property('result', 'Success');
+                        done();
+                    });
+            });
+    });
+
+    it('should not persist the authorize flag on the stored report', function(done) {
+        request.get('/o/reports/all?api_key=' + memberApiKey + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                res.body.forEach(function(r) {
+                    r.should.not.have.property('authorized');
+                });
+                done();
+            });
+    });
+
+    it('should still allow a core report for an app the member has rights on', function(done) {
+        var coreReport = Object.assign({}, newReport, {apps: [APP_ID], title: "noncore-core-control-" + uniq});
+        request.get('/i/reports/create?api_key=' + memberApiKey + '&app_id=' + APP_ID
+            + '&args=' + encodeURIComponent(JSON.stringify(coreReport)))
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                res.body.should.have.property('result', 'Success');
+                done();
+            });
+    });
+
+    after(function(done) {
+        // remove everything this block created: the reports it scheduled, both
+        // dashboards, and the member
+        request.get('/o/reports/all?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+            .end(function(listErr, listRes) {
+                var created = ((listRes && listRes.body) || []).filter(function(r) {
+                    return typeof r.title === "string" && r.title.indexOf("" + uniq) > -1;
+                });
+                var pending = created.length;
+                /**
+                 * Delete the dashboards and the member once reports are gone
+                 * @returns {void}
+                 */
+                function cleanupRest() {
+                    request.get('/i/dashboards/delete?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + adminDashboardId)
+                        .end(function() {
+                            request.get('/i/dashboards/delete?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + memberDashboardId)
+                                .end(function() {
+                                    request.get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [memberUserId]})))
+                                        .end(function() {
+                                            done();
+                                        });
+                                });
+                        });
+                }
+                if (!pending) {
+                    return cleanupRest();
+                }
+                created.forEach(function(r) {
+                    request.get('/i/reports/delete?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&args=' + encodeURIComponent(JSON.stringify({_id: r._id})))
+                        .end(function() {
+                            pending--;
+                            if (!pending) {
+                                cleanupRest();
+                            }
+                        });
+                });
+            });
+    });
+});

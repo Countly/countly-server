@@ -1,5 +1,6 @@
 ## Version 25.03.xx
 Fixes:
+- [reports] Non-core reports, such as dashboard reports, now authorize the object they target on create and update
 - [events] Fix sum chart tooltip displaying the raw floating-point value instead of a rounded number
 
 ## Version 25.03.50
