@@ -1,4 +1,7 @@
 ## Version 24.05.51
+Fixes:
+- [reports] Non-core reports, such as dashboard reports, now authorize the object they target on create and update
+
 Enterprise Fixes:
 - [data-manager] Fixed bug where event and view transformations occasionally failed to apply to incoming data
 
