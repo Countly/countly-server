@@ -259,6 +259,24 @@ const FEATURE_NAME = 'reports';
                 //report for arbitrary apps.
                 props.report_type = props.report_type || "core";
 
+                /**
+                 * Insert the authorized report document
+                 * @returns {void}
+                 */
+                function insertReport() {
+                    common.db.collection('reports').insert(props, function(err0, result) {
+                        result = result.ops;
+                        if (err0) {
+                            err0 = err0.err;
+                            common.returnMessage(params, 200, err0);
+                        }
+                        else {
+                            plugins.dispatch("/systemlogs", {params: params, action: "reports_create", data: result[0]});
+                            common.returnMessage(params, 200, "Success");
+                        }
+                    });
+                }
+
                 if (props.report_type === "core") {
                     if (!props.apps || !Array.isArray(props.apps) || props.apps.length === 0) {
                         common.returnMessage(params, 400, 'Invalid or missing apps');
@@ -278,19 +296,22 @@ const FEATURE_NAME = 'reports';
                             return common.returnMessage(params, 401, 'User does not have right to access this information');
                         }
                     }
+                    insertReport();
                 }
-
-                common.db.collection('reports').insert(props, function(err0, result) {
-                    result = result.ops;
-                    if (err0) {
-                        err0 = err0.err;
-                        common.returnMessage(params, 200, err0);
-                    }
-                    else {
-                        plugins.dispatch("/systemlogs", {params: params, action: "reports_create", data: result[0]});
-                        common.returnMessage(params, 200, "Success");
-                    }
-                });
+                else {
+                    //a non-core report targets another plugin's object - a
+                    //"dashboards" report renders the dashboard named in
+                    //props.dashboards - and only that plugin knows whether the
+                    //member may use it. Previously nothing checked this, so any
+                    //member with reports-create rights could schedule a report
+                    //against an arbitrary dashboard id.
+                    validateNonCoreUser(params, props, function(authErr, authorized) {
+                        if (!authorized) {
+                            return common.returnMessage(params, 401, 'User does not have right to access this information');
+                        }
+                        insertReport();
+                    });
+                }
             });
             break;
         case 'update':
@@ -339,35 +360,59 @@ const FEATURE_NAME = 'reports';
                     //treated as a non-core type to skip the per-app check.
                     var effectiveType = props.report_type || report.report_type || "core";
 
-                    if (effectiveType === "core" && typeof props.apps !== "undefined") {
-                        if (!Array.isArray(props.apps) || props.apps.length === 0) {
-                            return common.returnMessage(params, 400, 'Invalid or missing apps');
-                        }
-                        if (!params.member.global_admin) {
-                            let allowedApps = (getAdminApps(params.member) || [])
-                                .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
-                            if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
-                                allowedApps = allowedApps.concat(params.member.user_of);
+                    /**
+                     * Apply the authorized update
+                     * @returns {void}
+                     */
+                    function applyUpdate() {
+                        common.db.collection('reports').update(recordUpdateOrDeleteQuery(params, id), {$set: props}, function(err_update2) {
+                            if (err_update2) {
+                                err_update2 = err_update2.err;
+                                common.returnMessage(params, 200, err_update2);
                             }
-                            let notPermitted = props.apps.some(function(appId) {
-                                return allowedApps.indexOf(appId) === -1;
-                            });
-                            if (notPermitted) {
-                                return common.returnMessage(params, 401, 'User does not have right to access this information');
+                            else {
+                                plugins.dispatch("/systemlogs", {params: params, action: "reports_edited", data: {_id: id, before: report, update: props}});
+                                common.returnMessage(params, 200, "Success");
                             }
-                        }
+                        });
                     }
 
-                    common.db.collection('reports').update(recordUpdateOrDeleteQuery(params, id), {$set: props}, function(err_update2) {
-                        if (err_update2) {
-                            err_update2 = err_update2.err;
-                            common.returnMessage(params, 200, err_update2);
+                    if (effectiveType === "core") {
+                        if (typeof props.apps !== "undefined") {
+                            if (!Array.isArray(props.apps) || props.apps.length === 0) {
+                                return common.returnMessage(params, 400, 'Invalid or missing apps');
+                            }
+                            if (!params.member.global_admin) {
+                                let allowedApps = (getAdminApps(params.member) || [])
+                                    .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
+                                if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                                    allowedApps = allowedApps.concat(params.member.user_of);
+                                }
+                                let notPermitted = props.apps.some(function(appId) {
+                                    return allowedApps.indexOf(appId) === -1;
+                                });
+                                if (notPermitted) {
+                                    return common.returnMessage(params, 401, 'User does not have right to access this information');
+                                }
+                            }
                         }
-                        else {
-                            plugins.dispatch("/systemlogs", {params: params, action: "reports_edited", data: {_id: id, before: report, update: props}});
-                            common.returnMessage(params, 200, "Success");
-                        }
-                    });
+                        applyUpdate();
+                    }
+                    else {
+                        //authorize the merged report, not just the payload: a
+                        //partial update may leave the target (props.dashboards)
+                        //in the stored document, and repointing an existing
+                        //report at another dashboard must be checked too. A copy
+                        //is passed so the authorize flag never reaches $set.
+                        var mergedReport = Object.assign({}, report, props);
+                        mergedReport.report_type = effectiveType;
+                        validateNonCoreUser(params, mergedReport, function(authErr, authorized) {
+                            if (!authorized) {
+                                return common.returnMessage(params, 401, 'User does not have right to access this information');
+                            }
+                            applyUpdate();
+                        });
+                    }
                 });
             });
             break;
@@ -551,40 +596,29 @@ const FEATURE_NAME = 'reports';
     }
 
     /**
-     * validation function for verifing user have permission to access infomation or not for core type of report
+     * Verify the member may use a non-core report's target.
+     *
+     * A non-core report_type names the plugin that owns the report, and that
+     * plugin authorizes the target through the /report/authorize event: the
+     * dashboards plugin checks view access to report.dashboards there. This
+     * fails closed, so a report type whose plugin does not answer the event is
+     * not authorized. A plugin adding a new report type must implement
+     * /report/authorize for it.
+     *
+     * Core reports are authorized inline against the member's per-app reports
+     * permission instead, so they never reach this.
+     *
      * @param {object} params - request params object
-     * @param {object} props  - report related props
-     * @param {func} cb - callback function
-     * @return {func} cb - callback function
-    
-    function validateCoreUser(params, props, cb) {
-        var userApps = getUserApps(params.member);
-        var apps = props.apps;
-        var isAppUser = apps.every(function(app) {
-            return userApps && userApps.indexOf(app) > -1;
-        });
-
-        if (!params.member.global_admin && !isAppUser) {
-            return cb(null, false);
-        }
-        else {
-            return cb(null, true);
-        }
-
-    }
-    */
-
-    /**
-     * validation function for verifing user have permission to access infomation or not for not core type of report
-     * @param {object} params - request params object
-     * @param {object} props  - report related props
-     * @param {func} cb - callback function
-     
+     * @param {object} props - report related props
+     * @param {function} cb - callback receiving (err, authorized)
+     */
     function validateNonCoreUser(params, props, cb) {
         plugins.dispatch("/report/authorize", { params: params, report: props }, function() {
             var authorized = props.authorized || false;
+            //the flag is only how the dispatch reports its result back; it must
+            //not be persisted onto the report document
+            delete props.authorized;
             cb(null, authorized);
         });
     }
-    */
 }());
