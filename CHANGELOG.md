@@ -1,6 +1,9 @@
 ## Version 24.05.52
 Fixes:
-- [events] Fixed event descriptions (and custom names / count-sum-dur labels) not showing on the Events page for events whose key contains special characters (`.`, `$`, `\`, `&`, `<`, `>`)
+- [events] Fixed event descriptions (and custom names / count-sum-dur labels) not showing on the Events page for events whose key contains special characters (`.`, `$`, `\`, `&`, `<`, `>`, `"`, `'`)
+
+Enterprise Fixes:
+- [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
 
 ## Version 24.05.51
 Enterprise Fixes:
