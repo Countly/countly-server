@@ -135,11 +135,47 @@ class InternalEventTrigger {
         // cache of owner-id -> isGlobalAdmin, scoped to this dispatch, so a
         // global event reaching many hooks resolves each owner only once
         const ownerGlobalAdminCache = new Map();
+
+        // App scoping drops events, and a silent drop is hard to tell apart from
+        // "nothing was configured". Two different things can happen and they get
+        // different levels:
+        //
+        //  - the dispatch carried no app id at all. Nothing can be scoped, so every
+        //    subscribing hook stops firing. That is a bug in the producer, not a
+        //    configuration choice, and it is how a dispatch that forgot its payload
+        //    silently disabled a working alert hook. Warned, once per dispatch.
+        //  - the dispatch named an app this hook is not scoped to. That is ordinary
+        //    filtering and happens constantly, so it is debug only.
+        let missingAppIdWarned = false;
+        /**
+         * Report a dispatch that cannot be scoped because it carries no app id.
+         * @param {string} where - the field the app id was expected in
+         */
+        const warnMissingAppId = (where) => {
+            if (missingAppIdWarned) {
+                return;
+            }
+            missingAppIdWarned = true;
+            log.w("Dropping " + eventType + ": no app id in " + where + ", so it cannot be scoped to an app. "
+                + rules.length + " hook(s) subscribe to this event and none of them will fire. "
+                + "Whatever dispatched this event needs to include the app id.");
+        };
+        /**
+         * Note a hook skipped because the event belongs to an app it is not scoped to.
+         * @param {object} rule - the hook rule being skipped
+         * @param {*} appId - app the event belongs to
+         */
+        const noteOutOfScope = (rule, appId) => {
+            log.d("Not delivering " + eventType + " for app " + appId + " to hook " + (rule._id || "?")
+                + ": outside the hook's apps [" + (Array.isArray(rule.apps) ? rule.apps.join(", ") : "") + "]");
+        };
         for (const rule of rules) {
             // global (non app-scoped) events must only reach hooks owned by a
             // global admin: an app-scoped hook from a non-global member must
             // not receive instance-wide member/system data.
             if (GLOBAL_EVENT_TYPES[eventType] && !await isRuleOwnerGlobalAdmin(rule, ownerGlobalAdminCache)) {
+                log.d("Not delivering global event " + eventType + " to hook " + (rule._id || "?")
+                    + ": its owner is not a global admin");
                 continue;
             }
             switch (eventType) {
@@ -152,7 +188,16 @@ class InternalEventTrigger {
                 //app_users documents (the lookup below reads
                 //app_users<cohort.app_id>). Require the cohort's app to be one
                 //the hook is scoped to.
-                if (rule.trigger.configuration.cohortID === cohort._id
+                const cohortMatches = rule.trigger.configuration.cohortID === cohort._id;
+                if (cohortMatches && !(Array.isArray(rule.apps) && rule.apps.indexOf(cohort.app_id + '') > -1)) {
+                    // the hook names this cohort but is not scoped to the cohort's
+                    // app, so it is asking for another app's data. Rare, and worth
+                    // seeing rather than dropping quietly.
+                    log.w("Not delivering " + eventType + " to hook " + (rule._id || "?")
+                        + ": it subscribes to cohort " + cohort._id + " which belongs to app " + cohort.app_id
+                        + ", outside the hook's apps [" + (Array.isArray(rule.apps) ? rule.apps.join(", ") : "") + "]");
+                }
+                if (cohortMatches
                     && Array.isArray(rule.apps) && rule.apps.indexOf(cohort.app_id + '') > -1) {
                     common.db.collection('app_users' + cohort.app_id).find({"uid": {"$in": uids}}).toArray(
                         (uidErr, result) => {
@@ -221,6 +266,9 @@ class InternalEventTrigger {
                             eventType,
                         });
                     }
+                    else if (!appId) {
+                        warnMissingAppId("ob.appId");
+                    }
                     else if (rule.apps[0] === appId + '') {
                         utils.updateRuleTriggerTime(rule._id);
                         this.pipeline({
@@ -228,6 +276,9 @@ class InternalEventTrigger {
                             rule: rule,
                             eventType,
                         });
+                    }
+                    else {
+                        noteOutOfScope(rule, appId);
                     }
                 }
                 catch (err) {
@@ -241,6 +292,12 @@ class InternalEventTrigger {
             case "/i/app_users/delete": {
                 const {app_id, user} = ob;
 
+                if (!app_id) {
+                    warnMissingAppId("ob.app_id");
+                }
+                else if (rule.apps[0] !== app_id + '') {
+                    noteOutOfScope(rule, app_id);
+                }
                 if (rule.apps[0] === app_id + '') {
                     try {
                         utils.updateRuleTriggerTime(rule._id);
@@ -283,7 +340,16 @@ class InternalEventTrigger {
                     && Array.isArray(rule.apps)
                     && sourceApps.length > 0
                     && sourceApps.every((a) => rule.apps.indexOf(a + '') > -1);
-                if (ob.rule._id + "" === rule.trigger.configuration.hookID && sourceInScope) {
+                const hookMatches = ob.rule._id + "" === rule.trigger.configuration.hookID;
+                if (hookMatches && !sourceInScope) {
+                    // the hook names this source hook but is not scoped to all of the
+                    // source's apps, so it is asking for another app's hook document
+                    log.w("Not delivering " + eventType + " to hook " + (rule._id || "?")
+                        + ": it subscribes to hook " + ob.rule._id + " whose apps ["
+                        + (sourceApps ? sourceApps.join(", ") : "") + "] are not all within the hook's apps ["
+                        + (Array.isArray(rule.apps) ? rule.apps.join(", ") : "") + "]");
+                }
+                if (hookMatches && sourceInScope) {
                     try {
                         utils.updateRuleTriggerTime(rule._id);
                     }
@@ -310,13 +376,19 @@ class InternalEventTrigger {
                 //A dispatch without an app id cannot be scoped, so it is dropped
                 //rather than delivered to every subscriber.
                 const rcAppId = ob && ob.params && ob.params.appId;
-                if (rcAppId && Array.isArray(rule.apps) && rule.apps.indexOf(rcAppId + '') > -1) {
+                if (!rcAppId) {
+                    warnMissingAppId("ob.params.appId");
+                }
+                else if (Array.isArray(rule.apps) && rule.apps.indexOf(rcAppId + '') > -1) {
                     utils.updateRuleTriggerTime(rule._id);
                     this.pipeline({
                         params: ob,
                         rule: rule,
                         eventType,
                     });
+                }
+                else {
+                    noteOutOfScope(rule, rcAppId);
                 }
                 break;
             }
@@ -325,12 +397,18 @@ class InternalEventTrigger {
                 //be triggered by it. The payload stays empty, as before; appId is
                 //used for scoping only and is not forwarded.
                 const alertAppId = ob && ob.appId;
-                if (alertAppId && Array.isArray(rule.apps) && rule.apps.indexOf(alertAppId + '') > -1) {
+                if (!alertAppId) {
+                    warnMissingAppId("ob.appId");
+                }
+                else if (Array.isArray(rule.apps) && rule.apps.indexOf(alertAppId + '') > -1) {
                     this.pipeline({
                         params: {},
                         rule: rule,
                         eventType,
                     });
+                }
+                else {
+                    noteOutOfScope(rule, alertAppId);
                 }
                 break;
             }
