@@ -2,8 +2,8 @@
 Fixes:
 - [events] Fix sum chart tooltip displaying the raw floating-point value instead of a rounded number
 
-
 Security Fixes:
+- [compliance-hub] The consents table now returns a fixed set of fields; a projection supplied on the request is no longer used to widen the response beyond the consent columns
 - [dashboards] Widgets are no longer copied when the copying user has no access to the apps they reference, and widget app ids are validated on widget create and update
 
 Enterprise Features:
