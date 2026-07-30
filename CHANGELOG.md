@@ -1,4 +1,7 @@
 ## Version 24.05.51
+Security Fixes:
+- [dashboards] Widgets are no longer copied when the copying user has no access to the apps they reference, and widget app ids are validated on widget create and update
+
 Enterprise Fixes:
 - [data-manager] Fixed bug where event and view transformations occasionally failed to apply to incoming data
 
