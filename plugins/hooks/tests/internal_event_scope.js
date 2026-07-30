@@ -1,4 +1,5 @@
-var should = require('should');
+// required for the side effect of extending Object.prototype with should
+require('should');
 var InternalEventTrigger = require('../api/parts/triggers/internal_event.js');
 var utils = require('../api/utils.js');
 
