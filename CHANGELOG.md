@@ -5,6 +5,9 @@ Fixes:
 Security Fixes:
 - [hooks] Internal event hooks are now scoped to the apps the hook belongs to: app creation is a global-admin-only event, and remote-config, cohort, alert and hook-chaining events are only delivered when the event's app is one the hook is scoped to
 
+Enterprise Features:
+- [journey_engine] dynamic parameter support in deeplinks
+
 ## Version 25.03.50
 Fixes:
 - [star-rating] Fix custom widget logo resolving to the wrong path (mis-detected as the global app logo) after editing a widget
