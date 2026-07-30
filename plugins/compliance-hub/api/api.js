@@ -10,6 +10,25 @@ var plugin = {},
 
 const FEATURE_NAME = 'compliance_hub';
 
+/**
+ * Fields the Compliance Hub users table renders, and the only app_users fields
+ * /o/app_users/consents may return. These match the columns bound in
+ * frontend/public/templates/user.html: did, d, av, consent, lac, plus uid and
+ * appUserExport for the per-row consent-history and export actions.
+ *
+ * compliance_hub read is a consent-scoped permission, so this endpoint must not
+ * be able to return the rest of an app_users document.
+ */
+const CONSENT_TABLE_PROJECTION = Object.freeze({
+    "did": 1,
+    "d": 1,
+    "av": 1,
+    "consent": 1,
+    "lac": 1,
+    "uid": 1,
+    "appUserExport": 1
+});
+
 (function() {
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
@@ -294,7 +313,15 @@ const FEATURE_NAME = 'compliance_hub';
                             return;
                         }
                         params.qstring.query = parsedC.query;
-                        params.qstring.project = params.qstring.project || params.qstring.projection || {"did": 1, "d": 1, "av": 1, "consent": 1, "lac": 1, "uid": 1, "appUserExport": 1};
+                        //The consent table is a fixed set of columns, so the
+                        //projection is fixed server side and any project/projection
+                        //supplied by the caller is ignored. Previously the default
+                        //applied only when the caller omitted both parameters, so
+                        //project={} - an empty projection, which Mongo reads as "all
+                        //fields" - returned whole app_users documents (name, email,
+                        //phone, custom properties, payment totals, location) to a
+                        //member holding nothing but compliance_hub read.
+                        params.qstring.project = Object.assign({}, CONSENT_TABLE_PROJECTION);
 
                         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
                             params.qstring.query.did = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
