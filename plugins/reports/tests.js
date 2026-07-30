@@ -334,6 +334,7 @@ describe('Testing Reports non-core authorization', function() {
     var APP_ID = "";
     var adminDashboardId = "";
     var memberDashboardId = "";
+    var sharedDashIdForCleanup = "";
     var memberApiKey = "";
     var memberUserId = "";
     var uniq = Date.now();
@@ -436,6 +437,39 @@ describe('Testing Reports non-core authorization', function() {
             });
     });
 
+    it('should allow a dashboards report for a dashboard shared with the member', function(done) {
+        // Dashboard permissions are deliberately separate from app permissions: a
+        // dashboard can be shared with a member who has no access to the apps its
+        // widgets reference, and they are meant to be able to view it and schedule a
+        // report for it. This is the same admin-owned dashboard the member was
+        // refused above, so the only thing that changes here is the share, which is
+        // what proves authorization follows the share and not app rights.
+        var sharedDashboardId = "";
+        request.get('/i/dashboards/create?api_key=' + API_KEY_ADMIN
+            + '&name=ReportsSharedDash' + uniq
+            + '&share_with=selected-users'
+            + '&shared_email_view=' + encodeURIComponent(JSON.stringify(["reportsmember" + uniq + "@mail.test"])))
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                sharedDashboardId = JSON.parse(res.text);
+                should.exist(sharedDashboardId);
+                request.get('/i/reports/create?api_key=' + memberApiKey + '&app_id=' + APP_ID
+                    + '&args=' + encodeURIComponent(JSON.stringify(dashboardReport(sharedDashboardId))))
+                    .expect(200)
+                    .end(function(e, r) {
+                        if (e) {
+                            return done(e);
+                        }
+                        r.body.should.have.property('result', 'Success');
+                        sharedDashIdForCleanup = sharedDashboardId;
+                        done();
+                    });
+            });
+    });
+
     it('should not persist the authorize flag on the stored report', function(done) {
         request.get('/o/reports/all?api_key=' + memberApiKey + '&app_id=' + APP_ID)
             .expect(200)
@@ -478,16 +512,25 @@ describe('Testing Reports non-core authorization', function() {
                  * @returns {void}
                  */
                 function cleanupRest() {
-                    request.get('/i/dashboards/delete?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + adminDashboardId)
-                        .end(function() {
-                            request.get('/i/dashboards/delete?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + memberDashboardId)
+                    var dashboards = [adminDashboardId, memberDashboardId, sharedDashIdForCleanup].filter(Boolean);
+                    /**
+                     * Delete the dashboards one at a time, then the member
+                     * @param {number} i - index into dashboards
+                     * @returns {void}
+                     */
+                    function deleteDashboard(i) {
+                        if (i >= dashboards.length) {
+                            return request.get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [memberUserId]})))
                                 .end(function() {
-                                    request.get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [memberUserId]})))
-                                        .end(function() {
-                                            done();
-                                        });
+                                    done();
                                 });
-                        });
+                        }
+                        request.get('/i/dashboards/delete?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + dashboards[i])
+                            .end(function() {
+                                deleteDashboard(i + 1);
+                            });
+                    }
+                    deleteDashboard(0);
                 }
                 if (!pending) {
                     return cleanupRest();
