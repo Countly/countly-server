@@ -603,6 +603,9 @@ var spawn = require('child_process').spawn,
                             common.returnMessage(params, 400, msg);
                             return;
                         }
+                        //guard.changes is always empty now that nothing is stripped. It is
+                        //still passed so the response keeps its "removed" field and the UI
+                        //contract does not change
                         aggregate(params.qstring.collection, aggregation, guard.changes);
                     }
                     catch (e) {
