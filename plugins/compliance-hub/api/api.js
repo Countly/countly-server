@@ -196,12 +196,7 @@ const CONSENT_TABLE_PROJECTION = Object.freeze({
                     }
                     else if (total > 0) {
                         params.qstring.query = params.qstring.query || params.qstring.filter || {};
-                        //consent_history holds only consent state and the device
-                        //context it changed in, so full documents stay the response
-                        //shape here. The projection is still fixed server side
-                        //rather than taken from the request, so this endpoint
-                        //cannot be steered with project/projection either.
-                        params.qstring.project = {};
+                        params.qstring.project = params.qstring.project || params.qstring.projection || {};
 
                         var parsedSearch = common.parseUserQuery(params.qstring.query);
                         if (parsedSearch.error) {
@@ -231,6 +226,16 @@ const CONSENT_TABLE_PROJECTION = Object.freeze({
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
+                        }
+
+                        params.qstring.project = params.qstring.project || {};
+                        if (typeof params.qstring.project === "string" && params.qstring.project.length) {
+                            try {
+                                params.qstring.project = JSON.parse(params.qstring.project);
+                            }
+                            catch (ex) {
+                                params.qstring.project = {};
+                            }
                         }
 
                         params.qstring.sort = params.qstring.sort || {};
