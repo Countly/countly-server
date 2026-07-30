@@ -33,6 +33,27 @@ describe("dbviewer aggregation guard", function() {
                     }
                 }
             ];
+            // Two independent checks now catch this. The join check runs first and
+            // reports the collection, since password_reset is protected for every
+            // role; the operator check would reject it anyway.
+            var res = guard.sanitizeAggregation(p, USER);
+            res.error.type.should.equal("join");
+            res.error.name.should.equal("password_reset");
+        });
+        it("rejects the same shape aimed at an unprotected collection, on the operator", function() {
+            var p = [
+                {$limit: 1},
+                {
+                    $facet: {
+                        leak: [
+                            {$lookup: {from: "apps", pipeline: [{$project: {key: 1}}], as: "docs"}},
+                            {$_internalInhibitOptimization: {}},
+                            {$unwind: "$docs"},
+                            {$replaceRoot: {newRoot: "$docs"}}
+                        ]
+                    }
+                }
+            ];
             var res = guard.sanitizeAggregation(p, USER);
             res.error.type.should.equal("operator");
             res.error.name.should.equal("$lookup");
@@ -160,6 +181,11 @@ describe("dbviewer aggregation guard", function() {
             var res = guard.sanitizeAggregation([{$lookup: {from: {db: "countly", coll: "members"}, as: "m"}}], ADMIN);
             res.error.type.should.equal("join");
             res.error.name.should.equal("members");
+        });
+        it("rejects a $lookup into password_reset, whose prid is a reset token", function() {
+            var res = guard.sanitizeAggregation([{$lookup: {from: "password_reset", as: "d"}}], ADMIN);
+            res.error.type.should.equal("join");
+            res.error.name.should.equal("password_reset");
         });
         it("rejects a $graphLookup into members via the cross-db object form", function() {
             var res = guard.sanitizeAggregation([{$graphLookup: {from: {db: "countly", coll: "members"}, startWith: "$x", connectFromField: "a", connectToField: "b", as: "m"}}], ADMIN);

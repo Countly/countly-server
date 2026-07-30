@@ -20,6 +20,10 @@ const MAX_DBVIEWER_LIMIT = 10000;
 // unit-tested in isolation.
 const { sanitizeAggregation, ALLOWED_OPERATORS_USER, ALLOWED_OPERATORS_GLOBAL_ADMIN } = require('./parts/aggregation_guard.js');
 const { findDisallowedProjectionValue, escapeRegExp } = require('./parts/query_guard.js');
+// Fields the viewer must never return, and the helpers that remove them. Held in one
+// module because the same redaction applies in three places (document read,
+// collection read, aggregation) and a per-site list drifts.
+const { hasRedactedFields, redactFields, redactionStage } = require('./parts/redaction.js');
 var spawn = require('child_process').spawn,
     child;
 
@@ -139,10 +143,8 @@ var spawn = require('child_process').spawn,
                     }
                     dbs[dbNameOnParam].collection(params.qstring.collection).findOne(docFilter, function(err, results) {
                         if (!err) {
-                            if (params.qstring.collection === 'members' && results) {
-                                delete results.password;
-                                delete results.api_key;
-                                delete results.two_factor_auth;
+                            if (hasRedactedFields(params.qstring.collection)) {
+                                redactFields(params.qstring.collection, results);
                             }
                             else if (params.qstring.collection === 'auth_tokens' && results) {
                                 if (results._id) {
@@ -289,10 +291,8 @@ var spawn = require('child_process').spawn,
                     var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc) {
 
-                            if (params.qstring.collection === 'members' && doc) {
-                                delete doc.password;
-                                delete doc.api_key;
-                                delete doc.two_factor_auth;
+                            if (hasRedactedFields(params.qstring.collection)) {
+                                redactFields(params.qstring.collection, doc);
                             }
                             else if (params.qstring.collection === 'auth_tokens' && doc) {
                                 if (doc._id) {
@@ -423,13 +423,14 @@ var spawn = require('child_process').spawn,
                         aggregation.push({ "$limit": Math.min(iDisplayLength, MAX_DBVIEWER_LIMIT) });
                     }
                 }
-                if (collection === 'members') {
+                var redaction = redactionStage(collection);
+                if (redaction) {
                     // Insert the redaction as the very first stage so no
                     // user-supplied stage — including a leading $match using
                     // $expr, or a $project/$group that aliases or references the
                     // field — can read the raw credential fields before they are
                     // removed.
-                    aggregation.splice(0, 0, {"$project": {"password": 0, "api_key": 0, "two_factor_auth": 0}});
+                    aggregation.splice(0, 0, redaction);
                 }
                 else if (collection === 'auth_tokens') {
                     aggregation.splice(0, 0, {"$addFields": {"_id": "***redacted***"}});

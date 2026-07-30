@@ -167,7 +167,8 @@ const ALLOWED_OPERATORS_GLOBAL_ADMIN = toMap(STAGES_USER, STAGES_GLOBAL_ADMIN_ON
 // source collection, so those are rejected for everyone including global admins.
 const PROTECTED_JOIN_COLLECTIONS = {
     "members": true,
-    "auth_tokens": true
+    "auth_tokens": true,
+    "password_reset": true
 };
 
 /**
