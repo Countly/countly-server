@@ -1176,7 +1176,7 @@
                 catch (error) {
                     return value;
                 }
-            }
+            },
 
             serializeEditor() {
                 const editor = this.$refs.editor;
