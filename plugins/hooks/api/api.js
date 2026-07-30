@@ -447,6 +447,9 @@ async function validateTriggerConfiguration(trigger, apps) {
             cohort = await common.db.collection("cohorts").findOne({_id: configuration.cohortID + ""});
         }
         catch (e) {
+            //an unresolvable cohort is allowed through on purpose (see above), so
+            //log why rather than letting the reason disappear
+            log.d("Could not resolve cohort " + configuration.cohortID + " while validating a hook trigger: " + e.message);
             cohort = null;
         }
         if (cohort && scopedApps.indexOf(cohort.app_id + "") === -1) {
@@ -464,6 +467,9 @@ async function validateTriggerConfiguration(trigger, apps) {
             sourceHook = await common.db.collection("hooks").findOne({_id: common.db.ObjectID(configuration.hookID + "")});
         }
         catch (e) {
+            //a malformed id lands here and is rejected below, which is correct, but
+            //the caller sees only "does not belong to this hook's apps" so record why
+            log.d("Could not resolve source hook " + configuration.hookID + " while validating a hook trigger: " + e.message);
             sourceHook = null;
         }
         //the source hook's payload includes its whole document, so require it to be
@@ -483,6 +489,8 @@ async function validateTriggerConfiguration(trigger, apps) {
             alert = await common.db.collection("alerts").findOne({_id: common.db.ObjectID(configuration.alertID + "")});
         }
         catch (e) {
+            //as above: a malformed id is rejected below, so record the real reason
+            log.d("Could not resolve alert " + configuration.alertID + " while validating a hook trigger: " + e.message);
             alert = null;
         }
         const alertApps = (alert && Array.isArray(alert.selectedApps)) ? alert.selectedApps : [];
