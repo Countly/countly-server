@@ -134,6 +134,15 @@ plugins.connectToAllDatabases().then(function() {
         proxy_type: "https"
     });
 
+    //the outbound proxy credentials. The whole security namespace used to be
+    //serialized into the dashboard page and returned to any app admin, so these were
+    //readable well below the operator who set them. The dashboard only uses the
+    //password policy keys from this namespace, so nothing needs them.
+    plugins.setSecretConfigs("security", {
+        proxy_username: true,
+        proxy_password: true
+    });
+
     /**
     * Set Plugins Logs Config
     */

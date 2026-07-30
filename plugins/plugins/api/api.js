@@ -282,6 +282,14 @@ var plugin = {},
             plugins.loadConfigs(common.db, function() {
                 var confs = plugins.getAllConfigs();
                 delete confs.services;
+                //an app admin may see which configuration exists, and how their app
+                //differs from the server default, but not the values that are
+                //credentials: a proxy password, an API key, the key report subscribe
+                //tokens are signed with. Only a global admin can set those, so only a
+                //global admin is shown them.
+                if (!params.member.global_admin) {
+                    confs = plugins.maskSecretConfigs(confs);
+                }
                 common.returnOutput(params, confs);
             });
         });

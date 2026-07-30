@@ -27,6 +27,11 @@ var pluginDependencies = require('./pluginDependencies.js'),
     { ConnectionString } = require("mongodb-connection-string-url");
 var pluginConfig = {};
 
+//stands in for a secret configuration value when configuration is read by someone
+//who may know the value is set but not what it is. Deliberately not a plausible
+//value, so it is obvious in a UI and in a bug report.
+const SECRET_CONFIG_MASK = "********";
+
 /**
 * This module handles communicaton with plugins
 * @module "plugins/pluginManager"
@@ -42,6 +47,9 @@ var pluginManager = function pluginManager() {
     var defaultConfigs = {};
     var configsOnchanges = {};
     var excludeFromUI = {plugins: true};
+    //configuration values that hold credentials rather than settings, by namespace.
+    //see setSecretConfigs()
+    var secretConfigs = {};
     var finishedSyncing = true;
     var expireList = [];
     var masking = {};
@@ -405,6 +413,96 @@ var pluginManager = function pluginManager() {
         for (let i in conf) {
             defaultConfigs[namespace]._user[i] = conf[i];
         }
+    };
+
+    /**
+    * Mark configuration values as secrets, so they are not handed out on read.
+    *
+    * Some configuration holds credentials rather than settings: a proxy password, an
+    * API key, the key report subscribe tokens are signed with. Those are readable by
+    * anyone who can read configuration at all, which is a lower bar than the
+    * operator who set them. Marking them here masks the value everywhere
+    * configuration is returned to a caller who is not a global admin, and keeps it
+    * out of the values exposed to the dashboard page.
+    *
+    * A value the browser needs is not a secret and must not be marked: once it is in
+    * page source, masking is theatre. tracking.self_tracking_app_key and
+    * recaptcha.site_key are deliberately not marked for that reason.
+    *
+    * getConfig() is unaffected, so server code keeps reading the real value.
+    *
+    * @param {string} namespace - namespace of configuration, usually plugin name
+    * @param {object} conf - object whose keys are secret when the value is true
+    **/
+    this.setSecretConfigs = function(namespace, conf) {
+        if (!secretConfigs[namespace]) {
+            secretConfigs[namespace] = {};
+        }
+        for (let i in conf) {
+            secretConfigs[namespace][i] = conf[i];
+        }
+    };
+
+    /**
+    * Whether a configuration value is marked secret.
+    * @param {string} namespace - namespace of configuration
+    * @param {string} key - configuration key
+    * @returns {boolean} true when the value must not be handed out
+    **/
+    this.isSecretConfig = function(namespace, key) {
+        return !!(secretConfigs[namespace] && secretConfigs[namespace][key] === true);
+    };
+
+    /**
+    * Copy of a full configuration object with every secret value replaced by a
+    * placeholder. Used for callers who may see that configuration exists but not what
+    * it is set to.
+    *
+    * The input is not modified, so the caller cannot accidentally hand a masked
+    * object to code that needs the real values.
+    *
+    * @param {object} confs - object of namespace -> configuration object
+    * @returns {object} copy with secret values masked
+    **/
+    this.maskSecretConfigs = function(confs) {
+        var masked = {};
+        for (let namespace in confs) {
+            var conf = confs[namespace];
+            if (!conf || typeof conf !== "object" || Array.isArray(conf)) {
+                masked[namespace] = conf;
+                continue;
+            }
+            masked[namespace] = {};
+            for (let key in conf) {
+                masked[namespace][key] = this.isSecretConfig(namespace, key) && conf[key] !== "" && conf[key] !== null && typeof conf[key] !== "undefined"
+                    ? SECRET_CONFIG_MASK
+                    : conf[key];
+            }
+        }
+        return masked;
+    };
+
+    /**
+    * Copy of one namespace's configuration with secret keys removed entirely, for
+    * values that are serialized into the dashboard page. Removed rather than masked:
+    * the page has no use for a placeholder, and an absent key cannot be mistaken for
+    * a real one.
+    *
+    * @param {string} namespace - namespace of configuration
+    * @param {object} conf - configuration object for that namespace
+    * @returns {object} copy without the secret keys
+    **/
+    this.omitSecretConfigs = function(namespace, conf) {
+        if (!conf || typeof conf !== "object" || Array.isArray(conf)) {
+            return conf;
+        }
+        var out = {};
+        for (let key in conf) {
+            if (!this.isSecretConfig(namespace, key)) {
+                out[key] = conf[key];
+            }
+        }
+        return out;
     };
 
     /**
