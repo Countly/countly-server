@@ -32,7 +32,7 @@
  * output means nothing.
  */
 
-/* eslint-disable no-undef, no-console */
+/* eslint-disable no-undef */
 'use strict';
 
 var probeDb = db.getSiblingDB("dbviewer_operator_probe");
