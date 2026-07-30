@@ -6,6 +6,13 @@ Fixes:
 Enterprise Fixes:
 - [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
 
+Security Fixes:
+- [compliance-hub] The consents table now returns a fixed set of fields; a projection supplied on the request is no longer used to widen the response beyond the consent columns
+- [dashboards] Widgets are no longer copied when the copying user has no access to the apps they reference, and widget app ids are validated on widget create and update
+
+Enterprise Features:
+- [journey_engine] dynamic parameter support in deeplinks
+
 ## Version 25.03.50
 Fixes:
 - [star-rating] Fix custom widget logo resolving to the wrong path (mis-detected as the global app logo) after editing a widget
