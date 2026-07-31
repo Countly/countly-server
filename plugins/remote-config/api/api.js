@@ -441,8 +441,10 @@ plugins.setConfigs("remote-config", {
                 return common.returnMessage(params, 500, message);
             }
 
+            //appId is included so hooks can scope this event to the app it
+            //belongs to; copied rather than set on the stored document
             plugins.dispatch("/i/remote-config/add-parameter", {
-                params: parameter
+                params: Object.assign({}, parameter, {appId: appId})
             });
 
             if (params.internal) {
@@ -1005,8 +1007,9 @@ plugins.setConfigs("remote-config", {
                 return common.returnMessage(params, 500, message);
             }
 
+            //appId is included so hooks can scope this event to the app it belongs to
             plugins.dispatch("/i/remote-config/update-parameter", {
-                params: parameter
+                params: Object.assign({}, parameter, {appId: appId})
             });
 
             return common.returnMessage(params, 200);
@@ -1131,8 +1134,9 @@ plugins.setConfigs("remote-config", {
                 common.outDb.collection(collectionName).remove({_id: common.outDb.ObjectID(parameterId)}, function(removeErr) {
                     if (!removeErr) {
                         plugins.dispatch("/systemlogs", {params: params, action: "rc_parameter_removed", data: parameter});
+                        //appId is included so hooks can scope this event to the app it belongs to
                         plugins.dispatch("/i/remote-config/remove-parameter", {
-                            params: parameter
+                            params: Object.assign({}, parameter, {appId: appId})
                         });
                         return common.returnMessage(params, 200, 'Success');
                     }
@@ -1235,8 +1239,9 @@ plugins.setConfigs("remote-config", {
             }
 
             var conditionId = result && result[1] || null;
+            //appId is included so hooks can scope this event to the app it belongs to
             plugins.dispatch("/i/remote-config/add-condition", {
-                params: condition
+                params: Object.assign({}, condition, {appId: appId})
             });
             if (params.internal) {
                 return conditionId;
@@ -1431,8 +1436,9 @@ plugins.setConfigs("remote-config", {
                 return common.returnMessage(params, 500, message);
             }
 
+            //appId is included so hooks can scope this event to the app it belongs to
             plugins.dispatch("/i/remote-config/update-condition", {
-                params: condition
+                params: Object.assign({}, condition, {appId: appId})
             });
 
             return common.returnMessage(params, 200);

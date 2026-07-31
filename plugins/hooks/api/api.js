@@ -295,7 +295,7 @@ plugins.register("/i/hook/save", function(ob) {
     let paramsInstance = ob.params;
 
 
-    validateCreate(ob.params, FEATURE_NAME, function(params) {
+    validateCreate(ob.params, FEATURE_NAME, async function(params) {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
@@ -325,7 +325,7 @@ plugins.register("/i/hook/save", function(ob) {
             if (hookConfig._id) {
                 const id = hookConfig._id;
                 delete hookConfig._id;
-                return common.db.collection("hooks").findOne({ _id: common.db.ObjectID(id) }, function(findErr, existingHook) {
+                return common.db.collection("hooks").findOne({ _id: common.db.ObjectID(id) }, async function(findErr, existingHook) {
                     if (findErr) {
                         common.returnMessage(params, 500, "Failed to save an hook");
                         return;
@@ -340,6 +340,16 @@ plugins.register("/i/hook/save", function(ob) {
                         (!memberHasRightForAllApps(rights.hasUpdateRight, params.member, existingHook.apps) ||
                             (hookConfig.apps && !memberHasRightForAllApps(rights.hasUpdateRight, params.member, hookConfig.apps)))) {
                         common.returnMessage(params, 403, "User does not have right");
+                        return;
+                    }
+                    //validate against the effective hook, since an update may
+                    //change only the trigger or only the apps
+                    const updatedTriggerValidation = await validateTriggerConfiguration(
+                        hookConfig.trigger || existingHook.trigger,
+                        hookConfig.apps || existingHook.apps
+                    );
+                    if (!updatedTriggerValidation.valid) {
+                        common.returnMessage(params, 400, updatedTriggerValidation.error);
                         return;
                     }
                     common.db.collection("hooks").findAndModify(
@@ -364,6 +374,12 @@ plugins.register("/i/hook/save", function(ob) {
                 common.returnMessage(params, 403, "User does not have right");
                 return true;
             }
+
+            const newTriggerValidation = await validateTriggerConfiguration(hookConfig.trigger, hookConfig.apps);
+            if (!newTriggerValidation.valid) {
+                common.returnMessage(params, 400, newTriggerValidation.error);
+                return true;
+            }
             return common.db.collection("hooks").insert(
                 hookConfig,
                 function(err, result) {
@@ -384,6 +400,109 @@ plugins.register("/i/hook/save", function(ob) {
     }, paramsInstance);
     return true;
 });
+
+/**
+ * Validate an InternalEventTrigger's configuration against the hook's own apps.
+ *
+ * The event type itself was never checked, so any string was accepted and stored.
+ * More importantly, the events that name a target object matched on that id alone
+ * at delivery time, with nothing tying the target to the hook's apps: a hook
+ * scoped to one app could name another app's cohort, hook or alert. Delivery is
+ * now scoped, so this is a second line of defence, but it turns a hook that would
+ * silently never fire into an explicit rejection at save time.
+ *
+ * hooks and alerts are core collections, so a target that cannot be resolved is
+ * rejected. Cohorts are an enterprise plugin and the collection may not exist in
+ * a given deployment, so an unresolvable cohort is allowed through and left to the
+ * delivery-time check rather than blocking a working feature.
+ *
+ * @param {object} trigger - the effective trigger, payload merged over stored
+ * @param {array} apps - the effective app ids the hook is scoped to
+ * @returns {Promise<object>} {valid, error}
+ */
+async function validateTriggerConfiguration(trigger, apps) {
+    if (!trigger || trigger.type !== "InternalEventTrigger") {
+        return {valid: true};
+    }
+
+    const configuration = trigger.configuration || {};
+    const eventType = configuration.eventType;
+
+    if (!eventType || InternalEventTrigger.getInternalEvents().indexOf(eventType) === -1) {
+        return {valid: false, error: "Unknown internal event type"};
+    }
+
+    const scopedApps = Array.isArray(apps) ? apps.map(function(a) {
+        return a + "";
+    }) : [];
+
+    if (eventType === "/cohort/enter" || eventType === "/cohort/exit") {
+        if (!configuration.cohortID) {
+            return {valid: false, error: "Missing cohort for this event type"};
+        }
+        let cohort = null;
+        try {
+            //cohort ids are stored as strings, and the collection belongs to an
+            //enterprise plugin that may not be installed
+            cohort = await common.db.collection("cohorts").findOne({_id: configuration.cohortID + ""});
+        }
+        catch (e) {
+            //an unresolvable cohort is allowed through on purpose (see above), so
+            //log why rather than letting the reason disappear
+            log.d("Could not resolve cohort " + configuration.cohortID + " while validating a hook trigger: " + e.message);
+            cohort = null;
+        }
+        if (cohort && scopedApps.indexOf(cohort.app_id + "") === -1) {
+            return {valid: false, error: "Cohort does not belong to this hook's apps"};
+        }
+        return {valid: true};
+    }
+
+    if (eventType === "/hooks/trigger") {
+        if (!configuration.hookID) {
+            return {valid: false, error: "Missing hook for this event type"};
+        }
+        let sourceHook = null;
+        try {
+            sourceHook = await common.db.collection("hooks").findOne({_id: common.db.ObjectID(configuration.hookID + "")});
+        }
+        catch (e) {
+            //a malformed id lands here and is rejected below, which is correct, but
+            //the caller sees only "does not belong to this hook's apps" so record why
+            log.d("Could not resolve source hook " + configuration.hookID + " while validating a hook trigger: " + e.message);
+            sourceHook = null;
+        }
+        //the source hook's payload includes its whole document, so require it to be
+        //scoped within this hook's apps rather than merely overlapping
+        const sourceApps = (sourceHook && Array.isArray(sourceHook.apps)) ? sourceHook.apps : null;
+        if (!sourceApps || !sourceApps.length || !sourceApps.every(function(a) {
+            return scopedApps.indexOf(a + "") > -1;
+        })) {
+            return {valid: false, error: "Source hook does not belong to this hook's apps"};
+        }
+        return {valid: true};
+    }
+
+    if (eventType === "/alerts/trigger" && configuration.alertID) {
+        let alert = null;
+        try {
+            alert = await common.db.collection("alerts").findOne({_id: common.db.ObjectID(configuration.alertID + "")});
+        }
+        catch (e) {
+            //as above: a malformed id is rejected below, so record the real reason
+            log.d("Could not resolve alert " + configuration.alertID + " while validating a hook trigger: " + e.message);
+            alert = null;
+        }
+        const alertApps = (alert && Array.isArray(alert.selectedApps)) ? alert.selectedApps : [];
+        if (!alert || !alertApps.some(function(a) {
+            return scopedApps.indexOf(a + "") > -1;
+        })) {
+            return {valid: false, error: "Alert does not belong to this hook's apps"};
+        }
+    }
+
+    return {valid: true};
+}
 
 /***
  * @param {array} effects - array of effects
