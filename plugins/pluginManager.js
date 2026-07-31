@@ -49,6 +49,9 @@ var pluginManager = function pluginManager() {
     //configuration values that hold credentials rather than settings, by namespace.
     //see setSecretConfigs()
     var secretConfigs = {};
+    //configuration values a caller who is not a global admin may read, by namespace.
+    //Nothing is readable unless it appears here. See setReadableConfigs()
+    var readableConfigs = {};
     var finishedSyncing = true;
     var expireList = [];
     var masking = {};
@@ -394,6 +397,73 @@ var pluginManager = function pluginManager() {
         for (let i in conf) {
             defaultConfigs[namespace]._user[i] = conf[i];
         }
+    };
+
+    /**
+    * Declare which configuration values a caller who is not a global admin may read.
+    *
+    * Nothing is readable unless declared here. That direction is deliberate: marking
+    * secrets instead would mean every new setting is exposed until somebody remembers
+    * to mark it, so one forgotten annotation is a leaked credential. Declaring what is
+    * needed fails the other way, and a missing entry costs a missing input in the UI,
+    * which someone notices and fixes.
+    *
+    * Declare the keys your own code reads. A plugin may declare a key from another
+    * namespace when it is the consumer: the reader knows what it needs, and the
+    * namespace owner may live in a different repository.
+    *
+    * This governs reads by other people. It has nothing to do with what the server
+    * itself can read, which is always the real configuration through getConfig().
+    *
+    * @param {string} namespace - namespace of configuration, usually plugin name
+    * @param {object} conf - object whose keys are readable when the value is true
+    **/
+    this.setReadableConfigs = function(namespace, conf) {
+        if (!readableConfigs[namespace]) {
+            readableConfigs[namespace] = {};
+        }
+        for (let i in conf) {
+            readableConfigs[namespace][i] = conf[i];
+        }
+    };
+
+    /**
+    * Whether a caller who is not a global admin may read a configuration value.
+    * @param {string} namespace - namespace of configuration
+    * @param {string} key - configuration key
+    * @returns {boolean} true when the value may be handed out
+    **/
+    this.isReadableConfig = function(namespace, key) {
+        return !!(Object.prototype.hasOwnProperty.call(readableConfigs, namespace)
+            && readableConfigs[namespace][key] === true);
+    };
+
+    /**
+    * Copy of a full configuration object reduced to the values a caller who is not a
+    * global admin may read. A namespace with nothing declared is dropped entirely.
+    *
+    * The input is not modified.
+    *
+    * @param {object} confs - object of namespace -> configuration object
+    * @returns {object} copy containing only declared values
+    **/
+    this.filterReadableConfigs = function(confs) {
+        var out = {};
+        for (let namespace in confs) {
+            var conf = confs[namespace];
+            if (!conf || typeof conf !== "object" || Array.isArray(conf)) {
+                continue;
+            }
+            for (let key in conf) {
+                if (this.isReadableConfig(namespace, key)) {
+                    if (!out[namespace]) {
+                        out[namespace] = {};
+                    }
+                    out[namespace][key] = conf[key];
+                }
+            }
+        }
+        return out;
     };
 
     /**

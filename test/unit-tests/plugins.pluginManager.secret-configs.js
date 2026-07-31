@@ -112,7 +112,71 @@ describe("pluginManager secret configs", function() {
         });
     });
 
-    // Which keys this codebase actually marks is deliberately not asserted here: a
+    describe("setReadableConfigs / filterReadableConfigs", function() {
+        before(function() {
+            plugins.setConfigs("unittest_readable", {
+                needed: 1,
+                also_needed: "yes",
+                not_needed: "internal",
+                brand_new_api_key: "NOBODY_MARKED_THIS"
+            });
+            plugins.setReadableConfigs("unittest_readable", {
+                needed: true,
+                also_needed: true
+            });
+        });
+
+        it("returns declared values", function() {
+            var out = plugins.filterReadableConfigs({unittest_readable: plugins.getConfig("unittest_readable")});
+            out.unittest_readable.should.have.property("needed", 1);
+            out.unittest_readable.should.have.property("also_needed", "yes");
+        });
+        it("withholds anything not declared", function() {
+            var out = plugins.filterReadableConfigs({unittest_readable: plugins.getConfig("unittest_readable")});
+            out.unittest_readable.should.not.have.property("not_needed");
+        });
+        it("withholds a newly added credential nobody marked secret", function() {
+            // the point of the allow-list. Marking secrets is the other direction and
+            // leaks until someone remembers; this leaks only if someone opts in.
+            var out = plugins.filterReadableConfigs({unittest_readable: plugins.getConfig("unittest_readable")});
+            out.unittest_readable.should.not.have.property("brand_new_api_key");
+        });
+        it("drops a namespace with nothing declared, rather than returning it empty", function() {
+            var out = plugins.filterReadableConfigs({unittest_undeclared_ns: {a: 1, b: 2}});
+            out.should.not.have.property("unittest_undeclared_ns");
+        });
+        it("does not modify the object it was given", function() {
+            var input = {unittest_readable: plugins.getConfig("unittest_readable")};
+            plugins.filterReadableConfigs(input);
+            input.unittest_readable.should.have.property("not_needed", "internal");
+        });
+        it("is false for inherited Object.prototype keys", function() {
+            plugins.isReadableConfig("unittest_readable", "constructor").should.equal(false);
+            plugins.isReadableConfig("constructor", "needed").should.equal(false);
+        });
+        it("tolerates non-object namespace values", function() {
+            var out = plugins.filterReadableConfigs({a: null, b: "str", c: [1]});
+            Object.keys(out).length.should.equal(0);
+        });
+    });
+
+    describe("the two mechanisms together", function() {
+        before(function() {
+            plugins.setConfigs("unittest_both", {shown: 1, credential: "REAL_VALUE"});
+            plugins.setSecretConfigs("unittest_both", {credential: true});
+        });
+
+        it("masks a credential even when it is wrongly declared readable", function() {
+            // the allow-list is the control and the mask is the backstop, so declaring a
+            // credential readable by mistake still does not hand out its value
+            plugins.setReadableConfigs("unittest_both", {shown: true, credential: true});
+            var out = plugins.maskSecretConfigs(plugins.filterReadableConfigs({unittest_both: plugins.getConfig("unittest_both")}));
+            out.unittest_both.should.have.property("shown", 1);
+            out.unittest_both.credential.should.not.equal("REAL_VALUE");
+        });
+    });
+
+    // Which keys this codebase actually declares is deliberately not asserted here: a
     // unit test requiring pluginManager directly never loads api/api.js or the plugin
     // modules that declare them, so every such assertion would pass or fail for the
     // wrong reason. That belongs in plugins/plugins/tests.js, which runs against a
