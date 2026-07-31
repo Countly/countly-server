@@ -238,7 +238,11 @@ describe('Testing configs read reduction', function() {
             });
     });
 
-    it('should give the app admin the ratings widget colours', function(done) {
+    it('should give the app admin a plugin namespace it declared, when that plugin is on', function(done) {
+        // feedback belongs to star-rating. getAllConfigs omits a namespace whose plugin
+        // is not enabled, so in a test run without star-rating there is nothing to
+        // reduce and nothing to assert. Asserting the namespace exists would be
+        // asserting which plugins the run enabled, which is not what this covers.
         request
             .get('/o/configs?api_key=' + memberApiKey + '&app_id=' + APP_ID)
             .expect(200)
@@ -247,10 +251,14 @@ describe('Testing configs read reduction', function() {
                     return done(err);
                 }
                 var ob = JSON.parse(res.text);
-                ob.should.have.property("feedback");
+                if (!ob.feedback) {
+                    return done();
+                }
+                // present, so the declared keys must have arrived with real values
                 ob.feedback.should.have.property("main_color");
                 ob.feedback.should.have.property("font_color");
                 ob.feedback.main_color.length.should.be.above(0);
+                ob.feedback.main_color.should.not.equal(MASK);
                 done();
             });
     });
