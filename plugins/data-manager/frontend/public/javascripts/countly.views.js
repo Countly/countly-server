@@ -700,7 +700,9 @@
                 var isVisible = command === 'visible';
                 var events = [];
                 rows.forEach(function(row) {
-                    events.push(row.key);
+                    // row.key is still API-escaped; change_visibility writes events.map[key]
+                    // directly, so submitting it raw would create a ghost map entry
+                    events.push(countlyCommon.unescapeHtml(row.key));
                 });
                 this.$store.dispatch('countlyDataManager/changeVisibility', { events: events, isVisible: isVisible }).then(function() {
                     countlyEvent.refreshEvents();
@@ -1338,8 +1340,22 @@
             },
             handleEdit: function() {
                 var event = JSON.parse(JSON.stringify(this.event));
-                event.segments = this.segments;
+                event.segments = JSON.parse(JSON.stringify(this.segments));
                 event.isEditMode = true;
+                // The store holds values exactly as the API returned them, and common.returnOutput
+                // HTML-escapes every string on the way out. The events table decodes these before
+                // opening the same drawer (see the 'dm-open-edit-event-drawer' handler) - do the
+                // same here, otherwise a key like "a & b" is submitted back as "a &amp; b" and
+                // forks a second drill_meta doc / events.map entry that shows up as a ghost row.
+                event.key = countlyCommon.unescapeHtml(event.key);
+                event.e = countlyCommon.unescapeHtml(event.e);
+                event.name = countlyCommon.unescapeHtml(event.name);
+                event.description = countlyCommon.unescapeHtml(event.description);
+                event.categoryName = countlyCommon.unescapeHtml(event.categoryName);
+                event.segments = event.segments.map(function(seg) {
+                    seg.name = countlyCommon.unescapeHtml(seg.name);
+                    return seg;
+                });
                 this.openDrawer("events", event);
             },
             handleEditSegment: function(seg) {
