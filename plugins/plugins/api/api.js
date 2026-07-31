@@ -282,13 +282,29 @@ var plugin = {},
             plugins.loadConfigs(common.db, function() {
                 var confs = plugins.getAllConfigs();
                 delete confs.services;
-                //an app admin may see which configuration exists, and how their app
-                //differs from the server default, but not the values that are
-                //credentials: a proxy password, an API key, the key report subscribe
-                //tokens are signed with. Only a global admin can set those, so only a
-                //global admin is shown them.
+                //A caller who is not a global admin gets only the values some part of
+                //the dashboard needs in order to work: the app management settings and
+                //a handful of display values. Nothing else, whether or not anybody
+                //remembered it was sensitive.
+                //
+                //Two mechanisms on purpose, in this order. The allow-list is the
+                //control: a value nobody declared is not returned, so a new setting is
+                //private by default and forgetting costs a missing input rather than a
+                //leak. Masking is the backstop: if a credential is ever declared
+                //readable by mistake, its value is still withheld.
                 if (!params.member.global_admin) {
-                    confs = plugins.maskSecretConfigs(confs);
+                    var before = Object.keys(confs);
+                    confs = plugins.maskSecretConfigs(plugins.filterReadableConfigs(confs));
+                    //a namespace disappearing here is how an undeclared value looks
+                    //from the outside, and the UI degrades silently when it happens, so
+                    //leave a trail rather than nothing
+                    var dropped = before.filter(function(ns) {
+                        return !confs[ns];
+                    });
+                    if (dropped.length) {
+                        log.d("Withheld configuration namespaces from a non global admin"
+                            + common.reqInfo(params) + ": " + dropped.join(", "));
+                    }
                 }
                 common.returnOutput(params, confs);
             });
