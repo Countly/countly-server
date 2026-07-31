@@ -283,24 +283,20 @@ const FEATURE_NAME = 'reports';
                     });
                 }
 
+                //apps is authorized whatever the report type. It used to be checked
+                //only for core reports, so a non-core report could be stored with an
+                //arbitrary apps list, and a later update flipping report_type to "core"
+                //would start using that list without it ever having been checked. The
+                //dashboards drawer hides the app picker, so a legitimate non-core report
+                //carries an empty apps and is unaffected by this.
+                if (!appsArePermitted(params, props.apps)) {
+                    return common.returnMessage(params, 401, 'User does not have right to access this information');
+                }
+
                 if (props.report_type === "core") {
                     if (!props.apps || !Array.isArray(props.apps) || props.apps.length === 0) {
                         common.returnMessage(params, 400, 'Invalid or missing apps');
                         return;
-                    }
-
-                    if (!params.member.global_admin) {
-                        let allowedApps = (getAdminApps(params.member) || [])
-                            .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
-                        if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
-                            allowedApps = allowedApps.concat(params.member.user_of);
-                        }
-                        let notPermitted = props.apps.some(function(appId) {
-                            return allowedApps.indexOf(appId) === -1;
-                        });
-                        if (notPermitted) {
-                            return common.returnMessage(params, 401, 'User does not have right to access this information');
-                        }
                     }
                     insertReport();
                 }
@@ -383,24 +379,19 @@ const FEATURE_NAME = 'reports';
                         });
                     }
 
+                    //Authorize the apps the report will actually have, which is the
+                    //submitted list when one is sent and the stored list otherwise.
+                    //Checking only the submitted list let an update omit apps to keep a
+                    //stored list that was never checked, and flip report_type to "core"
+                    //so that list started being used.
+                    var effectiveApps = (typeof props.apps !== "undefined") ? props.apps : report.apps;
+                    if (!appsArePermitted(params, effectiveApps)) {
+                        return common.returnMessage(params, 401, 'User does not have right to access this information');
+                    }
+
                     if (effectiveType === "core") {
-                        if (typeof props.apps !== "undefined") {
-                            if (!Array.isArray(props.apps) || props.apps.length === 0) {
-                                return common.returnMessage(params, 400, 'Invalid or missing apps');
-                            }
-                            if (!params.member.global_admin) {
-                                let allowedApps = (getAdminApps(params.member) || [])
-                                    .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
-                                if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
-                                    allowedApps = allowedApps.concat(params.member.user_of);
-                                }
-                                let notPermitted = props.apps.some(function(appId) {
-                                    return allowedApps.indexOf(appId) === -1;
-                                });
-                                if (notPermitted) {
-                                    return common.returnMessage(params, 401, 'User does not have right to access this information');
-                                }
-                            }
+                        if (typeof props.apps !== "undefined" && (!Array.isArray(props.apps) || props.apps.length === 0)) {
+                            return common.returnMessage(params, 400, 'Invalid or missing apps');
                         }
                         applyUpdate();
                     }
@@ -665,6 +656,40 @@ const FEATURE_NAME = 'reports';
         props.r_day = day;
         props.r_hour = hour;
         props.r_minute = minute;
+    }
+
+    /**
+     * Whether the member may schedule a report for every app in a list.
+     *
+     * An empty or absent list is permitted: a non-core report legitimately has no apps,
+     * since the dashboards drawer hides the app picker. What must never pass is a list
+     * naming an app the member cannot read, whatever the report type, because a later
+     * update can flip report_type to "core" and the stored list would then be used.
+     *
+     * Legacy members have no permission object and reach apps through user_of, so they
+     * are allowed for those, matching how /o/reports/all and the alerts endpoints treat
+     * them. Without it they could not schedule reports for their own apps.
+     *
+     * @param {object} params - request params object, for member and global_admin
+     * @param {Array} apps - app ids the report targets
+     * @returns {boolean} true when every app is permitted
+     */
+    function appsArePermitted(params, apps) {
+        if (params.member.global_admin) {
+            return true;
+        }
+        if (!Array.isArray(apps) || apps.length === 0) {
+            return true;
+        }
+        let allowedApps = (getAdminApps(params.member) || [])
+            .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
+        if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+            allowedApps = allowedApps.concat(params.member.user_of);
+        }
+        allowedApps = allowedApps.map(String);
+        return apps.every(function(appId) {
+            return allowedApps.indexOf(appId + "") > -1;
+        });
     }
 
     /**

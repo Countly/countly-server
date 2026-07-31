@@ -337,6 +337,7 @@ describe('Testing Reports non-core authorization', function() {
     var sharedDashIdForCleanup = "";
     var memberApiKey = "";
     var memberUserId = "";
+    var VICTIM_APP_ID = "";
     var uniq = Date.now();
 
     /**
@@ -404,6 +405,20 @@ describe('Testing Reports non-core authorization', function() {
             });
     });
 
+    it('should create a second app the member has no rights on', function(done) {
+        request.get('/i/apps/create?api_key=' + API_KEY_ADMIN
+            + '&args=' + encodeURIComponent(JSON.stringify({name: "reportsVictim" + uniq, country: "TR", type: "mobile", category: "6", timezone: "Europe/Istanbul"})))
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                VICTIM_APP_ID = res.body._id;
+                should.exist(VICTIM_APP_ID);
+                done();
+            });
+    });
+
     it('should reject a dashboards report for a dashboard the member cannot view', function(done) {
         request.get('/i/reports/create?api_key=' + memberApiKey + '&app_id=' + APP_ID
             + '&args=' + encodeURIComponent(JSON.stringify(dashboardReport(adminDashboardId))))
@@ -433,6 +448,61 @@ describe('Testing Reports non-core authorization', function() {
                         }
                         r.body.should.have.property('result', 'Success');
                         done();
+                    });
+            });
+    });
+
+    it('should refuse a non-core report naming an app the member cannot read', function(done) {
+        // apps used to be authorized only for core reports, so a non-core report could
+        // carry any apps list at all
+        var sneaky = Object.assign({}, dashboardReport(memberDashboardId), {apps: [VICTIM_APP_ID]});
+        request.get('/i/reports/create?api_key=' + memberApiKey + '&app_id=' + APP_ID
+            + '&args=' + encodeURIComponent(JSON.stringify(sneaky)))
+            .expect(401)
+            .end(function(err) {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+    });
+
+    it('should refuse to convert a stored report onto an app the member cannot read', function(done) {
+        // the second half of the chain: store apps while the type is non-core, then flip
+        // report_type to core with apps omitted so the stored list survives unchecked
+        var report = Object.assign({}, dashboardReport(memberDashboardId), {title: "convert-" + uniq});
+        request.get('/i/reports/create?api_key=' + memberApiKey + '&app_id=' + APP_ID
+            + '&args=' + encodeURIComponent(JSON.stringify(report)))
+            .expect(200)
+            .end(function(err) {
+                if (err) {
+                    return done(err);
+                }
+                request.get('/o/reports/all?api_key=' + memberApiKey + '&app_id=' + APP_ID)
+                    .expect(200)
+                    .end(function(e, r) {
+                        if (e) {
+                            return done(e);
+                        }
+                        var created = (r.body || []).filter(function(x) {
+                            return x.title === "convert-" + uniq;
+                        })[0];
+                        should.exist(created);
+                        // an admin plants the unauthorized apps list directly, standing in
+                        // for the first half of the chain now that create refuses it
+                        request.get('/i/reports/update?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID
+                            + '&args=' + encodeURIComponent(JSON.stringify({_id: created._id, apps: [VICTIM_APP_ID]})))
+                            .end(function() {
+                                request.get('/i/reports/update?api_key=' + memberApiKey + '&app_id=' + APP_ID
+                                    + '&args=' + encodeURIComponent(JSON.stringify({_id: created._id, report_type: "core"})))
+                                    .expect(401)
+                                    .end(function(e2) {
+                                        if (e2) {
+                                            return done(e2);
+                                        }
+                                        done();
+                                    });
+                            });
                     });
             });
     });
@@ -513,6 +583,9 @@ describe('Testing Reports non-core authorization', function() {
                  */
                 function cleanupRest() {
                     var dashboards = [adminDashboardId, memberDashboardId, sharedDashIdForCleanup].filter(Boolean);
+                    if (VICTIM_APP_ID) {
+                        request.get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({app_id: VICTIM_APP_ID}))).end(function() {});
+                    }
                     /**
                      * Delete the dashboards one at a time, then the member
                      * @param {number} i - index into dashboards
