@@ -183,6 +183,118 @@ describe('Testing configs read reduction', function() {
             });
     });
 
+    // Happy paths. The reduction is only correct if everything that legitimately reads
+    // configuration still works, so these assert the values actually arrive, with their
+    // real contents, rather than merely that secrets are gone.
+
+    it('should give the app admin real values, not placeholders, for what it may read', function(done) {
+        request
+            .get('/o/configs?api_key=' + memberApiKey + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var ob = JSON.parse(res.text);
+                // types matter: App Management infers each input's widget from them, so a
+                // masked or missing value would render the wrong control
+                ob.api.event_limit.should.be.a.Number();
+                ob.api.session_duration_limit.should.be.a.Number();
+                ob.api.country_data.should.be.a.Boolean();
+                ob.api.safe.should.be.a.Boolean();
+                ob.security.password_min.should.be.a.Number();
+                JSON.stringify(ob).should.not.match(/\*{8}/);
+                done();
+            });
+    });
+
+    it('should agree with the global admin on every value the app admin can read', function(done) {
+        // the app settings screen shows how an app differs from the server default, which
+        // is only meaningful if the defaults it sees are the real ones
+        request
+            .get('/o/configs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, adminRes) {
+                if (err) {
+                    return done(err);
+                }
+                var full = JSON.parse(adminRes.text);
+                request
+                    .get('/o/configs?api_key=' + memberApiKey + '&app_id=' + APP_ID)
+                    .expect(200)
+                    .end(function(err2, memberRes) {
+                        if (err2) {
+                            return done(err2);
+                        }
+                        var reduced = JSON.parse(memberRes.text);
+                        Object.keys(reduced).forEach(function(ns) {
+                            Object.keys(reduced[ns]).forEach(function(key) {
+                                JSON.stringify(reduced[ns][key])
+                                    .should.equal(JSON.stringify(full[ns][key]));
+                            });
+                        });
+                        done();
+                    });
+            });
+    });
+
+    it('should give the app admin the ratings widget colours', function(done) {
+        request
+            .get('/o/configs?api_key=' + memberApiKey + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var ob = JSON.parse(res.text);
+                ob.should.have.property("feedback");
+                ob.feedback.should.have.property("main_color");
+                ob.feedback.should.have.property("font_color");
+                ob.feedback.main_color.length.should.be.above(0);
+                done();
+            });
+    });
+
+    it('should let a global admin still write configuration', function(done) {
+        // masking needs no write guard only because writing stays global-admin only, so
+        // that has to keep working. Writes the value back unchanged, to avoid leaving the
+        // test environment altered.
+        request
+            .get('/o/configs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var current = JSON.parse(res.text).api.event_limit;
+                var payload = {api: {event_limit: current}};
+                request
+                    .get('/i/configs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&configs=' + encodeURIComponent(JSON.stringify(payload)))
+                    .expect(200)
+                    .end(function(err2, res2) {
+                        if (err2) {
+                            return done(err2);
+                        }
+                        var after = JSON.parse(res2.text);
+                        after.api.event_limit.should.equal(current);
+                        done();
+                    });
+            });
+    });
+
+    it('should not let the app admin write configuration', function(done) {
+        // the reason a mask can never be saved back over a real value
+        request
+            .get('/i/configs?api_key=' + memberApiKey + '&app_id=' + APP_ID + '&configs=' + encodeURIComponent(JSON.stringify({api: {event_limit: 1}})))
+            .expect(401)
+            .end(function(err) {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+    });
+
     after(function(done) {
         if (!memberUserId) {
             return done();
