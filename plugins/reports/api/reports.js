@@ -16,7 +16,10 @@ var reportsInstance = {},
     versionInfo = require('../../../frontend/express/version.info'),
     countlyConfig = require('../../../frontend/express/config.js'),
     countlyApiConfig = require('./../../../api/config', 'dont-enclose'),
+    rights = require('../../../api/utils/rights.js'),
     pdf = require('../../../api/utils/pdf');
+
+const FEATURE_NAME = 'reports';
 
 countlyConfig.passwordSecret || "";
 
@@ -70,23 +73,117 @@ var metricProps = {
 };
 (function(reports) {
     let _periodObj = null;
+    /**
+     * Whether the member a report is scheduled as may still read every app it covers.
+     *
+     * The endpoints authorize a request, but nothing re-checked anything once a report
+     * was scheduled, so one created before access was revoked kept mailing that app's
+     * figures indefinitely with no further action by anybody.
+     *
+     * A report with no apps is a non-core report (a dashboard, say), whose target is
+     * authorized by its own plugin through /report/authorize rather than per app, so
+     * there is nothing to judge here and it passes.
+     *
+     * @param {object} member - the member the report is scheduled as
+     * @param {Array} apps - app ids the report covers
+     * @returns {boolean} true when the report may still be sent
+     */
+    function ownerMayStillReadApps(member, apps) {
+        if (!member) {
+            return false;
+        }
+        if (member.global_admin) {
+            return true;
+        }
+        if (!Array.isArray(apps) || apps.length === 0) {
+            return true;
+        }
+        //members created before the permission object reach apps through user_of, and
+        //the right helpers fall through to admin_of alone, so without this their
+        //reports would stop arriving
+        const legacy = (typeof member.permission === "undefined" && Array.isArray(member.user_of))
+            ? member.user_of.map(String)
+            : [];
+        return apps.every(function(appId) {
+            return rights.hasReadRight(FEATURE_NAME, appId + "", member) || legacy.indexOf(appId + "") > -1;
+        });
+    }
+
+    /**
+     * Whether a stored report may still be sent, judged by its owner's current access.
+     *
+     * Used by both the scheduled job and the send-now path, which reach the renderer by
+     * different routes and would otherwise disagree.
+     *
+     * @param {object} db - database connection
+     * @param {object} report - the stored report
+     * @param {function} cb - cb(maySend), called with false when it must not be sent
+     * @returns {void}
+     */
+    reports.ownerMayStillSend = function(db, report, cb) {
+        if (!report) {
+            return cb(false);
+        }
+        db.collection('members').findOne({_id: db.ObjectID(report.user + "")}, function(memberErr, owner) {
+            if (memberErr) {
+                log.e("Could not resolve the owner of report " + report._id + ", not sending", memberErr);
+                return cb(false);
+            }
+            //an owner that no longer exists is left to getReport, which falls back to a
+            //global admin. That fallback predates this check and silently raises the
+            //access a report renders with, but changing it here would stop reports that
+            //have worked for years, so it is left alone and only noted.
+            if (!owner) {
+                log.w("Report " + report._id + " has no resolvable owner, so its access cannot be checked. Sending anyway.");
+                return cb(true);
+            }
+            if (!ownerMayStillReadApps(owner, report.apps)) {
+                log.d("Not sending report " + report._id + ": its owner no longer has access to the apps it covers");
+                return cb(false);
+            }
+            cb(true);
+        });
+    };
+
     reports.sendReport = function(db, id, callback) {
         reports.loadReport(db, id, function(err, report) {
             if (err) {
                 return callback(err, null);
             }
-            reports.getReport(db, report, function(err2, ob) {
-                if (!err2) {
-                    reports.send(ob.report, ob.message, function() {
-                        if (callback) {
-                            callback(err2, ob.message);
-                        }
-                    });
+            if (!report) {
+                return callback("Report not found", null);
+            }
+            //Do not keep mailing an app's figures to somebody who may no longer read it.
+            //Checked here rather than in getReport, so that preview and pdf keep being
+            //judged against the caller making the request instead.
+            reports.ownerMayStillSend(db, report, function(maySend) {
+                if (!maySend) {
+                    return callback(null, null);
                 }
-                else if (callback) {
-                    callback(err2, ob.message);
-                }
+                reports.sendLoadedReport(db, report, callback);
             });
+        });
+    };
+
+    /**
+     * Render and send a report that has already been loaded and authorized.
+     * @param {object} db - database connection
+     * @param {object} report - the stored report
+     * @param {function} callback - callback
+     * @returns {void}
+     */
+    reports.sendLoadedReport = function(db, report, callback) {
+        reports.getReport(db, report, function(err2, ob) {
+            if (!err2) {
+                reports.send(ob.report, ob.message, function() {
+                    if (callback) {
+                        callback(err2, ob.message);
+                    }
+                });
+            }
+            else if (callback) {
+                callback(err2, ob.message);
+            }
         });
     };
 
