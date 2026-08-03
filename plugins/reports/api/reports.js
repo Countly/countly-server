@@ -129,13 +129,13 @@ var metricProps = {
                 log.e("Could not resolve the owner of report " + report._id + ", not sending", memberErr);
                 return cb(false);
             }
-            //an owner that no longer exists is left to getReport, which falls back to a
-            //global admin. That fallback predates this check and silently raises the
-            //access a report renders with, but changing it here would stop reports that
-            //have worked for years, so it is left alone and only noted.
+            //A deleted account holds access to nothing, so the same rule applies: stop
+            //sending. getReport still falls back to a global admin when it cannot resolve
+            //the owner, which is what preview and pdf rely on, but that fallback must not
+            //be the thing that keeps an app's figures being mailed out.
             if (!owner) {
-                log.w("Report " + report._id + " has no resolvable owner, so its access cannot be checked. Sending anyway.");
-                return cb(true);
+                log.d("Owner of report " + report._id + " no longer exists, not sending");
+                return cb(false);
             }
             if (!ownerMayStillReadApps(owner, report.apps)) {
                 log.d("Not sending report " + report._id + ": its owner no longer has access to the apps it covers");
