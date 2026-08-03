@@ -226,6 +226,39 @@ const FEATURE_NAME = 'reports';
             return query;
         };
 
+        /**
+         * Whether the member may use a report covering every app in a list.
+         *
+         * The same allow-list the create and update paths build inline, extracted so the
+         * paths below can share it rather than repeat it. An empty or absent list is
+         * permitted: a non-core report legitimately has no apps, and its target is
+         * authorized by its own plugin through /report/authorize instead.
+         *
+         * Legacy members have no permission object and reach apps through user_of, so
+         * they are allowed for those, matching /o/reports/all.
+         *
+         * @param {object} params - request params object, for member and global_admin
+         * @param {Array} apps - app ids the report covers
+         * @returns {boolean} true when every app is permitted
+         */
+        const appsArePermitted = function(params, apps) {
+            if (params.member.global_admin) {
+                return true;
+            }
+            if (!Array.isArray(apps) || apps.length === 0) {
+                return true;
+            }
+            let allowedApps = (getAdminApps(params.member) || [])
+                .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
+            if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                allowedApps = allowedApps.concat(params.member.user_of);
+            }
+            allowedApps = allowedApps.map(String);
+            return apps.every(function(appId) {
+                return allowedApps.indexOf(appId + "") > -1;
+            });
+        };
+
         switch (paths[3]) {
         case 'create':
             validateCreate(paramsInstance, FEATURE_NAME, function() {
@@ -462,6 +495,16 @@ const FEATURE_NAME = 'reports';
                         return false;
                     }
 
+                    //Owning a report does not mean still being allowed to read the apps
+                    //it covers. Without this check somebody who lost access to an app
+                    //could send themselves that app's figures on demand, which is the
+                    //most direct form of the problem the scheduled path also has.
+                    if (!appsArePermitted(params, result.apps)) {
+                        log.d("Rejected report send: report " + id + " targets apps the caller may not read");
+                        common.returnMessage(params, 401, 'User does not have right to access this information');
+                        return false;
+                    }
+
                     reports.sendReport(common.db, id, function(err2) {
                         if (err2) {
                             log.d("Error occurred while sending out report.", err);
@@ -494,6 +537,15 @@ const FEATURE_NAME = 'reports';
 
                     // TODO: Handle report type check
 
+                    //renders the report's contents straight into the response, so the
+                    //apps it covers have to be readable by the caller now, not merely
+                    //at the time they created it
+                    if (!appsArePermitted(params, result.apps)) {
+                        log.d("Rejected report preview: report " + id + " targets apps the caller may not read");
+                        common.returnMessage(params, 401, 'User does not have right to access this information');
+                        return false;
+                    }
+
                     reports.getReport(common.db, result, function(err2, res) {
                         if (err2) {
                             common.returnMessage(params, 200, err2);
@@ -513,11 +565,53 @@ const FEATURE_NAME = 'reports';
             });
             break;
         case 'status':
-            validateUpdate(paramsInstance, FEATURE_NAME, function() {
+            validateUpdate(paramsInstance, FEATURE_NAME, async function() {
                 var params = paramsInstance;
                 const statusList = params.qstring.args;
 
-                console.log(statusList, 'status-list');
+                //Owning a report is not the same as being allowed to act on the apps it
+                //targets, so enabling one is authorized against its *stored* apps.
+                //Without this, somebody who lost access to an app could switch their old
+                //report back on and keep that app's figures arriving by email.
+                //
+                //Switching one off stays allowed. It only reduces what the report does,
+                //and refusing would leave them unable to stop mail they no longer want.
+                const enablingIds = Object.keys(statusList || {}).filter(function(id) {
+                    return statusList[id] === true || statusList[id] === "true";
+                });
+                if (enablingIds.length > 0 && !params.member.global_admin) {
+                    let toEnable = [];
+                    try {
+                        //scoped to records the caller may modify, the same as the write
+                        //below. An id belonging to somebody else must stay the silent
+                        //no-op it already was, rather than returning a 403 that would
+                        //confirm a report with those apps exists.
+                        toEnable = await common.db.collection("reports").find({
+                            _id: {
+                                $in: enablingIds.map(function(id) {
+                                    return common.db.ObjectID(id);
+                                })
+                            },
+                            user: common.db.ObjectID(params.member._id)
+                        }, { projection: { apps: 1 } }).toArray();
+                    }
+                    catch (e) {
+                        log.e("Failed to load reports for a status change", e);
+                        common.returnMessage(params, 500, "Failed to change report status");
+                        return;
+                    }
+                    const unauthorized = toEnable.filter(function(report) {
+                        return !appsArePermitted(params, report.apps);
+                    });
+                    if (unauthorized.length > 0) {
+                        log.d("Rejected report status change: report(s) "
+                            + unauthorized.map(function(r) {
+                                return r._id;
+                            }).join(", ") + " target apps the caller may not read");
+                        common.returnMessage(params, 401, 'User does not have right to access this information');
+                        return;
+                    }
+                }
 
                 var bulk = common.db.collection("reports").initializeUnorderedBulkOp();
                 for (const id in statusList) {
