@@ -1,4 +1,4 @@
-## Version 25.03.xx
+## Version 25.03.51
 Fixes:
 - [hooks] Internal event hooks are validated on save: an unknown event type is rejected, and an event that names a cohort, hook or alert must name one belonging to the hook's own apps
 - [events] Fix sum chart tooltip displaying the raw floating-point value instead of a rounded number
@@ -11,6 +11,7 @@ Security Fixes:
 - [hooks] Internal event hooks are now scoped to the apps the hook belongs to: app creation is a global-admin-only event, and remote-config, cohort, alert and hook-chaining events are only delivered when the event's app is one the hook is scoped to
 - [compliance-hub] The consents table now returns a fixed set of fields; a projection supplied on the request is no longer used to widen the response beyond the consent columns
 - [dashboards] Widgets are no longer copied when the copying user has no access to the apps they reference, and widget app ids are validated on widget create and update
+- [pipelines] Pin docker images to shasum base
 
 Enterprise Features:
 - [journey_engine] dynamic parameter support in deeplinks
