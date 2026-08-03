@@ -821,6 +821,26 @@ plugins.setConfigs("dashboards", {
             function insertNewWidgets(dataObj, callback) {
                 var widgets = dataObj.widgets || [];
 
+                //Copying a dashboard makes the copier the owner of the copied
+                //widgets, and owners have edit rights. A widget is therefore only
+                //copied when the copier can read every app it points at.
+                //Otherwise a view-only recipient could rewrite a borrowed
+                //widget's query and read more of that app than the dashboard
+                //owner chose to show them. Widgets that reference no apps, such
+                //as notes, are always copied.
+                widgets = widgets.filter(function(widget) {
+                    if (typeof widget.apps === "undefined") {
+                        return true;
+                    }
+
+                    var widgetApps = normalizeAppIds(widget.apps);
+                    if (widgetApps === null) {
+                        return false;
+                    }
+
+                    return memberHasAccessToAllApps(params.member, widgetApps);
+                });
+
                 if (!widgets.length) {
                     return callback();
                 }
@@ -1201,23 +1221,19 @@ plugins.setConfigs("dashboards", {
                 widget.contenthtml = sanitizeNote(widget.contenthtml);
             }
 
-            //Filter out app_ids that current users does not have access to
-            if (widget.apps && Array.isArray(widget.apps)) {
-                var user_apps = getUserApps(params.member) || [];
-                var admin_apps = getAdminApps(params.member) || [];
-                widget.apps = widget.apps.filter(appId => {
-                    if (params.member.global_admin) {
-                        return true;
-                    }
-                    else if (user_apps && user_apps.indexOf(appId) !== -1) {
-                        return true;
-                    }
-                    else if (admin_apps && admin_apps.indexOf(appId) !== -1) {
-                        return true;
-                    }
-                    return false;
-                });
+            //A new widget may only reference apps the creator can read. Reject
+            //rather than silently strip, so a widget is never stored pointing at
+            //an app whose data will not be served.
+            var newWidgetApps = normalizeAppIds(widget.apps);
+            if (newWidgetApps === null) {
+                common.returnMessage(params, 400, 'Invalid parameter: widget.apps');
+                return true;
             }
+            if (!memberHasAccessToAllApps(params.member, newWidgetApps)) {
+                common.returnMessage(params, 403, 'Not allowed to use one or more of the given apps');
+                return true;
+            }
+            widget.apps = newWidgetApps;
 
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                 if (err || !dashboard) {
@@ -1301,24 +1317,17 @@ plugins.setConfigs("dashboards", {
                 common.returnMessage(params, 400, 'Invalid parameter: widget_id');
                 return true;
             }
-            //Filter out app_ids that current users does not have access to
-            if (widget.apps && Array.isArray(widget.apps)) {
-                var user_apps = getUserApps(params.member) || [];
-                var admin_apps = getAdminApps(params.member) || [];
-                widget.apps = widget.apps.filter(appId => {
-                    if (params.member.global_admin) {
-                        return true;
-                    }
-                    else if (user_apps && user_apps.indexOf(appId) !== -1) {
-                        return true;
-                    }
-                    else if (admin_apps && admin_apps.indexOf(appId) !== -1) {
-                        return true;
-                    }
-                    return false;
-                });
+            //Normalize the apps list up front so an array-like value such as
+            //{length: 1, "0": "<app id>"} cannot slip past the access check below
+            //while still being read through .length/[i] by every consumer.
+            if (typeof widget.apps !== "undefined") {
+                var updatedWidgetApps = normalizeAppIds(widget.apps);
+                if (updatedWidgetApps === null) {
+                    common.returnMessage(params, 400, 'Invalid parameter: widget.apps');
+                    return true;
+                }
+                widget.apps = updatedWidgetApps;
             }
-
 
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (err || !dashboard) {
@@ -1336,15 +1345,38 @@ plugins.setConfigs("dashboards", {
                             unsetQuery.$unset = {"isPluginWidget": ""};
                         }
                         if (hasEditAccess) {
-                            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget, ...unsetQuery }, {new: false}, function(er, result) {
-                                if (er || !result || !result.value) {
-                                    common.returnMessage(params, 500, "Failed to update widget");
+                            //A member with edit access may keep the apps a widget
+                            //already points at, even ones they cannot read - the
+                            //dashboard owner delegated that by sharing with edit
+                            //rights. They may not ADD an app they cannot read,
+                            //which is what would turn a shared widget into a
+                            //window onto an unrelated app.
+                            common.db.collection("widgets").findOne({_id: common.db.ObjectID(widgetId)}, {projection: {apps: 1}}, function(readErr, existingWidget) {
+                                if (readErr || !existingWidget) {
+                                    return common.returnMessage(params, 500, "Failed to update widget");
                                 }
-                                else {
-                                    plugins.dispatch("/systemlogs", {params: params, action: "widget_edited", data: {before: result.value, update: widget}});
-                                    plugins.dispatch("/dashboard/widget/updated", {params: params, widget: {before: result.value, update: widget}});
-                                    common.returnMessage(params, 200, 'Success');
+
+                                if (typeof widget.apps !== "undefined") {
+                                    var existingApps = normalizeAppIds(existingWidget.apps) || [];
+                                    var addedApps = widget.apps.filter(function(appId) {
+                                        return existingApps.indexOf(appId) === -1;
+                                    });
+
+                                    if (!memberHasAccessToAllApps(params.member, addedApps)) {
+                                        return common.returnMessage(params, 403, 'Not allowed to use one or more of the given apps');
+                                    }
                                 }
+
+                                common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget, ...unsetQuery }, {new: false}, function(er, result) {
+                                    if (er || !result || !result.value) {
+                                        common.returnMessage(params, 500, "Failed to update widget");
+                                    }
+                                    else {
+                                        plugins.dispatch("/systemlogs", {params: params, action: "widget_edited", data: {before: result.value, update: widget}});
+                                        plugins.dispatch("/dashboard/widget/updated", {params: params, widget: {before: result.value, update: widget}});
+                                        common.returnMessage(params, 200, 'Success');
+                                    }
+                                });
                             });
                         }
                         else if (hasViewAccess) {
@@ -1715,6 +1747,63 @@ plugins.setConfigs("dashboards", {
 
         for (var i = 0; i < requiredProps.length; i++) {
             if (widget[requiredProps[i]] === undefined) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Function to normalize a widget apps value into an array of app id strings
+     *
+     * Only a genuine Array of 24 character hex strings is accepted. An
+     * array-like object such as {length: 1, "0": "<app id>"} is rejected here,
+     * because it would otherwise pass an Array.isArray() guard while still
+     * being consumed through .length/[i] by fetchWidgetApps and by every
+     * /dashboard/data handler.
+     *
+     * @param  {Any} apps - widget apps value as supplied or as stored
+     * @returns {Array|null} array of app id strings, or null if not a valid list
+     */
+    function normalizeAppIds(apps) {
+        if (!Array.isArray(apps)) {
+            return null;
+        }
+
+        var appIds = [];
+
+        for (var i = 0; i < apps.length; i++) {
+            var appId = apps[i];
+
+            if (typeof appId !== "string" || !/^[a-f0-9]{24}$/i.test(appId)) {
+                return null;
+            }
+
+            if (appIds.indexOf(appId) === -1) {
+                appIds.push(appId);
+            }
+        }
+
+        return appIds;
+    }
+
+    /**
+     * Function to check whether a member can read every given app
+     * @param  {Object} member - user
+     * @param  {Array} appIds - normalized app id strings
+     * @returns {Boolean} true if the member has access to all of them
+     */
+    function memberHasAccessToAllApps(member, appIds) {
+        if (member.global_admin) {
+            return true;
+        }
+
+        var userApps = getUserApps(member) || [];
+        var adminApps = getAdminApps(member) || [];
+
+        for (var i = 0; i < appIds.length; i++) {
+            if (userApps.indexOf(appIds[i]) === -1 && adminApps.indexOf(appIds[i]) === -1) {
                 return false;
             }
         }

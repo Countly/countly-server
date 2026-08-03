@@ -231,7 +231,8 @@
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/<=/g, "&le;").replace(/>=/g, "&ge;");
         },
         getEventLongName: function(eventKey, eventMap) {
-            var mapKey = eventKey.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, "\\u002e");
+            //events.map is keyed by the raw event key, exactly as it appears in events.list, so do not escape it here
+            var mapKey = eventKey;
             if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
                 return eventMap[mapKey].name;
             }
@@ -244,7 +245,8 @@
             var allEvents = context.state.allEventsData;
             var groupData = context.state.groupData.displayMap;
             var eventMap = allEvents.map;
-            var mapKey = context.state.selectedEventName.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
+            //events.map is keyed by the raw event key, exactly as it appears in events.list, so do not escape it here
+            var mapKey = context.state.selectedEventName;
             var countString = (mapKey.startsWith('[CLY]_group') && groupData.c) ? groupData.c : (eventMap && eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"];
             var sumString = (mapKey.startsWith('[CLY]_group') && groupData.s) ? groupData.s : (eventMap && eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"];
             var durString = (mapKey.startsWith('[CLY]_group') && groupData.d) ? groupData.d : (eventMap && eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
@@ -893,9 +895,7 @@
                 return countlyAllEvents.service.fetchAllEventsData(context, period)
                     .then(function(res) {
                         if (res) {
-                            if (Array.isArray(res.list)) {
-                                res.list = res.list.map(eventName => countlyCommon.unescapeHtml(eventName));
-                            }
+                            // setAllEventsData decodes res.list and res.map keys in place
                             context.commit("setAllEventsData", res);
                             var is_group = false;
                             if (context.state.selectedEventName && context.state.selectedEventName.startsWith('[CLY]_group')) {
@@ -1106,6 +1106,29 @@
 
         var allEventsMutations = {
             setAllEventsData: function(state, value) {
+                // The API HTML-escapes every key and value on the way out (common.returnOutput),
+                // but the rest of this store works with raw event keys - selectedEventName is
+                // taken from `list`. Normalise `list` and the `map` keys together here, the one
+                // point both fetch paths commit through, so lookups like map[selectedEventName]
+                // don't silently miss for keys containing & < > " '. Keys without those chars
+                // (dots, dashes) were unaffected, which is why only some events lost their
+                // description on the Events page.
+                if (value && Array.isArray(value.list)) {
+                    value.list = value.list.map(function(eventName) {
+                        return countlyCommon.unescapeHtml(eventName);
+                    });
+                }
+                if (value && value.map && typeof value.map === "object") {
+                    //null prototype: event keys are arbitrary strings, and assigning a
+                    //"__proto__" key on a plain object reparents the map instead of adding
+                    //an own property, which would let unrelated key lookups resolve through
+                    //the assigned value
+                    var decodedMap = Object.create(null);
+                    Object.keys(value.map).forEach(function(eventKey) {
+                        decodedMap[countlyCommon.unescapeHtml(eventKey)] = value.map[eventKey];
+                    });
+                    value.map = decodedMap;
+                }
                 state.allEventsData = value;
             },
             setAllEventsList: function(state, value) {
