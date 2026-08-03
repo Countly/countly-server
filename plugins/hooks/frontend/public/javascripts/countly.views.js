@@ -465,7 +465,9 @@
             // and may only be subscribed to by global admins; hide them for
             // everyone else (the server also rejects them on save).
             if (!countlyGlobal.member.global_admin) {
-                var globalEventTypes = {"/i/users/create": true, "/i/users/update": true, "/i/users/delete": true, "/master": true, "/systemlogs": true};
+                // keep in sync with GLOBAL_EVENT_TYPES in
+                // plugins/hooks/api/parts/triggers/internal_event.js
+                var globalEventTypes = {"/i/users/create": true, "/i/users/update": true, "/i/users/delete": true, "/master": true, "/systemlogs": true, "/i/apps/create": true};
                 this.internalEventOptions = this.internalEventOptions.filter(function(option) {
                     return !globalEventTypes[option.value];
                 });
