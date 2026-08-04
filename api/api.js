@@ -121,7 +121,7 @@ plugins.connectToAllDatabases().then(function() {
         password_rotation: 3,
         password_autocomplete: true,
         robotstxt: "User-agent: *\nDisallow: /",
-        dashboard_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nCross-Origin-Opener-Policy: same-origin\nCross-Origin-Resource-Policy: same-origin",
+        dashboard_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nCross-Origin-Opener-Policy: same-origin-allow-popups",
         api_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nAccess-Control-Allow-Origin:*",
         dashboard_rate_limit_window: 60,
         dashboard_rate_limit_requests: 500,

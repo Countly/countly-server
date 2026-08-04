@@ -69,12 +69,10 @@ var STAR_RATING_EXT_TO_MIME = {
             //globally have to come back off for this response.
             //
             //Cross-Origin-Opener-Policy matters when the SDK opens the popup as a window
-            //rather than an iframe: same-origin would sever window.opener and with it any
-            //callback the SDK expects. Cross-Origin-Resource-Policy is removed for the
-            //same reason the framing header is, so an embedder is never refused.
+            //rather than an iframe: it would otherwise sever window.opener and with it any
+            //callback the SDK expects.
             res.removeHeader('X-Frame-Options');
             res.removeHeader('Cross-Origin-Opener-Policy');
-            res.removeHeader('Cross-Origin-Resource-Policy');
             res.render('../../../plugins/star-rating/frontend/public/templates/feedback-popup', { countlyPath });
         }
 
@@ -111,12 +109,7 @@ var STAR_RATING_EXT_TO_MIME = {
                         res.sendFile(__dirname + '/public/images/default_app_icon.png');
                         return;
                     }
-                    //Served to the embedded widget, so the dashboard's cross-origin
-                    //isolation header is removed here for the same reason the framing
-                    //header is removed on the popup itself: an embedder must never be
-                    //refused this asset.
-                    res.removeHeader('Cross-Origin-Resource-Policy');
-                    res.writeHead(200, {
+                            res.writeHead(200, {
                         'Content-Type': safeType,
                         'Content-Length': img.length,
                         'X-Content-Type-Options': 'nosniff',
@@ -162,12 +155,7 @@ var STAR_RATING_EXT_TO_MIME = {
                                     res.end();
                                 }
                             });
-                            //Served to the embedded widget, so the dashboard's cross-origin
-                            //isolation header is removed here for the same reason the framing
-                            //header is removed on the popup itself: an embedder must never be
-                            //refused this asset.
-                            res.removeHeader('Cross-Origin-Resource-Policy');
-                            res.writeHead(200, {
+                                            res.writeHead(200, {
                                 'Accept-Ranges': 'bytes',
                                 'Cache-Control': 'public, max-age=31536000',
                                 'Connection': 'keep-alive',
