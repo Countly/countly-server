@@ -109,7 +109,7 @@ var STAR_RATING_EXT_TO_MIME = {
                         res.sendFile(__dirname + '/public/images/default_app_icon.png');
                         return;
                     }
-                            res.writeHead(200, {
+                    res.writeHead(200, {
                         'Content-Type': safeType,
                         'Content-Length': img.length,
                         'X-Content-Type-Options': 'nosniff',
@@ -155,7 +155,7 @@ var STAR_RATING_EXT_TO_MIME = {
                                     res.end();
                                 }
                             });
-                                            res.writeHead(200, {
+                            res.writeHead(200, {
                                 'Accept-Ranges': 'bytes',
                                 'Cache-Control': 'public, max-age=31536000',
                                 'Connection': 'keep-alive',
