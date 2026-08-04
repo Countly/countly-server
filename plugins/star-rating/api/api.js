@@ -157,19 +157,21 @@ const widgetProperties = {
 //through escaping unchanged and the browser runs it when the link is clicked. The scheme
 //has to be checked as a scheme.
 //
-//The accepted set matches what countlyCommon's onTagAttr already permits for an href
-//elsewhere in the dashboard: http(s), a root-relative path, or a fragment. Being stricter
-//than the rest of the dashboard would be a surprise, and a self-hosted install may
-//reasonably point a consent link at a relative Terms page.
-const SAFE_LINK_URL = /^(?:https?:\/\/|\/(?!\/)|#)/i;
+//Only http(s) is accepted, which is what the surveys widget already does for the same kind
+//of consent link, in its countly.common.components.js. The two widgets do the same job and are
+//configured side by side, so a destination refused in one and rendered in the other would be
+//the surprising outcome. A relative path is no loss here: the popup is served from the Countly
+//server, so "/terms" would resolve against the server rather than against the site the widget
+//is embedded in.
+const SAFE_LINK_URL = /^https?:\/\//i;
 
 /**
  * Whether a consent link destination is safe to put in an href.
  *
- * Leading whitespace and control characters are stripped before the test, because a
- * browser ignores them when resolving a URL: "\tjavascript:alert(1)" and
- * "java\nscript:alert(1)" both run. A protocol-relative "//host" is refused as well,
- * since it is not a relative path.
+ * The test is an allowlist anchored at the start of the trimmed value, so the usual ways of
+ * hiding a scheme fail it rather than having to be enumerated one by one:
+ * "\tjavascript:alert(1)", "java\nscript:alert(1)", "JaVaScRiPt:alert(1)" and a
+ * protocol-relative "//host" all miss `^https?://`.
  *
  * @param {string} value - the link destination as submitted
  * @returns {boolean} true when the value may be used as an href
@@ -178,8 +180,7 @@ function isSafeLinkUrl(value) {
     if (typeof value !== "string") {
         return false;
     }
-    var candidate = value.replace(/[\u0000-\u0020]+/g, "");
-    return SAFE_LINK_URL.test(candidate);
+    return SAFE_LINK_URL.test(value.trim());
 }
 
 const widgetPropertyPreprocessors = {
