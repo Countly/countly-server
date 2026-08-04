@@ -1,0 +1,73 @@
+name: Merge Shepherd
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  push:
+    branches: [master]
+  pull_request:
+    types: [labeled]
+  pull_request_review:
+    types: [submitted]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Log planned actions without executing them'
+        type: boolean
+        default: false
+
+concurrency:
+  group: merge-shepherd
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  shepherd:
+    # PR events only matter when they can change queue membership: the
+    # auto-merge label being added, or an approval landing
+    if: >
+      (github.event_name != 'pull_request' && github.event_name != 'pull_request_review') ||
+      (github.event_name == 'pull_request' && github.event.label.name == 'auto-merge') ||
+      (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check App secrets are configured
+        env:
+          APP_ID: ${{ secrets.MERGE_SHEPHERD_APP_ID }}
+        run: |
+          if [ -z "$APP_ID" ]; then
+            echo "::error::MERGE_SHEPHERD_APP_ID / MERGE_SHEPHERD_APP_PRIVATE_KEY secrets are not configured. See docs/MERGE_SHEPHERD.md"
+            exit 1
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7 (= v7.0.1)
+        with:
+          # always run the shepherd logic from master, even on pull_request
+          # events (whose default checkout is the PR's merge ref)
+          ref: master
+          sparse-checkout: .github/scripts
+
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3 (= v3.2.0)
+        id: app-token
+        with:
+          app-id: ${{ secrets.MERGE_SHEPHERD_APP_ID }}
+          private-key: ${{ secrets.MERGE_SHEPHERD_APP_PRIVATE_KEY }}
+
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9 (= v9.0.0)
+        env:
+          DRY_RUN: ${{ inputs.dry_run == true && '1' || '' }}
+          MERGE_SHEPHERD_BATCH_SIZE: ${{ vars.MERGE_SHEPHERD_BATCH_SIZE }}
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const shepherd = require('${{ github.workspace }}/.github/scripts/merge-shepherd.js');
+            return await shepherd.run({
+              github,
+              context,
+              core,
+              dryRun: !!process.env.DRY_RUN,
+              batchSize: parseInt(process.env.MERGE_SHEPHERD_BATCH_SIZE, 10) || undefined,
+            });

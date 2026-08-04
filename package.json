@@ -15,6 +15,7 @@
   },
   "scripts": {
     "test": "grunt --verbose",
+    "test:merge-shepherd": "node --test .github/scripts/merge-shepherd.test.js",
     "prepare": "husky",
     "postinstall": "mkdir -p frontend/express/public/sdk/web && cp -rf node_modules/countly-sdk-web/lib/* frontend/express/public/sdk/web/"
   },
