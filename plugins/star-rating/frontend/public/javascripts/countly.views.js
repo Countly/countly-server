@@ -19,9 +19,10 @@ function escapeForRegExp(value) {
  *
  * HTML escaping is no protection here: `javascript:alert(1)` contains no HTML
  * metacharacter, so it survives escaping unchanged and runs when the link is clicked.
- * The accepted set matches the widget endpoint and the public popup: http(s), a
- * root-relative path, or a fragment. Leading whitespace and control characters are
- * stripped first, because a browser ignores them when resolving a URL.
+ * Only http(s) is accepted, matching the widget endpoint, the public popup, and the surveys
+ * widget that renders the same kind of consent link. The test is anchored at the start of the
+ * trimmed value, so a scheme hidden behind whitespace or mixed case fails it rather than
+ * having to be enumerated.
  *
  * @param {string} value - the stored link destination
  * @returns {boolean} true when it may be used as an href
@@ -30,7 +31,7 @@ function isSafeConsentLink(value) {
     if (typeof value !== 'string') {
         return false;
     }
-    return /^(?:https?:\/\/|\/(?!\/)|#)/i.test(value.replace(/[\u0000-\u0020]+/g, ''));
+    return /^https?:\/\//i.test(value.trim());
 }
 
 (function() {
@@ -197,8 +198,13 @@ function isSafeConsentLink(value) {
                         //because the endpoint now rejects it: widgets saved before that check
                         //still carry whatever was stored, and this drawer also renders values
                         //that have not been saved at all.
-                        const href = isSafeConsentLink(link.linkValue) ? link.linkValue : '';
-                        finalText = finalText.replace(regex, `<a href="${href}" target="_blank">${link.textValue}</a>`);
+                        //about:blank rather than an empty href, which would point the link back
+                        //at the dashboard and reload it on click.
+                        const href = isSafeConsentLink(link.linkValue) ? link.linkValue.trim() : 'about:blank';
+                        //This string is rendered with v-html, so escape the href: a value that
+                        //passes the scheme check can still carry a quote and close the attribute.
+                        const escHref = countlyCommon.encodeHtml(href);
+                        finalText = finalText.replace(regex, `<a href="${escHref}" target="_blank" rel="noopener noreferrer">${link.textValue}</a>`);
                     });
                 }
 

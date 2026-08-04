@@ -8,7 +8,7 @@ Enterprise Fixes:
 - [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
 
 Security Fixes:
-- [star-rating] Consent link destinations are now checked as URLs, on save and again when rendered, so a link can only point at an http(s) url, a root-relative path or a fragment. HTML escaping never covered this, since a `javascript:` url contains no character that escaping touches. Link labels are also escaped before being used to build a regular expression
+- [star-rating] Consent link destinations are now checked as URLs, on save and again when rendered, so a link can only point at an http(s) url. HTML escaping never covered this, since a `javascript:` url contains no character that escaping touches. Link labels are also escaped before being used to build a regular expression
 - [hooks] Internal event hooks are now scoped to the apps the hook belongs to: app creation is a global-admin-only event, and remote-config, cohort, alert and hook-chaining events are only delivered when the event's app is one the hook is scoped to
 - [compliance-hub] The consents table now returns a fixed set of fields; a projection supplied on the request is no longer used to widen the response beyond the consent columns
 - [dashboards] Widgets are no longer copied when the copying user has no access to the apps they reference, and widget app ids are validated on widget create and update

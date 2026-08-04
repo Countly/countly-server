@@ -9,6 +9,11 @@ var vm = require("vm");
 // unchanged and the browser runs it when the link is clicked. The scheme has to be checked
 // as a scheme.
 //
+// The rule is http(s) only, which is what the surveys widget already applies to the same
+// kind of consent link. A relative path and a fragment are refused along with everything
+// else: the popup is served from the Countly server, so they would resolve against the
+// server rather than the site the widget is embedded in.
+//
 // There are three copies of that check, in three separate runtime contexts: the widget
 // endpoint, the dashboard drawer, and the standalone popup page, which shares no code with
 // the dashboard. They have to agree, or a value refused in one place renders in another,
@@ -69,10 +74,9 @@ describe("star-rating consent link destinations", function() {
     var allowed = [
         ["an https url", "https://example.com/terms"],
         ["an http url", "http://example.com"],
-        ["a root-relative path", "/terms"],
-        ["a fragment", "#terms"],
         ["an https url with a query", "https://example.com/t?a=1&b=2"],
-        ["mixed case scheme", "HTTPS://example.com"]
+        ["mixed case scheme", "HTTPS://example.com"],
+        ["an https url with surrounding whitespace", "  https://example.com/terms  "]
     ];
 
     var refused = [
@@ -86,7 +90,10 @@ describe("star-rating consent link destinations", function() {
         ["a protocol-relative url", "//evil.example.com"],
         ["an empty string", ""],
         ["a bare scheme name", "javascript:"],
-        ["some other scheme", "ftp://example.com"]
+        ["some other scheme", "ftp://example.com"],
+        ["a mailto url", "mailto:someone@example.com"],
+        ["a root-relative path", "/terms"],
+        ["a fragment", "#terms"]
     ];
 
     Object.keys(checks).forEach(function(where) {
@@ -140,4 +147,30 @@ describe("star-rating consent link destinations", function() {
             built.should.equal(true);
         });
     });
+
+    // The predicates above only decide true/false. What the render sites do with a false is
+    // the other half of the contract, and it is not reachable through the lifted functions:
+    // the destination must become about:blank rather than an empty href, which would point
+    // the link back at the page and reload it, and the anchor must carry rel.
+    describe("what the render sites do with a refused destination", function() {
+        var sites = [
+            ["dashboard drawer", "plugins/star-rating/frontend/public/javascripts/countly.views.js"],
+            ["public popup", "plugins/star-rating/frontend/public/templates/feedback-popup.html"]
+        ];
+
+        sites.forEach(function(site) {
+            describe(site[0], function() {
+                var src = fs.readFileSync(path.join(root, site[1]), "utf8");
+
+                it("falls back to about:blank", function() {
+                    src.indexOf("'about:blank'").should.be.above(-1);
+                });
+
+                it("sets rel on the anchor", function() {
+                    src.indexOf('rel="noopener noreferrer"').should.be.above(-1);
+                });
+            });
+        });
+    });
+
 });

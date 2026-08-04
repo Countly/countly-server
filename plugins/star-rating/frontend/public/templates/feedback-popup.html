@@ -306,15 +306,15 @@
                 //A consent link's destination is put into an anchor's href. encodeHtml below
                 //is no protection for that: `javascript:alert(1)` has no HTML metacharacter,
                 //so it comes through escaping unchanged and runs when the link is clicked.
-                //The accepted set matches the widget endpoint and the dashboard drawer:
-                //http(s), a root-relative path, or a fragment. Leading whitespace and control
-                //characters are stripped first because a browser ignores them when resolving
-                //a URL, so "\tjavascript:..." would otherwise slip past.
+                //Only http(s) is accepted, matching the widget endpoint, the dashboard drawer
+                //and the surveys widget that renders the same kind of consent link. The test is
+                //anchored at the start of the trimmed value, so "\tjavascript:..." and
+                //"JaVaScRiPt:..." fail it rather than having to be enumerated.
                 var isSafeLinkUrl = function (value) {
                     if (typeof value !== 'string') {
                         return false;
                     }
-                    return /^(?:https?:\/\/|\/(?!\/)|#)/i.test(value.replace(/[\u0000-\u0020]+/g, ''));
+                    return /^https?:\/\//i.test(value.trim());
                 };
 
                 var encodeHtml = function (html) {
@@ -425,10 +425,10 @@
                             links.forEach(function (link) {
                                 //refuse a destination that is not a usable href; widgets saved before
                                 //the endpoint check still carry whatever was stored
-                                link.linkValue = isSafeLinkUrl(link.linkValue) ? encodeHtml(link.linkValue) : '';
+                                link.linkValue = encodeHtml(isSafeLinkUrl(link.linkValue) ? link.linkValue.trim() : 'about:blank');
                                 link.textValue = encodeHtml(link.textValue);
                                 var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
-                                finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
+                                finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank" rel="noopener noreferrer">' + link.textValue + '</a>');
                             });
                         }
 
