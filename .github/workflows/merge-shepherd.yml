@@ -50,13 +50,25 @@ jobs:
           ref: master
           sparse-checkout: .github/scripts
 
+      - name: Check shepherd script exists on master
+        id: script-check
+        run: |
+          if [ -f .github/scripts/merge-shepherd.js ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::.github/scripts/merge-shepherd.js is not on master yet — nothing to run"
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3 (= v3.2.0)
+        if: steps.script-check.outputs.exists == 'true'
         id: app-token
         with:
           app-id: ${{ secrets.MERGE_SHEPHERD_APP_ID }}
           private-key: ${{ secrets.MERGE_SHEPHERD_APP_PRIVATE_KEY }}
 
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9 (= v9.0.0)
+        if: steps.script-check.outputs.exists == 'true'
         env:
           DRY_RUN: ${{ inputs.dry_run == true && '1' || '' }}
           MERGE_SHEPHERD_BATCH_SIZE: ${{ vars.MERGE_SHEPHERD_BATCH_SIZE }}
