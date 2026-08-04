@@ -259,6 +259,18 @@
         var h = d.getHours();
         var dow = d.getDay();
         var symbol = 'emoji';
+        //A consent link's destination is put into an anchor's href. encodeHtml below is no
+        //protection for that: `javascript:alert(1)` has no HTML metacharacter, so it comes
+        //through escaping unchanged and runs when the link is clicked. The accepted set
+        //matches the widget endpoint and the dashboard drawer: http(s), a root-relative
+        //path, or a fragment. Leading whitespace and control characters are stripped first,
+        //because a browser ignores them when resolving a url.
+        var isSafeLinkUrl = function (value) {
+            if (typeof value !== 'string') {
+                return false;
+            }
+            return /^(?:https?:\/\/|\/(?!\/)|#)/i.test(value.replace(/[\u0000-\u0020]+/g, ''));
+        };
         var encodeHtml = function (html) {
             var div = document.createElement('div');
             div.innerText = html;
@@ -308,9 +320,13 @@
                     //sanitize the text and links
                     finalText = encodeHtml(finalText);
                     links.forEach(function (link) {
-                        link.linkValue = encodeHtml(link.linkValue);
+                        //refuse a destination that is not a usable href; widgets saved
+                        //before the endpoint check still carry whatever was stored
+                        link.linkValue = isSafeLinkUrl(link.linkValue) ? encodeHtml(link.linkValue) : '';
                         link.textValue = encodeHtml(link.textValue);
-                        var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
+                        //textValue is a literal here, not a pattern: unescaped, a label
+                        //like `(a+)+$` turns matching into catastrophic backtracking
+                        var regex = new RegExp('\\b' + link.textValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'g');
                         finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
                     });
                 }

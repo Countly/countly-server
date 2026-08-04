@@ -151,6 +151,37 @@ const widgetProperties = {
     }
 };
 
+//A consent link's destination is rendered into an anchor's href, in the widget preview in
+//the dashboard and in the public popup. HTML escaping is applied to it in both places and
+//is no protection here: `javascript:alert(1)` contains no HTML metacharacter, so it comes
+//through escaping unchanged and the browser runs it when the link is clicked. The scheme
+//has to be checked as a scheme.
+//
+//The accepted set matches what countlyCommon's onTagAttr already permits for an href
+//elsewhere in the dashboard: http(s), a root-relative path, or a fragment. Being stricter
+//than the rest of the dashboard would be a surprise, and a self-hosted install may
+//reasonably point a consent link at a relative Terms page.
+const SAFE_LINK_URL = /^(?:https?:\/\/|\/(?!\/)|#)/i;
+
+/**
+ * Whether a consent link destination is safe to put in an href.
+ *
+ * Leading whitespace and control characters are stripped before the test, because a
+ * browser ignores them when resolving a URL: "\tjavascript:alert(1)" and
+ * "java\nscript:alert(1)" both run. A protocol-relative "//host" is refused as well,
+ * since it is not a relative path.
+ *
+ * @param {string} value - the link destination as submitted
+ * @returns {boolean} true when the value may be used as an href
+ */
+function isSafeLinkUrl(value) {
+    if (typeof value !== "string") {
+        return false;
+    }
+    var candidate = value.replace(/[\u0000-\u0020]+/g, "");
+    return SAFE_LINK_URL.test(candidate);
+}
+
 const widgetPropertyPreprocessors = {
     target_pages: function(targetPages) {
         try {
@@ -174,17 +205,26 @@ const widgetPropertyPreprocessors = {
         }
     },
     links: function(links) {
+        var parsed;
         try {
-            return JSON.parse(links);
+            parsed = JSON.parse(links);
         }
         catch (jsonParseError) {
-            if (Array.isArray(links)) {
-                return links;
-            }
-            else {
-                return [];
-            }
+            parsed = Array.isArray(links) ? links : [];
         }
+        //Both create and edit run every preprocessor, so this is the one place that sees
+        //every submitted link on both paths. A destination that is not a usable href is
+        //dropped rather than the whole request refused, so a widget still saves and the
+        //link simply has nowhere to point.
+        if (Array.isArray(parsed)) {
+            parsed.forEach(function(link) {
+                if (link && typeof link === "object" && typeof link.linkValue !== "undefined" && !isSafeLinkUrl(link.linkValue)) {
+                    log.d("Dropped a consent link with an unusable destination: " + JSON.stringify(link.linkValue));
+                    link.linkValue = "";
+                }
+            });
+        }
+        return parsed;
     },
     ratings_texts: function(ratingsTexts) {
         try {
@@ -2019,4 +2059,9 @@ function uploadFile(myfile, id, callback) {
         }
     }
 }(exported));
+
+//exposed for tests: the scheme check is the whole of this fix, so it is worth
+//asserting directly rather than only through the widget endpoints
+exported.isSafeLinkUrl = isSafeLinkUrl;
+
 module.exports = exported;

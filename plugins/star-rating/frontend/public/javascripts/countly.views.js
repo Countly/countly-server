@@ -1,4 +1,38 @@
 /*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyPlugins, countlyCommon,  CV, countlyVue, moment, countlyCohorts*/
+
+/**
+ * Escape regular expression metacharacters in a literal.
+ *
+ * textValue is interpolated into a RegExp below. Unescaped, the value IS a pattern,
+ * so one like `(a+)+$` turns matching into catastrophic backtracking on a long
+ * enough finalText.
+ *
+ * @param {string} value - literal to be matched
+ * @returns {string} the literal, safe to embed in a pattern
+ */
+function escapeForRegExp(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Whether a consent link destination is usable as an href.
+ *
+ * HTML escaping is no protection here: `javascript:alert(1)` contains no HTML
+ * metacharacter, so it survives escaping unchanged and runs when the link is clicked.
+ * The accepted set matches the widget endpoint and the public popup: http(s), a
+ * root-relative path, or a fragment. Leading whitespace and control characters are
+ * stripped first, because a browser ignores them when resolving a URL.
+ *
+ * @param {string} value - the stored link destination
+ * @returns {boolean} true when it may be used as an href
+ */
+function isSafeConsentLink(value) {
+    if (typeof value !== 'string') {
+        return false;
+    }
+    return /^(?:https?:\/\/|\/(?!\/)|#)/i.test(value.replace(/[\u0000-\u0020]+/g, ''));
+}
+
 (function() {
     var FEATURE_NAME = 'star_rating';
     var CLY_X_INT = 'cly_x_int';
@@ -147,8 +181,16 @@
                 }
                 else if (Array.isArray(links) && typeof finalText === 'string') {
                     links.forEach(link => {
-                        const regex = new RegExp(`\\b${link.textValue}\\b`, 'g');
-                        finalText = finalText.replace(regex, `<a href="${link.linkValue}" target="_blank">${link.textValue}</a>`);
+                        //textValue goes into a RegExp, so its metacharacters have to be escaped:
+                        //an unescaped value IS a pattern, and one like `(a+)+$` makes this hang
+                        //on a long enough finalText.
+                        const regex = new RegExp(`\\b${escapeForRegExp(link.textValue)}\\b`, 'g');
+                        //Refuse a destination that is not a usable href rather than trusting it
+                        //because the endpoint now rejects it: widgets saved before that check
+                        //still carry whatever was stored, and this drawer also renders values
+                        //that have not been saved at all.
+                        const href = isSafeConsentLink(link.linkValue) ? link.linkValue : '';
+                        finalText = finalText.replace(regex, `<a href="${href}" target="_blank">${link.textValue}</a>`);
                     });
                 }
 
