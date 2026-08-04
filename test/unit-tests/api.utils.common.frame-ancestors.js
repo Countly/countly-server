@@ -1,5 +1,32 @@
 var should = require("should");
 var common = require("../../api/utils/common");
+var plugins = require("../../plugins/pluginManager.js");
+
+// The enforce switch is read through plugins.getConfig("security"); drive it
+// directly rather than standing up a config store.
+var originalGetConfig = plugins.getConfig;
+
+/**
+ * Force security.widget_frame_ancestors_enforce for the duration of a test.
+ * @param {Boolean} enforce - value the code under test should observe
+ * @returns {void} nothing
+ */
+function setEnforce(enforce) {
+    plugins.getConfig = function(name) {
+        if (name === "security") {
+            return {widget_frame_ancestors_enforce: enforce};
+        }
+        return originalGetConfig.apply(plugins, arguments);
+    };
+}
+
+/**
+ * Put plugins.getConfig back the way it was.
+ * @returns {void} nothing
+ */
+function restoreConfig() {
+    plugins.getConfig = originalGetConfig;
+}
 
 /**
  * Minimal stand-in for the parts of an express response the widget routes
@@ -125,42 +152,54 @@ describe("Widget frame-ancestors headers", function() {
         });
     });
 
-    describe("setWidgetFrameHeaders", function() {
-        it("should omit the CSP header when the app has no list configured", function() {
-            var res = fakeRes({"X-Frame-Options": "deny"});
-            common.setWidgetFrameHeaders(res, appWithOrigins(""));
-            should.not.exist(res.getHeader("Content-Security-Policy"));
+    describe("setWidgetFrameHeaders (default: report-only)", function() {
+        var REPORT = "Content-Security-Policy-Report-Only";
+
+        beforeEach(function() {
+            setEnforce(false);
         });
 
-        it("should omit the CSP header when the app has no plugins object at all", function() {
-            var res = fakeRes({"X-Frame-Options": "deny"});
-            common.setWidgetFrameHeaders(res, {});
-            should.not.exist(res.getHeader("Content-Security-Policy"));
-        });
+        afterEach(restoreConfig);
 
-        it("should omit the CSP header when the app could not be resolved", function() {
-            var res = fakeRes({"X-Frame-Options": "deny"});
-            common.setWidgetFrameHeaders(res, null);
-            should.not.exist(res.getHeader("Content-Security-Policy"));
-        });
-
-        it("should set the CSP header for a single configured origin", function() {
+        it("should report and never enforce while the operator has not opted in", function() {
+            //enforcing repurposes a list configured for CORS; a widget embedded on a
+            //host that is not in it must keep working until an operator opts in
             var res = fakeRes({"X-Frame-Options": "deny"});
             common.setWidgetFrameHeaders(res, appWithOrigins("https://example.com"));
-            res.getHeader("Content-Security-Policy").should.eql("frame-ancestors 'self' https://example.com");
+            res.getHeader(REPORT).should.eql("frame-ancestors 'self' https://example.com");
+            should.not.exist(res.getHeader("Content-Security-Policy"));
         });
 
-        it("should set the CSP header for several configured origins", function() {
+        it("should omit the header when the app has no list configured", function() {
+            var res = fakeRes({"X-Frame-Options": "deny"});
+            common.setWidgetFrameHeaders(res, appWithOrigins(""));
+            should.not.exist(res.getHeader(REPORT));
+            should.not.exist(res.getHeader("Content-Security-Policy"));
+        });
+
+        it("should omit the header when the app has no plugins object at all", function() {
+            var res = fakeRes({"X-Frame-Options": "deny"});
+            common.setWidgetFrameHeaders(res, {});
+            should.not.exist(res.getHeader(REPORT));
+        });
+
+        it("should omit the header when the app could not be resolved", function() {
+            var res = fakeRes({"X-Frame-Options": "deny"});
+            common.setWidgetFrameHeaders(res, null);
+            should.not.exist(res.getHeader(REPORT));
+        });
+
+        it("should report several configured origins", function() {
             var res = fakeRes({"X-Frame-Options": "deny"});
             common.setWidgetFrameHeaders(res, appWithOrigins("https://example.com\nhttps://shop.example.com"));
-            res.getHeader("Content-Security-Policy")
+            res.getHeader(REPORT)
                 .should.eql("frame-ancestors 'self' https://example.com https://shop.example.com");
         });
 
         it("should skip malformed entries when setting the header", function() {
             var res = fakeRes({"X-Frame-Options": "deny"});
             common.setWidgetFrameHeaders(res, appWithOrigins("https://example.com\nnot-an-origin\nhttps://ok.example.com"));
-            res.getHeader("Content-Security-Policy")
+            res.getHeader(REPORT)
                 .should.eql("frame-ancestors 'self' https://example.com https://ok.example.com");
         });
 
@@ -178,7 +217,57 @@ describe("Widget frame-ancestors headers", function() {
             should.not.exist(unresolved.getHeader("X-Frame-Options"));
         });
 
-        it("should merge into a Content-Security-Policy an operator already configured", function() {
+        it("should merge into a report-only policy an operator already configured", function() {
+            var res = fakeRes({"Content-Security-Policy-Report-Only": "default-src 'self'"});
+            common.setWidgetFrameHeaders(res, appWithOrigins("https://example.com"));
+            res.getHeader(REPORT)
+                .should.eql("default-src 'self'; frame-ancestors 'self' https://example.com");
+        });
+
+        it("should leave an enforced policy untouched while in report-only mode", function() {
+            //the operator's own enforced CSP is not ours to edit from here
+            var res = fakeRes({"Content-Security-Policy": "default-src 'self'"});
+            common.setWidgetFrameHeaders(res, appWithOrigins("https://example.com"));
+            res.getHeader("Content-Security-Policy").should.eql("default-src 'self'");
+            res.getHeader(REPORT).should.eql("frame-ancestors 'self' https://example.com");
+        });
+
+        it("should not throw on a response object that cannot carry headers", function() {
+            should.doesNotThrow(function() {
+                common.setWidgetFrameHeaders(null, appWithOrigins("https://example.com"));
+                common.setWidgetFrameHeaders({}, appWithOrigins("https://example.com"));
+            });
+        });
+    });
+
+    describe("setWidgetFrameHeaders (operator opted in to enforcing)", function() {
+        beforeEach(function() {
+            setEnforce(true);
+        });
+
+        afterEach(restoreConfig);
+
+        it("should enforce the policy and emit no report-only header", function() {
+            var res = fakeRes({"X-Frame-Options": "deny"});
+            common.setWidgetFrameHeaders(res, appWithOrigins("https://example.com"));
+            res.getHeader("Content-Security-Policy").should.eql("frame-ancestors 'self' https://example.com");
+            should.not.exist(res.getHeader("Content-Security-Policy-Report-Only"));
+        });
+
+        it("should still omit the header entirely when nothing usable is configured", function() {
+            var res = fakeRes({"X-Frame-Options": "deny"});
+            common.setWidgetFrameHeaders(res, appWithOrigins("*\nhttps://*.example.com"));
+            should.not.exist(res.getHeader("Content-Security-Policy"));
+            should.not.exist(res.getHeader("Content-Security-Policy-Report-Only"));
+        });
+
+        it("should still remove X-Frame-Options", function() {
+            var res = fakeRes({"X-Frame-Options": "deny"});
+            common.setWidgetFrameHeaders(res, appWithOrigins("https://example.com"));
+            should.not.exist(res.getHeader("X-Frame-Options"));
+        });
+
+        it("should merge into an enforced policy an operator already configured", function() {
             var res = fakeRes({"Content-Security-Policy": "default-src 'self'"});
             common.setWidgetFrameHeaders(res, appWithOrigins("https://example.com"));
             res.getHeader("Content-Security-Policy")
@@ -190,13 +279,6 @@ describe("Widget frame-ancestors headers", function() {
             common.setWidgetFrameHeaders(res, appWithOrigins("https://example.com"));
             res.getHeader("Content-Security-Policy")
                 .should.eql("frame-ancestors https://operator.example.com");
-        });
-
-        it("should not throw on a response object that cannot carry headers", function() {
-            should.doesNotThrow(function() {
-                common.setWidgetFrameHeaders(null, appWithOrigins("https://example.com"));
-                common.setWidgetFrameHeaders({}, appWithOrigins("https://example.com"));
-            });
         });
     });
 

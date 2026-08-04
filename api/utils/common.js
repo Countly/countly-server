@@ -1489,6 +1489,13 @@ common.buildFrameAncestorsPolicy = function(allowedOrigins) {
 *
 * When the app has no usable origin configured the CSP header is left off, so
 * the many apps that never filled in the list keep embedding as before.
+*
+* Reported, not enforced, unless an operator opts in with
+* security.widget_frame_ancestors_enforce. allow_access_control_origin is
+* labelled purely as an Access-Control-Origin list and says nothing about
+* framing, so an app that listed only the origin its SDK makes XHR from would
+* have a working embed on another host blocked the moment this is enforced.
+* Report-only blocks nothing and surfaces those violations first.
 * @param {Object} res - express response object
 * @param {Object} app - app document, may be null when it could not be resolved
 **/
@@ -1501,18 +1508,27 @@ common.setWidgetFrameHeaders = function(res, app) {
     if (!policy || typeof res.setHeader !== "function") {
         return;
     }
+    var enforce = false;
+    try {
+        enforce = !!(plugins.getConfig("security") || {}).widget_frame_ancestors_enforce;
+    }
+    catch (e) {
+        //no config loaded in this process: stay with the harmless default
+        enforce = false;
+    }
+    var headerName = enforce ? "Content-Security-Policy" : "Content-Security-Policy-Report-Only";
     //an operator can already put a Content-Security-Policy into
     //security.dashboard_additional_headers, so merge instead of overwriting and
     //losing their directives; if they scoped framing themselves, leave it be
-    var existing = typeof res.getHeader === "function" ? res.getHeader("Content-Security-Policy") : null;
+    var existing = typeof res.getHeader === "function" ? res.getHeader(headerName) : null;
     if (typeof existing === "string" && existing.trim().length) {
         if (existing.indexOf("frame-ancestors") !== -1) {
             return;
         }
-        res.setHeader("Content-Security-Policy", existing.trim().replace(/;$/, "") + "; " + policy);
+        res.setHeader(headerName, existing.trim().replace(/;$/, "") + "; " + policy);
         return;
     }
-    res.setHeader("Content-Security-Policy", policy);
+    res.setHeader(headerName, policy);
 };
 
 /**

@@ -67,11 +67,12 @@ describe('Testing Rating plugin', function() {
                     //the widget must stay embeddable, so X-Frame-Options is gone
                     should.not.exist(res.headers['x-frame-options']);
                     //and with no app resolved there is nothing to scope framing to,
-                    //so no frame-ancestors may be emitted at all
-                    var csp = res.headers['content-security-policy'];
-                    if (csp) {
-                        csp.should.not.containEql('frame-ancestors');
-                    }
+                    //so no frame-ancestors may be emitted at all, enforced or reported
+                    ['content-security-policy', 'content-security-policy-report-only'].forEach(function(h) {
+                        if (res.headers[h]) {
+                            res.headers[h].should.not.containEql('frame-ancestors');
+                        }
+                    });
                     done();
                 });
         });
