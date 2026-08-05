@@ -734,6 +734,51 @@ exports.fromRequest = function(options) {
 };
 
 
+/**
+ * Look for an aggregation stage that writes, at any nesting depth.
+ *
+ * Sub-pipelines inside $lookup, $unionWith and $facet are searched too, so a write cannot be
+ * hidden one level down. Names are matched as object keys, which is the only place a stage
+ * operator appears.
+ *
+ * @param {Array} pipeline - aggregation pipeline to inspect
+ * @returns {string|null} the offending stage name, or null when there is none
+ */
+function findWriteStage(pipeline) {
+    var WRITE_STAGES = ["$out", "$merge"];
+    var seen = 0;
+
+    /**
+     * @param {*} node - value to walk
+     * @returns {string|null} offending stage name or null
+     */
+    function walk(node) {
+        if (seen++ > 10000 || !node || typeof node !== "object") {
+            return null;
+        }
+        if (Array.isArray(node)) {
+            for (var i = 0; i < node.length; i++) {
+                var fromItem = walk(node[i]);
+                if (fromItem) {
+                    return fromItem;
+                }
+            }
+            return null;
+        }
+        for (var key in node) {
+            if (WRITE_STAGES.indexOf(key) !== -1) {
+                return key;
+            }
+            var fromValue = walk(node[key]);
+            if (fromValue) {
+                return fromValue;
+            }
+        }
+        return null;
+    }
+    return walk(pipeline);
+}
+
 exports.fromRequestQuery = function(options) {
     options.db = options.db || common.db;
     options.path = options.path || "/";
@@ -748,7 +793,15 @@ exports.fromRequestQuery = function(options) {
         //providing data in request object
         'req': {
             url: options.path,
-            body: options.data || {},
+            //Deliberately empty. The endpoint being re-run supplies the collection and the
+            //pipeline, and that is only trustworthy while the caller cannot influence what it
+            //returns. processRequest copies every key of this body onto the inner request's
+            //params.qstring, so anything here reaches the endpoint as if it were a query
+            //parameter: an endpoint that keeps unrecognised parameters and returns what it
+            //stored would echo a caller-supplied collection and pipeline back to us. Every
+            //caller in the product passes its parameters in the path's query string instead,
+            //so there is nothing to forward.
+            body: {},
             method: "export"
         },
         //adding custom processing for API responses
@@ -757,6 +810,22 @@ exports.fromRequestQuery = function(options) {
                 log.e(err);
             }
             if (body) {
+                //A spec is the endpoint's own work, so its stages are trusted, but no endpoint
+                //has any reason to write. Refusing $out and $merge at any depth keeps a buggy
+                //or tampered spec from turning a read into a write.
+                var writeStage = findWriteStage(body.pipeline);
+                if (writeStage) {
+                    log.e("Refusing export query containing a write stage: " + writeStage);
+                    var refused = new Transform({
+                        objectMode: true,
+                        transform: (data, _, done) => {
+                            done(null, data);
+                        }
+                    });
+                    refused.end();
+                    options.output(refused);
+                    return;
+                }
                 if (body.transformFunction) {
                     options.transformFunction = body.transformFunction;
                 }
