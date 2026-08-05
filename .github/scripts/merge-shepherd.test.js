@@ -4,6 +4,8 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const shepherd = require('./merge-shepherd.js');
 
+/** test commend, delete this afterwards */
+
 /**
  * Builds a PR snapshot with sensible defaults for tests
  * @param {object} overrides - fields to override
