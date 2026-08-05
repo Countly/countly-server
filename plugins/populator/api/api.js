@@ -102,6 +102,13 @@ const FEATURE_NAME = 'populator';
         return true;
     };
 
+    //Custom templates are a server-wide shared library: any member holding the populator feature
+    //on any app can list, use, edit and remove them, and that is intended rather than a missing
+    //app filter. A template describes how to generate synthetic data (event names, property
+    //distributions) and holds no collected data of its own, so it is deliberately not bound to an
+    //app. Environments are the opposite and are always app-scoped, because each records the
+    //synthetic users actually generated into one specific app.
+
     const removeTemplate = function(ob) {
         const obParams = ob.params;
         validateDelete(obParams, FEATURE_NAME, function(params) {
@@ -115,33 +122,58 @@ const FEATURE_NAME = 'populator';
                 return false;
             }
 
-            common.db.collection('populator_templates').remove({"_id": templateId }, function(removeTemplateErr) {
-                if (!removeTemplateErr) {
-                    plugins.dispatch("/systemlogs", {params: params, action: "populator_template_removed", data: {templateId: templateId}});
-                    common.db.collection('populator_environment_users').deleteMany({"_id": { $regex: new RegExp("^" + params.qstring.app_id + "_" + ob.params.qstring.template_id) }}, function(errEnvUsers) {
-                        if (errEnvUsers) {
-                            log.e("Error deleting populator environment users while deleting template", errEnvUsers);
-                            common.returnMessage(ob.params, 500, errEnvUsers.message);
-                            return false;
-                        }
-                        else {
-                            common.db.collection('populator_environments').deleteMany({ "templateId": ob.params.qstring.template_id }, function(errEnvs) {
-                                if (errEnvs) {
-                                    log.e("Error deleting populator environments while deleting template", errEnvs);
-                                    common.returnMessage(ob.params, 500, errEnvs.message);
-                                    return false;
-                                }
-                                common.returnMessage(ob.params, 200, 'Success');
-                                plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_removed_through_template", data: {templateId: ob.params.qstring.template_id, appId: ob.params.qstring.app_id}});
-                                return true;
-                            });
-                        }
-                    });
-                }
-                else {
-                    common.returnMessage(ob.params, 500, removeTemplateErr.message);
+            //Because the template is shared, other apps may have generated environments from it.
+            //An environment is only ever reachable through its template: the templates table
+            //marks which ones have environments, and the environment view is routed by template
+            //id. So removing the template would leave those rows with nothing able to list,
+            //reuse or delete them. Deleting them here instead would discard another app's
+            //records at the request of someone who has no access to that app. Refuse instead,
+            //and let each app remove its own environment first, through
+            ///o/populator/environment/remove.
+            common.db.collection('populator_environments').find({
+                "templateId": ob.params.qstring.template_id,
+                "appId": {$ne: params.qstring.app_id + ""}
+            }).toArray(function(errOtherEnvs, otherEnvs) {
+                if (errOtherEnvs) {
+                    log.e("Error checking populator environments before deleting template", errOtherEnvs);
+                    common.returnMessage(obParams, 500, errOtherEnvs.message);
                     return false;
                 }
+                if (otherEnvs && otherEnvs.length) {
+                    common.returnMessage(obParams, 400, "Cannot remove this template: " + otherEnvs.length + " environment(s) in other applications were generated from it. Those applications have to remove their environments first.");
+                    return false;
+                }
+                common.db.collection('populator_templates').remove({"_id": templateId }, function(removeTemplateErr) {
+                    if (!removeTemplateErr) {
+                        plugins.dispatch("/systemlogs", {params: params, action: "populator_template_removed", data: {templateId: templateId}});
+                        common.db.collection('populator_environment_users').deleteMany({"_id": { $regex: new RegExp("^" + params.qstring.app_id + "_" + ob.params.qstring.template_id) }}, function(errEnvUsers) {
+                            if (errEnvUsers) {
+                                log.e("Error deleting populator environment users while deleting template", errEnvUsers);
+                                common.returnMessage(ob.params, 500, errEnvUsers.message);
+                                return false;
+                            }
+                            else {
+                                //Scoped to this app, like every other query against this
+                                //collection. The check above means no other app has one; if one
+                                //appears in between, leaving it is better than deleting it.
+                                common.db.collection('populator_environments').deleteMany({ "templateId": ob.params.qstring.template_id, "appId": params.qstring.app_id + "" }, function(errEnvs) {
+                                    if (errEnvs) {
+                                        log.e("Error deleting populator environments while deleting template", errEnvs);
+                                        common.returnMessage(ob.params, 500, errEnvs.message);
+                                        return false;
+                                    }
+                                    common.returnMessage(ob.params, 200, 'Success');
+                                    plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_removed_through_template", data: {templateId: ob.params.qstring.template_id, appId: ob.params.qstring.app_id}});
+                                    return true;
+                                });
+                            }
+                        });
+                    }
+                    else {
+                        common.returnMessage(ob.params, 500, removeTemplateErr.message);
+                        return false;
+                    }
+                });
             });
         });
         return true;
