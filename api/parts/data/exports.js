@@ -446,19 +446,23 @@ exports.stream = function(params, stream, options) {
         });
         xc.pipe(params.res);
         if (listAtEnd === false) {
-            xc.write(paramList);
+            xc.write(paramList.map(preventCSVInjection));
         }
         stream.stream(options.streamOptions).on('data', function(doc) {
             var values = [];
             var valuesMap = {};
             getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd});
-            xc.write(values);
+            //getValues only neutralizes by way of flattenObject, which its collectProp=false
+            //branch skips, so a projected export would otherwise write formulas into the sheet
+            //verbatim. Headers go through the same guard, since a column name is attacker
+            //controlled too when it comes from event segmentation.
+            xc.write(values.map(preventCSVInjection));
         });
 
         stream.once('close', function() {
             setTimeout(function() {
                 if (listAtEnd) {
-                    xc.write(paramList);
+                    xc.write(paramList.map(preventCSVInjection));
                 }
                 xc.end();
             }, 100);
