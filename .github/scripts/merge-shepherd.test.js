@@ -4,8 +4,6 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const shepherd = require('./merge-shepherd.js');
 
-/** test commend, delete this afterwards */
-
 /**
  * Builds a PR snapshot with sensible defaults for tests
  * @param {object} overrides - fields to override
@@ -122,8 +120,16 @@ test('behind branch updates even when old checks failed', () => {
     assert.deepStrictEqual(actions, [{ type: 'update-branch', number: 1 }]);
 });
 
-test('failed checks with no prior state retries as attempt 1', () => {
+test('failed checks with no prior state arms auto-merge and retries as attempt 1', () => {
     const actions = shepherd.planForBatchMember(makePr({ mergeStateStatus: 'blocked', checksFailed: true }));
+    assert.deepStrictEqual(actions, [
+        { type: 'enable-automerge', number: 1 },
+        { type: 'retry', number: 1, nextRetries: 1 },
+    ]);
+});
+
+test('failed checks with auto-merge already armed only retries', () => {
+    const actions = shepherd.planForBatchMember(makePr({ mergeStateStatus: 'blocked', checksFailed: true, autoMergeEnabled: true }));
     assert.deepStrictEqual(actions, [{ type: 'retry', number: 1, nextRetries: 1 }]);
 });
 
@@ -131,6 +137,7 @@ test('failed checks with one prior retry on same sha retries as attempt 2', () =
     const actions = shepherd.planForBatchMember(makePr({
         mergeStateStatus: 'blocked',
         checksFailed: true,
+        autoMergeEnabled: true,
         state: { sha: 'abc1234', retries: 1 },
     }));
     assert.deepStrictEqual(actions, [{ type: 'retry', number: 1, nextRetries: 2 }]);
@@ -149,6 +156,7 @@ test('retry counter resets when head sha changed since last retry', () => {
     const actions = shepherd.planForBatchMember(makePr({
         mergeStateStatus: 'blocked',
         checksFailed: true,
+        autoMergeEnabled: true,
         state: { sha: 'oldsha99', retries: 2 },
     }));
     assert.deepStrictEqual(actions, [{ type: 'retry', number: 1, nextRetries: 1 }]);
