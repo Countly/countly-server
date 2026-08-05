@@ -107,7 +107,7 @@ function flattenObject(ob, fields) {
 //by the client while it parses the file, exposing whatever follows it, so they belong
 //here too.
 var CSV_FORMULA_PREFIXES = ["@", "=", "+", "-", "\t", "\r"];
-var CSV_FORMULA_MARKER = "`";
+var CSV_FORMULA_MARKER = "'";
 
 /**
  *  Escape values that can cause CSV injection
