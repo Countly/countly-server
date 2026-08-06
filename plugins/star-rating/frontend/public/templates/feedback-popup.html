@@ -718,7 +718,12 @@
                         }
                     }
                     else {
-                        if (window.parent && typeof window.parent.postMessage === 'function') {
+                        if (platform !== 'Web') {
+                            // Legacy widgets (no wv) on mobile must trigger a real navigation so the
+                            // mobile SDK can intercept and close. postMessage is only for the web SDK.
+                            window.location.href = 'https://countly_action_event?cly_widget_command=1&close=1';
+                        }
+                        else if (window.parent && typeof window.parent.postMessage === 'function') {
                             var d = JSON.stringify({ close: true });
                             window.parent.postMessage(d, parentOrigin);
                         }
