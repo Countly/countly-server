@@ -57,6 +57,26 @@ describe('Testing Rating plugin', function() {
                 });
         });
 
+        it('should not send X-Frame-Options and should not scope framing for an unresolvable widget', function(done) {
+            request.get('/feedback/rating')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    //the widget must stay embeddable, so X-Frame-Options is gone
+                    should.not.exist(res.headers['x-frame-options']);
+                    //and with no app resolved there is nothing to scope framing to,
+                    //so no frame-ancestors may be emitted at all, enforced or reported
+                    ['content-security-policy', 'content-security-policy-report-only'].forEach(function(h) {
+                        if (res.headers[h]) {
+                            res.headers[h].should.not.containEql('frame-ancestors');
+                        }
+                    });
+                    done();
+                });
+        });
+
         it('should prefix every asset path with provided_url when it has a leading slash', function(done) {
             var providedUrl = '/reverse-proxy/countly';
             request.get('/feedback/rating?provided_url=' + encodeURIComponent(providedUrl))

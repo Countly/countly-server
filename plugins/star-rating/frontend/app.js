@@ -22,7 +22,7 @@ var STAR_RATING_EXT_TO_MIME = {
 };
 
 (function(plugin) {
-    plugin.init = function(app) {
+    plugin.init = function(app, countlyDb) {
 
         var SAFE_PROVIDED_PATH_RE = /^[a-zA-Z0-9\-_./]*$/;
         /**
@@ -46,6 +46,27 @@ var STAR_RATING_EXT_TO_MIME = {
         }
 
         /**
+         * Resolve the app that owns the requested widget, so the response can be
+         * scoped to the origins that app is allowed to be embedded on. Never
+         * fails the request: an unknown widget just yields no app, and the
+         * frame-ancestors header is then omitted.
+         * @param {*} widgetId - widget_id query parameter
+         * @param {Function} callback - called with the app document, or null
+         * @returns {void} nothing, the result is handed to the callback
+         */
+        function getWidgetApp(widgetId, callback) {
+            if (!countlyDb || typeof widgetId !== 'string' || !/^[a-f0-9]{24}$/i.test(widgetId)) {
+                return callback(null);
+            }
+            countlyDb.collection('feedback_widgets').findOne({_id: countlyDb.ObjectID(widgetId)}, {projection: {app_id: 1}}, function(err, widget) {
+                if (err || !widget) {
+                    return callback(null);
+                }
+                common.getAppForWidget(countlyDb, widget.app_id, callback);
+            });
+        }
+
+        /**
          * Method that render ratings popup template
          * @param {*} req - Express request object
          * @param {*} res - Express response object
@@ -64,8 +85,21 @@ var STAR_RATING_EXT_TO_MIME = {
                 countlyPath = `/${countlyPath}`;
             }
 
+            //This popup is meant to be embedded by an SDK in a page on the customer's own
+            //origin, so the framing and cross-origin isolation headers the dashboard sets
+            //globally have to come back off for this response.
+            //
+            //Cross-Origin-Opener-Policy matters when the SDK opens the popup as a window
+            //rather than an iframe: it would otherwise sever window.opener and with it any
+            //callback the SDK expects.
             res.removeHeader('X-Frame-Options');
-            res.render('../../../plugins/star-rating/frontend/public/templates/feedback-popup', { countlyPath });
+            res.removeHeader('Cross-Origin-Opener-Policy');
+            //X-Frame-Options cannot name the origins allowed to frame this popup, so
+            //scope it with CSP frame-ancestors built from the app's own configuration
+            getWidgetApp(req.query.widget_id, function(widgetApp) {
+                common.setWidgetFrameHeaders(res, widgetApp);
+                res.render('../../../plugins/star-rating/frontend/public/templates/feedback-popup', { countlyPath });
+            });
         }
 
         app.get(countlyConfig.path + '/feedback/rating', renderPopup);
