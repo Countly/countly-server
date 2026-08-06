@@ -1036,9 +1036,17 @@ function uploadFile(myfile, id, callback) {
                             return false;
                         }
                     });
-                    // increment ratings count for widget
+                    //Scoped to the app the event was submitted under. The widget id arrives in
+                    //the event's segmentation, so without this an app's ingestion could move the
+                    //counters on another app's widget. The feedback row itself is already written
+                    //to the submitting app's own collection, so only the aggregate needed binding.
+                    //
+                    //Note this closes an app boundary rather than a new capability: anyone holding
+                    //an app's public key can already submit ratings for that app's own widgets
+                    //through the same path, which is what public ingestion is for.
                     common.db.collection('feedback_widgets').update({
-                        _id: common.db.ObjectID(currEvent.segmentation.widget_id)
+                        _id: common.db.ObjectID(currEvent.segmentation.widget_id),
+                        app_id: ob.params.app._id + ""
                     }, {
                         $inc: { ratingsSum: currEvent.segmentation.ratingSum, ratingsCount: 1 }
                     }, function(err) {
