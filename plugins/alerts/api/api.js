@@ -5,10 +5,12 @@ var Promise = require("bluebird");
 const JOB = require('../../../api/parts/jobs');
 const utils = require('./parts/utils.js');
 const _ = require('lodash');
-const { validateCreate, validateRead, validateUpdate, hasCreateRight, getAdminApps, getUserAppsForFeaturePermission } = require('../../../api/utils/rights.js');
+const { validateCreate, validateRead, validateUpdate, hasCreateRight, hasUpdateRight, getAdminApps, getUserAppsForFeaturePermission } = require('../../../api/utils/rights.js');
 const FEATURE_NAME = 'alerts';
 const commonLib = require("./parts/common-lib.js");
 const moment = require('moment-timezone');
+const { memberHasRightForAllApps } = require('./parts/app-authorization.js');
+
 
 /**
  * Alerts that can be triggered when an event is received.
@@ -248,22 +250,41 @@ function getScheduleTextExpression(period, offset) {
                     if (params.member.global_admin !== true) {
                         query.createdBy = params.member._id;
                     }
-                    return common.db.collection("alerts").findAndModify(
-                        query,
-                        {},
-                        {$set: alertConfig},
-                        function(err, result) {
-                            if (!err) {
-                                if (result && result.value) {
-                                    plugins.dispatch("/updateAlert", { method: "alertTrigger", alert: result.value });
-                                }
+                    //The guard above only saw the submitted selectedApps, and an update
+                    //may leave that out to keep whatever is stored. So load the alert
+                    //and authorize the apps it currently targets before changing it,
+                    //otherwise an alert for an app the caller has since lost access to
+                    //stays editable through any app they do still hold.
+                    return common.db.collection("alerts").findOne({_id: common.db.ObjectID(id)}, function(findErr, existingAlert) {
+                        if (findErr) {
+                            common.returnMessage(params, 500, "Failed to save an alert");
+                            return;
+                        }
+                        if (existingAlert && params.member.global_admin !== true
+                            && !memberHasRightForAllApps(hasUpdateRight, params.member, existingAlert.selectedApps)) {
+                            log.d("Rejected alert update" + common.reqInfo(params) + ": alert " + id
+                                + " targets apps [" + (Array.isArray(existingAlert.selectedApps) ? existingAlert.selectedApps.join(", ") : "")
+                                + "] the caller may not update");
+                            common.returnMessage(params, 403, 'No alerts:update permission on the apps this alert targets');
+                            return;
+                        }
+                        common.db.collection("alerts").findAndModify(
+                            query,
+                            {},
+                            {$set: alertConfig},
+                            function(err, result) {
+                                if (!err) {
+                                    if (result && result.value) {
+                                        plugins.dispatch("/updateAlert", { method: "alertTrigger", alert: result.value });
+                                    }
 
-                                common.returnOutput(params, result && result.value);
-                            }
-                            else {
-                                common.returnMessage(params, 500, "Failed to save an alert");
-                            }
-                        });
+                                    common.returnOutput(params, result && result.value);
+                                }
+                                else {
+                                    common.returnMessage(params, 500, "Failed to save an alert");
+                                }
+                            });
+                    });
                 }
                 if (!alertConfig._id) {
                     alertConfig.createdAt = new Date().getTime();
@@ -317,6 +338,12 @@ function getScheduleTextExpression(period, offset) {
             try {
                 var query = { "_id": common.db.ObjectID(alertID) };
                 //If not global admin, limit delete to own alerts only
+                //
+                //Deliberately not also requiring rights on the apps the alert targets.
+                //Deleting only removes what the alert does, so it cannot be used to
+                //reach another app's data, and someone who has lost access to an app
+                //needs to remain able to remove the alert they own for it. Refusing here
+                //would leave them holding an alert they can neither manage nor delete.
                 if (params.member.global_admin !== true) {
                     query.createdBy = params.member._id;
                 }
@@ -366,7 +393,7 @@ function getScheduleTextExpression(period, offset) {
     plugins.register("/i/alert/status", function(ob) {
         let params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME, function() {
+        validateUpdate(params, FEATURE_NAME, async function() {
             let statusList;
             try {
                 statusList = JSON.parse(params.qstring.status);
@@ -375,6 +402,50 @@ function getScheduleTextExpression(period, offset) {
                 log.e('Parse alert status failed', params.qstring.status, err);
                 common.returnMessage(params, 500, "Failed to change alert status" + err.message);
                 return;
+            }
+            //Enabling an alert for an app the caller may no longer touch is what makes
+            //this endpoint exploitable, so the apps each stored alert targets are
+            //authorized before it is switched on.
+            //
+            //Switching one off is deliberately still allowed. It only reduces what the
+            //alert does, and refusing it would leave somebody who lost access to an app
+            //unable to stop alert mail they no longer want, which is worse than the
+            //problem being fixed.
+            const enablingIds = Object.keys(statusList).filter(function(alertID) {
+                return statusList[alertID] === true || statusList[alertID] === "true";
+            });
+            if (enablingIds.length > 0 && params.member.global_admin !== true) {
+                let toEnable = [];
+                try {
+                    //scoped to the caller's own alerts, the same as the update below.
+                    //An id belonging to somebody else must keep behaving as it did, a
+                    //silent no-op, rather than returning a 403 that would confirm an
+                    //alert with those apps exists.
+                    toEnable = await common.db.collection("alerts").find({
+                        _id: {
+                            $in: enablingIds.map(function(a) {
+                                return common.db.ObjectID(a);
+                            })
+                        },
+                        createdBy: params.member._id
+                    }, { projection: { selectedApps: 1 } }).toArray();
+                }
+                catch (e) {
+                    log.e("Failed to load alerts for a status change", e);
+                    common.returnMessage(params, 500, "Failed to change alert status");
+                    return;
+                }
+                const unauthorized = toEnable.filter(function(alert) {
+                    return !memberHasRightForAllApps(hasUpdateRight, params.member, alert.selectedApps);
+                });
+                if (unauthorized.length > 0) {
+                    log.d("Rejected alert status change" + common.reqInfo(params) + ": alert(s) "
+                        + unauthorized.map(function(a) {
+                            return a._id;
+                        }).join(", ") + " target apps the caller may not update");
+                    common.returnMessage(params, 403, 'No alerts:update permission on the apps these alerts target');
+                    return;
+                }
             }
             const batch = [];
             for (const alertID in statusList) {
