@@ -1,6 +1,6 @@
 ## Version 25.03.52
 Security Fixes:
-- [docker] Rebuilt the api and frontend images as multi-stage builds on Debian 13 with Node.js 24, so compilers, development headers and build tooling are no longer present in the shipped images. Critical findings drop from 27 to 6 on api and to 4 on frontend; every remaining critical has no upstream fix and is unreachable at runtime, as detailed in `security_report.md`
+- [docker] Rebuilt the api and frontend images as multi-stage builds on Debian 13 with Node.js 24, so compilers, development headers and build tooling are no longer present in the shipped images.
 - [core] Updated vulnerable transitive dependencies through npm overrides: tar, form-data, brace-expansion, minimatch, immutable, ip-address, basic-ftp, websocket-driver, js-yaml, body-parser, qs, postcss, protobufjs and ws
 - [hooks] Replaced the unmaintained v8-sandbox custom-code sandbox with isolated-vm, which exposes no network, filesystem or process surface to custom code. Custom code that relies on `setTimeout`, `setInterval` or asynchronous completion now fails with a logged error instead of running, and the `bufferToBase64` and `base64ToBuffer` helpers are no longer available
 - [ab-testing] Replaced pystan 2.19 and its pickled models with cmdstanpy and compiled Stan executables, removing the end-of-life Python 3.8 runtime
