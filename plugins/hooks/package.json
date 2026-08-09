@@ -21,7 +21,13 @@
   ],
   "dependencies": {
     "ipaddr.js": "^2.3.0",
-    "v8-sandbox": "3.2.12"
+    "isolated-vm": "^6.0.2"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "form-data": "^4.0.4",
+    "tar": "^7.5.21",
+    "brace-expansion@^2.0.0": "^2.1.4",
+    "ip-address": "^10.3.1"
+  }
 }

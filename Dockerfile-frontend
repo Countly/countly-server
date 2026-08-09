@@ -1,10 +1,49 @@
-# node:iron-bookworm-slim -- Node.js 20.20.2 (Iron LTS) on Debian bookworm-slim.
-# Multi-arch manifest list digest, resolved 2026-08-03.
-FROM node:iron-bookworm-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0
+# node:24-trixie-slim -- Node.js 24 (Krypton LTS) on Debian trixie-slim.
+# Multi-arch manifest list digest, resolved 2026-08-07.
+FROM node:24-trixie-slim@sha256:0711b541c1c33a8a530ac4f0d391baa9a15b3d804695b1b24a47daa5fb60e74d AS builder
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides
 # Countly Enterprise:
 #ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps,sdk,guides,journey_engine,content
+
+ENV COUNTLY_CONTAINER="frontend" \
+	COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
+	NODE_OPTIONS="--max-old-space-size=2048 --no-node-snapshot" \
+	npm_config_allow_git=root \
+	npm_config_dangerously_allow_all_scripts=true \
+	PUPPETEER_SKIP_DOWNLOAD=true
+
+# Build dependencies live only in this stage and are never shipped
+RUN apt-get update && \
+	apt-get install -y curl wget git make gcc g++ unzip xz-utils build-essential sudo \
+		python3 sqlite3 ca-certificates
+
+WORKDIR /opt/countly
+COPY . .
+
+# Frontend never runs models; the marker makes ab-testing's setup.sh a no-op
+RUN { [ ! -d plugins/ab-testing/api/bayesian ] || touch plugins/ab-testing/api/bayesian/.ab_disabled; } && \
+	./bin/docker/modify.sh && \
+	cp -n ./api/config.sample.js ./api/config.js && \
+	cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
+	cp -n ./frontend/express/public/javascripts/countly/countly.config.sample.js ./frontend/express/public/javascripts/countly/countly.config.js && \
+	HOME=/tmp npm install -g npm@11.19.0 && \
+	HOME=/tmp npm install && \
+	HOME=/tmp npm_config_build_from_source=true npm install argon2 && \
+	./bin/docker/preinstall.sh && \
+	bash /opt/countly/bin/scripts/detect.init.sh && \
+	countly update sdk-web && \
+	npm remove -y --no-save mocha nyc should supertest puppeteer && \
+	# CE builds carry only a stub ab-testing dir; drop it so it never ships
+	{ [ -f plugins/ab-testing/package.json ] || rm -rf plugins/ab-testing; } && \
+	rm -rf test /tmp/* /var/tmp/* /root/.npm && \
+	chown -R 1001:0 /opt/countly && \
+	chmod -R g=u /opt/countly
+
+
+FROM node:24-trixie-slim@sha256:0711b541c1c33a8a530ac4f0d391baa9a15b3d804695b1b24a47daa5fb60e74d AS runtime
+
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides
 
 EXPOSE 6001
 HEALTHCHECK --start-period=400s CMD bash -c '\
@@ -14,70 +53,28 @@ HEALTHCHECK --start-period=400s CMD bash -c '\
     curl --fail http://localhost:6001/ping || exit 1; \
   fi'
 
-USER root
-
-# Core dependencies
-## Tini
 ENV COUNTLY_CONTAINER="frontend" \
 	COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
 	COUNTLY_CONFIG_FRONTEND_WEB_HOST="0.0.0.0" \
-	NODE_OPTIONS="--max-old-space-size=2048" \
-	TINI_VERSION="0.18.0"
+	npm_config_dangerously_allow_all_scripts=true \
+	NODE_OPTIONS="--max-old-space-size=2048 --no-node-snapshot"
+
+# Runtime-only packages: init, healthcheck, ops tools
+RUN apt-get update && apt-get upgrade -y && \
+	apt-get install -y --no-install-recommends \
+		tini curl procps iputils-ping net-tools ca-certificates \
+		sudo telnet xz-utils apt-transport-https lsb-release && \
+	apt-get clean && rm -rf /var/lib/apt/lists/* && \
+	echo "Etc/UTC" > /etc/timezone
 
 WORKDIR /opt/countly
-COPY . .
+COPY --from=builder /usr/local /usr/local
+COPY --from=builder /opt/countly /opt/countly
 
-# install required dependencies which slim image doesn't have
-RUN apt-get update && \
-	apt-get install -y iputils-ping net-tools telnet apt-transport-https procps curl wget git make gcc g++ unzip xz-utils
-
-RUN apt-get update && \
-	apt-get upgrade -y && \
-	cd /usr/src && \
-	wget https://www.python.org/ftp/python/3.8.20/Python-3.8.20.tar.xz && \
-	tar -xf Python-3.8.20.tar.xz && \
-	apt-get install -y build-essential sudo zlib1g-dev libssl3 libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev && \
-	cd Python-3.8.20 && \
-	./configure --enable-optimizations --enable-shared && \
-	make && \
-	make altinstall && \
-	ldconfig /usr/src/Python-3.8.20 && \
-	ln -sf /usr/local/bin/python3.8 /usr/bin/python3
-
-RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" && \
-	dpkg -i /tmp/tini.deb && \
-	\
-	# modify standard distribution
-	apt-get update && apt-get install -y sqlite3 && \
-	./bin/docker/modify.sh && \
-	\
-	# preinstall
-	cp -n ./api/config.sample.js ./api/config.js && \
-	cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
-	cp -n ./frontend/express/public/javascripts/countly/countly.config.sample.js ./frontend/express/public/javascripts/countly/countly.config.js && \
-	HOME=/tmp npm install -g npm@10 && \
-	HOME=/tmp npm install --unsafe-perm=true --allow-root && \
-	HOME=/tmp npm install argon2 --build-from-source --unsafe-perm=true --allow-root && \
-	./bin/docker/preinstall.sh && \
-	bash /opt/countly/bin/scripts/detect.init.sh && \
-	python3.8 -m pip install --upgrade pip setuptools && \
-        countly update sdk-web && \
-	\
-	# cleanup & chown
-	npm remove -y --no-save mocha nyc should supertest puppeteer && \
-	apt-get purge -y python3 python3-pip python3-distutils python3-setuptools && \
-        apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 wget && \
-	apt-get autoremove -y && \
-	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-        apt-get autoremove -y && \
-        rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm /usr/local/lib/python3.8/ensurepip/_bundled/*.whl /usr/src/Python* /var/lib/dpkg/info/python3* && \
-	\
-	# temporary to remove npm bug message
-	mkdir /.npm && chown -R 1001:0 /.npm && \
-	\
-	chown -R 1001:0 /opt/countly && \
-	chmod -R g=u /opt/countly
-
+# npm stays for in-container plugin rebuilds (countly task dist-all -> npx grunt)
+RUN ln -sf /opt/countly/bin/commands/countly.sh /usr/bin/countly && \
+	chown 1001:0 /opt/countly && chmod g=u /opt/countly && \
+	mkdir -p /.npm && chown -R 1001:0 /.npm
 
 USER 1001:0
 

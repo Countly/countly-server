@@ -1,3 +1,27 @@
+## Version 25.03.xx
+Security Fixes:
+- [docker] Rebuilt the api and frontend images as multi-stage builds on Debian 13 with Node.js 24, so compilers, development headers and build tooling are no longer present in the shipped images.
+- [core] Updated vulnerable transitive dependencies through npm overrides: tar, form-data, brace-expansion, minimatch, immutable, ip-address, basic-ftp, websocket-driver, js-yaml, body-parser, qs, postcss, protobufjs and ws
+- [hooks] Replaced the unmaintained v8-sandbox custom-code sandbox with isolated-vm, which exposes no network, filesystem or process surface to custom code. 
+- [ab-testing] Replaced pystan 2.19 and its pickled models with cmdstanpy and compiled Stan executables, removing the end-of-life Python 3.8 runtime
+
+Fixes:
+- [docker] Restored the `/usr/bin/countly` symlink so the management CLI works inside the container
+- [reports] Headless Chrome now launches in the api image; PDF and e-mail report rendering previously failed to start
+- [docker] A plugin whose dependency install or asset build fails now fails the image build instead of being shipped broken without warning
+- [ab-testing] The model runner locates its CmdStan installation automatically when `CMDSTAN` is not set in the service environment
+
+Enterprise Fixes:
+- [ab-testing] `/o/ab-testing/check-models` reports whether the models are actually compiled; it previously reported success whenever any model file was present.
+
+Enterprise Features:
+- [ab-testing] Added `/o/ab-testing/test-models`, a global-admin diagnostic that runs a model against supplied variant data and returns the raw result
+
+Dependencies:
+- [docker] Node.js 20 to 24, Debian 12 to 13, npm 10 to 11.19.0. Custom plugins containing native addons must be rebuilt, and images derived from these must reinstall any build tooling they need
+- [ab-testing] Python 3.8 to 3.12, pystan 2.19.1.1 to cmdstanpy 1.2.5 with CmdStan 2.36.0
+- [hooks] v8-sandbox 3.2.12 to isolated-vm 6.0.2
+
 ## Version 25.03.51
 Fixes:
 - [hooks] Internal event hooks are validated on save: an unknown event type is rejected, and an event that names a cohort, hook or alert must name one belonging to the hook's own apps

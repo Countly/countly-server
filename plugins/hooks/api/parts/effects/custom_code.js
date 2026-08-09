@@ -1,7 +1,7 @@
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
 const log = common.log("hooks:api:api_custom_code_effect");
-const {Sandbox} = require("v8-sandbox");
+const ivm = require("isolated-vm");
 
 /**
  * custom code effect
@@ -21,55 +21,77 @@ class CustomCodeEffect {
     async run(options) {
         const {effect, params, rule, effectStep, _originalInput} = options;
         let genCode = "";
-        let runtimePassed = true ;
+        let runtimePassed = true;
         let logs = [];
+        let isolate;
+
         try {
-            await new Promise(CUSTOM_CODE_RESOLVER => {
-                const code = effect.configuration.code;
-                /**
-                 * function for rejection of effect
-                 * @param {object} e - error object
-                 */
-                const CUSTOM_CODE_ERROR_CALLBACK = (e) => {
-                    runtimePassed = false;
-                    log.e("got error when executing custom code", e, genCode, options);
-                    logs.push(`Error: ${e.message}`);
-                    utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
-                };
+            const code = effect.configuration.code;
 
-                genCode = `
-                    ${code}
-                    setResult({ value: params });
-                `;
-                // Disable the sandbox's built-in httpRequest helper. v8-sandbox
-                // enables it by default, which would let custom code make
-                // arbitrary server-side requests (to loopback, link-local,
-                // cloud-metadata and other internal targets) completely
-                // bypassing the SSRF validation applied to the HTTPEffect path.
-                // Hooks that need outbound HTTP must use the HTTPEffect, whose
-                // URL is checked with ssrfProtection.isUrlSafe().
-                const sandbox = new Sandbox({ httpEnabled: false });
+            // Create isolated VM instance
+            isolate = new ivm.Isolate({ memoryLimit: 128 });
+            const context = await isolate.createContext();
+            const jail = context.global;
 
-                (async() => {
-                    const { error, value } = await sandbox.execute({ code: genCode, timeout: 3000, globals: { params } });
+            // Set up global object
+            await jail.set('global', jail.derefInto());
 
-                    await sandbox.shutdown();
+            // Set up params. JSON round-trip matches the previous v8-sandbox
+            // transport (ObjectId/Date -> string, functions dropped) so existing
+            // custom code sees the same param shapes it did before.
+            const clonedParams = params === undefined ? undefined : JSON.parse(JSON.stringify(params));
+            await jail.set('params', new ivm.ExternalCopy(clonedParams).copyInto());
 
-                    if (error) {
-                        CUSTOM_CODE_ERROR_CALLBACK(error);
-                    }
-                    options.params = value;
-                    log.d("Resolved value:", value);
-                    CUSTOM_CODE_RESOLVER();
-                })();
+            // Set up setResult function using JSON serialization for simplicity
+            let resultValue = null;
+            const setResultRef = new ivm.Reference(function(jsonString) {
+                // Receive JSON string and parse it
+                resultValue = JSON.parse(jsonString);
             });
+            await jail.set('$setResult', setResultRef);
+
+            // Create wrapper function in isolate that serializes and calls the reference
+            const wrapperScript = await isolate.compileScript('globalThis.setResult = function(arg) { return $setResult.applySync(undefined, [JSON.stringify(arg)]); }');
+            await wrapperScript.run(context);
+
+            // Prepare code
+            genCode = `
+                ${code}
+                setResult({ value: params });
+            `;
+
+            // Compile and run the script
+            const script = await isolate.compileScript(genCode);
+            await script.run(context, { timeout: 3000 });
+
+            // Assign whenever a value key was set, so custom code that intentionally
+            // blanks params (0, "", false, null) is honored, matching the previous
+            // unconditional assignment.
+            options.params = resultValue && Object.prototype.hasOwnProperty.call(resultValue, 'value') ? resultValue.value : undefined;
+            log.d("Resolved value:", options.params);
         }
         catch (e) {
             runtimePassed = false;
+            // the previous sandbox assigned its undefined result even on failure,
+            // so a failed run must not leak the original params downstream
+            options.params = undefined;
             log.e("got error when executing custom code", e, genCode, options);
             logs.push(`Error: ${e.message}`);
             utils.addErrorRecord(rule._id, e, params, effectStep, _originalInput);
         }
+        finally {
+            // Clean up isolate. dispose() throws if the isolate was already torn
+            // down (e.g. after a memory-limit abort), which would mask the real error.
+            if (isolate) {
+                try {
+                    isolate.dispose();
+                }
+                catch (disposeErr) {
+                    log.d("isolate already disposed:", disposeErr.message);
+                }
+            }
+        }
+
         return runtimePassed ? options : {...options, logs};
     }
 }

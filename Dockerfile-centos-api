@@ -25,6 +25,7 @@ ENV COUNTLY_CONTAINER="api" \
 	COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
 	NODE_OPTIONS="--max-old-space-size=2048" \
 	TINI_VERSION="0.18.0" \
+	CMDSTAN="/opt/cmdstan/cmdstan-2.36.0" \
 	PATH="/opt/rh/rh-nodejs10/root/usr/bin:${PATH}"
 
 WORKDIR /opt/countly

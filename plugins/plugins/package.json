@@ -19,5 +19,16 @@
     "plugins"
   ],
   "dependencies": {},
-  "private": true
+  "private": true,
+  "overrides": {
+    "basic-ftp": "^5.3.1",
+    "body-parser@^2.0.0": "^2.3.0",
+    "brace-expansion@^2.0.0": "^2.1.4",
+    "immutable": "^5.1.8",
+    "ip-address": "^10.3.1",
+    "postcss": "^8.5.23",
+    "protobufjs": "^7.6.5",
+    "qs": "^6.15.2",
+    "ws@^8.0.0": "^8.21.0"
+  }
 }

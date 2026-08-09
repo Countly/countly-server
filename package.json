@@ -116,8 +116,19 @@
     "serialize-javascript": "^7.0.5",
     "uuid": "^11.1.1",
     "@tootallnate/once": "^2.0.1",
-    "js-yaml@^3.0.0": "^3.15.0",
-    "js-yaml@^4.0.0": "^4.2.0"
+    "js-yaml@^3.0.0": "^3.15.1",
+    "js-yaml@^4.0.0": "^4.3.1",
+    "basic-ftp": "^5.3.1",
+    "fast-xml-parser": "^5.3.5",
+    "tar": "^7.5.21",
+    "websocket-driver": "^0.7.5",
+    "brace-expansion@^1.0.0": "^1.1.18",
+    "brace-expansion@^2.0.0": "^2.1.4",
+    "minimatch@^3.0.0": "^3.1.4",
+    "immutable": "^5.1.8",
+    "ip-address": "^10.3.1",
+    "body-parser@^1.0.0": "^1.20.6",
+    "brace-expansion@^5.0.0": "^5.0.9"
   },
   "jshintConfig": {
     "esversion": 6,
