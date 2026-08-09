@@ -42,7 +42,7 @@ RUN yum update -y
 RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.rpm" && \
 	rpm -i /tmp/tini.rpm && \
 	\
-	curl -sL https://rpm.nodesource.com/setup_20.x | bash - && \
+	curl -sL https://rpm.nodesource.com/setup_22.x | bash - && \
 	yum install -y nodejs python3.8 python2 python38-libs python38-devel python38-pip nss libdrm libgbm cyrus-sasl* && \
 	ln -s /usr/bin/node /usr/bin/nodejs && \
 	unlink /usr/bin/python3 && \
@@ -51,12 +51,16 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	\
 	yum install -y python3-policycoreutils && \
 	yum group install -y "Development Tools" && \
+	yum install -y gcc-toolset-11 && \
 	yum install -y epel-release && \
 	yum install -y pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc && \
     curl -L -O -J "https://box.tools.count.ly/public.php/dav/files/Wj8opzNdyE5DyDX/?accept=zip" && \
     yum install -y raven-release.el8.noarch.rpm && \
 	yum install -y wget openssl-devel make git libsqlite* sqlite unzip bzip2 && \
 	# modify standard distribution
+	# isolated-vm needs -std=c++20 and node-gyp needs python>=3.8; stock CentOS 8 has neither
+	. /opt/rh/gcc-toolset-11/enable && \
+	export npm_config_python=/usr/bin/python3.8 && \
 	./bin/docker/modify.sh && \
 	\
 	# preinstall

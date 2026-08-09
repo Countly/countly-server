@@ -1,18 +1,20 @@
-## Version 25.03.xx
+## Version 25.03.52
 Security Fixes:
-- [docker] Rebuilt the api and frontend images as multi-stage builds on Debian 13 with Node.js 24, so compilers, development headers and build tooling are no longer present in the shipped images.
+- [docker] Rebuilt the api and frontend images as multi-stage builds on Debian 13 with Node.js 24, so compilers, development headers and build tooling are no longer present in the shipped images. Critical findings drop from 27 to 6 on api and to 4 on frontend; every remaining critical has no upstream fix and is unreachable at runtime, as detailed in `security_report.md`
 - [core] Updated vulnerable transitive dependencies through npm overrides: tar, form-data, brace-expansion, minimatch, immutable, ip-address, basic-ftp, websocket-driver, js-yaml, body-parser, qs, postcss, protobufjs and ws
-- [hooks] Replaced the unmaintained v8-sandbox custom-code sandbox with isolated-vm, which exposes no network, filesystem or process surface to custom code. 
+- [hooks] Replaced the unmaintained v8-sandbox custom-code sandbox with isolated-vm, which exposes no network, filesystem or process surface to custom code. Custom code that relies on `setTimeout`, `setInterval` or asynchronous completion now fails with a logged error instead of running, and the `bufferToBase64` and `base64ToBuffer` helpers are no longer available
 - [ab-testing] Replaced pystan 2.19 and its pickled models with cmdstanpy and compiled Stan executables, removing the end-of-life Python 3.8 runtime
 
 Fixes:
+- [core] `utils.decrypt` no longer throws on Node.js 22 and later. `crypto.createDecipher` was removed from Node.js, which broke decryption of every value stored in the pre-IV format, including the MongoDB password, two-factor secrets and LDAP and Active Directory credentials
+- [docker] `/opt/countly` is group-writable again, so containers running under an arbitrary UID, such as OpenShift or Kubernetes `runAsUser`, can write to it
 - [docker] Restored the `/usr/bin/countly` symlink so the management CLI works inside the container
 - [reports] Headless Chrome now launches in the api image; PDF and e-mail report rendering previously failed to start
 - [docker] A plugin whose dependency install or asset build fails now fails the image build instead of being shipped broken without warning
 - [ab-testing] The model runner locates its CmdStan installation automatically when `CMDSTAN` is not set in the service environment
 
 Enterprise Fixes:
-- [ab-testing] `/o/ab-testing/check-models` reports whether the models are actually compiled; it previously reported success whenever any model file was present.
+- [ab-testing] `/o/ab-testing/check-models` reports whether the models are actually compiled; it previously reported success whenever any model file was present. Reported statistics differ slightly from earlier releases because the sampler retains more draws; the underlying model is unchanged
 
 Enterprise Features:
 - [ab-testing] Added `/o/ab-testing/test-models`, a global-admin diagnostic that runs a model against supplied variant data and returns the raw result
