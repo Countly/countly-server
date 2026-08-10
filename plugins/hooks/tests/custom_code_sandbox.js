@@ -3,15 +3,14 @@ var should = require('should');
 var testUtils = require('../../../test/testUtils');
 request = request(testUtils.url);
 
-const mockData = {qstring: {a: 1}, paths: ['localhost', 'o', 'hooks', 'sandbox-probe']};
-
 /**
  * Build a hook config with a single CustomCodeEffect running the given code.
  * @param {string} code - custom code to run inside the sandbox
  * @param {string} appId - application ID
+ * @param {string} path - trigger path; must match the mock request's paths[3]
  * @returns {object} hook config
  */
-function buildHookConfig(code, appId) {
+function buildHookConfig(code, appId, path) {
     return {
         name: 'custom-code-sandbox',
         description: 'verify what the custom code sandbox exposes',
@@ -19,7 +18,7 @@ function buildHookConfig(code, appId) {
         trigger: {
             type: 'APIEndPointTrigger',
             configuration: {
-                path: `sandbox-probe-${Date.now()}`,
+                path: path,
                 method: 'get',
             },
         },
@@ -39,7 +38,11 @@ function buildHookConfig(code, appId) {
 function testHookURL(code) {
     var API_KEY_ADMIN = testUtils.get('API_KEY_ADMIN');
     var APP_ID = testUtils.get('APP_ID');
-    var config = JSON.stringify(buildHookConfig(code, APP_ID));
+    // APIEndPointTrigger matches rule.trigger.configuration.path against paths[3]
+    // of the mock request, so both must come from the same value or nothing fires
+    var path = 'sandbox-probe-' + Date.now();
+    var config = JSON.stringify(buildHookConfig(code, APP_ID, path));
+    var mockData = {qstring: {a: 1}, paths: ['localhost', 'o', 'hooks', path]};
     return '/i/hook/test?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID
         + '&hook_config=' + encodeURIComponent(config)
         + '&mock_data=' + encodeURIComponent(JSON.stringify(mockData));
