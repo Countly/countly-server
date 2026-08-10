@@ -109,29 +109,6 @@ exports.decrypt = function(crypted, key, iv, algorithm, input_encoding, output_e
 };
 
 /**
-* Derive key and iv from a password the way OpenSSL EVP_BytesToKey does (MD5, no
-* salt, one iteration). This is what the removed crypto.createDecipher() did
-* internally, so values encrypted by older Countly versions stay readable.
-* @param {string} algorithm - cipher algorithm name
-* @param {string} password - password the value was encrypted with
-* @returns {object} object with key and iv buffers
-*/
-function legacyKeyAndIv(algorithm, password) {
-    var info = crypto.getCipherInfo(algorithm);
-    var pass = Buffer.from(password, "binary");
-    var block = Buffer.alloc(0);
-    var out = Buffer.alloc(0);
-    while (out.length < info.keyLength + info.ivLength) {
-        block = crypto.createHash("md5").update(Buffer.concat([block, pass])).digest();
-        out = Buffer.concat([out, block]);
-    }
-    return {
-        key: out.subarray(0, info.keyLength),
-        iv: out.subarray(info.keyLength, info.keyLength + info.ivLength)
-    };
-}
-
-/**
 * Old deprecated decrypt function, needed for old stored values
 * @param {string} crypted - value to decrypt
 * @param {string=} key - key used for encryption and decryption
@@ -173,9 +150,7 @@ exports.decrypt_old = function(crypted, key, iv, algorithm, input_encoding, outp
         decipher = crypto.createDecipheriv(algorithm, key, iv);
     }
     else {
-        // crypto.createDecipher was removed in Node 22; derive the same key/iv it used
-        var derived = legacyKeyAndIv(algorithm, key);
-        decipher = crypto.createDecipheriv(algorithm, derived.key, derived.iv);
+        decipher = crypto.createDecipher(algorithm, key);
     }
     decrypted = decipher.update(crypted, input_encoding, output_encoding);
     decrypted += decipher.final(output_encoding);

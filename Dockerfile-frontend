@@ -16,7 +16,7 @@ ENV COUNTLY_CONTAINER="frontend" \
 # Build dependencies live only in this stage and are never shipped
 RUN apt-get update && \
 	apt-get install -y curl wget git make gcc g++ unzip xz-utils build-essential sudo \
-		python3 sqlite3 ca-certificates
+		python3 python3-setuptools sqlite3 ca-certificates
 
 WORKDIR /opt/countly
 COPY . .
@@ -56,8 +56,8 @@ HEALTHCHECK --start-period=400s CMD bash -c '\
 ENV COUNTLY_CONTAINER="frontend" \
 	COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
 	COUNTLY_CONFIG_FRONTEND_WEB_HOST="0.0.0.0" \
-	npm_config_dangerously_allow_all_scripts=true \
-	NODE_OPTIONS="--max-old-space-size=2048 --no-node-snapshot"
+	NODE_OPTIONS="--max-old-space-size=2048 --no-node-snapshot" \
+	HOME=/tmp
 
 # Runtime-only packages: init, healthcheck, ops tools
 RUN apt-get update && apt-get upgrade -y && \
@@ -74,7 +74,7 @@ COPY --from=builder /opt/countly /opt/countly
 # npm stays for in-container plugin rebuilds (countly task dist-all -> npx grunt)
 RUN ln -sf /opt/countly/bin/commands/countly.sh /usr/bin/countly && \
 	chown 1001:0 /opt/countly && chmod g=u /opt/countly && \
-	mkdir -p /.npm && chown -R 1001:0 /.npm
+	mkdir -p /.npm && chown -R 1001:0 /.npm && chmod -R g=u /.npm
 
 USER 1001:0
 

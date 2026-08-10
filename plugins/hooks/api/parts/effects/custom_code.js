@@ -51,7 +51,8 @@ class CustomCodeEffect {
             await jail.set('$setResult', setResultRef);
 
             // Create wrapper function in isolate that serializes and calls the reference
-            const wrapperScript = await isolate.compileScript('globalThis.setResult = function(arg) { return $setResult.applySync(undefined, [JSON.stringify(arg)]); }');
+            // JSON.stringify(undefined) returns undefined, which JSON.parse cannot read
+            const wrapperScript = await isolate.compileScript('globalThis.setResult = function(arg) { return $setResult.applySync(undefined, [JSON.stringify(arg === undefined ? null : arg)]); }');
             await wrapperScript.run(context);
 
             // Prepare code

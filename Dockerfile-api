@@ -7,7 +7,7 @@ ENV NODE_OPTIONS="--max-old-space-size=2048"
 # Build dependencies live only in build stages and are never shipped
 RUN apt-get update && \
 	apt-get install -y curl wget git make gcc g++ unzip xz-utils build-essential sudo \
-		python3 zlib1g-dev libssl-dev libncurses-dev libgdbm-dev libnss3-dev libsqlite3-dev \
+		python3 python3-setuptools zlib1g-dev libssl-dev libncurses-dev libgdbm-dev libnss3-dev libsqlite3-dev \
 		libreadline-dev libffi-dev libbz2-dev sqlite3 ca-certificates
 
 # Python 3.12 from source for the ab-testing cmdstanpy models
@@ -32,8 +32,9 @@ ARG CMDSTAN_VERSION=2.36.0
 ENV CMDSTAN=/opt/cmdstan/cmdstan-${CMDSTAN_VERSION}
 WORKDIR /opt/countly
 
-# CE repo carries a byte-identical copy of this file so standalone builds work
-COPY plugins/ab-testing/api/bayesian/requirements_docker.txt ./plugins/ab-testing/api/bayesian/requirements_docker.txt
+# ab-testing is EE-only. Bracketing every separator makes the path one glob, so
+# these COPYs resolve to nothing instead of failing in a CE-only build context.
+COPY plugins[/]ab-testing[/]api[/]bayesian[/]requirements_docker.txt ./plugins/ab-testing/api/bayesian/
 
 # Install the python stack only when the ab-testing plugin is enabled
 RUN set -eux; \
@@ -41,7 +42,9 @@ RUN set -eux; \
 	  || { mkdir -p plugins/ab-testing/api/bayesian; touch plugins/ab-testing/api/bayesian/.ab_disabled; exit 0; }; \
 	python3.12 -m pip install --no-cache-dir -r plugins/ab-testing/api/bayesian/requirements_docker.txt
 
-COPY plugins/ab-testing/api/bayesian/ ./plugins/ab-testing/api/bayesian/
+COPY plugins[/]ab-testing[/]api[/]bayesian[/]*.py ./plugins/ab-testing/api/bayesian/
+COPY plugins[/]ab-testing[/]api[/]bayesian[/]models[/]*.py ./plugins/ab-testing/api/bayesian/models/
+COPY plugins[/]ab-testing[/]api[/]bayesian[/]models[/]stan_models[/]*.stan ./plugins/ab-testing/api/bayesian/models/stan_models/
 
 # Install CmdStan and compile the seven variant models
 RUN set -eux; \
@@ -113,7 +116,6 @@ ENV COUNTLY_CONTAINER="api" \
 	COUNTLY_CONFIG_API_API_WORKERS="1" \
 	COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
 	NODE_OPTIONS="--max-old-space-size=2048 --no-node-snapshot" \
-	npm_config_dangerously_allow_all_scripts=true \
 	HOME=/tmp \
 	CMDSTAN=/opt/cmdstan/cmdstan-${CMDSTAN_VERSION} \
 	PUPPETEER_CACHE_DIR=/opt/countly/.cache/puppeteer
@@ -144,7 +146,7 @@ RUN ldconfig && \
 	ln -sf /usr/local/bin/python3.12 /usr/bin/python3 && \
 	ln -sf /opt/countly/bin/commands/countly.sh /usr/bin/countly && \
 	chown 1001:0 /opt/countly && chmod g=u /opt/countly && \
-	mkdir -p /.npm && chown -R 1001:0 /.npm
+	mkdir -p /.npm && chown -R 1001:0 /.npm && chmod -R g=u /.npm
 
 USER 1001:0
 

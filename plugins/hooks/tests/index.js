@@ -5,3 +5,4 @@ require('./internal_event_delivery.js');
 require('./trigger_config_authz.js');
 require('./email.js');
 require('./ssrf.js');
+require('./custom_code_sandbox.js');
