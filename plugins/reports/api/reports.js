@@ -704,12 +704,16 @@ var metricProps = {
 
                 if (report.sendPdf === true) {
                     let htmlForPdf = html;
+                    //the two origins the templates load their images from, passed so
+                    //the renderer can refuse everything else
+                    let renderOrigins = [message.data && message.data.host];
                     if (pdfHasTemplate) { // report from dashboard
                         let emailFiller = Object.assign({}, message.data);
                         //use localhost for pdf generation instead of domain
                         //it prevents the issue when one server has local files and loadbalancer sends the request to another server
                         emailFiller.localhost = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + countlyConfig.web.host + ':' + countlyConfig.web.port + countlyConfig.path;
                         htmlForPdf = ejs.render(message.template, emailFiller);
+                        renderOrigins.push(emailFiller.localhost);
                     }
                     pdf.renderPDF(htmlForPdf, function() {
                         msg.attachments = [{filename: "Countly_Report.pdf", path: filePath}];
@@ -733,13 +737,15 @@ var metricProps = {
                             mail.sendMail(msg, deletePDFCallback);
                         }
                     }, options, {
-                        //--disable-web-security used to be here. It switches off the
-                        //same origin policy, which let anything rendered read the
-                        //bodies of the responses it fetched. The dashboard template
-                        //does not need it: it loads its own assets from the host
-                        //below, which is same origin.
-                        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                    }, true).catch(err => {
+                        //--disable-web-security stays. The html is opened as a data:
+                        //url, whose origin is opaque, and Chromium refuses http
+                        //subresources from an opaque origin, so without this the
+                        //template's own images do not load at all. What made the flag
+                        //dangerous was that any request could be made in the first
+                        //place; renderOrigins is the control for that, and with it the
+                        //flag can only relax checks for Countly's own origin.
+                        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'],
+                    }, true, renderOrigins).catch(err => {
                         log.d(err);
                     });
 

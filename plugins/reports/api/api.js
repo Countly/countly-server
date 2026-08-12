@@ -548,6 +548,10 @@ function publicReportFields(args) {
                             const filePath = '/tmp/email_report_' + new Date().getTime() + '.pdf';
                             const options = { "path": filePath, "width": "1028px", height: "1000px" };
 
+                            //the template loads its images from this host, and the
+                            //renderer refuses every other origin
+                            const renderOrigins = [res.message && res.message.data && res.message.data.host];
+
                             pdf.renderPDF(html, function() {
                                 //output created file to browser
                                 fs.readFile(filePath, function(err3, data) {
@@ -571,8 +575,11 @@ function publicReportFields(args) {
                                     });
                                 });
                             }, options, {
+                                //kept for the same reason as the send path: a data:
+                                //url document cannot load its own origin's images
+                                //without it. renderOrigins is what bounds the requests.
                                 args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'],
-                            }, true);
+                            }, true, renderOrigins);
                         }
                         else {
                             common.returnMessage(params, 200, 'No data to report');
