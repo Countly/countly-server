@@ -2014,6 +2014,19 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 }
 
 /**
+* Whether a string, used as a MongoDB field name, would name a member of
+* Object.prototype. Such a name survives storage as a literal field and, when the
+* document is later walked with for...in and merged, writes into the prototype of
+* the process. Segmentation values, metric values and event keys all become field
+* names, so each is checked against this before use.
+* @param {string} name - the candidate field name
+* @returns {boolean} true when the name must not be used as a field name as-is
+**/
+common.isForbiddenFieldName = function(name) {
+    return name === "__proto__" || name === "constructor" || name === "prototype";
+};
+
+/**
 * Record specific metric segment
 * @param {Params} params - params object
 * @param {string} metric - metric to record
@@ -2029,6 +2042,12 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate) {
     var escapedMetricKey = name.replace(/^\$/, "").replace(/\./g, ":");
     var escapedMetricVal = (val + "").replace(/^\$/, "").replace(/\./g, ":");
+    //escapedMetricVal is used below as a component of a d.<...> field name, so a
+    //value naming an Object.prototype member is prefixed the way forbidden day
+    //numbers already are
+    if (common.isForbiddenFieldName(escapedMetricVal)) {
+        escapedMetricVal = "[CLY]" + escapedMetricVal;
+    }
     if (!tmpSet["meta." + escapedMetricKey]) {
         tmpSet["meta." + escapedMetricKey] = [];
     }

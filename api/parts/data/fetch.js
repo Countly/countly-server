@@ -1813,6 +1813,15 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     **/
     function deepMerge(ob1, ob2) {
         for (let i in ob2) {
+            //ob2 is a stored document. A field literally named __proto__ deserializes
+            //as an own enumerable property, so for...in yields it; merging into
+            //ob1[i] would then write into Object.prototype of this worker for the rest
+            //of its life. Skip inherited keys and the prototype-member names outright.
+            //This is the durable guard: it also neutralises documents poisoned before
+            //the input paths were fixed.
+            if (!Object.prototype.hasOwnProperty.call(ob2, i) || common.isForbiddenFieldName(i)) {
+                continue;
+            }
             if (typeof ob1[i] === "undefined") {
                 ob1[i] = ob2[i];
             }
