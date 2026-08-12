@@ -98,7 +98,23 @@ var metricProps = {
         });
     };
 
+    //Fields the generator derives while sending. They have no business arriving
+    //from the database: a document stored before the create/update allow-list
+    //existed may still hold them, and reports.send prefers a present
+    //messages[].html over rendering the trusted template.
+    //
+    //Stripped here rather than in loadReport because /o/reports/preview and
+    ///o/reports/pdf run their own findOne and call this directly, so this is the
+    //one point all three paths share.
+    const DERIVED_FIELDS = ["messages", "data", "subject", "mailTemplate", "properties",
+        "period", "start", "end", "date", "total_new", "universe"];
+
     reports.getReport = function(db, report, callback, cache) {
+        if (report) {
+            DERIVED_FIELDS.forEach(function(field) {
+                delete report[field];
+            });
+        }
         /**
          * find Member
          * @param {func} cb - callback function
@@ -717,7 +733,12 @@ var metricProps = {
                             mail.sendMail(msg, deletePDFCallback);
                         }
                     }, options, {
-                        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'],
+                        //--disable-web-security used to be here. It switches off the
+                        //same origin policy, which let anything rendered read the
+                        //bodies of the responses it fetched. The dashboard template
+                        //does not need it: it loads its own assets from the host
+                        //below, which is same origin.
+                        args: ['--no-sandbox', '--disable-setuid-sandbox'],
                     }, true).catch(err => {
                         log.d(err);
                     });
