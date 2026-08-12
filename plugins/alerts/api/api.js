@@ -211,6 +211,7 @@ function getScheduleTextExpression(period, offset) {
             }
             try {
                 alertConfig = JSON.parse(alertConfig);
+                common.stripRequestCredentials(alertConfig);
                 var checkProps = {
                     'alertName': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
                     'alertDataType': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
