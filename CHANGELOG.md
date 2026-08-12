@@ -1,4 +1,4 @@
-## Version 25.03.xx
+## Version 25.03.52-LTS
 Security Fixes:
 - [docker] Rebuilt the api and frontend images as multi-stage builds on Debian 13 with Node.js 24, so compilers, development headers and build tooling are no longer present in the shipped images.
 - [core] Updated vulnerable transitive dependencies through npm overrides: tar, form-data, brace-expansion, minimatch, immutable, ip-address, basic-ftp, websocket-driver, js-yaml, body-parser, qs, postcss, protobufjs and ws
