@@ -545,7 +545,7 @@ presetsApi.update = function(params) {
             updatedPreset.fav = fav;
         }
 
-        if (!Object.keys(updatedPreset).length) {
+        if (Object.keys(updatedPreset).length === 0) {
             common.returnMessage(params, 403, 'Not allowed to edit this preset');
             return false;
         }
