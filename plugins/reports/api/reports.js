@@ -695,12 +695,16 @@ var metricProps = {
 
                 if (report.sendPdf === true) {
                     let htmlForPdf = html;
+                    //the origins the template loads its images from, passed so the
+                    //renderer can refuse every other one
+                    let renderOrigins = [message.data && message.data.host];
                     if (pdfHasTemplate) { // report from dashboard
                         let emailFiller = Object.assign({}, message.data);
                         //use localhost for pdf generation instead of domain
                         //it prevents the issue when one server has local files and loadbalancer sends the request to another server
                         emailFiller.localhost = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + countlyConfig.web.host + ':' + countlyConfig.web.port + countlyConfig.path;
                         htmlForPdf = ejs.render(message.template, emailFiller);
+                        renderOrigins.push(emailFiller.localhost);
                     }
                     pdf.renderPDF(htmlForPdf, function() {
                         msg.attachments = [{filename: "Countly_Report.pdf", path: filePath}];
@@ -724,8 +728,10 @@ var metricProps = {
                             mail.sendMail(msg, deletePDFCallback);
                         }
                     }, options, {
+                        //this branch never carried --disable-web-security, so it is
+                        //left as it is. renderOrigins bounds what may be requested.
                         args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                    }, true).catch(err => {
+                    }, true, renderOrigins).catch(err => {
                         log.d(err);
                     });
 
