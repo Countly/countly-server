@@ -38,10 +38,40 @@ describe("the value paths run through the predicate before building a field name
         src.should.match(/isForbiddenFieldName\(escapedMetricVal\)/);
     });
     it("deepMerge skips inherited keys and prototype-member names", function() {
+        // via the shared isMergeableKey, which the read-path suite below pins down
         var src = fs.readFileSync(path.join(__dirname, "../../api/parts/data/fetch.js"), "utf8");
         var dm = src.slice(src.indexOf("function deepMerge"));
         dm = dm.slice(0, dm.indexOf("return ob1"));
-        dm.should.match(/hasOwnProperty\.call\(ob2, i\)/);
-        dm.should.match(/isForbiddenFieldName\(i\)/);
+        dm.should.match(/isMergeableKey\(ob2, i\)/);
+    });
+});
+
+describe("both read-path merges refuse a prototype key", function() {
+    var fetchSrc = fs.readFileSync(path.join(__dirname, "../../api/parts/data/fetch.js"), "utf8");
+
+    it("shares one guard for every walk of a stored document", function() {
+        fetchSrc.should.match(/function isMergeableKey\(source, key\)/);
+        fetchSrc.should.match(/hasOwnProperty\.call\(source, key\)/);
+        fetchSrc.should.match(/isForbiddenFieldName\(key\)/);
+    });
+
+    it("guards deepMerge", function() {
+        var dm = fetchSrc.slice(fetchSrc.indexOf("function deepMerge"));
+        dm.slice(0, dm.indexOf("return ob1")).should.match(/isMergeableKey\(ob2, i\)/);
+    });
+
+    it("guards all five levels of getMergedEventData", function() {
+        // the second sink: a hand-inlined nested merge, not named "merge" and not
+        // recursive, so a grep for merge helpers alone does not find it
+        var gme = fetchSrc.slice(fetchSrc.indexOf("fetch.getMergedEventData"));
+        gme = gme.slice(0, gme.indexOf("meta = allEventData.map"));
+        ["levelOne", "levelTwo", "levelThree", "levelFour", "levelFive"].forEach(function(level) {
+            gme.should.match(new RegExp("isMergeableKey\\([^)]*, " + level + "\\)"));
+        });
+    });
+
+    it("guards the meta reduce, where a prototype key would throw rather than pollute", function() {
+        var reduce = fetchSrc.slice(fetchSrc.indexOf("meta = allEventData.map"));
+        reduce.slice(0, 400).should.match(/isMergeableKey\(x, key\)/);
     });
 });
