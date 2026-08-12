@@ -162,9 +162,14 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
         log.d('pdf generated');
     }
     catch (error) {
-        log.d('Error:', error);
+        //a failed render used to be logged at debug and then replaced by a
+        //TypeError from the close below, so the actual reason (a missing chromium,
+        //a bad launch argument) never reached the log at all
+        log.e('pdf generation failed', error);
     }
     finally {
-        await browser.close();
+        if (browser) {
+            await browser.close();
+        }
     }
 };
