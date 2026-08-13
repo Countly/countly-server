@@ -95,16 +95,148 @@ function indexesThroughKey(memberNode, key) {
     return false;
 }
 
+const PROTOTYPE_MEMBER_NAMES = ["__proto__", "constructor", "prototype"];
+
+// Helpers that exist to reject those names. Calling one counts as a rejection, so a
+// site fixed through a shared helper still reads as fixed.
+const REJECTING_HELPER = /forbidden|unsafe|reserved|dangerous|mergeable|safekey|safefield|protokey/i;
+
+/**
+ * Whether an if-test actually rejects the prototype member names, rather than merely
+ * mentioning the key.
+ *
+ * The distinction matters because the obvious-looking guard does not hold:
+ * `hasOwnProperty.call(src, k)` is TRUE for a key that came out of JSON.parse as a
+ * literal "__proto__", since that is an own property. Such a loop passes the check and
+ * then pollutes anyway - confirmed by running it, not by reading the spec. Accepting it
+ * as a guard would let a site that was never really fixed sit silently inside the gate.
+ * @param {object} test - the if-statement test
+ * @returns {boolean} true when the test names a prototype member or calls a helper that does
+ */
+function rejectsPrototypeKeys(test) {
+    let rejects = false;
+    (function scan(current) {
+        if (!current || typeof current.type !== "string" || rejects) {
+            return;
+        }
+        if (current.type === "Literal" && typeof current.value === "string"
+            && PROTOTYPE_MEMBER_NAMES.includes(current.value)) {
+            rejects = true;
+            return;
+        }
+        if (current.type === "CallExpression") {
+            const callee = current.callee;
+            let name = "";
+            if (callee.type === "Identifier") {
+                name = callee.name;
+            }
+            else if (callee.type === "MemberExpression" && callee.property.type === "Identifier") {
+                name = callee.property.name;
+            }
+            if (REJECTING_HELPER.test(name)) {
+                rejects = true;
+                return;
+            }
+        }
+        for (const prop of Object.keys(current)) {
+            if (prop === "parent" || prop === "loc" || prop === "range") {
+                continue;
+            }
+            const value = current[prop];
+            if (Array.isArray(value)) {
+                value.forEach(scan);
+            }
+            else if (value && typeof value.type === "string") {
+                scan(value);
+            }
+        }
+    }(test));
+    return rejects;
+}
+
+/**
+ * Whether an expression reads through one of the given keys, e.g. `src[k]` or
+ * `src[k].name`. Used to find values that came off the enumerated object.
+ * @param {object} node - expression to inspect
+ * @param {Array} keys - key names in scope
+ * @returns {boolean} true when the expression indexes with one of them
+ */
+function readsThroughAnyKey(node, keys) {
+    let found = false;
+    (function scan(current) {
+        if (!current || typeof current.type !== "string" || found) {
+            return;
+        }
+        if (current.type === "MemberExpression" && current.computed
+            && current.property.type === "Identifier" && keys.includes(current.property.name)) {
+            found = true;
+            return;
+        }
+        for (const prop of Object.keys(current)) {
+            if (prop === "parent" || prop === "loc" || prop === "range") {
+                continue;
+            }
+            const value = current[prop];
+            if (Array.isArray(value)) {
+                value.forEach(scan);
+            }
+            else if (value && typeof value.type === "string") {
+                scan(value);
+            }
+        }
+    }(node));
+    return found;
+}
+
+/**
+ * Names bound inside the loop to something read off the enumerated object, which are
+ * then just as dangerous as the key when used as one.
+ *
+ * This is how the original defect actually worked: a segmentation VALUE became a field
+ * name. A loop can guard its key perfectly and still write through
+ * `uniqueNames[valueFromDocument][k]`, so guarding the key does not clear these.
+ * @param {object} body - the loop body
+ * @param {Array} keys - key names already in scope
+ * @returns {Array} additional names that carry document data
+ */
+function derivedKeyNames(body, keys) {
+    const derived = [];
+    (function scan(current) {
+        if (!current || typeof current.type !== "string") {
+            return;
+        }
+        if (current.type === "VariableDeclarator" && current.id.type === "Identifier"
+            && current.init && readsThroughAnyKey(current.init, keys.concat(derived))) {
+            derived.push(current.id.name);
+        }
+        else if (current.type === "AssignmentExpression" && current.left.type === "Identifier"
+            && readsThroughAnyKey(current.right, keys.concat(derived))) {
+            derived.push(current.left.name);
+        }
+        for (const prop of Object.keys(current)) {
+            if (prop === "parent" || prop === "loc" || prop === "range") {
+                continue;
+            }
+            const value = current[prop];
+            if (Array.isArray(value)) {
+                value.forEach(scan);
+            }
+            else if (value && typeof value.type === "string") {
+                scan(value);
+            }
+        }
+    }(body));
+    return derived;
+}
+
 /**
  * Whether the loop opens with a guard that skips the key, which is how a fixed site
- * looks: an `if` whose test mentions the loop key and whose body continues. Covers
- * `if (!isMergeableKey(src, k)) { continue; }`, an explicit comparison against the
- * three prototype names, and a hasOwnProperty check.
+ * looks: an `if` whose test mentions the loop key, names a prototype member (or calls a
+ * helper that rejects them), and whose body continues. Covers
+ * `if (!isMergeableKey(src, k)) { continue; }` and an explicit comparison against the
+ * three prototype names.
  *
- * This trusts any leading key-referencing if/continue rather than proving the test is
- * sufficient, which is deliberate: without it the rule would keep reporting a site
- * after it had been fixed, and the only way to quieten it would be to record a fixed
- * site as "reviewed", which is exactly the wrong record to leave behind.
+ * A bare `hasOwnProperty` check is deliberately NOT enough - see rejectsPrototypeKeys.
  * @param {object} node - the loop node
  * @param {string} key - the loop key name
  * @returns {boolean} true when the loop skips unwanted keys up front
@@ -146,7 +278,7 @@ function opensWithKeyGuard(node, key) {
                 }
             }
         }(statement.test));
-        if (mentionsKey) {
+        if (mentionsKey && rejectsPrototypeKeys(statement.test)) {
             return true;
         }
     }
@@ -183,6 +315,9 @@ module.exports = {
             if (!keys.length || !node.body) {
                 return;
             }
+            // a name bound to a value off the enumerated object is as dangerous as the
+            // key, and a guard on the key does not clear it
+            const derived = derivedKeyNames(node.body, keys);
             const assignments = [];
             /**
              * Collect assignment nodes anywhere inside the loop body.
@@ -217,8 +352,12 @@ module.exports = {
                 if (!target || target.type !== "MemberExpression") {
                     continue;
                 }
+                // a leading guard clears the loop key it names; it cannot clear a name
+                // carrying a value read out of the document, so derived names are checked
+                // without it
                 const key = keys.find((candidate) => indexesThroughKey(target, candidate)
-                    && !opensWithKeyGuard(node, candidate));
+                    && !opensWithKeyGuard(node, candidate))
+                    || derived.find((candidate) => indexesThroughKey(target, candidate));
                 if (!key) {
                     continue;
                 }

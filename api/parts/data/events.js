@@ -568,6 +568,14 @@ function mergeEvents(firstObj, secondObj) {
             continue;
         }
 
+        //a stored event document can carry "__proto__" as an OWN key, which the check
+        //above accepts. firstObj[firstLevel] is then Object.prototype, which is truthy,
+        //so the "if (!firstObj[firstLevel])" branch below does not fire either and the
+        //two writes land on the prototype for the life of the worker.
+        if (common.isForbiddenFieldName(firstLevel)) {
+            continue;
+        }
+
         if (!firstObj[firstLevel]) {
             firstObj[firstLevel] = secondObj[firstLevel];
             continue;
