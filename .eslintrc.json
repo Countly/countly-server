@@ -357,7 +357,7 @@
     },
     "overrides": [
         {
-            "files": ["api/**/*.js", "plugins/*/api/**/*.js"],
+            "files": ["api/**/*.js", "plugins/*/api/**/*.js", "frontend/express/public/javascripts/countly/**/*.js", "plugins/*/frontend/**/*.js"],
             "excludedFiles": ["**/tests.js", "**/tests/**"],
             "rules": {
                 "no-prototype-pollution-sink": "error"

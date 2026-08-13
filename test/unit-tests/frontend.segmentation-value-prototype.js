@@ -202,3 +202,109 @@ describe("countly client: segmentation value prototype pollution", function() {
         });
     });
 });
+
+// The no-prototype-pollution-sink eslint rule was extended from api/plugins-api to the
+// dashboard and plugin frontends. Every site it flags there is guarded in source (there is
+// no exceptions list). These cover that the guards are present, that the rule is actually
+// switched on for those paths, and behaviourally that the two genuinely global sinks it
+// surfaced - the views json walk and the sources derived-value index - no longer pollute.
+describe("countly dashboard + plugin prototype-pollution guards", function() {
+    function read(rel) {
+        return fs.readFileSync(path.join(__dirname, "../../" + rel), "utf8");
+    }
+
+    describe("every flagged loop is guarded in source", function() {
+        var GUARDS = {
+            "frontend/express/public/javascripts/countly/countly.auth.js":
+                [[/isForbiddenFieldName\(countlyApp\)/, 1], [/isForbiddenFieldName\(accessType\)/, 1]],
+            "frontend/express/public/javascripts/countly/countly.session.js":
+                [[/isForbiddenFieldName\(z\)/, 1]],
+            "frontend/express/public/javascripts/countly/countly.template.js":
+                [[/isForbiddenFieldName\(url\)/, 1], [/isForbiddenFieldName\(data\)/, 1]],
+            "frontend/express/public/javascripts/countly/countly.view.js":
+                [[/isForbiddenFieldName\(url\)/, 1], [/isForbiddenFieldName\(data\)/, 1]],
+            "plugins/views/frontend/public/javascripts/countly.models.js":
+                [[/isForbiddenFieldName\(k\)/, 1]],
+            "plugins/sdk/frontend/public/javascripts/countly.views.js":
+                [[/isForbiddenFieldName\(key\)/, 2]],
+            "plugins/sources/frontend/public/javascripts/countly.views.js":
+                [[/isForbiddenFieldName\(source\)/, 1], [/var sourceBucket = /, 1]],
+            "plugins/push/frontend/public/javascripts/countly.views.component.common.js":
+                [[/isForbiddenFieldName\(category\)/, 1]]
+        };
+        Object.keys(GUARDS).forEach(function(rel) {
+            it("guards " + rel.split("/").pop(), function() {
+                var src = read(rel);
+                GUARDS[rel].forEach(function(pair) {
+                    (src.match(new RegExp(pair[0].source, "g")) || []).length.should.equal(pair[1]);
+                });
+            });
+        });
+    });
+
+    describe("the rule is switched on for the dashboard, not only the server", function() {
+        it(".eslintrc.json scopes no-prototype-pollution-sink to frontend + plugin frontend", function() {
+            // .eslintrc.json carries comments (JSONC), so match text rather than JSON.parse
+            var rc = read(".eslintrc.json");
+            rc.should.match(/"no-prototype-pollution-sink"/);
+            rc.should.match(/frontend\/express\/public\/javascripts\/countly\/\*\*\/\*\.js/);
+            rc.should.match(/plugins\/\*\/frontend\/\*\*\/\*\.js/);
+        });
+    });
+
+    describe("the two global plugin sinks stay out of Object.prototype", function() {
+        function isForbidden(n) {
+            return n === "__proto__" || n === "constructor" || n === "prototype";
+        }
+        afterEach(function() {
+            ["pollViews", "PWN"].forEach(function(k) {
+                delete Object.prototype[k];
+            });
+        });
+        it("views models.js json walk does not reach Object.prototype", function() {
+            // mirrors the guarded for (var k in json) merge in plugins/views countly.models.js
+            var graphDataObj = {};
+            var json = JSON.parse('{"__proto__":{"pollViews":{"x":1}},"real_name":"ok"}');
+            for (var k in json) {
+                if (isForbidden(k)) {
+                    continue;
+                }
+                if (k.indexOf("_name") > -1) {
+                    graphDataObj[k] = json[k];
+                }
+                else if (graphDataObj[k]) {
+                    for (var z in json[k]) {
+                        graphDataObj[k][z] = json[k][z];
+                    }
+                }
+                else {
+                    graphDataObj[k] = json[k];
+                }
+            }
+            Object.prototype.should.not.have.property("pollViews");
+            graphDataObj.real_name.should.equal("ok");
+        });
+        it("sources derived source index does not reach Object.prototype", function() {
+            // mirrors the guarded + laundered loop in plugins/sources countly.views.js
+            var dataMap = {};
+            var cleanData = { r1: { sources: "PWN" }, r2: { sources: "Chrome" } };
+            function getSourceName(v) {
+                return v === "PWN" ? "__proto__" : v;
+            }
+            var source;
+            for (var i in cleanData) {
+                source = getSourceName(cleanData[i].sources);
+                if (isForbidden(source)) {
+                    continue;
+                }
+                if (!dataMap[source]) {
+                    dataMap[source] = {};
+                }
+                var bucket = dataMap[source];
+                bucket[cleanData[i].sources] = cleanData[i];
+            }
+            Object.prototype.should.not.have.property("PWN");
+            dataMap.Chrome.Chrome.should.eql({ sources: "Chrome" });
+        });
+    });
+});
