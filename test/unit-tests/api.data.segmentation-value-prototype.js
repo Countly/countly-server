@@ -75,3 +75,20 @@ describe("both read-path merges refuse a prototype key", function() {
         reduce.slice(0, 400).should.match(/isMergeableKey\(x, key\)/);
     });
 });
+
+describe("getMergedObj walks stored days without reaching a prototype", function() {
+    var fetchSrc = fs.readFileSync(path.join(__dirname, "../../api/parts/data/fetch.js"), "utf8");
+
+    it("guards the day loop and the segmentation-value loop", function() {
+        // the third sink: same file as deepMerge, not named like a merge, and the
+        // existing "if (!target[key])" guards cannot help because a prototype is truthy
+        fetchSrc.should.match(/isMergeableKey\(dataObjects\[i\]\.d, day\)/);
+        fetchSrc.should.match(/isMergeableKey\(dataObjects\[i\]\.d\[day\], prop\)/);
+        fetchSrc.should.match(/isMergeableKey\(dataObjects\[i\]\.d\[day\]\[prop\], secondLevel\)/);
+    });
+
+    it("guards the meta merges that read the accumulator back", function() {
+        fetchSrc.should.match(/isMergeableKey\(dataObjects\[i\]\.meta, metaEl\)/);
+        fetchSrc.should.match(/isMergeableKey\(mergedDataObj\.meta, i\)/);
+    });
+});
