@@ -27,7 +27,6 @@
     "plugins/push/api/jobs/util/resultor.js|this.removeTokens[aid][field] = []",
     "plugins/push/api/jobs/util/resultor.js|this.sentUsers[aid][mid].users = []",
     "plugins/push/api/jobs/util/resultor.js|this.sentUsers[aid][mid][p] = 0",
-    "plugins/push/api/parts/note.js|compiled[k][kk] = data[k][kk]",
     "plugins/server-stats/api/parts/stats.js|toReturn[z].change = toReturn[z].dp - toReturn[z].change",
     "plugins/views/api/api.js|viewInfo.segments[segKey][segKey] = true"
   ]

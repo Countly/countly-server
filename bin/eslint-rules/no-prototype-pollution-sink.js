@@ -34,37 +34,45 @@ const path = require("path");
  * @param {object} node - candidate loop node
  * @returns {string|null} the bound key name, or null when this is not such a loop
  */
-function loopKeyName(node) {
+function loopKeyNames(node) {
     const left = node.left;
-    let id = null;
+    const bound = [];
     if (left.type === "VariableDeclaration" && left.declarations[0]) {
         const declared = left.declarations[0].id;
         if (declared.type === "Identifier") {
-            id = declared.name;
+            bound.push(declared.name);
         }
-        else if (declared.type === "ArrayPattern" && declared.elements[0]
-            && declared.elements[0].type === "Identifier") {
-            id = declared.elements[0].name;
+        else if (declared.type === "ArrayPattern") {
+            // for (const [k, v] of Object.entries(x)): k is the key, and v can itself be
+            // a string later used as a key, which is how the original defect worked (a
+            // segmentation VALUE became a field name). Both are candidates.
+            declared.elements.forEach((element) => {
+                if (element && element.type === "Identifier") {
+                    bound.push(element.name);
+                }
+            });
         }
     }
     else if (left.type === "Identifier") {
-        id = left.name;
+        bound.push(left.name);
     }
-    if (!id) {
-        return null;
+    if (!bound.length) {
+        return [];
     }
     if (node.type === "ForInStatement") {
-        return id;
+        return bound;
     }
-    // for-of only counts when it walks an object's own keys
+    // for-of counts when it walks an object's own keys or its own values: a value that
+    // is the string "__proto__" is just as dangerous once used as a key.
     const right = node.right;
     if (right && right.type === "CallExpression" && right.callee.type === "MemberExpression"
         && right.callee.object && right.callee.object.name === "Object"
         && right.callee.property && (right.callee.property.name === "keys"
-            || right.callee.property.name === "entries")) {
-        return id;
+            || right.callee.property.name === "entries"
+            || right.callee.property.name === "values")) {
+        return bound;
     }
-    return null;
+    return [];
 }
 
 /**
@@ -200,11 +208,8 @@ module.exports = {
          * @returns {void}
          */
         function checkLoop(node) {
-            const key = loopKeyName(node);
-            if (!key || !node.body) {
-                return;
-            }
-            if (opensWithKeyGuard(node, key)) {
+            const keys = loopKeyNames(node);
+            if (!keys.length || !node.body) {
                 return;
             }
             const assignments = [];
@@ -241,7 +246,9 @@ module.exports = {
                 if (!target || target.type !== "MemberExpression") {
                     continue;
                 }
-                if (!indexesThroughKey(target, key)) {
+                const key = keys.find((candidate) => indexesThroughKey(target, candidate)
+                    && !opensWithKeyGuard(node, candidate));
+                if (!key) {
                     continue;
                 }
                 // signature is the file plus the normalised sink text, so unrelated
