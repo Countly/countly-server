@@ -23,12 +23,10 @@
  * deepMerge, getMergedEventData, an unnamed inline loop, an `action` loop and a
  * `summed` loop, so no naming convention would have found them.
  *
- * Existing sites are carried in the `reviewed` option as "<relative path>|<sink text>",
- * so the rule fails only on new ones. They are held there rather than as 100+ inline
- * eslint-disable comments, which would bury the signal they are meant to carry.
+ * There is deliberately no list of exceptions. Every site this rule reports is guarded
+ * in the source instead, so the rule is simply clean, and a new report means new code
+ * rather than an entry to add somewhere.
  */
-const path = require("path");
-
 /**
  * The identifier a loop binds, when it enumerates an object's own keys.
  * @param {object} node - candidate loop node
@@ -163,43 +161,16 @@ module.exports = {
                 + "which reaches Object.prototype when the key is \"__proto__\"",
             recommended: true,
         },
-        schema: [{
-            type: "object",
-            properties: {
-                reviewed: { type: "array", items: { type: "string" } },
-            },
-            additionalProperties: false,
-        }],
+        schema: [],
         messages: {
             sink: "Writing through '{{key}}' can reach Object.prototype: a stored or parsed "
-                + "key may be \"__proto__\", and this indexes into it. Skip inherited and "
-                + "prototype-member keys. If the target is the object that carries the own "
-                + "__proto__ this is safe, in which case add to bin/eslint-rules/"
-                + "prototype-pollution-reviewed.json: {{signature}}",
+                + "key may be \"__proto__\", and this indexes into it. Skip the prototype "
+                + "member names at the top of the loop, the way the surrounding code does.",
         },
     },
 
     create(context) {
-        const options = context.options[0] || {};
-        const cwdForList = context.cwd || process.cwd();
-        let reviewedList = options.reviewed;
-        if (!reviewedList) {
-            // Default to the list beside this rule, so both an eslintrc and a flat
-            // config need only "error" rather than carrying dozens of signatures.
-            try {
-                reviewedList = require(path.join(cwdForList,
-                    "bin/eslint-rules/prototype-pollution-reviewed.json")).reviewed;
-            }
-            catch (e) {
-                reviewedList = [];
-            }
-        }
-        const reviewed = new Set(reviewedList);
         // eslint 8 exposes these as methods, 9+ as properties
-        const filename = context.filename || context.getFilename();
-        const sourceCode = context.sourceCode || context.getSourceCode();
-        const cwd = context.cwd || process.cwd();
-        const relative = path.relative(cwd, filename).split(path.sep).join("/");
         const alreadyReported = new Set();
 
         /**
@@ -253,17 +224,12 @@ module.exports = {
                 }
                 // signature is the file plus the normalised sink text, so unrelated
                 // edits moving line numbers do not churn the reviewed list
-                const text = sourceCode.getText(assignment).replace(/\s+/g, " ").trim();
-                const signature = relative + "|" + text;
-                if (reviewed.has(signature)) {
-                    continue;
-                }
                 const at = assignment.range ? assignment.range[0] : assignment.start;
                 if (alreadyReported.has(at)) {
                     continue;
                 }
                 alreadyReported.add(at);
-                context.report({ node: assignment, messageId: "sink", data: { key, signature } });
+                context.report({ node: assignment, messageId: "sink", data: { key } });
             }
         }
 
