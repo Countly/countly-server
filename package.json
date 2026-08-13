@@ -21,7 +21,7 @@
   },
   "lint-staged": {
     "*.{js,vue}": [
-      "eslint --fix --no-quiet"
+      "eslint --fix --no-quiet --rulesdir bin/eslint-rules"
     ]
   },
   "devDependencies": {
