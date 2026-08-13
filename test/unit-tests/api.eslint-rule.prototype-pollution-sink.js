@@ -19,55 +19,48 @@ describe("no-prototype-pollution-sink", function() {
         ruleTester.run("no-prototype-pollution-sink", rule, {
             valid: [
                 // writing AT the key: the setter reparents a local object, no pollution
-                { code: "for (var k in doc) { acc[k] = doc[k]; }", options: [{ reviewed: [] }] },
+                { code: "for (var k in doc) { acc[k] = doc[k]; }" },
                 // guarded the way the fixed merges are
                 {
                     code: "for (var k in doc) { if (k === '__proto__') { continue; } acc[k].x = 1; }",
-                    options: [{ reviewed: [] }],
                 },
-                // recorded as reviewed, e.g. the target carries its own __proto__
+                // a second guard style: hasOwnProperty plus the names, as the merges use
                 {
-                    code: "for (var k in doc) { doc[k].x = 1; }",
-                    options: [{ reviewed: ["<input>|doc[k].x = 1"] }],
-                    filename: "<input>",
+                    code: "for (var k in doc) { if (!isMergeableKey(doc, k)) { continue; } acc[k].x = 1; }",
                 },
                 // a plain indexed loop is not this shape
-                { code: "for (var i = 0; i < n; i++) { acc[i].x = 1; }", options: [{ reviewed: [] }] },
+                { code: "for (var i = 0; i < n; i++) { acc[i].x = 1; }" },
             ],
             invalid: [
                 {
                     code: "for (var k in doc) { acc[k].x = 1; }",
-                    options: [{ reviewed: [] }],
                     errors: [{ messageId: "sink" }],
                 },
                 {
                     code: "for (var k in doc) { acc[k][j] += doc[k][j]; }",
-                    options: [{ reviewed: [] }],
                     errors: [{ messageId: "sink" }],
                 },
                 // for-of over Object.keys is the same enumeration
                 {
                     code: "for (const k of Object.keys(doc)) { acc[k].x = 1; }",
-                    options: [{ reviewed: [] }],
                     errors: [{ messageId: "sink" }],
                 },
                 // nested loops must not report the same write twice
                 {
                     code: "for (var a in doc) { for (var b in doc[a]) { out[a][b] = 1; } }",
-                    options: [{ reviewed: [] }],
                     errors: 1,
                 },
             ],
         });
     });
 
-    it("names the signature to record, so a safe site is one copy-paste away", function() {
+    it("points at guarding the loop, there being no exceptions list to add to", function() {
         var linter = new (require("eslint").Linter)();
         linter.defineRule("t", rule);
         var messages = linter.verify("for (var k in doc) { acc[k].x = 1; }", {
             parserOptions: { ecmaVersion: 2022 },
-            rules: { t: ["error", { reviewed: [] }] },
+            rules: { t: "error" },
         }, path.join(process.cwd(), "api/zz.js"));
-        messages[0].message.should.match(/api\/zz\.js\|acc\[k\]\.x = 1/);
+        messages[0].message.should.match(/Skip the prototype member names/);
     });
 });

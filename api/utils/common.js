@@ -1910,6 +1910,11 @@ common.recordMetric = function(params, props) {
         tmpSet = {};
 
     for (let i in props.metrics) {
+        // a key off a stored document or a parsed payload can be a prototype
+        // member name; writing through one would reach Object.prototype
+        if (i === "__proto__" || i === "constructor" || i === "prototype") {
+            continue;
+        }
         props.metrics[i].value = props.metrics[i].value || 1;
         recordMetric(params, i, props.metrics[i], tmpSet, updateUsersZero, updateUsersMonth);
     }
@@ -3285,6 +3290,11 @@ common.sanitizeHTML = (html, extendedWhitelist) => {
 common.mergeQuery = function(ob1, ob2) {
     if (ob2) {
         for (let key in ob2) {
+            // a key off a stored document or a parsed payload can be a prototype
+            // member name; writing through one would reach Object.prototype
+            if (key === "__proto__" || key === "constructor" || key === "prototype") {
+                continue;
+            }
             if (!ob1[key]) {
                 ob1[key] = ob2[key];
             }
@@ -3316,6 +3326,11 @@ common.mergeQuery = function(ob1, ob2) {
             }
             else if (key === "$push") {
                 for (let val in ob2[key]) {
+                    // a key off a stored document or a parsed payload can be a prototype
+                    // member name; writing through one would reach Object.prototype
+                    if (val === "__proto__" || val === "constructor" || val === "prototype") {
+                        continue;
+                    }
                     if (typeof ob1[key][val] !== 'object') {
                         ob1[key][val] = {'$each': [ob1[key][val]]};
                     }
