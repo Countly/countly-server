@@ -29,6 +29,54 @@ var fs = require('fs');
 
 
 /**
+* Check that a view stays on the dashboard, and return the url to navigate to
+*
+* The view can come from a request (/o/render passes params.qstring.view through), and the
+* url is built by concatenation. With the default countlyConfig.path of "" the prefix is
+* exactly "http://localhost", so a view that does not begin with "/" rewrites the host
+* instead of the path:
+*
+*   "@169.254.169.254/latest/meta-data/"  ->  host 169.254.169.254
+*   ":8500/v1/kv/?recurse"                ->  host localhost:8500
+*   ".internal.example/x"                 ->  host localhost.internal.example
+*
+* Parsing the concatenated url and comparing origins settles all of those at once, rather
+* than trying to enumerate them. It also agrees with what Chromium will do with the same
+* string, since both use the WHATWG url parser. Note that a private range denylist would
+* be the wrong control here: the intended target is loopback.
+*
+* The returned url is the concatenation itself, unchanged, so a configured
+* countlyConfig.path keeps working exactly as before.
+* @param {string} host - dashboard origin plus the configured path
+* @param {string} view - view to render, expected to be a path on that dashboard
+* @returns {string|null} url to navigate to, or null when it leaves the dashboard origin
+**/
+function sameOriginView(host, view) {
+    if (typeof view !== "string") {
+        return null;
+    }
+    var target = host + view;
+    var expected;
+    var actual;
+    try {
+        //host may carry no path at all, so normalise it before taking the origin
+        expected = new URL(host + "/").origin;
+        actual = new URL(target).origin;
+    }
+    catch (error) {
+        return null;
+    }
+    //opaque origins serialise to "null" and would compare equal to each other
+    if (!expected || expected === "null" || actual !== expected) {
+        return null;
+    }
+    return target;
+}
+
+//exported so the same origin check can be unit tested without launching a browser
+exports.sameOriginView = sameOriginView;
+
+/**
  * Function to render views as images
  * @param  {object} options - options required for rendering
  * @param  {string} options.host - the hostname
@@ -130,6 +178,38 @@ exports.renderView = function(options, cb) {
                     scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
                 };
 
+                //Second, independent control: the renderer may only fetch from the
+                //dashboard origin. The check on the view bounds where we navigate, this
+                //bounds every subresource the rendered page then asks for. Same approach as
+                //api/utils/pdf.js. The dashboard serves all of its own assets, so nothing in
+                //a normal render is refused here.
+                var renderOrigin = null;
+                try {
+                    renderOrigin = new URL(host + "/").origin;
+                }
+                catch (error) {
+                    log.e("Cannot parse the configured dashboard host", host);
+                }
+                await page.setRequestInterception(true);
+                page.on('request', function(request) {
+                    var requestUrl = request.url();
+                    if (/^(data|blob|about):/.test(requestUrl)) {
+                        return request.continue();
+                    }
+                    var requestOrigin;
+                    try {
+                        requestOrigin = new URL(requestUrl).origin;
+                    }
+                    catch (error) {
+                        requestOrigin = null;
+                    }
+                    if (renderOrigin && renderOrigin !== "null" && requestOrigin === renderOrigin) {
+                        return request.continue();
+                    }
+                    log.d("Refused a request outside the dashboard origin", requestUrl);
+                    return request.abort();
+                });
+
                 page.setDefaultNavigationTimeout(updatedTimeout);
                 const resp = await page.goto(host + '/login/token/' + token + '?ssr=true');
                 const status = resp?.status();
@@ -141,7 +221,14 @@ exports.renderView = function(options, cb) {
 
                 await timeout(1500);
 
-                await page.goto(host + view);
+                var viewUrl = sameOriginView(host, view);
+                if (!viewUrl) {
+                    //the value can be attacker supplied, so keep it out of the log
+                    log.e("Refusing to render a view outside the dashboard origin");
+                    throw new Error("Invalid view");
+                }
+
+                await page.goto(viewUrl);
 
                 if (waitForRegex) {
                     await page.waitForResponse(
