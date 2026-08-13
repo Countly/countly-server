@@ -2085,6 +2085,20 @@
         };
 
         /**
+        * Whether a string, used as an object key, names a member of Object.prototype.
+        * Such a name can arrive as a stored segmentation/metric value or as an own key of a
+        * JSON/BSON response; writing THROUGH it (target[name][...] = ...) reaches
+        * Object.prototype for the life of the page. Every hand-rolled merge below skips
+        * these names before indexing, mirroring api/utils/common.js isForbiddenFieldName.
+        * @memberof countlyCommon
+        * @param {string} name - the candidate key
+        * @returns {boolean} true when the name must not be used as a key as-is
+        */
+        countlyCommon.isForbiddenFieldName = function(name) {
+            return name === "__proto__" || name === "constructor" || name === "prototype";
+        };
+
+        /**
         * Merge metric data in chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }, just in case if after data transformation of countly standard metric data model, resulting chartData contains duplicated values, as for example converting null, undefined and unknown values to unknown
         * @memberof countlyCommon
         * @param {object} chartData - chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }
@@ -2112,6 +2126,11 @@
                     newName = jQuery.i18n.map["common.unknown"];
                 }
                 data[metric] = newName;
+                // a stored segmentation/range value can be a prototype member name;
+                // writing through uniqueNames[newName] below would reach Object.prototype
+                if (countlyCommon.isForbiddenFieldName(newName)) {
+                    continue;
+                }
                 if (newName && !uniqueNames[newName]) {
                     uniqueNames[newName] = data;
                 }
@@ -2566,6 +2585,13 @@
                     continue;
                 }
 
+                // an own "__proto__"/"constructor"/"prototype" key survives JSON/BSON and
+                // hasOwnProperty does not exclude it; writing through dbObj[year][level1]
+                // below would reach Object.prototype
+                if (countlyCommon.isForbiddenFieldName(level1)) {
+                    continue;
+                }
+
                 if (intRegex.test(level1)) {
                     continue;
                 }
@@ -2624,6 +2650,10 @@
                 if (tmpUpdateObj[level1]) {
                     for (var level2 in tmpUpdateObj[level1]) {
                         if (!Object.prototype.hasOwnProperty.call(tmpUpdateObj[level1], level2)) {
+                            continue;
+                        }
+
+                        if (countlyCommon.isForbiddenFieldName(level2)) {
                             continue;
                         }
 
