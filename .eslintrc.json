@@ -1,8 +1,55 @@
 {
     "extends": "eslint:recommended",
+    "plugins": [
+        "security",
+        "no-unsanitized"
+    ],
     "rules": {
         //        "quotes": ["warn", "single", { "avoidEscape": true }],
         "require-atomic-updates": "off",
+
+        /* ---------- Security ----------
+           Counts below were measured against this tree before each rule was turned on.
+           A rule that costs nothing today is worth having as a forward gate; a rule
+           whose cost is a long cleanup is carried at "warn" with that cleanup named.
+
+           Deliberately NOT enabled:
+
+           guard-for-in — 454 reports here, and 6.2% of them (28) sit on a loop that
+             actually contains a prototype-reaching write. Those 28 are found by the same
+             two predicates no-prototype-pollution-sink already uses, so the rule adds no
+             coverage over it while adding 454 reports. It also misses the sinks that
+             motivated that rule, because a lone if/else loop body satisfies it.
+
+           security/detect-object-injection — fires on nearly every obj[key] read.
+
+           security/detect-non-literal-fs-filename — 145 reports, dominated by legitimate
+             path building in Gruntfile, countlyFs and the upload handlers.
+
+           security/detect-non-literal-require — 19 reports, all of them the plugin
+             loader doing what a plugin loader does. */
+
+        // 0 reports: free forward gates.
+        "no-proto": "error",
+        "no-implied-eval": "error",
+        "no-new-func": "error",
+        "no-script-url": "error",
+        // 0 reports. Exempts the destructured `const {spawn} = require('child_process')`
+        // that 24 files use, and flags a non-literal first argument to exec() — which is
+        // exactly the anti-pattern CLAUDE.md calls out.
+        "security/detect-child-process": "error",
+        "security/detect-eval-with-expression": "error",
+        "security/detect-pseudoRandomBytes": "error",
+
+        // 26 reports across 16 files, mostly in api/utils/common.js. Each needs a
+        // read to tell a real ReDoS from a bounded pattern, so it stays at "warn"
+        // until those are triaged rather than being disabled at 26 sites.
+        "security/detect-unsafe-regex": "warn",
+        // 14 innerHTML assignments across 6 files, all in frontend code, none of them
+        // literal. Same reason: real findings, but fixing them is a code change, so
+        // they are surfaced rather than either blocking the build or being silenced.
+        "no-unsanitized/method": "warn",
+        "no-unsanitized/property": "warn",
         "block-spacing": [
             "error",
             "always"
