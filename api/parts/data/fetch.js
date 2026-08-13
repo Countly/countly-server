@@ -1920,6 +1920,9 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                     //old meta merge
                     if (mergedDataObj.meta) {
                         for (let metaEl in dataObjects[i].meta) {
+                            if (!isMergeableKey(dataObjects[i].meta, metaEl)) {
+                                continue;
+                            }
                             if (mergedDataObj.meta[metaEl]) {
                                 mergedDataObj.meta[metaEl] = union(mergedDataObj.meta[metaEl], dataObjects[i].meta[metaEl]);
                             }
@@ -1935,6 +1938,9 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                     //new meta merge as hash tables
                     if (dataObjects[i].meta_v2) {
                         for (let metaEl in dataObjects[i].meta_v2) {
+                            if (!isMergeableKey(dataObjects[i].meta_v2, metaEl)) {
+                                continue;
+                            }
                             if (mergedDataObj.meta[metaEl]) {
                                 mergedDataObj.meta[metaEl] = union(mergedDataObj.meta[metaEl], Object.keys(dataObjects[i].meta_v2[metaEl]));
                             }
@@ -1961,16 +1967,25 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
                     if (!isRefresh) {
                         for (let day in dataObjects[i].d) {
+                            if (!isMergeableKey(dataObjects[i].d, day)) {
+                                continue;
+                            }
                             if (options.unique.indexOf(day) !== -1) {
                                 continue;
                             }
                             for (let prop in dataObjects[i].d[day]) {
+                                if (!isMergeableKey(dataObjects[i].d[day], prop)) {
+                                    continue;
+                                }
                                 if (options.unique.indexOf(prop) !== -1 || prop <= 23 && prop >= 0) {
                                     continue;
                                 }
 
                                 if (typeof dataObjects[i].d[day][prop] === 'object') {
                                     for (let secondLevel in dataObjects[i].d[day][prop]) {
+                                        if (!isMergeableKey(dataObjects[i].d[day][prop], secondLevel)) {
+                                            continue;
+                                        }
                                         if ((levels.daily.length) ? levels.daily.indexOf(secondLevel) !== -1 : options.unique.indexOf(secondLevel) === -1) {
                                             if (!mergedDataObj[year][month][prop]) {
                                                 mergedDataObj[year][month][prop] = {};
@@ -2019,6 +2034,9 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
             }
             //Fixing meta  to be escaped.(Because return output will escape keys and make values incompatable)
             for (let i in mergedDataObj.meta) {
+                if (!isMergeableKey(mergedDataObj.meta, i)) {
+                    continue;
+                }
                 for (var p = 0; p < mergedDataObj.meta[i].length; p++) {
                     if (mergedDataObj.meta[i][p] && typeof mergedDataObj.meta[i][p] === 'string') {
                         mergedDataObj.meta[i][p] = mergedDataObj.meta[i][p].replace(new RegExp("\"", "g"), '&quot;');
@@ -2030,6 +2048,9 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                 var metric_length = plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit;
                 if (metric_length > 0) {
                     for (let i in mergedDataObj.meta) {
+                        if (!isMergeableKey(mergedDataObj.meta, i)) {
+                            continue;
+                        }
                         if (mergedDataObj.meta[i].length > metric_length) {
                             delete mergedDataObj.meta[i]; //don't  return if there is more than limit
                         }
@@ -2041,6 +2062,9 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                     var value_length = plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_value_limit;
                     if (value_length > 0) {
                         for (let i in mergedDataObj.meta) {
+                            if (!isMergeableKey(mergedDataObj.meta, i)) {
+                                continue;
+                            }
                             if (mergedDataObj.meta[i].length > value_length) {
                                 mergedDataObj.meta[i].splice(value_length); //removes some elements if there is more than set limit
                             }
