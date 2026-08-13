@@ -242,15 +242,10 @@ describe("countly dashboard + plugin prototype-pollution guards", function() {
         });
     });
 
-    describe("the rule is switched on for the dashboard, not only the server", function() {
-        it(".eslintrc.json scopes no-prototype-pollution-sink to frontend + plugin frontend", function() {
-            // .eslintrc.json carries comments (JSONC), so match text rather than JSON.parse
-            var rc = read(".eslintrc.json");
-            rc.should.match(/"no-prototype-pollution-sink"/);
-            rc.should.match(/frontend\/express\/public\/javascripts\/countly\/\*\*\/\*\.js/);
-            rc.should.match(/plugins\/\*\/frontend\/\*\*\/\*\.js/);
-        });
-    });
+    // NB: no assertion here reads .eslintrc.json - CI runs these tests from a copy made
+    // with `cp -rf ./* /opt/countly`, which skips dotfiles, so the config at the test cwd
+    // is not the PR's. The rule's scoping is enforced by the `lint` CI job and the rule's
+    // own RuleTester suite; this file only proves the guarded source stays clean.
 
     describe("the two global plugin sinks stay out of Object.prototype", function() {
         function isForbidden(n) {
