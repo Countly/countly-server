@@ -28,6 +28,18 @@ describe("no-prototype-pollution-sink", function() {
                 {
                     code: "for (var k in doc) { if (!isMergeableKey(doc, k)) { continue; } acc[k].x = 1; }",
                 },
+                // the shared helper the fixed sites call
+                {
+                    code: "for (var k in doc) { if (common.isForbiddenFieldName(k)) { continue; } acc[k].x = 1; }",
+                },
+                // hasOwnProperty is not a prototype guard on its own, but with one it is
+                {
+                    code: "for (var k in doc) { if (!doc.hasOwnProperty(k) || k === '__proto__') { continue; } acc[k].x = 1; }",
+                },
+                // a value that never came off the enumerated object is not a derived key
+                { code: "for (var k in doc) { var n = other.name; out[n].x = 1; }" },
+                // one level through a derived name only reparents a local object
+                { code: "for (var k in doc) { var n = doc[k].name; out[n] = 1; }" },
                 // a plain indexed loop is not this shape
                 { code: "for (var i = 0; i < n; i++) { acc[i].x = 1; }" },
             ],
@@ -49,6 +61,28 @@ describe("no-prototype-pollution-sink", function() {
                 {
                     code: "for (var a in doc) { for (var b in doc[a]) { out[a][b] = 1; } }",
                     errors: 1,
+                },
+                // hasOwnProperty alone is NOT a guard: an own "__proto__" out of a stored
+                // document passes it, and the write below still reaches the prototype.
+                // This is the shape mergeEvents had.
+                {
+                    code: "for (var k in doc) { if (!Object.prototype.hasOwnProperty.call(doc, k)) { continue; } acc[k].x = 1; }",
+                    errors: [{ messageId: "sink" }],
+                },
+                {
+                    code: "for (var k in doc) { if (!doc.hasOwnProperty(k)) { continue; } acc[k].x = 1; }",
+                    errors: [{ messageId: "sink" }],
+                },
+                // writing through a VALUE read off the document, which is how the original
+                // defect worked: a segmentation value became a field name
+                {
+                    code: "for (var k in rows) { var n = rows[k].name; uniq[n][k] = rows[k].v; }",
+                    errors: [{ messageId: "sink" }],
+                },
+                // guarding the KEY does not clear a name carrying document data
+                {
+                    code: "for (var k in rows) { if (k === '__proto__') { continue; } var n = rows[k].name; uniq[n].total = 1; }",
+                    errors: [{ messageId: "sink" }],
                 },
             ],
         });

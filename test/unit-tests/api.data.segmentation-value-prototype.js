@@ -37,6 +37,18 @@ describe("the value paths run through the predicate before building a field name
         var src = fs.readFileSync(path.join(__dirname, "../../api/utils/common.js"), "utf8");
         src.should.match(/isForbiddenFieldName\(escapedMetricVal\)/);
     });
+    it("events.js mergeEvents guards its outer key, hasOwnProperty not being enough", function() {
+        // hasOwnProperty is TRUE for a stored document's own "__proto__", so it lets the
+        // key through; firstObj[firstLevel] is then Object.prototype, which is truthy, so
+        // the "if (!firstObj[firstLevel])" branch does not fire either and both writes
+        // below land on the prototype. Confirmed by lifting the function and merging such
+        // a document: before the guard Object.prototype gained the field, after it did
+        // not and the legitimate segment still summed.
+        var src = fs.readFileSync(path.join(__dirname, "../../api/parts/data/events.js"), "utf8");
+        var fn = src.slice(src.indexOf("function mergeEvents"));
+        fn = fn.slice(0, fn.indexOf("\n}"));
+        fn.should.match(/isForbiddenFieldName\(firstLevel\)/);
+    });
     it("deepMerge skips inherited keys and prototype-member names", function() {
         // via the shared isMergeableKey, which the read-path suite below pins down
         var src = fs.readFileSync(path.join(__dirname, "../../api/parts/data/fetch.js"), "utf8");
