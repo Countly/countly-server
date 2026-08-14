@@ -60,6 +60,10 @@ var versionInfo = require('./version.info'),
     { validateCreate } = require('../../api/utils/rights.js'),
     tracker = require('../../api/parts/mgmt/tracker.js');
 
+//Language codes as the dashboard uses them, e.g. "en", "pt-br", "zh_CN". Anything
+//else is refused rather than sanitized, so a bad value never reaches storage.
+var LANG_CODE_RE = /^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})?$/;
+
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
 var COUNTLY_NAMED_TYPE = "Countly Lite v" + COUNTLY_VERSION;
@@ -1796,8 +1800,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
         var updatedUser = {};
 
-        if (req.body.lang) {
-            updatedUser.lang = req.body.lang;
+        //The stored lang reaches file paths in several places, for example
+        //api/utils/localization.js and the plugin localization lookups, so keep it to a
+        //language code here rather than relying on every reader to sanitize it. The
+        //dashboard only ever sends codes from its own localization list.
+        if (req.body.lang && LANG_CODE_RE.test(req.body.lang + "")) {
+            updatedUser.lang = req.body.lang + "";
 
             countlyDb.collection('members').update({"_id": countlyDb.ObjectID(req.session.uid + "")}, {'$set': updatedUser}, {safe: true}, function(err, member) {
                 if (member && !err) {
