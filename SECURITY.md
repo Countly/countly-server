@@ -5,13 +5,18 @@ Security is very important to us. If you discover any issue regarding security, 
 All software related security bugs with severity of medium and higher will be awarded accordingly with a bug bounty reward.
 
 # Vulnerability levels
-**Critical Severity:** software can be exploited at any time without any additional information
 
-**High Severity:** some additional information, access or action required (from the user, like clicking on injected link) for software to be exploited
+The levels are ordered on what an attacker must already have, before impact is considered. A finding that requires no account always grades above one that requires an account. That ordering follows from Countly being deployed as a single-tenant application: whoever holds a dashboard account is someone the deployment has already extended trust to, so a finding that requires an account is bounded by an internal trust boundary, whereas one that requires no account is not bounded at all.
 
-**Medium Severity:** the impact is limited (for example, can only access limited information) or requires special conditions to achieve it (when server is configured in specific way)
+**Critical Severity:** no account is needed, and no additional information or special conditions either. It can be exploited as it stands, and the impact reaches the highest permissions in the system, up to full takeover.
 
-**Low** - no bounty rewards, does not directly lead to vulnerability, but provides a possibility (like exposing software version, which can be mapped to specific vulnerabilities), old dependencies, server misconfiguration
+**High Severity:** no account is needed, but exploitation requires additional information or special conditions. A credential that ships inside the customer's own application, such as an app key, is not an account for this purpose, since it can be read out of any deployed application or website.
+
+**Medium Severity:** an account is required, and the impact is either data an application has collected from its end users, or a credential that grants access. Gaining permissions the account was not granted counts too, whether at a higher level or at the same level on an application where it holds no role.
+
+Descriptive information about the deployment itself, such as which applications and members exist and what they are called, is not sufficient for Medium on its own. In a single-tenant deployment that is ordinarily known to colleagues already, so a finding limited to it is Low.
+
+**Low** - no bounty rewards. Either the business impact is small, or reproduction depends on a chain of conditions so unlikely that it does not amount to a practical attack. This applies at any level of access: a finding that needs no account is still Low when what it yields does not matter, such as exposing a software version, which can be mapped to specific vulnerabilities, old dependencies, or server misconfiguration.
 
 **Exclusions (out of scope — not eligible for bounty)**
 
@@ -38,3 +43,5 @@ The following are out of scope. They may still be reported, and configuration is
 10. **Instances of a vulnerability class already under active remediation.** Findings that are additional instances of a vulnerability class we are already remediating — including work visible in an open or in-progress pull request, a public branch, or another not-yet-released fix — are considered part of that known, ongoing effort and are not separately eligible. Enumerating sibling occurrences of an issue from our published or in-progress remediation is not an independent discovery. Independently discovered issues remain welcome.
 
 11. **Cross-site scripting (XSS) without a working proof of concept.** XSS reports that do not demonstrate actual script execution in an authenticated dashboard session are out of scope. Pointing at a potential sink (for example a `v-html` binding or a DOM write) is not sufficient on its own, since the value reaching a sink may already be neutralized elsewhere in the request handling or rendering pipeline. XSS with a working end-to-end proof of concept — including DOM-based XSS that originates from the URL or other client-controlled input — is in scope and welcome.
+
+12. **Further instances of a root cause you have already reported.** Where a report is another instance of a root cause you previously reported to us — the same defective function, check, or pattern, reached through a different parameter, endpoint, or event — it is treated as part of that original report and is awarded once, under the original submission. We expect a report to cover the instances its own analysis reaches: having identified a root cause, enumerating the remaining places it applies is part of that finding rather than a new one. This applies whether or not we had finished remediating the first report. Independent discovery of the same class by a different researcher is assessed on its own merits, and genuinely distinct root causes are always separate reports.

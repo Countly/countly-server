@@ -488,6 +488,8 @@ function uploadFile(myfile, id, callback) {
      *  "result": "Missing parameter "api_key" or "auth_token""
      * }
     */
+    //also declared by the surveys plugin, which serves this path when enabled
+    plugins.uploadPaths.push({path: "/i/feedback/upload"});
     plugins.register("/i/feedback/upload", function(ob) {
         // do not respond if this isn't feedback fetch request
         // or surveys plugin enabled
@@ -980,6 +982,7 @@ function uploadFile(myfile, id, callback) {
     *  "result": "Missing parameter \"api_key\" or \"auth_token\""" 
     * }
     */
+    plugins.uploadPaths.push({path: "/i/feedback/logo"});
     plugins.register("/i/feedback/logo", function(ob) {
         var params = ob.params;
         validateCreate(params, FEATURE_NAME, function() {

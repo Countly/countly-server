@@ -18,9 +18,14 @@ const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
 const tracker = require('./parts/mgmt/tracker.js');
 const { RateLimiterMemory } = require("rate-limiter-flexible");
+const uploadTemp = require('./utils/upload-temp.js');
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
+
+// Core endpoints that read params.files. Plugins declare their own.
+plugins.uploadPaths.push({path: "/i/apps/create"});
+plugins.uploadPaths.push({path: "/i/apps/update"});
 
 if (cluster.isMaster) {
     console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
@@ -482,6 +487,27 @@ function handleRequest(req, res) {
         if (countlyConfig.api.maxUploadFileSize) {
             formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
         }
+        // The body is parsed before the request is routed or authorized, so
+        // uploads are refused unless a plugin declared that this exact path
+        // reads params.files
+        Object.assign(formidableOptions, uploadTemp.parseOptions(req.url, common.config && common.config.path, plugins.uploadPaths));
+
+        // Whatever did get written is removed once the response is done with.
+        // 'close' matters as well as 'finish': an upload aborted mid-stream
+        // leaves a partial file that 'finish' never sees. Handlers that consume
+        // an upload unlink it themselves; this only catches what they did not,
+        // which is every request rejected before reaching a handler at all.
+        /**
+         * Remove any upload temp file the handlers did not consume
+         * @returns {void}
+         */
+        const discardOnce = () => {
+            res.removeListener('finish', discardOnce);
+            res.removeListener('close', discardOnce);
+            uploadTemp.discardUploads(params);
+        };
+        res.on('finish', discardOnce);
+        res.on('close', discardOnce);
 
         const form = new formidable.IncomingForm(formidableOptions);
         if (/crash_symbols\/(add_symbol|upload_symbol)/.test(req.url)) {
@@ -517,6 +543,9 @@ function handleRequest(req, res) {
                 }
             }
             params.files = files;
+            //snapshot the paths formidable produced, before a handler can
+            //repoint params.files[x].path at something that must not be removed
+            uploadTemp.trackUploads(params, files);
             if (multiFormData) {
                 let formDataUrl = [];
                 for (const i in fields) {

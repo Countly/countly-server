@@ -1286,7 +1286,7 @@
                 if (!this.widget.logoType) {
                     this.widget.logoType = 'default';
                 }
-                if (this.widget.logo && this.widget.logo.indexOf("feedback_logo")) {
+                if (this.widget.logo && this.widget.logo.indexOf("feedback_logo") > -1) {
                     this.widget.globalLogo = true;
                 }
                 if (!this.widget.targeting) {

@@ -80,6 +80,20 @@ var pluginManager = function pluginManager() {
      */
     this.ttlCollections = [];
     /**
+     * Request paths that are allowed to carry a file upload.
+     *
+     * The API parses POST bodies before a request is routed or authorized, and
+     * formidable writes multipart parts and raw application/octet-stream bodies
+     * to disk. Uploads are therefore refused by default and a plugin has to
+     * declare the paths where it actually reads params.files, so a body sent
+     * anywhere else is never written to disk. Set raw when the endpoint reads an
+     * application/octet-stream body rather than a multipart part.
+     *
+     * Paths are matched exactly, after the installation subpath is stripped.
+     * @type {{path: string, raw: boolean=}[]}
+     */
+    this.uploadPaths = [];
+    /**
      *  Custom configuration files for different databases for docker env
      */
     this.dbConfigEnvs = {

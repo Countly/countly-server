@@ -320,8 +320,15 @@ appsApi.createApp = async function(params) {
                     appId: app.ops[0]._id,
                     data: newApp
                 });
-                iconUpload(Object.assign({}, params, {app_id: app.ops[0]._id}));
-                common.returnOutput(params, newApp);
+                //respond only once the icon has been processed, so the uploaded
+                //temp file is not removed while jimp is still reading it
+                iconUpload(Object.assign({}, params, {app_id: app.ops[0]._id}))
+                    .catch(function() {
+                        //iconUpload logs its own failures, the app was created either way
+                    })
+                    .then(function() {
+                        common.returnOutput(params, newApp);
+                    });
             }
             else {
                 common.returnMessage(params, 500, "Error creating App: " + err);
@@ -497,8 +504,15 @@ appsApi.updateApp = function(params) {
                                 update: updatedApp
                             }
                         });
-                        iconUpload(params);
-                        common.returnOutput(params, updatedApp);
+                        //respond only once the icon has been processed, so the
+                        //uploaded temp file is not removed while jimp is reading it
+                        iconUpload(params)
+                            .catch(function() {
+                                //iconUpload logs its own failures, the app was updated either way
+                            })
+                            .then(function() {
+                                common.returnOutput(params, updatedApp);
+                            });
                     });
                 }
                 else {
