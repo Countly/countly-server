@@ -15,6 +15,32 @@
         padding-top: 8px;
         padding-bottom: 12px;
 
+        // Long header-left content (a report/funnel name, etc.) must never overlap
+        // the action buttons on the right. The left slot is already flagged
+        // shrinkable (bu-is-flex-shrink-1 + inline min-width:0), so clip its
+        // overflow — this keeps overflowing content inside the left column instead
+        // of bleeding over the right slot. Keep the right-side buttons at their
+        // natural width so they stay put and readable.
+        > .bu-level-left {
+            overflow: hidden;
+        }
+
+        > .bu-level-right {
+            flex-shrink: 0;
+            margin-left: 16px;
+        }
+
+        // Ellipsize the default header title when no custom header-left slot is used.
+        > .bu-level-left .bu-level-item {
+            min-width: 0;
+
+            > h2 {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
         &--no-pt {
             padding-top: 0px;
         }
