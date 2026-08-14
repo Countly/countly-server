@@ -8,7 +8,7 @@ var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     log = common.log('views:api'),
-    { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+    { validateRead, validateUpdate, validateDelete, hasReadRight } = require('../../../api/utils/rights.js');
 
 const viewsUtils = require("./parts/viewsUtils.js");
 const FEATURE_NAME = 'views';
@@ -1584,31 +1584,44 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         callback: function(owner, expires_after) {
                             if (owner) {
                                 var token = params.req.headers["countly-token"];
-                                if (expires_after < 600 && expires_after > -1) {
-                                    authorize.extend_token({
-                                        extendTill: Date.now() + 600000, //10 minutes
-                                        token: params.req.headers["countly-token"],
-                                        callback: function(/*err,res*/) {
-                                            params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
-                                            params.app_id = app._id;
-                                            params.app_cc = app.country;
-                                            params.appTimezone = app.timezone;
-                                            params.app = app;
-                                            params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-                                            getHeatmap(params);
-                                        }
-                                    });
+                                //A token acts as its owner: everywhere else it is resolved to the
+                                //member who created it and that member's own rights decide what the
+                                //request may read, while the token's app and endpoint fields only narrow
+                                //it further. This branch used to skip that step, so the app resolved from
+                                //the caller's app_key was served without consulting the owner at all.
+                                //Apply the owner's read right here, the way validateRead does for the
+                                //api_key branch below.
+                                common.db.collection('members').findOne({_id: common.db.ObjectID(owner + "")}, function(memberErr, member) {
+                                    if (memberErr || !member || !hasReadRight(FEATURE_NAME, app._id + "", member)) {
+                                        common.returnMessage(params, 401, 'User does not have view right for this application');
+                                        return false;
+                                    }
+                                    if (expires_after < 600 && expires_after > -1) {
+                                        authorize.extend_token({
+                                            extendTill: Date.now() + 600000, //10 minutes
+                                            token: params.req.headers["countly-token"],
+                                            callback: function(/*err,res*/) {
+                                                params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
+                                                params.app_id = app._id;
+                                                params.app_cc = app.country;
+                                                params.appTimezone = app.timezone;
+                                                params.app = app;
+                                                params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                                                getHeatmap(params);
+                                            }
+                                        });
 
-                                }
-                                else {
-                                    params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
-                                    params.app_id = app._id;
-                                    params.app_cc = app.country;
-                                    params.appTimezone = app.timezone;
-                                    params.app = app;
-                                    params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-                                    getHeatmap(params);
-                                }
+                                    }
+                                    else {
+                                        params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
+                                        params.app_id = app._id;
+                                        params.app_cc = app.country;
+                                        params.appTimezone = app.timezone;
+                                        params.app = app;
+                                        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                                        getHeatmap(params);
+                                    }
+                                });
                             }
                             else {
                                 common.returnMessage(params, 401, 'User does not have view right for this application');
