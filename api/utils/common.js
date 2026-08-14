@@ -2833,6 +2833,35 @@ common.parseUserQuery = function(raw) {
 };
 
 /**
+ * Check that a request parameter is a scalar, so it can be used as a VALUE
+ * inside a MongoDB query/match document.
+ *
+ * params.qstring values are not guaranteed to be strings: a JSON request body
+ * puts nested objects straight into params.qstring, so a parameter an endpoint
+ * reads as a plain id or name can arrive as an object. In a value position
+ * Mongo reads such an object as a query expression rather than a value, so
+ * `{"view": {"$ne": null}}` turns an equality match on one document into a
+ * match on every document. Besides returning data the endpoint never meant to
+ * return, that removes the bound on how much data the query has to scan, which
+ * on an aggregation over the drill collections is expensive.
+ *
+ * Use this on scalar parameters (ids, names, types) before they reach a query,
+ * and reject the request when it returns false. It is NOT for parameters that
+ * are queries in their own right: validate those with common.parseUserQuery or
+ * common.findUnsafeMongoOperator instead.
+ *
+ * null and undefined count as scalars. Whether an absent parameter belongs in
+ * the query at all is the caller's decision, and the existing truthiness
+ * checks at the call sites already make it.
+ *
+ * @param {*} value - request parameter value
+ * @returns {boolean} true when the value is safe to use as a query value
+ */
+common.isQueryScalar = function(value) {
+    return value === null || typeof value !== "object";
+};
+
+/**
  * Build a short, log-safe label identifying the request's endpoint, for use in
  * log messages (e.g. query-rejection logs). Returns the request path plus the
  * `method` query param when present, e.g. " [/i/app_users/delete]" or

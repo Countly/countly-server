@@ -1137,6 +1137,14 @@ plugins.setConfigs("crashes", {
         else if (obParams.qstring.method === 'user_crashes') {
             validateRead(obParams, FEATURE_NAME, function(params) {
                 if (params.qstring.uid) {
+                    //uid is matched as a plain value, so it has to be a scalar.
+                    //A JSON request body can put an object here, which Mongo
+                    //would read as a query expression and which would widen the
+                    //match instead of narrowing it to the one user
+                    if (!common.isQueryScalar(params.qstring.uid)) {
+                        common.returnMessage(params, 400, 'Invalid parameter: uid');
+                        return true;
+                    }
                     var columns = ["group", "reports", "last"];
                     var query = {group: {$ne: 0}, uid: params.qstring.uid};
                     var cursor = common.db.collection('app_crashusers' + params.app_id).find(query || {}, {_id: 0});
