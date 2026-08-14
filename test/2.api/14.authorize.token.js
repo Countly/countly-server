@@ -216,6 +216,47 @@ describe('Testing global admin user token', function() {
 */
 });
 
+describe('Token restricted to an application cannot read account information', function() {
+    var appScopedToken = "";
+
+    it('creating a token restricted to one application', function(done) {
+        authorize.save({
+            db: testUtils.db,
+            multi: true,
+            owner: testowner,
+            app: [APP_ID],
+            callback: function(err, token) {
+                if (err) {
+                    return done(err);
+                }
+                if (!token) {
+                    return done("token not created");
+                }
+                appScopedToken = token;
+                done();
+            }
+        });
+    });
+
+    it('should refuse /o/users/me, which belongs to no application', function(done) {
+        request
+            .get('/o/users/me?auth_token=' + appScopedToken)
+            .expect(401)
+            .end(function(err) {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+    });
+
+    it('cleaning up the app restricted token', function(done) {
+        testUtils.db.collection("auth_tokens").remove({_id: appScopedToken}, function() {
+            done();
+        });
+    });
+});
+
 describe('Creating token to allow only paths under /o/users/', function() {
     it('creating token for user', function(done) {
         authorize.save({
