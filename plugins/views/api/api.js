@@ -1360,6 +1360,20 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             log.e('Parse device failed: ', params.qstring.device);
         }
 
+        //view, actionType and segment are matched as plain values against the
+        //drill collections below, so they have to be scalars. A JSON request
+        //body can put an object here, and Mongo would read that object as a
+        //query expression instead of a value: the pipeline would then match
+        //far more than the one view asked for, and the $unionWith across the
+        //drill collections would have no bound on how much it scans.
+        const scalarParams = ['view', 'actionType', 'segment'];
+        for (let i = 0; i < scalarParams.length; i++) {
+            if (!common.isQueryScalar(params.qstring[scalarParams[i]])) {
+                common.returnMessage(params, 400, 'Bad request parameter: ' + scalarParams[i]);
+                return false;
+            }
+        }
+
         const actionType = params.qstring.actionType;
 
         if (!(device.minWidth >= 0) || !(device.maxWidth >= 0)) {

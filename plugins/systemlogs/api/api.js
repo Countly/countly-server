@@ -467,7 +467,10 @@ plugins.setConfigs("systemlogs", {
             else if (user.email) {
                 query.email = user.email;
             }
-            else if (params.qstring.api_key) {
+            else if (params.qstring.api_key && common.isQueryScalar(params.qstring.api_key)) {
+                //matched as a plain value, so a non-scalar is left out of the
+                //query rather than handed to Mongo as a query expression, which
+                //would resolve the log entry to an arbitrary member
                 query.api_key = params.qstring.api_key;
             }
             if (Object.keys(query).length) {
