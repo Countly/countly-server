@@ -53,7 +53,30 @@ function parseFeedbackLogoName(name) {
     return {valid: true, isGlobal: !m[1], appId: m[1] || null};
 }
 
+// Allowed logo identifiers. The dashboard sends Date.now() as the identifier, so a plain
+// filename fragment covers every real upload. This matters because the identifier is
+// concatenated into the upload path: separators or leading dots in it would choose where
+// the file lands rather than just what it is called. Kept here beside
+// parseFeedbackLogoName, and dependency free so this module stays unit testable.
+var LOGO_IDENTIFIER_RE = /^[A-Za-z0-9_-]{1,64}$/;
+
+/**
+ * Validate a logo upload identifier, which becomes the stored file's name.
+ * @param {string|number} id - candidate identifier, straight from the request
+ * @returns {string|null} the identifier when it is a plain name, otherwise null
+ */
+function safeLogoIdentifier(id) {
+    if (typeof id === "number" && isFinite(id)) {
+        id = String(id);
+    }
+    if (typeof id !== "string" || !LOGO_IDENTIFIER_RE.test(id)) {
+        return null;
+    }
+    return id;
+}
+
 module.exports = {
     sniffImageType: sniffImageType,
-    parseFeedbackLogoName: parseFeedbackLogoName
+    parseFeedbackLogoName: parseFeedbackLogoName,
+    safeLogoIdentifier: safeLogoIdentifier
 };

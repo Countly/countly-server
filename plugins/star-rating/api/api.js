@@ -267,6 +267,15 @@ function uploadFile(myfile, id, callback) {
     }
     var tmp_path = myfile.path;
 
+    //The identifier is request supplied and is concatenated into the path below, so refuse
+    //anything that is not a plain name before it can pick the write location.
+    var safeId = imageUtils.safeLogoIdentifier(id);
+    if (!safeId) {
+        fs.unlink(tmp_path, function() { });
+        callback("Invalid identifier");
+        return;
+    }
+
     create_upload_dir(function() {
         fs.readFile(tmp_path, (err, data) => {
             if (err || !data) {
@@ -285,14 +294,14 @@ function uploadFile(myfile, id, callback) {
                 return;
             }
             try {
-                var pp = path.resolve(__dirname, './../images/' + id + "." + detectedExt);
-                countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + detectedExt, writeMode: "overwrite" }, function(err3) {
+                var pp = path.resolve(__dirname, './../images/' + safeId + "." + detectedExt);
+                countlyFs.saveData("star-rating", pp, data, { id: "" + safeId + "." + detectedExt, writeMode: "overwrite" }, function(err3) {
                     fs.unlink(tmp_path, function() { });
                     if (err3) {
                         callback("Failed to upload image");
                     }
                     else {
-                        callback(true, id + "." + detectedExt);
+                        callback(true, safeId + "." + detectedExt);
                     }
                 });
             }
