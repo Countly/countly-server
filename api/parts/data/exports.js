@@ -102,16 +102,31 @@ function flattenObject(ob, fields) {
     return toReturn;
 }
 
+//A leading one of these makes a spreadsheet client read the cell as a formula. The
+//first four are the formula introducers; a leading tab or carriage return is consumed
+//by the client while it parses the file, exposing whatever follows it, so they belong
+//here too.
+var CSV_FORMULA_PREFIXES = ["@", "=", "+", "-", "\t", "\r"];
+var CSV_FORMULA_MARKER = "'";
+
 /**
  *  Escape values that can cause CSV injection
+ *
+ *  Values reach this from two directions. flattenObject calls it while building a row,
+ *  and processCSVvalue calls it again for every cell it writes, so it has to be safe to
+ *  apply twice: a value already carrying the marker is returned untouched. A cell that
+ *  genuinely began with the marker is not a formula either way.
+ *
  *  @param {varies} val - value to escape
  *  @returns {varies} escaped value
  */
 function preventCSVInjection(val) {
-    if (typeof val === "string") {
-        var ch = val[0];
-        if (["@", "=", "+", "-"].indexOf(ch) !== -1) {
-            val = '`' + val;
+    if (typeof val === "string" && val.length) {
+        if (val[0] === CSV_FORMULA_MARKER) {
+            return val;
+        }
+        if (CSV_FORMULA_PREFIXES.indexOf(val[0]) !== -1) {
+            val = CSV_FORMULA_MARKER + val;
         }
     }
     return val;
@@ -140,6 +155,14 @@ function processCSVvalue(value) {
     }
 
     if (typeof value === 'string') {
+        //Neutralize before quoting. The quotes added below are the CSV text qualifier
+        //and the spreadsheet client strips them while parsing, so quoting is not
+        //protection against a formula introducer. Doing it here covers every cell the
+        //streamed CSV writes, headers included, rather than at each call site: the
+        //header rows and the data rows are written from three separate places, and only
+        //the rows built without a projection pass through flattenObject on the way.
+        value = preventCSVInjection(value);
+
         if (value.includes('"')) {
             value = value.replace(new RegExp('"', 'g'), '"' + '"');
         }
@@ -424,19 +447,23 @@ exports.stream = function(params, stream, options) {
         });
         xc.pipe(params.res);
         if (listAtEnd === false) {
-            xc.write(paramList);
+            xc.write(paramList.map(preventCSVInjection));
         }
         stream.stream(options.streamOptions).on('data', function(doc) {
             var values = [];
             var valuesMap = {};
             getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd});
-            xc.write(values);
+            //getValues only neutralizes by way of flattenObject, which its collectProp=false
+            //branch skips, so a projected export would otherwise write formulas into the sheet
+            //verbatim. Headers go through the same guard, since a column name is attacker
+            //controlled too when it comes from event segmentation.
+            xc.write(values.map(preventCSVInjection));
         });
 
         stream.once('close', function() {
             setTimeout(function() {
                 if (listAtEnd) {
-                    xc.write(paramList);
+                    xc.write(paramList.map(preventCSVInjection));
                 }
                 xc.end();
             }, 100);
