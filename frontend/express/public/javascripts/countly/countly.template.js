@@ -2403,7 +2403,7 @@ var AppRouter = Backbone.Router.extend({
 
                 countlyCommon.setActiveApp(activeApp._id);
                 self.activeAppName = activeApp.name;
-                $('#active-app-name').html(activeApp.name);
+                $('#active-app-name').text(activeApp.name);
                 $('#active-app-name').attr('title', activeApp.name);
                 $("#active-app-icon").css("background-image", "url('" + countlyGlobal.cdn + "appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
             }
