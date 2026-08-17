@@ -7,6 +7,7 @@ Enterprise Fixes:
 
 Security Fixes:
 - [core] The graph note tooltip now HTML-encodes the application name before rendering, so an application name is shown as text rather than markup
+- [core] The dashboard escapes `<` when serializing the exposed `countlyGlobal` object into the inline page script, so an application name (or any exposed value) containing a `</script>` end tag in any spelling can no longer break out of the script block and run in another user's session; the active-app name is now rendered with `.text()` instead of `.html()`
 
 ## Version 24.05.51
 
