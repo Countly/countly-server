@@ -8,7 +8,7 @@ Enterprise Fixes:
 - [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
 
 Security Fixes:
-- [core] Token creation is now allowed only from a full-permission credential: an api_key, or a token with no app and no endpoint restriction. A restricted token can no longer create a token, which previously let it mint an unrestricted or login-capable token and escalate beyond its own scope
+- [core] A token restricted to specific apps or endpoints can no longer escalate its scope. Token creation is allowed only from a full-permission credential (an api_key, or a token with no app and no endpoint restriction), and a scoped token can no longer be redeemed for a dashboard session at /login/token. Previously a token scoped to one app could mint an unrestricted or login-capable token and take over the owner's full account
 - [hooks] Internal event hooks are now scoped to the apps the hook belongs to: app creation is a global-admin-only event, and remote-config, cohort, alert and hook-chaining events are only delivered when the event's app is one the hook is scoped to
 - [compliance-hub] The consents table now returns a fixed set of fields; a projection supplied on the request is no longer used to widen the response beyond the consent columns
 - [dashboards] Widgets are no longer copied when the copying user has no access to the apps they reference, and widget app ids are validated on widget create and update
