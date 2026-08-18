@@ -194,7 +194,7 @@
                 var ret = "<p>" + ((jQuery.i18n.map["systemlogs.action." + row.a]) ? jQuery.i18n.map["systemlogs.action." + row.a] : row.a) + "</p>";
                 if (typeof row.i === "object") {
                     if (typeof row.i.app_id !== "undefined" && countlyGlobal.apps[row.i.app_id]) {
-                        ret += "<p title='" + row.i.app_id + "'>" + jQuery.i18n.map["systemlogs.for-app"] + ": " + countlyGlobal.apps[row.i.app_id].name + "</p>";
+                        ret += "<p title='" + row.i.app_id + "'>" + jQuery.i18n.map["systemlogs.for-app"] + ": " + countlyCommon.encodeHtml(countlyGlobal.apps[row.i.app_id].name) + "</p>";
                     }
                     if (typeof row.i.appuser_id !== "undefined") {
                         ret += "<p title='" + row.i.appuser_id + "'>" + jQuery.i18n.map["systemlogs.for-appuser"] + ": " + row.i.appuser_id + "</p>";

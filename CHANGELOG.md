@@ -5,6 +5,9 @@ Fixes:
 Enterprise Fixes:
 - [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
 
+Security Fixes:
+- [compliance-hub] The export/purge history table now HTML-encodes the application name before it is placed in the action cell, so an application name is shown as text rather than markup
+
 ## Version 24.05.51
 
 Fixes:
