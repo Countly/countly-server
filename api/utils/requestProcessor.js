@@ -65,6 +65,37 @@ const reloadConfig = function() {
 };
 
 /**
+* Run an operation only when the request was made with a full-permission credential.
+*
+* Token management hands out and revokes the owner's other credentials, so it must not be reachable
+* from a token that is itself restricted to specific apps or endpoints: such a token would be able
+* to read or destroy credentials wider than itself. An api_key request is the member, and an
+* unrestricted token (a dashboard session token) is already as capable as the member, so both pass.
+* @param {params} params - params object
+* @param {string} message - message returned when the caller is a restricted token
+* @param {function} callback - called only when the caller may manage tokens
+* @returns {void}
+*/
+const requireUnrestrictedCredential = (params, message, callback) => {
+    const callerToken = params.qstring.auth_token || (params.req && params.req.headers && params.req.headers["countly-token"]) || "";
+    if (!callerToken) {
+        //api_key authenticated: the member itself, full permission
+        callback();
+        return;
+    }
+    common.db.collection("auth_tokens").findOne({_id: callerToken + ""}, function(tokenErr, callerTokenDoc) {
+        const isScopeRestricted = function(scope) {
+            return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
+        };
+        if (tokenErr || !callerTokenDoc || isScopeRestricted(callerTokenDoc.app) || isScopeRestricted(callerTokenDoc.endpoint)) {
+            common.returnMessage(params, 403, message);
+            return;
+        }
+        callback();
+    });
+};
+
+/**
  * Default request processing handler, which requires request context to operate. Check tcp_example.js
  * @static
  * @param {params} params - for request context. Minimum needed properties listed
@@ -2615,22 +2646,26 @@ const processRequest = (params) => {
                 */
                 case 'delete':
                     validateUser(() => {
-                        if (params.qstring.tokenid) {
-                            common.db.collection("auth_tokens").remove({
-                                "_id": params.qstring.tokenid,
-                                "owner": params.member._id + ""
-                            }, function(err, res) {
-                                if (err) {
-                                    common.returnMessage(params, 404, err.message);
-                                }
-                                else {
-                                    common.returnMessage(params, 200, res);
-                                }
-                            });
-                        }
-                        else {
-                            common.returnMessage(params, 404, "Token id not provided");
-                        }
+                        //revoking the owner's other credentials is credential management, not
+                        //something a token restricted to a subset of their access may do
+                        requireUnrestrictedCredential(params, "A restricted token cannot delete tokens", function() {
+                            if (params.qstring.tokenid) {
+                                common.db.collection("auth_tokens").remove({
+                                    "_id": params.qstring.tokenid,
+                                    "owner": params.member._id + ""
+                                }, function(err, res) {
+                                    if (err) {
+                                        common.returnMessage(params, 404, err.message);
+                                    }
+                                    else {
+                                        common.returnMessage(params, 200, res);
+                                    }
+                                });
+                            }
+                            else {
+                                common.returnMessage(params, 404, "Token id not provided");
+                            }
+                        });
                     }, params);
                     break;
                 /**
@@ -2671,7 +2706,6 @@ const processRequest = (params) => {
                         // member itself) or a token with no app and no endpoint restriction, such as the
                         // dashboard session token. Future: enforce the child's permissions as a subset of
                         // the creating credential's CRUD permissions.
-                        const creatorToken = params.qstring.auth_token || (params.req && params.req.headers && params.req.headers["countly-token"]) || "";
                         /**
                         * Parse the request and save the new token. Reached only once the caller is
                         * allowed to create tokens.
@@ -2732,21 +2766,7 @@ const processRequest = (params) => {
                                 }
                             });
                         };
-                        if (!creatorToken) {
-                            //api_key authenticated: the member itself, full permission
-                            proceedWithCreate();
-                            return;
-                        }
-                        common.db.collection("auth_tokens").findOne({_id: creatorToken + ""}, function(tokenErr, creatorTokenDoc) {
-                            const isScopeRestricted = function(scope) {
-                                return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
-                            };
-                            if (tokenErr || !creatorTokenDoc || isScopeRestricted(creatorTokenDoc.app) || isScopeRestricted(creatorTokenDoc.endpoint)) {
-                                common.returnMessage(params, 403, "A restricted token cannot create tokens");
-                                return;
-                            }
-                            proceedWithCreate();
-                        });
+                        requireUnrestrictedCredential(params, "A restricted token cannot create tokens", proceedWithCreate);
                     });
                     break;
                 default:
@@ -2827,13 +2847,19 @@ const processRequest = (params) => {
                 */
                 case 'list':
                     validateUser(params, function() {
-                        common.db.collection("auth_tokens").find({"owner": params.member._id + ""}).toArray(function(err, res) {
-                            if (err) {
-                                common.returnMessage(params, 404, err.message);
-                            }
-                            else {
-                                common.returnMessage(params, 200, res);
-                            }
+                        // Each document returned here includes its _id, which is the token itself.
+                        // Listing them from a restricted token would hand it the owner's other
+                        // credentials - including the unrestricted dashboard session token - and let
+                        // it act as any of them, escalating exactly as creating a wider token would.
+                        requireUnrestrictedCredential(params, "A restricted token cannot list tokens", function() {
+                            common.db.collection("auth_tokens").find({"owner": params.member._id + ""}).toArray(function(err, res) {
+                                if (err) {
+                                    common.returnMessage(params, 404, err.message);
+                                }
+                                else {
+                                    common.returnMessage(params, 200, res);
+                                }
+                            });
                         });
                     });
                     break;
