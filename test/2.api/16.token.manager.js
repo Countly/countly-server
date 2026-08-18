@@ -379,4 +379,249 @@ describe('Testing token manager', function() {
                 });
         });
     });
+
+    describe('Token permissions bound every grant to the creating credential', function() {
+        var limitedToken = "";
+        var fullToken = "";
+        var legacyRestrictedToken = "";
+
+        //a token allowed only to read the "core" feature of APP_ID, and nothing else
+        var readCorePermission = function(appId) {
+            var permission = {_: {a: [], u: [[appId]]}, c: {}, r: {}, u: {}, d: {}};
+            permission.r[appId] = {all: false, allowed: {core: true}};
+            return encodeURIComponent(JSON.stringify(permission));
+        };
+
+        //a token that additionally claims delete on everything, which its creator must not pass on
+        var deleteAllPermission = function(appId) {
+            var permission = {_: {a: [], u: [[appId]]}, c: {}, r: {}, u: {}, d: {}};
+            permission.r[appId] = {all: false, allowed: {core: true}};
+            permission.d[appId] = {all: true, allowed: {}};
+            return encodeURIComponent(JSON.stringify(permission));
+        };
+
+        var deleteToken = function(id, done) {
+            if (!id) {
+                return done();
+            }
+            request
+                .get('/i/token/delete?api_key=' + API_KEY_ADMIN + '&tokenid=' + id)
+                .end(function() {
+                    done();
+                });
+        };
+
+        it('setup: api_key creates a token limited to reading core on one app', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=integration&multi=true&ttl=3600&permission=' + readCorePermission(APP_ID))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result');
+                    limitedToken = ob.result;
+                    (limitedToken !== "").should.equal(true);
+                    done();
+                });
+        });
+
+        it('the limited token can read the feature it was granted', function(done) {
+            request
+                .get('/o/users/permissions?app_id=' + APP_ID + '&auth_token=' + limitedToken)
+                .expect(200)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+
+        it('the limited token cannot act as a global admin, even though its owner is one', function(done) {
+            request
+                .get('/o/users/all?auth_token=' + limitedToken)
+                .expect(401)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+
+        it('the limited token cannot create an unrestricted child', function(done) {
+            request
+                .get('/i/token/create?auth_token=' + limitedToken + '&multi=true&ttl=300')
+                .expect(403)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    //an unrestricted child would carry the owner's full permissions
+                    JSON.parse(res.text).should.have.property('result');
+                    done();
+                });
+        });
+
+        it('the limited token cannot grant a permission it does not hold', function(done) {
+            request
+                .get('/i/token/create?auth_token=' + limitedToken + '&multi=true&ttl=300&permission=' + deleteAllPermission(APP_ID))
+                .expect(403)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', "Token permissions must be a subset of the creating credential's permissions");
+                    done();
+                });
+        });
+
+        it('the limited token can create a child within its own permissions', function(done) {
+            request
+                .get('/i/token/create?auth_token=' + limitedToken + '&multi=true&ttl=300&permission=' + readCorePermission(APP_ID))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    deleteToken(JSON.parse(res.text).result, done);
+                });
+        });
+
+        it('the limited token cannot be granted login permission', function(done) {
+            request
+                .get('/i/token/create?auth_token=' + limitedToken + '&multi=true&ttl=300&can_login=true')
+                .expect(403)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'The creating credential cannot grant login permission');
+                    done();
+                });
+        });
+
+        it('the limited token cannot list the owner tokens, which would hand it their secrets', function(done) {
+            request
+                .get('/o/token/list?auth_token=' + limitedToken)
+                .expect(403)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'A restricted token cannot list tokens');
+                    done();
+                });
+        });
+
+        it('the limited token cannot delete the owner tokens', function(done) {
+            request
+                .get('/i/token/delete?auth_token=' + limitedToken + '&tokenid=' + limitedToken)
+                .expect(403)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+
+        it('a purpose string alone never grants login permission', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=LoggedInAuth&multi=true&ttl=300')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var forged = JSON.parse(res.text).result;
+                    //the token exists, but carries no login permission, so it cannot open a session
+                    request
+                        .get('/login/token/' + forged)
+                        .expect(302)
+                        .end(function(err2, res2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            //rejected logins are redirected back to the login page
+                            res2.headers.location.should.not.containEql('/dashboard');
+                            deleteToken(forged, done);
+                        });
+                });
+        });
+
+        it('api_key can still create a token, and grant it login permission', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&multi=true&ttl=300&can_login=true')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    fullToken = JSON.parse(res.text).result;
+                    (fullToken !== "").should.equal(true);
+                    done();
+                });
+        });
+
+        it('a full-permission token can create a child, as the dashboard session does', function(done) {
+            request
+                .get('/i/token/create?auth_token=' + fullToken + '&purpose=child&multi=true&ttl=300')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    deleteToken(JSON.parse(res.text).result, done);
+                });
+        });
+
+        it('setup: a token restricted the legacy way, by app', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=legacy&multi=true&ttl=3600&apps=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    legacyRestrictedToken = JSON.parse(res.text).result;
+                    done();
+                });
+        });
+
+        it('a legacy app-restricted token cannot create tokens', function(done) {
+            request
+                .get('/i/token/create?auth_token=' + legacyRestrictedToken + '&multi=true&ttl=300')
+                .expect(403)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'A restricted token cannot create tokens');
+                    done();
+                });
+        });
+
+        it('an endpoint restriction cannot be combined with permissions', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&multi=true&ttl=300&endpoint=/o/users&permission=' + readCorePermission(APP_ID))
+                .expect(400)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+
+        it('cleanup: remove the tokens created here', function(done) {
+            deleteToken(limitedToken, function() {
+                deleteToken(fullToken, function() {
+                    deleteToken(legacyRestrictedToken, done);
+                });
+            });
+        });
+    });
 });
