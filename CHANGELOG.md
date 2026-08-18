@@ -5,6 +5,9 @@ Fixes:
 Enterprise Fixes:
 - [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
 
+Security Fixes:
+- [core] The SSRF address filter now also rejects the RFC 8215 local-use NAT64 prefix (64:ff9b:1::/48), matching how it already handles the well-known NAT64 prefix
+
 ## Version 24.05.51
 
 Fixes:
