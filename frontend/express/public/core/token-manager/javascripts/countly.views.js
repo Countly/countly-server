@@ -1,5 +1,7 @@
-/*global app, countlyVue, countlyCommon, CV, $, countlyGlobal, countlyTokenManager, CountlyHelpers */
+/*global app, countlyVue, countlyCommon, CV, $, countlyGlobal, countlyTokenManager, countlyUserManagement, countlyAuth, CountlyHelpers */
 (function() {
+    var PERMISSION_TYPES = ["c", "r", "u", "d"];
+
     var TokenDrawer = countlyVue.views.create({
         template: CV.T('/core/token-manager/templates/token-manager-drawer.html'),
         data: function() {
@@ -7,6 +9,11 @@
                 tokenUsage: '0',
                 tokenExpiration: '0',
                 title: '',
+                features: [],
+                filteredFeatures: [],
+                searchQuery: '',
+                allByType: {c: false, r: false, u: false, d: false},
+                permissionSet: countlyAuth.permissionSetGenerator(1)[0],
                 constants: {
                     "availableProps": [
                         { label: CV.i18n('token_manager.limit.h'), value: "hours" },
@@ -17,6 +24,13 @@
                 }
             };
         },
+        mounted: function() {
+            var self = this;
+            $.when(countlyUserManagement.fetchFeatures()).then(function() {
+                self.features = countlyUserManagement.getFeatures() || [];
+                self.filteredFeatures = self.features;
+            });
+        },
         methods: {
             appsData: function() {
                 var apps = [];
@@ -25,51 +39,81 @@
                 }
                 return apps;
             },
-            addEndpoint: function(endpoints) {
-                endpoints.push({parameters: [{}]});
+            featureBeautifier: function(feature) {
+                return countlyAuth.featureBeautifier(feature);
             },
-            addParameter: function(parameters) {
-                parameters.push({});
-            },
-            removeEndpoint: function(endpoints, endpointIndex) {
-                if (endpoints.length > 1) {
-                    endpoints.splice(endpointIndex, 1);
+            search: function() {
+                var self = this;
+                var query = (self.searchQuery || "").toLowerCase();
+                if (query !== "") {
+                    self.filteredFeatures = self.features.filter(function(feature) {
+                        return self.featureBeautifier(feature).toLowerCase().indexOf(query) !== -1;
+                    });
+                }
+                else {
+                    self.filteredFeatures = self.features;
                 }
             },
-            removeParameter: function(parameters, parameterIndex) {
-                if (parameters.length > 1) {
-                    parameters.splice(parameterIndex, 1);
+            clearSearch: function() {
+                this.searchQuery = '';
+                this.filteredFeatures = this.features;
+            },
+            //granting anything on a feature implies being able to read it, mirroring how a user's
+            //own permissions are edited in user management
+            setPermissionByFeature: function(type, feature) {
+                if (type !== 'r' && this.permissionSet[type].allowed[feature] && !this.permissionSet.r.allowed[feature]) {
+                    this.$set(this.permissionSet.r.allowed, feature, true);
                 }
+                if (type === 'r' && !this.permissionSet.r.allowed[feature]) {
+                    for (var i = 0; i < PERMISSION_TYPES.length; i++) {
+                        this.$set(this.permissionSet[PERMISSION_TYPES[i]].allowed, feature, false);
+                    }
+                }
+                this.syncAllFlags();
+            },
+            setPermissionByType: function(type) {
+                var on = this.allByType[type];
+                for (var i = 0; i < this.filteredFeatures.length; i++) {
+                    var feature = this.filteredFeatures[i];
+                    this.$set(this.permissionSet[type].allowed, feature, on);
+                    if (on && type !== 'r') {
+                        this.$set(this.permissionSet.r.allowed, feature, true);
+                    }
+                    if (!on && type === 'r') {
+                        for (var j = 0; j < PERMISSION_TYPES.length; j++) {
+                            this.$set(this.permissionSet[PERMISSION_TYPES[j]].allowed, feature, false);
+                        }
+                    }
+                }
+                this.syncAllFlags();
+            },
+            //"all" must mean every feature, including ones added later, so it is only set when the
+            //whole list is selected - the server refuses an "all" grant the creator does not hold
+            syncAllFlags: function() {
+                var self = this;
+                PERMISSION_TYPES.forEach(function(type) {
+                    var every = self.features.length > 0 && self.features.every(function(feature) {
+                        return self.permissionSet[type].allowed[feature] === true;
+                    });
+                    self.permissionSet[type].all = every;
+                    self.allByType[type] = every;
+                });
+            },
+            buildPermission: function(apps) {
+                var permission = {_: {a: [], u: [apps]}, c: {}, r: {}, u: {}, d: {}};
+                return countlyAuth.combinePermissionObject([apps], [this.permissionSet], permission);
             },
             onClose: function() {
                 this.tokenUsage = '0';
                 this.tokenExpiration = '0';
+                this.searchQuery = '';
+                this.filteredFeatures = this.features;
+                this.permissionSet = countlyAuth.permissionSetGenerator(1)[0];
+                this.allByType = {c: false, r: false, u: false, d: false};
             },
             onSubmit: function(doc) {
                 var self = this;
                 var ttl = 0;
-                var selectApps = doc.selectApps;
-                var endpoints = doc.endpoints;
-                var newEndpoints = [];
-                endpoints.forEach(function(element) {
-                    if (element.endpointName !== "" && element.endpointName) {
-                        var obj = {params: {}} ;
-                        obj.endpoint = element.endpointName;
-                        element.parameters.forEach(function(item) {
-                            var key = item.queryParameters1;
-                            var value = item.queryParameters2;
-                            obj.params[key] = value;
-                        });
-                        newEndpoints.push(obj);
-                    }
-                });
-                endpoints = JSON.stringify(newEndpoints);
-
-                if (self.tokenUsage === "1") {
-                    if (doc.selectApps.length > 0) {
-                        selectApps = doc.selectApps.join(",");
-                    }
-                }
                 if (self.tokenExpiration === "1") {
                     if (doc.selectTime === "hours") {
                         ttl = doc.timeInput * 3600;
@@ -81,7 +125,26 @@
                         ttl = doc.timeInput * 3600 * 24 * 30;
                     }
                 }
-                countlyTokenManager.createTokenWithQuery(doc.description, endpoints, doc.checkboxMultipleTimes, selectApps, ttl, function() {
+
+                var options = {
+                    purpose: doc.description,
+                    multi: doc.checkboxMultipleTimes,
+                    ttl: ttl
+                };
+                if (self.tokenUsage === "1") {
+                    options.permission = self.buildPermission(doc.selectApps || []);
+                }
+                else {
+                    //an unlimited token carries the creator's own permissions, and only such a
+                    //token may be granted permission to sign in
+                    options.canLogin = doc.checkboxCanLogin === true;
+                }
+
+                countlyTokenManager.createTokenWithPermissions(options, function(err) {
+                    if (err) {
+                        CountlyHelpers.alert(CV.i18n('token_manager.create-error'), "red");
+                        return;
+                    }
                     self.$emit("create");
                 });
             }
@@ -155,6 +218,8 @@
                         row.purpose = row.purpose + "";
                         row.purpose = row.purpose[0].toUpperCase() + row.purpose.substring(1);
                     }
+                    row.canLogin = row.can_login === true;
+                    row.permissionSummary = this.describePermission(row);
                     if (Array.isArray(row.endpoint)) {
                         var lines = [];
                         for (var p = 0; p < row.endpoint.length; p++) {
@@ -186,6 +251,40 @@
                 }
                 this.tableData = tableData;
             },
+            //describe what a token may do, so the list distinguishes a limited token from one that
+            //carries the owner's own permissions
+            describePermission: function(row) {
+                if (!row.token_permission) {
+                    return CV.i18n('token_manager.permission.full');
+                }
+                var counts = {c: 0, r: 0, u: 0, d: 0};
+                var labels = [];
+                PERMISSION_TYPES.forEach(function(type) {
+                    var forType = row.token_permission[type] || {};
+                    for (var appId in forType) {
+                        var entry = forType[appId];
+                        if (!entry) {
+                            continue;
+                        }
+                        var grants = entry.all === true;
+                        for (var feature in entry.allowed || {}) {
+                            if (entry.allowed[feature] === true) {
+                                grants = true;
+                                break;
+                            }
+                        }
+                        if (grants) {
+                            counts[type]++;
+                        }
+                    }
+                });
+                PERMISSION_TYPES.forEach(function(type) {
+                    if (counts[type] > 0) {
+                        labels.push(CV.i18n('token_manager.permission.' + type));
+                    }
+                });
+                return labels.length ? labels.join(", ") : CV.i18n('token_manager.permission.none');
+            },
             getColor: function(status) {
                 if (status === "active") {
                     return "green";
@@ -196,7 +295,7 @@
             },
             onCreateClick: function() {
                 this.openDrawer("main", {
-                    description: "", checkboxMultipleTimes: false, endpoints: [{parameters: [{}]}], selectApps: []
+                    description: "", checkboxMultipleTimes: false, checkboxCanLogin: false, selectApps: []
                 });
             },
             onDelete: function(row) {
