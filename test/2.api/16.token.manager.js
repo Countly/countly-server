@@ -479,6 +479,46 @@ describe('Testing token manager', function() {
                 });
         });
 
+        it('a restricted token cannot list tokens, which would expose the owner other credentials', function(done) {
+            request
+                .get('/o/token/list?auth_token=' + restrictedToken)
+                .expect(403)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'A restricted token cannot list tokens');
+                    done();
+                });
+        });
+
+        it('a restricted token cannot delete tokens', function(done) {
+            request
+                .get('/i/token/delete?auth_token=' + restrictedToken + '&tokenid=' + restrictedToken)
+                .expect(403)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'A restricted token cannot delete tokens');
+                    done();
+                });
+        });
+
+        it('api_key can still list tokens', function(done) {
+            request
+                .get('/o/token/list?api_key=' + API_KEY_ADMIN)
+                .expect(200)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+
         it('cleanup: remove the restricted token', function(done) {
             testUtils.db.collection("auth_tokens").remove({_id: restrictedToken + ""}, function() {
                 done();
